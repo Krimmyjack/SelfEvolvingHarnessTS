@@ -1,0 +1,440 @@
+{
+ "S_ar:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, no strong seasonality, high outlier density. Median_smooth w=5 is safe default per risk rules."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, no strong seasonality, high outlier density. Median_smooth w=5 is safe default per risk rules.\"\n}"
+  ]
+ },
+ "S_ar:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, no strong seasonality, missing moderate. Median_smooth w=5 is safe default per risk rules; incumbent agrees."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, no strong seasonality, missing moderate. Median_smooth w=5 is safe default per risk rules; incumbent agrees.\"\n}"
+  ]
+ },
+ "S_both:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [
+    {
+     "when": {
+      "snr": "high",
+      "miss": "some"
+     },
+     "skill": "median_smooth",
+     "param": 9
+    }
+   ],
+   "rationale": "Low SNR, no strong seasonality, moderate trend. Median w5 safest for noise; w9 for high-SNR with missing to avoid over-smoothing."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [\n    {\n      \"when\": {\n        \"snr\": \"high\",\n        \"miss\": \"some\"\n      },\n      \"skill\": \"median_smooth\",\n      \"param\": 9\n    }\n  ],\n  \"rationale\": \"Low SNR, no strong seasonality, moderate trend. Median w5 safest for noise; w9 for high-SNR with missing to avoid over-smoothing.\"\n}"
+  ]
+ },
+ "S_both:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [
+    {
+     "when": {
+      "snr": "low",
+      "miss": "some"
+     },
+     "skill": "median_smooth",
+     "param": 9
+    }
+   ],
+   "rationale": "Low noise, no strong season; median_smooth w5 safe default. Low SNR with missing may need wider w9. Avoid stl_deseason despite period—risk of garbage-period smoothing."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [\n    {\n      \"when\": {\n        \"snr\": \"low\",\n        \"miss\": \"some\"\n      },\n      \"skill\": \"median_smooth\",\n      \"param\": 9\n    }\n  ],\n  \"rationale\": \"Low noise, no strong season; median_smooth w5 safe default. Low SNR with missing may need wider w9. Avoid stl_deseason despite period—risk of garbage-period smoothing.\"\n}"
+  ]
+ },
+ "S_hetero:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, no strong seasonality, moderate missing. Median_smooth w=5 is safe default per risk rules; avoids over-smoothing."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, no strong seasonality, moderate missing. Median_smooth w=5 is safe default per risk rules; avoids over-smoothing.\"\n}"
+  ]
+ },
+ "S_hetero:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, no strong seasonality, small gaps. Median_smooth w=5 is safe default per risk rules; identity would leave noise unhandled."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, no strong seasonality, small gaps. Median_smooth w=5 is safe default per risk rules; identity would leave noise unhandled.\"\n}"
+  ]
+ },
+ "S_intermittent:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "High noise, low seasonality, no period evidence. Median_smooth w=5 is safe default; identity would leave noise and gaps unaddressed."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"High noise, low seasonality, no period evidence. Median_smooth w=5 is safe default; identity would leave noise and gaps unaddressed.\"\n}"
+  ]
+ },
+ "S_intermittent:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, high noise, no strong seasonality. Median_smooth w=5 is safe default per risk rules; matches incumbent."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, high noise, no strong seasonality. Median_smooth w=5 is safe default per risk rules; matches incumbent.\"\n}"
+  ]
+ },
+ "S_multiseason:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Moderate noise (SNR 3.7), missing in 35/45 series, strong period (P=16) but low trend. Median_smooth w=5 is safe default per risk rules."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\"skill\": \"median_smooth\", \"param\": 5},\n  \"overrides\": [],\n  \"rationale\": \"Moderate noise (SNR 3.7), missing in 35/45 series, strong period (P=16) but low trend. Median_smooth w=5 is safe default per risk rules.\"\n}"
+  ]
+ },
+ "S_multiseason:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Moderate noise, low missing, strong period (P16). Median_smooth w=5 safe; avoids seasonal damage. Incumbent median is risky per rules."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Moderate noise, low missing, strong period (P16). Median_smooth w=5 safe; avoids seasonal damage. Incumbent median is risky per rules.\"\n}"
+  ]
+ },
+ "S_regime:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, moderate missing, no strong seasonality. Median_smooth w=5 is safe default per risk rules; incumbent majority agrees."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\"skill\": \"median_smooth\", \"param\": 5},\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, moderate missing, no strong seasonality. Median_smooth w=5 is safe default per risk rules; incumbent majority agrees.\"\n}"
+  ]
+ },
+ "S_regime:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, high missing, no seasonality. Median_smooth w=5 is safest; incumbent agrees. Avoid stronger smoothing due to risk."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, high missing, no seasonality. Median_smooth w=5 is safest; incumbent agrees. Avoid stronger smoothing due to risk.\"\n}"
+  ]
+ },
+ "S_season:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [
+    {
+     "when": {
+      "snr": "high",
+      "miss": "none"
+     },
+     "skill": "identity",
+     "param": null
+    }
+   ],
+   "rationale": "Low SNR, high missing, moderate seasonality. Median_smooth w=5 safest: avoids period damage. Override clean high-SNR series with identity."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [\n    {\n      \"when\": {\n        \"snr\": \"high\",\n        \"miss\": \"none\"\n      },\n      \"skill\": \"identity\",\n      \"param\": null\n    }\n  ],\n  \"rationale\": \"Low SNR, high missing, moderate seasonality. Median_smooth w=5 safest: avoids period damage. Override clean high-SNR series with identity.\"\n}"
+  ]
+ },
+ "S_season:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [
+    {
+     "when": {
+      "snr": "high",
+      "miss": "none"
+     },
+     "skill": "identity",
+     "param": null
+    }
+   ],
+   "rationale": "Low SNR, moderate seasonality, and missing data favor safe median smoothing. High SNR with no missing can skip processing."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [\n    {\n      \"when\": {\n        \"snr\": \"high\",\n        \"miss\": \"none\"\n      },\n      \"skill\": \"identity\",\n      \"param\": null\n    }\n  ],\n  \"rationale\": \"Low SNR, moderate seasonality, and missing data favor safe median smoothing. High SNR with no missing can skip processing.\"\n}"
+  ]
+ },
+ "S_trend:h0": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [],
+   "rationale": "Low SNR, missing data, no strong seasonality. Median_smooth w=5 is safe default per risk rules; incumbent picks confirm median family."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\"skill\": \"median_smooth\", \"param\": 5},\n  \"overrides\": [],\n  \"rationale\": \"Low SNR, missing data, no strong seasonality. Median_smooth w=5 is safe default per risk rules; incumbent picks confirm median family.\"\n}"
+  ]
+ },
+ "S_trend:h1": {
+  "decision": {
+   "default": {
+    "skill": "median_smooth",
+    "param": 5
+   },
+   "overrides": [
+    {
+     "when": {
+      "snr": "low",
+      "miss": "some"
+     },
+     "skill": "median_smooth",
+     "param": 9
+    }
+   ],
+   "rationale": "Low SNR, no strong seasonality, moderate trend. Median w5 safe default; w9 for low SNR with missing to handle noise without harming structure."
+  },
+  "views_used": [
+   "structure",
+   "mask",
+   "skills",
+   "policy",
+   "window",
+   "period",
+   "decomp"
+  ],
+  "n_calls": 2,
+  "violation": false,
+  "raw": [
+   "{\"request_views\": [\"window\", \"period\", \"decomp\"]}",
+   "{\n  \"default\": {\n    \"skill\": \"median_smooth\",\n    \"param\": 5\n  },\n  \"overrides\": [\n    {\n      \"when\": {\n        \"snr\": \"low\",\n        \"miss\": \"some\"\n      },\n      \"skill\": \"median_smooth\",\n      \"param\": 9\n    }\n  ],\n  \"rationale\": \"Low SNR, no strong seasonality, moderate trend. Median w5 safe default; w9 for low SNR with missing to handle noise without harming structure.\"\n}"
+  ]
+ }
+}

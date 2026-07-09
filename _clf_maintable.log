@@ -1,0 +1,35 @@
+== Main-table reporter: targets=['inception', 'rocket'] (independent ⟂judge=rocket: ['inception'])  seeds=[0, 1] ==
+== loaded 300 ECG5000 class signals (len=140) ==
+== 4 classification cells with final_test≥4 (split ⟂ held_in/held_out_a) ==
+
+== Fixed-harness variants ΔPerf (vs raw) ==  (reporter ⟂ judge, final_test split)
+cell                                    v_none        v_median        v_savgol           v_stl       v_wavelet        v_winsor v_winsor_savgol
+----------------------------------------------------------------------------------------------------------------------------------------------
+classification|snrHigh|full             +0.002          +0.242          +0.017          -0.009          +0.008          +0.113          +0.169
+classification|snrHigh|miss             +0.003          +0.111          +0.066          +0.064          +0.068          +0.168          +0.160
+classification|snrLow|full              +0.002          +0.209          -0.050          -0.161          -0.052          +0.059          +0.104
+classification|snrLow|miss              +0.010          +0.204          -0.051          -0.188          -0.045          +0.089          +0.101
+
+  mean ΔPerf over cells (per independent target, vs raw):
+    v_none             inception=+0.008   rocket=+0.000
+    v_median           inception=+0.249   rocket=+0.134
+    v_savgol           inception=+0.046   rocket=-0.054
+    v_stl              inception=-0.037   rocket=-0.110
+    v_wavelet          inception=+0.044   rocket=-0.054
+    v_winsor           inception=+0.141   rocket=+0.073
+    v_winsor_savgol    inception=+0.186   rocket=+0.081
+  [independent reporters ⟂ judge(rocket)] = ['inception'];  cross-ref(=judge, 非 headline): ['rocket']
+
+== C1 上界：per-cell oracle vs single-best-global（仅 7 变体内）==
+  cell                              oracle ΔPerf   winner（不同 cell 不同赢家 = 没有单一 harness 全局最优）
+  classification|snrHigh|full             +0.242   v_median
+  classification|snrHigh|miss             +0.168   v_winsor
+  classification|snrLow|full              +0.209   v_median
+  classification|snrLow|miss              +0.204   v_median
+
+  single-best-global = v_median (mean ΔPerf +0.192)
+  per-cell oracle mean ΔPerf = +0.206  (gap over single-best = +0.014 = 条件化的价值/C1)
+  参照: minimal mean=-0.008  degraded mean=-0.011  (Ours-evolved 见 run_real_longrun --report-readiness)
+
+[387.2s]  ΔPerf>0 = readiness gain over raw on an independent downstream model
+[separation] reporter models ⟂ in-loop judge → readiness claim is non-circular (Exp_Design §★.2)

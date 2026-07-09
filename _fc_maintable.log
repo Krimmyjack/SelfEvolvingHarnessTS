@@ -1,0 +1,34 @@
+== Main-table reporter: targets=['lstm_scratch', 'dlinear_scratch'] (independent ⟂judge=chronos: ['lstm_scratch', 'dlinear_scratch'])  seeds=[0, 1] ==
+== 4 forecast cells with final_test≥4 (split ⟂ held_in/held_out_a) ==
+
+== Fixed-harness variants ΔPerf (vs raw) ==  (reporter ⟂ judge, final_test split)
+cell                                    v_none        v_median        v_savgol           v_stl       v_wavelet        v_winsor v_winsor_savgol
+----------------------------------------------------------------------------------------------------------------------------------------------
+forecast|snrHigh|full                   +0.000          +0.149          +0.142          +0.112          +0.142          +0.120          +0.189
+forecast|snrHigh|miss                   +0.000          +0.323          +0.045          +0.045          +0.045          +0.064          +0.074
+forecast|snrLow|full                    +0.000          -0.037          -0.103          +0.006          -0.103          +0.012          -0.087
+forecast|snrLow|miss                    +0.000          -0.063          -0.093          +0.055          -0.093          +0.048          -0.081
+
+  mean ΔPerf over cells (per independent target, vs raw):
+    v_none             lstm_scratch=+0.000   dlinear_scratch=+0.000
+    v_median           lstm_scratch=-0.003   dlinear_scratch=+0.189
+    v_savgol           lstm_scratch=-0.024   dlinear_scratch=+0.020
+    v_stl              lstm_scratch=+0.057   dlinear_scratch=+0.052
+    v_wavelet          lstm_scratch=-0.024   dlinear_scratch=+0.020
+    v_winsor           lstm_scratch=+0.029   dlinear_scratch=+0.093
+    v_winsor_savgol    lstm_scratch=-0.018   dlinear_scratch=+0.065
+  [independent reporters ⟂ judge(chronos)] = ['lstm_scratch', 'dlinear_scratch']
+
+== C1 上界：per-cell oracle vs single-best-global（仅 7 变体内）==
+  cell                              oracle ΔPerf   winner（不同 cell 不同赢家 = 没有单一 harness 全局最优）
+  forecast|snrHigh|full                   +0.189   v_winsor_savgol
+  forecast|snrHigh|miss                   +0.323   v_median
+  forecast|snrLow|full                    +0.012   v_winsor
+  forecast|snrLow|miss                    +0.055   v_stl
+
+  single-best-global = v_median (mean ΔPerf +0.093)
+  per-cell oracle mean ΔPerf = +0.145  (gap over single-best = +0.052 = 条件化的价值/C1)
+  参照: minimal mean=+0.021  degraded mean=-0.013  (Ours-evolved 见 run_real_longrun --report-readiness)
+
+[304.3s]  ΔPerf>0 = readiness gain over raw on an independent downstream model
+[separation] reporter models ⟂ in-loop judge → readiness claim is non-circular (Exp_Design §★.2)

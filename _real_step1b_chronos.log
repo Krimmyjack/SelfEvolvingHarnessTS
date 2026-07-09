@@ -1,0 +1,83 @@
+== grounded substrate = chronos (amazon/chronos-bolt-small) ==
+== loaded 12 real signals ==  configs={'nn5_daily': 4, 'tourism_monthly': 4, 'fred_md': 4}  periods={7: 4, 12: 8}  forecast_target=ensemble
+== start harness: minimal v0 ==  degraded_ops_off=[]
+
+== ② cell distribution (6 cells, triggerable≥12: 6) ==
+   cell                              n  trig  | median struct_feats (SNR/period/seas/trend/miss/outlier)
+   anomaly_detection|snrHigh|miss   18   yes  | SNR= 12.79 per= 692.0 seas=0.00 trend=0.51 miss=0.05 out=0.031
+   anomaly_detection|snrLow|miss    78   yes  | SNR= -3.09 per=   6.7 seas=0.20 trend=0.05 miss=0.05 out=0.043
+   forecast|snrHigh|full            34   yes  | SNR=  4.78 per=   7.0 seas=0.37 trend=0.06 miss=0.00 out=0.034
+   forecast|snrHigh|miss            18   yes  | SNR= 10.86 per= 645.5 seas=0.00 trend=0.48 miss=0.05 out=0.026
+   forecast|snrLow|full             62   yes  | SNR=  2.77 per=   7.0 seas=0.31 trend=0.01 miss=0.00 out=0.038
+   forecast|snrLow|miss             78   yes  | SNR= -3.12 per=   7.0 seas=0.20 trend=0.04 miss=0.05 out=0.033
+
+== ① encoder performance (baseline v0, encoder=synthetic) ==
+   forecast: grounded nRMSE vs seasonal_naive floor (nRMSE<floor → 编码器有迁移价值)
+   anomaly_detection|snrHigh|miss 1-recall=  0.400  (n=12)
+   anomaly_detection|snrLow|miss  1-recall=  0.317  (n=12)
+Loading weights:   0%|          | 0/143 [00:00<?, ?it/s]Loading weights:  18%|█▊        | 26/143 [00:00<00:00, 257.20it/s]Loading weights:  54%|█████▍    | 77/143 [00:00<00:00, 394.10it/s]Loading weights:  97%|█████████▋| 138/143 [00:00<00:00, 484.21it/s]Loading weights: 100%|██████████| 143/143 [00:00<00:00, 450.70it/s]
+   forecast|snrHigh|full          nRMSE=  0.921  floor=  0.826  Δ= -0.095  [WEAK(≥floor)]
+   forecast|snrHigh|miss          nRMSE=  2.818  floor=  3.968  Δ= +1.150  [OK(beats floor)]
+   forecast|snrLow|full           nRMSE=  0.961  floor=  0.912  Δ= -0.049  [WEAK(≥floor)]
+   forecast|snrLow|miss           nRMSE=  1.026  floor=  0.940  Δ= -0.086  [WEAK(≥floor)]
+
+[diag done in 14.6s]
+
+== evolving 6 cells × 3 epochs (real LLM) ==
+[evolve done in 834.6s]  LLM={'model': 'deepseek-chat', 'api_calls': 45, 'cache_hits': 0, 'avg_latency_s': 3.53}
+
+== per-round trace ==
+  [······] forecast|snrHigh|full        ep0 r0 budget=3 proposed=3 accepted=0
+  [······] forecast|snrLow|full         ep0 r0 budget=3 proposed=3 accepted=0
+  [······] forecast|snrLow|miss         ep0 r0 budget=3 proposed=3 accepted=0
+  [ACCEPT] forecast|snrHigh|miss        ep0 r0 budget=3 proposed=2 accepted=1
+           - l2.task_templates::denoise_median_for_forecast_snrHigh_miss:held_out_a_regress(Δ=-2.467)
+           - l2.task_templates::forecast_snrHigh_miss_impute_kalman:accept
+  [······] anomaly_detection|snrLow|miss ep0 r0 budget=3 proposed=3 accepted=0
+  [······] anomaly_detection|snrHigh|miss ep0 r0 budget=3 proposed=2 accepted=0
+  [ACCEPT] forecast|snrHigh|full        ep1 r1 budget=3 proposed=1 accepted=1
+           - l2.task_templates::forecast_snrHigh_full_winsorize:accept
+  [ACCEPT] forecast|snrLow|full         ep1 r1 budget=3 proposed=3 accepted=1
+           - l2.task_templates::cell_forecast_snrLow_full_winsorize:accept
+           - l2.active_operators.winsorize:held_in_not_fulfilled(Δ=0.000<ε=0.03)
+           - l2.task_templates::forecast_snrLow_full_winsorize:held_in_not_fulfilled(Δ=0.000<ε=0.03)
+  [ACCEPT] forecast|snrLow|miss         ep1 r1 budget=3 proposed=2 accepted=1
+           - l2.task_templates::forecast_denoise_stl_snrLow_miss:accept
+           - l2.task_templates::forecast_denoise_wavelet_snrLow_miss:held_in_not_fulfilled(Δ=0.000<ε=0.03)
+  [······] forecast|snrHigh|miss        ep1 r1 budget=3 proposed=3 accepted=0
+  [······] anomaly_detection|snrLow|miss ep1 r1 budget=3 proposed=1 accepted=0
+  [······] anomaly_detection|snrHigh|miss ep1 r1 budget=3 proposed=3 accepted=0
+  [······] forecast|snrHigh|full        ep2 r2 budget=3 proposed=2 accepted=0
+  [······] forecast|snrLow|full         ep2 r2 budget=3 proposed=2 accepted=0
+  [······] forecast|snrLow|miss         ep2 r2 budget=3 proposed=3 accepted=0
+  [······] forecast|snrHigh|miss        ep2 r2 budget=3 proposed=2 accepted=0
+  [······] anomaly_detection|snrLow|miss ep2 r2 budget=3 proposed=1 accepted=0
+  [······] anomaly_detection|snrHigh|miss ep2 r2 budget=3 proposed=1 accepted=0
+
+== ③ evolution summary ==
+  rounds with ≥1 accept : 4/18 (22%)
+  accepted paths        : {'l2.task_templates::forecast_snrHigh_miss_impute_kalman': 1, 'l2.task_templates::forecast_snrHigh_full_winsorize': 1, 'l2.task_templates::cell_forecast_snrLow_full_winsorize': 1, 'l2.task_templates::forecast_denoise_stl_snrLow_miss': 1}
+  pareto violations     : 0
+  frozen cells          : ['anomaly_detection|snrLow|miss', 'anomaly_detection|snrHigh|miss']
+  final version         : v7 (patch_log=10)
+
+  active_operators changes vs start : none
+  cell-scoped templates             : 4
+     forecast_snrHigh_miss_impute_kalman: cell=snrHigh|miss  prefer=['impute_kalman']  ban=['impute_linear', 'impute_fft']
+     forecast_snrHigh_full_winsorize: cell=snrHigh|full  prefer=['winsorize']  ban=['denoise_wavelet', 'denoise_savgol']
+     cell_forecast_snrLow_full_winsorize: cell=snrLow|full  prefer=['winsorize']  ban=['denoise_wavelet', 'denoise_savgol']
+     forecast_denoise_stl_snrLow_miss: cell=snrLow|miss  prefer=['denoise_stl']  ban=['denoise_savgol']
+
+  learned per-cell operator attribution (OPD 公式11):
+     anomaly_detection|snrHigh|miss:  prefer=[('winsorize', 0.014), ('denoise_median', 0.01), ('denoise_wavelet', 0.01)]  avoid=[]
+     anomaly_detection|snrLow|miss:  prefer=[('denoise_median', 0.097), ('denoise_savgol', 0.056), ('denoise_stl', 0.05)]  avoid=[]
+     forecast|snrHigh|full:  prefer=[('winsorize', 0.137), ('denoise_median', 0.029)]  avoid=[('denoise_wavelet', -0.09), ('denoise_savgol', -0.064)]
+     forecast|snrHigh|miss:  prefer=[('denoise_stl', 0.411), ('denoise_savgol', 0.411), ('denoise_wavelet', 0.341)]  avoid=[('denoise_median', -0.256), ('impute_linear', -0.192), ('impute_fft', -0.192)]
+     forecast|snrLow|full:  prefer=[('winsorize', 0.032)]  avoid=[('denoise_wavelet', -0.031), ('denoise_savgol', -0.024)]
+     forecast|snrLow|miss:  prefer=[('denoise_stl', 0.102), ('winsorize', 0.041), ('denoise_wavelet', 0.039)]  avoid=[('denoise_savgol', -0.074)]
+
+== recovery check: forecast grounded nRMSE before → after (start=minimal) ==
+   forecast|snrHigh|full            0.921 →   0.448  (Δ= +0.473, floor=0.534)
+   forecast|snrHigh|miss            2.818 →   1.498  (Δ= +1.320, floor=5.782)
+   forecast|snrLow|full             0.961 →   0.648  (Δ= +0.313, floor=0.745)
+   forecast|snrLow|miss             1.026 →   0.506  (Δ= +0.521, floor=0.559)

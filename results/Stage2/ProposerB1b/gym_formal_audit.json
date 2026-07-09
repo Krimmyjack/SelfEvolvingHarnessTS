@@ -1,0 +1,223 @@
+{
+ "audit_of": "gym_formal.json",
+ "note": "零外呼审计；不覆盖注册结果",
+ "per_fold_rejections": [
+  {
+   "n_raw": 10,
+   "n_accepted": 7,
+   "reason_counts": {
+    "non_novel": 3,
+    "ACCEPTED": 7
+   },
+   "rows": [
+    [
+     "impute_linear->denoise_stl",
+     "non_novel:=v_stl"
+    ],
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel:=v_winsor_savgol"
+    ],
+    [
+     "period_complete->denoise_savgol",
+     "ACCEPTED"
+    ],
+    [
+     "impute_linear->outlier_iqr->denoise_wavelet",
+     "ACCEPTED"
+    ],
+    [
+     "impute_ema->winsorize->denoise_stl",
+     "ACCEPTED"
+    ],
+    [
+     "impute_linear->denoise_median",
+     "non_novel:=v_median"
+    ],
+    [
+     "impute_fft->denoise_savgol",
+     "ACCEPTED"
+    ],
+    [
+     "impute_linear->outlier_mad->smooth_ma",
+     "ACCEPTED"
+    ],
+    [
+     "impute_linear->winsorize->denoise_wavelet",
+     "ACCEPTED"
+    ],
+    [
+     "period_complete->winsorize->denoise_savgol",
+     "ACCEPTED"
+    ]
+   ],
+   "cache_hit": true,
+   "held_out": "S_both"
+  },
+  {
+   "n_raw": 6,
+   "n_accepted": 2,
+   "reason_counts": {
+    "non_novel": 4,
+    "ACCEPTED": 2
+   },
+   "rows": [
+    [
+     "impute_linear->denoise_stl",
+     "non_novel:=v_stl"
+    ],
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel:=v_winsor_savgol"
+    ],
+    [
+     "impute_linear->denoise_savgol",
+     "non_novel:=v_savgol"
+    ],
+    [
+     "impute_linear->outlier_iqr->denoise_wavelet",
+     "ACCEPTED"
+    ],
+    [
+     "impute_linear->denoise_median",
+     "non_novel:=v_median"
+    ],
+    [
+     "impute_linear->winsorize->smooth_ma",
+     "ACCEPTED"
+    ]
+   ],
+   "cache_hit": true,
+   "held_out": "S_regime"
+  },
+  {
+   "n_raw": 10,
+   "n_accepted": 1,
+   "reason_counts": {
+    "non_novel": 9,
+    "ACCEPTED": 1
+   },
+   "rows": [
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel:=v_winsor_savgol"
+    ],
+    [
+     "impute_linear->denoise_stl",
+     "non_novel:=v_stl"
+    ],
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel:=v_winsor_savgol"
+    ],
+    [
+     "impute_linear->denoise_median",
+     "non_novel:=v_median"
+    ],
+    [
+     "impute_linear->denoise_wavelet",
+     "non_novel:=v_wavelet"
+    ],
+    [
+     "impute_linear->winsorize",
+     "non_novel:=v_winsor"
+    ],
+    [
+     "impute_linear->denoise_savgol",
+     "non_novel:=v_savgol"
+    ],
+    [
+     "impute_linear->outlier_iqr->denoise_savgol",
+     "ACCEPTED"
+    ],
+    [
+     "impute_linear->denoise_stl",
+     "non_novel:=v_stl"
+    ],
+    [
+     "impute_linear->denoise_median",
+     "non_novel:=f0_median_w9"
+    ]
+   ],
+   "cache_hit": true,
+   "held_out": "S_trend"
+  },
+  {
+   "n_raw": 3,
+   "n_accepted": 0,
+   "reason_counts": {
+    "non_novel": 3
+   },
+   "rows": [
+    [
+     "impute_linear->denoise_stl",
+     "non_novel:=v_stl"
+    ],
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel:=v_winsor_savgol"
+    ],
+    [
+     "impute_linear->denoise_wavelet",
+     "non_novel:=v_wavelet"
+    ]
+   ],
+   "cache_hit": true,
+   "held_out": "S_multiseason"
+  }
+ ],
+ "itt_llm_minus_det": {
+  "point": -0.0484,
+  "ci": [
+   -0.1797,
+   0.0705
+  ],
+  "n": 336,
+  "A_beats_B": false,
+  "n_uids": 336,
+  "interpretation": "ITT：空候选折按 no-op(=frozen) 计入 → 完整四折协议 CI"
+ },
+ "family_level_llm_minus_det": {
+  "per_fold": [
+   {
+    "held": "S_both",
+    "llm_ho": 0.1123,
+    "det_ho": 0.0793,
+    "llm_minus_det": 0.033
+   },
+   {
+    "held": "S_regime",
+    "llm_ho": -0.1352,
+    "det_ho": -0.0992,
+    "llm_minus_det": -0.036
+   },
+   {
+    "held": "S_trend",
+    "llm_ho": -0.1317,
+    "det_ho": -0.0015,
+    "llm_minus_det": -0.1302
+   },
+   {
+    "held": "S_multiseason",
+    "llm_ho": null,
+    "det_ho": 0.0606,
+    "llm_minus_det": -0.0606
+   }
+  ],
+  "n_independent_decisions": 4,
+  "llm_wins": 1,
+  "mean": -0.0485,
+  "caveat": "仅 4 个独立 proposer 决策；UID bootstrap 衡量固定程序下的序列不确定性，非跨 family 泛化"
+ },
+ "safety_gate": {
+  "delta_safe": 0.05,
+  "arm_min_worst_family": {
+   "random": -0.1865,
+   "det_search": -0.0992,
+   "llm_mem": -0.1352
+  },
+  "any_arm_passes": false,
+  "note": "det 相对赢但 S_regime worst −0.099 触发 unsafe；无臂过完整安全门"
+ },
+ "seconds": 22.4
+}

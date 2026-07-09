@@ -1,0 +1,106 @@
+{
+ "audit_of": "gym_ceiling.json",
+ "note": "零外呼审计；不覆盖注册结果",
+ "per_fold_rejections": [
+  {
+   "n_raw": 10,
+   "n_accepted": 10,
+   "reason_counts": {},
+   "rows": [],
+   "cache_hit": true,
+   "held_out": "S_both"
+  },
+  {
+   "n_raw": 10,
+   "n_accepted": 9,
+   "reason_counts": {
+    "non_novel": 1
+   },
+   "rows": [
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel"
+    ]
+   ],
+   "cache_hit": true,
+   "held_out": "S_regime"
+  },
+  {
+   "n_raw": 10,
+   "n_accepted": 9,
+   "reason_counts": {
+    "non_novel": 1
+   },
+   "rows": [
+    [
+     "impute_linear->winsorize->denoise_savgol",
+     "non_novel"
+    ]
+   ],
+   "cache_hit": true,
+   "held_out": "S_trend"
+  },
+  {
+   "n_raw": 10,
+   "n_accepted": 10,
+   "reason_counts": {},
+   "rows": [],
+   "cache_hit": true,
+   "held_out": "S_multiseason"
+  }
+ ],
+ "itt_llm_minus_det": {
+  "point": -0.0809,
+  "ci": [
+   -0.1269,
+   -0.0367
+  ],
+  "n": 336,
+  "A_beats_B": false,
+  "n_uids": 336,
+  "interpretation": "ITT：空候选折按 no-op(=frozen) 计入 → 完整四折协议 CI"
+ },
+ "family_level_llm_minus_det": {
+  "per_fold": [
+   {
+    "held": "S_both",
+    "llm_ho": -0.1184,
+    "det_ho": 0.0793,
+    "llm_minus_det": -0.1977
+   },
+   {
+    "held": "S_regime",
+    "llm_ho": -0.2708,
+    "det_ho": -0.0992,
+    "llm_minus_det": -0.1716
+   },
+   {
+    "held": "S_trend",
+    "llm_ho": 0.0195,
+    "det_ho": -0.0015,
+    "llm_minus_det": 0.021
+   },
+   {
+    "held": "S_multiseason",
+    "llm_ho": 0.0854,
+    "det_ho": 0.0606,
+    "llm_minus_det": 0.0248
+   }
+  ],
+  "n_independent_decisions": 4,
+  "llm_wins": 2,
+  "mean": -0.0809,
+  "caveat": "仅 4 个独立 proposer 决策；UID bootstrap 衡量固定程序下的序列不确定性，非跨 family 泛化"
+ },
+ "safety_gate": {
+  "delta_safe": 0.05,
+  "arm_min_worst_family": {
+   "random": -0.1865,
+   "det_search": -0.0992,
+   "llm_ceiling": -0.2708
+  },
+  "any_arm_passes": false,
+  "note": "det 相对赢但 S_regime worst −0.099 触发 unsafe；无臂过完整安全门"
+ },
+ "seconds": 6.3
+}

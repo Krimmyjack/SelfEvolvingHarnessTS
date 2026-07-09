@@ -1,0 +1,156 @@
+{
+ "arms": {
+  "A_frozen": {
+   "cum_mean": 0.36770820423003087,
+   "cum_range": [
+    0.3677082042300308,
+    0.3677082042300309
+   ],
+   "llm_blocks": 0,
+   "llm_mean_delta_vs_frozen": 0.0,
+   "llm_max_block_harm": 0.0
+  },
+  "B_wrapper": {
+   "cum_mean": 0.36770820423003087,
+   "cum_range": [
+    0.3677082042300308,
+    0.3677082042300309
+   ],
+   "llm_blocks": 0,
+   "llm_mean_delta_vs_frozen": 0.0,
+   "llm_max_block_harm": 0.0
+  },
+  "C_llm_all": {
+   "cum_mean": 0.40594437180974074,
+   "cum_range": [
+    0.40594437180974074,
+    0.4059443718097408
+   ],
+   "llm_blocks": 80,
+   "llm_mean_delta_vs_frozen": 0.0382361675797099,
+   "llm_max_block_harm": 0.3425879804145693
+  },
+  "D_escalation": {
+   "cum_mean": 0.3942961032770972,
+   "cum_range": [
+    0.3785152547326244,
+    0.40575620334549184
+   ],
+   "llm_blocks": 40,
+   "llm_mean_delta_vs_frozen": 0.05317579809413268,
+   "llm_max_block_harm": 0.3425879804145693
+  }
+ },
+ "gates": {
+  "G1_safety_C": {
+   "mean_ok": false,
+   "max_ok": false
+  },
+  "G1_safety_D": {
+   "mean_ok": false,
+   "max_ok": false
+  },
+  "G2_value_D_vs_A": {
+   "point": 0.023245655358663114,
+   "ci": [
+    5.6704409018641355e-05,
+    0.04632850445824043
+   ],
+   "passed": false
+  },
+  "G4_cost": {
+   "d_triggered_unique": 14,
+   "c_unique": 16,
+   "passed": false
+  },
+  "G5_wrapper": "A≡B bit 级（守卫已 assert）",
+  "G3_compositional": {
+   "blocks": [
+    {
+     "perm": 0,
+     "block": 9,
+     "llm": 0.7587,
+     "frozen": 0.6708,
+     "d_triggered": false
+    },
+    {
+     "perm": 1,
+     "block": 3,
+     "llm": 0.8225,
+     "frozen": 0.612,
+     "d_triggered": true
+    },
+    {
+     "perm": 2,
+     "block": 11,
+     "llm": 0.7587,
+     "frozen": 0.6708,
+     "d_triggered": true
+    },
+    {
+     "perm": 3,
+     "block": 5,
+     "llm": 0.8225,
+     "frozen": 0.612,
+     "d_triggered": false
+    },
+    {
+     "perm": 4,
+     "block": 7,
+     "llm": 0.7587,
+     "frozen": 0.6708,
+     "d_triggered": true
+    }
+   ],
+   "llm_beats_frozen": false
+  }
+ },
+ "diagnostics": {
+  "llm_failures": 0,
+  "c_minus_frozen_on_nontriggered": 0.023296537065287122,
+  "c_on_gate_missed_sboth": [
+   0.1492115575390801
+  ],
+  "views_requested": {
+   "S_ar:h0": [
+    "period",
+    "decomp"
+   ],
+   "S_ar:h1": [],
+   "S_both:h0": [],
+   "S_both:h1": [],
+   "S_hetero:h0": [],
+   "S_hetero:h1": [],
+   "S_intermittent:h0": [],
+   "S_intermittent:h1": [],
+   "S_multiseason:h0": [],
+   "S_multiseason:h1": [],
+   "S_regime:h0": [],
+   "S_regime:h1": [],
+   "S_season:h0": [],
+   "S_season:h1": [],
+   "S_trend:h0": [],
+   "S_trend:h1": []
+  },
+  "per_family_c_delta": {
+   "S_ar": 0.003171403675473604,
+   "S_both": 0.1492115575390801,
+   "S_hetero": 7.717686647896668e-05,
+   "S_intermittent": -0.0007279399267143619,
+   "S_multiseason": 0.020298203384051,
+   "S_regime": 0.08992254012686654,
+   "S_season": 0.02505881956381758,
+   "S_trend": 0.018877579408625778
+  }
+ },
+ "verdict": "G1 败：deployment LLM composer 在此信息面被拒；view log 仍收割",
+ "config": {
+  "seed": 20260706,
+  "skills_sha": "52bc954c517076b3",
+  "boot_b": 2000,
+  "delta_safe": 0.05,
+  "llm": "flash t=0 cache=skill_slice",
+  "prereg": "results/Stage2/prereg_skill_slice.md",
+  "trigger": "BlockGate flag ∪ block0（prereg §2 锁）"
+ }
+}
