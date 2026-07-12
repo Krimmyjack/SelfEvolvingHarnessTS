@@ -106,3 +106,51 @@ def test_evidence_packet_includes_formal_composer_context_fields():
     assert "skill_id" in packet["candidate_schema"]["allowed_fields"]
     assert "abstain_to_raw" in packet["candidate_schema"]["allowed_fields"]
     json.dumps(packet, allow_nan=False)
+
+
+def _minimal_record():
+    return {
+        "uid": "u3",
+        "cell": "forecast|snrLow|full",
+        "snr": -2.0,
+        "miss_rate": 0.0,
+        "X_p": [24, 0.2, 0.6, 0.4, 0, 0.5, 0.3, 0.02],
+    }
+
+
+def test_evidence_packet_default_task_is_explicit_forecast_spec():
+    # P0：不再是裸 {"type": "forecast"} 硬编码——默认 TaskSpec 显式化且带完整任务契约字段。
+    packet = build_evidence_packet(
+        _minimal_record(),
+        skills=SKILLS_V1,
+        memory_rows=None,
+        action_menu_meta={"version": "v1", "sha256": "abc", "allowed_actions": ["v_none"]},
+    )
+    task = packet["task"]
+    assert task["type"] == "forecast"                    # legacy 键保留（下游按 task.type 读）
+    assert task["task_type"] == "forecast"
+    assert task["target_semantics"] == "future_values"
+    assert task["label_availability"] == "history_only"
+    assert task["metric"]["direction"] == "lower_is_better"
+    assert packet["provenance"]["task_spec_sha"]
+    json.dumps(packet, allow_nan=False)
+
+
+def test_evidence_packet_carries_custom_task_spec():
+    from SelfEvolvingHarnessTS.policy.task_spec import classification_task_spec_v1
+
+    spec = classification_task_spec_v1()
+    packet = build_evidence_packet(
+        _minimal_record(),
+        skills=SKILLS_V1,
+        memory_rows=None,
+        action_menu_meta={"version": "v1", "sha256": "abc", "allowed_actions": ["v_none"]},
+        task_spec=spec,
+    )
+    assert packet["task"]["type"] == "classification"
+    assert packet["task"]["task_type"] == "classification"
+    assert packet["task"]["label_availability"] == "train_labels"
+    assert packet["task"]["metric"]["direction"] == "higher_is_better"
+    assert packet["provenance"]["task_spec_sha"] == spec.sha()
+    # 泄漏 lint 不受影响
+    assert not ({"L_test", "arms", "X_t", "history"} & set(_all_keys(packet)))

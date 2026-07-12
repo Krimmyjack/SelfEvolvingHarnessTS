@@ -1,4 +1,4 @@
-﻿"""Run a no-API fast-path ablation slice.
+"""Run a no-API fast-path ablation slice.
 
 This script is intentionally small and deterministic. It exercises the deployed
 fast-path interfaces with a stub composer and a fixed synthetic reporter before
@@ -21,7 +21,7 @@ from .fast_path.ablation import (
     write_fast_path_ablation_report,
 )
 from .memory import EvidenceStore
-from .memory.evidence_schema import build_memory_evidence
+from .memory.evidence_schema import build_memory_evidence_v2
 from .policy.action_spec import action_menu_v1
 from .policy.skill_memory_composer import TypedCandidate
 from .slow_path.evidence_miner import DeploymentEvidenceMiner, suggest_slow_path_proposals
@@ -70,17 +70,37 @@ def build_demo_forecast_ablation_inputs(n_records: int = 4) -> tuple[
         series_by_uid[uid] = x
         target_by_uid[uid] = target
         memory_by_uid[uid] = [
-            build_memory_evidence(
+            build_memory_evidence_v2(
                 task="forecast",
                 pattern_region=cell,
+                memory_type="utility",
+                role="recommend",
                 skill_id="median_smooth",
                 action_id="v_median",
                 program={"steps": [{"op": "denoise_median", "params": {"window": 5}}]},
                 raw_loss=2.0,
                 selected_loss=1.7,
-                support={"n": 3, "slice": "synthetic_forecast_small"},
+                confidence={"source": "synthetic_demo"},
+                support={"n": 3, "n_unique_cases": 3, "slice": "synthetic_forecast_small"},
+                evidence_refs=(f"demo:utility:{idx}",),
                 provenance={"case_id": f"demo_memory_{idx}"},
-            )
+            ),
+            build_memory_evidence_v2(
+                task="forecast",
+                pattern_region=cell,
+                memory_type="risk",
+                role="warn",
+                skill_id="median_smooth",
+                action_id="v_median",
+                program={"steps": [{"op": "denoise_median", "params": {"window": 5}}]},
+                raw_loss=1.0,
+                selected_loss=1.15 if idx % 2 else 1.05,
+                confidence={"source": "synthetic_demo_counter_evidence"},
+                support={"n": 1, "n_unique_cases": 1, "slice": "synthetic_forecast_small"},
+                failure_signature="synthetic_prior_harm_vs_raw",
+                evidence_refs=(f"demo:risk:{idx}",),
+                provenance={"case_id": f"demo_risk_memory_{idx}"},
+            ),
         ]
     return records, series_by_uid, memory_by_uid, target_by_uid
 
@@ -90,7 +110,6 @@ def _filled_mse(values: Any, target: np.ndarray) -> float:
     tgt = np.asarray(target, dtype=float).ravel()
     arr = np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
     return float(np.mean((arr - tgt) ** 2))
-
 
 
 def _finite_losses(record: Mapping[str, Any]) -> dict[str, float]:
@@ -124,26 +143,55 @@ def _ledger_dummy_series(record: Mapping[str, Any], length: int = 64) -> np.ndar
     return arr
 
 
-def _memory_from_ledger_record(record: Mapping[str, Any], *, raw_action: str) -> Any | None:
+def _memories_from_ledger_record(record: Mapping[str, Any], *, raw_action: str) -> list[Any]:
     losses = _finite_losses(record)
     if raw_action not in losses:
-        return None
-    action, selected_loss = _oracle_from_losses(losses)
-    raw_loss = float(losses[raw_action])
-    if action == raw_action or raw_loss <= selected_loss:
-        return None
+        return []
+    source_uid = str(record.get("uid") or "")
     cell = str(record.get("cell") or "")
-    return build_memory_evidence(
-        task="forecast",
-        pattern_region=cell,
-        skill_id="ledger_prior_best_action",
-        action_id=action,
-        program={"source": "ledger_prior_best_action", "steps": []},
-        raw_loss=raw_loss,
-        selected_loss=selected_loss,
-        support={"n": 1, "n_unique_cases": 1, "slice": "s2_oracle_ledger_prior"},
-        provenance={"source_uid": str(record.get("uid") or ""), "source": "prior_same_cell_l_test"},
-    )
+    raw_loss = float(losses[raw_action])
+    memories: list[Any] = []
+
+    action, selected_loss = _oracle_from_losses(losses)
+    if action != raw_action and raw_loss > selected_loss:
+        memories.append(
+            build_memory_evidence_v2(
+                task="forecast",
+                pattern_region=cell,
+                memory_type="utility",
+                role="recommend",
+                skill_id="ledger_prior_best_action",
+                action_id=action,
+                program={"source": "ledger_prior_best_action", "steps": []},
+                raw_loss=raw_loss,
+                selected_loss=selected_loss,
+                support={"n": 1, "n_unique_cases": 1, "slice": "s2_oracle_ledger_prior"},
+                evidence_refs=(f"ledger:utility:{source_uid}:{action}",),
+                provenance={"source_uid": source_uid, "source": "prior_same_cell_l_test"},
+            )
+        )
+
+    for action_id, selected_loss in sorted(losses.items()):
+        if action_id == raw_action or selected_loss <= raw_loss:
+            continue
+        memories.append(
+            build_memory_evidence_v2(
+                task="forecast",
+                pattern_region=cell,
+                memory_type="risk",
+                role="warn",
+                skill_id="ledger_prior_harmful_action",
+                action_id=action_id,
+                program={"source": "ledger_prior_harmful_action", "steps": []},
+                raw_loss=raw_loss,
+                selected_loss=selected_loss,
+                support={"n": 1, "n_unique_cases": 1, "slice": "s2_oracle_ledger_prior"},
+                failure_signature="prior_action_harm_vs_raw",
+                evidence_refs=(f"ledger:risk:{source_uid}:{action_id}",),
+                provenance={"source_uid": source_uid, "source": "prior_same_cell_l_test"},
+            )
+        )
+    return memories
 
 
 def _load_jsonl_records(path: str | Path) -> list[dict[str, Any]]:
@@ -189,9 +237,9 @@ def build_oracle_ledger_ablation_inputs(
         series_by_uid[uid] = _ledger_dummy_series(record)
         memory_by_uid[uid] = list(prior_by_cell.get(cell, []))
         losses_by_uid[uid] = _finite_losses(source)
-        memory = _memory_from_ledger_record(source, raw_action=raw_action)
-        if memory is not None:
-            prior_by_cell.setdefault(cell, []).append(memory)
+        memories = _memories_from_ledger_record(source, raw_action=raw_action)
+        if memories:
+            prior_by_cell.setdefault(cell, []).extend(memories)
     return records, series_by_uid, memory_by_uid, losses_by_uid
 
 
@@ -232,6 +280,8 @@ def ledger_oracle_validator(
         }
 
     return validator
+
+
 def synthetic_oracle_proxy_validator(target_by_uid: Mapping[str, np.ndarray]) -> Callable[[Any, Any, Mapping[str, Any]], Mapping[str, Any]]:
     """Return a deterministic utility/harm reporter for the synthetic slice."""
 
@@ -270,26 +320,68 @@ def _skill_id_supporting_action(skills: list[Mapping[str, Any]], action_id: str)
     return None
 
 
+def _memory_mapping_rows(memory: Mapping[str, Any], key: str) -> list[Mapping[str, Any]]:
+    return [row for row in memory.get(key) or [] if isinstance(row, Mapping)]
+
+
+def _row_refs(row: Mapping[str, Any], fallback: str) -> tuple[str, ...]:
+    refs = row.get("evidence_refs")
+    if isinstance(refs, (list, tuple)) and refs:
+        return tuple(str(ref) for ref in refs)
+    provenance = row.get("provenance")
+    if isinstance(provenance, Mapping):
+        for key in ("case_id", "source_uid", "evidence_ref"):
+            if provenance.get(key):
+                return (str(provenance[key]),)
+    return (fallback,)
+
+
+def _refs_with_stub(refs: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys([*refs, "stub:no_api"]))
+
+
 def stub_skill_memory_composer(packet: Mapping[str, Any]) -> TypedCandidate:
     """Deterministic typed composer used only for no-API ablations."""
     skills = [row for row in packet.get("skills") or [] if isinstance(row, Mapping)]
     memory = packet.get("memory") or {}
-    prior = [row for row in memory.get("prior_fragments") or [] if isinstance(row, Mapping)]
+    if not isinstance(memory, Mapping):
+        memory = {}
+    utility = _memory_mapping_rows(memory, "utility_memory")
+    risk = _memory_mapping_rows(memory, "risk_memory")
+    prior = _memory_mapping_rows(memory, "prior_fragments")
     action_id = "v_none"
     skill_id: str | None = None
-    if prior:
+    refs: tuple[str, ...] = ()
+    rationale = "deterministic_stub_no_api_composer"
+
+    if utility:
+        action_id = str(utility[0].get("action_id") or action_id)
+        skill_id = _skill_id_supporting_action(skills, action_id)
+        refs = _row_refs(utility[0], "utility_memory:1")
+    elif prior:
         action_id = str(prior[0].get("action_id") or action_id)
         skill_id = _skill_id_supporting_action(skills, action_id)
+        refs = _row_refs(prior[0], "prior_fragment:1")
+    elif risk:
+        return TypedCandidate(
+            action_id="v_none",
+            risk_rule={"source": "risk_memory", "n_risk": len(risk)},
+            abstain_to_raw=True,
+            rationale="risk_memory_only_abstain",
+            evidence_refs=_refs_with_stub(_row_refs(risk[0], "risk_memory:1")),
+        )
     elif skills:
         allowed = list(skills[0].get("allowed_actions") or [])
         action_id = str(allowed[0]) if allowed else action_id
         skill_id = _skill_id_supporting_action(skills, action_id)
+
     return TypedCandidate(
         skill_id=skill_id,
         action_id=action_id,
-        rationale="deterministic_stub_no_api_composer",
-        evidence_refs=("stub:no_api",),
+        rationale=rationale,
+        evidence_refs=_refs_with_stub(refs),
     )
+
 
 def _edit_op_payload(outcome: Any) -> dict[str, Any] | None:
     edit_op = getattr(outcome, "edit_op", None)
@@ -323,7 +415,7 @@ def mine_and_write_slow_path_proposals(
             })
     with (path / "slow_path_proposals.jsonl").open("w", encoding="utf-8") as f:
         for row in rows:
-            f.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+            f.write(json.dumps(row, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n")
     kind_counts = Counter(row["proposal"]["kind"] for row in rows)
     accepted_kind_counts = Counter(row["proposal"]["kind"] for row in rows if row["accepted"])
     return {
@@ -365,17 +457,18 @@ def run_demo_forecast_ablation(
             "reporter": "synthetic_oracle_proxy_v1",
             "raw_action": "v_none",
             "raw_action_semantics": "v_none_is_impute_linear_baseline_not_strict_raw",
+            "memory_protocol": "memory_v2_utility_risk_buckets",
+            "ablation_matrix": "phase4_memory_v2",
             "api_calls": 0,
         },
     )
     report["slow_path"] = mine_and_write_slow_path_proposals(store, out_dir, min_support=2)
     report_path = Path(out_dir) / "report.json"
     report_path.write_text(
-        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2),
+        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False),
         encoding="utf-8",
     )
     return report
-
 
 
 def run_oracle_ledger_ablation(
@@ -408,22 +501,24 @@ def run_oracle_ledger_ablation(
         metadata={
             "slice": "s2_oracle_ledger_small",
             "n_records": int(n_records),
-            "records_path": str(records_path),
+            "records_path": Path(records_path).as_posix(),
             "composer": "deterministic_stub_no_api_composer",
             "reporter": "ledger_l_test_oracle_v1",
             "raw_action": raw_action,
             "raw_action_semantics": "v_none_is_ledger_baseline_action",
-            "memory_protocol": "prior_same_cell_l_test_current_uid_excluded",
+            "memory_protocol": "prior_same_cell_l_test_current_uid_excluded_memory_v2_utility_risk",
+            "ablation_matrix": "phase4_memory_v2",
             "api_calls": 0,
         },
     )
     report["slow_path"] = mine_and_write_slow_path_proposals(store, out_dir, min_support=2)
     report_path = Path(out_dir) / "report.json"
     report_path.write_text(
-        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2),
+        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False),
         encoding="utf-8",
     )
     return report
+
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run no-API fast-path ablation slice")
@@ -452,4 +547,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

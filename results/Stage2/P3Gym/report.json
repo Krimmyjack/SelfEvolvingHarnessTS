@@ -1,0 +1,56 @@
+{
+  "phase": "P3_gym_fidelity_headroom",
+  "claim_scope": "synthetic gym substrate (motivation-grade); real-corpus supply verdict belongs to P5 identity gate",
+  "n_series": 60,
+  "fidelity": {
+    "forecast": {
+      "within_series_mean_rho": 0.5699079227663222,
+      "within_series_rho_p25": 0.37350014381303226,
+      "n_series_scored": 60,
+      "series_coverage": 1.0,
+      "pooled_rho_diagnostic": -0.18589241221832217,
+      "n_pairs": 1260,
+      "status": "fail"
+    },
+    "anomaly_detection": {
+      "within_series_mean_rho": null,
+      "within_series_rho_p25": null,
+      "n_series_scored": 0,
+      "series_coverage": 0.0,
+      "pooled_rho_diagnostic": null,
+      "n_pairs": 180,
+      "status": "insufficient_variance",
+      "diagnostic_with_violations": {
+        "pooled_rho": 0.8503846574372074,
+        "n_pairs": 180,
+        "status": "pass",
+        "basis": "pooled_offpath（诊断组刻意跨 off-path 空间，pooled 口径合理）"
+      },
+      "note": "deployable 候选面=插补类（registry 物理禁平滑/删改）→ 指标近常量属预期；违约诊断组证明 proxy 在空间移动时跟踪 true"
+    }
+  },
+  "escalate_only_tasks": [
+    "forecast",
+    "anomaly_detection"
+  ],
+  "headroom": {
+    "forecast": {
+      "mean": 0.0,
+      "ci90_lo": 0.0,
+      "ci90_hi": 0.0,
+      "n_series": 60,
+      "series_with_seed_win": 0,
+      "seed_win_counts": {}
+    },
+    "anomaly_detection": {
+      "mean": 0.0,
+      "ci90_lo": 0.0,
+      "ci90_hi": 0.0,
+      "n_series": 60,
+      "series_with_seed_win": 0,
+      "seed_win_counts": {}
+    }
+  },
+  "epsilon_registered": 0.02,
+  "epsilon_rule": "max(0.02, forecast headroom ci90_lo) = max(0.02, 0.0000)"
+}

@@ -86,3 +86,74 @@ def test_memory_evidence_feeds_evidence_packet_memory_summary():
     assert row["schema"] == "memory_evidence_v1"
     assert row["utility_delta_vs_raw"] == 0.2
     assert row["action_id"] == "v_median"
+
+def test_memory_evidence_v2_roles_and_packet_bucket_are_leakage_safe():
+    from SelfEvolvingHarnessTS.memory.evidence_schema import (
+        build_memory_evidence_v2,
+        memory_packet_bucket,
+    )
+
+    ev = build_memory_evidence_v2(
+        task="forecast",
+        pattern_region="forecast|snrLow|miss",
+        memory_type="risk",
+        role="ban",
+        action_id="v_median",
+        raw_loss=1.0,
+        selected_loss=1.4,
+        support={"n_unique_cases": 3},
+        evidence_refs=("case:u-risk",),
+        provenance={"raw_loss": 1.0, "selected_loss": 1.4, "case_id": "u-risk"},
+    )
+
+    row = ev.to_packet_row()
+    dumped = json.dumps(row, ensure_ascii=False)
+
+    assert row["schema"] == "memory_evidence_v2"
+    assert row["memory_type"] == "risk"
+    assert row["role"] == "ban"
+    assert row["harm_delta_vs_raw"] == 0.4
+    assert row["evidence_refs"] == ["case:u-risk"]
+    assert memory_packet_bucket(row) == "risk_memory"
+    assert "raw_loss" not in dumped
+    assert "selected_loss" not in dumped
+
+
+def test_evidence_packet_splits_memory_v2_into_first_class_buckets():
+    from SelfEvolvingHarnessTS.memory.evidence_schema import build_memory_evidence_v2
+
+    record = {
+        "uid": "u-v2",
+        "cell": "forecast|snrLow|miss",
+        "snr": -4.0,
+        "miss_rate": 0.1,
+        "X_p": [12, 0.3, 0.4, 0.2, 0, 0.6, 0.5, 0.05],
+    }
+    utility = build_memory_evidence_v2(
+        task="forecast",
+        pattern_region="forecast|snrLow|miss",
+        memory_type="utility",
+        action_id="v_median",
+        utility_delta_vs_raw=0.2,
+        support={"n_unique_cases": 4},
+    )
+    risk = build_memory_evidence_v2(
+        task="forecast",
+        pattern_region="forecast|snrLow|miss",
+        memory_type="risk",
+        role="warn",
+        action_id="v_median",
+        harm_delta_vs_raw=0.1,
+        evidence_refs=("case:harm",),
+    )
+
+    packet = build_evidence_packet(
+        record,
+        skills=[],
+        memory_rows=[utility, risk],
+        action_menu_meta={"version": "v1", "allowed_actions": ["v_none", "v_median"]},
+    )
+
+    assert packet["memory"]["utility_memory"][0]["action_id"] == "v_median"
+    assert packet["memory"]["risk_memory"][0]["evidence_refs"] == ["case:harm"]
+    assert packet["memory"]["prior_fragments"] == []

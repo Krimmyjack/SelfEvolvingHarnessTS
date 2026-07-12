@@ -1,0 +1,68 @@
+{
+  "generated_by": "run_p5_quadrant",
+  "prereg": "results/Stage2/prereg_codeagent_first_P1_P5.md §5.0（P5-B 冻结）",
+  "pattern_axis": "degradation_preset_cell",
+  "domain_axis": "dataset_config",
+  "actions": {
+    "v_none": [
+      [
+        "impute_linear",
+        {}
+      ]
+    ],
+    "f0_median_w9": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "denoise_median",
+        {
+          "window": 9
+        }
+      ]
+    ],
+    "f0_median_w15": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "denoise_median",
+        {
+          "window": 15
+        }
+      ]
+    ],
+    "f0_median_w25": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "denoise_median",
+        {
+          "window": 25
+        }
+      ]
+    ],
+    "v_winsor_savgol": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "winsorize",
+        {}
+      ],
+      [
+        "denoise_savgol",
+        {}
+      ]
+    ]
+  },
+  "judge": "seasonal_naive nRMSE vs real future (H_FORECAST), true judge",
+  "leakage_guard": "sources exclude same series_uid",
+  "bootstrap_b": 2000,
+  "grouped_by": "series_uid"
+}

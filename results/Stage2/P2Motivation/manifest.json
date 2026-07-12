@@ -1,0 +1,84 @@
+{
+  "generated_by": "run_p2_motivation",
+  "plan": "Final_Plan_CodeAgentFirst_2026-07-09 §P2",
+  "prereg": "results/Stage2/prereg_codeagent_first_P1_P5.md §2",
+  "epsilon": 0.01,
+  "reference_action": "v_raw_identity",
+  "flip_rule": "mean>|eps| 且 90% bootstrap CI 同侧不跨 0（两任务反向）",
+  "seed": 20260709,
+  "bootstrap_b": 1000,
+  "n_series": 40,
+  "detector": {
+    "detector": "residual_zscore",
+    "baseline": "rolling_median_loo_nan_safe",
+    "window": 11,
+    "threshold": 4.0,
+    "scale_calibration": "frozen_on_raw_input",
+    "tol": 2,
+    "frozen": true
+  },
+  "forecast_judge": {
+    "name": "seasonal_naive_h24",
+    "metric": "nRMSE_vs_clean_future"
+  },
+  "task_spec_shas": {
+    "forecast": "227eca1801b7ea54",
+    "anomaly_detection": "37660f8d8b55d422"
+  },
+  "slice": {
+    "generator": "evaluators.anomaly_rig.make_anomaly_slice",
+    "cells": [
+      "anomaly|snrHigh|full",
+      "anomaly|snrLow|miss"
+    ],
+    "shared_series_across_tasks": true
+  },
+  "programs": {
+    "v_raw_identity": [],
+    "v_impute_linear": [
+      [
+        "impute_linear",
+        {}
+      ]
+    ],
+    "median_w9": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "denoise_median",
+        {
+          "window": 9
+        }
+      ]
+    ],
+    "winsor": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "winsorize",
+        {}
+      ]
+    ],
+    "universal_cleaner": [
+      [
+        "impute_linear",
+        {}
+      ],
+      [
+        "winsorize",
+        {}
+      ],
+      [
+        "denoise_median",
+        {
+          "window": 9
+        }
+      ]
+    ]
+  },
+  "task_conditioned_rule": "forecast→impute+median(w9 snrHigh / w25 snrLow, F0 剂量单调)；anomaly→impute only"
+}

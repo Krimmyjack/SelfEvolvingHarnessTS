@@ -1,4 +1,4 @@
-﻿import numpy as np
+import numpy as np
 
 from SelfEvolvingHarnessTS.fast_path.ablation import (
     FastPathAblationArm,
@@ -6,7 +6,7 @@ from SelfEvolvingHarnessTS.fast_path.ablation import (
     summarize_fast_path_ablation_results,
     write_fast_path_ablation_report,
 )
-from SelfEvolvingHarnessTS.memory.evidence_schema import build_memory_evidence
+from SelfEvolvingHarnessTS.memory.evidence_schema import build_memory_evidence, build_memory_evidence_v2
 from SelfEvolvingHarnessTS.policy.action_spec import action_menu_v1
 from SelfEvolvingHarnessTS.policy.skill_memory_composer import TypedCandidate
 
@@ -32,6 +32,23 @@ def _memory():
         selected_loss=1.7,
         support={"n": 3},
         provenance={"case_id": "m1"},
+    )
+
+
+def _risk_memory(action_id="v_median"):
+    return build_memory_evidence_v2(
+        task="forecast",
+        pattern_region="forecast|snrHigh|full",
+        memory_type="risk",
+        role="ban",
+        skill_id="median_smooth",
+        action_id=action_id,
+        program={"steps": []},
+        utility_delta_vs_raw=-0.4,
+        harm_delta_vs_raw=0.4,
+        support={"n": 2},
+        evidence_refs=("risk:m1",),
+        provenance={"case_id": "risk_m1"},
     )
 
 
@@ -88,6 +105,74 @@ def test_memory_only_ablation_arm_removes_skill_surface_but_keeps_memory():
     assert results[0].decision.action_id == "v_median"
     assert results[0].evidence.routing["ablation_arm"] == "memory_only_selector"
 
+
+def test_positive_memory_arm_filters_out_risk_memory_before_composer():
+    captured = []
+
+    def composer(packet):
+        captured.append(packet)
+        return TypedCandidate(skill_id=None, action_id="v_median", rationale="positive_memory_stub")
+
+    arm = FastPathAblationArm(
+        name="positive_memory_only",
+        use_skills=False,
+        use_memory=True,
+        use_composer=True,
+        use_safety=False,
+        composer=composer,
+        support_stats={"support_score": 0.1, "needs_composition": True},
+        memory_mode="positive",
+    )
+
+    run_fast_path_ablation(
+        [_record()],
+        {"r1": np.sin(np.linspace(0, 2 * np.pi, 64))},
+        arms=[arm],
+        action_menu=action_menu_v1(),
+        memory_by_uid={"r1": [_memory(), _risk_memory()]},
+    )
+
+    assert len(captured) == 1
+    memory = captured[0]["memory"]
+    assert len(memory["utility_memory"]) == 1
+    assert memory["utility_memory"][0]["action_id"] == "v_median"
+    assert memory["risk_memory"] == []
+    assert memory["prior_fragments"] == []
+
+
+def test_risk_memory_only_arm_abstains_to_raw_and_records_memory_mode():
+    arm = FastPathAblationArm(
+        name="risk_memory_only",
+        use_skills=False,
+        use_memory=True,
+        use_composer=True,
+        use_safety=True,
+        composer=lambda packet: TypedCandidate(
+            action_id="v_none",
+            abstain_to_raw=True,
+            rationale="risk_memory_only_abstain",
+            evidence_refs=("risk:m1",),
+        ),
+        support_stats={"support_score": 0.1, "needs_composition": True},
+        memory_mode="risk",
+    )
+
+    results = run_fast_path_ablation(
+        [_record()],
+        {"r1": np.sin(np.linspace(0, 2 * np.pi, 64))},
+        arms=[arm],
+        action_menu=action_menu_v1(),
+        memory_by_uid={"r1": [_memory(), _risk_memory()]},
+    )
+
+    result = results[0]
+    assert result.decision.candidate.abstain_to_raw is True
+    assert result.decision.safety.accepted is False
+    assert "candidate_abstain_to_raw" in result.decision.safety.reasons
+    assert result.executed.status == "raw_fallback_not_compiled"
+    assert result.evidence.routing["ablation_flags"]["memory_mode"] == "risk"
+
+
 def test_ablation_summary_and_report_are_reproducible(tmp_path):
     def composer(packet):
         return TypedCandidate(skill_id=None, action_id="v_median", rationale="stub_report")
@@ -127,8 +212,6 @@ def test_ablation_summary_and_report_are_reproducible(tmp_path):
     records = (tmp_path / "records.jsonl").read_text(encoding="utf-8").strip().splitlines()
     assert len(records) == 2
     assert '"arm_name": "raw"' in records[0]
-
-
 
 
 def test_ablation_summary_reports_lift_against_raw_arm_by_uid():
@@ -173,3 +256,50 @@ def test_ablation_summary_reports_lift_against_raw_arm_by_uid():
     assert summary["reference_arm"] == "raw"
     assert summary["arms"]["raw"]["mean_lift_vs_raw_arm"] == 0.0
     assert summary["arms"]["memory_only_selector"]["mean_lift_vs_raw_arm"] == 0.5
+
+
+def test_ablation_summary_reports_phase4_safety_and_serve_metrics():
+    def validator(raw, artifact, context):
+        return {
+            "validator": "fixed_stub",
+            "passed": bool(context["executed"].execution_ok),
+            "utility_delta_vs_raw": 0.0,
+            "harm_delta_vs_raw": 0.0,
+        }
+
+    arms = [
+        FastPathAblationArm.raw(),
+        FastPathAblationArm(
+            name="risk_memory_only",
+            use_skills=False,
+            use_memory=True,
+            use_composer=True,
+            use_safety=True,
+            composer=lambda packet: TypedCandidate(
+                action_id="v_none",
+                abstain_to_raw=True,
+                rationale="risk_memory_only_abstain",
+                evidence_refs=("risk:m1",),
+            ),
+            support_stats={"support_score": 0.1, "needs_composition": True},
+            memory_mode="risk",
+        ),
+    ]
+
+    results = run_fast_path_ablation(
+        [_record()],
+        {"r1": np.sin(np.linspace(0, 2 * np.pi, 64))},
+        arms=arms,
+        action_menu=action_menu_v1(),
+        memory_by_uid={"r1": [_risk_memory()]},
+        validator=validator,
+    )
+
+    summary = summarize_fast_path_ablation_results(results)
+
+    assert summary["arms"]["raw"]["serve_fraction"] == 1.0
+    risk_arm = summary["arms"]["risk_memory_only"]
+    assert risk_arm["serve_fraction"] == 0.0
+    assert risk_arm["fallback_fraction"] == 1.0
+    assert risk_arm["abstain_to_raw"] == 1
+    assert risk_arm["safety_reason_counts"]["candidate_abstain_to_raw"] == 1

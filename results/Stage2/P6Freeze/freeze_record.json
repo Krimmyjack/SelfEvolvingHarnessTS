@@ -1,0 +1,142 @@
+{
+  "amendment_protocol": {
+    "amendments": [],
+    "rule": "签发后 prereg/代码唯一合法修改 = technical-abort 类修复；须在本 freeze_record 增补 amendment 条目（含 sha 变更）；且永不发生在任何 V/U 效用数字被读取之后。其余偏离一律以 erratum 追加，不得静默修改。"
+  },
+  "backlog": [
+    {
+      "desc": "BoundVEpisodes/BoundUEpisodes factory-only 加固（禁止直接构造未经 load_materialization_bound 验证的载体）——后续可选加固，不阻塞签发。",
+      "id": "BoundVEpisodes-factory-only",
+      "status": "optional-future"
+    },
+    {
+      "desc": "final_packet 全链路接线：run_u_eval_formal 已可写 packet，但 chain_tip 外锚 + cycle 侧 freeze SHA 集聚合的端到端串联须在 VERDICT 前确认。",
+      "id": "final_packet-full-wiring",
+      "status": "must-confirm-before-VERDICT"
+    }
+  ],
+  "capability_matrix": {
+    "surfaces": {
+      "RiskRulePatch": {
+        "compiler": "compile_proposal @ p6/edit_surfaces.py → apply_edit @ p6/harness_state.py",
+        "paired_validator": "paired_risk_run @ p6/fast_path.py",
+        "serving_consumer": "apply_risk @ p6/fast_path.py",
+        "typed_proposal": "RiskRulePatch @ p6/edit_surfaces.py"
+      },
+      "SamplerPatch": {
+        "compiler": "compile_proposal @ p6/edit_surfaces.py → apply_edit @ p6/harness_state.py",
+        "paired_validator": "paired_sampler_run @ p6/fast_path.py",
+        "serving_consumer": "generate_candidates / generate_candidates_with_stats @ p6/fast_path.py",
+        "typed_proposal": "SamplerPatch @ p6/edit_surfaces.py"
+      },
+      "SelectorPatch": {
+        "compiler": "compile_proposal @ p6/edit_surfaces.py → apply_edit @ p6/harness_state.py",
+        "paired_validator": "paired_selector_run @ p6/fast_path.py",
+        "serving_consumer": "select @ p6/fast_path.py",
+        "typed_proposal": "SelectorPatch @ p6/edit_surfaces.py"
+      }
+    },
+    "verified_import_level": true
+  },
+  "code_sha256": {
+    "idea_p6_plan": {
+      "idea/P6_Plan.md": "0eca8a797fc1c881875d8953728d3aec3d26cc0647301c5e4469d4732cf2c38d"
+    },
+    "p6_modules": {
+      "SelfEvolvingHarnessTS/p6/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SelfEvolvingHarnessTS/p6/c0_runner.py": "a5837e3c94cd2206f899f465bc4314d464e6dc327a6690c08db61e137a78654a",
+      "SelfEvolvingHarnessTS/p6/cycle_runner.py": "b04554c5c1a3f3280586d8f8c6bd0c06ac8e60bf3c1fe0c983259202ac06d6cc",
+      "SelfEvolvingHarnessTS/p6/edit_surfaces.py": "85318054c2ca9b62b5d98dc609df7f6f7488c80577843b62e18d4ab2320ef604",
+      "SelfEvolvingHarnessTS/p6/fast_path.py": "b49c06fce08729ca54cb74ca749c347b0c9aee80a6b64631f3de96f5900930f8",
+      "SelfEvolvingHarnessTS/p6/final_packet.py": "a18dddcb1866bf1812534c173e019e678c98ad5037d6a83d0b45be404a5f61d6",
+      "SelfEvolvingHarnessTS/p6/harness_state.py": "d6f5c0ea1ecf075d12a8e280b4ffb1e7b1e2d61a085b773e12596ec84204ba94",
+      "SelfEvolvingHarnessTS/p6/judge_closed_form.py": "842dd75eecf9cb827cbb4a066a2bc114887f394a3a1de6fe38e6f8de81c148d5",
+      "SelfEvolvingHarnessTS/p6/loaders.py": "d8a2a0d584d48d6bfb14d5d4f77bb9d160cb8cb1e69108c5545f36aa361af759",
+      "SelfEvolvingHarnessTS/p6/materializer.py": "24b3c12e71e5c3f9768f9e66ccb6be27effa4f07ad5ed142c2f50309b6faa7d9",
+      "SelfEvolvingHarnessTS/p6/metrics.py": "2673dccdd02e0cffe56bd16ae1ee7347fed403241696c0818734a95214f5677b",
+      "SelfEvolvingHarnessTS/p6/miner.py": "10df06e52bc81d57feac31f7ddc2f821762de15d158c707c9075e56f033f318a",
+      "SelfEvolvingHarnessTS/p6/split_manifest.py": "7d06035504f8a2afcd47e00ad189c085cfe95f7fdadf3976e1c52d13e20e467d",
+      "SelfEvolvingHarnessTS/p6/u_runner.py": "2a136983c0e2643aeb71c88019f39ec0f453edbe5878979b597f0300ca5283b7"
+    },
+    "tests_test_p6": {
+      "SelfEvolvingHarnessTS/tests/test_p6_cycle.py": "ec2f8cc3cd7e9732599984d8eab88016f4c779fe64eca55dfa3de5b562c89fd9",
+      "SelfEvolvingHarnessTS/tests/test_p6_fixwave.py": "9f647965bf0b2ca427d331d78d6c51d92c471fd071edc81a478a3f8c15752c52",
+      "SelfEvolvingHarnessTS/tests/test_p6_judge.py": "10d790f41c632b6059e38d39f2eb554f5a3dbb24b90d08951e22a2c4766c6da7",
+      "SelfEvolvingHarnessTS/tests/test_p6_metrics.py": "df0e98b6e4c04fbcb2c551ff97014773a6ed2f1fa40846615895745e5618d13a",
+      "SelfEvolvingHarnessTS/tests/test_p6_miner.py": "accc6e1c0cdbbdea4a930bf76d96cfa2fbd2066d26ab66f30c4dcfd5d4856119",
+      "SelfEvolvingHarnessTS/tests/test_p6_runners.py": "9843b5d0f8ee25dd6eb52bc0c76b703b03999f0d1cbe317f49b42e50712d09a9",
+      "SelfEvolvingHarnessTS/tests/test_p6_split.py": "f44fe6605f91d6829b7957b3a60f8e8b9067471bcdd10f9e544a6ed28a7a8925",
+      "SelfEvolvingHarnessTS/tests/test_p6_surfaces.py": "535c0cf912660fdd1825cc765f7ccaabeea2f88b5178cd15a1ebff9cc6592f52"
+    }
+  },
+  "environment": {
+    "hf_repo_id": "monash_tsf",
+    "numpy_version": "2.2.6",
+    "parquet_rev": "refs/convert/parquet",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python_executable": "D:/Anaconda_envs/envs/project/python.exe",
+    "python_version": "3.10.19",
+    "torch_version": "2.12.0+cu126"
+  },
+  "formal_entrypoints": {
+    "only_legal": [
+      "run_c0_formal",
+      "run_cycle_formal",
+      "run_u_eval_formal"
+    ],
+    "requirement": "正式运行唯一合法入口 = run_*_formal；entrypoint 名 + 冻结字面量 digest 须出现在产物 provenance（CycleResult/C0_FREEZE/U report）、台账 open bindings/sidecar hash 链、与 final_packet 中。run_*_unfrozen 仅供机械单测。",
+    "unfrozen_test_only": [
+      "run_c0_unfrozen",
+      "run_cycle_unfrozen",
+      "run_u_eval_unfrozen"
+    ]
+  },
+  "frozen_at": "2026-07-12",
+  "frozen_literals": {
+    "H0_allocation": {
+      "det": 3,
+      "llm": 0,
+      "random": 5
+    },
+    "K_slot_budget": 8,
+    "bootstrap_b": 2000,
+    "c0_adam_fits": 96,
+    "c0_episodes": 64,
+    "cycle_bootstrap_seed": "20260711 + cycle",
+    "delta_safe_rule": "2.5 * epsilon",
+    "epsilon_rule": "0.02 * J_raw_C0",
+    "llm_requests_max_per_cycle": 60,
+    "paired_seeds": [
+      0,
+      1,
+      2
+    ],
+    "trainer_fit_timeout_seconds": 900.0,
+    "u_bootstrap_seed": 20260714
+  },
+  "irreversible_point": 1,
+  "note": "P6 执行冻结协议签发（不可逆点 #1）。纯机械盖章：prereg DRAFT-2→FROZEN，记录本文件与全部承重代码/manifest/探针 sha256。签发前未开启任何 C0/D/V/U。",
+  "one_time_resources": {
+    "U": "未开箱（sealed；cycle2 terminal 后由 run_u_eval_formal 一次性 open）",
+    "V1": "未开箱（sealed）",
+    "V2": "未开箱（sealed）",
+    "legacy_derived_artifacts_forbidden": [
+      "frozen_lstm_real_h64.pt（R0' 半训练产物）",
+      "任何 legacy 83 条衍生工件（LSTM reporter 必须 from-scratch）"
+    ],
+    "seeds_20_99": "已消耗，永不复用（confirmatory/level-1 已耗尽；见 STAGE1_VERDICT）"
+  },
+  "prereg": {
+    "diff_note": "frozen_sha 与 reviewed_sha 的差异仅为两处：①文首状态行 DRAFT-2→FROZEN；②文末新增 §10 签发块。除此之外 prereg 一字未改。",
+    "frozen_sha": "f2d13c3edbcb5c29ffefd0e6ed802d022d61e7553cb1b111149341fb4dad996b",
+    "path": "SelfEvolvingHarnessTS/results/Stage2/prereg_p6.md",
+    "reviewed_equals_disk_before_stamp": true,
+    "reviewed_sha": "f74440af73abf9c75dd8f562abfbd982cbcba329d6e14bf334e8e3f382ac71a8"
+  },
+  "probe_anchors": {
+    "SelfEvolvingHarnessTS/results/Stage2/P6Probes/exposure_ledger.jsonl": "30f9fdcc131100bb13ac289045c94f0f39ca4269640d68de6940728ee22d3cac",
+    "SelfEvolvingHarnessTS/results/Stage2/P6Probes/u_admission_v2_traffic_hourly.json": "768a380d733db1ef0a1718112d56fab34d178d2fc03f8ec4b8f6a525a8947fb2"
+  },
+  "schema_version": "p6-freeze-record/1",
+  "written_at_utc": "2026-07-12T03:18:22+00:00"
+}

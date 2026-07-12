@@ -6,7 +6,8 @@
 配置（previous/check8-10）：
   flash = deepseek-chat   （~3–9 s/调用，默认；fast_path compose / 廉价提议）
   pro   = deepseek-v4-pro （~35–50 s/调用，强；slow_path proposer 开放空间提议更优，check9）
-密钥优先取环境变量 DEEPSEEK_API_KEY；缺省回退到 previous 中记录的 key（research 用）。
+密钥只取环境变量 DEEPSEEK_API_KEY（外评①：fallback key 已移除，缺失时网络调用前 fail-loud；
+缓存命中不需要 key，离线重放不受影响）。
 """
 from __future__ import annotations
 
@@ -21,8 +22,9 @@ from typing import Any, List, Optional
 import requests
 
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-_KEY_FALLBACK = "sk-8ef4e576d4e64512834cebed5b1023da"   # previous/check7-10；优先用环境变量覆盖
-DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY") or _KEY_FALLBACK
+# 外评①（2026-07-10）：硬编码 fallback key 已移除——key 只从环境变量来，缺失时在发出任何
+# 网络请求前 fail-loud。旧 key 已进入仓库历史，必须在 DeepSeek 平台侧轮换作废（代码侧无法代办）。
+DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY")
 
 MODELS = {"flash": "deepseek-chat", "pro": "deepseek-v4-pro"}
 
@@ -92,6 +94,10 @@ class LLMClient:
         if k in self._cache:
             self.n_hit += 1
             return self._cache[k]
+        if not self.key:
+            raise RuntimeError(
+                "DEEPSEEK_API_KEY 未设置（外评①：硬编码 fallback key 已移除，fail-loud）。"
+                "请设置环境变量后重试；旧 key 已进入仓库历史，须在平台侧轮换作废。")
         self._check_budget()
         headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
         payload = {"model": self.model,

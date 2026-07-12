@@ -5,6 +5,9 @@
 from __future__ import annotations
 
 import hashlib
+import os
+
+import pytest
 
 from SelfEvolvingHarnessTS.llm import LLMClient, MODELS, extract_code_block, extract_json
 
@@ -50,6 +53,8 @@ def test_model_aliases():
 
 
 # ── 5. 真实 API smoke（联网；确认 key/连通）──────────────────────────────
+@pytest.mark.skipif(not os.environ.get("DEEPSEEK_API_KEY"),
+                    reason="live smoke 需要 DEEPSEEK_API_KEY（外评①：fallback key 已移除）")
 def test_live_api_smoke():
     llm = LLMClient(cache_name="smoke", temperature=0.0)
     out = llm("You are a terse assistant. Output only what is asked.",

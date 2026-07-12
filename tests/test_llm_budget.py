@@ -18,9 +18,20 @@ def _client_name(prefix):
     return f"{prefix}_{uuid.uuid4().hex}"
 
 
+def test_missing_key_fails_loud_before_network(monkeypatch):
+    # 外评①：硬编码 fallback key 已移除——无 key 时必须在发出任何网络请求前 fail-loud
+    called = []
+    monkeypatch.setattr(llm_client.requests, "post", lambda *a, **k: called.append(1))
+    c = LLMClient(cache_name=_client_name("nokey"), temperature=0.0, key=None)
+    with pytest.raises(RuntimeError, match="DEEPSEEK_API_KEY"):
+        c("SYS", "USER")
+    assert not called
+
+
 def test_llm_client_stops_new_api_calls_at_call_budget(monkeypatch):
     monkeypatch.setattr(llm_client.requests, "post", lambda *a, **k: _FakeResponse())
-    c = LLMClient(cache_name=_client_name("budget_calls"), temperature=0.0, max_api_calls=1)
+    c = LLMClient(cache_name=_client_name("budget_calls"), temperature=0.0, max_api_calls=1,
+                  key="test-key")   # 预算逻辑测试：显式假 key 过鉴权守卫（网络已 monkeypatch）
 
     assert c("SYS", "USER-1") == "OK"
     with pytest.raises(RuntimeError, match="LLM budget exceeded"):
@@ -38,6 +49,7 @@ def test_llm_client_stops_before_estimated_cost_budget(monkeypatch):
         temperature=0.0,
         max_cost_usd=0.015,
         estimated_cost_per_call_usd=0.01,
+        key="test-key",
     )
 
     assert c("SYS", "USER-1") == "OK"

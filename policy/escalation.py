@@ -17,7 +17,13 @@ from ..fast_path.execute import execute
 from ..fast_path.verify import role_b_score
 from ..memory import EvidenceRecord, EvidenceStore
 from .action_spec import ActionCompiler, ActionMenu
-from .evidence_packet import build_evidence_packet
+from .evidence_packet import build_evidence_packet, build_evidence_packet_v2
+from .program_edit import (
+    guard_matches,
+    spec_v1_from_dict,
+    to_action_spec_v1,
+    validate_v1 as validate_program_v1,
+)
 from .skill_memory_composer import TypedCandidate, parse_typed_candidate
 from .skill_retriever import retrieve_skill_cards
 
@@ -33,6 +39,9 @@ class EscalationConfig:
     min_deterministic_skill_score: float = 0.55
     max_support_score: float | None = None
     max_harm_rate: float | None = None
+    # P1（Final_Plan_CodeAgentFirst §0.2）：研究阶段 code-agent-first——composer 默认上场，
+    # deterministic 只作对照臂/回退；False = 原 escalation 行为（bit 级不变）
+    composer_first: bool = False
 
 
 @dataclass(frozen=True)
@@ -41,6 +50,7 @@ class SafetyGateDecision:
     serve_action_id: str
     fallback_raw: bool
     reasons: tuple[str, ...] = field(default_factory=tuple)
+    evidence_refs: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -52,6 +62,9 @@ class EscalationDecision:
     packet: Mapping[str, Any]
     safety: SafetyGateDecision
     composer_called: bool = False
+    # 非空 = gate 已接受的 novel ProgramSpec v1 编译产物（ActionSpec）——compile 时绕过 menu
+    # 成员检查（novel program 不在冻结 menu 内，身份/语义由 grammar+guard+invariants 保证）
+    program_action: Any = None
 
 
 @dataclass(frozen=True)
@@ -141,19 +154,26 @@ def _needs_composer(support_stats: Mapping[str, Any], config: EscalationConfig) 
     )
 
 
-def _memory_for_packet(memory_rows: Any) -> dict[str, list[Any]]:
+def _memory_for_packet(memory_rows: Any) -> Any:
+    """Normalize memory rows while preserving V2 packet buckets when present."""
+
     if memory_rows is None:
-        return {"prior_fragments": [], "failure_warnings": []}
+        return {
+            "prior_fragments": [],
+            "failure_warnings": [],
+            "case_memory": [],
+            "utility_memory": [],
+            "risk_memory": [],
+            "contrast_memory": [],
+            "strategy_memory": [],
+            "skill_evidence": [],
+        }
     if isinstance(memory_rows, Mapping):
-        prior = memory_rows.get("prior_fragments") or memory_rows.get("successes") or []
-        failures = memory_rows.get("failure_warnings") or memory_rows.get("failures") or []
-    else:
-        prior = memory_rows
-        failures = []
-    return {
-        "prior_fragments": [_packet_row(row) for row in list(prior)],
-        "failure_warnings": [_packet_row(row) for row in list(failures)],
-    }
+        out = {str(key): [_packet_row(row) for row in list(value)] for key, value in memory_rows.items() if isinstance(value, (list, tuple))}
+        out.setdefault("prior_fragments", [_packet_row(row) for row in list(memory_rows.get("successes") or [])])
+        out.setdefault("failure_warnings", [_packet_row(row) for row in list(memory_rows.get("failures") or [])])
+        return out
+    return [_packet_row(row) for row in list(memory_rows)]
 
 
 def _packet_row(row: Any) -> Any:
@@ -216,6 +236,63 @@ def _coerce_candidate(raw: Any, packet: Mapping[str, Any]) -> TypedCandidate | N
     return None
 
 
+def _row_ref(row: Mapping[str, Any], fallback: str) -> str:
+    refs = row.get("evidence_refs")
+    if isinstance(refs, (list, tuple)) and refs:
+        return str(refs[0])
+    provenance = row.get("provenance")
+    if isinstance(provenance, Mapping):
+        for key in ("case_id", "record_uid", "source_uid", "evidence_ref"):
+            if provenance.get(key):
+                return str(provenance[key])
+    if row.get("failure_signature"):
+        return str(row["failure_signature"])
+    return fallback
+
+
+def _risk_memory_blocks(packet: Mapping[str, Any], action: str | None) -> tuple[list[str], list[str]]:
+    if action is None:
+        return [], []
+    memory = packet.get("memory") or {}
+    if not isinstance(memory, Mapping):
+        return [], []
+    reasons: list[str] = []
+    refs: list[str] = []
+    for idx, row in enumerate(memory.get("risk_memory") or [], start=1):
+        if not isinstance(row, Mapping):
+            continue
+        row_action = row.get("action_id")
+        scope = row.get("scope") if isinstance(row.get("scope"), Mapping) else {}
+        scoped_actions = scope.get("base_action_in") or scope.get("actions") or []
+        if row_action is not None and str(row_action) != str(action):
+            continue
+        if row_action is None and scoped_actions and str(action) not in {str(v) for v in scoped_actions}:
+            continue
+        role = str(row.get("role") or "warn")
+        if role == "ban":
+            reasons.append("risk_memory_ban")
+        elif role == "abstain":
+            reasons.append("risk_memory_abstain")
+        else:
+            harm = row.get("harm_delta_vs_raw")
+            try:
+                has_harm = harm is not None and float(harm) > 0.0
+            except (TypeError, ValueError):
+                has_harm = False
+            if not has_harm and not row.get("failure_signature"):
+                continue
+            reasons.append("risk_memory_warn")
+        refs.append(_row_ref(row, f"risk_memory:{idx}"))
+    return reasons, refs
+def _program_hits_task_forbidden(spec: Any, packet: Mapping[str, Any]) -> bool:
+    forbidden = (packet.get("task") or {}).get("forbidden_modifications") or []
+    if not forbidden:
+        return False
+    from ..operators.registry import canonicalize
+    banned = {canonicalize(str(op)) for op in forbidden}
+    return any(canonicalize(op) in banned for op, _params in spec.steps)
+
+
 def safety_gate_candidate(
     candidate: TypedCandidate,
     packet: Mapping[str, Any],
@@ -232,11 +309,41 @@ def safety_gate_candidate(
 
     if candidate.abstain_to_raw:
         reasons.append("candidate_abstain_to_raw")
-    if action is None:
+
+    # P1：program 候选（action_id=None + program_spec 非空）——grammar/guard 是它的 gate 面；
+    # 通过后 action=prog1_* 继续走 risk-memory/support/harm 检查，menu 成员检查按定义跳过
+    program_ok = False
+    prog_reasons: list[str] = []
+    if action is None and not candidate.abstain_to_raw and candidate.program_spec:
+        spec = None
+        try:
+            spec = spec_v1_from_dict(dict(candidate.program_spec))
+        except ValueError:
+            prog_reasons.append("invalid_program_spec")
+        if spec is not None:
+            ok, _why = validate_program_v1(spec)
+            if not ok:
+                prog_reasons.append("program_grammar_rejected")
+            elif _program_hits_task_forbidden(spec, packet):
+                # P2：TaskSpec.forbidden_modifications 活语义——packet 携带的任务实例禁改集
+                # 在 registry allowed_tasks 之外进一步收紧（canonical 名比较，旧 alias 同禁）
+                prog_reasons.append("task_forbidden_op")
+            else:
+                try:
+                    if guard_matches(spec, packet.get("pattern") or {}):
+                        action = spec.action_id
+                        program_ok = True
+                    else:
+                        prog_reasons.append("pattern_guard_unsatisfied")
+                except KeyError:
+                    prog_reasons.append("pattern_guard_feature_missing")
+        reasons.extend(prog_reasons)
+
+    if action is None and not prog_reasons:
         reasons.append("missing_action")
 
     allowed = _allowed_actions_from_menu(packet.get("action_menu") or {})
-    if action is not None and allowed and action not in allowed:
+    if action is not None and not program_ok and allowed and action not in allowed:
         reasons.append("action_not_in_menu")
 
     skill_actions = _packet_skill_actions(packet)
@@ -246,6 +353,9 @@ def safety_gate_candidate(
             reasons.append("unknown_skill")
         elif action is not None and action not in allowed_for_skill:
             reasons.append("skill_action_mismatch")
+
+    risk_reasons, risk_refs = _risk_memory_blocks(packet, action)
+    reasons.extend(risk_reasons)
 
     if action != cfg.raw_action and _weak_support(support, cfg):
         reasons.append("weak_support")
@@ -264,6 +374,7 @@ def safety_gate_candidate(
             serve_action_id=cfg.raw_action,
             fallback_raw=True,
             reasons=tuple(dict.fromkeys(reasons)),
+            evidence_refs=tuple(dict.fromkeys(risk_refs)),
         )
     return SafetyGateDecision(
         accepted=True,
@@ -330,6 +441,18 @@ def compile_fast_path_decision(
             compiled=False,
             program=None,
             reason="safety_rejected_not_compiled",
+        )
+    if decision.program_action is not None and decision.action_id == decision.program_action.action_id:
+        # gate 已接受的 novel program：直接编译其 ActionSpec（不在冻结 menu 内，跳过成员检查）
+        key = conditioning_key_from_record(record, task_type=task_type)
+        comp = compiler or ActionCompiler()
+        program = comp.to_program(decision.program_action, key)
+        return CompiledFastPathDecision(
+            action_id=decision.action_id,
+            compiled=True,
+            program=program,
+            conditioning_key=key,
+            reason="compiled_program_spec_v1",
         )
     if decision.action_id not in action_menu:
         raise ValueError(f"action {decision.action_id!r} not in ActionMenu {action_menu.version!r}")
@@ -499,6 +622,7 @@ def _routing_for_evidence(decision: EscalationDecision) -> dict[str, Any]:
             "serve_action_id": decision.safety.serve_action_id,
             "fallback_raw": decision.safety.fallback_raw,
             "reasons": list(decision.safety.reasons),
+            "evidence_refs": list(decision.safety.evidence_refs),
         },
         "packet": {
             "schema": packet.get("schema"),
@@ -567,6 +691,9 @@ def decide_fast_path(
     config: EscalationConfig | None = None,
     composer: Composer | None = None,
     skill_cards_override: Sequence[Mapping[str, Any]] | None = None,
+    continuous_evidence: Mapping[str, Mapping[str, Any]] | None = None,
+    trace_summaries: Sequence[Mapping[str, Any]] | None = None,
+    task_spec: Any = None,
 ) -> EscalationDecision:
     """Return a typed fast-path decision plus the evidence packet it used.
 
@@ -586,8 +713,7 @@ def decide_fast_path(
     else:
         skill_cards = [dict(card) for card in skill_cards_override]
     deterministic = _deterministic_candidate(skill_cards, cfg)
-    packet = build_evidence_packet(
-        record,
+    packet_kwargs = dict(
         skills=skill_cards,
         memory_rows=_memory_for_packet(memory_rows),
         action_menu_meta=action_menu_meta,
@@ -601,10 +727,26 @@ def decide_fast_path(
         },
         max_skills=cfg.top_k_skills,
         max_memory=cfg.max_memory,
+        task_spec=task_spec,
     )
+    if cfg.composer_first:
+        # code-agent-first：composer 的输入面固定为 v2（连续证据 + trace + allowed_grammar，R1）
+        packet = build_evidence_packet_v2(
+            record,
+            continuous_evidence=continuous_evidence,
+            trace_summaries=trace_summaries,
+            **packet_kwargs,
+        )
+    else:
+        packet = build_evidence_packet(record, **packet_kwargs)
 
     composer_called = False
-    if deterministic is not None and not _needs_composer(support, cfg):
+    if cfg.composer_first and composer is not None:
+        # 研究阶段主路径：code agent 默认上场；invalid/empty 输出 → 下方统一 ITT raw 回退
+        composer_called = True
+        candidate = _coerce_candidate(composer(packet), packet)
+        proposal_route = "code_agent"
+    elif deterministic is not None and not _needs_composer(support, cfg):
         candidate = deterministic
         proposal_route = "deterministic"
     elif composer is not None:
@@ -635,6 +777,15 @@ def decide_fast_path(
             config=cfg,
         )
 
+    program_action = None
+    if safety.accepted and candidate.action_id is None and candidate.program_spec:
+        try:
+            spec = spec_v1_from_dict(dict(candidate.program_spec))
+            if spec.action_id == safety.serve_action_id:
+                program_action = to_action_spec_v1(spec)
+        except ValueError:
+            program_action = None
+
     route = proposal_route if safety.accepted else "raw_fallback"
     return EscalationDecision(
         route=route,
@@ -644,5 +795,6 @@ def decide_fast_path(
         packet=packet,
         safety=safety,
         composer_called=composer_called,
+        program_action=program_action,
     )
 

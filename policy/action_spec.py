@@ -164,6 +164,10 @@ class ActionCompiler:
     def to_harness(self, spec: ActionSpec, task: str) -> HarnessState:
         self._check_task(spec, task)
         h = HarnessState.from_minimal()
+        if not spec.steps:
+            # strict raw（空步 spec）：不注册模板——stages=[] 的模板永不被 _best_template 匹配，
+            # 注册它是"看似生效实则惰性"的死 artifact；恒等语义由 to_program 空步分支保证
+            return h
         stages = [{"stage": "s1", "preferred_ops": [st.op], "banned_ops": [],
                    "params_override": dict(st.params)} for st in spec.steps]
         h.l2.task_templates[spec.action_id] = PipelineTemplate.from_dict(
@@ -176,5 +180,9 @@ class ActionCompiler:
                    harness: Optional[HarnessState] = None) -> Program:
         task = conditioning_key["task"]["type"]
         self._check_task(spec, task)
+        if not spec.steps:
+            # strict raw（P0 语义三拆）：空 steps = 恒等程序。不得走 compose——空模板不会
+            # 匹配 _best_template，会静默落入 heuristic 合成插补链 = 语义漂移。
+            return Program(steps=[], source="template", note=f"raw_identity:{spec.action_id}")
         h = harness if harness is not None else self.to_harness(spec, task)
         return compose(conditioning_key, h)

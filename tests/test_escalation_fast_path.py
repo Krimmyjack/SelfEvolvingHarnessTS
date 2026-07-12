@@ -351,3 +351,35 @@ def test_escalation_api_is_exported_from_policy_package():
     assert policy.execute_fast_path_decision is execute_fast_path_decision
     assert policy.validate_fast_path_output is validate_fast_path_output
     assert policy.emit_fast_path_evidence is emit_fast_path_evidence
+
+
+def test_risk_memory_ban_is_evidence_grounded_safety_reject():
+    from SelfEvolvingHarnessTS.memory.evidence_schema import build_memory_evidence_v2
+
+    risk = build_memory_evidence_v2(
+        task="forecast",
+        pattern_region="forecast|snrHigh|full",
+        memory_type="risk",
+        role="ban",
+        action_id="v_median",
+        harm_delta_vs_raw=0.2,
+        evidence_refs=("risk:case-1",),
+    )
+
+    def composer(packet):
+        return TypedCandidate(skill_id="median_smooth", action_id="v_median")
+
+    decision = decide_fast_path(
+        _record(uid="risk_memory", snr=10.0, miss_rate=0.0),
+        action_menu_meta=_menu("v_none", "v_median"),
+        memory_rows=[risk],
+        support_stats={"support_score": 0.1, "evidence_conflict": True},
+        config=EscalationConfig(max_support_score=0.5),
+        composer=composer,
+    )
+
+    assert decision.route == "raw_fallback"
+    assert decision.action_id == "v_none"
+    assert "risk_memory_ban" in decision.safety.reasons
+    assert decision.safety.evidence_refs == ("risk:case-1",)
+    assert decision.packet["memory"]["risk_memory"][0]["role"] == "ban"

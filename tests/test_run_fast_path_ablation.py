@@ -1,8 +1,22 @@
-﻿import json
+import json
 
 import pytest
 
 from SelfEvolvingHarnessTS.run_fast_path_ablation import run_demo_forecast_ablation
+
+
+PHASE4_ARM_ORDER = [
+    "raw",
+    "deterministic_router",
+    "skill_only_deterministic",
+    "positive_memory_only",
+    "risk_memory_only",
+    "positive_risk_memory",
+    "skill_memory_deterministic",
+    "composer_skill",
+    "composer_skill_memory",
+    "composer_skill_memory_safety",
+]
 
 
 def test_run_demo_forecast_ablation_writes_no_api_report(tmp_path):
@@ -11,25 +25,18 @@ def test_run_demo_forecast_ablation_writes_no_api_report(tmp_path):
     assert report["metadata"]["slice"] == "synthetic_forecast_small"
     assert report["metadata"]["api_calls"] == 0
     assert report["metadata"]["reporter"] == "synthetic_oracle_proxy_v1"
-    assert report["summary"]["n_results"] == 16
+    assert report["metadata"]["ablation_matrix"] == "phase4_memory_v2"
+    assert report["summary"]["n_results"] == 20
     assert report["summary"]["reference_arm"] == "raw"
-    assert report["summary"]["arm_order"] == [
-        "raw",
-        "deterministic_router",
-        "skill_only_deterministic",
-        "memory_only_selector",
-        "skill_memory_deterministic",
-        "composer_skill",
-        "composer_skill_memory",
-        "composer_skill_memory_safety",
-    ]
+    assert report["summary"]["arm_order"] == PHASE4_ARM_ORDER
     assert (tmp_path / "report.json").exists()
     assert (tmp_path / "records.jsonl").exists()
     assert (tmp_path / "slow_path_proposals.jsonl").exists()
-    assert len((tmp_path / "records.jsonl").read_text(encoding="utf-8").strip().splitlines()) == 16
+    assert len((tmp_path / "records.jsonl").read_text(encoding="utf-8").strip().splitlines()) == 20
     assert report["summary"]["arms"]["raw"]["mean_lift_vs_raw_arm"] == 0.0
-    assert report["summary"]["arms"]["memory_only_selector"]["mean_utility_delta_vs_raw"] is not None
-    assert report["summary"]["arms"]["memory_only_selector"]["mean_lift_vs_raw_arm"] is not None
+    assert report["summary"]["arms"]["positive_memory_only"]["mean_utility_delta_vs_raw"] is not None
+    assert report["summary"]["arms"]["positive_memory_only"]["mean_lift_vs_raw_arm"] is not None
+    assert report["summary"]["arms"]["risk_memory_only"]["fallback_fraction"] >= 0.0
     assert report["slow_path"]["n_proposals"] == 0
     assert report["slow_path"]["n_promotion_accepted"] == 0
 
@@ -37,7 +44,7 @@ def test_run_demo_forecast_ablation_writes_no_api_report(tmp_path):
 def test_run_demo_forecast_ablation_promotes_only_independent_support(tmp_path):
     report = run_demo_forecast_ablation(out_dir=tmp_path, n_records=4)
 
-    assert report["summary"]["n_results"] == 32
+    assert report["summary"]["n_results"] == 40
     assert report["metadata"]["api_calls"] == 0
     assert report["slow_path"]["min_support"] == 2
     assert report["slow_path"]["n_proposals"] > 0
@@ -99,12 +106,17 @@ def test_oracle_ledger_inputs_use_only_prior_same_cell_memory():
     assert losses_by_uid["r1"]["v_median"] == 0.8
     assert memory_by_uid["r0"] == []
     assert memory_by_uid["r2"] == []
-    assert len(memory_by_uid["r1"]) == 1
-    packet_row = memory_by_uid["r1"][0].to_packet_row()
-    assert packet_row["action_id"] == "v_median"
-    assert packet_row["utility_delta_vs_raw"] == pytest.approx(0.3)
-    assert packet_row["provenance"]["source_uid"] == "r0"
-    assert packet_row["provenance"]["source_uid"] != "r1"
+    assert len(memory_by_uid["r1"]) == 2
+    packet_rows = [row.to_packet_row() for row in memory_by_uid["r1"]]
+    utility_rows = [row for row in packet_rows if row["memory_type"] == "utility"]
+    risk_rows = [row for row in packet_rows if row["memory_type"] == "risk"]
+    assert utility_rows[0]["action_id"] == "v_median"
+    assert utility_rows[0]["utility_delta_vs_raw"] == pytest.approx(0.3)
+    assert utility_rows[0]["provenance"]["source_uid"] == "r0"
+    assert utility_rows[0]["provenance"]["source_uid"] != "r1"
+    assert risk_rows[0]["action_id"] == "v_winsor"
+    assert risk_rows[0]["harm_delta_vs_raw"] == pytest.approx(0.2)
+    assert risk_rows[0]["provenance"]["source_uid"] == "r0"
 
 
 def test_ledger_oracle_validator_scores_selected_action_from_l_test():
@@ -145,13 +157,18 @@ def test_run_oracle_ledger_ablation_writes_no_api_report(tmp_path):
     assert report["metadata"]["slice"] == "s2_oracle_ledger_small"
     assert report["metadata"]["api_calls"] == 0
     assert report["metadata"]["reporter"] == "ledger_l_test_oracle_v1"
-    assert report["summary"]["n_results"] == 24
+    assert report["metadata"]["ablation_matrix"] == "phase4_memory_v2"
+    assert report["summary"]["n_results"] == 30
     assert report["summary"]["reference_arm"] == "raw"
+    assert report["summary"]["arm_order"] == PHASE4_ARM_ORDER
     assert report["summary"]["arms"]["raw"]["mean_lift_vs_raw_arm"] == 0.0
     assert (tmp_path / "out" / "report.json").exists()
     assert (tmp_path / "out" / "records.jsonl").exists()
     assert (tmp_path / "out" / "slow_path_proposals.jsonl").exists()
+    report_text = (tmp_path / "out" / "report.json").read_text(encoding="utf-8")
     rows = (tmp_path / "out" / "records.jsonl").read_text(encoding="utf-8")
+    assert "NaN" not in report_text
+    assert "NaN" not in rows
     assert "L_test" not in rows
     assert "ledger_l_test_oracle_v1" in rows
 
@@ -196,3 +213,61 @@ def test_stub_composer_attaches_registry_skill_when_it_supports_memory_action():
 
     assert candidate.action_id == "v_median"
     assert candidate.skill_id == "median_smooth"
+
+
+def test_stub_composer_prefers_utility_memory_over_legacy_prior():
+    from SelfEvolvingHarnessTS.run_fast_path_ablation import stub_skill_memory_composer
+
+    packet = {
+        "skills": [{"name": "median_smooth", "allowed_actions": ["v_median"]}],
+        "memory": {
+            "utility_memory": [
+                {
+                    "memory_type": "utility",
+                    "role": "recommend",
+                    "skill_id": "ledger_prior_best_action",
+                    "action_id": "v_median",
+                    "evidence_refs": ["utility:r0"],
+                }
+            ],
+            "prior_fragments": [
+                {
+                    "skill_id": "legacy_prior",
+                    "action_id": "v_winsor",
+                }
+            ],
+        },
+    }
+
+    candidate = stub_skill_memory_composer(packet)
+
+    assert candidate.action_id == "v_median"
+    assert candidate.skill_id == "median_smooth"
+    assert "utility:r0" in candidate.evidence_refs
+
+
+def test_stub_composer_abstains_when_packet_contains_only_risk_memory():
+    from SelfEvolvingHarnessTS.run_fast_path_ablation import stub_skill_memory_composer
+
+    packet = {
+        "skills": [{"name": "median_smooth", "allowed_actions": ["v_median"]}],
+        "memory": {
+            "risk_memory": [
+                {
+                    "memory_type": "risk",
+                    "role": "ban",
+                    "action_id": "v_median",
+                    "evidence_refs": ["risk:r0"],
+                }
+            ],
+            "utility_memory": [],
+            "prior_fragments": [],
+        },
+    }
+
+    candidate = stub_skill_memory_composer(packet)
+
+    assert candidate.action_id == "v_none"
+    assert candidate.abstain_to_raw is True
+    assert candidate.risk_rule["source"] == "risk_memory"
+    assert "risk:r0" in candidate.evidence_refs

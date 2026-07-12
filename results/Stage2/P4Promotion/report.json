@@ -1,0 +1,88 @@
+{
+  "phase": "P4_promotion_cycle",
+  "claim_scope": "mechanism acceptance on synthetic substrate; NOT a performance claim; the term self-evolving stays locked until P6",
+  "n_series": 60,
+  "split": {
+    "held_in": 30,
+    "held_out": 30,
+    "stratified_by_cell": true
+  },
+  "held_in_mining_evidence": {
+    "anomaly|snrHigh|full": {
+      "mean_true_delta": 0.7061198512675966,
+      "n": 15
+    },
+    "anomaly|snrLow|miss": {
+      "mean_true_delta": 0.7202855238430891,
+      "n": 15
+    }
+  },
+  "promoted": {
+    "version": "bundle_v0.e1",
+    "sha": "a5f26f50e42d8b3a",
+    "rule_id": "mined_ban_f0_median_w25_snr_low",
+    "validation": {
+      "accepted": true,
+      "reasons": [],
+      "held_in": {
+        "mean_gain": 0.23745745879745905,
+        "n": 30,
+        "fired_rows": 15
+      },
+      "held_out": {
+        "mean_gain": 0.264094329555565,
+        "n": 30,
+        "fired_rows": 15
+      },
+      "per_cell": {
+        "anomaly|snrHigh|full": 0.0,
+        "anomaly|snrLow|miss": 0.52818865911113
+      },
+      "non_targeted_identical": true,
+      "candidate_version": "bundle_v0.e1",
+      "candidate_sha": "a5f26f50e42d8b3a"
+    },
+    "apply_log": [
+      {
+        "op": {
+          "kind": "add_risk_rule",
+          "rule_id": "mined_ban_f0_median_w25_snr_low",
+          "scope": "region:cell_snr=low",
+          "then": {
+            "op": "ban",
+            "action": "f0_median_w9"
+          }
+        },
+        "applied": true,
+        "new_version": "bundle_v0.e1",
+        "new_sha": "a5f26f50e42d8b3a"
+      }
+    ]
+  },
+  "n_rejected": 2,
+  "regression": {
+    "non_targeted_identical": true,
+    "anomaly_rows_identical": true,
+    "targeted_rows": 30,
+    "targeted_mean_gain": 0.501551788353024
+  },
+  "rollback": {
+    "verified": true,
+    "final_head": "bundle_v0.e1"
+  },
+  "memory_ladder": {
+    "status": "conditional_pending",
+    "risk_memory_veto": "live in deployment gate since P1 (escalation._risk_memory_blocks)",
+    "pending_conditions": "prereg §4：utility/contrast memory 须 ①胜 static 学习器 ②first-unseen harm ≤ 阈值 ③in-support 显著优于 out-support——需自身预注册 run，本周期不解锁"
+  },
+  "exit_criteria": {
+    "typed_edit_op": true,
+    "promotion_gate": true,
+    "true_judge_held_in_out_validation": true,
+    "version_bump_persisted": true,
+    "regression_replay": true,
+    "rollback_demo": true,
+    "rejected_buffer": true,
+    "cycle_complete": true
+  }
+}

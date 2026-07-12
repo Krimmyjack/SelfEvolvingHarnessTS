@@ -4,14 +4,15 @@ The runner executes named arms over the same records and series. It is intended
 for local, reproducible checks before any real LLM/API composer is introduced.
 """
 from __future__ import annotations
-import json
-from collections import Counter
-from pathlib import Path
 
+import json
+import math
+from collections import Counter
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from ..memory import EvidenceRecord, EvidenceStore
+from ..memory import EvidenceRecord, EvidenceStore, MEMORY_PACKET_BUCKETS, memory_packet_bucket
 from ..policy.action_spec import ActionMenu
 from ..policy.escalation import (
     DownstreamValidationResult,
@@ -44,6 +45,7 @@ class FastPathAblationArm:
     support_stats: Mapping[str, Any] = field(default_factory=dict)
     harm_stats: Mapping[str, Any] = field(default_factory=dict)
     config: EscalationConfig | None = None
+    memory_mode: str | None = None
 
     @classmethod
     def raw(cls, *, raw_action: str = "v_none") -> "FastPathAblationArm":
@@ -68,22 +70,44 @@ class FastPathAblationResult:
     evidence: EvidenceRecord
 
 
-def standard_fast_path_ablation_arms(composer: Composer | None = None) -> list[FastPathAblationArm]:
-    """Return the planned no-API ablation matrix using an injected stub composer."""
+def phase4_fast_path_ablation_arms(composer: Composer | None = None) -> list[FastPathAblationArm]:
+    """Return the Stage-4 no-API ablation matrix for MemoryV2 attribution."""
     needs_composition = {"needs_composition": True, "support_score": 0.1}
     return [
         FastPathAblationArm.raw(),
         FastPathAblationArm(name="deterministic_router", use_memory=False),
         FastPathAblationArm(name="skill_only_deterministic", use_memory=False),
         FastPathAblationArm(
-            name="memory_only_selector",
+            name="positive_memory_only",
             use_skills=False,
             use_memory=True,
             use_composer=True,
+            use_safety=False,
             composer=composer,
             support_stats=needs_composition,
+            memory_mode="positive",
         ),
-        FastPathAblationArm(name="skill_memory_deterministic", use_memory=True),
+        FastPathAblationArm(
+            name="risk_memory_only",
+            use_skills=False,
+            use_memory=True,
+            use_composer=True,
+            use_safety=True,
+            composer=composer,
+            support_stats=needs_composition,
+            memory_mode="risk",
+        ),
+        FastPathAblationArm(
+            name="positive_risk_memory",
+            use_skills=False,
+            use_memory=True,
+            use_composer=True,
+            use_safety=True,
+            composer=composer,
+            support_stats=needs_composition,
+            memory_mode="positive_risk",
+        ),
+        FastPathAblationArm(name="skill_memory_deterministic", use_memory=True, memory_mode="positive_risk"),
         FastPathAblationArm(
             name="composer_skill",
             use_memory=False,
@@ -98,6 +122,7 @@ def standard_fast_path_ablation_arms(composer: Composer | None = None) -> list[F
             use_safety=False,
             composer=composer,
             support_stats=needs_composition,
+            memory_mode="positive_risk",
         ),
         FastPathAblationArm(
             name="composer_skill_memory_safety",
@@ -106,8 +131,14 @@ def standard_fast_path_ablation_arms(composer: Composer | None = None) -> list[F
             use_safety=True,
             composer=composer,
             support_stats=needs_composition,
+            memory_mode="positive_risk",
         ),
     ]
+
+
+def standard_fast_path_ablation_arms(composer: Composer | None = None) -> list[FastPathAblationArm]:
+    """Return the current no-API ablation matrix using an injected stub composer."""
+    return phase4_fast_path_ablation_arms(composer=composer)
 
 
 def _raw_decision(
@@ -159,6 +190,7 @@ def _without_safety(decision: EscalationDecision) -> EscalationDecision:
         packet=decision.packet,
         safety=safety,
         composer_called=decision.composer_called,
+        program_action=decision.program_action,
     )
 
 
@@ -168,6 +200,90 @@ def _merged_stats(base_by_uid: Mapping[str, Mapping[str, Any]] | None, uid: str,
         stats.update(dict(base_by_uid[uid]))
     stats.update(dict(arm_stats or {}))
     return stats
+
+
+def _packet_memory_row(row: Any) -> Any:
+    if hasattr(row, "to_packet_row"):
+        return row.to_packet_row()
+    if isinstance(row, Mapping):
+        return dict(row)
+    return row
+
+
+def _float_or_none(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _inferred_memory_bucket(row: Any) -> str:
+    if not isinstance(row, Mapping):
+        return "case_memory"
+    if row.get("memory_type") or row.get("role"):
+        return memory_packet_bucket(row)
+    harm = _float_or_none(row.get("harm_delta_vs_raw"))
+    if harm is not None and harm > 0.0:
+        return "risk_memory"
+    if row.get("failure_signature"):
+        return "risk_memory"
+    utility = _float_or_none(row.get("utility_delta_vs_raw"))
+    if utility is not None and utility > 0.0:
+        return "utility_memory"
+    return "case_memory"
+
+
+def _row_with_inferred_v2_role(row: Any) -> Any:
+    packet_row = _packet_memory_row(row)
+    if not isinstance(packet_row, Mapping):
+        return packet_row
+    if packet_row.get("memory_type") or packet_row.get("role"):
+        return packet_row
+    bucket = _inferred_memory_bucket(packet_row)
+    typed = dict(packet_row)
+    if bucket == "risk_memory":
+        typed.setdefault("memory_type", "risk")
+        typed.setdefault("role", "warn")
+    elif bucket == "utility_memory":
+        typed.setdefault("memory_type", "utility")
+        typed.setdefault("role", "recommend")
+    else:
+        typed.setdefault("memory_type", "case")
+        typed.setdefault("role", "diagnostic")
+    return typed
+
+
+def _iter_memory_rows(memory_rows: Any) -> list[Any]:
+    if memory_rows is None:
+        return []
+    if isinstance(memory_rows, Mapping):
+        rows: list[Any] = []
+        for key in ("prior_fragments", "successes", "failure_warnings", "failures", *MEMORY_PACKET_BUCKETS):
+            value = memory_rows.get(key)
+            if isinstance(value, (list, tuple)):
+                rows.extend(value)
+        return rows
+    return list(memory_rows)
+
+
+def _filter_memory_rows(memory_rows: Any, memory_mode: str | None) -> Any:
+    if memory_rows is None or memory_mode in (None, "all"):
+        return memory_rows
+    allowed_by_mode = {
+        "positive": {"utility_memory"},
+        "risk": {"risk_memory"},
+        "positive_risk": {"utility_memory", "risk_memory"},
+        "contrast": {"contrast_memory"},
+    }
+    allowed = allowed_by_mode.get(str(memory_mode))
+    if allowed is None:
+        raise ValueError(f"unknown memory_mode {memory_mode!r}")
+    rows = []
+    for row in _iter_memory_rows(memory_rows):
+        typed = _row_with_inferred_v2_role(row)
+        if _inferred_memory_bucket(typed) in allowed:
+            rows.append(typed)
+    return rows
 
 
 def run_fast_path_ablation(
@@ -196,7 +312,8 @@ def run_fast_path_ablation(
         x = series_by_uid[uid]
         for arm in arms:
             config = arm.config or EscalationConfig()
-            memory_rows = (memory_by_uid or {}).get(uid) if arm.use_memory else None
+            raw_memory_rows = (memory_by_uid or {}).get(uid) if arm.use_memory else None
+            memory_rows = _filter_memory_rows(raw_memory_rows, arm.memory_mode) if arm.use_memory else None
             if arm.kind == "raw":
                 decision = _raw_decision(
                     record,
@@ -234,6 +351,7 @@ def run_fast_path_ablation(
                 "use_memory": arm.use_memory,
                 "use_composer": arm.use_composer,
                 "use_safety": arm.use_safety,
+                "memory_mode": arm.memory_mode,
             }
             results.append(
                 FastPathAblationResult(
@@ -247,11 +365,42 @@ def run_fast_path_ablation(
             )
     return results
 
+
+def _json_float(value: Any) -> float | None:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if math.isfinite(numeric) else None
+
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, float):
+        return _json_float(value)
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(val) for key, val in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(val) for val in value]
+    if hasattr(value, "item"):
+        return _json_safe(value.item())
+    return value
+
+
 def _mean(values: Sequence[float]) -> float | None:
-    vals = [float(v) for v in values]
+    vals = []
+    for value in values:
+        numeric = _json_float(value)
+        if numeric is not None:
+            vals.append(numeric)
     if not vals:
         return None
     return round(sum(vals) / len(vals), 12)
+
+
+def _fraction(count: int, total: int) -> float | None:
+    if total <= 0:
+        return None
+    return round(float(count) / float(total), 12)
 
 
 def _result_to_record(result: FastPathAblationResult) -> dict[str, Any]:
@@ -267,12 +416,13 @@ def _result_to_record(result: FastPathAblationResult) -> dict[str, Any]:
         "composer_called": bool(result.decision.composer_called),
         "safety_accepted": bool(safety.accepted),
         "safety_reasons": list(safety.reasons),
+        "safety_evidence_refs": list(safety.evidence_refs),
         "status": result.executed.status,
         "execution_ok": bool(result.executed.execution_ok),
         "passed": bool(result.validation.passed),
-        "role_b_score": float(result.validation.role_b_score),
+        "role_b_score": _json_float(result.validation.role_b_score),
         "failure_signature": result.validation.failure_signature,
-        "downstream": dict(downstream),
+        "downstream": _json_safe(dict(downstream)),
         "cell_id": result.evidence.cell_id,
         "batch_id": result.evidence.batch_id,
     }
@@ -283,9 +433,10 @@ def _downstream_metric(result: FastPathAblationResult, key: str) -> float | None
     if key not in downstream:
         return None
     try:
-        return float(downstream[key])
+        numeric = float(downstream[key])
     except (TypeError, ValueError):
         return None
+    return numeric if math.isfinite(numeric) else None
 
 
 def summarize_fast_path_ablation_results(results: Sequence[FastPathAblationResult]) -> dict[str, Any]:
@@ -311,38 +462,62 @@ def summarize_fast_path_ablation_results(results: Sequence[FastPathAblationResul
         action_counts = Counter(row.decision.action_id for row in rows)
         status_counts = Counter(row.executed.status for row in rows)
         safety_reasons: Counter = Counter()
+        safety_refs: Counter = Counter()
         utilities: list[float] = []
         harms: list[float] = []
         scores: list[float] = []
         lifts_vs_raw_arm: list[float] = []
+        cell_utilities: dict[str, list[float]] = {}
         for row in rows:
             safety_reasons.update(row.decision.safety.reasons)
-            scores.append(float(row.validation.role_b_score))
+            safety_refs.update(row.decision.safety.evidence_refs)
+            score = _json_float(row.validation.role_b_score)
+            if score is not None:
+                scores.append(score)
             utility = _downstream_metric(row, "utility_delta_vs_raw")
             if utility is not None:
                 utilities.append(utility)
+                cell_utilities.setdefault(str(row.evidence.cell_id), []).append(utility)
                 if row.uid in raw_utility_by_uid:
                     lifts_vs_raw_arm.append(utility - raw_utility_by_uid[row.uid])
             harm = _downstream_metric(row, "harm_delta_vs_raw")
             if harm is not None:
                 harms.append(harm)
+        executed_count = sum(1 for row in rows if row.executed.status == "executed")
+        fallback_count = sum(1 for row in rows if row.executed.status != "executed")
+        rejected_count = sum(1 for row in rows if not row.decision.safety.accepted)
+        abstain_count = sum(1 for row in rows if row.decision.candidate.abstain_to_raw)
+        worst_cell = None
+        if cell_utilities:
+            cell_means = [_mean(values) for values in cell_utilities.values()]
+            finite_cell_means = [value for value in cell_means if value is not None]
+            worst_cell = min(finite_cell_means) if finite_cell_means else None
         arms[arm_name] = {
             "n": len(rows),
             "passed": sum(1 for row in rows if row.validation.passed),
-            "executed": sum(1 for row in rows if row.executed.status == "executed"),
-            "raw_fallback": sum(1 for row in rows if row.executed.status != "executed"),
+            "executed": executed_count,
+            "raw_fallback": fallback_count,
+            "serve_fraction": _fraction(executed_count, len(rows)),
+            "fallback_fraction": _fraction(fallback_count, len(rows)),
             "composer_called": sum(1 for row in rows if row.decision.composer_called),
-            "safety_rejected": sum(1 for row in rows if not row.decision.safety.accepted),
+            "safety_rejected": rejected_count,
+            "safety_rejection_fraction": _fraction(rejected_count, len(rows)),
+            "abstain_to_raw": abstain_count,
+            "abstain_fraction": _fraction(abstain_count, len(rows)),
             "action_counts": dict(sorted(action_counts.items())),
             "status_counts": dict(sorted(status_counts.items())),
             "safety_reason_counts": dict(sorted(safety_reasons.items())),
+            "safety_evidence_ref_count": sum(safety_refs.values()),
+            "safety_evidence_ref_counts": dict(sorted(safety_refs.items())),
             "mean_role_b_score": _mean(scores),
             "mean_utility_delta_vs_raw": _mean(utilities),
             "mean_harm_delta_vs_raw": _mean(harms),
             "mean_lift_vs_raw_arm": _mean(lifts_vs_raw_arm),
+            "cell_count": len(cell_utilities),
+            "worst_cell_mean_utility_delta_vs_raw": worst_cell,
         }
     return {
-        "schema": "fast_path_ablation_summary_v1",
+        "schema": "fast_path_ablation_summary_v2",
         "reference_arm": reference_arm,
         "reference_metric": "utility_delta_vs_raw",
         "lift_metric": "utility_delta_vs_raw - raw_arm.utility_delta_vs_raw for same uid",
@@ -350,6 +525,7 @@ def summarize_fast_path_ablation_results(results: Sequence[FastPathAblationResul
         "arm_order": arm_order,
         "arms": arms,
     }
+
 
 def write_fast_path_ablation_report(
     results: Sequence[FastPathAblationResult],
@@ -367,13 +543,11 @@ def write_fast_path_ablation_report(
         "summary": summarize_fast_path_ablation_results(results),
     }
     (path / "report.json").write_text(
-        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2),
+        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False),
         encoding="utf-8",
     )
     with (path / "records.jsonl").open("w", encoding="utf-8") as f:
         for record in records:
-            f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+            f.write(json.dumps(record, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n")
     return report
-
-
 
