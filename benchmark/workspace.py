@@ -11,11 +11,15 @@ from typing import Iterable
 import numpy as np
 
 from . import BENCHMARK_VERSION, HEADLINE_HORIZON, HEADLINE_MIN_LENGTH
+from .corruption import CORRUPTION_GRID, LANE_OF_SCENARIO, replicates_for
+from .datasets import DATASET_MANIFEST, dataset_manifest_document
 from .materialize import (
     ParsedSeries,
     RawAsset,
     materialize_clean_base,
+    parse_gefcom2012_load_zip,
     parse_metr_la_hdf,
+    parse_metr_la_sensor_locations,
     parse_monash_parquet,
     parse_noaa_global_hourly,
     parse_uci_electricity_zip,
@@ -32,8 +36,9 @@ from .registry import (
     read_registry_jsonl,
     write_registry_jsonl,
 )
-from .sources import SOURCE_SPECS
-from .split import SplitManifest, build_split_manifest
+from .sources import METR_LA_SPATIAL_BLOCKS, SOURCE_SPECS
+from .spatial import block_diagnostics, build_spatial_blocks
+from .split import SplitManifest, build_split_manifest, build_support_a_subsplit
 
 MAX_CLEAN_LENGTH = 1024
 SPLIT_SALT = "benchmark-v0-split-salt-v1"
@@ -67,13 +72,32 @@ def _probe_consumed_traffic(project_root: Path) -> set[str]:
     return {str(value) for value in values}
 
 
+def metr_la_blocking(root: Path):
+    """Build the frozen METR-LA spatial blocking from the pinned coordinate asset."""
+    locations = root / "raw" / "metr_la" / "graph_sensor_locations.csv"
+    if not locations.is_file():
+        return None, None
+    _bound_raw(locations)
+    coordinates = parse_metr_la_sensor_locations(locations)
+    blocking = build_spatial_blocks(coordinates, n_blocks=METR_LA_SPATIAL_BLOCKS)
+    return coordinates, blocking
+
+
 def _automatic_parsed(
     root: Path,
     *,
     min_length: int,
     horizon: int,
     max_length: int,
+    metr_blocking: object | None = None,
 ) -> Iterable[tuple[str, str, ParsedSeries, RawAsset, str]]:
+    """Yield (source_id, dataset_id, parsed, raw_asset, overlap_group).
+
+    The overlap group is the atomic outer-split unit.  It is the series itself for
+    every source whose entities are independent, but for METR-LA it is the *spatial
+    block*: co-located freeway sensors are not independent series and must never
+    straddle Support and Query.
+    """
     monash = root / "raw" / "monash_hf"
     for path in sorted(monash.glob("*/test/0000.parquet")):
         config = path.parent.parent.name
@@ -85,10 +109,15 @@ def _automatic_parsed(
             horizon=horizon,
             max_length=max_length,
         ):
-            yield "monash_hf", f"monash:{config}", row, asset, config
+            yield "monash_hf", f"monash:{config}", row, asset, f"{config}:{row.entity_id}"
 
     metr = root / "raw" / "metr_la" / "metr-la.h5"
     if metr.is_file():
+        if metr_blocking is None:
+            raise RuntimeError(
+                "METR-LA is materialized but its pinned sensor coordinates are missing; "
+                "without them the split cannot block co-located sensors and would leak"
+            )
         asset = _bound_raw(metr)
         for row in parse_metr_la_hdf(
             metr,
@@ -96,7 +125,13 @@ def _automatic_parsed(
             horizon=horizon,
             max_length=max_length,
         ):
-            yield "metr_la", "metr_la", row, asset, "metr_la"
+            block = metr_blocking.get(row.entity_id)
+            if block is None:
+                raise RuntimeError(
+                    f"METR-LA sensor {row.entity_id!r} has no pinned coordinate; "
+                    "refusing to fall back to a per-sensor split"
+                )
+            yield "metr_la", "metr_la", row, asset, f"metr_la:block_{int(block):02d}"
 
     uci = root / "raw" / "uci_electricity_load_diagrams" / "electricityloaddiagrams20112014.zip"
     if uci.is_file():
@@ -107,7 +142,13 @@ def _automatic_parsed(
             horizon=horizon,
             max_length=max_length,
         ):
-            yield "uci_electricity_load_diagrams", "uci_electricity_load_diagrams", row, asset, "uci_eld"
+            yield (
+                "uci_electricity_load_diagrams",
+                "uci_electricity_load_diagrams",
+                row,
+                asset,
+                f"uci_eld:{row.entity_id}",
+            )
 
     noaa_root = root / "raw" / "noaa_global_hourly"
     for path in sorted(noaa_root.glob("[0-9][0-9][0-9][0-9]/*.csv")):
@@ -121,7 +162,31 @@ def _automatic_parsed(
             )
         except ValueError:
             continue
-        yield "noaa_global_hourly", "noaa_global_hourly", row, asset, "noaa_isd"
+        yield "noaa_global_hourly", "noaa_global_hourly", row, asset, f"noaa_isd:{row.entity_id}"
+
+    gefcom_root = root / "incoming" / "gefcom2012"
+    gefcom_archives = sorted(
+        path for path in gefcom_root.glob("*.zip")
+        if not path.name.endswith(".asset.json")
+    )
+    if len(gefcom_archives) > 1:
+        raise RuntimeError("GEFCom2012 incoming directory contains multiple ZIP assets")
+    if gefcom_archives:
+        path = gefcom_archives[0]
+        asset = _bound_raw(path)
+        for row in parse_gefcom2012_load_zip(
+            path,
+            min_length=min_length,
+            horizon=horizon,
+            max_length=max_length,
+        ):
+            yield (
+                "gefcom2012",
+                "gefcom2012_load",
+                row,
+                asset,
+                f"gefcom2012_load:{row.entity_id}",
+            )
 
 
 def _regime(features: dict[str, float | int]) -> str:
@@ -241,14 +306,30 @@ def probe_workspace(
     horizon: int = HEADLINE_HORIZON,
     max_length: int = MAX_CLEAN_LENGTH,
     min_scale_pairs: int = 32,
+    work_root: Path | str | None = None,
 ) -> dict[str, object]:
-    """Materialize immutable clean bases, run the loss-free probe, and write registry."""
+    """Materialize immutable clean bases, run the loss-free probe, and write registry.
+
+    `root` holds the immutable source layer (`raw/`, `incoming/`), which is shared by
+    every benchmark version.  `work_root` holds the *derived* clean base, and defaults to
+    `root`.
+
+    They are separable because `clean_base/record.json` carries protocol decisions -- most
+    importantly `overlap_group`, the atomic split unit -- and a protocol decision can
+    legitimately change between benchmark versions while the underlying bytes do not.  A
+    version that redefines an overlap group (v0.1 makes METR-LA's atomic unit the spatial
+    block rather than the individual sensor) therefore needs its own derived layer; writing
+    it over v0's would either corrupt a sealed artifact or trip the immutability guard.
+    The probe cache stays under `root`, because probe features are a function of the values
+    alone and are version-independent.
+    """
 
     if horizon != HEADLINE_HORIZON and include_legacy:
         raise ValueError("production probe must use the frozen headline horizon")
     data_root, output = Path(root), Path(out)
+    derived_root = Path(work_root) if work_root is not None else data_root
     output.mkdir(parents=True, exist_ok=True)
-    clean_root = data_root / "clean_base"
+    clean_root = derived_root / "clean_base"
     project_root = Path(__file__).resolve().parents[1]
     values_by_uid: dict[str, np.ndarray] = {}
     timestamps_by_uid: dict[str, np.ndarray] = {}
@@ -283,12 +364,14 @@ def probe_workspace(
             values_by_uid[asset.record.series_uid] = values_loaded
             legacy_keys.add((record.dataset_id.split(":", 1)[-1], record.entity_id))
 
+    coordinates, blocking = metr_la_blocking(data_root)
     consumed_traffic = _probe_consumed_traffic(project_root)
-    for source_id, dataset_id, parsed, raw_asset, overlap_label in _automatic_parsed(
+    for source_id, dataset_id, parsed, raw_asset, overlap_group in _automatic_parsed(
         data_root,
         min_length=min_length,
         horizon=horizon,
         max_length=max_length,
+        metr_blocking=blocking,
     ):
         config = dataset_id.split(":", 1)[-1] if dataset_id.startswith("monash:") else ""
         if config and (config, parsed.entity_id) in legacy_keys:
@@ -312,7 +395,7 @@ def probe_workspace(
             overlap_family=spec.overlap_family,
             exposure_class=exposure,
             frequency=parsed.frequency,
-            overlap_group=f"{overlap_label}:{parsed.entity_id}",
+            overlap_group=overlap_group,
             overlap_status="resolved",
             overlap_evidence_sha256=raw_asset.sha256,
         )
@@ -352,6 +435,30 @@ def probe_workspace(
             )
         )
     write_registry_jsonl(output / "series_registry.jsonl", finalized)
+
+    if coordinates is not None and blocking is not None:
+        diagnostics = block_diagnostics(coordinates, blocking)
+        spatial_payload = {
+            "schema_version": "benchmark-spatial-blocks/1",
+            "benchmark_version": BENCHMARK_VERSION,
+            "dataset_id": "metr_la",
+            "source_revision": SOURCE_SPECS["metr_la"].source_revision,
+            "sensor_locations_sha256": _sha256_file(
+                data_root / "raw" / "metr_la" / "graph_sensor_locations.csv"
+            ),
+            "n_blocks": blocking.n_blocks,
+            "site_merge_radius_km": blocking.site_merge_radius_km,
+            "diagnostics": diagnostics,
+            "overlap_group_of_entity": {
+                entity: f"metr_la:block_{int(block):02d}"
+                for entity, block in sorted(blocking.items())
+            },
+        }
+        (output / "metr_la_spatial_blocks.json").write_text(
+            json.dumps(spatial_payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
     counts = Counter("eligible" if not row.admission_reasons else "rejected" for row in finalized)
     summary: dict[str, object] = {
         "schema_version": "benchmark-probe-summary/1",
@@ -377,6 +484,92 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(encoded, encoding="utf-8")
 
 
+def _data_card(
+    records: list[SeriesRecord],
+    eligible: list[SeriesRecord],
+    role_counts: Counter,
+    dataset_counts: Counter,
+    output: Path,
+) -> str:
+    spatial_path = output / "metr_la_spatial_blocks.json"
+    spatial = (
+        json.loads(spatial_path.read_text("utf-8")) if spatial_path.is_file() else None
+    )
+    lines = [
+        f"# Benchmark {BENCHMARK_VERSION} data card",
+        "",
+        f"Registry rows: {len(records)}; eligible: {len(eligible)}.",
+        "",
+        f"Frozen role counts: `{dict(sorted(role_counts.items()))}`.",
+        "",
+        f"Series per dataset: `{dict(sorted(dataset_counts.items()))}`.",
+        "",
+        "## What a number on this benchmark is allowed to claim",
+        "",
+        "Claim tiers and domains are declared per dataset in `dataset_manifest.json`, "
+        "before any method was run. `supplementary` datasets (GEFCom2012, 20 zones) "
+        "join the pooled roster and the per-cell tables, but a result on a "
+        "supplementary dataset alone is not a reportable finding -- its Query sample "
+        "is too small to carry one.",
+        "",
+        "### Traffic: two networks, and only one of them is spatially clean",
+        "",
+        "Traffic series are sensors on a road graph, not independent entities, so a "
+        "within-dataset traffic result can only ever claim *unseen sensor in this "
+        "network* -- never cross-network generalization. Cross-network evidence has to "
+        "come from METR-LA (Los Angeles) and monash:traffic_hourly (San Francisco Bay "
+        "Area) testing each other, because they are genuinely different road graphs.",
+        "",
+    ]
+    if spatial is not None:
+        diagnostics = spatial["diagnostics"]
+        lines += [
+            f"**METR-LA is spatially blocked.** Its {diagnostics['n_sensors']} sensors "
+            f"merge into {diagnostics['n_sites']} co-location sites at a "
+            f"{spatial['site_merge_radius_km']} km radius (largest site: "
+            f"{diagnostics['site_size_max']} sensors -- these are detectors metres apart, "
+            "e.g. opposite directions at one milepost), and those sites are grouped into "
+            f"{spatial['n_blocks']} compact blocks by deterministic median bisection. The "
+            "block, not the sensor, is the atomic split unit, so an entire block always "
+            "travels to the same role. Minimum distance between sensors in *different* "
+            f"blocks: {diagnostics['min_cross_block_distance_km']} km. That is the "
+            "residual: blocking bounds adjacent-sensor leakage, it does not eliminate it.",
+            "",
+            "**monash:traffic_hourly is NOT spatially blocked, and cannot be.** The pinned "
+            "Monash release ships no sensor coordinates, so its 862 Bay Area sensors are "
+            "split per series. Adjacent sensors can therefore land on opposite sides of "
+            "Support/Query and its within-dataset numbers should be read as an optimistic "
+            "bound. METR-LA is the spatially clean traffic read; this one is not.",
+            "",
+        ]
+    lines += [
+        "## Corruption",
+        "",
+        "The grid in `corruption_grid.json` was pre-registered in full before any method "
+        "was run against it. It has a **Natural lane** (`natural`, dose 0: no synthetic "
+        "damage at all, only the missingness the source actually shipped with -- "
+        "deterministic, so one replicate), the three inherited **Controlled v0** "
+        "missingness cells, and five new **Controlled v0.1** cells covering outliers, "
+        "structural break, additive noise, and timestamp disorder. A pipeline that only "
+        "imputes will score identically to Raw on the last four; that is the point.",
+        "",
+        "## Support-A is two pools, not one",
+        "",
+        "`support_a_subsplit.json` partitions Support-A at the overlap-group level into "
+        "`support_a_discovery` (search and fit freely) and `support_a_validation` (the "
+        "development promotion gate). A candidate is never judged on the series used to "
+        "find it. This is a partition of the Support-A *population* and has nothing to do "
+        "with the chronological train/validation/test boundaries inside each series.",
+        "",
+        "## U",
+        "",
+        "NOAA Global Hourly is the sealed weather U pool. Natural NaNs are preserved; "
+        "hourly bins with partial or absent observations remain missing.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
     """Freeze registry membership and protocol artifacts without reading Final utility."""
 
@@ -387,16 +580,52 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
     u_selected = {row.series_uid for row in eligible if row.dataset_id == "noaa_global_hourly"}
     manifest = build_split_manifest(candidates, BENCHMARK_VERSION, SPLIT_SALT, u_selected)
     _write_json(output / "split_manifest.json", manifest.to_dict())
+
+    dataset_counts = Counter(row.dataset_id for row in records)
+    _write_json(
+        output / "dataset_manifest.json",
+        dataset_manifest_document(dict(dataset_counts)),
+    )
+    _write_json(output / "support_a_subsplit.json", build_support_a_subsplit(manifest))
+
+    corruption_document = {
+        "schema_version": "benchmark-corruption-grid/1",
+        "benchmark_version": BENCHMARK_VERSION,
+        "preregistered_before_any_method_ran": True,
+        "cells": [
+            {
+                "scenario": scenario,
+                "dose": dose,
+                "lane": LANE_OF_SCENARIO[scenario],
+                "replicates": list(replicates_for(scenario)),
+            }
+            for scenario, dose in CORRUPTION_GRID
+        ],
+        "seed_rule": (
+            "sha256([benchmark_version, clean_content_sha, scenario, dose, replicate_idx]) "
+            "-- invariant to source order and subset selection; every method consumes the "
+            "identical realization (CRN)"
+        ),
+    }
+    _write_json(output / "corruption_grid.json", corruption_document)
+
     acquisition = data_root / "acquisition_manifest.json"
     acquisition_sha = _sha256_file(acquisition) if acquisition.is_file() else None
     registry_sha = _sha256_file(output / "series_registry.jsonl")
     split_sha = _sha256_file(output / "split_manifest.json")
+    spatial_path = output / "metr_la_spatial_blocks.json"
     benchmark_manifest = {
         "schema_version": "benchmark-manifest/1",
         "benchmark_version": BENCHMARK_VERSION,
         "acquisition_manifest_sha256": acquisition_sha,
         "registry_sha256": registry_sha,
         "split_manifest_sha256": split_sha,
+        "dataset_manifest_sha256": _sha256_file(output / "dataset_manifest.json"),
+        "support_a_subsplit_sha256": _sha256_file(output / "support_a_subsplit.json"),
+        "corruption_grid_sha256": _sha256_file(output / "corruption_grid.json"),
+        "metr_la_spatial_blocks_sha256": (
+            _sha256_file(spatial_path) if spatial_path.is_file() else None
+        ),
         "split_salt": SPLIT_SALT,
         "headline": {"lookback": 48, "horizon": 48, "stride": 4, "min_length": 207},
         "corruption_seeds": [0, 1],
@@ -411,11 +640,7 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
     _write_json(output / "benchmark_manifest_v0.yaml", benchmark_manifest)
     role_counts = Counter(row.role.value for row in manifest.assignments)
     (output / "data_card.md").write_text(
-        "# Benchmark v0 data card\n\n"
-        f"Registry rows: {len(records)}; eligible: {len(eligible)}.\n\n"
-        f"Frozen role counts: `{dict(sorted(role_counts.items()))}`.\n\n"
-        "NOAA Global Hourly is the frozen weather U pool. Natural NaNs are preserved; "
-        "hourly bins with partial or absent observations remain missing.\n",
+        _data_card(records, eligible, role_counts, dataset_counts, output),
         encoding="utf-8",
     )
     (output / "training_evaluation_protocol.md").write_text(

@@ -11,6 +11,7 @@ import pytest
 
 import SelfEvolvingHarnessTS.benchmark.sources as sources_module
 
+from SelfEvolvingHarnessTS.benchmark.materialize import write_raw_once
 from SelfEvolvingHarnessTS.benchmark.registry import (
     Admission,
     SeriesRecord,
@@ -232,7 +233,47 @@ def test_acquisition_status_manifest_is_written_without_network(tmp_path):
     assert all(by_id[source_id].status == "manual_required" for source_id in MANUAL_SOURCE_IDS)
 
 
-def test_metr_acquisition_uses_google_drive_downloader_after_http_failure(tmp_path):
+def test_acquisition_status_reports_hash_bound_manual_asset(tmp_path):
+    spec = SOURCE_SPECS["gefcom2012"]
+    asset = write_raw_once(
+        tmp_path / "incoming" / spec.incoming_subdir / "GEFCom2012.zip",
+        b"official-archive",
+        source_revision=spec.source_revision,
+    )
+
+    results = acquire_all_sources(tmp_path, automatic=False)
+    row = {item.source_id: item for item in results}["gefcom2012"]
+
+    assert row.status == "manual_bound"
+    assert row.asset_sha256 == (asset.sha256,)
+    assert row.asset_paths == (asset.path.as_posix(),)
+
+
+def _preplace_metr_locations(tmp_path, monkeypatch):
+    """Bind a fixture coordinate file so acquisition short-circuits its download.
+
+    METR-LA acquisition now also binds the pinned DCRNN sensor coordinates, because the
+    spatial blocking that keeps co-located sensors out of opposing roles is a pure
+    function of that file.  Already-bound raw assets are never re-fetched, so a
+    pre-placed asset means these tests still touch no network.
+    """
+    body = b"index,sensor_id,latitude,longitude\n0,700000,34.0,-118.0\n"
+    asset = write_raw_once(
+        tmp_path / "raw" / "metr_la" / "graph_sensor_locations.csv",
+        body,
+        source_revision=sources_module.METR_LA_SENSOR_GRAPH_COMMIT,
+    )
+    monkeypatch.setattr(
+        sources_module, "METR_LA_SENSOR_LOCATIONS_SHA256", asset.sha256
+    )
+    return asset
+
+
+def test_metr_acquisition_uses_google_drive_downloader_after_http_failure(
+    tmp_path, monkeypatch
+):
+    _preplace_metr_locations(tmp_path, monkeypatch)
+
     class FailingSession:
         def get(self, *args, **kwargs):
             raise RuntimeError("drive direct endpoint failed")
@@ -249,13 +290,17 @@ def test_metr_acquisition_uses_google_drive_downloader_after_http_failure(tmp_pa
         drive_downloader=fake_drive_download,
     )
     assert result.status == "complete"
-    assert len(result.asset_sha256) == 1
+    # The matrix AND its coordinates: METR-LA is not usable without both.
+    assert len(result.asset_sha256) == 2
 
 
-def test_metr_manual_official_object_is_bound_before_any_network_access(tmp_path):
+def test_metr_manual_official_object_is_bound_before_any_network_access(
+    tmp_path, monkeypatch
+):
     destination = tmp_path / "raw" / "metr_la" / "metr-la.h5"
     destination.parent.mkdir(parents=True)
     destination.write_bytes(b"\x89HDF\r\n\x1a\nmanual")
+    _preplace_metr_locations(tmp_path, monkeypatch)
 
     class NoNetwork:
         def get(self, *args, **kwargs):
@@ -264,6 +309,24 @@ def test_metr_manual_official_object_is_bound_before_any_network_access(tmp_path
     result = sources_module._acquire_metr_la(tmp_path, NoNetwork())
     assert result.status == "complete"
     assert destination.with_name("metr-la.h5.asset.json").is_file()
+
+
+def test_metr_sensor_locations_are_rejected_when_they_drift_from_the_pinned_digest(
+    tmp_path,
+):
+    write_raw_once(
+        tmp_path / "raw" / "metr_la" / "graph_sensor_locations.csv",
+        b"index,sensor_id,latitude,longitude\n0,700000,0.0,0.0\n",
+        source_revision=sources_module.METR_LA_SENSOR_GRAPH_COMMIT,
+    )
+
+    class NoNetwork:
+        def get(self, *args, **kwargs):
+            raise AssertionError("an already-bound asset must not be re-fetched")
+
+    # If the coordinate file moved, every spatial block silently moves with it.
+    with pytest.raises(ValueError, match="differ from the pinned digest"):
+        sources_module._acquire_metr_la_sensor_locations(tmp_path, NoNetwork())
 
 
 def test_registry_keeps_natural_missing_mask_and_round_trips_jsonl(tmp_path):

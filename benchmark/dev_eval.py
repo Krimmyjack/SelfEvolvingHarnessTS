@@ -18,7 +18,12 @@ from .baselines import (
     oracle_transfer,
     select_best_fixed,
 )
-from .corruption import CORRUPTION_GRID, apply_corruption, corruption_seed
+from .corruption import (
+    CORRUPTION_GRID,
+    apply_corruption,
+    corruption_seed,
+    replicates_for,
+)
 from .ingestion import canonical_ingest
 from .metrics import seasonal_scale, smase
 from .registry import SeriesRecord, read_registry_jsonl
@@ -28,6 +33,161 @@ from .trainers import NormalizationState, build_windows, fit_closed_form
 
 FIXED_PROGRAMS = ("raw", "forward_fill", "seasonal_fill")
 PROGRAM_IDS = FIXED_PROGRAMS + ("h_ref",)
+
+
+def fold_to_headline(rows: list[ProgramLoss]) -> dict[str, object]:
+    """Apply the frozen folding ladder to already-per-uid rows.
+
+    Amendment-1 order, resumed from the point where one row per uid already exists:
+
+        cell (dataset x regime): series-equal mean
+        -> regime: dataset macro mean
+        -> overall: equal mean over regimes
+
+    The plain mean over every uid -- which is what a naive `np.mean(losses)` computes --
+    is NOT this number.  It is a series-micro mean, so it silently weights each cell by
+    how many series happen to be in it, letting the largest dataset (862 traffic sensors)
+    dominate the headline over the smallest (20 GEFCom zones).  The micro mean is still
+    reported, labelled, as a descriptive figure.
+    """
+    by_cell: dict[str, list[float]] = defaultdict(list)
+    for row in rows:
+        by_cell[row.cell_id].append(row.loss)
+    cell_means = {cell: float(np.mean(losses)) for cell, losses in sorted(by_cell.items())}
+
+    by_regime: dict[str, list[float]] = defaultdict(list)
+    for cell, mean in cell_means.items():
+        # cell_id is "<dataset_id>|<regime>"; the macro step averages datasets within regime.
+        regime = cell.rsplit("|", 1)[-1]
+        by_regime[regime].append(mean)
+    regime_means = {
+        regime: float(np.mean(values)) for regime, values in sorted(by_regime.items())
+    }
+
+    return {
+        "overall": float(np.mean([regime_means[key] for key in sorted(regime_means)])),
+        "by_regime_dataset_macro": regime_means,
+        "by_cell_series_equal": cell_means,
+        "series_micro_descriptive": float(np.mean([row.loss for row in rows])),
+        "n_uid": len(rows),
+    }
+
+
+def audit_h_ref_behaviour(
+    raw_rows: list[ProgramLoss],
+    h_ref_rows: list[ProgramLoss],
+    *,
+    tolerance: float = 1e-9,
+) -> dict[str, object]:
+    """Ask what H_ref actually DOES, rather than assuming the ladder is doing work.
+
+    A reference pipeline that is a no-op on most series and actively harmful on the rest
+    is not a baseline worth beating -- and a benchmark whose "headroom" is really the
+    oracle undoing that harm is measuring the wrong thing.  So this is reported up front,
+    not derived later by whoever reads the numbers carefully enough.
+    """
+    raw_by_uid = {row.uid: row.loss for row in raw_rows}
+    shared = [row for row in h_ref_rows if row.uid in raw_by_uid]
+    if not shared:
+        raise RuntimeError("H_ref audit needs Raw and H_ref rows over the same uids")
+
+    no_op = 0
+    helped = 0
+    harmed = 0
+    harm_total = 0.0
+    help_total = 0.0
+    for row in shared:
+        raw_loss = raw_by_uid[row.uid]
+        delta = row.loss - raw_loss
+        if abs(delta) <= tolerance * max(1.0, abs(raw_loss)):
+            no_op += 1
+        elif delta > 0:
+            harmed += 1
+            harm_total += delta
+        else:
+            helped += 1
+            help_total += -delta
+
+    n = len(shared)
+    return {
+        "n_uid": n,
+        "indistinguishable_from_raw": no_op,
+        "indistinguishable_from_raw_fraction": no_op / n,
+        "better_than_raw": helped,
+        "worse_than_raw": harmed,
+        "mean_improvement_where_better": (help_total / helped) if helped else 0.0,
+        "mean_damage_where_worse": (harm_total / harmed) if harmed else 0.0,
+        "net_vs_raw_series_micro": float(
+            np.mean([row.loss - raw_by_uid[row.uid] for row in shared])
+        ),
+        "reading": (
+            "indistinguishable_from_raw_fraction near 1.0 means H_ref is mostly a no-op, "
+            "so 'H_ref' and 'Raw' are not two independent baselines. net_vs_raw > 0 means "
+            "the reference ladder is, on net, worse than doing nothing."
+        ),
+    }
+
+
+def dual_headroom(
+    raw_rows: list[ProgramLoss],
+    h_ref_rows: list[ProgramLoss],
+    insample_rows: list[ProgramLoss],
+) -> dict[str, object]:
+    """Report headroom above BOTH floors, and flag where the oracle is only undoing harm.
+
+    Measuring headroom only as `H_ref - oracle` is a trap: if H_ref hurt a cell, the
+    oracle simply picks Raw back and the resulting "gain" is exactly the harm H_ref did.
+    That is not repair space a method could win -- it is H_ref's own damage, refunded.
+    Every such cell is flagged, and the honest number (`gain_over_raw`, the gain above the
+    no-op floor) is reported beside it.
+    """
+    raw_by_cell: dict[str, list[float]] = defaultdict(list)
+    h_ref_by_cell: dict[str, list[float]] = defaultdict(list)
+    oracle_by_cell: dict[str, list[float]] = defaultdict(list)
+    oracle_program_of_cell: dict[str, str] = {}
+
+    for row in raw_rows:
+        raw_by_cell[row.cell_id].append(row.loss)
+    for row in h_ref_rows:
+        h_ref_by_cell[row.cell_id].append(row.loss)
+    for row in insample_rows:
+        oracle_by_cell[row.cell_id].append(row.loss)
+        oracle_program_of_cell[row.cell_id] = row.program_id
+
+    cells: dict[str, dict[str, object]] = {}
+    for cell in sorted(raw_by_cell):
+        raw_mean = float(np.mean(raw_by_cell[cell]))
+        h_ref_mean = float(np.mean(h_ref_by_cell[cell]))
+        oracle_mean = float(np.mean(oracle_by_cell[cell]))
+        selected = oracle_program_of_cell.get(cell, "unknown")
+        cells[cell] = {
+            "oracle_selected_program": selected,
+            "raw_mean": raw_mean,
+            "h_ref_mean": h_ref_mean,
+            "oracle_insample_mean": oracle_mean,
+            "gain_over_raw": raw_mean - oracle_mean,
+            "gain_over_h_ref": h_ref_mean - oracle_mean,
+            "h_ref_self_harm": h_ref_mean - raw_mean,
+            "oracle_reverts_to_raw": selected == "raw",
+        }
+
+    reverting = sorted(cell for cell, row in cells.items() if row["oracle_reverts_to_raw"])
+    return {
+        "definition": {
+            "gain_over_raw": (
+                "pool-best minus the No-op floor. This is the honest headroom: space a "
+                "method could actually win."
+            ),
+            "gain_over_h_ref": (
+                "pool-best minus the current reference ladder. Inflated wherever H_ref "
+                "hurt, because the oracle just picks Raw back."
+            ),
+            "h_ref_self_harm": "positive means H_ref is worse than doing nothing on that cell",
+        },
+        "cells": cells,
+        "cells_where_oracle_reverts_to_raw": reverting,
+        "n_cells_reverting_to_raw": len(reverting),
+    }
 
 
 def aggregate_per_dose(rows: list[dict[str, object]]) -> list[dict[str, object]]:
@@ -188,6 +348,10 @@ def _program_values(
     return prepared_history, prepared_inner
 
 
+def _expected_measurements() -> int:
+    return sum(len(replicates_for(scenario)) for scenario, _ in CORRUPTION_GRID)
+
+
 def _evaluate_role(
     role: SplitRole,
     assignments: list[object],
@@ -200,81 +364,118 @@ def _evaluate_role(
     list[float],
     list[dict[str, object]],
 ]:
-    by_cell: dict[str, list[str]] = defaultdict(list)
+    """Evaluate every program on one role.
+
+    The downstream model is trained ONCE per (program, scenario, dose, replicate) on the
+    whole role's pooled inner-train, with series-equal weighting.  It is emphatically NOT
+    trained per dataset x regime cell: `regime_tag` is a benchmark-private diagnostic
+    label, and slicing the training pool by it would (a) hand the model a private label no
+    method is allowed to see and (b) train a different, smaller model for every cell, so
+    "the shared model" would not be shared at all.  `cell_id` survives only as a reporting
+    key.
+    """
+    cell_of_uid: dict[str, str] = {}
     for assignment in assignments:
         if assignment.role is role:
-            by_cell[f"{assignment.dataset_id}|{assignment.regime_tag}"].append(assignment.series_uid)
-    raw_losses: dict[tuple[str, str, str], list[float]] = defaultdict(list)
+            cell_of_uid[assignment.series_uid] = (
+                f"{assignment.dataset_id}|{assignment.regime_tag}"
+            )
+    uids = sorted(cell_of_uid)
+    if not uids:
+        return [], {}, [], [], []
+
+    # Keyed by (program, cell, uid, scenario, dose) -> one loss per replicate, so the
+    # replicate fold happens BEFORE the scenario x dose fold. A flat mean over all
+    # measurements would silently weight the one-replicate Natural lane at half the
+    # weight of every two-replicate stochastic lane.
+    raw_losses: dict[tuple[str, str, str, str, float], list[float]] = defaultdict(list)
     fill_rates: dict[tuple[str, str], list[float]] = defaultdict(list)
     prepare_times: list[float] = []
     trainer_times: list[float] = []
     repeat_rows: list[dict[str, object]] = []
+
     for scenario, dose in CORRUPTION_GRID:
-        for replicate in (0, 1):
-            for cell_id, uids in sorted(by_cell.items()):
-                histories = {
-                    uid: _corrupt_history(records_by_uid[uid], values_by_uid[uid], scenario, dose, replicate)
-                    for uid in sorted(uids)
-                }
-                inner = {
-                    uid: history[: len(values_by_uid[uid]) - 2 * HEADLINE_HORIZON]
-                    for uid, history in histories.items()
-                }
-                state = default_state()
+        for replicate in replicates_for(scenario):
+            histories = {
+                uid: _corrupt_history(
+                    records_by_uid[uid], values_by_uid[uid], scenario, dose, replicate
+                )
+                for uid in uids
+            }
+            inner = {
+                uid: history[: len(values_by_uid[uid]) - 2 * HEADLINE_HORIZON]
+                for uid, history in histories.items()
+            }
+            state = default_state()
+            started = time.perf_counter()
+            h_ref_choices = run_fast_path(inner, state, state.sampler.expected_total)
+            prepare_times.append(time.perf_counter() - started)
+
+            for program_id in PROGRAM_IDS:
                 started = time.perf_counter()
-                h_ref_choices = run_fast_path(inner, state, state.sampler.expected_total)
+                prepared_history, prepared_inner = _program_values(
+                    program_id, histories, inner, records_by_uid, h_ref_choices
+                )
+                normalization = {uid: NormalizationState.fit(inner[uid]) for uid in inner}
                 prepare_times.append(time.perf_counter() - started)
-                for program_id in PROGRAM_IDS:
-                    started = time.perf_counter()
-                    prepared_history, prepared_inner = _program_values(
-                        program_id, histories, inner, records_by_uid, h_ref_choices
+
+                started = time.perf_counter()
+                batch = build_windows(prepared_inner, normalization)
+                model = fit_closed_form(batch)
+                trainer_times.append(time.perf_counter() - started)
+
+                for uid in uids:
+                    cell_id = cell_of_uid[uid]
+                    context, fill_rate = canonical_evaluation_context(
+                        prepared_history[uid], lookback=48
                     )
-                    normalization = {
-                        uid: NormalizationState.fit(inner[uid]) for uid in inner
-                    }
-                    prepare_times.append(time.perf_counter() - started)
-                    started = time.perf_counter()
-                    batch = build_windows(prepared_inner, normalization)
-                    model = fit_closed_form(batch)
-                    trainer_times.append(time.perf_counter() - started)
-                    for uid in sorted(uids):
-                        context, fill_rate = canonical_evaluation_context(
-                            prepared_history[uid], lookback=48
-                        )
-                        normalized = normalization[uid].normalize(context)
-                        prediction = normalization[uid].denormalize(
-                            model.predict(normalized[None, :])[0]
-                        )
-                        clean = values_by_uid[uid]
-                        train = clean[: len(clean) - 2 * HEADLINE_HORIZON]
-                        scale = seasonal_scale(
-                            train,
-                            np.isfinite(train),
-                            period=_period(records_by_uid[uid]),
-                            min_pairs=32,
-                        )
-                        loss = smase(clean[-HEADLINE_HORIZON:], prediction, scale=scale)
-                        raw_losses[(program_id, cell_id, uid)].append(loss)
-                        fill_rates[(program_id, cell_id)].append(fill_rate)
-                        repeat_rows.append(
-                            {
-                                "split_role": role.value,
-                                "program_id": program_id,
-                                "cell_id": cell_id,
-                                "uid": uid,
-                                "scenario": scenario,
-                                "dose": dose,
-                                "corruption_replicate": replicate,
-                                "loss": loss,
-                            }
-                        )
+                    normalized = normalization[uid].normalize(context)
+                    prediction = normalization[uid].denormalize(
+                        model.predict(normalized[None, :])[0]
+                    )
+                    clean = values_by_uid[uid]
+                    train = clean[: len(clean) - 2 * HEADLINE_HORIZON]
+                    scale = seasonal_scale(
+                        train,
+                        np.isfinite(train),
+                        period=_period(records_by_uid[uid]),
+                        min_pairs=32,
+                    )
+                    loss = smase(clean[-HEADLINE_HORIZON:], prediction, scale=scale)
+                    raw_losses[(program_id, cell_id, uid, scenario, dose)].append(loss)
+                    fill_rates[(program_id, cell_id)].append(fill_rate)
+                    repeat_rows.append(
+                        {
+                            "split_role": role.value,
+                            "program_id": program_id,
+                            "cell_id": cell_id,
+                            "uid": uid,
+                            "scenario": scenario,
+                            "dose": dose,
+                            "corruption_replicate": replicate,
+                            "loss": loss,
+                        }
+                    )
+
+    # Fold 1: average corruption replicates within uid x scenario x dose.
+    folded: dict[tuple[str, str, str], dict[tuple[str, float], float]] = defaultdict(dict)
+    for (program_id, cell_id, uid, scenario, dose), losses in raw_losses.items():
+        if len(losses) != len(replicates_for(scenario)):
+            raise RuntimeError(
+                f"uid {uid} is missing a corruption replicate for {scenario}/{dose}"
+            )
+        folded[(program_id, cell_id, uid)][(scenario, dose)] = float(np.mean(losses))
+
+    # Fold 2: equal-average every frozen scenario x dose value -> exactly one row per uid.
+    grid = set(CORRUPTION_GRID)
     rows: list[ProgramLoss] = []
-    for (program_id, cell_id, uid), losses in sorted(raw_losses.items()):
-        if len(losses) != len(CORRUPTION_GRID) * 2:
-            raise RuntimeError("Dev loss folding lacks a corruption scenario or replicate")
-        rows.append(
-            ProgramLoss(role.value, cell_id, program_id, uid, float(np.mean(losses)))
-        )
+    for (program_id, cell_id, uid), by_cell in sorted(folded.items()):
+        if set(by_cell) != grid:
+            raise RuntimeError(
+                f"uid {uid} is missing a corruption scenario/dose under {program_id}"
+            )
+        mean_loss = float(np.mean([by_cell[key] for key in sorted(by_cell)]))
+        rows.append(ProgramLoss(role.value, cell_id, program_id, uid, mean_loss))
     return rows, fill_rates, prepare_times, trainer_times, repeat_rows
 
 
@@ -306,6 +507,20 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
     transfer_rows, transfer_missing_cells = oracle_transfer_with_coverage(support, dev)
     h_ref_by_uid = {row.uid: row for row in h_ref_rows}
     insample_by_uid = {row.uid: row for row in insample_rows}
+
+    # The sMASE denominator, carried into the report so a cell whose losses look enormous
+    # can be read as "tiny seasonal scale" rather than "catastrophic forecast".
+    scales_by_uid = {
+        uid: float(
+            seasonal_scale(
+                values[uid][: len(values[uid]) - 2 * HEADLINE_HORIZON],
+                np.isfinite(values[uid][: len(values[uid]) - 2 * HEADLINE_HORIZON]),
+                period=_period(records_by_uid[uid]),
+                min_pairs=32,
+            )
+        )
+        for uid in sorted(h_ref_by_uid)
+    }
     discrimination_rows = [
         DevDiscriminationRow(
             split_role="dev_query",
@@ -317,27 +532,47 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
         )
         for uid in sorted(h_ref_by_uid)
     ]
-    report = build_dev_discrimination_report(discrimination_rows)
+    report = build_dev_discrimination_report(
+        discrimination_rows,
+        raw_loss_by_uid={row.uid: row.loss for row in dev if row.program_id == "raw"},
+        seasonal_scale_by_uid=scales_by_uid,
+    )
     fill_disclosure = {
         f"{program}|{cell}": float(np.mean(values))
         for (program, cell), values in sorted(dev_fill.items())
     }
     report["ingestion_fill_rate_by_method_cell"] = fill_disclosure
-    report["baseline_mean_smase"] = {
-        "raw": float(np.mean([row.loss for row in dev if row.program_id == "raw"])),
-        "best_fixed": float(np.mean([row.loss for row in best_rows])),
-        "h_ref": float(np.mean([row.loss for row in h_ref_rows])),
-        "oracle_transfer": (
-            float(np.mean([row.loss for row in transfer_rows])) if transfer_rows else None
-        ),
-        "oracle_insample": float(np.mean([row.loss for row in insample_rows])),
+
+    raw_rows = [row for row in dev if row.program_id == "raw"]
+    report["baseline_smase"] = {
+        "raw": fold_to_headline(raw_rows),
+        "best_fixed": fold_to_headline(best_rows),
+        "h_ref": fold_to_headline(h_ref_rows),
+        "oracle_transfer": fold_to_headline(transfer_rows) if transfer_rows else None,
+        "oracle_insample": fold_to_headline(insample_rows),
     }
+    report["aggregation_note"] = (
+        "'overall' follows the frozen ladder (cell series-equal -> regime dataset-macro "
+        "-> mean over regimes). 'series_micro_descriptive' is the plain per-uid mean and "
+        "is descriptive only -- it lets the biggest dataset dominate."
+    )
     report["best_fixed_program"] = best.program_id
     report["oracle_transfer_missing_support_cells"] = list(transfer_missing_cells)
     report["closed_form_model_seed_semantics"] = "deterministic_not_applicable"
+    report["h_ref_behaviour_audit"] = audit_h_ref_behaviour(raw_rows, h_ref_rows)
+    report["headroom"] = dual_headroom(raw_rows, h_ref_rows, insample_rows)
+    # Numbers only: bind_dev_report_to_manifest validates every value here as a positive
+    # finite float. Provenance lives in its own key.
     report["timeout_calibration_seconds"] = {
         "prepare_p95_x2": 2.0 * float(np.quantile(support_prepare + dev_prepare, 0.95)),
         "trainer_p95_x2": 2.0 * float(np.quantile(support_train + dev_train, 0.95)),
+    }
+    report["timeout_calibration_provenance"] = {
+        "measured_on": (
+            "the corrected per-config pooled training path; the pre-fix per-cell numbers "
+            "were measured on much smaller training pools and do not transfer"
+        ),
+        "trainer_scope": "closed_form_only -- Adam and LSTM must be calibrated separately",
     }
     report_bytes = (
         json.dumps(report, sort_keys=True, ensure_ascii=True, indent=2) + "\n"
@@ -365,15 +600,67 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
         + "\n",
         encoding="utf-8",
     )
-    means = report["baseline_mean_smase"]
     (output / "baseline_report.md").write_text(
-        "# Benchmark v0 Dev-Query baseline report\n\n"
-        "Final-Query was not read. All values below are repeatable Dev-Query sMASE.\n\n"
-        + "\n".join(f"- {name}: {value:.6f}" for name, value in means.items())
-        + f"\n\nBest-fixed program selected on Support-A: `{best.program_id}`.\n",
+        _baseline_report_markdown(report, best.program_id),
         encoding="utf-8",
     )
     return report
+
+
+def _baseline_report_markdown(report: dict[str, object], best_program: str) -> str:
+    baselines = report["baseline_smase"]
+    audit = report["h_ref_behaviour_audit"]
+    headroom = report["headroom"]
+
+    lines = [
+        f"# Benchmark {BENCHMARK_VERSION} Dev-Query baseline report",
+        "",
+        "Final-Query was not read. Every value below is repeatable Dev-Query sMASE.",
+        "",
+        "## Baselines (frozen folding ladder)",
+        "",
+        "| baseline | overall (macro) | series-micro (descriptive) |",
+        "| --- | --- | --- |",
+    ]
+    for name in ("raw", "best_fixed", "h_ref", "oracle_transfer", "oracle_insample"):
+        fold = baselines.get(name)
+        if fold is None:
+            lines.append(f"| {name} | n/a | n/a |")
+            continue
+        lines.append(
+            f"| {name} | {fold['overall']:.6f} | {fold['series_micro_descriptive']:.6f} |"
+        )
+    lines += [
+        "",
+        f"Best-fixed program selected on Support-A: `{best_program}`.",
+        "",
+        "## What H_ref actually does",
+        "",
+        f"- Indistinguishable from Raw on {audit['indistinguishable_from_raw']}"
+        f"/{audit['n_uid']} Dev series "
+        f"({audit['indistinguishable_from_raw_fraction']:.1%}).",
+        f"- Better than Raw on {audit['better_than_raw']}; worse on {audit['worse_than_raw']}.",
+        f"- Net vs Raw (series-micro): {audit['net_vs_raw_series_micro']:+.6f} "
+        "(positive = worse than doing nothing).",
+        "",
+        "## Headroom, measured from both floors",
+        "",
+        f"The oracle reverts to Raw in {headroom['n_cells_reverting_to_raw']} cell(s): "
+        f"`{headroom['cells_where_oracle_reverts_to_raw']}`. In those cells the apparent "
+        "gain over H_ref is H_ref's own damage refunded, not repair space.",
+        "",
+        "| cell | oracle pick | gain over Raw | gain over H_ref | H_ref self-harm |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for cell, row in headroom["cells"].items():
+        flag = " *(reverts)*" if row["oracle_reverts_to_raw"] else ""
+        lines.append(
+            f"| `{cell}` | {row['oracle_selected_program']}{flag} "
+            f"| {row['gain_over_raw']:+.4f} | {row['gain_over_h_ref']:+.4f} "
+            f"| {row['h_ref_self_harm']:+.4f} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
 
 
 __all__ = [
@@ -381,8 +668,11 @@ __all__ = [
     "PROGRAM_IDS",
     "aggregate_per_dose",
     "apply_fixed_program",
+    "audit_h_ref_behaviour",
     "bind_dev_report_to_manifest",
     "canonical_evaluation_context",
+    "dual_headroom",
+    "fold_to_headline",
     "oracle_transfer_with_coverage",
     "run_dev_evaluation",
 ]

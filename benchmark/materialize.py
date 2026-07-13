@@ -21,8 +21,10 @@ __all__ = [
     "RawAsset",
     "RawMutationError",
     "materialize_clean_base",
+    "parse_gefcom2012_load_zip",
     "parse_noaa_global_hourly",
     "parse_metr_la_hdf",
+    "parse_metr_la_sensor_locations",
     "parse_monash_parquet",
     "parse_uci_electricity_zip",
     "promote_download",
@@ -155,6 +157,100 @@ def parse_uci_electricity_zip(
     return tuple(rows)
 
 
+def parse_gefcom2012_load_zip(
+    path: Path | str,
+    *,
+    min_length: int,
+    horizon: int,
+    max_length: int,
+) -> tuple[ParsedSeries, ...]:
+    """Parse the official GEFCom2012 load track into one hourly series per zone.
+
+    The competition history deliberately blanks evaluation blocks.  Those cells
+    are restored only from the official ``Load_solution.csv`` ground truth; any
+    other missing observations remain natural NaNs.  The source does not encode
+    a timezone, so its documented calendar/hour convention is frozen as UTC,
+    with h1=01:00 and h24=00:00 on the following day.
+    """
+
+    hour_columns = [f"h{hour}" for hour in range(1, 25)]
+    key_columns = ["zone_id", "year", "month", "day"]
+    with zipfile.ZipFile(path) as archive:
+        history_names = [
+            name for name in archive.namelist()
+            if name.replace("\\", "/").endswith("/Load/Load_history.csv")
+        ]
+        solution_names = [
+            name for name in archive.namelist()
+            if name.replace("\\", "/").endswith("/Load/Load_solution.csv")
+        ]
+        if len(history_names) != 1 or len(solution_names) != 1:
+            raise ValueError(
+                "GEFCom2012 archive must contain one Load_history.csv and one Load_solution.csv"
+            )
+        history = pd.read_csv(archive.open(history_names[0]), thousands=",")
+        solution = pd.read_csv(archive.open(solution_names[0]), thousands=",")
+
+    required = set(key_columns + hour_columns)
+    if not required <= set(history.columns) or not required <= set(solution.columns):
+        raise ValueError("GEFCom2012 load tables lack required zone/date/hour columns")
+    history = history[key_columns + hour_columns].copy()
+    solution = solution[key_columns + hour_columns].copy()
+    for column in key_columns:
+        history[column] = pd.to_numeric(history[column], errors="raise").astype(int)
+        solution[column] = pd.to_numeric(solution[column], errors="raise").astype(int)
+    if history.duplicated(key_columns).any() or solution.duplicated(key_columns).any():
+        raise ValueError("GEFCom2012 load tables contain duplicate zone/day keys")
+
+    history_index = pd.MultiIndex.from_frame(history[key_columns])
+    solution_indexed = solution.set_index(key_columns)
+    for column in hour_columns:
+        values = pd.to_numeric(history[column], errors="coerce")
+        truth = pd.to_numeric(solution_indexed[column], errors="coerce").reindex(
+            history_index
+        )
+        truth.index = history.index
+        history[column] = values.where(values.notna(), truth)
+
+    rows: list[ParsedSeries] = []
+    for zone_id, zone in history.groupby("zone_id", sort=True):
+        zone = zone.sort_values(["year", "month", "day"])
+        days = pd.to_datetime(
+            zone[["year", "month", "day"]], errors="raise", utc=True
+        )
+        timestamps = pd.DatetimeIndex(days.repeat(24)) + pd.to_timedelta(
+            np.tile(np.arange(1, 25), len(zone)), unit="h"
+        )
+        values = zone[hour_columns].to_numpy(dtype=np.float64).reshape(-1)
+        series = pd.Series(values, index=timestamps).sort_index()
+        if series.index.has_duplicates:
+            raise ValueError("GEFCom2012 zone expands to duplicate hourly timestamps")
+        complete_index = pd.date_range(
+            series.index.min(), series.index.max(), freq="1h", tz="UTC"
+        )
+        series = series.reindex(complete_index)
+        try:
+            selected, selected_times = select_benchmark_span(
+                series.to_numpy(dtype=np.float64),
+                series.index.to_numpy(dtype="datetime64[ns]"),
+                horizon=horizon,
+                min_length=min_length,
+                max_length=max_length,
+            )
+        except ValueError:
+            continue
+        rows.append(
+            ParsedSeries(
+                entity_id=f"zone_{int(zone_id)}",
+                values=selected,
+                timestamps=selected_times,
+                natural_missing_mask=np.isnan(selected),
+                frequency="hourly",
+            )
+        )
+    return tuple(rows)
+
+
 def parse_noaa_global_hourly(
     path: Path | str,
     *,
@@ -261,6 +357,29 @@ def parse_monash_parquet(
             )
         )
     return tuple(rows)
+
+
+def parse_metr_la_sensor_locations(path: Path | str) -> dict[str, tuple[float, float]]:
+    """Read the pinned DCRNN sensor coordinate table as entity_id -> (lat, lon)."""
+
+    frame = pd.read_csv(path, dtype={"sensor_id": str})
+    required = {"sensor_id", "latitude", "longitude"}
+    if not required <= set(frame.columns):
+        raise ValueError("METR-LA sensor locations lack sensor_id/latitude/longitude")
+    coordinates: dict[str, tuple[float, float]] = {}
+    for row in frame.itertuples():
+        entity = str(row.sensor_id).strip()
+        latitude, longitude = float(row.latitude), float(row.longitude)
+        if not entity:
+            raise ValueError("METR-LA sensor locations contain a blank sensor_id")
+        if entity in coordinates:
+            raise ValueError(f"METR-LA sensor locations repeat sensor {entity!r}")
+        if not np.isfinite([latitude, longitude]).all():
+            raise ValueError(f"METR-LA sensor {entity!r} has a non-finite coordinate")
+        coordinates[entity] = (latitude, longitude)
+    if not coordinates:
+        raise ValueError("METR-LA sensor locations are empty")
+    return coordinates
 
 
 def parse_metr_la_hdf(

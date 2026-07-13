@@ -15,6 +15,11 @@ import pandas as pd
 __all__ = [
     "SOURCE_SPECS",
     "AUTOMATIC_SOURCE_IDS",
+    "METR_LA_SENSOR_GRAPH_COMMIT",
+    "METR_LA_SENSOR_LOCATIONS_SHA256",
+    "METR_LA_SENSOR_LOCATIONS_URL",
+    "METR_LA_SPATIAL_BLOCKS",
+    "NOAA_STATION_COUNT",
     "AcquisitionPlanRow",
     "AcquisitionResult",
     "MANUAL_SOURCE_IDS",
@@ -34,6 +39,32 @@ RevisionKind = Literal[
 _REVISION_KINDS = frozenset(
     {"git_commit", "object_id", "catalog_snapshot", "manual_export"}
 )
+
+# METR-LA ships its sensor coordinates in the DCRNN repository, not in the HDF5
+# matrix.  They are pinned to an immutable commit (not `master`) because the spatial
+# blocking that keeps co-located sensors out of opposing split roles is a pure
+# function of this file: if the file moved, the split would silently move with it.
+METR_LA_SENSOR_GRAPH_COMMIT = "82922c830800ca7aeaf53acc412a6d2cf7e56055"
+METR_LA_SENSOR_LOCATIONS_SHA256 = (
+    "eb8ea96e07358b45d0e4ba3b89c2673fa20c54af50150249e627389e749ade6f"
+)
+METR_LA_SENSOR_LOCATIONS_URL = (
+    "https://raw.githubusercontent.com/liyaguang/DCRNN/"
+    f"{METR_LA_SENSOR_GRAPH_COMMIT}/data/sensor_graph/graph_sensor_locations.csv"
+)
+
+# Blocking parameter, frozen with the benchmark: the smallest block count for which
+# every outer role still receives at least 20 METR-LA series.  Fewer blocks (12, 16)
+# starve Dev-Query; more blocks buy nothing and shrink each block's footprint.
+METR_LA_SPATIAL_BLOCKS = 20
+
+# The weather U pool.  select_noaa_stations() orders the eligible universe by a hash
+# that does not depend on `count`, so raising the count is append-only: the original
+# 12 stations stay exactly where they were and 52 new ones are added behind them.
+# The literal "benchmark-v0" salt inside select_noaa_stations is deliberately NOT
+# bumped to v0.1 -- bumping it would reshuffle the order and un-select assets that are
+# already downloaded and hash-bound.
+NOAA_STATION_COUNT = 64
 
 
 def _canonical_string(value: object, name: str) -> str:
@@ -432,6 +463,24 @@ def _acquire_uci(root: Path, session: object) -> AcquisitionResult:
     return _asset_result(spec.source_id, "complete", [asset], "official UCI dataset-321 ZIP")
 
 
+def _acquire_metr_la_sensor_locations(root: Path, session: object) -> object:
+    """Bind the pinned DCRNN sensor coordinate file that spatial blocking depends on."""
+    spec = SOURCE_SPECS["metr_la"]
+    asset = _download_http(
+        session,
+        METR_LA_SENSOR_LOCATIONS_URL,
+        root / "raw" / spec.source_id / "graph_sensor_locations.csv",
+        source_revision=METR_LA_SENSOR_GRAPH_COMMIT,
+    )
+    actual = str(getattr(asset, "sha256"))
+    if actual != METR_LA_SENSOR_LOCATIONS_SHA256:
+        raise ValueError(
+            "METR-LA sensor locations differ from the pinned digest "
+            f"(expected {METR_LA_SENSOR_LOCATIONS_SHA256}, got {actual})"
+        )
+    return asset
+
+
 def _acquire_metr_la(
     root: Path,
     session: object,
@@ -455,11 +504,13 @@ def _acquire_metr_la(
             destination,
             source_revision=spec.source_revision,
         )
+        locations = _acquire_metr_la_sensor_locations(root, session)
         return _asset_result(
             spec.source_id,
             "complete",
-            [asset],
-            "manually placed DCRNN author Drive object bound immutably",
+            [asset, locations],
+            "manually placed DCRNN author Drive object bound immutably; "
+            "sensor coordinates pinned to the DCRNN commit",
         )
     try:
         asset = _download_http(
@@ -486,7 +537,13 @@ def _acquire_metr_la(
             destination,
             source_revision=spec.source_revision,
         )
-    return _asset_result(spec.source_id, "complete", [asset], "DCRNN author Drive object")
+    locations = _acquire_metr_la_sensor_locations(root, session)
+    return _asset_result(
+        spec.source_id,
+        "complete",
+        [asset, locations],
+        "DCRNN author Drive object; sensor coordinates pinned to the DCRNN commit",
+    )
 
 
 def _acquire_noaa(
@@ -541,7 +598,7 @@ def acquire_all_sources(
     *,
     automatic: bool = True,
     noaa_year: int = 2024,
-    noaa_station_count: int = 12,
+    noaa_station_count: int = NOAA_STATION_COUNT,
     http_session: object | None = None,
 ) -> tuple[AcquisitionResult, ...]:
     """Acquire every approved automatic source and account for every manual source."""
@@ -591,6 +648,43 @@ def acquire_all_sources(
         )
     for row in plan:
         if row.access == "manual":
+            spec = SOURCE_SPECS[row.source_id]
+            assert spec.incoming_subdir is not None
+            incoming = base / "incoming" / spec.incoming_subdir
+            files = sorted(
+                path for path in incoming.rglob("*")
+                if path.is_file() and not path.name.endswith(".asset.json")
+            ) if incoming.is_dir() else []
+            bound_assets: list[object] = []
+            if files:
+                from .materialize import RawAsset, verify_raw_asset
+
+                for path in files:
+                    sidecar = path.with_name(path.name + ".asset.json")
+                    if not sidecar.is_file():
+                        bound_assets = []
+                        break
+                    payload = json.loads(sidecar.read_text("utf-8"))
+                    bound_assets.append(
+                        verify_raw_asset(
+                            RawAsset(
+                                path,
+                                str(payload["sha256"]),
+                                str(payload["source_revision"]),
+                                int(payload["size"]),
+                            )
+                        )
+                    )
+            if bound_assets and len(bound_assets) == len(files):
+                results.append(
+                    _asset_result(
+                        row.source_id,
+                        "manual_bound",
+                        bound_assets,
+                        "manual source files are immutably hash-bound",
+                    )
+                )
+                continue
             results.append(
                 AcquisitionResult(
                     row.source_id,

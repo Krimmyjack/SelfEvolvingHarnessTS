@@ -2,14 +2,71 @@ from __future__ import annotations
 
 import numpy as np
 
+import pytest
+
 from SelfEvolvingHarnessTS.benchmark.dev_eval import (
     aggregate_per_dose,
     apply_fixed_program,
+    audit_h_ref_behaviour,
     bind_dev_report_to_manifest,
     canonical_evaluation_context,
+    dual_headroom,
+    fold_to_headline,
     oracle_transfer_with_coverage,
 )
 from SelfEvolvingHarnessTS.benchmark.baselines import ProgramLoss
+
+
+def test_headline_fold_is_cell_equal_not_series_micro():
+    # A big cell (10 series, loss 1.0) and a small one (1 series, loss 11.0). The micro
+    # mean is dragged to ~1.9 by sheer count; the frozen ladder weights the cells equally.
+    rows = [
+        ProgramLoss("dev_query", "big|regime", "raw", f"b{i}", 1.0) for i in range(10)
+    ] + [ProgramLoss("dev_query", "small|regime", "raw", "s0", 11.0)]
+
+    fold = fold_to_headline(rows)
+    assert fold["by_cell_series_equal"] == {"big|regime": 1.0, "small|regime": 11.0}
+    # One regime, two datasets -> dataset macro mean = 6.0.
+    assert fold["by_regime_dataset_macro"]["regime"] == pytest.approx(6.0)
+    assert fold["overall"] == pytest.approx(6.0)
+    assert fold["series_micro_descriptive"] == pytest.approx(21.0 / 11.0)
+    assert fold["overall"] != fold["series_micro_descriptive"]
+
+
+def test_h_ref_audit_separates_no_op_from_help_and_harm():
+    raw = [
+        ProgramLoss("dev_query", "c|r", "raw", "same", 1.0),
+        ProgramLoss("dev_query", "c|r", "raw", "better", 2.0),
+        ProgramLoss("dev_query", "c|r", "raw", "worse", 1.0),
+    ]
+    h_ref = [
+        ProgramLoss("dev_query", "c|r", "h_ref", "same", 1.0),
+        ProgramLoss("dev_query", "c|r", "h_ref", "better", 1.5),
+        ProgramLoss("dev_query", "c|r", "h_ref", "worse", 3.0),
+    ]
+    audit = audit_h_ref_behaviour(raw, h_ref)
+    assert audit["indistinguishable_from_raw"] == 1
+    assert audit["better_than_raw"] == 1
+    assert audit["worse_than_raw"] == 1
+    assert audit["mean_damage_where_worse"] == pytest.approx(2.0)
+    # Net is positive: on this cell the reference ladder is worse than doing nothing.
+    assert audit["net_vs_raw_series_micro"] > 0
+
+
+def test_headroom_flags_the_cell_where_the_oracle_only_undoes_h_ref_harm():
+    # H_ref hurt this cell (2.0 vs Raw 1.0). The oracle picks Raw back, so its "gain over
+    # H_ref" is exactly H_ref's damage refunded -- and the true gain over Raw is zero.
+    raw = [ProgramLoss("dev_query", "hurt|r", "raw", "u", 1.0)]
+    h_ref = [ProgramLoss("dev_query", "hurt|r", "h_ref", "u", 2.0)]
+    insample = [ProgramLoss("dev_query", "hurt|r", "raw", "u", 1.0)]
+
+    headroom = dual_headroom(raw, h_ref, insample)
+    cell = headroom["cells"]["hurt|r"]
+    assert cell["oracle_reverts_to_raw"] is True
+    assert cell["gain_over_h_ref"] == pytest.approx(1.0)
+    assert cell["gain_over_raw"] == pytest.approx(0.0)
+    assert cell["h_ref_self_harm"] == pytest.approx(1.0)
+    assert headroom["cells_where_oracle_reverts_to_raw"] == ["hurt|r"]
 
 
 def test_fixed_programs_preserve_length_and_raw_is_noop():
@@ -53,6 +110,23 @@ def test_transfer_oracle_discloses_query_cells_missing_from_support():
     selected, missing = oracle_transfer_with_coverage(support, query)
     assert [row.uid for row in selected] == ["q1"]
     assert missing == ("b",)
+
+
+def test_timeout_binding_rejects_non_numeric_annotations(tmp_path):
+    path = tmp_path / "benchmark_manifest_v0.yaml"
+    path.write_text('{"final_query_state":"sealed"}\n', encoding="utf-8")
+    # Timeouts are an enforcement threshold, so the binder takes numbers and nothing else.
+    # Prose about how they were measured belongs in its own report key.
+    with pytest.raises(ValueError, match="positive prepare/trainer"):
+        bind_dev_report_to_manifest(
+            path,
+            b'{"split_role":"dev_query"}\n',
+            {
+                "prepare_p95_x2": 1.0,
+                "trainer_p95_x2": 2.0,
+                "trainer_scope": "closed_form_only",
+            },
+        )
 
 
 def test_dev_report_hash_and_numeric_timeouts_are_bound_to_sealed_manifest(tmp_path):

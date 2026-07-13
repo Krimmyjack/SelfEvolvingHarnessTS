@@ -1,7 +1,19 @@
-# Benchmark v0 bulk materializations are local, immutable data assets.
+# Benchmark bulk materializations are local, immutable data assets, reproducible from
+# the pinned sources in acquisition_manifest.json. clean_base is derived per benchmark
+# version (see workspace.probe_workspace: overlap_group is a protocol decision, so a
+# version that redefines it needs its own derived layer).
 data/benchmark_v0/raw/
 data/benchmark_v0/clean_base/
 data/benchmark_v0/probe_cache/
+data/benchmark_v0_1/clean_base/
+
+# Account-gated manual sources (GEFCom, ENTSO-E) are user-supplied archives, not repo
+# content. Their identity lives in acquisition_manifest.json as a SHA256, which is what
+# reproducibility actually needs. The incoming/README.md stays tracked.
+data/benchmark_v0/incoming/**/*.zip
+data/benchmark_v0/incoming/**/*.zip.asset.json
+data/benchmark_v0/incoming/**/*.csv
+data/benchmark_v0/incoming/**/*.csv.asset.json
 
 # Python runtime noise.
 __pycache__/

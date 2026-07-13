@@ -22,19 +22,36 @@ from . import (
     HEADLINE_HORIZON,
     HEADLINE_LOOKBACK,
     HEADLINE_MIN_LENGTH,
+    KNOWN_BENCHMARK_VERSIONS,
 )
 
 __all__ = [
+    "SUPPORT_A_DISCOVERY_FRACTION",
+    "SUPPORT_A_SUBSPLIT_SALT",
     "SplitAssignment",
     "SplitCandidate",
     "SplitManifest",
     "SplitManifestError",
     "SplitRole",
     "build_split_manifest",
+    "build_support_a_subsplit",
     "group_hash_value",
     "role_from_unit_interval",
+    "support_a_partition",
     "validate_split_manifest",
 ]
+
+# Support-A is one role but two jobs, and conflating them is how a development loop
+# quietly overfits: you search for a program on the same series you then use to decide
+# whether the program earned promotion.  The partition below is at the OVERLAP-GROUP
+# level (not the series level), so a group's members never land on both sides.
+#
+# This is an entirely different axis from the chronological train/validation/test
+# boundaries inside each series -- those slice one series in time; this slices the
+# Support-A population.  The names are kept deliberately unalike so a reader can never
+# mistake one for the other.
+SUPPORT_A_SUBSPLIT_SALT = "benchmark-support-a-subsplit-v1"
+SUPPORT_A_DISCOVERY_FRACTION = 0.70
 
 
 class SplitManifestError(ValueError):
@@ -570,7 +587,8 @@ def build_split_manifest(
     _require_canonical_string(benchmark_version, "benchmark version")
     if benchmark_version != BENCHMARK_VERSION:
         raise SplitManifestError(
-            f"benchmark version must be exactly {BENCHMARK_VERSION!r}"
+            "benchmark version must be exactly the current builder version "
+            f"{BENCHMARK_VERSION!r}; older known versions are readable but not buildable"
         )
     _require_canonical_string(split_salt, "split salt")
 
@@ -663,6 +681,82 @@ def build_split_manifest(
     return manifest
 
 
+def support_a_partition(
+    version: str, group_key: str, *, discovery_fraction: float = SUPPORT_A_DISCOVERY_FRACTION
+) -> str:
+    """Deterministically place one Support-A overlap group in discovery or validation."""
+
+    for value, name in ((version, "benchmark version"), (group_key, "group key")):
+        _require_canonical_string(value, name)
+    if not 0.0 < discovery_fraction < 1.0:
+        raise SplitManifestError("discovery fraction must lie strictly inside (0,1)")
+    raw = hashlib.sha256(
+        f"{version}|support_a_subsplit|{SUPPORT_A_SUBSPLIT_SALT}|{group_key}".encode("utf-8")
+    ).digest()
+    value = int.from_bytes(raw[:8], "big") / float(1 << 64)
+    return "support_a_discovery" if value < discovery_fraction else "support_a_validation"
+
+
+def build_support_a_subsplit(
+    manifest: SplitManifest,
+    *,
+    discovery_fraction: float = SUPPORT_A_DISCOVERY_FRACTION,
+) -> dict[str, object]:
+    """Partition Support-A into a search half and a promotion-gate half.
+
+    Development promotion decisions must be made on Support-A series that were not used
+    to search for the candidate in the first place.  Support-B is one-shot confirmation
+    after code freeze and cannot serve as a development gate; Dev-Query is the arena's
+    query side.  This partition is what a development loop is allowed to iterate on.
+    """
+    if not isinstance(manifest, SplitManifest):
+        raise SplitManifestError("manifest must be a SplitManifest")
+
+    partition_of_group: dict[str, str] = {}
+    members: dict[str, list[str]] = {
+        "support_a_discovery": [],
+        "support_a_validation": [],
+    }
+    for row in manifest.assignments:
+        if row.role is not SplitRole.SUPPORT_A:
+            continue
+        group_key = row.group_key
+        if group_key not in partition_of_group:
+            partition_of_group[group_key] = support_a_partition(
+                manifest.benchmark_version,
+                group_key,
+                discovery_fraction=discovery_fraction,
+            )
+        members[partition_of_group[group_key]].append(row.series_uid)
+
+    if not partition_of_group:
+        raise SplitManifestError("split manifest has no Support-A groups to partition")
+    for name, uids in members.items():
+        if not uids:
+            raise SplitManifestError(f"Support-A partition {name!r} came out empty")
+
+    return {
+        "schema_version": "benchmark-support-a-subsplit/1",
+        "benchmark_version": manifest.benchmark_version,
+        "subsplit_salt": SUPPORT_A_SUBSPLIT_SALT,
+        "discovery_fraction": float(discovery_fraction),
+        "unit": "overlap_group",
+        "distinct_from": (
+            "the chronological train/validation/test boundaries inside each series; "
+            "this partitions the Support-A population, not any series' timeline"
+        ),
+        "usage": {
+            "support_a_discovery": "search, propose, fit; iterate freely",
+            "support_a_validation": (
+                "development promotion gate; never used to select the candidate it judges"
+            ),
+        },
+        "n_groups": len(partition_of_group),
+        "counts": {name: len(uids) for name, uids in sorted(members.items())},
+        "members": {name: sorted(uids) for name, uids in sorted(members.items())},
+    }
+
+
 def validate_split_manifest(manifest: SplitManifest) -> None:
     """Reject tampering or any placement inconsistent with frozen rules."""
 
@@ -671,9 +765,11 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
     if manifest.schema_version != _SCHEMA_VERSION:
         raise SplitManifestError(f"unsupported schema version {manifest.schema_version!r}")
     _require_canonical_string(manifest.benchmark_version, "benchmark version")
-    if manifest.benchmark_version != BENCHMARK_VERSION:
+    # Readers accept any known version so the sealed, never-opened benchmark-v0 Final
+    # split stays auditable after v0.1 supersedes it. Builders still emit only current.
+    if manifest.benchmark_version not in KNOWN_BENCHMARK_VERSIONS:
         raise SplitManifestError(
-            f"benchmark version must be exactly {BENCHMARK_VERSION!r}"
+            f"benchmark version must be one of {KNOWN_BENCHMARK_VERSIONS!r}"
         )
     _require_canonical_string(manifest.split_salt, "split salt")
     if not isinstance(manifest.inner_split, Mapping):

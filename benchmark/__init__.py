@@ -1,7 +1,20 @@
-"""Public, frozen constants for the forecast benchmark-v0 protocol."""
+"""Public, frozen constants for the forecast benchmark protocol.
+
+`benchmark-v0.1` supersedes `benchmark-v0`.  It is a genuinely different arena --
+larger roster (METR-LA, GEFCom2012, an expanded NOAA weather pool), spatial
+blocking for METR-LA, and a wider corruption grid -- so it carries its own version
+string.  The version is an input to both the outer-split group hash and the
+corruption seed, which means v0.1 draws its own role assignment and its own
+corruption realizations; nothing silently inherits v0's.
+
+`benchmark-v0` artifacts stay readable so the sealed, never-opened v0 Final-Query
+remains auditable.  Validators accept any KNOWN_BENCHMARK_VERSIONS entry; builders
+only ever emit BENCHMARK_VERSION.
+"""
 from __future__ import annotations
 
-BENCHMARK_VERSION = "benchmark-v0"
+BENCHMARK_VERSION = "benchmark-v0.1"
+KNOWN_BENCHMARK_VERSIONS = ("benchmark-v0", "benchmark-v0.1")
 
 HEADLINE_LOOKBACK = 48
 HEADLINE_HORIZON = 48
@@ -35,6 +48,7 @@ __all__ = [
     "HEADLINE_HORIZON",
     "HEADLINE_LOOKBACK",
     "HEADLINE_MIN_LENGTH",
+    "KNOWN_BENCHMARK_VERSIONS",
     "MODEL_SEEDS",
     "SATURATION_GAP",
     "SATURATION_GAP_KIND",

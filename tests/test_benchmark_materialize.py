@@ -13,6 +13,7 @@ from SelfEvolvingHarnessTS.benchmark.materialize import (
     ParsedSeries,
     RawMutationError,
     materialize_clean_base,
+    parse_gefcom2012_load_zip,
     parse_metr_la_hdf,
     parse_monash_parquet,
     parse_noaa_global_hourly,
@@ -221,6 +222,42 @@ def test_metr_hdf_parser_resamples_each_sensor_without_pooling(tmp_path):
     assert [row.entity_id for row in rows] == ["sensor-a", "sensor-b"]
     assert rows[0].frequency == "hourly"
     assert rows[0].values.tolist() == [pytest.approx(5.5)]
+
+
+def test_gefcom2012_parser_uses_official_solution_and_keeps_zones_separate(tmp_path):
+    archive = tmp_path / "GEFCom2012.zip"
+    hours = [f"h{hour}" for hour in range(1, 25)]
+    history_rows = []
+    solution_rows = []
+    for zone in (1, 2):
+        values = {name: zone * 100 + hour for hour, name in enumerate(hours, 1)}
+        values["h23"] = None
+        history_rows.append(dict(zone_id=zone, year=2004, month=1, day=1, **values))
+        solution_rows.append(
+            dict(id=zone, zone_id=zone, year=2004, month=1, day=1,
+                 **{name: zone * 1000 + hour for hour, name in enumerate(hours, 1)},
+                 weight=1)
+        )
+    with zipfile.ZipFile(archive, "w") as handle:
+        handle.writestr(
+            "GEFCOM2012_Data/Load/Load_history.csv",
+            pd.DataFrame(history_rows).to_csv(index=False),
+        )
+        handle.writestr(
+            "GEFCOM2012_Data/Load/Load_solution.csv",
+            pd.DataFrame(solution_rows).to_csv(index=False),
+        )
+
+    rows = parse_gefcom2012_load_zip(
+        archive, min_length=24, horizon=2, max_length=24
+    )
+
+    assert [row.entity_id for row in rows] == ["zone_1", "zone_2"]
+    assert all(row.frequency == "hourly" for row in rows)
+    assert rows[0].values[22] == 1023
+    assert not rows[0].natural_missing_mask.any()
+    assert rows[0].timestamps[0] == np.datetime64("2004-01-01T01:00:00")
+    assert rows[0].timestamps[-1] == np.datetime64("2004-01-02T00:00:00")
 
 
 def test_source_timezone_localization_freezes_dst_ambiguity_to_standard_time():

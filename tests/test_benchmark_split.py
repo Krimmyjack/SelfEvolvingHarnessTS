@@ -1,4 +1,4 @@
-"""Contract tests for the benchmark-v0 outer split manifest."""
+"""Contract tests for the benchmark outer split manifest."""
 from __future__ import annotations
 
 import dataclasses
@@ -22,9 +22,70 @@ from SelfEvolvingHarnessTS.benchmark.split import (
     SplitManifestError,
     SplitRole,
     build_split_manifest,
+    build_support_a_subsplit,
     role_from_unit_interval,
+    support_a_partition,
     validate_split_manifest,
 )
+
+
+def _many_candidates(n: int = 200) -> list[SplitCandidate]:
+    return [
+        SplitCandidate(f"uid-{i:03d}", "dataset", "regime", f"group-{i:03d}", "certified_virgin")
+        for i in range(n)
+    ]
+
+
+def test_support_a_subsplit_is_group_atomic_and_covers_support_a_exactly():
+    manifest = build_split_manifest(
+        _many_candidates(), BENCHMARK_VERSION, "salt", set()
+    )
+    subsplit = build_support_a_subsplit(manifest)
+
+    support_a_uids = {
+        row.series_uid
+        for row in manifest.assignments
+        if row.role is SplitRole.SUPPORT_A
+    }
+    discovery = set(subsplit["members"]["support_a_discovery"])
+    validation = set(subsplit["members"]["support_a_validation"])
+
+    # Exactly Support-A, partitioned: no overlap, nothing lost, nothing borrowed.
+    assert discovery | validation == support_a_uids
+    assert not (discovery & validation)
+    assert not (discovery | validation) & {
+        row.series_uid
+        for row in manifest.assignments
+        if row.role is not SplitRole.SUPPORT_A
+    }
+
+
+def test_support_a_partition_keeps_an_overlap_group_whole():
+    rows = [
+        SplitCandidate("a", "d", "r", "shared-group", "confirmed_exposed"),
+        SplitCandidate("b", "d", "r", "shared-group", "confirmed_exposed"),
+    ] + _many_candidates(50)
+    manifest = build_split_manifest(rows, BENCHMARK_VERSION, "salt", set())
+    subsplit = build_support_a_subsplit(manifest)
+
+    side_of_uid = {
+        uid: name
+        for name, uids in subsplit["members"].items()
+        for uid in uids
+    }
+    # Both members share one overlap group, so they cannot land on opposite sides.
+    assert side_of_uid["a"] == side_of_uid["b"]
+
+
+def test_support_a_partition_is_independent_of_the_outer_role_draw():
+    # A different salt namespace, so discovery/validation is not a function of the
+    # outer split's own hash -- otherwise the two draws would be correlated.
+    outer = SplitManifest.role_policies()
+    assert outer  # sanity
+    partitions = {
+        support_a_partition(BENCHMARK_VERSION, f"group-{i:03d}") for i in range(50)
+    }
+    assert partitions == {"support_a_discovery", "support_a_validation"}
 
 
 def _candidate(
@@ -59,7 +120,7 @@ def test_overlap_group_is_atomic_and_forced_roles_win():
         SplitCandidate("u-b", "d", "r", "u-g", "certified_virgin"),
     ]
     manifest = build_split_manifest(
-        rows, "benchmark-v0", "split-salt-v0", {"u-a"}
+        rows, BENCHMARK_VERSION, "split-salt-v0", {"u-a"}
     )
     assert manifest.assignment("a").role == manifest.assignment("b").role
     assert manifest.assignment("legacy").role is SplitRole.SUPPORT_A
@@ -73,7 +134,7 @@ def test_support_a_and_u_force_conflict_is_rejected():
         _candidate("selected-u", group="mixed"),
     ]
     with pytest.raises(SplitManifestError, match="Support-A.*U"):
-        build_split_manifest(rows, "benchmark-v0", "salt", {"selected-u"})
+        build_split_manifest(rows, BENCHMARK_VERSION, "salt", {"selected-u"})
 
 
 def test_dev_query_policy_cannot_alias_support_b():
