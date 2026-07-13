@@ -89,6 +89,8 @@ class CampaignManifest:
     materialization_sha: str
     runner_code_sha: str
     entries: tuple[CampaignEntry, ...]
+    prepare_timeout_s: float | None = None
+    trainer_timeout_s: float | None = None
 
     def __post_init__(self) -> None:
         _canonical_string(self.campaign_id, "campaign_id")
@@ -106,6 +108,14 @@ class CampaignManifest:
             raise ValueError("campaign roster entry ids must be unique")
         if sorted(orders) != list(range(len(self.entries))):
             raise ValueError("campaign roster order must be contiguous from zero")
+        for name in ("prepare_timeout_s", "trainer_timeout_s"):
+            value = getattr(self, name)
+            if value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not 0 < float(value) < float("inf")
+            ):
+                raise ValueError(f"{name} must be finite and positive when frozen")
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -114,6 +124,8 @@ class CampaignManifest:
             "input_manifest_sha": self.input_manifest_sha,
             "materialization_sha": self.materialization_sha,
             "runner_code_sha": self.runner_code_sha,
+            "prepare_timeout_s": self.prepare_timeout_s,
+            "trainer_timeout_s": self.trainer_timeout_s,
             "entries": [asdict(entry) for entry in sorted(self.entries, key=lambda item: item.order)],
         }
 
