@@ -146,6 +146,15 @@ def test_probe_registry_keeps_every_uid_and_contains_no_outcome_fields():
     assert not ({"loss", "utility", "gain"} & set(report[row.series_uid]))
 
 
+def test_probe_registry_reports_full_registry_missingness_while_structure_uses_inner_train():
+    values = np.sin(np.arange(336) * 2 * np.pi / 24)
+    values[300] = np.nan
+    row = _record(values)
+    report = probe_registry([row], {row.series_uid: values})[row.series_uid]
+    assert report["natural_missing_count"] == row.natural_missing_count == 1
+    assert report["natural_missing_rate"] == row.natural_missing_rate
+
+
 def test_probe_module_has_read_only_import_boundary():
     import SelfEvolvingHarnessTS.benchmark.probe as module
 

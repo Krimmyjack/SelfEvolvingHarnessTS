@@ -221,10 +221,22 @@ def probe_registry(
             raise ProbeError(
                 f"inner_train_end for {row.series_uid!r} disagrees with frozen inner-train boundary"
             )
-        report[row.series_uid] = probe_series(
+        features = probe_series(
             values_map[row.series_uid],
             period=period,
             inner_train_end=frozen_stop,
             timestamps=timestamps,
         )
+        # Structure is intentionally inner-train-only. Provenance diagnostics
+        # describe the full frozen clean base and must agree bit-for-bit with
+        # SeriesRecord.with_probe_result even when missingness occurs later.
+        features.update(
+            {
+                "natural_missing_count": row.natural_missing_count,
+                "natural_missing_rate": row.natural_missing_rate,
+                "irregular_interval_count": row.irregular_interval_count,
+                "irregular_sampling_rate": row.irregular_sampling_rate,
+            }
+        )
+        report[row.series_uid] = features
     return report

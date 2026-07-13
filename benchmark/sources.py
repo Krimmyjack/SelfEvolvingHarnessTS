@@ -1,16 +1,29 @@
 """Frozen, verifiable acquisition specifications for benchmark sources."""
 from __future__ import annotations
 
+import hashlib
+import json
+import shutil
 from dataclasses import dataclass
+from pathlib import Path
 from types import MappingProxyType
 from typing import Literal, Mapping
 from urllib.parse import urlparse
 
+import pandas as pd
+
 __all__ = [
     "SOURCE_SPECS",
+    "AUTOMATIC_SOURCE_IDS",
+    "AcquisitionPlanRow",
+    "AcquisitionResult",
+    "MANUAL_SOURCE_IDS",
     "RevisionKind",
     "SourceSpec",
+    "build_acquisition_plan",
+    "acquire_all_sources",
     "get_source_spec",
+    "select_noaa_stations",
 ]
 
 
@@ -193,6 +206,412 @@ _SPECS = (
 SOURCE_SPECS: Mapping[str, SourceSpec] = MappingProxyType(
     {spec.source_id: spec for spec in _SPECS}
 )
+
+AUTOMATIC_SOURCE_IDS = tuple(
+    spec.source_id for spec in _SPECS if spec.access == "automatic"
+)
+MANUAL_SOURCE_IDS = tuple(
+    spec.source_id for spec in _SPECS if spec.access == "manual"
+)
+
+
+@dataclass(frozen=True)
+class AcquisitionPlanRow:
+    source_id: str
+    access: AccessMode
+    status: str
+    destination: str
+    source_revision: str
+
+
+@dataclass(frozen=True)
+class AcquisitionResult:
+    source_id: str
+    status: str
+    asset_paths: tuple[str, ...]
+    asset_sha256: tuple[str, ...]
+    message: str
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "source_id": self.source_id,
+            "status": self.status,
+            "asset_paths": list(self.asset_paths),
+            "asset_sha256": list(self.asset_sha256),
+            "message": self.message,
+        }
+
+
+def build_acquisition_plan(root: Path | str) -> tuple[AcquisitionPlanRow, ...]:
+    """Describe automatic destinations and account-gated incoming status."""
+    base = Path(root)
+    rows: list[AcquisitionPlanRow] = []
+    for spec in _SPECS:
+        if spec.access == "automatic":
+            status = "pending"
+            destination = base / "raw" / spec.source_id
+        else:
+            assert spec.incoming_subdir is not None
+            destination = base / "incoming" / spec.incoming_subdir
+            ready = destination.is_dir() and any(path.is_file() for path in destination.rglob("*"))
+            status = "manual_ready" if ready else "manual_required"
+        rows.append(
+            AcquisitionPlanRow(
+                source_id=spec.source_id,
+                access=spec.access,
+                status=status,
+                destination=destination.as_posix(),
+                source_revision=spec.source_revision,
+            )
+        )
+    return tuple(rows)
+
+
+def _station_component(value: object, width: int) -> str:
+    text = str(value).strip()
+    if text.endswith(".0"):
+        text = text[:-2]
+    if not text.isdigit() or len(text) > width:
+        raise ValueError("NOAA station identifier is not numeric")
+    return text.zfill(width)
+
+
+def select_noaa_stations(
+    catalog: pd.DataFrame,
+    *,
+    year: int,
+    count: int,
+    country: str = "US",
+) -> tuple[str, ...]:
+    """Freeze a catalog-order-invariant station subset; failed downloads are not refilled."""
+    required = {"USAF", "WBAN", "CTRY", "BEGIN", "END", "LAT", "LON"}
+    if not isinstance(catalog, pd.DataFrame) or not required <= set(catalog.columns):
+        raise ValueError("NOAA catalog lacks required station fields")
+    if isinstance(year, bool) or not isinstance(year, int) or year < 1900:
+        raise ValueError("NOAA year must be a valid integer")
+    if isinstance(count, bool) or not isinstance(count, int) or count < 1:
+        raise ValueError("NOAA station count must be positive")
+    start, end = year * 10000 + 101, year * 10000 + 1231
+    eligible: list[str] = []
+    for _, row in catalog.iterrows():
+        try:
+            if str(row["CTRY"]).strip() != country:
+                continue
+            if int(row["BEGIN"]) > start or int(row["END"]) < end:
+                continue
+            if pd.isna(row["LAT"]) or pd.isna(row["LON"]):
+                continue
+            station = _station_component(row["USAF"], 6) + _station_component(row["WBAN"], 5)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        eligible.append(station)
+    universe = tuple(sorted(set(eligible)))
+    if len(universe) < count:
+        raise ValueError(f"NOAA catalog has only {len(universe)} eligible stations; need {count}")
+    universe_sha = hashlib.sha256("\n".join(universe).encode("ascii")).hexdigest()
+    ordered = sorted(
+        universe,
+        key=lambda station: hashlib.sha256(
+            f"benchmark-v0|noaa|{year}|{universe_sha}|{station}".encode("ascii")
+        ).hexdigest(),
+    )
+    return tuple(ordered[:count])
+
+
+def _asset_result(source_id: str, status: str, assets: list[object], message: str) -> AcquisitionResult:
+    return AcquisitionResult(
+        source_id=source_id,
+        status=status,
+        asset_paths=tuple(Path(getattr(asset, "path")).as_posix() for asset in assets),
+        asset_sha256=tuple(str(getattr(asset, "sha256")) for asset in assets),
+        message=message,
+    )
+
+
+def _download_http(
+    session: object,
+    url: str,
+    destination: Path,
+    *,
+    source_revision: str,
+    expected_prefix: bytes | None = None,
+) -> object:
+    from .materialize import promote_download, write_raw_once
+
+    if destination.is_file() and destination.with_name(destination.name + ".asset.json").is_file():
+        return write_raw_once(
+            destination, destination.read_bytes(), source_revision=source_revision
+        )
+    partial = destination.with_name(destination.name + ".partial")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    response = session.get(url, stream=True, timeout=120, allow_redirects=True)
+    response.raise_for_status()
+    with partial.open("wb") as handle:
+        for chunk in response.iter_content(chunk_size=1024 * 1024):
+            if chunk:
+                handle.write(chunk)
+    if expected_prefix is not None:
+        with partial.open("rb") as handle:
+            actual_prefix = handle.read(len(expected_prefix))
+        if actual_prefix != expected_prefix:
+            raise ValueError(
+                f"downloaded bytes from {url!r} do not match the expected file signature"
+            )
+    return promote_download(
+        partial,
+        destination,
+        source_revision=source_revision,
+    )
+
+
+def _acquire_monash(root: Path) -> AcquisitionResult:
+    from huggingface_hub import HfApi, hf_hub_download
+
+    from .materialize import promote_download, write_raw_once
+
+    spec = SOURCE_SPECS["monash_hf"]
+    files = set(
+        HfApi().list_repo_files(
+            "monash_tsf", repo_type="dataset", revision=spec.source_revision
+        )
+    )
+    requested = ("nn5_daily", "covid_deaths", "traffic_hourly", "electricity_hourly")
+    assets: list[object] = []
+    unavailable: list[str] = []
+    for config in requested:
+        filename = f"{config}/test/0000.parquet"
+        if filename not in files:
+            unavailable.append(config)
+            continue
+        destination = root / "raw" / spec.source_id / filename
+        if destination.is_file() and destination.with_name(destination.name + ".asset.json").is_file():
+            assets.append(
+                write_raw_once(
+                    destination,
+                    destination.read_bytes(),
+                    source_revision=spec.source_revision,
+                )
+            )
+            continue
+        cached = Path(
+            hf_hub_download(
+                "monash_tsf",
+                repo_type="dataset",
+                revision=spec.source_revision,
+                filename=filename,
+            )
+        )
+        partial = destination.with_name(destination.name + ".partial")
+        partial.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(cached, partial)
+        assets.append(
+            promote_download(
+                partial,
+                destination,
+                source_revision=spec.source_revision,
+            )
+        )
+    status = "complete" if not unavailable else "partial_unavailable_at_pinned_revision"
+    message = (
+        "pinned HF parquet assets acquired"
+        if not unavailable
+        else f"pinned revision lacks configs: {unavailable}"
+    )
+    return _asset_result(spec.source_id, status, assets, message)
+
+
+def _acquire_uci(root: Path, session: object) -> AcquisitionResult:
+    spec = SOURCE_SPECS["uci_electricity_load_diagrams"]
+    asset = _download_http(
+        session,
+        "https://archive.ics.uci.edu/static/public/321/electricityloaddiagrams20112014.zip",
+        root / "raw" / spec.source_id / "electricityloaddiagrams20112014.zip",
+        source_revision=spec.source_revision,
+        expected_prefix=b"PK",
+    )
+    return _asset_result(spec.source_id, "complete", [asset], "official UCI dataset-321 ZIP")
+
+
+def _acquire_metr_la(
+    root: Path,
+    session: object,
+    *,
+    drive_downloader: object | None = None,
+) -> AcquisitionResult:
+    from .materialize import promote_download
+
+    spec = SOURCE_SPECS["metr_la"]
+    object_id = spec.source_revision
+    destination = root / "raw" / spec.source_id / "metr-la.h5"
+    sidecar = destination.with_name(destination.name + ".asset.json")
+    if destination.is_file() and not sidecar.exists():
+        with destination.open("rb") as handle:
+            if handle.read(8) != b"\x89HDF\r\n\x1a\n":
+                raise ValueError("manually placed METR-LA file is not HDF5")
+        partial = destination.with_name(destination.name + ".partial")
+        destination.replace(partial)
+        asset = promote_download(
+            partial,
+            destination,
+            source_revision=spec.source_revision,
+        )
+        return _asset_result(
+            spec.source_id,
+            "complete",
+            [asset],
+            "manually placed DCRNN author Drive object bound immutably",
+        )
+    try:
+        asset = _download_http(
+            session,
+            f"https://drive.usercontent.google.com/download?id={object_id}&export=download&confirm=t",
+            destination,
+            source_revision=spec.source_revision,
+            expected_prefix=b"\x89HDF\r\n\x1a\n",
+        )
+    except Exception:
+        if drive_downloader is None:
+            from gdown import download as drive_downloader
+
+        partial = destination.with_name(destination.name + ".partial")
+        partial.parent.mkdir(parents=True, exist_ok=True)
+        downloaded = drive_downloader(id=object_id, output=str(partial), quiet=True)
+        if downloaded is None or not partial.is_file():
+            raise RuntimeError("Google Drive downloader did not materialize METR-LA")
+        with partial.open("rb") as handle:
+            if handle.read(8) != b"\x89HDF\r\n\x1a\n":
+                raise ValueError("Google Drive fallback did not return an HDF5 asset")
+        asset = promote_download(
+            partial,
+            destination,
+            source_revision=spec.source_revision,
+        )
+    return _asset_result(spec.source_id, "complete", [asset], "DCRNN author Drive object")
+
+
+def _acquire_noaa(
+    root: Path,
+    session: object,
+    *,
+    year: int,
+    station_count: int,
+) -> AcquisitionResult:
+    spec = SOURCE_SPECS["noaa_global_hourly"]
+    catalog_asset = _download_http(
+        session,
+        "https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv",
+        root / "raw" / spec.source_id / "isd-history.csv",
+        source_revision=spec.source_revision,
+    )
+    catalog = pd.read_csv(Path(getattr(catalog_asset, "path")), dtype={"USAF": str, "WBAN": str})
+    stations = select_noaa_stations(catalog, year=year, count=station_count)
+    assets: list[object] = [catalog_asset]
+    failures: list[str] = []
+    for station in stations:
+        try:
+            asset = _download_http(
+                session,
+                f"https://www.ncei.noaa.gov/data/global-hourly/access/{year}/{station}.csv",
+                root / "raw" / spec.source_id / str(year) / f"{station}.csv",
+                source_revision=spec.source_revision,
+            )
+            assets.append(asset)
+        except Exception as exc:  # no refill: retain the frozen failed station identity
+            failures.append(f"{station}:{type(exc).__name__}")
+    selection_path = root / "raw" / spec.source_id / f"station_selection_{year}.json"
+    selection_path.parent.mkdir(parents=True, exist_ok=True)
+    selection_payload = {
+        "benchmark_version": "benchmark-v0",
+        "catalog_sha256": getattr(catalog_asset, "sha256"),
+        "year": year,
+        "station_count": station_count,
+        "selected_stations": list(stations),
+        "download_failures_no_refill": failures,
+    }
+    selection_path.write_text(
+        json.dumps(selection_payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    status = "complete" if not failures else "partial_download_failed_no_refill"
+    return _asset_result(spec.source_id, status, assets, f"NOAA station failures: {failures}")
+
+
+def acquire_all_sources(
+    root: Path | str,
+    *,
+    automatic: bool = True,
+    noaa_year: int = 2024,
+    noaa_station_count: int = 12,
+    http_session: object | None = None,
+) -> tuple[AcquisitionResult, ...]:
+    """Acquire every approved automatic source and account for every manual source."""
+    base = Path(root)
+    base.mkdir(parents=True, exist_ok=True)
+    plan = build_acquisition_plan(base)
+    results: list[AcquisitionResult] = []
+    if automatic:
+        if http_session is None:
+            import requests
+
+            http_session = requests.Session()
+        operations = (
+            ("monash_hf", lambda: _acquire_monash(base)),
+            ("metr_la", lambda: _acquire_metr_la(base, http_session)),
+            (
+                "uci_electricity_load_diagrams",
+                lambda: _acquire_uci(base, http_session),
+            ),
+            (
+                "noaa_global_hourly",
+                lambda: _acquire_noaa(
+                    base,
+                    http_session,
+                    year=noaa_year,
+                    station_count=noaa_station_count,
+                ),
+            ),
+        )
+        for source_id, operation in operations:
+            try:
+                results.append(operation())
+            except Exception as exc:
+                results.append(
+                    AcquisitionResult(
+                        source_id,
+                        "download_failed",
+                        (),
+                        (),
+                        f"{type(exc).__name__}: {exc}",
+                    )
+                )
+    else:
+        results.extend(
+            AcquisitionResult(source_id, "automatic_skipped", (), (), "automatic acquisition disabled")
+            for source_id in AUTOMATIC_SOURCE_IDS
+        )
+    for row in plan:
+        if row.access == "manual":
+            results.append(
+                AcquisitionResult(
+                    row.source_id,
+                    row.status,
+                    (),
+                    (),
+                    f"place untouched files under {row.destination}",
+                )
+            )
+    ordered = tuple(sorted(results, key=lambda row: row.source_id))
+    manifest = {
+        "schema_version": "benchmark-acquisition/1",
+        "benchmark_version": "benchmark-v0",
+        "automatic_requested": automatic,
+        "results": [row.to_dict() for row in ordered],
+    }
+    (base / "acquisition_manifest.json").write_text(
+        json.dumps(manifest, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return ordered
 
 
 def get_source_spec(source_id: str) -> SourceSpec:

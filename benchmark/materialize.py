@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import os
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -16,12 +17,18 @@ from .registry import SeriesRecord
 
 __all__ = [
     "CleanBaseAsset",
+    "ParsedSeries",
     "RawAsset",
     "RawMutationError",
     "materialize_clean_base",
+    "parse_noaa_global_hourly",
+    "parse_metr_la_hdf",
+    "parse_monash_parquet",
+    "parse_uci_electricity_zip",
     "promote_download",
     "read_clean_base",
     "resample_hourly",
+    "select_benchmark_span",
     "verify_raw_asset",
     "write_raw_once",
 ]
@@ -29,6 +36,276 @@ __all__ = [
 
 class RawMutationError(RuntimeError):
     """An immutable raw or clean-base path disagrees with frozen bytes."""
+
+
+@dataclass(frozen=True)
+class ParsedSeries:
+    entity_id: str
+    values: np.ndarray
+    timestamps: np.ndarray
+    natural_missing_mask: np.ndarray
+    frequency: str
+
+    def __post_init__(self) -> None:
+        values = np.asarray(self.values, dtype=np.float64)
+        timestamps = np.asarray(self.timestamps).astype("datetime64[ns]")
+        mask = np.asarray(self.natural_missing_mask, dtype=bool)
+        if values.ndim != 1 or timestamps.ndim != 1 or mask.ndim != 1:
+            raise ValueError("parsed series arrays must be one-dimensional")
+        if not (len(values) == len(timestamps) == len(mask)) or not len(values):
+            raise ValueError("parsed series arrays must be non-empty and aligned")
+        if np.isinf(values).any() or np.isnat(timestamps).any():
+            raise ValueError("parsed series cannot contain infinity or NaT")
+        if len(timestamps) > 1 and np.any(np.diff(timestamps.astype(np.int64)) <= 0):
+            raise ValueError("parsed timestamps must be strictly increasing")
+        if not isinstance(self.entity_id, str) or not self.entity_id.strip():
+            raise ValueError("parsed entity_id must be non-empty")
+        if not isinstance(self.frequency, str) or not self.frequency.strip():
+            raise ValueError("parsed frequency must be non-empty")
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "timestamps", timestamps)
+        object.__setattr__(self, "natural_missing_mask", mask)
+
+
+def select_benchmark_span(
+    values: np.ndarray,
+    timestamps: np.ndarray,
+    *,
+    horizon: int,
+    min_length: int,
+    max_length: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Select the latest bounded span whose held-out future is fully observed."""
+
+    array = np.asarray(values, dtype=np.float64)
+    times = np.asarray(timestamps).astype("datetime64[ns]")
+    if array.ndim != 1 or times.ndim != 1 or len(array) != len(times):
+        raise ValueError("values and timestamps must be aligned one-dimensional arrays")
+    if any(isinstance(value, bool) or not isinstance(value, int) or value < 1 for value in (horizon, min_length, max_length)):
+        raise ValueError("span dimensions must be positive integers")
+    if min_length < horizon or max_length < min_length:
+        raise ValueError("span dimensions are inconsistent")
+    for stop in range(len(array), min_length - 1, -1):
+        if np.isfinite(array[stop - horizon : stop]).all():
+            start = max(0, stop - max_length)
+            if stop - start >= min_length:
+                return array[start:stop].copy(), times[start:stop].copy()
+    raise ValueError("no admissible span has a fully observed test future")
+
+
+def _localize_index(index: pd.DatetimeIndex, timezone: str) -> pd.DatetimeIndex:
+    if index.tz is None:
+        # The official UCI/METR tables contain no offset bit for isolated DST
+        # fallback timestamps. Freeze those to standard time (ambiguous=False).
+        index = index.tz_localize(timezone, ambiguous=False, nonexistent="shift_forward")
+    return index.tz_convert("UTC")
+
+
+def parse_uci_electricity_zip(
+    path: Path | str,
+    *,
+    min_length: int,
+    horizon: int,
+    max_length: int,
+) -> tuple[ParsedSeries, ...]:
+    """Parse the official UCI ELD archive and conservatively resample to UTC hours."""
+
+    with zipfile.ZipFile(path) as archive:
+        names = sorted(
+            name for name in archive.namelist()
+            if name.lower().endswith(".txt") and not name.startswith("__MACOSX/")
+        )
+        if len(names) != 1:
+            raise ValueError("UCI ELD archive must contain exactly one data text file")
+        with archive.open(names[0]) as handle:
+            frame = pd.read_csv(handle, sep=";", decimal=",")
+    if frame.shape[1] < 2:
+        raise ValueError("UCI ELD table has no client columns")
+    timestamps = pd.to_datetime(frame.iloc[:, 0], errors="raise")
+    index = _localize_index(pd.DatetimeIndex(timestamps), "Europe/Lisbon")
+    rows: list[ParsedSeries] = []
+    for column in frame.columns[1:]:
+        numeric = pd.to_numeric(frame[column], errors="coerce")
+        series = pd.Series(numeric.to_numpy(dtype=float), index=index).sort_index()
+        if series.index.has_duplicates:
+            series = series.groupby(level=0).mean()
+        hourly, missing = resample_hourly(series)
+        conservative = hourly.to_numpy(dtype=float)
+        mask = missing.to_numpy(dtype=bool)
+        conservative[mask] = np.nan
+        try:
+            selected, selected_times = select_benchmark_span(
+                conservative,
+                hourly.index.to_numpy(dtype="datetime64[ns]"),
+                horizon=horizon,
+                min_length=min_length,
+                max_length=max_length,
+            )
+        except ValueError:
+            continue
+        rows.append(
+            ParsedSeries(
+                entity_id=str(column),
+                values=selected,
+                timestamps=selected_times,
+                natural_missing_mask=np.isnan(selected),
+                frequency="hourly",
+            )
+        )
+    return tuple(rows)
+
+
+def parse_noaa_global_hourly(
+    path: Path | str,
+    *,
+    min_length: int,
+    horizon: int,
+    max_length: int,
+) -> ParsedSeries:
+    """Decode NOAA Global Hourly TMP tenths-Celsius observations into UTC hours."""
+
+    frame = pd.read_csv(path, dtype={"STATION": str, "TMP": str})
+    if not {"STATION", "DATE", "TMP"} <= set(frame.columns) or frame.empty:
+        raise ValueError("NOAA file lacks STATION, DATE, or TMP")
+    stations = frame["STATION"].dropna().astype(str).unique()
+    if len(stations) != 1:
+        raise ValueError("NOAA file must contain exactly one station")
+    index = pd.DatetimeIndex(pd.to_datetime(frame["DATE"], utc=True, errors="raise"))
+    decoded: list[float] = []
+    for raw in frame["TMP"].astype(str):
+        token = raw.split(",", 1)[0].strip()
+        try:
+            value = int(token)
+        except ValueError:
+            value = 9999
+        decoded.append(np.nan if abs(value) == 9999 else value / 10.0)
+    series = pd.Series(decoded, index=index).sort_index()
+    if series.index.has_duplicates:
+        series = series.groupby(level=0).mean()
+    hourly, missing = resample_hourly(series)
+    values = hourly.to_numpy(dtype=float)
+    values[missing.to_numpy(dtype=bool)] = np.nan
+    selected, selected_times = select_benchmark_span(
+        values,
+        hourly.index.to_numpy(dtype="datetime64[ns]"),
+        horizon=horizon,
+        min_length=min_length,
+        max_length=max_length,
+    )
+    return ParsedSeries(
+        entity_id=str(stations[0]),
+        values=selected,
+        timestamps=selected_times,
+        natural_missing_mask=np.isnan(selected),
+        frequency="hourly",
+    )
+
+
+_MONASH_CONFIG_FREQUENCY = {
+    "nn5_daily": ("daily", "1D"),
+    "covid_deaths": ("daily", "1D"),
+    "traffic_hourly": ("hourly", "1h"),
+    "electricity_hourly": ("hourly", "1h"),
+}
+
+
+def parse_monash_parquet(
+    path: Path | str,
+    *,
+    config: str,
+    min_length: int,
+    horizon: int,
+    max_length: int,
+) -> tuple[ParsedSeries, ...]:
+    """Parse a pinned Hugging Face Monash shard without filling natural NaNs."""
+
+    try:
+        frequency, pandas_frequency = _MONASH_CONFIG_FREQUENCY[config]
+    except KeyError as exc:
+        raise ValueError(f"unsupported Monash benchmark config: {config!r}") from exc
+    frame = pd.read_parquet(path)
+    target_column = "target" if "target" in frame else "series_value" if "series_value" in frame else None
+    if target_column is None:
+        raise ValueError("Monash parquet lacks target/series_value")
+    rows: list[ParsedSeries] = []
+    for position, row in frame.iterrows():
+        values = np.asarray(row[target_column], dtype=np.float64)
+        if values.ndim != 1 or values.size == 0 or np.isinf(values).any():
+            continue
+        entity_id = str(row.get("item_id", position))
+        start = pd.Timestamp(row.get("start", "1970-01-01"))
+        if start.tzinfo is None:
+            start = start.tz_localize("UTC")
+        else:
+            start = start.tz_convert("UTC")
+        timestamps = pd.date_range(start, periods=len(values), freq=pandas_frequency).to_numpy(
+            dtype="datetime64[ns]"
+        )
+        try:
+            selected, selected_times = select_benchmark_span(
+                values,
+                timestamps,
+                horizon=horizon,
+                min_length=min_length,
+                max_length=max_length,
+            )
+        except ValueError:
+            continue
+        rows.append(
+            ParsedSeries(
+                entity_id=entity_id,
+                values=selected,
+                timestamps=selected_times,
+                natural_missing_mask=np.isnan(selected),
+                frequency=frequency,
+            )
+        )
+    return tuple(rows)
+
+
+def parse_metr_la_hdf(
+    path: Path | str,
+    *,
+    min_length: int,
+    horizon: int,
+    max_length: int,
+) -> tuple[ParsedSeries, ...]:
+    """Parse the DCRNN METR-LA matrix and retain sensors as independent series."""
+
+    frame = pd.read_hdf(path)
+    if not isinstance(frame, pd.DataFrame) or frame.empty or frame.shape[1] < 1:
+        raise ValueError("METR-LA HDF must contain a non-empty data frame")
+    index = pd.DatetimeIndex(pd.to_datetime(frame.index, errors="raise"))
+    index = _localize_index(index, "America/Los_Angeles")
+    rows: list[ParsedSeries] = []
+    for column in frame.columns:
+        numeric = pd.to_numeric(frame[column], errors="coerce")
+        series = pd.Series(numeric.to_numpy(dtype=float), index=index).sort_index()
+        if series.index.has_duplicates:
+            series = series.groupby(level=0).mean()
+        hourly, missing = resample_hourly(series)
+        values = hourly.to_numpy(dtype=float)
+        values[missing.to_numpy(dtype=bool)] = np.nan
+        try:
+            selected, selected_times = select_benchmark_span(
+                values,
+                hourly.index.to_numpy(dtype="datetime64[ns]"),
+                horizon=horizon,
+                min_length=min_length,
+                max_length=max_length,
+            )
+        except ValueError:
+            continue
+        rows.append(
+            ParsedSeries(
+                entity_id=str(column),
+                values=selected,
+                timestamps=selected_times,
+                natural_missing_mask=np.isnan(selected),
+                frequency="hourly",
+            )
+        )
+    return tuple(rows)
 
 
 def _sha256(payload: bytes) -> str:

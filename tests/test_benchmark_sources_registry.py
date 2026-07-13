@@ -6,7 +6,10 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
+
+import SelfEvolvingHarnessTS.benchmark.sources as sources_module
 
 from SelfEvolvingHarnessTS.benchmark.registry import (
     Admission,
@@ -16,7 +19,15 @@ from SelfEvolvingHarnessTS.benchmark.registry import (
     read_registry_jsonl,
     write_registry_jsonl,
 )
-from SelfEvolvingHarnessTS.benchmark.sources import SOURCE_SPECS, SourceSpec
+from SelfEvolvingHarnessTS.benchmark.sources import (
+    AUTOMATIC_SOURCE_IDS,
+    MANUAL_SOURCE_IDS,
+    SOURCE_SPECS,
+    SourceSpec,
+    acquire_all_sources,
+    build_acquisition_plan,
+    select_noaa_stations,
+)
 from SelfEvolvingHarnessTS.benchmark.split import SplitRole
 
 
@@ -177,6 +188,82 @@ def test_approved_official_sources_are_registered_exactly():
     for source_id in ("gefcom2012", "gefcom2014"):
         assert SOURCE_SPECS[source_id].access == "manual"
         assert "kaggle.com" in SOURCE_SPECS[source_id].official_url
+
+
+def test_acquisition_plan_keeps_automatic_and_manual_sources_distinct(tmp_path):
+    plan = build_acquisition_plan(tmp_path)
+    assert {row.source_id for row in plan if row.access == "automatic"} == set(
+        AUTOMATIC_SOURCE_IDS
+    )
+    manual = {row.source_id: row for row in plan if row.access == "manual"}
+    assert set(manual) == set(MANUAL_SOURCE_IDS)
+    assert all(row.status == "manual_required" for row in manual.values())
+    incoming = tmp_path / "incoming" / "gefcom2012"
+    incoming.mkdir(parents=True)
+    (incoming / "official.zip").write_bytes(b"x")
+    refreshed = {row.source_id: row for row in build_acquisition_plan(tmp_path)}
+    assert refreshed["gefcom2012"].status == "manual_ready"
+
+
+def test_noaa_station_selection_is_content_keyed_and_has_no_refill():
+    catalog = pd.DataFrame(
+        {
+            "USAF": [10000, 10001, 10002, 10003],
+            "WBAN": [99999, 99999, 99999, 99999],
+            "CTRY": ["US"] * 4,
+            "BEGIN": [20200101] * 4,
+            "END": [20251231] * 4,
+            "LAT": [1.0, 2.0, 3.0, 4.0],
+            "LON": [1.0, 2.0, 3.0, 4.0],
+        }
+    )
+    first = select_noaa_stations(catalog, year=2024, count=3)
+    second = select_noaa_stations(catalog.iloc[::-1], year=2024, count=3)
+    assert first == second
+    assert len(first) == 3
+    assert all(len(station) == 11 for station in first)
+
+
+def test_acquisition_status_manifest_is_written_without_network(tmp_path):
+    results = acquire_all_sources(tmp_path, automatic=False)
+    assert (tmp_path / "acquisition_manifest.json").is_file()
+    by_id = {row.source_id: row for row in results}
+    assert all(by_id[source_id].status == "automatic_skipped" for source_id in AUTOMATIC_SOURCE_IDS)
+    assert all(by_id[source_id].status == "manual_required" for source_id in MANUAL_SOURCE_IDS)
+
+
+def test_metr_acquisition_uses_google_drive_downloader_after_http_failure(tmp_path):
+    class FailingSession:
+        def get(self, *args, **kwargs):
+            raise RuntimeError("drive direct endpoint failed")
+
+    def fake_drive_download(*, id, output, quiet):
+        assert id == SOURCE_SPECS["metr_la"].source_revision
+        assert quiet is True
+        Path(output).write_bytes(b"\x89HDF\r\n\x1a\nfixture")
+        return output
+
+    result = sources_module._acquire_metr_la(
+        tmp_path,
+        FailingSession(),
+        drive_downloader=fake_drive_download,
+    )
+    assert result.status == "complete"
+    assert len(result.asset_sha256) == 1
+
+
+def test_metr_manual_official_object_is_bound_before_any_network_access(tmp_path):
+    destination = tmp_path / "raw" / "metr_la" / "metr-la.h5"
+    destination.parent.mkdir(parents=True)
+    destination.write_bytes(b"\x89HDF\r\n\x1a\nmanual")
+
+    class NoNetwork:
+        def get(self, *args, **kwargs):
+            raise AssertionError("manual import must not touch the network")
+
+    result = sources_module._acquire_metr_la(tmp_path, NoNetwork())
+    assert result.status == "complete"
+    assert destination.with_name("metr-la.h5.asset.json").is_file()
 
 
 def test_registry_keeps_natural_missing_mask_and_round_trips_jsonl(tmp_path):

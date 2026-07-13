@@ -4,6 +4,19 @@ Automatic acquisition handles Monash, METR-LA, UCI Electricity Load Diagrams,
 and NOAA Global Hourly. The sources below require an account or acceptance of
 portal terms and must be downloaded manually without renaming internal files.
 
+## METR-LA official-object fallback
+
+The automatic downloader first uses the DCRNN authors' Google Drive object and
+then `gdown`. If both routes are blocked by local TLS or return a Drive 5xx,
+download object `10FOTa6HXPqX8Pf5WRoRwcFnW9BrNZEIX` from
+<https://drive.google.com/uc?id=10FOTa6HXPqX8Pf5WRoRwcFnW9BrNZEIX> and place
+the untouched HDF5 file at:
+`data/benchmark_v0/raw/metr_la/metr-la.h5`.
+
+The file must begin with the HDF5 signature `89 48 44 46 0d 0a 1a 0a`.
+Re-run `acquire --automatic` afterward so the immutable SHA sidecar and
+acquisition manifest are written before probing.
+
 ## ENTSO-E Actual Total Load
 
 1. Sign in at <https://transparency.entsoe.eu/>.

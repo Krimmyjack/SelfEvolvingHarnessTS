@@ -256,12 +256,43 @@ class BenchmarkRunner:
 
 
 def default_cli_handlers() -> dict[str, Callable[[Any], int]]:
+    def acquire(args: Any) -> int:
+        from .sources import acquire_all_sources
+
+        acquire_all_sources(args.root, automatic=bool(args.automatic))
+        return 0
+
+    def probe(args: Any) -> int:
+        from .workspace import probe_workspace
+
+        probe_workspace(args.root, args.out)
+        return 0
+
+    def freeze(args: Any) -> int:
+        from .workspace import freeze_workspace
+
+        freeze_workspace(args.root, args.out)
+        return 0
+
+    def dev_eval(args: Any) -> int:
+        from .dev_eval import run_dev_evaluation
+
+        requested = tuple(item.strip().replace("-", "_") for item in args.baselines.split(","))
+        required = ("raw", "best_fixed", "h_ref", "oracle_transfer", "oracle_insample")
+        if requested != required:
+            raise RunnerGateError(
+                "Dev evaluation requires the frozen ordered baseline roster "
+                + ",".join(required)
+            )
+        run_dev_evaluation(args.root, args.out)
+        return 0
+
     def unavailable(args: Any) -> int:
         raise RunnerGateError(
             f"CLI phase {args.command!r} requires a configured benchmark workspace"
         )
 
-    return {
+    handlers = {
         command: unavailable
         for command in (
             "acquire",
@@ -274,6 +305,11 @@ def default_cli_handlers() -> dict[str, Callable[[Any], int]]:
             "final-eval",
         )
     }
+    handlers["acquire"] = acquire
+    handlers["probe"] = probe
+    handlers["freeze"] = freeze
+    handlers["dev-eval"] = dev_eval
+    return handlers
 
 
 __all__ = [
@@ -284,4 +320,3 @@ __all__ = [
     "default_cli_handlers",
     "validate_campaign_roster",
 ]
-

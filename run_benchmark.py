@@ -20,7 +20,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     acquire = subparsers.add_parser("acquire")
     _paths(acquire, out=False)
-    acquire.add_argument("--automatic", action="store_true")
+    acquisition_mode = acquire.add_mutually_exclusive_group()
+    acquisition_mode.add_argument("--automatic", action="store_true")
+    acquisition_mode.add_argument("--manual-status", action="store_true")
 
     probe = subparsers.add_parser("probe")
     _paths(probe)
@@ -68,4 +70,3 @@ def main(
 
 if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())
-
