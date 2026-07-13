@@ -123,6 +123,9 @@ class _ImmutableSequence(tuple):
             return tuple(self) == tuple(other)
         return False
 
+    def __ne__(self, other: object) -> bool:
+        return not self == other
+
     __hash__ = tuple.__hash__
 
 
@@ -142,6 +145,20 @@ def _require_canonical_string(value: Any, field_name: str) -> str:
             f"{field_name} must be a non-empty string without boundary whitespace"
         )
     return value
+
+
+def _require_finite_float(value: Any, field_name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise SplitManifestError(f"{field_name} must be finite numeric data")
+    try:
+        converted = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise SplitManifestError(
+            f"{field_name} must be finite numeric data"
+        ) from exc
+    if not math.isfinite(converted):
+        raise SplitManifestError(f"{field_name} must be finite numeric data")
+    return converted
 
 
 def _require_exact_keys(
@@ -438,15 +455,9 @@ def _assignment_from_dict(value: Any, index: int) -> SplitAssignment:
         raise SplitManifestError(f"assignment {index} length must be an integer")
     group_key = _require_canonical_string(data["group_key"], "group_key")
 
-    hash_value = data["group_hash_value"]
-    if (
-        isinstance(hash_value, bool)
-        or not isinstance(hash_value, (int, float))
-        or not math.isfinite(float(hash_value))
-    ):
-        raise SplitManifestError(
-            f"assignment {index} group_hash_value must be finite numeric data"
-        )
+    hash_value = _require_finite_float(
+        data["group_hash_value"], f"assignment {index} group_hash_value"
+    )
 
     role_value = _require_canonical_string(data["role"], "role")
     try:
@@ -491,7 +502,7 @@ def _assignment_from_dict(value: Any, index: int) -> SplitAssignment:
         exposure_class=exposure_class,
         length=length,
         group_key=group_key,
-        group_hash_value=float(hash_value),
+        group_hash_value=hash_value,
         role=role,
         forced_by=forced_by,
         chronological_boundaries=boundaries,
@@ -742,14 +753,10 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
             raise SplitManifestError(
                 f"assignment {row.series_uid!r} has a non-canonical group key"
             )
-        if (
-            isinstance(row.group_hash_value, bool)
-            or not isinstance(row.group_hash_value, (int, float))
-            or not math.isfinite(float(row.group_hash_value))
-        ):
-            raise SplitManifestError(
-                f"assignment {row.series_uid!r} has an invalid group hash value"
-            )
+        _require_finite_float(
+            row.group_hash_value,
+            f"assignment {row.series_uid!r} group hash value",
+        )
         if not isinstance(row.role, SplitRole):
             raise SplitManifestError(
                 f"assignment {row.series_uid!r} has an invalid role"
@@ -765,7 +772,10 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
     selected_set = set(selected)
     for group_key, members in by_group.items():
         roles = {row.role for row in members}
-        hash_values = {row.group_hash_value for row in members}
+        hash_values = {
+            _require_finite_float(row.group_hash_value, "group hash value")
+            for row in members
+        }
         forced_values = {row.forced_by for row in members}
         if len(roles) != 1 or len(hash_values) != 1 or len(forced_values) != 1:
             raise SplitManifestError(f"overlap group {group_key!r} is not atomic")
@@ -781,7 +791,9 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
         expected_hash = group_hash_value(
             manifest.benchmark_version, manifest.split_salt, group_key
         )
-        actual_hash = members[0].group_hash_value
+        actual_hash = _require_finite_float(
+            members[0].group_hash_value, "group hash value"
+        )
         if actual_hash != expected_hash:
             raise SplitManifestError(f"overlap group {group_key!r} hash value is invalid")
         if forced_support:

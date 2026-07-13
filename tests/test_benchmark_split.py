@@ -350,3 +350,55 @@ def test_validator_normalizes_malformed_assignment_and_u_types():
     malformed_uid = dataclasses.replace(manifest, assignments=(invalid_uid,))
     with pytest.raises(SplitManifestError, match="series_uid"):
         validate_split_manifest(malformed_uid)
+
+
+def test_immutable_boundary_sequence_has_consistent_equality_and_hash_contract():
+    manifest = build_split_manifest(
+        [_candidate("long", length=HEADLINE_MIN_LENGTH)],
+        BENCHMARK_VERSION,
+        "salt",
+        set(),
+    )
+    boundaries = manifest.assignment("long").chronological_boundaries
+    assert boundaries is not None
+    sequence = boundaries["train"]
+    expected_list = [0, HEADLINE_MIN_LENGTH - 2 * HEADLINE_HORIZON]
+    expected_tuple = tuple(expected_list)
+    different_list = [1, expected_list[1]]
+    different_tuple = tuple(different_list)
+
+    assert sequence == expected_list
+    assert expected_list == sequence
+    assert sequence == expected_tuple
+    assert expected_tuple == sequence
+    assert not sequence != expected_list
+    assert not expected_list != sequence
+    assert sequence != different_list
+    assert different_list != sequence
+    assert sequence != different_tuple
+    assert different_tuple != sequence
+    assert hash(sequence) == hash(expected_tuple)
+
+
+def test_from_dict_rejects_overflowing_group_hash_as_manifest_error():
+    manifest = build_split_manifest(
+        [_candidate("a")], BENCHMARK_VERSION, "salt", set()
+    )
+    payload = manifest.to_dict()
+    payload["assignments"][0]["group_hash_value"] = 10**400
+
+    with pytest.raises(SplitManifestError, match="group_hash_value"):
+        SplitManifest.from_dict(payload)
+
+
+def test_validator_rejects_overflowing_group_hash_as_manifest_error():
+    manifest = build_split_manifest(
+        [_candidate("a")], BENCHMARK_VERSION, "salt", set()
+    )
+    assignment = dataclasses.replace(
+        manifest.assignments[0], group_hash_value=10**400
+    )
+    malformed = dataclasses.replace(manifest, assignments=(assignment,))
+
+    with pytest.raises(SplitManifestError, match="group hash"):
+        validate_split_manifest(malformed)
