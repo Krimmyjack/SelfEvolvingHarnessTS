@@ -9,11 +9,14 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Iterable, Mapping
+from types import MappingProxyType
+from typing import Any
 
 from . import (
+    BENCHMARK_VERSION,
     DESIGN_COMMIT,
     EXTERNAL_ADDENDUM_SHA256,
     HEADLINE_HORIZON,
@@ -46,8 +49,17 @@ class SplitRole(str, Enum):
     U = "u"
 
 
+_SCHEMA_VERSION = "benchmark-split-manifest/1"
+_EXPOSURE_CLASSES = frozenset(
+    {
+        "certified_virgin",
+        "confirmed_exposed",
+        "uncertain_legacy_exposure",
+        "probe_consumed",
+    }
+)
 _FORCED_SUPPORT_A_EXPOSURES = frozenset(
-    {"confirmed_exposed", "uncertain_legacy_exposure"}
+    {"confirmed_exposed", "uncertain_legacy_exposure", "probe_consumed"}
 )
 
 _INNER_SPLIT = {
@@ -103,6 +115,53 @@ _ROLE_POLICIES: Mapping[SplitRole, Mapping[str, bool]] = {
 }
 
 
+class _ImmutableSequence(tuple):
+    """Tuple storage that retains JSON-list equality for legacy callers."""
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, (list, tuple)):
+            return tuple(self) == tuple(other)
+        return False
+
+    __hash__ = tuple.__hash__
+
+
+def _freeze_nested(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType(
+            {key: _freeze_nested(nested) for key, nested in value.items()}
+        )
+    if isinstance(value, (list, tuple)):
+        return _ImmutableSequence(_freeze_nested(item) for item in value)
+    return value
+
+
+def _require_canonical_string(value: Any, field_name: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise SplitManifestError(
+            f"{field_name} must be a non-empty string without boundary whitespace"
+        )
+    return value
+
+
+def _require_exact_keys(
+    value: Any, expected: set[str], context: str
+) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise SplitManifestError(f"{context} must be an object")
+    keys = list(value.keys())
+    if any(not isinstance(key, str) for key in keys):
+        raise SplitManifestError(f"{context} keys must be strings")
+    actual = set(keys)
+    if actual != expected:
+        missing = sorted(expected - actual)
+        extra = sorted(actual - expected)
+        raise SplitManifestError(
+            f"{context} fields are malformed (missing={missing}, extra={extra})"
+        )
+    return value
+
+
 def role_from_unit_interval(u: float) -> SplitRole:
     """Map a canonical hash fraction to the frozen fresh-data role bins."""
 
@@ -124,12 +183,19 @@ def role_from_unit_interval(u: float) -> SplitRole:
 def group_hash_value(version: str, salt: str, group_key: str) -> float:
     """Return the canonical big-endian uint64 SHA256 fraction for a group."""
 
-    if not isinstance(version, str) or not version:
-        raise ValueError("benchmark version must be a non-empty string")
-    if not isinstance(salt, str) or not salt:
-        raise ValueError("split salt must be a non-empty string")
-    if not isinstance(group_key, str) or not group_key:
-        raise ValueError("group key must be a non-empty string")
+    for value, name in (
+        (version, "benchmark version"),
+        (salt, "split salt"),
+        (group_key, "group key"),
+    ):
+        if (
+            not isinstance(value, str)
+            or not value
+            or value != value.strip()
+        ):
+            raise ValueError(
+                f"{name} must be a non-empty string without boundary whitespace"
+            )
     raw = hashlib.sha256(
         f"{version}|outer|{salt}|{group_key}".encode("utf-8")
     ).digest()
@@ -166,7 +232,15 @@ class SplitAssignment:
     group_hash_value: float
     role: SplitRole
     forced_by: str | None
-    chronological_boundaries: Mapping[str, list[int]] | None
+    chronological_boundaries: Mapping[str, tuple[int, int]] | None
+
+    def __post_init__(self) -> None:
+        if self.chronological_boundaries is not None:
+            object.__setattr__(
+                self,
+                "chronological_boundaries",
+                _freeze_nested(self.chronological_boundaries),
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -202,7 +276,14 @@ class SplitManifest:
     inner_split: Mapping[str, Any]
     policies: Mapping[str, Mapping[str, bool]]
     provenance: Mapping[str, str]
-    schema_version: str = "benchmark-split-manifest/1"
+    schema_version: str = _SCHEMA_VERSION
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "assignments", tuple(self.assignments))
+        object.__setattr__(self, "u_selected_uids", tuple(self.u_selected_uids))
+        object.__setattr__(self, "inner_split", _freeze_nested(self.inner_split))
+        object.__setattr__(self, "policies", _freeze_nested(self.policies))
+        object.__setattr__(self, "provenance", _freeze_nested(self.provenance))
 
     @staticmethod
     def role_policies() -> dict[SplitRole, dict[str, bool]]:
@@ -243,6 +324,77 @@ class SplitManifest:
             "provenance": dict(self.provenance),
         }
 
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> "SplitManifest":
+        """Rebuild and validate the one canonical immutable persisted form."""
+
+        data = _require_exact_keys(
+            payload,
+            {
+                "schema_version",
+                "benchmark_version",
+                "split_salt",
+                "assignments",
+                "u_selected_uids",
+                "inner_split",
+                "role_policies",
+                "provenance",
+            },
+            "split manifest",
+        )
+        schema_version = _require_canonical_string(
+            data["schema_version"], "schema_version"
+        )
+        benchmark_version = _require_canonical_string(
+            data["benchmark_version"], "benchmark version"
+        )
+        split_salt = _require_canonical_string(data["split_salt"], "split salt")
+
+        assignment_values = data["assignments"]
+        if not isinstance(assignment_values, list):
+            raise SplitManifestError("assignments must be a JSON array")
+        assignments = tuple(
+            _assignment_from_dict(value, index)
+            for index, value in enumerate(assignment_values)
+        )
+
+        selected_values = data["u_selected_uids"]
+        if not isinstance(selected_values, list):
+            raise SplitManifestError("u_selected_uids must be a JSON array")
+        selected = tuple(
+            _require_canonical_string(value, f"U-selected uid {index}")
+            for index, value in enumerate(selected_values)
+        )
+
+        inner_split = data["inner_split"]
+        if not isinstance(inner_split, Mapping):
+            raise SplitManifestError("inner_split must be an object")
+        policies = data["role_policies"]
+        if not isinstance(policies, Mapping):
+            raise SplitManifestError("role_policies must be an object")
+        for role_name, policy in policies.items():
+            _require_canonical_string(role_name, "role policy name")
+            if not isinstance(policy, Mapping):
+                raise SplitManifestError(
+                    f"role policy {role_name!r} must be an object"
+                )
+        provenance = data["provenance"]
+        if not isinstance(provenance, Mapping):
+            raise SplitManifestError("provenance must be an object")
+
+        manifest = cls(
+            schema_version=schema_version,
+            benchmark_version=benchmark_version,
+            split_salt=split_salt,
+            assignments=assignments,
+            u_selected_uids=selected,
+            inner_split=dict(inner_split),
+            policies={key: dict(value) for key, value in policies.items()},
+            provenance=dict(provenance),
+        )
+        validate_split_manifest(manifest)
+        return manifest
+
     @property
     def manifest_sha(self) -> str:
         canonical = json.dumps(
@@ -251,16 +403,115 @@ class SplitManifest:
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _candidate_boundaries(length: int | None) -> Mapping[str, list[int]] | None:
+def _assignment_from_dict(value: Any, index: int) -> SplitAssignment:
+    data = _require_exact_keys(
+        value,
+        {
+            "series_uid",
+            "dataset_id",
+            "regime_tag",
+            "overlap_group",
+            "exposure_class",
+            "length",
+            "group_key",
+            "group_hash_value",
+            "role",
+            "forced_by",
+            "chronological_boundaries",
+        },
+        f"assignment {index}",
+    )
+    series_uid = _require_canonical_string(data["series_uid"], "series_uid")
+    dataset_id = _require_canonical_string(data["dataset_id"], "dataset_id")
+    regime_tag = _require_canonical_string(data["regime_tag"], "regime_tag")
+    exposure_class = _require_canonical_string(
+        data["exposure_class"], "exposure_class"
+    )
+
+    overlap_group = data["overlap_group"]
+    if overlap_group is not None:
+        overlap_group = _require_canonical_string(overlap_group, "overlap_group")
+    length = data["length"]
+    if length is not None and (
+        isinstance(length, bool) or not isinstance(length, int)
+    ):
+        raise SplitManifestError(f"assignment {index} length must be an integer")
+    group_key = _require_canonical_string(data["group_key"], "group_key")
+
+    hash_value = data["group_hash_value"]
+    if (
+        isinstance(hash_value, bool)
+        or not isinstance(hash_value, (int, float))
+        or not math.isfinite(float(hash_value))
+    ):
+        raise SplitManifestError(
+            f"assignment {index} group_hash_value must be finite numeric data"
+        )
+
+    role_value = _require_canonical_string(data["role"], "role")
+    try:
+        role = SplitRole(role_value)
+    except ValueError as exc:
+        raise SplitManifestError(
+            f"assignment {index} has unknown role {role_value!r}"
+        ) from exc
+
+    forced_by = data["forced_by"]
+    if forced_by is not None:
+        forced_by = _require_canonical_string(forced_by, "forced_by")
+
+    raw_boundaries = data["chronological_boundaries"]
+    if raw_boundaries is None:
+        boundaries = None
+    else:
+        boundary_data = _require_exact_keys(
+            raw_boundaries,
+            {"train", "validation", "test"},
+            f"assignment {index} chronological_boundaries",
+        )
+        parsed: dict[str, tuple[int, int]] = {}
+        for name in ("train", "validation", "test"):
+            bounds = boundary_data[name]
+            if (
+                not isinstance(bounds, list)
+                or len(bounds) != 2
+                or any(isinstance(item, bool) or not isinstance(item, int) for item in bounds)
+            ):
+                raise SplitManifestError(
+                    f"assignment {index} boundary {name!r} must contain two integers"
+                )
+            parsed[name] = (bounds[0], bounds[1])
+        boundaries = parsed
+
+    return SplitAssignment(
+        series_uid=series_uid,
+        dataset_id=dataset_id,
+        regime_tag=regime_tag,
+        overlap_group=overlap_group,
+        exposure_class=exposure_class,
+        length=length,
+        group_key=group_key,
+        group_hash_value=float(hash_value),
+        role=role,
+        forced_by=forced_by,
+        chronological_boundaries=boundaries,
+    )
+
+
+def _candidate_boundaries(
+    length: int | None,
+) -> Mapping[str, tuple[int, int]] | None:
     if length is None:
         return None
     train_stop = length - 2 * HEADLINE_HORIZON
     validation_stop = length - HEADLINE_HORIZON
-    return {
-        "train": [0, train_stop],
-        "validation": [train_stop, validation_stop],
-        "test": [validation_stop, length],
-    }
+    return _freeze_nested(
+        {
+            "train": (0, train_stop),
+            "validation": (train_stop, validation_stop),
+            "test": (validation_stop, length),
+        }
+    )
 
 
 def _validate_candidate(candidate: SplitCandidate, index: int) -> None:
@@ -270,17 +521,21 @@ def _validate_candidate(candidate: SplitCandidate, index: int) -> None:
         )
     for field_name in ("series_uid", "dataset_id", "regime_tag", "exposure_class"):
         value = getattr(candidate, field_name)
-        if not isinstance(value, str) or not value.strip():
-            raise SplitManifestError(
-                f"candidate {index} has empty or invalid {field_name}"
-            )
-    if candidate.overlap_group is not None and (
-        not isinstance(candidate.overlap_group, str)
-        or not candidate.overlap_group.strip()
-    ):
+        try:
+            _require_canonical_string(value, field_name)
+        except SplitManifestError as exc:
+            raise SplitManifestError(f"candidate {index}: {exc}") from exc
+    if candidate.exposure_class not in _EXPOSURE_CLASSES:
         raise SplitManifestError(
-            f"candidate {candidate.series_uid!r} has an invalid overlap_group"
+            f"candidate {index} exposure_class is not a frozen exposure class"
         )
+    if candidate.overlap_group is not None:
+        try:
+            _require_canonical_string(candidate.overlap_group, "overlap_group")
+        except SplitManifestError as exc:
+            raise SplitManifestError(
+                f"candidate {candidate.series_uid!r}: {exc}"
+            ) from exc
     if candidate.length is not None:
         if isinstance(candidate.length, bool) or not isinstance(candidate.length, int):
             raise SplitManifestError(
@@ -301,12 +556,19 @@ def build_split_manifest(
 ) -> SplitManifest:
     """Build the deterministic five-role outer split and validate it fully."""
 
-    if not isinstance(benchmark_version, str) or not benchmark_version:
-        raise SplitManifestError("benchmark version must be a non-empty string")
-    if not isinstance(split_salt, str) or not split_salt:
-        raise SplitManifestError("split salt must be a non-empty string")
+    _require_canonical_string(benchmark_version, "benchmark version")
+    if benchmark_version != BENCHMARK_VERSION:
+        raise SplitManifestError(
+            f"benchmark version must be exactly {BENCHMARK_VERSION!r}"
+        )
+    _require_canonical_string(split_salt, "split salt")
 
-    rows = list(candidates)
+    try:
+        rows = list(candidates)
+    except TypeError as exc:
+        raise SplitManifestError("candidates must be an iterable") from exc
+    if not rows:
+        raise SplitManifestError("candidate set must contain at least one series")
     seen: set[str] = set()
     by_group: dict[str, list[SplitCandidate]] = {}
     for index, row in enumerate(rows):
@@ -316,9 +578,16 @@ def build_split_manifest(
         seen.add(row.series_uid)
         by_group.setdefault(row.group_key, []).append(row)
 
-    selected = tuple(sorted(set(u_selected_uids)))
-    if any(not isinstance(uid, str) or not uid for uid in selected):
-        raise SplitManifestError("U-selected uid values must be non-empty strings")
+    try:
+        raw_selected = list(u_selected_uids)
+    except TypeError as exc:
+        raise SplitManifestError("U-selected uid values must be an iterable") from exc
+    for index, uid in enumerate(raw_selected):
+        try:
+            _require_canonical_string(uid, f"U-selected uid {index}")
+        except SplitManifestError as exc:
+            raise SplitManifestError(f"invalid U-selected uid: {exc}") from exc
+    selected = tuple(sorted(set(raw_selected)))
     unknown_u = sorted(set(selected) - seen)
     if unknown_u:
         raise SplitManifestError(f"unknown U-selected series_uid values: {unknown_u}")
@@ -388,17 +657,32 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
 
     if not isinstance(manifest, SplitManifest):
         raise SplitManifestError("manifest must be a SplitManifest")
-    if manifest.schema_version != "benchmark-split-manifest/1":
+    if manifest.schema_version != _SCHEMA_VERSION:
         raise SplitManifestError(f"unsupported schema version {manifest.schema_version!r}")
-    if not manifest.benchmark_version or not manifest.split_salt:
-        raise SplitManifestError("manifest version and split salt must be non-empty")
+    _require_canonical_string(manifest.benchmark_version, "benchmark version")
+    if manifest.benchmark_version != BENCHMARK_VERSION:
+        raise SplitManifestError(
+            f"benchmark version must be exactly {BENCHMARK_VERSION!r}"
+        )
+    _require_canonical_string(manifest.split_salt, "split salt")
+    if not isinstance(manifest.inner_split, Mapping):
+        raise SplitManifestError("inner_split must be an object")
     if dict(manifest.inner_split) != _INNER_SPLIT:
         raise SplitManifestError("chronological inner-split rule differs from benchmark-v0")
     expected_policies = {
         role.value: dict(policy) for role, policy in _ROLE_POLICIES.items()
     }
-    if {key: dict(value) for key, value in manifest.policies.items()} != expected_policies:
+    if not isinstance(manifest.policies, Mapping):
+        raise SplitManifestError("role policies must be an object")
+    actual_policies: dict[str, dict[str, Any]] = {}
+    for key, value in manifest.policies.items():
+        if not isinstance(key, str) or not isinstance(value, Mapping):
+            raise SplitManifestError("role policies contain malformed entries")
+        actual_policies[key] = dict(value)
+    if actual_policies != expected_policies:
         raise SplitManifestError("role policies differ from the frozen protocol")
+    if not isinstance(manifest.provenance, Mapping):
+        raise SplitManifestError("design provenance must be an object")
     if dict(manifest.provenance) != {
         "external_addendum_sha256": EXTERNAL_ADDENDUM_SHA256,
         "design_commit": DESIGN_COMMIT,
@@ -406,11 +690,35 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
         raise SplitManifestError("design provenance differs from the frozen protocol")
 
     rows = list(manifest.assignments)
+    if not rows:
+        raise SplitManifestError("manifest must contain at least one assignment")
+    for index, row in enumerate(rows):
+        if not isinstance(row, SplitAssignment):
+            raise SplitManifestError(
+                f"assignment {index} must be a SplitAssignment, "
+                f"got {type(row).__name__}"
+            )
+        _validate_candidate(
+            SplitCandidate(
+                row.series_uid,
+                row.dataset_id,
+                row.regime_tag,
+                row.overlap_group,
+                row.exposure_class,
+                row.length,
+            ),
+            index,
+        )
     uids = [row.series_uid for row in rows]
     if len(uids) != len(set(uids)):
         raise SplitManifestError("manifest contains duplicate series_uid values")
     if uids != sorted(uids):
         raise SplitManifestError("manifest assignments are not in canonical uid order")
+    for index, uid in enumerate(manifest.u_selected_uids):
+        try:
+            _require_canonical_string(uid, f"U-selected uid {index}")
+        except SplitManifestError as exc:
+            raise SplitManifestError(f"invalid U-selected uid: {exc}") from exc
     selected = tuple(sorted(set(manifest.u_selected_uids)))
     if selected != manifest.u_selected_uids:
         raise SplitManifestError("U-selected uid list is not canonical and unique")
@@ -429,10 +737,25 @@ def validate_split_manifest(manifest: SplitManifest) -> None:
             row.length,
         )
         _validate_candidate(candidate, 0)
+        _require_canonical_string(row.group_key, "group_key")
         if row.group_key != candidate.group_key:
             raise SplitManifestError(
                 f"assignment {row.series_uid!r} has a non-canonical group key"
             )
+        if (
+            isinstance(row.group_hash_value, bool)
+            or not isinstance(row.group_hash_value, (int, float))
+            or not math.isfinite(float(row.group_hash_value))
+        ):
+            raise SplitManifestError(
+                f"assignment {row.series_uid!r} has an invalid group hash value"
+            )
+        if not isinstance(row.role, SplitRole):
+            raise SplitManifestError(
+                f"assignment {row.series_uid!r} has an invalid role"
+            )
+        if row.forced_by is not None:
+            _require_canonical_string(row.forced_by, "forced_by")
         if row.chronological_boundaries != _candidate_boundaries(row.length):
             raise SplitManifestError(
                 f"assignment {row.series_uid!r} has invalid chronological boundaries"

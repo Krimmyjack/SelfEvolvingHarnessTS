@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -162,3 +163,190 @@ def test_repository_addendum_is_an_exact_byte_mirror():
         / "Benchmark_v0_Forecast_Design_v3_Addendum_2026-07-13.md"
     )
     assert hashlib.sha256(mirror.read_bytes()).hexdigest() == EXTERNAL_ADDENDUM_SHA256
+
+
+@pytest.mark.parametrize(
+    "exposure",
+    ["confirmed_exposed", "uncertain_legacy_exposure", "probe_consumed"],
+)
+def test_every_nonvirgin_exposure_forces_the_whole_group_to_support_a(exposure):
+    manifest = build_split_manifest(
+        [_candidate("marked", group="g", exposure=exposure), _candidate("peer", group="g")],
+        BENCHMARK_VERSION,
+        "salt",
+        set(),
+    )
+    assert manifest.assignment("marked").role is SplitRole.SUPPORT_A
+    assert manifest.assignment("peer").role is SplitRole.SUPPORT_A
+    assert manifest.assignment("marked").forced_by == "exposure"
+
+
+def test_probe_consumed_cannot_be_selected_for_u():
+    with pytest.raises(SplitManifestError, match="Support-A.*U"):
+        build_split_manifest(
+            [_candidate("probe", exposure="probe_consumed")],
+            BENCHMARK_VERSION,
+            "salt",
+            {"probe"},
+        )
+
+
+@pytest.mark.parametrize(
+    "exposure",
+    [
+        "virgin",
+        "certified-virgin",
+        "",
+        " ",
+        " certified_virgin",
+        "certified_virgin ",
+    ],
+)
+def test_unknown_or_noncanonical_exposure_fails_loudly(exposure):
+    with pytest.raises(SplitManifestError, match="exposure_class"):
+        build_split_manifest(
+            [_candidate("series", exposure=exposure)],
+            BENCHMARK_VERSION,
+            "salt",
+            set(),
+        )
+
+
+def test_manifest_nested_state_is_immutable_and_sha_cannot_drift():
+    manifest = build_split_manifest(
+        [_candidate("long", length=HEADLINE_MIN_LENGTH)],
+        BENCHMARK_VERSION,
+        "salt",
+        set(),
+    )
+    original_sha = manifest.manifest_sha
+
+    with pytest.raises(TypeError):
+        manifest.inner_split["lookback"] = 1
+    with pytest.raises(TypeError):
+        manifest.policies[SplitRole.SUPPORT_A.value]["repeatable"] = False
+    with pytest.raises(TypeError):
+        manifest.provenance["design_commit"] = "changed"
+
+    boundaries = manifest.assignment("long").chronological_boundaries
+    assert boundaries is not None
+    with pytest.raises(TypeError):
+        boundaries["train"] = (1, 2)
+    with pytest.raises(TypeError):
+        boundaries["train"][0] = 1
+
+    assert manifest.manifest_sha == original_sha
+
+
+def test_manifest_json_round_trip_rebuilds_canonical_immutable_types():
+    original = build_split_manifest(
+        [
+            _candidate("a", group="g", length=HEADLINE_MIN_LENGTH),
+            _candidate("b", group="g"),
+        ],
+        BENCHMARK_VERSION,
+        "salt",
+        set(),
+    )
+    persisted = json.loads(json.dumps(original.to_dict()))
+    rebuilt = SplitManifest.from_dict(persisted)
+
+    assert rebuilt.to_dict() == original.to_dict()
+    assert rebuilt.manifest_sha == original.manifest_sha
+    assert rebuilt.assignments == original.assignments
+    assert rebuilt.assignments[0].role is original.assignments[0].role
+    with pytest.raises(TypeError):
+        rebuilt.inner_split["horizon"] = 1
+
+
+def test_manifest_from_dict_normalizes_malformed_persistence_errors():
+    manifest = build_split_manifest(
+        [_candidate("a", length=HEADLINE_MIN_LENGTH)],
+        BENCHMARK_VERSION,
+        "salt",
+        set(),
+    )
+
+    missing_version = manifest.to_dict()
+    del missing_version["benchmark_version"]
+    invalid_role = manifest.to_dict()
+    invalid_role["assignments"][0]["role"] = "not-a-role"
+    invalid_assignment = manifest.to_dict()
+    invalid_assignment["assignments"][0] = "not-an-assignment"
+    invalid_boundaries = manifest.to_dict()
+    invalid_boundaries["assignments"][0]["chronological_boundaries"] = "bad"
+    invalid_policies = manifest.to_dict()
+    invalid_policies["role_policies"] = []
+
+    for payload in (
+        missing_version,
+        invalid_role,
+        invalid_assignment,
+        invalid_boundaries,
+        invalid_policies,
+    ):
+        with pytest.raises(SplitManifestError):
+            SplitManifest.from_dict(payload)
+
+
+def test_split_is_bound_to_the_exact_benchmark_version():
+    with pytest.raises(SplitManifestError, match="benchmark version"):
+        build_split_manifest([_candidate("a")], "benchmark-v0-next", "salt", set())
+
+    manifest = build_split_manifest(
+        [_candidate("a")], BENCHMARK_VERSION, "salt", set()
+    )
+    tampered = dataclasses.replace(manifest, benchmark_version="benchmark-v0-next")
+    with pytest.raises(SplitManifestError, match="benchmark version"):
+        validate_split_manifest(tampered)
+
+
+def test_empty_candidates_and_boundary_whitespace_are_rejected():
+    with pytest.raises(SplitManifestError, match="at least one"):
+        build_split_manifest([], BENCHMARK_VERSION, "salt", set())
+
+    with pytest.raises(SplitManifestError, match="benchmark version"):
+        build_split_manifest([_candidate("a")], f" {BENCHMARK_VERSION}", "salt", set())
+    with pytest.raises(SplitManifestError, match="split salt"):
+        build_split_manifest([_candidate("a")], BENCHMARK_VERSION, " salt", set())
+
+    base = _candidate("a", group="group")
+    for field_name in (
+        "series_uid",
+        "dataset_id",
+        "regime_tag",
+        "overlap_group",
+        "exposure_class",
+    ):
+        value = getattr(base, field_name)
+        candidate = dataclasses.replace(base, **{field_name: f"{value} "})
+        with pytest.raises(SplitManifestError, match=field_name):
+            build_split_manifest([candidate], BENCHMARK_VERSION, "salt", set())
+
+
+@pytest.mark.parametrize("selected", [["a", 1], ["a", ""], ["a", " a"]])
+def test_u_selection_elements_are_validated_before_deduplication_and_sorting(selected):
+    with pytest.raises(SplitManifestError, match="U-selected"):
+        build_split_manifest(
+            [_candidate("a")], BENCHMARK_VERSION, "salt", selected
+        )
+
+
+def test_validator_normalizes_malformed_assignment_and_u_types():
+    manifest = build_split_manifest(
+        [_candidate("a")], BENCHMARK_VERSION, "salt", set()
+    )
+    malformed_assignment = dataclasses.replace(manifest, assignments=(object(),))
+    with pytest.raises(SplitManifestError, match="SplitAssignment"):
+        validate_split_manifest(malformed_assignment)
+
+    malformed_u = dataclasses.replace(manifest, u_selected_uids=(object(),))
+    with pytest.raises(SplitManifestError, match="U-selected"):
+        validate_split_manifest(malformed_u)
+
+    invalid_uid = dataclasses.replace(
+        manifest.assignments[0], series_uid=[]
+    )
+    malformed_uid = dataclasses.replace(manifest, assignments=(invalid_uid,))
+    with pytest.raises(SplitManifestError, match="series_uid"):
+        validate_split_manifest(malformed_uid)
