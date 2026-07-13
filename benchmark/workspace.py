@@ -25,6 +25,7 @@ from .materialize import (
     parse_uci_electricity_zip,
     read_clean_base,
     verify_raw_asset,
+    write_text_lf,
 )
 from .metrics import UndefinedSeasonalScale, seasonal_scale
 from .probe import probe_registry
@@ -288,9 +289,9 @@ def _probe_with_cache(
             "features": result,
         }
         temporary = path.with_suffix(".json.partial")
-        temporary.write_text(
+        write_text_lf(
+            temporary,
             json.dumps(payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")) + "\n",
-            encoding="utf-8",
         )
         temporary.replace(path)
         output[row.series_uid] = result
@@ -454,9 +455,9 @@ def probe_workspace(
                 for entity, block in sorted(blocking.items())
             },
         }
-        (output / "metr_la_spatial_blocks.json").write_text(
+        write_text_lf(
+            output / "metr_la_spatial_blocks.json",
             json.dumps(spatial_payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
-            encoding="utf-8",
         )
 
     counts = Counter("eligible" if not row.admission_reasons else "rejected" for row in finalized)
@@ -469,19 +470,23 @@ def probe_workspace(
         "datasets": dict(sorted(Counter(row.dataset_id for row in finalized).items())),
         "regimes": dict(sorted(Counter(row.regime_tag for row in finalized).items())),
     }
-    (output / "probe_summary.json").write_text(
+    write_text_lf(
+        output / "probe_summary.json",
         json.dumps(summary, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
-        encoding="utf-8",
     )
     return summary
 
 
 def _write_json(path: Path, payload: object) -> None:
-    encoded = json.dumps(payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n"
-    if path.exists() and path.read_text("utf-8") != encoded:
+    # Compared and written as BYTES: this artifact's digest is pinned into the benchmark
+    # manifest, so a platform-dependent newline would make the freeze irreproducible.
+    encoded = (
+        json.dumps(payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n"
+    ).encode("utf-8")
+    if path.exists() and path.read_bytes() != encoded:
         raise RuntimeError(f"frozen artifact differs on rerun: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(encoded, encoding="utf-8")
+    path.write_bytes(encoded)
 
 
 def _data_card(
@@ -639,18 +644,21 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
     }
     _write_json(output / "benchmark_manifest_v0.yaml", benchmark_manifest)
     role_counts = Counter(row.role.value for row in manifest.assignments)
-    (output / "data_card.md").write_text(
+    write_text_lf(
+        output / "data_card.md",
         _data_card(records, eligible, role_counts, dataset_counts, output),
-        encoding="utf-8",
     )
-    (output / "training_evaluation_protocol.md").write_text(
-        "# Benchmark v0 training and evaluation protocol\n\n"
+    write_text_lf(
+        output / "training_evaluation_protocol.md",
+        f"# Benchmark {BENCHMARK_VERSION} training and evaluation protocol\n\n"
         "Normalization is benchmark-owned. Raw means No-op + canonical ingestion. "
         "Closed-form, Adam-DLinear, and LSTM share eligibility, windows, ingestion, and normalization.\n\n"
+        "One shared model is trained per (program, scenario, dose, corruption replicate) on the "
+        "role's pooled inner-train with series-equal weighting. The training pool is never sliced "
+        "by regime_tag, which is a benchmark-private diagnostic label.\n\n"
         "Aggregation order: model seed -> corruption replicate -> scenario and dose -> one row per uid "
         "-> cell series mean -> dataset macro mean within regime.\n\n"
         "Final-Query is sealed until one frozen evaluation campaign records durable unseal/access events.\n",
-        encoding="utf-8",
     )
     freeze_event = {
         "event": "benchmark_freeze",
@@ -659,13 +667,14 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
         "split_manifest_sha256": split_sha,
         "final_query_state": "sealed",
     }
-    ledger_bytes = json.dumps(
-        freeze_event, sort_keys=True, ensure_ascii=True, separators=(",", ":")
-    ) + "\n"
+    ledger_bytes = (
+        json.dumps(freeze_event, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
     ledger_path = output / "virgin_ledger.jsonl"
-    if ledger_path.exists() and ledger_path.read_text("utf-8") != ledger_bytes:
+    if ledger_path.exists() and ledger_path.read_bytes() != ledger_bytes:
         raise RuntimeError("frozen virgin ledger differs on rerun")
-    ledger_path.write_text(ledger_bytes, encoding="utf-8")
+    ledger_path.write_bytes(ledger_bytes)
     return manifest
 
 

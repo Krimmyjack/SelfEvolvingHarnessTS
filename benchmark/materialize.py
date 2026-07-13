@@ -33,7 +33,25 @@ __all__ = [
     "select_benchmark_span",
     "verify_raw_asset",
     "write_raw_once",
+    "write_text_lf",
 ]
+
+
+def write_text_lf(path: Path, text: str) -> bytes:
+    """Write UTF-8 text with LF endings, byte-exactly, and return the bytes written.
+
+    Every artifact whose SHA256 is pinned into the benchmark manifest MUST go through
+    this.  `Path.write_text` uses the platform's newline convention, so on Windows it
+    silently emits CRLF -- which means the digest of a frozen artifact would depend on
+    which OS froze it, and a Linux re-freeze of identical content would produce a
+    different hash.  Worse, git's `text=auto` normalizes CRLF to LF in the object store
+    and restores CRLF on Windows checkout, so a checked-out artifact would not hash to
+    its own pinned digest.  Byte-exact LF is the only way the bindings survive both.
+    """
+    payload = text.encode("utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(payload)
+    return payload
 
 
 class RawMutationError(RuntimeError):

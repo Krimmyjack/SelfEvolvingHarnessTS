@@ -585,9 +585,11 @@ def _acquire_noaa(
         "selected_stations": list(stations),
         "download_failures_no_refill": failures,
     }
-    selection_path.write_text(
+    from .materialize import write_text_lf
+
+    write_text_lf(
+        selection_path,
         json.dumps(selection_payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
-        encoding="utf-8",
     )
     status = "complete" if not failures else "partial_download_failed_no_refill"
     return _asset_result(spec.source_id, status, assets, f"NOAA station failures: {failures}")
@@ -701,9 +703,11 @@ def acquire_all_sources(
         "automatic_requested": automatic,
         "results": [row.to_dict() for row in ordered],
     }
-    (base / "acquisition_manifest.json").write_text(
+    from .materialize import write_text_lf
+
+    write_text_lf(
+        base / "acquisition_manifest.json",
         json.dumps(manifest, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
-        encoding="utf-8",
     )
     return ordered
 

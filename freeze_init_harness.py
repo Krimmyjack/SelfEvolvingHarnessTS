@@ -38,6 +38,7 @@ from collections import Counter
 from pathlib import Path
 
 from .benchmark import BENCHMARK_VERSION
+from .benchmark.materialize import write_text_lf
 from .benchmark.registry import SeriesRecord, read_registry_jsonl
 
 PKG = Path(__file__).resolve().parent
@@ -238,8 +239,11 @@ def build_init_harness() -> dict:
 def main() -> None:
     doc = build_init_harness()
     RESULTS.mkdir(parents=True, exist_ok=True)
-    INIT_HARNESS_PATH.write_text(
-        json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=True) + "\n", "utf-8"
+    # Byte-exact LF: this manifest carries its own SHA256, and Path.write_text would emit
+    # CRLF on Windows, making the digest depend on which OS froze it.
+    write_text_lf(
+        INIT_HARNESS_PATH,
+        json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
     )
     extension_count = doc["total_count"] - doc["core_only_count"]
     print(

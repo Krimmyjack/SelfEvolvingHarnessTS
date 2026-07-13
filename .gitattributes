@@ -1,2 +1,19 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Files whose SHA256 is pinned somewhere must never be rewritten by git.
+#
+# `text=auto` stores LF in the object database and restores CRLF on Windows checkout.
+# For an ordinary source file that is harmless. For an artifact whose *bytes are its
+# identity* -- a frozen registry, a split manifest, a design document mirrored by digest
+# -- it is fatal: the checked-out file no longer hashes to the digest recorded inside the
+# benchmark manifest, so the integrity check meant to catch tampering fires on a clean
+# checkout instead.
+#
+# `-text` disables newline translation entirely, so these paths round-trip byte-exactly
+# on every platform. The writers (benchmark/materialize.py: write_text_lf) emit LF, so
+# the bytes are identical everywhere.
+results/Benchmark_v0/** -text
+results/Benchmark_v0_1/** -text
+data/benchmark_v0/acquisition_manifest.json -text
+docs/benchmark/** -text

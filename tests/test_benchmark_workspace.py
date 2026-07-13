@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import zipfile
@@ -186,6 +187,41 @@ def test_probe_workspace_consumes_registered_gefcom_and_metr_assets(tmp_path):
             == group_of_sensor[_metr_sensor_id(site, 1)]
         )
     assert (out / "metr_la_spatial_blocks.json").is_file()
+
+
+def test_frozen_artifacts_are_byte_exact_lf_and_hash_to_their_pinned_digests(tmp_path):
+    """The manifest's digests must hold for the bytes actually on disk, on any platform.
+
+    Path.write_text emits CRLF on Windows, so a manifest frozen there would pin CRLF
+    digests that a Linux re-freeze could never reproduce -- and git's `text=auto` would
+    rewrite the artifact on checkout so it no longer hashes to its own recorded digest.
+    """
+    root = tmp_path / "data"
+    out = tmp_path / "results"
+    _write_small_uci(root)
+    probe_workspace(
+        root, out, include_legacy=False, min_length=207, horizon=2, max_length=220,
+        min_scale_pairs=2,
+    )
+    freeze_workspace(root, out)
+
+    manifest = json.loads((out / "benchmark_manifest_v0.yaml").read_bytes())
+    pinned = {
+        "series_registry.jsonl": "registry_sha256",
+        "split_manifest.json": "split_manifest_sha256",
+        "dataset_manifest.json": "dataset_manifest_sha256",
+        "support_a_subsplit.json": "support_a_subsplit_sha256",
+        "corruption_grid.json": "corruption_grid_sha256",
+    }
+    for name, key in pinned.items():
+        payload = (out / name).read_bytes()
+        assert b"\r\n" not in payload, f"{name} was written with CRLF"
+        assert hashlib.sha256(payload).hexdigest() == manifest[key], (
+            f"{name} does not hash to the digest pinned in the benchmark manifest"
+        )
+
+    for name in ("probe_summary.json", "data_card.md", "virgin_ledger.jsonl"):
+        assert b"\r\n" not in (out / name).read_bytes(), f"{name} was written with CRLF"
 
 
 def test_metr_la_without_coordinates_is_refused_rather_than_split_per_sensor(tmp_path):

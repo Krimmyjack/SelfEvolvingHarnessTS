@@ -25,6 +25,7 @@ from .corruption import (
     replicates_for,
 )
 from .ingestion import canonical_ingest
+from .materialize import write_text_lf
 from .metrics import seasonal_scale, smase
 from .registry import SeriesRecord, read_registry_jsonl
 from .report import DevDiscriminationRow, build_dev_discrimination_report
@@ -257,9 +258,8 @@ def bind_dev_report_to_manifest(
         "trainer": float(timeout_values["trainer_p95_x2"]),
         "rule": "same_hardware_dev_p95_x2",
     }
-    path.write_text(
-        json.dumps(payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n",
-        encoding="utf-8",
+    write_text_lf(
+        path, json.dumps(payload, sort_keys=True, ensure_ascii=True, indent=2) + "\n"
     )
     return digest
 
@@ -586,7 +586,8 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
     with (output / "dev_program_losses.jsonl").open("w", encoding="utf-8", newline="\n") as handle:
         for row in support + dev:
             handle.write(json.dumps(row.__dict__, sort_keys=True, ensure_ascii=True) + "\n")
-    (output / "dev_per_dose_report.json").write_text(
+    write_text_lf(
+        output / "dev_per_dose_report.json",
         json.dumps(
             {
                 "split_role": "dev_query",
@@ -598,11 +599,10 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
             indent=2,
         )
         + "\n",
-        encoding="utf-8",
     )
-    (output / "baseline_report.md").write_text(
+    write_text_lf(
+        output / "baseline_report.md",
         _baseline_report_markdown(report, best.program_id),
-        encoding="utf-8",
     )
     return report
 
