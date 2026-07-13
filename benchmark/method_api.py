@@ -6,7 +6,7 @@ import json
 import math
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any, Callable, Mapping, Protocol, Sequence
+from typing import Any, Callable, Mapping, Protocol, Sequence, runtime_checkable
 
 import numpy as np
 
@@ -119,6 +119,7 @@ class PreparedSeries:
         _canonical_string(self.units, "units")
 
 
+@runtime_checkable
 class BenchmarkMethod(Protocol):
     method_id: str
 
