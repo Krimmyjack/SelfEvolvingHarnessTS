@@ -6,15 +6,16 @@ import pytest
 
 from SelfEvolvingHarnessTS.benchmark.dev_eval import (
     aggregate_per_dose,
-    apply_fixed_program,
     audit_h_ref_behaviour,
     bind_dev_report_to_manifest,
     canonical_evaluation_context,
     dual_headroom,
     fold_to_headline,
+    mechanism_panel,
     oracle_transfer_with_coverage,
 )
 from SelfEvolvingHarnessTS.benchmark.baselines import ProgramLoss
+from SelfEvolvingHarnessTS.benchmark.programs import apply_program
 
 
 def test_headline_fold_is_cell_equal_not_series_micro():
@@ -71,14 +72,56 @@ def test_headroom_flags_the_cell_where_the_oracle_only_undoes_h_ref_harm():
 
 def test_fixed_programs_preserve_length_and_raw_is_noop():
     values = np.array([1.0, np.nan, np.nan, 4.0, 5.0, np.nan, 7.0])
-    raw = apply_fixed_program("raw", values, period=2)
-    forward = apply_fixed_program("forward_fill", values, period=2)
-    seasonal = apply_fixed_program("seasonal_fill", values, period=2)
+    raw = apply_program("raw", values, period=2)
+    forward = apply_program("forward_fill", values, period=2)
+    seasonal = apply_program("seasonal_fill", values, period=2)
     assert np.array_equal(raw, values, equal_nan=True)
     assert len(forward) == len(seasonal) == len(values)
     assert np.isfinite(forward).all()
     assert np.isfinite(seasonal).all()
     assert seasonal[2] == 1.0
+
+
+def test_retrained_oracle_headroom_reports_the_picks_it_actually_made():
+    # A retrained oracle carries its own id on every row, because it picks a program per
+    # (cell, scenario, dose). The headroom table must therefore be told what it picked --
+    # otherwise the "oracle reverted to Raw" flag, which is what separates real repair
+    # space from H_ref's damage being refunded, silently reads False forever.
+    raw = [ProgramLoss("dev_query", "hurt|r", "raw", "u", 1.0)]
+    h_ref = [ProgramLoss("dev_query", "hurt|r", "h_ref", "u", 2.0)]
+    oracle = [ProgramLoss("dev_query", "hurt|r", "oracle_transfer_retrained", "u", 1.0)]
+
+    blind = dual_headroom(raw, h_ref, oracle)
+    assert blind["cells"]["hurt|r"]["oracle_reverts_to_raw"] is False
+
+    informed = dual_headroom(
+        raw, h_ref, oracle, selection_by_cell={"hurt|r": ["raw", "raw", "winsorize"]}
+    )
+    cell = informed["cells"]["hurt|r"]
+    assert cell["oracle_reverts_to_raw"] is True
+    assert cell["oracle_raw_pick_share"] == pytest.approx(2 / 3)
+    assert cell["gain_over_raw"] == pytest.approx(0.0)
+    assert cell["gain_over_h_ref"] == pytest.approx(1.0)
+
+
+def test_mechanism_panel_flags_the_cells_where_no_program_can_act():
+    # This is the v0.1 finding, promoted to a permanent guard: when every program in the
+    # pool scores identically on a defect, the pool has no action for it. That has to read
+    # as a capability gap, never as "the data is saturated".
+    rows = [
+        {"program_id": p, "cell_id": "ds|r", "scenario": "level_shift", "dose": 0.05, "loss": 2.0}
+        for p in ("raw", "forward_fill", "winsorize")
+    ] + [
+        {"program_id": "raw", "cell_id": "ds|r", "scenario": "block", "dose": 0.24, "loss": 3.0},
+        {"program_id": "forward_fill", "cell_id": "ds|r", "scenario": "block", "dose": 0.24, "loss": 2.0},
+        {"program_id": "winsorize", "cell_id": "ds|r", "scenario": "block", "dose": 0.24, "loss": 4.0},
+    ]
+    panel = mechanism_panel(rows)
+    assert panel["cells_where_pool_cannot_act"] == ["ds|level_shift|0.05"]
+    live = [row for row in panel["rows"] if row["scenario"] == "block"][0]
+    assert live["programs_indistinguishable"] is False
+    assert live["best_pool_program"] == "forward_fill"
+    assert live["mechanism_of_best_program"] == "missing"
 
 
 def test_per_dose_disclosure_folds_replicates_but_not_scenario_or_dose():

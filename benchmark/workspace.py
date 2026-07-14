@@ -38,6 +38,7 @@ from .registry import (
     write_registry_jsonl,
 )
 from .sources import METR_LA_SPATIAL_BLOCKS, SOURCE_SPECS
+from .programs import pool_manifest
 from .spatial import block_diagnostics, build_spatial_blocks
 from .split import SplitManifest, build_split_manifest, build_support_a_subsplit
 
@@ -613,6 +614,10 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
         ),
     }
     _write_json(output / "corruption_grid.json", corruption_document)
+    # The pool is frozen here, at freeze time, before any v0.2 number exists. A pool chosen
+    # after the fact -- "these are the operators that count" -- is the shortest path from a
+    # null result to a discovery.
+    _write_json(output / "program_pool.json", pool_manifest())
 
     acquisition = data_root / "acquisition_manifest.json"
     acquisition_sha = _sha256_file(acquisition) if acquisition.is_file() else None
@@ -628,6 +633,7 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
         "dataset_manifest_sha256": _sha256_file(output / "dataset_manifest.json"),
         "support_a_subsplit_sha256": _sha256_file(output / "support_a_subsplit.json"),
         "corruption_grid_sha256": _sha256_file(output / "corruption_grid.json"),
+        "program_pool_sha256": _sha256_file(output / "program_pool.json"),
         "metr_la_spatial_blocks_sha256": (
             _sha256_file(spatial_path) if spatial_path.is_file() else None
         ),
@@ -653,9 +659,15 @@ def freeze_workspace(root: Path | str, out: Path | str) -> SplitManifest:
         f"# Benchmark {BENCHMARK_VERSION} training and evaluation protocol\n\n"
         "Normalization is benchmark-owned. Raw means No-op + canonical ingestion. "
         "Closed-form, Adam-DLinear, and LSTM share eligibility, windows, ingestion, and normalization.\n\n"
-        "One shared model is trained per (program, scenario, dose, corruption replicate) on the "
-        "role's pooled inner-train with series-equal weighting. The training pool is never sliced "
-        "by regime_tag, which is a benchmark-private diagnostic label.\n\n"
+        "One model is trained per (program, scenario, dose, corruption replicate, dataset) on "
+        "that dataset's inner-train with series-equal weighting. The frozen spec fixes trainer "
+        "internals but never fixed the training pool's scope; v0.2 fixes it at dataset. The pool "
+        "is never sliced by regime_tag, which is a benchmark-private diagnostic label, and "
+        "dataset_id is public metadata, so slicing by it leaks nothing.\n\n"
+        "Oracles are RETRAINED: once a policy picks a program per (cell, scenario, dose), the "
+        "corpus those picks produce is assembled and a model is trained on it, through the same "
+        "path a Method takes. An oracle read off single-program models describes a corpus no "
+        "model was ever fitted to and is reported as descriptive only.\n\n"
         "Aggregation order: model seed -> corruption replicate -> scenario and dose -> one row per uid "
         "-> cell series mean -> dataset macro mean within regime.\n\n"
         "Final-Query is sealed until one frozen evaluation campaign records durable unseal/access events.\n",

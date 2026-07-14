@@ -1,0 +1,158 @@
+{
+  "capability_gaps": [
+    {
+      "corruption_scenario": "local_permutation",
+      "defect_mechanism": "timestamp_irregularity",
+      "why_uncovered": "The corruption is realized in the value domain -- values are permuted inside disjoint tiles -- because the legacy Monash series carry no timestamps at all, so a real timestamp array cannot be perturbed uniformly across the roster without breaking CRN. A 're-align the timestamps' operator therefore has nothing to grip: the index is already uniform and correct. Median and smoothing programs are weak candidates at best, and they are in the pool for other mechanisms, not for this one."
+    },
+    {
+      "corruption_scenario": "level_shift",
+      "defect_mechanism": "structural_break",
+      "why_uncovered": "`operators/registry.py` holds no changepoint-detection or segment-normalization operator. Nothing in the pool can find a break, so nothing in the pool can repair one. This is a gap in the operator library and is reported as such."
+    }
+  ],
+  "code_sha256": {
+    "benchmark/programs.py": "2aa2de9363d3a5d7507b85eedb2569919fc2b6eddf41d6888f3f2ed40a231540",
+    "operators/_common.py": "9bec3b97ddb23e970a8cff0fb3d570fce8b4edd24f6f8b16fbd7aa16e4efaeea",
+    "operators/registry.py": "52d78e45cf9d1ba23a44214ded641321cb6707a191db1399d5f038445ef77a80",
+    "operators/s1_denoise.py": "5f025f0447225d609aa1d08933a7ee0e2b705a88e479158639c4546f4c903339",
+    "operators/s1_outlier.py": "e8ef1d2183bf0f190211c540e8d8040a474790ddaae9ea8d98c1506b28a42324"
+  },
+  "deliberately_excluded_operators": {
+    "impute_ema": "redundant mechanism with forward_fill; excluded before results",
+    "impute_fft": "redundant mechanism with seasonal_fill; excluded before results",
+    "impute_linear": "identical to canonical ingestion, which Raw already applies",
+    "minmax_norm": "changes_target_space; banned from the action surface",
+    "note": "This exclusion list is part of the freeze. Deciding after the fact which operators 'count' is the path by which a null becomes a discovery.",
+    "outlier_iqr": "redundant mechanism with winsorize; excluded before results",
+    "outlier_mad": "redundant mechanism with winsorize; excluded before results",
+    "period_complete": "redundant mechanism with seasonal_fill; excluded before results",
+    "smooth_ema": "redundant mechanism with denoise_savgol; excluded before results",
+    "smooth_ma": "redundant mechanism with denoise_savgol; excluded before results",
+    "znorm": "changes_target_space; banned from the action surface by the frozen spec"
+  },
+  "dependency_fingerprint": {
+    "numpy": "2.2.6",
+    "pywt": "1.8.0",
+    "scipy": "1.15.2",
+    "sklearn": "1.7.2",
+    "statsmodels": "0.14.6"
+  },
+  "frozen_before_any_v0_2_result_was_read": true,
+  "operator_contract_checked": [
+    "changes_target_space is False",
+    "forecast in allowed_tasks",
+    "shape_changing is False",
+    "output length equals input length",
+    "output is finite"
+  ],
+  "programs": [
+    {
+      "mechanism": "none",
+      "note": "No-op + canonical ingestion. The honest floor: what a method must beat.",
+      "operator": null,
+      "params": {},
+      "period_param": null,
+      "program_id": "raw"
+    },
+    {
+      "mechanism": "missing",
+      "note": "Benchmark-owned last-observation-carried-forward, leading NaNs back-filled.",
+      "operator": null,
+      "params": {},
+      "period_param": null,
+      "program_id": "forward_fill"
+    },
+    {
+      "mechanism": "missing",
+      "note": "Benchmark-owned lag-period fill, canonical ingestion for what it cannot reach.",
+      "operator": null,
+      "params": {},
+      "period_param": "period",
+      "program_id": "seasonal_fill"
+    },
+    {
+      "mechanism": "outlier_spike",
+      "note": "Symmetric quantile clipping. Registry default limits, frozen unchanged.",
+      "operator": "winsorize",
+      "params": {
+        "limits": 0.05
+      },
+      "period_param": null,
+      "program_id": "winsorize"
+    },
+    {
+      "mechanism": "outlier_spike",
+      "note": "Sliding median, symmetric boundary. This is the operator that project results before the benchmark called `v_median`; the canonical registry name is used here so the pool cannot drift from the operator library's single source.",
+      "operator": "denoise_median",
+      "params": {
+        "window": 5
+      },
+      "period_param": null,
+      "program_id": "denoise_median"
+    },
+    {
+      "mechanism": "additive_noise",
+      "note": "STL trend+seasonal reconstruction, residual dropped. The period is passed explicitly from the frozen frequency so the operator never reaches its `_guess_period` branch, whose no-seasonality path falls back to savgol.",
+      "operator": "denoise_stl",
+      "params": {},
+      "period_param": "period",
+      "program_id": "denoise_stl"
+    },
+    {
+      "mechanism": "additive_noise",
+      "note": "Savitzky-Golay, explicit `interp` endpoints. Registry defaults, frozen.",
+      "operator": "denoise_savgol",
+      "params": {
+        "order": 3,
+        "window": 11
+      },
+      "period_param": null,
+      "program_id": "denoise_savgol"
+    },
+    {
+      "mechanism": "additive_noise",
+      "note": "Bounded-level VisuShrink soft threshold, symmetric mode. Registry defaults.",
+      "operator": "denoise_wavelet",
+      "params": {
+        "wavelet": "db4"
+      },
+      "period_param": null,
+      "program_id": "denoise_wavelet"
+    },
+    {
+      "mechanism": "reference",
+      "note": "The frozen P6 det+random fast path. Executed by the runner, not by `apply_program`, because its action is a function of the whole role's episode state rather than of one series' values.",
+      "operator": null,
+      "params": {},
+      "period_param": null,
+      "program_id": "h_ref"
+    }
+  ],
+  "programs_by_mechanism": {
+    "additive_noise": [
+      "denoise_savgol",
+      "denoise_stl",
+      "denoise_wavelet"
+    ],
+    "missing": [
+      "forward_fill",
+      "seasonal_fill"
+    ],
+    "none": [
+      "raw"
+    ],
+    "outlier_spike": [
+      "denoise_median",
+      "winsorize"
+    ],
+    "reference": [
+      "h_ref"
+    ]
+  },
+  "runner_executed": [
+    "h_ref"
+  ],
+  "schema_version": "benchmark-program-pool/2",
+  "selection_principle": "mechanism coverage, not expected performance -- the pool exists so that 'choosing' has something to choose between, which is the precondition for C1 being measurable at all"
+}

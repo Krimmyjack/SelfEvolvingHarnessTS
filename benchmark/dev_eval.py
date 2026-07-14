@@ -27,13 +27,24 @@ from .corruption import (
 from .ingestion import canonical_ingest
 from .materialize import write_text_lf
 from .metrics import seasonal_scale, smase
+from .power import power_panel
+from .programs import (
+    PROGRAM_IDS,
+    RUNNER_EXECUTED,
+    apply_program,
+    mechanism_of,
+    pool_manifest,
+)
 from .registry import SeriesRecord, read_registry_jsonl
 from .report import DevDiscriminationRow, build_dev_discrimination_report
 from .split import SplitManifest, SplitRole
 from .trainers import NormalizationState, build_windows, fit_closed_form
 
-FIXED_PROGRAMS = ("raw", "forward_fill", "seasonal_fill")
-PROGRAM_IDS = FIXED_PROGRAMS + ("h_ref",)
+# The two retrained oracles. They are not programs a method could run -- they are runner
+# privileges -- but they are evaluated through the identical path as every program, which
+# is the whole point of retraining them.
+ORACLE_TRANSFER_RETRAINED = "oracle_transfer_retrained"
+ORACLE_INSAMPLE_RETRAINED = "oracle_insample_retrained"
 
 
 def fold_to_headline(rows: list[ProgramLoss]) -> dict[str, object]:
@@ -129,10 +140,74 @@ def audit_h_ref_behaviour(
     }
 
 
+def mechanism_panel(repeat_rows: list[dict[str, object]]) -> dict[str, object]:
+    """The second reporting axis: dataset x scenario x dose, never folded into the first.
+
+    The headline aggregation is dataset x regime, and it has to stay that way -- it is the
+    frozen ladder.  But a defect-mechanism question ("can anything in this pool touch a
+    level shift?") is invisible there, because the fold averages every scenario together.
+    So the mechanism axis gets its own table.  The `programs_indistinguishable` flag is the
+    one that mattered in v0.1: when every program's mean agrees to four decimals, the pool
+    has no action for that defect, and any "saturation" reading is a fact about the pool,
+    not about the data.
+    """
+    grouped: dict[tuple[str, str, float], dict[str, list[float]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    for row in repeat_rows:
+        dataset = str(row["cell_id"]).rsplit("|", 1)[0]
+        key = (dataset, str(row["scenario"]), float(row["dose"]))
+        grouped[key][str(row["program_id"])].append(float(row["loss"]))
+
+    panel: list[dict[str, object]] = []
+    for (dataset, scenario, dose), by_program in sorted(grouped.items()):
+        means = {
+            program: float(np.mean(losses)) for program, losses in sorted(by_program.items())
+        }
+        pool_means = {
+            program: value
+            for program, value in means.items()
+            if program not in RUNNER_EXECUTED
+            and program not in {ORACLE_TRANSFER_RETRAINED, ORACLE_INSAMPLE_RETRAINED}
+        }
+        spread = (max(pool_means.values()) - min(pool_means.values())) if pool_means else 0.0
+        best_program = min(pool_means, key=lambda key: (pool_means[key], key))
+        panel.append(
+            {
+                "dataset_id": dataset,
+                "scenario": scenario,
+                "dose": dose,
+                "mechanism_of_best_program": mechanism_of(best_program),
+                "best_pool_program": best_program,
+                "program_mean_smase": means,
+                "pool_spread": spread,
+                "programs_indistinguishable": bool(spread < 1e-4),
+                "n_series": len(next(iter(by_program.values()))) if by_program else 0,
+            }
+        )
+    dead = [
+        f"{row['dataset_id']}|{row['scenario']}|{row['dose']}"
+        for row in panel
+        if row["programs_indistinguishable"]
+    ]
+    return {
+        "reading": (
+            "programs_indistinguishable=true means no program in the frozen pool can act on "
+            "that defect. That is a capability gap in the operator library, reported as "
+            "such; it is not evidence that the data has nothing to gain."
+        ),
+        "rows": panel,
+        "cells_where_pool_cannot_act": dead,
+        "n_cells_where_pool_cannot_act": len(dead),
+    }
+
+
 def dual_headroom(
     raw_rows: list[ProgramLoss],
     h_ref_rows: list[ProgramLoss],
     insample_rows: list[ProgramLoss],
+    *,
+    selection_by_cell: dict[str, list[str]] | None = None,
 ) -> dict[str, object]:
     """Report headroom above BOTH floors, and flag where the oracle is only undoing harm.
 
@@ -160,16 +235,32 @@ def dual_headroom(
         raw_mean = float(np.mean(raw_by_cell[cell]))
         h_ref_mean = float(np.mean(h_ref_by_cell[cell]))
         oracle_mean = float(np.mean(oracle_by_cell[cell]))
-        selected = oracle_program_of_cell.get(cell, "unknown")
+        # A retrained oracle carries the oracle's own id on every row, because its picks
+        # vary by (scenario, dose) within the cell. In that case the caller hands over the
+        # actual picks, and "reverts to Raw" becomes a majority question rather than a
+        # single label.
+        if selection_by_cell is not None:
+            picks = sorted(selection_by_cell.get(cell, []))
+            raw_share = (
+                sum(1 for pick in picks if pick == "raw") / len(picks) if picks else 0.0
+            )
+            selected: object = picks
+            reverts = raw_share >= 0.5
+        else:
+            single = oracle_program_of_cell.get(cell, "unknown")
+            selected = single
+            raw_share = 1.0 if single == "raw" else 0.0
+            reverts = single == "raw"
         cells[cell] = {
             "oracle_selected_program": selected,
+            "oracle_raw_pick_share": raw_share,
             "raw_mean": raw_mean,
             "h_ref_mean": h_ref_mean,
             "oracle_insample_mean": oracle_mean,
             "gain_over_raw": raw_mean - oracle_mean,
             "gain_over_h_ref": h_ref_mean - oracle_mean,
             "h_ref_self_harm": h_ref_mean - raw_mean,
-            "oracle_reverts_to_raw": selected == "raw",
+            "oracle_reverts_to_raw": reverts,
         }
 
     reverting = sorted(cell for cell, row in cells.items() if row["oracle_reverts_to_raw"])
@@ -264,33 +355,6 @@ def bind_dev_report_to_manifest(
     return digest
 
 
-def apply_fixed_program(program_id: str, values: np.ndarray, *, period: int) -> np.ndarray:
-    source = np.asarray(values, dtype=np.float64)
-    if source.ndim != 1 or source.size == 0 or np.isinf(source).any():
-        raise ValueError("program input must be a non-empty finite-or-NaN vector")
-    result = source.copy()
-    if program_id == "raw":
-        return result
-    if program_id == "forward_fill":
-        finite = np.flatnonzero(np.isfinite(result))
-        if not finite.size:
-            raise ValueError("forward_fill has no finite anchor")
-        first = int(finite[0])
-        result[:first] = result[first]
-        for index in range(first + 1, len(result)):
-            if not np.isfinite(result[index]):
-                result[index] = result[index - 1]
-        return result
-    if program_id == "seasonal_fill":
-        if isinstance(period, bool) or not isinstance(period, int) or period < 1:
-            raise ValueError("seasonal_fill period must be positive")
-        for index in range(len(result)):
-            if not np.isfinite(result[index]) and index >= period and np.isfinite(result[index - period]):
-                result[index] = result[index - period]
-        return canonical_ingest(result).values.copy()
-    raise ValueError(f"unknown fixed program: {program_id!r}")
-
-
 def _slot(record: SeriesRecord, clean_root: Path) -> Path:
     key = hashlib.sha256(
         json.dumps(
@@ -334,7 +398,7 @@ def _program_values(
     prepared_inner: dict[str, np.ndarray] = {}
     for uid in histories:
         period = _period(records[uid])
-        if program_id == "h_ref":
+        if program_id in RUNNER_EXECUTED:
             choice = h_ref_choices.get(uid)
             full_artifact = prepared_artifact(choice, histories[uid])
             train_artifact = prepared_artifact(choice, inner[uid])
@@ -343,9 +407,92 @@ def _program_values(
             prepared_history[uid] = np.asarray(full_artifact, dtype=np.float64)
             prepared_inner[uid] = np.asarray(train_artifact, dtype=np.float64)
         else:
-            prepared_history[uid] = apply_fixed_program(program_id, histories[uid], period=period)
-            prepared_inner[uid] = apply_fixed_program(program_id, inner[uid], period=period)
+            prepared_history[uid] = apply_program(program_id, histories[uid], period=period)
+            prepared_inner[uid] = apply_program(program_id, inner[uid], period=period)
     return prepared_history, prepared_inner
+
+
+def _mixed_values(
+    policy: dict[str, str],
+    prepared_history_by_program: dict[str, dict[str, np.ndarray]],
+    prepared_inner_by_program: dict[str, dict[str, np.ndarray]],
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+    """Assemble the corpus a per-series policy actually produces.
+
+    Every program has already been run over every series for this corruption realization,
+    so composing the mixture costs nothing but a dictionary lookup.  What it buys is the
+    thing the old oracle never had: a corpus that a model can then be trained *on*.
+    """
+    history = {uid: prepared_history_by_program[program][uid] for uid, program in policy.items()}
+    inner = {uid: prepared_inner_by_program[program][uid] for uid, program in policy.items()}
+    return history, inner
+
+
+def _fit_and_score(
+    uids_by_dataset: dict[str, list[str]],
+    prepared_inner: dict[str, np.ndarray],
+    prepared_history: dict[str, np.ndarray],
+    normalization: dict[str, NormalizationState],
+    records_by_uid: dict[str, SeriesRecord],
+    scale_by_uid: dict[str, float],
+    clean_by_uid: dict[str, np.ndarray],
+) -> tuple[dict[str, float], dict[str, float], float]:
+    """Train one closed-form model per dataset and score that dataset's series with it.
+
+    The training unit is `(program, scenario, dose, replicate, dataset)`.  Under the v0.1
+    role-pooled unit, a program applied to COVID moved the shared weights that scored
+    traffic, so "the effect of this program on this dataset" was never isolated -- and the
+    per-cell oracle described a mixed corpus that no model had been fitted to.  Slicing by
+    `dataset_id` leaks nothing (it is public metadata, unlike `regime_tag`) and makes a
+    dataset-conditioned choice a world that was actually trained.
+    """
+    losses: dict[str, float] = {}
+    fills: dict[str, float] = {}
+    trainer_seconds = 0.0
+    for dataset in sorted(uids_by_dataset):
+        ds_uids = uids_by_dataset[dataset]
+        started = time.perf_counter()
+        batch = build_windows(
+            {uid: prepared_inner[uid] for uid in ds_uids},
+            {uid: normalization[uid] for uid in ds_uids},
+        )
+        model = fit_closed_form(batch)
+        trainer_seconds += time.perf_counter() - started
+
+        for uid in ds_uids:
+            context, fill_rate = canonical_evaluation_context(
+                prepared_history[uid], lookback=48
+            )
+            normalized = normalization[uid].normalize(context)
+            prediction = normalization[uid].denormalize(model.predict(normalized[None, :])[0])
+            losses[uid] = smase(
+                clean_by_uid[uid][-HEADLINE_HORIZON:], prediction, scale=scale_by_uid[uid]
+            )
+            fills[uid] = fill_rate
+    return losses, fills, trainer_seconds
+
+
+def _policy_from_cell_means(
+    cell_means: dict[tuple[str, str], float],
+    cells: set[str],
+    programs: tuple[str, ...],
+    fallback: str,
+) -> tuple[dict[str, str], list[str]]:
+    """Pick the best program per cell; report the cells with no evidence to pick from."""
+    policy: dict[str, str] = {}
+    uncovered: list[str] = []
+    for cell in sorted(cells):
+        scored = [
+            (cell_means[(cell, program)], program)
+            for program in programs
+            if (cell, program) in cell_means
+        ]
+        if not scored:
+            policy[cell] = fallback
+            uncovered.append(cell)
+            continue
+        policy[cell] = min(scored)[1]
+    return policy, uncovered
 
 
 def _expected_measurements() -> int:
@@ -357,32 +504,65 @@ def _evaluate_role(
     assignments: list[object],
     records_by_uid: dict[str, SeriesRecord],
     values_by_uid: dict[str, np.ndarray],
+    *,
+    transfer_policy: dict[tuple[str, str, float], dict[str, str]] | None = None,
+    best_fixed_program: str = "raw",
 ) -> tuple[
     list[ProgramLoss],
     dict[tuple[str, str], list[float]],
     list[float],
     list[float],
     list[dict[str, object]],
+    dict[str, object],
 ]:
-    """Evaluate every program on one role.
+    """Evaluate every pool program, plus both retrained oracles, on one role.
 
-    The downstream model is trained ONCE per (program, scenario, dose, replicate) on the
-    whole role's pooled inner-train, with series-equal weighting.  It is emphatically NOT
-    trained per dataset x regime cell: `regime_tag` is a benchmark-private diagnostic
-    label, and slicing the training pool by it would (a) hand the model a private label no
-    method is allowed to see and (b) train a different, smaller model for every cell, so
-    "the shared model" would not be shared at all.  `cell_id` survives only as a reporting
-    key.
+    Two things here are the v0.2 protocol, and both are deliberate.
+
+    **The training unit is per dataset.**  One closed-form model is fitted for every
+    `(program, scenario, dose, replicate, dataset)`.  `regime_tag` never touches the
+    training pool -- it is a benchmark-private label and slicing by it would hand the model
+    something no method may see -- so `cell_id` survives only as a reporting key.
+
+    **The oracles are retrained.**  Selecting a different program for each cell describes a
+    corpus that mixes programs.  Reading that oracle's loss off the per-program models --
+    which is what v0/v0.1 did -- reports a world in which no model was ever fitted to the
+    corpus the policy actually produces.  So once a policy is chosen, its corpus is
+    assembled and a model is trained *on it*, through the identical path a Method takes.
+    The floor (`best_fixed`), the ceiling (the oracles), and any method are then the same
+    kind of measurement, and the gap between them is a gap a method could actually close.
     """
     cell_of_uid: dict[str, str] = {}
+    dataset_of_uid: dict[str, str] = {}
     for assignment in assignments:
         if assignment.role is role:
             cell_of_uid[assignment.series_uid] = (
                 f"{assignment.dataset_id}|{assignment.regime_tag}"
             )
+            dataset_of_uid[assignment.series_uid] = assignment.dataset_id
     uids = sorted(cell_of_uid)
     if not uids:
-        return [], {}, [], [], []
+        return [], {}, [], [], [], {}, {}
+
+    uids_by_dataset: dict[str, list[str]] = defaultdict(list)
+    for uid in uids:
+        uids_by_dataset[dataset_of_uid[uid]].append(uid)
+    uids_by_dataset = {key: sorted(value) for key, value in sorted(uids_by_dataset.items())}
+    cells = {cell_of_uid[uid] for uid in uids}
+
+    # The sMASE denominator and the clean future are properties of the clean series, so
+    # they are constant across programs and corruption realizations. Hoisted out of the
+    # innermost loop, where the pool's ninefold widening would otherwise recompute them.
+    clean_by_uid = {uid: values_by_uid[uid] for uid in uids}
+    scale_by_uid = {
+        uid: seasonal_scale(
+            clean_by_uid[uid][: len(clean_by_uid[uid]) - 2 * HEADLINE_HORIZON],
+            np.isfinite(clean_by_uid[uid][: len(clean_by_uid[uid]) - 2 * HEADLINE_HORIZON]),
+            period=_period(records_by_uid[uid]),
+            min_pairs=32,
+        )
+        for uid in uids
+    }
 
     # Keyed by (program, cell, uid, scenario, dose) -> one loss per replicate, so the
     # replicate fold happens BEFORE the scenario x dose fold. A flat mean over all
@@ -393,6 +573,23 @@ def _evaluate_role(
     prepare_times: list[float] = []
     trainer_times: list[float] = []
     repeat_rows: list[dict[str, object]] = []
+    # (cell, program) -> per-(scenario,dose) mean, the evidence a transfer policy is built
+    # from. Recorded per scenario/dose because degradation-conditioned choice is exactly
+    # what C1 is about.
+    cell_loss_by_grid: dict[tuple[str, float], dict[tuple[str, str], list[float]]] = (
+        defaultdict(lambda: defaultdict(list))
+    )
+    oracle_selections: dict[str, list[dict[str, object]]] = {}
+    oracle_picks: dict[str, dict[str, list[str]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    uncovered_transfer_cells: set[str] = set()
+
+    all_programs = tuple(PROGRAM_IDS)
+    # H_ref is the incumbent being measured, not a tool the oracle may reach for. Letting
+    # the ceiling pick it would make "headroom" partly a statement about H_ref's own
+    # quality rather than about the pool's reachable space.
+    selectable = tuple(p for p in all_programs if p not in RUNNER_EXECUTED)
 
     for scenario, dose in CORRUPTION_GRID:
         for replicate in replicates_for(scenario):
@@ -406,44 +603,44 @@ def _evaluate_role(
                 uid: history[: len(values_by_uid[uid]) - 2 * HEADLINE_HORIZON]
                 for uid, history in histories.items()
             }
+            # Normalization is fitted on the PRE-method degraded inner-train and is shared
+            # by every program, so it is computed once here rather than once per program.
+            normalization = {uid: NormalizationState.fit(inner[uid]) for uid in inner}
+
             state = default_state()
             started = time.perf_counter()
             h_ref_choices = run_fast_path(inner, state, state.sampler.expected_total)
             prepare_times.append(time.perf_counter() - started)
 
-            for program_id in PROGRAM_IDS:
+            prepared_history_by_program: dict[str, dict[str, np.ndarray]] = {}
+            prepared_inner_by_program: dict[str, dict[str, np.ndarray]] = {}
+            losses_by_program: dict[str, dict[str, float]] = {}
+
+            for program_id in all_programs:
                 started = time.perf_counter()
                 prepared_history, prepared_inner = _program_values(
                     program_id, histories, inner, records_by_uid, h_ref_choices
                 )
-                normalization = {uid: NormalizationState.fit(inner[uid]) for uid in inner}
                 prepare_times.append(time.perf_counter() - started)
+                prepared_history_by_program[program_id] = prepared_history
+                prepared_inner_by_program[program_id] = prepared_inner
 
-                started = time.perf_counter()
-                batch = build_windows(prepared_inner, normalization)
-                model = fit_closed_form(batch)
-                trainer_times.append(time.perf_counter() - started)
+                losses, fills, trainer_seconds = _fit_and_score(
+                    uids_by_dataset,
+                    prepared_inner,
+                    prepared_history,
+                    normalization,
+                    records_by_uid,
+                    scale_by_uid,
+                    clean_by_uid,
+                )
+                trainer_times.append(trainer_seconds)
+                losses_by_program[program_id] = losses
 
                 for uid in uids:
                     cell_id = cell_of_uid[uid]
-                    context, fill_rate = canonical_evaluation_context(
-                        prepared_history[uid], lookback=48
-                    )
-                    normalized = normalization[uid].normalize(context)
-                    prediction = normalization[uid].denormalize(
-                        model.predict(normalized[None, :])[0]
-                    )
-                    clean = values_by_uid[uid]
-                    train = clean[: len(clean) - 2 * HEADLINE_HORIZON]
-                    scale = seasonal_scale(
-                        train,
-                        np.isfinite(train),
-                        period=_period(records_by_uid[uid]),
-                        min_pairs=32,
-                    )
-                    loss = smase(clean[-HEADLINE_HORIZON:], prediction, scale=scale)
-                    raw_losses[(program_id, cell_id, uid, scenario, dose)].append(loss)
-                    fill_rates[(program_id, cell_id)].append(fill_rate)
+                    raw_losses[(program_id, cell_id, uid, scenario, dose)].append(losses[uid])
+                    fill_rates[(program_id, cell_id)].append(fills[uid])
                     repeat_rows.append(
                         {
                             "split_role": role.value,
@@ -453,18 +650,100 @@ def _evaluate_role(
                             "scenario": scenario,
                             "dose": dose,
                             "corruption_replicate": replicate,
-                            "loss": loss,
+                            "loss": losses[uid],
+                        }
+                    )
+
+            # Per-(cell, program) losses for THIS (scenario, dose), pooled over replicates.
+            # This is the evidence another role's transfer policy reads.
+            grid_key = (scenario, dose)
+            for program_id in selectable:
+                for uid in uids:
+                    cell_loss_by_grid[grid_key][(cell_of_uid[uid], program_id)].append(
+                        losses_by_program[program_id][uid]
+                    )
+
+            # --- the two retrained oracles -------------------------------------------
+            insample_cell_means = {
+                (cell_of_uid_key, program_id): float(
+                    np.mean(
+                        [
+                            losses_by_program[program_id][uid]
+                            for uid in uids
+                            if cell_of_uid[uid] == cell_of_uid_key
+                        ]
+                    )
+                )
+                for cell_of_uid_key in cells
+                for program_id in selectable
+            }
+            insample_policy_by_cell, _ = _policy_from_cell_means(
+                insample_cell_means, cells, selectable, best_fixed_program
+            )
+            policies: dict[str, dict[str, str]] = {
+                ORACLE_INSAMPLE_RETRAINED: insample_policy_by_cell
+            }
+            if transfer_policy is not None:
+                by_cell_transfer = transfer_policy.get(grid_key, {})
+                resolved = {
+                    cell: by_cell_transfer.get(cell, best_fixed_program) for cell in cells
+                }
+                uncovered_transfer_cells.update(
+                    cell for cell in cells if cell not in by_cell_transfer
+                )
+                policies[ORACLE_TRANSFER_RETRAINED] = resolved
+
+            for oracle_id, cell_policy in policies.items():
+                uid_policy = {uid: cell_policy[cell_of_uid[uid]] for uid in uids}
+                for cell, program in cell_policy.items():
+                    oracle_picks[oracle_id][cell].append(program)
+                    oracle_selections.setdefault(oracle_id, []).append(
+                        {
+                            "cell_id": cell,
+                            "scenario": scenario,
+                            "dose": dose,
+                            "replicate": replicate,
+                            "program_id": program,
+                        }
+                    )
+                mixed_history, mixed_inner = _mixed_values(
+                    uid_policy, prepared_history_by_program, prepared_inner_by_program
+                )
+                losses, fills, trainer_seconds = _fit_and_score(
+                    uids_by_dataset,
+                    mixed_inner,
+                    mixed_history,
+                    normalization,
+                    records_by_uid,
+                    scale_by_uid,
+                    clean_by_uid,
+                )
+                trainer_times.append(trainer_seconds)
+                for uid in uids:
+                    cell_id = cell_of_uid[uid]
+                    raw_losses[(oracle_id, cell_id, uid, scenario, dose)].append(losses[uid])
+                    fill_rates[(oracle_id, cell_id)].append(fills[uid])
+                    repeat_rows.append(
+                        {
+                            "split_role": role.value,
+                            "program_id": oracle_id,
+                            "cell_id": cell_id,
+                            "uid": uid,
+                            "scenario": scenario,
+                            "dose": dose,
+                            "corruption_replicate": replicate,
+                            "loss": losses[uid],
                         }
                     )
 
     # Fold 1: average corruption replicates within uid x scenario x dose.
     folded: dict[tuple[str, str, str], dict[tuple[str, float], float]] = defaultdict(dict)
-    for (program_id, cell_id, uid, scenario, dose), losses in raw_losses.items():
-        if len(losses) != len(replicates_for(scenario)):
+    for (program_id, cell_id, uid, scenario, dose), losses_list in raw_losses.items():
+        if len(losses_list) != len(replicates_for(scenario)):
             raise RuntimeError(
                 f"uid {uid} is missing a corruption replicate for {scenario}/{dose}"
             )
-        folded[(program_id, cell_id, uid)][(scenario, dose)] = float(np.mean(losses))
+        folded[(program_id, cell_id, uid)][(scenario, dose)] = float(np.mean(losses_list))
 
     # Fold 2: equal-average every frozen scenario x dose value -> exactly one row per uid.
     grid = set(CORRUPTION_GRID)
@@ -476,13 +755,75 @@ def _evaluate_role(
             )
         mean_loss = float(np.mean([by_cell[key] for key in sorted(by_cell)]))
         rows.append(ProgramLoss(role.value, cell_id, program_id, uid, mean_loss))
-    return rows, fill_rates, prepare_times, trainer_times, repeat_rows
+
+    cell_means_by_grid: dict[tuple[str, float], dict[tuple[str, str], float]] = {
+        grid_key: {key: float(np.mean(values)) for key, values in bucket.items()}
+        for grid_key, bucket in cell_loss_by_grid.items()
+    }
+    diagnostics: dict[str, object] = {
+        "training_unit": "(program, scenario, dose, replicate, dataset)",
+        "n_datasets": len(uids_by_dataset),
+        "series_per_dataset": {key: len(value) for key, value in uids_by_dataset.items()},
+        "selectable_programs": list(selectable),
+        "oracle_selections": {
+            key: sorted(
+                value, key=lambda row: (row["cell_id"], row["scenario"], row["dose"], row["replicate"])
+            )
+            for key, value in sorted(oracle_selections.items())
+        },
+        "oracle_picks_by_cell": {
+            oracle_id: {cell: sorted(picks) for cell, picks in sorted(by_cell.items())}
+            for oracle_id, by_cell in sorted(oracle_picks.items())
+        },
+        "transfer_cells_without_support_evidence": sorted(uncovered_transfer_cells),
+    }
+    return (
+        rows,
+        fill_rates,
+        prepare_times,
+        trainer_times,
+        repeat_rows,
+        diagnostics,
+        cell_means_by_grid,
+    )
+
+
+def _selectable_rows(rows: list[ProgramLoss]) -> list[ProgramLoss]:
+    """Keep only rows a floor/oracle may choose between.
+
+    H_ref is the incumbent under test and the two retrained oracles are runner privileges.
+    Leaving any of them in the candidate set would let `best_fixed` "select" a ceiling, or
+    let an oracle select another oracle, and the resulting number would be meaningless.
+    """
+    excluded = set(RUNNER_EXECUTED) | {ORACLE_TRANSFER_RETRAINED, ORACLE_INSAMPLE_RETRAINED}
+    return [row for row in rows if row.program_id not in excluded]
+
+
+def _transfer_policy_from_support(
+    support_cell_means: dict[tuple[str, float], dict[tuple[str, str], float]],
+) -> dict[tuple[str, float], dict[str, str]]:
+    """Best program per (cell, scenario, dose), chosen on Support-A and never on the query.
+
+    This is the policy the Gate-bearing ceiling executes.  It is conditioned on both axes
+    C1 names -- the pattern proxy (`regime` inside `cell_id`) and the degradation actually
+    encountered (`scenario`, `dose`) -- and it is selected on a disjoint set of series, so
+    the ceiling it produces is one a real method could aim at rather than a winner's-curse
+    artifact of the query set.
+    """
+    policy: dict[tuple[str, float], dict[str, str]] = {}
+    for grid_key, bucket in support_cell_means.items():
+        by_cell: dict[str, list[tuple[float, str]]] = defaultdict(list)
+        for (cell, program), mean in bucket.items():
+            by_cell[cell].append((mean, program))
+        policy[grid_key] = {cell: min(scored)[1] for cell, scored in by_cell.items()}
+    return policy
 
 
 def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
     """Evaluate the full public baseline pool on repeatable Dev-Query only."""
 
     data_root, output = Path(root), Path(out)
+    pool = pool_manifest()
     records = read_registry_jsonl(output / "series_registry.jsonl")
     records_by_uid = {row.series_uid: row for row in records}
     split = SplitManifest.from_dict(json.loads((output / "split_manifest.json").read_text("utf-8")))
@@ -492,21 +833,64 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
     }
     selected_records = [records_by_uid[uid] for uid in sorted(selected_uids)]
     values = _load_values(selected_records, data_root / "clean_base")
-    support, support_fill, support_prepare, support_train, support_repeats = _evaluate_role(
-        SplitRole.SUPPORT_A, list(split.assignments), records_by_uid, values
-    )
-    dev, dev_fill, dev_prepare, dev_train, dev_repeats = _evaluate_role(
-        SplitRole.DEV_QUERY, list(split.assignments), records_by_uid, values
+
+    # Pass 1: Support-A. No transfer policy exists yet -- that is what this pass produces.
+    (
+        support,
+        support_fill,
+        support_prepare,
+        support_train,
+        support_repeats,
+        support_diag,
+        support_cell_means,
+    ) = _evaluate_role(SplitRole.SUPPORT_A, list(split.assignments), records_by_uid, values)
+
+    best = select_best_fixed(_selectable_rows(support))
+    transfer_policy = _transfer_policy_from_support(support_cell_means)
+
+    # Pass 2: Dev-Query, with the ceiling's policy already fixed on disjoint series.
+    (
+        dev,
+        dev_fill,
+        dev_prepare,
+        dev_train,
+        dev_repeats,
+        dev_diag,
+        _dev_cell_means,
+    ) = _evaluate_role(
+        SplitRole.DEV_QUERY,
+        list(split.assignments),
+        records_by_uid,
+        values,
+        transfer_policy=transfer_policy,
+        best_fixed_program=best.program_id,
     )
     if not dev:
         raise RuntimeError("frozen split has no Dev-Query rows")
-    best = select_best_fixed(support)
+
+    dev_selectable = _selectable_rows(dev)
     best_rows = [row for row in dev if row.program_id == best.program_id]
     h_ref_rows = [row for row in dev if row.program_id == "h_ref"]
-    insample_rows = oracle_insample(dev)
-    transfer_rows, transfer_missing_cells = oracle_transfer_with_coverage(support, dev)
+    retrained_transfer_rows = [
+        row for row in dev if row.program_id == ORACLE_TRANSFER_RETRAINED
+    ]
+    retrained_insample_rows = [
+        row for row in dev if row.program_id == ORACLE_INSAMPLE_RETRAINED
+    ]
+    if not retrained_transfer_rows:
+        raise RuntimeError("the Gate-bearing retrained transfer oracle produced no rows")
+
+    # The legacy cell-level oracles are kept for continuity with the v0/v0.1 reports and
+    # are labelled for what they are: a program picked per cell, but scored under models
+    # that were each trained on a corpus prepared with ONE program throughout. No model was
+    # ever fitted to the mixed corpus those picks describe, so the number is not a value
+    # any method could reach. It does not enter the Gate.
+    insample_rows = oracle_insample(dev_selectable)
+    transfer_rows, transfer_missing_cells = oracle_transfer_with_coverage(
+        _selectable_rows(support), dev_selectable
+    )
     h_ref_by_uid = {row.uid: row for row in h_ref_rows}
-    insample_by_uid = {row.uid: row for row in insample_rows}
+    insample_by_uid = {row.uid: row for row in retrained_insample_rows}
 
     # The sMASE denominator, carried into the report so a cell whose losses look enormous
     # can be read as "tiny seasonal scale" rather than "catastrophic forecast".
@@ -548,8 +932,43 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
         "raw": fold_to_headline(raw_rows),
         "best_fixed": fold_to_headline(best_rows),
         "h_ref": fold_to_headline(h_ref_rows),
-        "oracle_transfer": fold_to_headline(transfer_rows) if transfer_rows else None,
-        "oracle_insample": fold_to_headline(insample_rows),
+        ORACLE_TRANSFER_RETRAINED: fold_to_headline(retrained_transfer_rows),
+        ORACLE_INSAMPLE_RETRAINED: fold_to_headline(retrained_insample_rows),
+        "oracle_transfer_untrained_counterfactual": (
+            fold_to_headline(transfer_rows) if transfer_rows else None
+        ),
+        "oracle_insample_untrained_counterfactual": fold_to_headline(insample_rows),
+    }
+    report["per_program_smase"] = {
+        program: fold_to_headline([row for row in dev if row.program_id == program])
+        for program in PROGRAM_IDS
+    }
+    report["oracle_semantics"] = {
+        ORACLE_TRANSFER_RETRAINED: (
+            "GATE-BEARING CEILING. The best program per (cell, scenario, dose) is chosen on "
+            "Support-A; Dev-Query is then prepared with those choices, a model is TRAINED on "
+            "the resulting mixed corpus (per dataset), and that model is scored. Same path a "
+            "Method takes, so floor, ceiling, and method are one kind of measurement."
+        ),
+        ORACLE_INSAMPLE_RETRAINED: (
+            "INFLATION ENVELOPE. Same retraining, but the policy is chosen on Dev-Query "
+            "itself. Reports how much of any apparent ceiling is winner's curse."
+        ),
+        "oracle_transfer_untrained_counterfactual": (
+            "DESCRIPTIVE ONLY, NOT A GATE INPUT. The v0/v0.1 oracle: a program picked per "
+            "cell, but each cell's loss read off a model trained on a corpus prepared with "
+            "ONE program throughout. No model was ever fitted to the mixed corpus these "
+            "picks describe, so this is not a value any method could reach. Kept only so "
+            "the v0.1 report remains comparable."
+        ),
+        "oracle_insample_untrained_counterfactual": (
+            "DESCRIPTIVE ONLY, NOT A GATE INPUT. As above, selected on Dev-Query."
+        ),
+        "h_ref_and_oracles_are_not_selectable": (
+            "The oracles choose only among pool programs. H_ref is the incumbent under "
+            "test; letting the ceiling pick it would make headroom partly a statement "
+            "about H_ref's quality instead of the pool's reachable space."
+        ),
     }
     report["aggregation_note"] = (
         "'overall' follows the frozen ladder (cell series-equal -> regime dataset-macro "
@@ -557,10 +976,67 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
         "is descriptive only -- it lets the biggest dataset dominate."
     )
     report["best_fixed_program"] = best.program_id
+    report["program_pool"] = pool
+    report["training_unit"] = {
+        "unit": "(program, scenario, dose, replicate, dataset)",
+        "support_a": support_diag,
+        "dev_query": dev_diag,
+        "spec_gap_note": (
+            "The frozen spec fixes trainer internals but never fixed the training pool's "
+            "scope. v0 sliced by dataset x regime (leaking the private regime tag); v0.1 "
+            "pooled the whole role (coupling datasets through shared weights). v0.2 fixes "
+            "the scope explicitly at dataset, which is public metadata."
+        ),
+    }
     report["oracle_transfer_missing_support_cells"] = list(transfer_missing_cells)
     report["closed_form_model_seed_semantics"] = "deterministic_not_applicable"
     report["h_ref_behaviour_audit"] = audit_h_ref_behaviour(raw_rows, h_ref_rows)
-    report["headroom"] = dual_headroom(raw_rows, h_ref_rows, insample_rows)
+    # The Gate. Headroom is measured from the No-op floor to the RETRAINED transfer ceiling.
+    picks_by_cell = dev_diag.get("oracle_picks_by_cell", {})
+    report["headroom"] = dual_headroom(
+        raw_rows,
+        h_ref_rows,
+        retrained_transfer_rows,
+        selection_by_cell=picks_by_cell.get(ORACLE_TRANSFER_RETRAINED, {}),
+    )
+    report["headroom_envelope_insample_retrained"] = dual_headroom(
+        raw_rows,
+        h_ref_rows,
+        retrained_insample_rows,
+        selection_by_cell=picks_by_cell.get(ORACLE_INSAMPLE_RETRAINED, {}),
+    )
+    report["headroom_untrained_counterfactual_descriptive"] = dual_headroom(
+        raw_rows, h_ref_rows, insample_rows
+    )
+    mechanism = mechanism_panel(dev_repeats)
+    report["mechanism_diagnostics"] = mechanism
+
+    # Detectability. Cells are resampled by overlap group, not by series: METR-LA's sensors
+    # come in spatial blocks and are not independent draws. A cell whose mde_80 exceeds the
+    # material threshold cannot support a saturation claim, and says so.
+    cluster_of_uid = {
+        row.series_uid: (row.overlap_group or row.series_uid) for row in split.assignments
+    }
+    raw_by_uid = {row.uid: row.loss for row in raw_rows}
+    gate_by_uid = {row.uid: row.loss for row in retrained_transfer_rows}
+    paired_by_cell: dict[str, dict[str, float]] = defaultdict(dict)
+    for row in retrained_transfer_rows:
+        paired_by_cell[row.cell_id][row.uid] = raw_by_uid[row.uid] - gate_by_uid[row.uid]
+    scale_warned = [
+        cell_id
+        for cell_id, cell in report.get("cells", {}).items()
+        if cell.get("scale_warning")
+    ]
+    report["power_panel_cells"] = power_panel(
+        paired_by_cell,
+        cluster_of_uid,
+        scale_warning_keys=scale_warned,
+    )
+    report["power_panel_note"] = (
+        "Effect = Raw minus the Gate-bearing retrained transfer oracle, paired per uid "
+        "under CRN. A cell carrying diagnostic_unavailable contributes nothing to a "
+        "saturation claim."
+    )
     # Numbers only: bind_dev_report_to_manifest validates every value here as a positive
     # finite float. Provenance lives in its own key.
     report["timeout_calibration_seconds"] = {
@@ -569,8 +1045,10 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
     }
     report["timeout_calibration_provenance"] = {
         "measured_on": (
-            "the corrected per-config pooled training path; the pre-fix per-cell numbers "
-            "were measured on much smaller training pools and do not transfer"
+            "the v0.2 per-dataset training path with the widened pool. Neither the v0 "
+            "per-cell numbers nor the v0.1 role-pooled numbers transfer: the training pool "
+            "changed size in both directions and the pool went from four programs to nine "
+            "plus two retrained oracles."
         ),
         "trainer_scope": "closed_form_only -- Adam and LSTM must be calibrated separately",
     }
@@ -586,6 +1064,15 @@ def run_dev_evaluation(root: Path | str, out: Path | str) -> dict[str, object]:
     with (output / "dev_program_losses.jsonl").open("w", encoding="utf-8", newline="\n") as handle:
         for row in support + dev:
             handle.write(json.dumps(row.__dict__, sort_keys=True, ensure_ascii=True) + "\n")
+    # The unfolded measurements. Everything above is a fold of these, and a fold cannot be
+    # inverted: without them, any later per-uid x scenario question -- why does H_ref hurt
+    # on block 0.24? does the pool separate anything on the spike lane? -- would need
+    # another full re-run of the arena to answer.
+    with (output / "dev_repeat_losses.jsonl").open(
+        "w", encoding="utf-8", newline="\n"
+    ) as handle:
+        for row in support_repeats + dev_repeats:
+            handle.write(json.dumps(row, sort_keys=True, ensure_ascii=True) + "\n")
     write_text_lf(
         output / "dev_per_dose_report.json",
         json.dumps(
@@ -611,25 +1098,73 @@ def _baseline_report_markdown(report: dict[str, object], best_program: str) -> s
     baselines = report["baseline_smase"]
     audit = report["h_ref_behaviour_audit"]
     headroom = report["headroom"]
+    mechanism = report["mechanism_diagnostics"]
+    per_program = report["per_program_smase"]
 
     lines = [
         f"# Benchmark {BENCHMARK_VERSION} Dev-Query baseline report",
         "",
         "Final-Query was not read. Every value below is repeatable Dev-Query sMASE.",
         "",
-        "## Baselines (frozen folding ladder)",
+        "One closed-form model is trained per `(program, scenario, dose, replicate, "
+        "dataset)`. The two `*_retrained` oracles pick a program per `(cell, scenario, "
+        "dose)` and are then **trained on the corpus those picks produce** -- the same path "
+        "a Method takes. The `*_untrained_counterfactual` rows are the v0/v0.1 oracle, kept "
+        "for continuity and excluded from the Gate: they read each cell's loss off a model "
+        "trained on a single-program corpus, so they describe a world no model was fitted "
+        "to.",
         "",
-        "| baseline | overall (macro) | series-micro (descriptive) |",
-        "| --- | --- | --- |",
+        "## The three-point C1 comparison",
+        "",
+        "| role | baseline | overall (macro) | series-micro (descriptive) |",
+        "| --- | --- | --- | --- |",
     ]
-    for name in ("raw", "best_fixed", "h_ref", "oracle_transfer", "oracle_insample"):
+    ladder = (
+        ("floor (no-op)", "raw"),
+        ("floor (best single program)", "best_fixed"),
+        ("incumbent", "h_ref"),
+        ("CEILING -- gate", ORACLE_TRANSFER_RETRAINED),
+        ("envelope (winner's curse)", ORACLE_INSAMPLE_RETRAINED),
+        ("descriptive only", "oracle_transfer_untrained_counterfactual"),
+        ("descriptive only", "oracle_insample_untrained_counterfactual"),
+    )
+    for role_label, name in ladder:
         fold = baselines.get(name)
         if fold is None:
-            lines.append(f"| {name} | n/a | n/a |")
+            lines.append(f"| {role_label} | {name} | n/a | n/a |")
             continue
         lines.append(
-            f"| {name} | {fold['overall']:.6f} | {fold['series_micro_descriptive']:.6f} |"
+            f"| {role_label} | `{name}` | {fold['overall']:.6f} "
+            f"| {fold['series_micro_descriptive']:.6f} |"
         )
+
+    lines += [
+        "",
+        "## Every program in the frozen pool",
+        "",
+        "| program | mechanism | overall (macro) |",
+        "| --- | --- | --- |",
+    ]
+    for program in PROGRAM_IDS:
+        fold = per_program.get(program)
+        if fold is None:
+            continue
+        lines.append(
+            f"| `{program}` | {mechanism_of(program)} | {fold['overall']:.6f} |"
+        )
+
+    lines += [
+        "",
+        "## Where the pool has no action at all",
+        "",
+        f"The pool cannot act on {mechanism['n_cells_where_pool_cannot_act']} "
+        "dataset/scenario/dose cell(s) -- every program scores identically there. That is a "
+        "capability gap in the operator library, not evidence the data has nothing to gain.",
+        "",
+    ]
+    for cell in mechanism["cells_where_pool_cannot_act"]:
+        lines.append(f"- `{cell}`")
+
     lines += [
         "",
         f"Best-fixed program selected on Support-A: `{best_program}`.",
@@ -654,8 +1189,10 @@ def _baseline_report_markdown(report: dict[str, object], best_program: str) -> s
     ]
     for cell, row in headroom["cells"].items():
         flag = " *(reverts)*" if row["oracle_reverts_to_raw"] else ""
+        picks = row["oracle_selected_program"]
+        rendered = ", ".join(sorted(set(picks))) if isinstance(picks, list) else str(picks)
         lines.append(
-            f"| `{cell}` | {row['oracle_selected_program']}{flag} "
+            f"| `{cell}` | {rendered}{flag} "
             f"| {row['gain_over_raw']:+.4f} | {row['gain_over_h_ref']:+.4f} "
             f"| {row['h_ref_self_harm']:+.4f} |"
         )
@@ -664,15 +1201,16 @@ def _baseline_report_markdown(report: dict[str, object], best_program: str) -> s
 
 
 __all__ = [
-    "FIXED_PROGRAMS",
+    "ORACLE_INSAMPLE_RETRAINED",
+    "ORACLE_TRANSFER_RETRAINED",
     "PROGRAM_IDS",
     "aggregate_per_dose",
-    "apply_fixed_program",
     "audit_h_ref_behaviour",
     "bind_dev_report_to_manifest",
     "canonical_evaluation_context",
     "dual_headroom",
     "fold_to_headline",
+    "mechanism_panel",
     "oracle_transfer_with_coverage",
     "run_dev_evaluation",
 ]

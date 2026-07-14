@@ -708,11 +708,29 @@ def build_support_a_subsplit(
     to search for the candidate in the first place.  Support-B is one-shot confirmation
     after code freeze and cannot serve as a development gate; Dev-Query is the arena's
     query side.  This partition is what a development loop is allowed to iterate on.
+
+    From v0.2 the hash draw is overridden in one direction: any overlap group holding a
+    series that is not `certified_virgin` is forced into discovery.  Those series -- the
+    136 that make up the Init Harness, and every other legacy or probe-consumed row -- have
+    already fed the incumbent H_ref.  Validating an update to that harness on data which
+    helped form it is a closed loop: the gate would be asking the harness to be judged by
+    its own training experience.  So A-validation is `certified_virgin` only, and the
+    price -- a smaller, slightly less representative validation half -- is the right one to
+    pay.  The exposure classes drive this, not a hard-coded uid list, so it stays correct
+    if the roster changes.
     """
     if not isinstance(manifest, SplitManifest):
         raise SplitManifestError("manifest must be a SplitManifest")
 
+    exposed_groups: set[str] = {
+        row.group_key
+        for row in manifest.assignments
+        if row.role is SplitRole.SUPPORT_A
+        and row.exposure_class in _FORCED_SUPPORT_A_EXPOSURES
+    }
+
     partition_of_group: dict[str, str] = {}
+    forced_groups: list[str] = []
     members: dict[str, list[str]] = {
         "support_a_discovery": [],
         "support_a_validation": [],
@@ -722,11 +740,15 @@ def build_support_a_subsplit(
             continue
         group_key = row.group_key
         if group_key not in partition_of_group:
-            partition_of_group[group_key] = support_a_partition(
-                manifest.benchmark_version,
-                group_key,
-                discovery_fraction=discovery_fraction,
-            )
+            if group_key in exposed_groups:
+                partition_of_group[group_key] = "support_a_discovery"
+                forced_groups.append(group_key)
+            else:
+                partition_of_group[group_key] = support_a_partition(
+                    manifest.benchmark_version,
+                    group_key,
+                    discovery_fraction=discovery_fraction,
+                )
         members[partition_of_group[group_key]].append(row.series_uid)
 
     if not partition_of_group:
@@ -735,8 +757,20 @@ def build_support_a_subsplit(
         if not uids:
             raise SplitManifestError(f"Support-A partition {name!r} came out empty")
 
+    virgin_uids = {
+        row.series_uid
+        for row in manifest.assignments
+        if row.role is SplitRole.SUPPORT_A and row.exposure_class == "certified_virgin"
+    }
+    contaminated = sorted(set(members["support_a_validation"]) - virgin_uids)
+    if contaminated:
+        raise SplitManifestError(
+            "A-validation must hold certified_virgin series only; found "
+            f"{len(contaminated)} exposed: {contaminated[:5]}"
+        )
+
     return {
-        "schema_version": "benchmark-support-a-subsplit/1",
+        "schema_version": "benchmark-support-a-subsplit/2",
         "benchmark_version": manifest.benchmark_version,
         "subsplit_salt": SUPPORT_A_SUBSPLIT_SALT,
         "discovery_fraction": float(discovery_fraction),
@@ -751,7 +785,15 @@ def build_support_a_subsplit(
                 "development promotion gate; never used to select the candidate it judges"
             ),
         },
+        "validation_exposure_rule": (
+            "certified_virgin only. Any overlap group holding a confirmed_exposed, "
+            "uncertain_legacy_exposure, or probe_consumed series is forced to discovery, "
+            "because those series already fed the incumbent harness and cannot be used to "
+            "validate an update to it."
+        ),
         "n_groups": len(partition_of_group),
+        "n_groups_forced_to_discovery_by_exposure": len(forced_groups),
+        "groups_forced_to_discovery_by_exposure": sorted(forced_groups),
         "counts": {name: len(uids) for name, uids in sorted(members.items())},
         "members": {name: sorted(uids) for name, uids in sorted(members.items())},
     }
