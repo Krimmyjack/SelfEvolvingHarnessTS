@@ -139,6 +139,78 @@ def action_menu_v1() -> ActionMenu:
         "defaults_source": "harness.layers.minimal_l2().operator_defaults"})
 
 
+# ════════════════════════ Menu v2（E-3.3 R5，2026-07-14） ════════════════════════
+#
+# 新算子进了 registry **并不等于它可用**——程序生成面才是动作真正被枚举的地方。本项目有
+# 三个互不相同的枚举面，别混：
+#   ① `policy.action_spec.action_menu_*`  —— Router/selector 的版本化动作集（**本节扩的是它**）；
+#   ② `p6.fast_path.GRAMMAR_* / det_ladder` —— H_ref 的候选文法，**硬编码、已冻结、绝不能碰**
+#      （v0.2 竞技场的每一个数字都是在这个文法下量出来的；动它 = 全部读数作废）；
+#   ③ `fast_path.compose._IMPUTE/_DENOISE/_OUTLIER` —— heuristic 合成的同类降级链（旧路径，
+#      本次不动：新算子经 usable_ops 已对 LLM/selector 可见，不需要挤进 heuristic 的优先级表）。
+#
+# **v1 必须逐位不变**（它是 P0 冻结面）。这有两条硬约束：
+#   (a) 新动作只能进 v2，v1 的 actions 一个字节都不许改；
+#   (b) **不得往 `harness.layers.minimal_l2().operator_defaults` 里加新算子的默认参数**——
+#       该 dict 的 sha 是 menu v1 的 meta 字段，加一个键 v1 的 SHA 就变了；而且 P6 的
+#       `resolve_steps` 也读它，改它会静默改掉 H_ref 的参数解析。
+#   → 所以 v2 的新动作**把每个参数完整写死在 ActionSpec 里**（不依赖任何 defaults 查表）。
+#       这同时也是 v1 就立下的规矩：menu SHA 必须绑定动作的**执行语义**，而不只是算子名。
+#
+# TTHA-0 的 prereg 将 pin 的就是 `action_menu_v2().sha256`：动作面一旦签发即冻结，中途加算子
+# = 协议漂移。所以 R1–R3 必须在 prereg 签发**之前**全部入列——这就是它们排在最前面的原因。
+
+_MENU_V2_ADDITIONS: List[Tuple[str, Tuple[Tuple[str, Dict[str, Any]], ...]]] = [
+    # 模型预测族插补（机制上区别于 v1 里清一色的复制/插值族）
+    # period=0 / order=0 = "自动"（走 A0 共享周期模块）——菜单里 pin 的是**这个策略**，
+    # 而不是某个具体周期：动作要在全 roster 上都成立，roster 里 hourly/daily 频率并存。
+    ("v_ssm", (("impute_ssm", {"period": 0}),)),
+    ("v_ar", (("impute_ar", {"order": 0, "period": 0}),)),
+    # 局部自适应点式离群修复（区别于 v_winsor 的全局阈值裁剪）
+    ("v_hampel", (("impute_linear", {}),
+                  ("hampel_filter", {"window": 7, "n_sigmas": 3.0}))),
+    # 结构断层修复（填 benchmark 预先声明的 structural_break 缺口——v1 动作面在这个机制上是空集）
+    ("v_levelshift", (("impute_linear", {}),
+                      ("repair_level_shift", {"period": 0, "t_threshold": 3.5,
+                                              "min_jump_sigma": 1.0, "min_segment": 10,
+                                              "max_breaks": 5}))),
+]
+
+
+def action_menu_v2() -> ActionMenu:
+    """Menu v2 = menu v1 全集（逐位不变）+ 4 个新机制动作（E-3.3 R1–R3 的算子）。
+
+    v2 ⊃ v1：任何 pin 了 v1 动作 ID 的旧 artifact 在 v2 下仍能解析到**同一个** ActionSpec
+    （v1 的 spec 直接取自 `action_menu_v1()`，不重新构造），故升级菜单不使旧 Router 失效。
+    新动作的 params 全部显式写死（见上方注释 (b)），不查 operator_defaults。
+    """
+    v1 = action_menu_v1()
+    specs: List[ActionSpec] = [v1.actions[aid] for aid in sorted(v1.actions)]
+    for name, chain in _MENU_V2_ADDITIONS:
+        if name in v1:
+            raise ValueError(f"menu v2 新动作 {name!r} 与冻结的 v1 动作 ID 冲突"
+                             f"（同名不同义 = provenance 污染，拒绝）")
+        specs.append(ActionSpec(
+            action_id=name,
+            steps=tuple(ActionStep(op, dict(params)) for op, params in chain),
+            task_constraints=_task_constraints([op for op, _ in chain]),
+            model_constraints=None,
+            provenance={"source": "policy.action_spec._MENU_V2_ADDITIONS",
+                        "menu_version": "v2",
+                        "override_params": [dict(params) for _, params in chain]}))
+    return ActionMenu("v2", specs, meta={
+        **v1.meta,
+        "extends": "v1",
+        "extends_sha256": v1.sha256,
+        "params_resolution": (
+            "v1 动作：resolved_full（沿用 v1 构建结果，逐位不变）；"
+            "v2 新动作：explicit_full（参数完整写死在 spec 里，不查 operator_defaults）"),
+        "new_mechanisms": ["model_predictive_imputation", "local_adaptive_outlier_repair",
+                           "structural_break_repair"],
+        "frozen_surfaces_untouched": ["p6.fast_path.GRAMMAR_*", "p6.fast_path.det_ladder",
+                                      "harness.layers.minimal_l2().operator_defaults"]})
+
+
 class ActionCompiler:
     """ActionSpec + conditioning context → 可执行对象。
 

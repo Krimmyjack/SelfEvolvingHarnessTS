@@ -1,0 +1,50 @@
+{
+  "schema_version": "pool-code-pin-reconciliation/1",
+  "date": "2026-07-14",
+  "reconciles": "results/Benchmark_v0_2/program_pool.json",
+  "pool_schema_version": "benchmark-program-pool/2",
+  "why": "E-3.3 扩充了算子库（新增 repair_level_shift / hampel_filter / impute_ssm / impute_ar，并新增契约字段 dependency_policy）。注册新算子必然改动 operators/registry.py 的字节，因此 program_pool.json 里 pin 的**源文件 digest** 必然对不上。这是 pin 机制的已知局限——benchmark/programs.py 自己的注释早就写过：'a freeze that cries wolf gets ignored'。文件 digest 回答不了「数字有没有动」；**行为 digest 可以**。",
+  "pool_membership_changed": false,
+  "reconciled_files": [
+    "operators/_common.py",
+    "operators/registry.py",
+    "operators/s1_outlier.py"
+  ],
+  "unchanged_files": [
+    "benchmark/programs.py",
+    "operators/s1_denoise.py"
+  ],
+  "pinned_at_freeze": {
+    "operators/_common.py": "9bec3b97ddb23e970a8cff0fb3d570fce8b4edd24f6f8b16fbd7aa16e4efaeea",
+    "operators/registry.py": "52d78e45cf9d1ba23a44214ded641321cb6707a191db1399d5f038445ef77a80",
+    "operators/s1_outlier.py": "e8ef1d2183bf0f190211c540e8d8040a474790ddaae9ea8d98c1506b28a42324"
+  },
+  "current": {
+    "operators/_common.py": "848e407ec304286b2e348bff06d4035bf2ef5af1ed0b620161c1eb582b7d85a1",
+    "operators/registry.py": "0fc68a72047031507fca122bce154f6beb54d83df57e327de7b7ab7d7df6c54f",
+    "operators/s1_outlier.py": "5dd0eace0a65e9411b9fadafc0188974a0ba03e7a387a57563d28ec64197e3c9"
+  },
+  "behavioural_equivalence": {
+    "claim": "冻结池的 8 个 value-domain program 在固定探针上的输出逐字节不变",
+    "probe": "tests/test_frozen_action_surfaces.py::_probe_series（seed=20260714, n=240, period=24；含缺失/spike/level_shift）",
+    "enforced_by": "tests/test_frozen_action_surfaces.py::test_v0_2_pool_programs_are_behaviourally_unchanged",
+    "captured_before_the_extension": true,
+    "program_output_sha256": {
+      "denoise_median": "0f6ec9313b4eed97ed58bbe51c375093000d94d26d90173d7bf526c04ea13aca",
+      "denoise_savgol": "36d853525c3fc3ec6ae4e9e9cd49ddd20af8530243f755c862e35825512043e7",
+      "denoise_stl": "baab3d011566037bf2c15fc23aa8b6e62c519b7103367ee7ebd6b79186acc189",
+      "denoise_wavelet": "f2b80def798039f3b94cb34e9086d31ee69140f740d099454c01ce895f4918c7",
+      "forward_fill": "7b8db1242f0e5e9ac50d8ae7e01a9213a9266ccafb539a9a472e2729bcf0076f",
+      "raw": "9a3049d734abb175214c6a0c6e6d78d78834cc9985bdb38939319bd0c1cd4a5e",
+      "seasonal_fill": "66ab500a54e5237a231ace534c0bb1628ca6e61d892827646b02f7c1a5182c5e",
+      "winsorize": "91dc1811f007b531cd0d09ec8cb8afd28a5abf65ba53537321e41cc22b95796e"
+    }
+  },
+  "also_proven_unchanged": {
+    "h_ref_candidate_grammar": "p6.fast_path.det_ladder + GRAMMAR_*（硬编码，不从 registry 推导）",
+    "operator_defaults": "harness.layers.minimal_l2().operator_defaults（一个键都没加）",
+    "action_menu_v1_sha256": "a4c0f83191e5bd18fb8b7b9f52854e356268ef3cf0e7e3420e3a0221514db457"
+  },
+  "consequence": "benchmark-v0.2 的 Dev 读数依然有效：池成员未变、池行为逐字节未变、H_ref 的动作空间未变。program_pool.json 本身未被改动（它的文件 SHA 被 benchmark_manifest_v0.yaml 的 program_pool_sha256 钉着，改它会打破一个真正的完整性校验）。本记录是旁挂的调和面。",
+  "future_edits": "再次改动 _POOL_CODE_FILES 里的任何文件 → tests/test_frozen_action_surfaces.py::test_pool_code_pins_are_intact_or_explicitly_reconciled 会失败，直到本记录被更新且行为等价被重新证明。不要通过放宽测试来通过测试。"
+}

@@ -28,7 +28,13 @@ BOUNDARY_MODES = {
     "denoise_median": "symmetric",
     "denoise_savgol": "interp",        # scipy 端点多项式拟合（显式固定，非默认漂移）
     "denoise_wavelet": "symmetric",    # pywt symmetric（显式固定）
+    "hampel_filter": "symmetric",      # E-3.3 R3：滚动中值/MAD 两个窗口同一 symmetric 语义
 }
+
+# 稳健尺度常数：MAD → σ（正态一致性因子）。与 benchmark/corruption.robust_scale 同一口径，
+# 故"1 个 robust σ 的跳变"在算子侧与腐蚀侧含义一致（两处独立定义，不互相 import：
+# operators/ 不得依赖 benchmark/——算子库是被 benchmark 度量的对象，不能反向耦合）。
+MAD_TO_SIGMA = 1.4826
 
 
 class ShapeChangingNotSupported(NotImplementedError):
@@ -76,3 +82,38 @@ def sliding_median_symmetric(y: np.ndarray, w: int) -> np.ndarray:
     yp = np.pad(y, (half, half), mode="symmetric")
     from numpy.lib.stride_tricks import sliding_window_view
     return np.median(sliding_window_view(yp, w), axis=1)
+
+
+def robust_sigma(y: np.ndarray) -> float:
+    """1.4826 × MAD —— 稳健尺度估计。全常数序列 MAD=0 → 回退 std → 回退 0.0（调用方须自行
+    处理零尺度：**零尺度下任何"偏离多少个 σ"的判据都无定义，必须弃权而非除零**）。"""
+    a = np.asarray(y, dtype=float)
+    a = a[np.isfinite(a)]
+    if a.size == 0:
+        return 0.0
+    mad = float(np.median(np.abs(a - np.median(a))))
+    scale = MAD_TO_SIGMA * mad
+    if scale <= 0.0:
+        scale = float(np.std(a))
+    return max(scale, 0.0)
+
+
+def odd_window(w: int, n: int) -> int:
+    """把窗口钳成 ≤n 的奇数（中值/MAD 类算子要求奇窗，否则中位数落在两点之间失定义）。
+    返回 <3 表示"窗口不可用"，调用方应恒等返回。"""
+    w = max(1, int(w))
+    if w % 2 == 0:
+        w += 1
+    if w > n:
+        w = n if n % 2 == 1 else n - 1
+    return w
+
+
+def sliding_mad_symmetric(y: np.ndarray, w: int) -> tuple[np.ndarray, np.ndarray]:
+    """滚动中值与滚动 MAD（同一 symmetric 边界，同一窗口）——Hampel 判据的两个输入。
+
+    返回 (med, mad)：med[i] = median(窗口 i)，mad[i] = median(|y − med| 在窗口 i 内)。
+    **注意 mad 是对偏差序列再做一次滚动中值**（Hampel 原始定义），不是"窗口内 |y−med[i]| 的
+    中位数"的近似——两者在窗口内 med 不变时等价，边界处因镜像而略有差异，这里统一走镜像。"""
+    med = sliding_median_symmetric(y, w)
+    return med, sliding_median_symmetric(np.abs(y - med), w)
