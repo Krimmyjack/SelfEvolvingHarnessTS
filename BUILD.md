@@ -1,5 +1,7 @@
 # SelfEvolvingHarnessTS — 构建与实验文档（BUILD）
 
+> **要在 benchmark 上开发方法（而不是构建/复现本仓库）？→ 直接读 [`ONBOARDING.md`](./ONBOARDING.md)**（一页纸：方法契约、可碰/禁碰的面、三条资源纪律）。本文档是构建与运行指南，不是开发者守则。
+>
 > 本文档 = 现在怎么构建/运行/测试这个项目。完整执行历史（P0–P6 逐阶段实现细节、每次 sync 的详细结论）已搬到 [`EXECUTION_LOG.md`](./EXECUTION_LOG.md)（只读追加式历史记录，不要在这里找"现在应该怎么做"）。
 >
 > **当前阶段状态**：P0–P6 已按 `../idea/Final_Plan_CodeAgentFirst_2026-07-09.md` 全部执行完毕（P5-A.3 终审 + P6 discovery engine 关账，claim = B-null）。当前研究状态的权威摘要见 `../idea/README.md`（文档阅读顺序）与项目 memory 中的 AdaCTS 当前状态整合记录。本文档只覆盖"如何构建/运行/复现"，不重复叙述研究结论。
