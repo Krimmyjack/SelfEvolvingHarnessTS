@@ -1,5 +1,8 @@
 # Benchmark v0 manual source imports
 
+The benchmark-wide data design, role semantics, split hierarchy, and current
+roster are documented in [`../../BENCHMARK_DATA.md`](../../BENCHMARK_DATA.md).
+
 Automatic acquisition handles Monash, METR-LA, UCI Electricity Load Diagrams,
 and NOAA Global Hourly. The sources below require an account or acceptance of
 portal terms and must be downloaded manually without renaming internal files.
