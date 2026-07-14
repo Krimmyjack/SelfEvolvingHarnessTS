@@ -37,6 +37,7 @@ import numpy as np
 import pytest
 
 from SelfEvolvingHarnessTS.benchmark.programs import (
+    _POOL_CODE_FILES,
     PROGRAM_SPECS,
     RUNNER_EXECUTED,
     _code_digests,
@@ -158,6 +159,28 @@ def test_pool_code_pins_are_intact_or_explicitly_reconciled():
     assert record["pinned_at_freeze"] == {p: frozen[p] for p in drifted}   # ② 旧 pin
     assert record["current"] == {p: current[p] for p in drifted}           # ② 重新 pin
     assert record["behavioural_equivalence"]["program_output_sha256"] == _POOL_OUTPUT_SHA256  # ③
+
+
+def test_pool_code_files_are_lf_so_a_clean_checkout_still_hashes():
+    """池代码文件必须是 **LF**，否则一次干净的 Windows checkout 就会让它们的 pin 全部失效。
+
+    ⚠️ 这是一个**先于 E-3.3 就存在**的完整性缺陷，由 E-3.3 顺带暴露出来（2026-07-14）：
+    `program_pool.json` 钉的是 `.py` **源文件**的 SHA256，而 `.gitattributes` 里
+    `* text=auto` 的豁免名单只列了 `results/**` 等产物路径——**源文件不在其中**。
+    于是 git 在 Windows 上 checkout 时把它们还原成 CRLF，字节变了，那五个 pin 在一个
+    **未经任何改动的 clone** 上就已经全部对不上。此前没有任何东西检查代码 digest，
+    所以这个缺陷一直隐形。
+
+    修法：`.gitattributes` 加 `*.py text eol=lf`（比 `-text` 更强：入库归一 LF、**每个平台**
+    都 checkout 成 LF，与贡献者的编辑器配置无关）。本测试是它的执行面。
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for relative in _POOL_CODE_FILES:
+        raw = (root / relative).read_bytes()
+        assert b"\r\n" not in raw, (
+            f"{relative} 含 CRLF —— 它的 SHA256 被 program_pool.json 钉着，"
+            f"CRLF 会让这个 pin 在干净 checkout 上失效（.gitattributes: *.py text eol=lf）"
+        )
 
 
 # ── ② H_ref 的候选文法 ────────────────────────────────────────────────────────

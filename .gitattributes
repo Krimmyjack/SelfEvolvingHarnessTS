@@ -18,3 +18,22 @@ results/Benchmark_v0_1/** -text
 results/Benchmark_v0_2/** -text
 data/benchmark_v0/acquisition_manifest.json -text
 docs/benchmark/** -text
+
+# ── 2026-07-14: the same hazard, one layer deeper — **Python source can be digest-pinned too**
+#
+# `results/Benchmark_v0_2/program_pool.json` pins the SHA256 of the *source files* that
+# implement the frozen program pool (`benchmark/programs.py::_POOL_CODE_FILES`):
+#   benchmark/programs.py, operators/_common.py, operators/registry.py,
+#   operators/s1_denoise.py, operators/s1_outlier.py
+# Those are ordinary `.py` files, so they fell under `* text=auto` and were exempt from
+# nothing -- meaning a clean Windows checkout restores them with CRLF, their SHA256 changes,
+# and every one of those pins goes stale **on an untouched clone**. The pins were computed on
+# LF bytes; nothing checked them, so the breakage stayed invisible.
+#
+# `eol=lf` (rather than `-text`) because it is the stronger guarantee for source: git
+# normalizes to LF on the way in *and* checks out LF on every platform, so the working-tree
+# bytes are the same everywhere no matter how a contributor's editor is configured.
+#
+# `tests/test_frozen_action_surfaces.py::test_pool_code_files_are_lf_so_a_clean_checkout_still_hashes`
+# enforces this: any pool code file containing CRLF fails the suite.
+*.py text eol=lf
