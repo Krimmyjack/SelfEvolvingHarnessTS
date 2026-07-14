@@ -1,5 +1,13 @@
 # benchmark-v0.2 — Dev-Query verdict
 
+> **⚠ READ `TD_VERDICT_ADDENDUM.md` ALONGSIDE THIS DOCUMENT.**
+> The verdict below is directionally correct but its **magnitudes are inflated 4–6×** by two
+> degenerate `monash:covid_deaths` cells. The addendum recomputes every figure with and without
+> COVID, **retracts two of §2's exemplars and §1's winner's-curse claim**, re-attributes §3's
+> confound (93.9% of it was COVID, not the judge), and restates the Gate result as
+> **"conditional LAUNCH — deferred until after the judge ladder."** The Gate itself does not
+> flip. Quote the addendum's numbers, not this document's.
+
 Final-Query was **not** read. It remains sealed.
 
 Preregistered before any of these numbers existed:
