@@ -1,0 +1,84 @@
+{
+  "schema": "p6-cycle1-run-provenance/1",
+  "written_at_utc": "2026-07-12T07:05:00+00:00",
+  "timing": "gate 创建与 D1 discovery 之前落盘——本决定 outcome-independent（D1 未开、无任何 utility 数字被读取）",
+  "decision": {
+    "id": "cycle1-offline-llm",
+    "date": "2026-07-12",
+    "choice": "llm_supplier=None（离线正式跑）；P1 DeepSeek 连通预检作废",
+    "rationale": [
+      "无 canonical P6 (uid,state,n)->operator_steps DeepSeek supplier（建之属 ad-hoc 开发，红线禁止）",
+      "H0 llm=0 → discovery 0 次 LLM 调用；LLM 仅经 sampler_b(llm=2) 触达",
+      "sampler_b 内部重评 = 128 D1 episodes × 1 request = 128 > 60 预算 → P6BudgetError（precommit 前 abort）",
+      "故真实 supplier 路径不可达（S1/S3/no-signature 从不调用；S2 则烧 60 次后 abort）——离线是唯一可达 terminal 的合法正式跑"
+    ],
+    "authority": "主会话用户裁定 2026-07-12"
+  },
+  "anchors": {
+    "c0_freeze_a1_sha256": "2240635a15cb235408c275f6980628c0b7c485078eeb92287732385e79a8c0eb",
+    "c0_gate_pass": true,
+    "epsilon": 0.015879655776961057,
+    "delta_safe": 0.039699139442402644,
+    "v1_block_digest": "d726f8db970856c6c994a402de599c1058a48bf10d018a3e70ab6cf30e7d766f",
+    "selection_manifest_sha": "5c768155a47c1b4cc033a0eaa724830a7055e343439ef77447ad3e6244e21720",
+    "code_sha": "3c3135043579e8b36e0d00dcd422ea53ceb762c9417e93d58f154d162ad9e434",
+    "code_sha_recipe": "sha256(canonical(sorted{p6 relpath: disk sha256}))；p6 模块=freeze_record.code_sha256.p6_modules（disk 0 drift）",
+    "config_digest": "9ac1b6f676d04f3f59795998ae05aa780cbf68656f4444fbbbdb5853cd861938",
+    "config_digest_recipe": "sha256(canonical(judge_cfg,seeds,B,boot_seed,K,timeout,eps,delta,p0_cutpoints,rule_manifest_sha,materialization_sha,llm_supplier))",
+    "config": {
+      "judge_cfg": {
+        "lam": 0.001,
+        "series_weight": "equal",
+        "stride": 4,
+        "window_cap": null
+      },
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "bootstrap_b": 2000,
+      "bootstrap_seed": 20260712,
+      "K": 8,
+      "trainer_fit_timeout_seconds": 900.0,
+      "epsilon": 0.015879655776961057,
+      "delta_safe": 0.039699139442402644,
+      "p0_cutpoints": {
+        "missing_rate": [
+          0.0,
+          0.021341463414634165,
+          0.04984858681022877
+        ],
+        "n_episodes": 64,
+        "quantiles": [
+          0.25,
+          0.5,
+          0.75
+        ],
+        "snr": [
+          0.2813217283744487,
+          0.48685973564787616,
+          0.8897597450377286
+        ]
+      },
+      "rule_manifest_sha": "5c768155a47c1b4cc033a0eaa724830a7055e343439ef77447ad3e6244e21720",
+      "materialization_sha": "d726f8db970856c6c994a402de599c1058a48bf10d018a3e70ab6cf30e7d766f",
+      "llm_supplier": "none(offline; user decision 2026-07-12; P1 waived)"
+    }
+  },
+  "assembly": {
+    "episodes_d": 128,
+    "d1_series": 32,
+    "episodes_v_expected": 80,
+    "materialization_sha_binding": "d726f8db970856c6c994a402de599c1058a48bf10d018a3e70ab6cf30e7d766f",
+    "H0_state_sha": "4e7e4ac5b40c941d",
+    "H0_allocation": {
+      "det": 3,
+      "random": 5,
+      "llm": 0
+    }
+  },
+  "entrypoint": "run_cycle_formal",
+  "out_dir": "SelfEvolvingHarnessTS/results/Stage2/Cycle1",
+  "sampler_b_offline_note": "若 S2 激活且 sampler_b 进入候选评估：其 llm=2 slot 在 llm_supplier=None 下由 _collect_llm 返回 []（realized llm 供给=0），report 如实记 realized pool。"
+}

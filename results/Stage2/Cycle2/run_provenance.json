@@ -1,0 +1,79 @@
+{
+  "schema": "p6-cycle2-run-provenance/1",
+  "written_at_utc": "2026-07-12T07:24:22+00:00",
+  "timing": "gate 续链与 D2 discovery 之前落盘——outcome-independent（V2 未开、无 utility 被读）",
+  "decision_ref": "沿用 Cycle 1 离线裁定（2026-07-12，D1 未开时点）：llm_supplier=None，P1 作废；见 results/Stage2/Cycle1/run_provenance.json。理由不变（无 canonical P6 supplier；sampler_b×128 D2 episodes>60 预算 → LLM 路径不可达）。",
+  "anchors": {
+    "c0_freeze_a1_sha256": "2240635a15cb235408c275f6980628c0b7c485078eeb92287732385e79a8c0eb",
+    "c0_gate_pass": true,
+    "epsilon": 0.015879655776961057,
+    "delta_safe": 0.039699139442402644,
+    "bootstrap_seed": 20260713,
+    "v2_block_digest": "0a1a4ea72dd0e288452f3d9550b606ef0d64f35248905b618ab4676b13716056",
+    "selection_manifest_sha": "5c768155a47c1b4cc033a0eaa724830a7055e343439ef77447ad3e6244e21720",
+    "code_sha": "3c3135043579e8b36e0d00dcd422ea53ceb762c9417e93d58f154d162ad9e434",
+    "config_digest": "a3308a3523523f68c7154283679339da86ecad7353391aca9829fbccdeb67d4d",
+    "config": {
+      "judge_cfg": {
+        "lam": 0.001,
+        "series_weight": "equal",
+        "stride": 4,
+        "window_cap": null
+      },
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "bootstrap_b": 2000,
+      "bootstrap_seed": 20260713,
+      "K": 8,
+      "trainer_fit_timeout_seconds": 900.0,
+      "epsilon": 0.015879655776961057,
+      "delta_safe": 0.039699139442402644,
+      "p0_cutpoints": {
+        "missing_rate": [
+          0.0,
+          0.021341463414634165,
+          0.04984858681022877
+        ],
+        "n_episodes": 64,
+        "quantiles": [
+          0.25,
+          0.5,
+          0.75
+        ],
+        "snr": [
+          0.2813217283744487,
+          0.48685973564787616,
+          0.8897597450377286
+        ]
+      },
+      "rule_manifest_sha": "5c768155a47c1b4cc033a0eaa724830a7055e343439ef77447ad3e6244e21720",
+      "materialization_sha": "0a1a4ea72dd0e288452f3d9550b606ef0d64f35248905b618ab4676b13716056",
+      "llm_supplier": "none(offline; user decision 2026-07-12; P1 waived)"
+    }
+  },
+  "chain": {
+    "shared_ledger": "SelfEvolvingHarnessTS/results/Stage2/Cycle1/p6_gate_ledger_5c768155a47c1b4cc033a0eaa724830a7055e343439ef77447ad3e6244e21720.jsonl",
+    "cycle1_terminal": "abstain",
+    "cycle1_chain_tip": "0e4fb965ba97ec0afd10e7416d946561af112c01961628418321ad2a0adfbad4",
+    "H_start": "Cycle1 H_final == H0（state_changed=False 复核）",
+    "H_start_sha": "4e7e4ac5b40c941d"
+  },
+  "assembly": {
+    "episodes_d": 128,
+    "d2_series": 32,
+    "d2_disjoint_d1": true,
+    "episodes_v_expected": 80,
+    "materialization_sha_binding": "0a1a4ea72dd0e288452f3d9550b606ef0d64f35248905b618ab4676b13716056",
+    "H0_allocation": {
+      "det": 3,
+      "random": 5,
+      "llm": 0
+    }
+  },
+  "entrypoint": "run_cycle_formal",
+  "out_dir": "SelfEvolvingHarnessTS/results/Stage2/Cycle2",
+  "sampler_b_offline_note": "若 S2 激活且 sampler_b 进入候选评估：llm=2 slot 在 None 下 _collect_llm 返回 []（realized llm 供给=0），report 如实记。"
+}

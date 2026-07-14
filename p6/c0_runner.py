@@ -632,7 +632,9 @@ def evaluate_identity_gate(
     cf_losses / adam_losses：{domain: {program: per-episode losses}}（adam 已 seed 均值）；
     presets_by_domain：{domain: 逐 episode preset 标签}；eps：§3.2 的 ε（先算 ε 再进本函数）。
     判据（PASS = ① ∧ ② ∧ ④ ∧ ③′）：
-      ① per-domain |U_cf(raw) − U_adam(raw)| ≤ 0.10·U_adam(raw)（全过）；
+      ① per-domain raw-level **non-inferiority**（Amendment A1，见 prereg §11；原双侧
+         equivalence 门 |U_cf−U_adam|≤0.10·U_adam 已改）：U_cf(raw) ≤ 1.10·U_adam(raw)
+         ——闭式判官相对 Adam 参照不显著更差即过；不再确立两估计器绝对水平等价；
       ② per-domain Spearman ρ（8 程序 gain vs raw）的域中位数 ≥ 0.7；
       ③′ episode 级 ε-tolerant top-1 一致率 ≥ 0.6（Adam top-1 ∈ 闭式 top-2 且
          cf_loss(adam_top1) − cf_loss(cf_top1) ≤ ε/2；冻结释义 D）；
@@ -659,16 +661,24 @@ def evaluate_identity_gate(
             raise ValueError(f"presets_by_domain[{d!r}] 长度与 episode 数不一致")
         presets[d] = labels
 
-    # ① raw 水准一致（per-domain 全过；≤ 含边界）
+    # ① raw 水准 non-inferiority（Amendment A1；见 prereg §11）：闭式判官相对 Adam 参照
+    # 不显著更差即过——U_cf ≤ (1+0.10)·U_adam。原双侧 equivalence 门（|U_cf−U_adam|≤tol）
+    # 已改为一侧；闭式 loss 更低（更优）恒过，仅当闭式比 Adam 更差 >10% 才 FAIL（门未整体
+    # 削弱，见 test_gate_criterion1_noninferiority_a1）。签名口径同 diagnostics/D10。
     crit1_per: Dict[str, Any] = {}
     for d in domains:
         u_cf = float(np.mean(cf[d][raw_id]))
         u_ad = float(np.mean(ad[d][raw_id]))
-        tol = GATE1_REL_TOL * u_ad
-        diff = abs(u_cf - u_ad)
+        upper = (1.0 + GATE1_REL_TOL) * u_ad
+        signed = u_cf - u_ad
+        noninf = bool(u_cf <= upper)
         crit1_per[d] = {
-            "u_cf_raw": u_cf, "u_adam_raw": u_ad, "abs_diff": diff,
-            "tol": tol, "pass": bool(diff <= tol),
+            "u_cf_raw": u_cf, "u_adam_raw": u_ad,
+            "signed_offset": signed,                                 # U_cf − U_adam（负=闭式更优）
+            "signed_relative_offset": (float(signed / u_ad) if u_ad != 0.0 else float("inf")),
+            "upper_bound": upper, "rel_tol": GATE1_REL_TOL,
+            "upper_noninferiority_pass": noninf, "pass": noninf,
+            "criterion_semantics": "closed_form_not_worse_than_adam_by_more_than_10pct",
         }
     crit1_pass = all(v["pass"] for v in crit1_per.values())
 
@@ -739,6 +749,7 @@ def evaluate_identity_gate(
     return {
         "epsilon": eps,
         "criterion1_raw_level": {"per_domain": crit1_per, "rel_tol": GATE1_REL_TOL,
+                                 "criterion_semantics": "raw_level_non_inferiority_A1",
                                  "pass": crit1_pass},
         "criterion2_spearman": {"per_domain_rho": crit2_rho, "median_rho": median_rho,
                                 "threshold": GATE2_MEDIAN_RHO_MIN, "pass": crit2_pass},

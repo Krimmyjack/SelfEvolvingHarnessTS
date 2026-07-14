@@ -376,8 +376,8 @@ def _table(domain_losses):
 
 
 def test_gate_criterion1_boundary():
-    # 二进制精确边界：adam raw=10.0 → tol=0.1·10.0（IEEE754 下恰为 1.0）；
-    # d0 diff = 11.0−10.0 = 1.0 == tol → 过（≤ 含边界）；d1 diff = 1.5 > 1.0 → 不过。
+    # A1 一侧 non-inferiority（U_cf ≤ 1.10·U_adam）：adam raw=10.0 → upper=1.10·10.0=11.0；
+    # d0 U_cf=11.0 == upper → 过（≤ 含边界，signed rel=+0.10）；d1 U_cf=11.5 > 11.0 → 不过（更差 15%）。
     progs, raw = ("raw", "a"), "raw"
     cf = _table({"d0": {"raw": [11.0] * 4, "a": [1.0] * 4},
                  "d1": {"raw": [11.5] * 4, "a": [1.0] * 4}})
@@ -386,11 +386,37 @@ def test_gate_criterion1_boundary():
     presets = {"d0": ["p"] * 4, "d1": ["p"] * 4}
     out = evaluate_identity_gate(cf, ad, presets, eps=0.5, programs=progs, raw_id=raw)
     c1 = out["criterion1_raw_level"]
-    assert 0.1 * 10.0 == 1.0                                  # 边界构造前提（IEEE754）
-    assert c1["per_domain"]["d0"]["abs_diff"] == 1.0 == c1["per_domain"]["d0"]["tol"]
-    assert c1["per_domain"]["d0"]["pass"] is True             # diff == tol → 过（≤ 含边界）
-    assert c1["per_domain"]["d1"]["pass"] is False            # 1.5 > 1.0
+    assert 1.10 * 10.0 == 11.0                                # 边界构造前提（IEEE754）
+    d0 = c1["per_domain"]["d0"]
+    assert d0["u_cf_raw"] == 11.0 and d0["upper_bound"] == 11.0
+    assert d0["signed_offset"] == 1.0 and d0["signed_relative_offset"] == pytest.approx(0.10)
+    assert d0["pass"] is True and d0["upper_noninferiority_pass"] is True     # == upper → 过（≤ 含边界）
+    assert d0["criterion_semantics"] == "closed_form_not_worse_than_adam_by_more_than_10pct"
+    assert c1["per_domain"]["d1"]["pass"] is False            # 11.5 > 11.0（更差 15%）
     assert c1["pass"] is False                                # per-domain 全过才过
+    assert c1["criterion_semantics"] == "raw_level_non_inferiority_A1"
+
+
+def test_gate_criterion1_noninferiority_a1():
+    """A1/回归：① 改一侧 non-inferiority 后**门未被整体削弱**——闭式更优→过；更差 11%→仍 FAIL。"""
+    progs, raw = ("raw", "a"), "raw"
+    presets = {"d0": ["p"] * 4}
+    ad = _table({"d0": {"raw": [10.0] * 4, "a": [1.0] * 4}})
+    # (a) 闭式显著更优（U_cf=0.5·U_adam，仿 fred_md 情形）→ 过
+    out_a = evaluate_identity_gate(_table({"d0": {"raw": [5.0] * 4, "a": [1.0] * 4}}),
+                                   ad, presets, eps=0.5, programs=progs, raw_id=raw)
+    da = out_a["criterion1_raw_level"]["per_domain"]["d0"]
+    assert da["pass"] is True and da["signed_relative_offset"] == pytest.approx(-0.5)
+    # (b) 闭式更差 11%（U_cf=1.11·U_adam）→ **仍 FAIL**（门没被削弱：真正更差的判官被拦）
+    out_b = evaluate_identity_gate(_table({"d0": {"raw": [11.1] * 4, "a": [1.0] * 4}}),
+                                   ad, presets, eps=0.5, programs=progs, raw_id=raw)
+    db = out_b["criterion1_raw_level"]["per_domain"]["d0"]
+    assert db["signed_relative_offset"] == pytest.approx(0.11)
+    assert db["pass"] is False and out_b["criterion1_raw_level"]["pass"] is False
+    # (c) 恰 10% 更差（边界）→ 过
+    out_c = evaluate_identity_gate(_table({"d0": {"raw": [11.0] * 4, "a": [1.0] * 4}}),
+                                   ad, presets, eps=0.5, programs=progs, raw_id=raw)
+    assert out_c["criterion1_raw_level"]["per_domain"]["d0"]["pass"] is True
 
 
 def test_gate_criterion2_spearman_median():

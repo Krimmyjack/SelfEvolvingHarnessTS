@@ -1,0 +1,475 @@
+{
+  "costs": {
+    "adam_fits": 96,
+    "closed_form_fits": 32,
+    "wall_clock_seconds": 189.619
+  },
+  "delta_safe": 0.039699139442402644,
+  "domains": [
+    "covid_deaths",
+    "fred_md",
+    "nn5_daily",
+    "tourism_monthly"
+  ],
+  "episodes_per_domain": {
+    "covid_deaths": 16,
+    "fred_md": 16,
+    "nn5_daily": 16,
+    "tourism_monthly": 16
+  },
+  "epsilon": 0.015879655776961057,
+  "identity_gate": {
+    "criterion1_raw_level": {
+      "criterion_semantics": "raw_level_non_inferiority_A1",
+      "pass": true,
+      "per_domain": {
+        "covid_deaths": {
+          "criterion_semantics": "closed_form_not_worse_than_adam_by_more_than_10pct",
+          "pass": true,
+          "rel_tol": 0.1,
+          "signed_offset": -0.009927423458927276,
+          "signed_relative_offset": -0.007174198599124839,
+          "u_adam_raw": 1.3837675834814909,
+          "u_cf_raw": 1.3738401600225636,
+          "upper_bound": 1.52214434182964,
+          "upper_noninferiority_pass": true
+        },
+        "fred_md": {
+          "criterion_semantics": "closed_form_not_worse_than_adam_by_more_than_10pct",
+          "pass": true,
+          "rel_tol": 0.1,
+          "signed_offset": -0.029751226810275172,
+          "signed_relative_offset": -0.12887261984535744,
+          "u_adam_raw": 0.230857623954379,
+          "u_cf_raw": 0.20110639714410383,
+          "upper_bound": 0.25394338634981695,
+          "upper_noninferiority_pass": true
+        },
+        "nn5_daily": {
+          "criterion_semantics": "closed_form_not_worse_than_adam_by_more_than_10pct",
+          "pass": true,
+          "rel_tol": 0.1,
+          "signed_offset": -0.02023729090473192,
+          "signed_relative_offset": -0.03334345091245815,
+          "u_adam_raw": 0.6069345059053453,
+          "u_cf_raw": 0.5866972150006133,
+          "upper_bound": 0.6676279564958798,
+          "upper_noninferiority_pass": true
+        },
+        "tourism_monthly": {
+          "criterion_semantics": "closed_form_not_worse_than_adam_by_more_than_10pct",
+          "pass": true,
+          "rel_tol": 0.1,
+          "signed_offset": 0.0002685755629701081,
+          "signed_relative_offset": 0.0002648625064355238,
+          "u_adam_raw": 1.01401880766196,
+          "u_cf_raw": 1.0142873832249302,
+          "upper_bound": 1.1154206884281561,
+          "upper_noninferiority_pass": true
+        }
+      },
+      "rel_tol": 0.1
+    },
+    "criterion2_spearman": {
+      "median_rho": 1.0,
+      "pass": true,
+      "per_domain_rho": {
+        "covid_deaths": 1.0,
+        "fred_md": 0.927710843373494,
+        "nn5_daily": 1.0,
+        "tourism_monthly": 1.0
+      },
+      "threshold": 0.7
+    },
+    "criterion3_prime_top1": {
+      "loss_tol": 0.007939827888480529,
+      "n_agree": 57,
+      "n_episodes": 64,
+      "pass": true,
+      "rate": 0.890625,
+      "threshold": 0.6
+    },
+    "criterion4_preset_sign": {
+      "n_agree": 24,
+      "n_evaluated": 24,
+      "n_excluded_near_zero": 8,
+      "n_pairs_total": 32,
+      "near_zero_band": 0.003969913944240264,
+      "pass": true,
+      "preset_gains": {
+        "G_hi_full": {
+          "il+median_w15": {
+            "gain_adam": -1.4741725174336437,
+            "gain_cf": -1.4590122880693626
+          },
+          "il+median_w25": {
+            "gain_adam": -1.69261341532783,
+            "gain_cf": -1.6904993977478195
+          },
+          "il+median_w9": {
+            "gain_adam": -1.3174441290530936,
+            "gain_cf": -1.2881675514943476
+          },
+          "il+smooth_ma_w5": {
+            "gain_adam": -0.5942054419774982,
+            "gain_cf": -0.5879987731672491
+          },
+          "il+winsorize": {
+            "gain_adam": -0.7518699060153213,
+            "gain_cf": -0.748364734391429
+          },
+          "il+winsorize+savgol": {
+            "gain_adam": -1.4848302202313342,
+            "gain_cf": -1.4777583938612517
+          },
+          "impute_linear": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          },
+          "raw_identity": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          }
+        },
+        "G_hi_miss": {
+          "il+median_w15": {
+            "gain_adam": -1.479471693581949,
+            "gain_cf": -1.465197535265753
+          },
+          "il+median_w25": {
+            "gain_adam": -1.647365039249256,
+            "gain_cf": -1.6155687393290834
+          },
+          "il+median_w9": {
+            "gain_adam": -1.307206864441076,
+            "gain_cf": -1.2600079499799515
+          },
+          "il+smooth_ma_w5": {
+            "gain_adam": -0.6033850348979843,
+            "gain_cf": -0.6013856979889792
+          },
+          "il+winsorize": {
+            "gain_adam": -0.7726369047517068,
+            "gain_cf": -0.757791909860479
+          },
+          "il+winsorize+savgol": {
+            "gain_adam": -1.4181846403292262,
+            "gain_cf": -1.4389396387797637
+          },
+          "impute_linear": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          },
+          "raw_identity": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          }
+        },
+        "G_lo_full": {
+          "il+median_w15": {
+            "gain_adam": -1.2606908871728044,
+            "gain_cf": -1.2483122471769552
+          },
+          "il+median_w25": {
+            "gain_adam": -1.4690593357102388,
+            "gain_cf": -1.469017287030662
+          },
+          "il+median_w9": {
+            "gain_adam": -1.0368110346854627,
+            "gain_cf": -1.0149557126527693
+          },
+          "il+smooth_ma_w5": {
+            "gain_adam": -0.5186299369503057,
+            "gain_cf": -0.5312027653456574
+          },
+          "il+winsorize": {
+            "gain_adam": -0.28437329048110727,
+            "gain_cf": -0.2767078522336418
+          },
+          "il+winsorize+savgol": {
+            "gain_adam": -1.0643638456296163,
+            "gain_cf": -1.1101320367026015
+          },
+          "impute_linear": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          },
+          "raw_identity": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          }
+        },
+        "G_lo_miss": {
+          "il+median_w15": {
+            "gain_adam": -1.1868736157872224,
+            "gain_cf": -1.1847634326465855
+          },
+          "il+median_w25": {
+            "gain_adam": -1.3341382475162034,
+            "gain_cf": -1.321687630012562
+          },
+          "il+median_w9": {
+            "gain_adam": -1.0007414037336568,
+            "gain_cf": -0.9943522697151647
+          },
+          "il+smooth_ma_w5": {
+            "gain_adam": -0.5477689027575093,
+            "gain_cf": -0.5426490533387137
+          },
+          "il+winsorize": {
+            "gain_adam": -0.24334908649292009,
+            "gain_cf": -0.24081901384478188
+          },
+          "il+winsorize+savgol": {
+            "gain_adam": -1.1109272202138052,
+            "gain_cf": -1.1670723873541373
+          },
+          "impute_linear": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          },
+          "raw_identity": {
+            "gain_adam": 0.0,
+            "gain_cf": 0.0
+          }
+        }
+      },
+      "rate": 1.0,
+      "threshold": 0.75
+    },
+    "epsilon": 0.015879655776961057,
+    "pass": true
+  },
+  "j_raw_c0": 0.7939827888480528,
+  "n_episodes": 64,
+  "p0_cutpoints": {
+    "missing_rate": [
+      0.0,
+      0.021341463414634165,
+      0.04984858681022877
+    ],
+    "n_episodes": 64,
+    "quantiles": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "snr": [
+      0.2813217283744487,
+      0.48685973564787616,
+      0.8897597450377286
+    ]
+  },
+  "per_domain_utilities": {
+    "adam_mean_seed": {
+      "covid_deaths": {
+        "il+median_w15": 2.9953998139183198,
+        "il+median_w25": 3.0990242579281806,
+        "il+median_w9": 2.9086150617585886,
+        "il+smooth_ma_w5": 2.139784769889187,
+        "il+winsorize": 2.741227673849407,
+        "il+winsorize+savgol": 3.2417876468675932,
+        "impute_linear": 1.3837675834814909,
+        "raw_identity": 1.3837675834814909
+      },
+      "fred_md": {
+        "il+median_w15": 0.26129642343560544,
+        "il+median_w25": 0.21269218458501576,
+        "il+median_w9": 0.22203835209250194,
+        "il+smooth_ma_w5": 0.3191485397043787,
+        "il+winsorize": 0.2591527687018264,
+        "il+winsorize+savgol": 0.3341680392195596,
+        "impute_linear": 0.230857623954379,
+        "raw_identity": 0.230857623954379
+      },
+      "nn5_daily": {
+        "il+median_w15": 3.191696898519248,
+        "il+median_w25": 3.91713912784595,
+        "il+median_w9": 2.8499820060908085,
+        "il+smooth_ma_w5": 1.5004025840747808,
+        "il+winsorize": 0.7951342401622703,
+        "il+winsorize+savgol": 2.7438260474847516,
+        "impute_linear": 0.6069345059053453,
+        "raw_identity": 0.6069345059053453
+      },
+      "tourism_monthly": {
+        "il+median_w15": 2.1883940991056217,
+        "il+median_w25": 2.149898988447557,
+        "il+median_w9": 1.9171465329745652,
+        "il+smooth_ma_w5": 1.5402319439181267,
+        "il+winsorize": 1.492293026030727,
+        "il+winsorize+savgol": 1.9941027138352525,
+        "impute_linear": 1.01401880766196,
+        "raw_identity": 1.01401880766196
+      }
+    },
+    "closed_form": {
+      "covid_deaths": {
+        "il+median_w15": 2.8987692755189145,
+        "il+median_w25": 3.015719867775497,
+        "il+median_w9": 2.7664196762602224,
+        "il+smooth_ma_w5": 2.1117492299451035,
+        "il+winsorize": 2.713157582951508,
+        "il+winsorize+savgol": 3.153530214259207,
+        "impute_linear": 1.3738401600225636,
+        "raw_identity": 1.3738401600225636
+      },
+      "fred_md": {
+        "il+median_w15": 0.2474020874452872,
+        "il+median_w25": 0.19760622440344444,
+        "il+median_w9": 0.20139626631254756,
+        "il+smooth_ma_w5": 0.30514392903346976,
+        "il+winsorize": 0.233494262144054,
+        "il+winsorize+savgol": 0.3398745977410694,
+        "impute_linear": 0.20110639714410383,
+        "raw_identity": 0.20110639714410383
+      },
+      "nn5_daily": {
+        "il+median_w15": 3.191816804464053,
+        "il+median_w25": 3.939733189253756,
+        "il+median_w9": 2.8471595756761925,
+        "il+smooth_ma_w5": 1.4848910685341288,
+        "il+winsorize": 0.7672070706529689,
+        "il+winsorize+savgol": 2.776508039155882,
+        "impute_linear": 0.5866972150006133,
+        "raw_identity": 0.5866972150006133
+      },
+      "tourism_monthly": {
+        "il+median_w15": 2.1952284911226125,
+        "il+median_w25": 2.11964492807964,
+        "il+median_w9": 1.9184391209854814,
+        "il+smooth_ma_w5": 1.5373832177201086,
+        "il+winsorize": 1.4857557499740115,
+        "il+winsorize+savgol": 2.0999207609338075,
+        "impute_linear": 1.0142873832249302,
+        "raw_identity": 1.0142873832249302
+      }
+    }
+  },
+  "presets_observed": [
+    "G_hi_full",
+    "G_hi_miss",
+    "G_lo_full",
+    "G_lo_miss"
+  ],
+  "protocol": {
+    "adam": {
+      "bs": 256,
+      "deterministic": true,
+      "device": "cpu",
+      "epochs": 120,
+      "fit_timeout_seconds": 900.0,
+      "lr": 0.01,
+      "model": "dlinear",
+      "windows": "judge-identical (history-only z-score, stride=judge, pooled)"
+    },
+    "degradation_seed_rule": "int(sha256('p6deg|{config}|{item}|{preset}').hexdigest()[:8], 16)",
+    "delta_safe_multiplier": 2.5,
+    "dual_path_check": {
+      "loss_atol": 1e-09,
+      "w_rtol": 1e-06
+    },
+    "epsilon_rate": 0.02,
+    "judge": {
+      "lam": 0.001,
+      "protocol_id": "dlinear_closed_form_v1",
+      "series_weight": "equal",
+      "stride": 4,
+      "window_cap": null
+    },
+    "judge_ingest": "non-finite→NaN→linear interp（首尾钳制）；全非有限→abort",
+    "p_gate_programs": {
+      "il+median_w15": [
+        [
+          "impute_linear",
+          {}
+        ],
+        [
+          "denoise_median",
+          {
+            "window": 15
+          }
+        ]
+      ],
+      "il+median_w25": [
+        [
+          "impute_linear",
+          {}
+        ],
+        [
+          "denoise_median",
+          {
+            "window": 25
+          }
+        ]
+      ],
+      "il+median_w9": [
+        [
+          "impute_linear",
+          {}
+        ],
+        [
+          "denoise_median",
+          {
+            "window": 9
+          }
+        ]
+      ],
+      "il+smooth_ma_w5": [
+        [
+          "impute_linear",
+          {}
+        ],
+        [
+          "smooth_ma",
+          {
+            "window": 5
+          }
+        ]
+      ],
+      "il+winsorize": [
+        [
+          "impute_linear",
+          {}
+        ],
+        [
+          "winsorize",
+          {}
+        ]
+      ],
+      "il+winsorize+savgol": [
+        [
+          "impute_linear",
+          {}
+        ],
+        [
+          "winsorize",
+          {}
+        ],
+        [
+          "denoise_savgol",
+          {}
+        ]
+      ],
+      "impute_linear": [
+        [
+          "impute_linear",
+          {}
+        ]
+      ],
+      "raw_identity": []
+    },
+    "raw_program": "raw_identity",
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "provenance": {
+    "entrypoint": "run_c0_formal",
+    "frozen_literals_digest": "c14c1977b23cc6aac259f3b2d6d3a433b0d5340b119bd31eb288ea971018cad0"
+  },
+  "record_sha": "e01190bd876febf3c0c70323d414fe730bb19b9af977c23a290e00d354c2cd05",
+  "schema_version": "p6-c0-freeze/1"
+}

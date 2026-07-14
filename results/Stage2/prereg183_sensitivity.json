@@ -1,0 +1,168 @@
+{
+  "schema": "p6-prereg183-sensitivity/1",
+  "status": "prereg183_non_adjudicatory_sensitivity_post_hoc",
+  "disclaimer": "prereg:183 预注册非裁决 sensitivity。结果后报告，**不改 verdict、不写任何决策字段**。S1/S2 在反事实 ε/λ 下的点火为 post-hoc counterfactual，非任何 promote/activate 决策。",
+  "inputs": {
+    "epsilon_frozen_2pct": 0.015879655776961057,
+    "delta_safe": 0.039699139442402644,
+    "J_raw_C0": 0.7939827888480528,
+    "bootstrap_b": 2000,
+    "boot_seed_cycle1": 20260712,
+    "boot_seed_cycle2": 20260713,
+    "state": "H0(default_state)",
+    "K": 8,
+    "replay_scope": "signature steps 1-3 (S1/S2 only); no gate/miner/torch/ledger"
+  },
+  "replay_faithfulness_vs_persisted": {
+    "all_match_bit_level": true,
+    "per_cycle": {
+      "1": {
+        "regret_mean": {
+          "replay": 0.005100082396638127,
+          "persisted": 0.005100082396638127,
+          "match": true
+        },
+        "s1_lcb90": {
+          "replay": 0.001510018010125527,
+          "persisted": 0.001510018010125527,
+          "match": true
+        },
+        "ceiling_gap": {
+          "replay": 0.000974171590223949,
+          "persisted": 0.000974171590223949,
+          "match": true
+        },
+        "mean_classes": {
+          "replay": 7.4375,
+          "persisted": 7.4375,
+          "match": true
+        }
+      },
+      "2": {
+        "regret_mean": {
+          "replay": 0.00798073458970467,
+          "persisted": 0.00798073458970467,
+          "match": true
+        },
+        "s1_lcb90": {
+          "replay": 0.002174691963698532,
+          "persisted": 0.002174691963698532,
+          "match": true
+        },
+        "ceiling_gap": {
+          "replay": 0.001959384836029865,
+          "persisted": 0.001959384836029865,
+          "match": true
+        },
+        "mean_classes": {
+          "replay": 7.40625,
+          "persisted": 7.40625,
+          "match": true
+        }
+      }
+    }
+  },
+  "analysis_1_eps_sensitivity_point_conditions": {
+    "1": {
+      "1pct": {
+        "eps": 0.007939827888480529,
+        "S1_regret_mean": 0.005100082396638127,
+        "S1_lcb90": 0.001510018010125527,
+        "S1_point_fire": false,
+        "S2_ceiling_gap": 0.000974171590223949,
+        "S2_mean_classes": 7.4375,
+        "S2_point_fire": false
+      },
+      "2pct_frozen": {
+        "eps": 0.015879655776961057,
+        "S1_regret_mean": 0.005100082396638127,
+        "S1_lcb90": 0.001510018010125527,
+        "S1_point_fire": false,
+        "S2_ceiling_gap": 0.000974171590223949,
+        "S2_mean_classes": 7.4375,
+        "S2_point_fire": false
+      },
+      "5pct": {
+        "eps": 0.039699139442402644,
+        "S1_regret_mean": 0.005100082396638127,
+        "S1_lcb90": 0.001510018010125527,
+        "S1_point_fire": false,
+        "S2_ceiling_gap": 0.000974171590223949,
+        "S2_mean_classes": 7.4375,
+        "S2_point_fire": false
+      }
+    },
+    "2": {
+      "1pct": {
+        "eps": 0.007939827888480529,
+        "S1_regret_mean": 0.00798073458970467,
+        "S1_lcb90": 0.002174691963698532,
+        "S1_point_fire": true,
+        "S2_ceiling_gap": 0.001959384836029865,
+        "S2_mean_classes": 7.40625,
+        "S2_point_fire": false
+      },
+      "2pct_frozen": {
+        "eps": 0.015879655776961057,
+        "S1_regret_mean": 0.00798073458970467,
+        "S1_lcb90": 0.002174691963698532,
+        "S1_point_fire": false,
+        "S2_ceiling_gap": 0.001959384836029865,
+        "S2_mean_classes": 7.40625,
+        "S2_point_fire": false
+      },
+      "5pct": {
+        "eps": 0.039699139442402644,
+        "S1_regret_mean": 0.00798073458970467,
+        "S1_lcb90": 0.002174691963698532,
+        "S1_point_fire": false,
+        "S2_ceiling_gap": 0.001959384836029865,
+        "S2_mean_classes": 7.40625,
+        "S2_point_fire": false
+      }
+    }
+  },
+  "analysis_2_ci95_lcb_requantile": {
+    "1": {
+      "S1_regret_lcb90_q05": 0.001510018010125527,
+      "S1_regret_lcb95_q025": 0.001020421046579051,
+      "matches_persisted_lcb90": true,
+      "S3_note": "S3 harm_lcb90=0（全 cohort chosen-vs-raw harm≡0）→ 任意分位退化为 0，CI95 亦 0"
+    },
+    "2": {
+      "S1_regret_lcb90_q05": 0.002174691963698532,
+      "S1_regret_lcb95_q025": 0.0014391514965689642,
+      "matches_persisted_lcb90": true,
+      "S3_note": "S3 harm_lcb90=0（全 cohort chosen-vs-raw harm≡0）→ 任意分位退化为 0，CI95 亦 0"
+    }
+  },
+  "analysis_3_lambda_1e-2_direction": {
+    "1": {
+      "regret_mean_lam001": 0.005100082396638127,
+      "regret_mean_lam01": 0.005100010555407129,
+      "regret_both_subeps_frozen": true,
+      "regret_sign_same": true,
+      "ceiling_gap_lam001": 0.000974171590223949,
+      "ceiling_gap_lam01": 0.0009741116122807814,
+      "gap_sign_same": true,
+      "S1_firing_verdict_preserved": true,
+      "S2_firing_verdict_preserved": true
+    },
+    "2": {
+      "regret_mean_lam001": 0.00798073458970467,
+      "regret_mean_lam01": 0.007980619812177486,
+      "regret_both_subeps_frozen": true,
+      "regret_sign_same": true,
+      "ceiling_gap_lam001": 0.001959384836029865,
+      "ceiling_gap_lam01": 0.001959287900103801,
+      "gap_sign_same": true,
+      "S1_firing_verdict_preserved": true,
+      "S2_firing_verdict_preserved": true
+    }
+  },
+  "notes": {
+    "S1_fire_def": "regret_mean ≥ ε 且 cluster-LCB90 > 0（冻结 s1_selector）",
+    "S2_fire_def": "mean_classes < 2 或 ceiling_gap < −ε（冻结 s2_supply）",
+    "expected_hit": "ε=1% 下 cycle2 S1 点条件成立（regret_mean 0.00798 ≥ ε1% 0.00794）——post-hoc counterfactual"
+  }
+}

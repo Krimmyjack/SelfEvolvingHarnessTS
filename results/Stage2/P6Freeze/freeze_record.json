@@ -1,6 +1,97 @@
 {
   "amendment_protocol": {
-    "amendments": [],
+    "amendments": [
+      {
+        "c0_record_chain": {
+          "a1_c0_freeze": {
+            "delta_safe": 0.039699139442402644,
+            "epsilon": 0.015879655776961057,
+            "file_sha256": "2240635a15cb235408c275f6980628c0b7c485078eeb92287732385e79a8c0eb",
+            "gate_pass": true,
+            "j_raw_c0": 0.7939827888480528,
+            "note": "A1 PASS（一侧 non-inferiority 下 fred ①过：U_cf 更低=更优）",
+            "path": "SelfEvolvingHarnessTS/results/Stage2/C0Run_A1/C0_FREEZE.json",
+            "record_sha": "e01190bd876febf3c0c70323d414fe730bb19b9af977c23a290e00d354c2cd05"
+          },
+          "invariants_unchanged": {
+            "delta_safe": true,
+            "epsilon": true,
+            "j_raw_c0": true,
+            "p0_cutpoints": true
+          },
+          "orig_c0_freeze": {
+            "file_sha256": "edaedbc7c7779dff44d44cbeeffc473ead3f03913c362bad83cdba50f7fca673",
+            "fred_signed_relative_offset": -0.12887,
+            "gate_pass": false,
+            "note": "原 FAIL：保留不覆盖（双侧 equivalence 下 fred ①越线）",
+            "path": "SelfEvolvingHarnessTS/results/Stage2/C0Run/C0_FREEZE.json",
+            "record_sha": "76704fef5f81bbe68df2e56f83ba7e689bb67d47aaf51b9d01cd35e605314438"
+          },
+          "selection_manifest_sha": "5c768155a47c1b4cc033a0eaa724830a7055e343439ef77447ad3e6244e21720"
+        },
+        "changed_files": {
+          "SelfEvolvingHarnessTS/p6/c0_runner.py": {
+            "new_sha256": "b1bb559e98da9f188464cdc78843dea66a7567133c0e26e1f34549a85c1ada60",
+            "old_sha256": "a5837e3c94cd2206f899f465bc4314d464e6dc327a6690c08db61e137a78654a"
+          },
+          "SelfEvolvingHarnessTS/results/Stage2/prereg_p6.md": {
+            "new_sha256": "a5c0c23b5f00711b2ea8a67ad764c3a4e12a10271f59bb4b5daac14ea0be6fc9",
+            "note": "reviewed_sha=f74440af…（首审锚）；signed frozen_sha=f2d13c3edbcb5c29ffefd0e6ed802d022d61e7553cb1b111149341fb4dad996b（状态行+§10）；A1 frozen_sha=a5c0c23b5f00711b2ea8a67ad764c3a4e12a10271f59bb4b5daac14ea0be6fc9（+§11 +§3.1 A1 标记）",
+            "old_sha256": "f2d13c3edbcb5c29ffefd0e6ed802d022d61e7553cb1b111149341fb4dad996b"
+          },
+          "SelfEvolvingHarnessTS/tests/test_p6_runners.py": {
+            "new_sha256": "8d16de82a62bb53dfc8603c89a7f3fdd3af4fc283e2249d89f3a97c169004700",
+            "old_sha256": "9843b5d0f8ee25dd6eb52bc0c76b703b03999f0d1cbe317f49b42e50712d09a9"
+          }
+        },
+        "criterion1_semantics": {
+          "after": "U_cf(raw) <= 1.10 * U_adam(raw)  (one-sided non-inferiority; closed_form_not_worse_than_adam_by_more_than_10pct)",
+          "before": "|U_cf(raw) - U_adam(raw)| <= 0.10 * U_adam(raw)  (two-sided equivalence)"
+        },
+        "date": "2026-07-12",
+        "description": "evaluate_identity_gate ① 由 |U_cf−U_adam|≤0.10·U_adam（双侧 equivalence）改为 U_cf≤1.10·U_adam（一侧 non-inferiority）；10%/②③′④/trainer/ε-δ 规则/seeds 不改。语义收窄：C0 不再确立两估计器绝对水平等价；主效应 estimand=frozen ridge-DLinear；Adam 门③仅 non-harm。不主张 program-invariant offset（D4 证否）或 Adam magnitude equivalence。",
+        "diagnostics_evidence": {
+          "D10_pre_gate": {
+            "config": "Adam+L2(1e-3)+×8(960ep)+cosine lr, 3 seeds, fred raw",
+            "signed_relative_offset": -0.00452,
+            "tol_rel": 0.03,
+            "u_adam_mean": 0.200197,
+            "u_cf": 0.20110639714410383,
+            "verdict": "两估计器共享目标极限一致（gap=优化路径，非隐藏 bug）→ GO_for_A1"
+          },
+          "note": "D1-D10 + fingerprint_check（只读诊断，不入 claim 分支）",
+          "results_sha256": {
+            "D10_limit_check.json": "e3833f7aefc5d31322a42ef3255d57ccc490a0f8970d1ecf856c2969f8d6ef1f",
+            "D1_training_curves.json": "1f132a2b4aaedd92c69a6fec6ec3b763e9d1f06b591d57612aeff75732865f79",
+            "D2_matching_reg.json": "e9a558b889fea83520d14ab8bdfd120e2f83016b678bcb4b1eb19cb5bd6026f1",
+            "D3_extended_budget.json": "383998b02bdae2e295fb7cfb0b148485ec53a9585f8b51b3d2c37cc546af1f4e",
+            "D4_per_program.json": "a4c458a8f038013ad226db1e5e9485b65b536adbb492e74dae9524b0f73a5cb4",
+            "D5_four_domain_delta.json": "3a83bbc3a3e04bcf32c8e09340bdb4471aac1d2e5ab2849091cf13f868aa7317",
+            "D6_gram_condition.json": "432723316d81564eb0686f9a5d819de1c074d27dfa0e6c8254db6aacf4d1ff4a",
+            "D7_per_series.json": "ad99c7f32ba14d7b4e6ab30d2495c5fd2ebe1a1eaaa315d6d1fac872abf25778",
+            "D8_weighted_adam_gate.json": "8c520dd1b73658f678fbccae1f828e11c314dc362643621a6d00c90ffa0b0b93",
+            "D9_window_protocol.json": "3aacd2f78d5bfce2ee5de146d77a7a8d11cd04d7289ac7928a7dc64efd7caa01",
+            "fingerprint_check.json": "7806dfca77f9945336d8e3eefd8e0bdd2ca2ff1f45b314cb0a89474007755981"
+          },
+          "scripts_sha256": {
+            "SelfEvolvingHarnessTS/diagnostics/p6_c0_diag_fred.py": "0b8f667341e105910c9a96439cc3933d8ecf4bc57c0570956d9635c539826070",
+            "SelfEvolvingHarnessTS/diagnostics/p6_c0_diag_fred_wave2.py": "f10da081da4bb8fb83cd0f85d0db6b1c42f4c8f49abdc4828d40a18b2a0b1681",
+            "SelfEvolvingHarnessTS/diagnostics/p6_c0_diag_fred_wave3.py": "8088e322c1a2c138c9718b270d155af9256f0cca72618beeeb5ac9858664ca67"
+          }
+        },
+        "dvu_state_at_amendment": "V1/V2/U 全 sealed 未开箱；仅 C0 legacy 数据被消费",
+        "id": "A1",
+        "legality": "prereg §10 修订协议（签发后 technical-class 修复；留痕；本 amendment 登记）",
+        "occurred_before_any_DVU_utility_read": true,
+        "test_delta": {
+          "after_full_suite": "213 passed（新增 test_gate_criterion1_noninferiority_a1：'判官更差11%'→仍 FAIL，证门未整体削弱）",
+          "before_full_suite": "212 passed",
+          "updated_test": "test_gate_criterion1_boundary（字段由 abs_diff/tol 改 signed_offset/upper_bound/…）"
+        },
+        "title": "判据①：双侧 raw-level equivalence → 一侧 raw-level non-inferiority",
+        "written_at_utc": "2026-07-12T05:56:22+00:00"
+      }
+    ],
     "rule": "签发后 prereg/代码唯一合法修改 = technical-abort 类修复；须在本 freeze_record 增补 amendment 条目（含 sha 变更）；且永不发生在任何 V/U 效用数字被读取之后。其余偏离一律以 erratum 追加，不得静默修改。"
   },
   "backlog": [
@@ -44,7 +135,7 @@
     },
     "p6_modules": {
       "SelfEvolvingHarnessTS/p6/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "SelfEvolvingHarnessTS/p6/c0_runner.py": "a5837e3c94cd2206f899f465bc4314d464e6dc327a6690c08db61e137a78654a",
+      "SelfEvolvingHarnessTS/p6/c0_runner.py": "b1bb559e98da9f188464cdc78843dea66a7567133c0e26e1f34549a85c1ada60",
       "SelfEvolvingHarnessTS/p6/cycle_runner.py": "b04554c5c1a3f3280586d8f8c6bd0c06ac8e60bf3c1fe0c983259202ac06d6cc",
       "SelfEvolvingHarnessTS/p6/edit_surfaces.py": "85318054c2ca9b62b5d98dc609df7f6f7488c80577843b62e18d4ab2320ef604",
       "SelfEvolvingHarnessTS/p6/fast_path.py": "b49c06fce08729ca54cb74ca749c347b0c9aee80a6b64631f3de96f5900930f8",
@@ -64,7 +155,7 @@
       "SelfEvolvingHarnessTS/tests/test_p6_judge.py": "10d790f41c632b6059e38d39f2eb554f5a3dbb24b90d08951e22a2c4766c6da7",
       "SelfEvolvingHarnessTS/tests/test_p6_metrics.py": "df0e98b6e4c04fbcb2c551ff97014773a6ed2f1fa40846615895745e5618d13a",
       "SelfEvolvingHarnessTS/tests/test_p6_miner.py": "accc6e1c0cdbbdea4a930bf76d96cfa2fbd2066d26ab66f30c4dcfd5d4856119",
-      "SelfEvolvingHarnessTS/tests/test_p6_runners.py": "9843b5d0f8ee25dd6eb52bc0c76b703b03999f0d1cbe317f49b42e50712d09a9",
+      "SelfEvolvingHarnessTS/tests/test_p6_runners.py": "8d16de82a62bb53dfc8603c89a7f3fdd3af4fc283e2249d89f3a97c169004700",
       "SelfEvolvingHarnessTS/tests/test_p6_split.py": "f44fe6605f91d6829b7957b3a60f8e8b9067471bcdd10f9e544a6ed28a7a8925",
       "SelfEvolvingHarnessTS/tests/test_p6_surfaces.py": "535c0cf912660fdd1825cc765f7ccaabeea2f88b5178cd15a1ebff9cc6592f52"
     }
@@ -115,6 +206,7 @@
     "u_bootstrap_seed": 20260714
   },
   "irreversible_point": 1,
+  "last_amended_utc": "2026-07-12T05:56:22+00:00",
   "note": "P6 执行冻结协议签发（不可逆点 #1）。纯机械盖章：prereg DRAFT-2→FROZEN，记录本文件与全部承重代码/manifest/探针 sha256。签发前未开启任何 C0/D/V/U。",
   "one_time_resources": {
     "U": "未开箱（sealed；cycle2 terminal 后由 run_u_eval_formal 一次性 open）",
@@ -127,11 +219,13 @@
     "seeds_20_99": "已消耗，永不复用（confirmatory/level-1 已耗尽；见 STAGE1_VERDICT）"
   },
   "prereg": {
-    "diff_note": "frozen_sha 与 reviewed_sha 的差异仅为两处：①文首状态行 DRAFT-2→FROZEN；②文末新增 §10 签发块。除此之外 prereg 一字未改。",
-    "frozen_sha": "f2d13c3edbcb5c29ffefd0e6ed802d022d61e7553cb1b111149341fb4dad996b",
+    "a1_frozen_sha": "a5c0c23b5f00711b2ea8a67ad764c3a4e12a10271f59bb4b5daac14ea0be6fc9",
+    "diff_note": "reviewed_sha(f74440af…,首审)→signed frozen_sha(f2d13c3edbcb5c29ffefd0e6ed802d022d61e7553cb1b111149341fb4dad996b,状态行+§10)→A1 frozen_sha(a5c0c23b5f00711b2ea8a67ad764c3a4e12a10271f59bb4b5daac14ea0be6fc9,+§11 +§3.1 A1 标记)；各步差异见 amendments[A1]",
+    "frozen_sha": "a5c0c23b5f00711b2ea8a67ad764c3a4e12a10271f59bb4b5daac14ea0be6fc9",
     "path": "SelfEvolvingHarnessTS/results/Stage2/prereg_p6.md",
     "reviewed_equals_disk_before_stamp": true,
-    "reviewed_sha": "f74440af73abf9c75dd8f562abfbd982cbcba329d6e14bf334e8e3f382ac71a8"
+    "reviewed_sha": "f74440af73abf9c75dd8f562abfbd982cbcba329d6e14bf334e8e3f382ac71a8",
+    "signed_frozen_sha": "f2d13c3edbcb5c29ffefd0e6ed802d022d61e7553cb1b111149341fb4dad996b"
   },
   "probe_anchors": {
     "SelfEvolvingHarnessTS/results/Stage2/P6Probes/exposure_ledger.jsonl": "30f9fdcc131100bb13ac289045c94f0f39ca4269640d68de6940728ee22d3cac",

@@ -100,6 +100,8 @@ estimand 属性），但评估协议与判官逐字一致以保 ① 可比：
   Adam 任一拟合 NaN/发散 → technical abort；
 - **PASS = ① ∧ ② ∧ ④ ∧ ③′**：
   ① |U_cf(raw) − mean_seed U_adam(raw)| ≤ 0.10·mean_seed U_adam(raw)（per-domain 全过）；
+     **→ 见 §11 Amendment A1**（本判据①已由双侧 equivalence 就地改为一侧 non-inferiority
+     U_cf ≤ 1.10·U_adam；原文字保留于此不动，语义修订以 §11 为准）。
   ② per-domain Spearman ρ（8 程序 gain）的 4 域中位数 ≥ 0.7；
   ③′ ε-tolerant top-1 一致率 ≥ 0.6（episode 级）；
   ④ preset 级 gain 符号一致率 ≥ 0.75（near-zero 带外）。
@@ -282,3 +284,52 @@ paired validator）三 surface（Selector/Sampler/RiskRule）import 级齐备。
 **修订协议（签发后）**：本协议与承重代码的唯一合法修改 = technical-abort 类修复，须在
 freeze_record.json 增补 amendment 条目，且**永不发生在任何 V/U 效用数字被读取之后**；
 其余偏离一律以 erratum 追加，不得静默修改。
+
+## 11. Amendment A1 — 判据①由双侧 equivalence 改为一侧 non-inferiority（2026-07-12）
+
+**发生时点声明**：本 amendment 提出并实施于 **任何 D/V/U 效用数字被读取之前**（V1/V2/U 仍
+sealed 未开箱；仅 C0 legacy 数据被消费）。合法性依 §10 修订协议（签发后 technical-class 修复，
+留痕、增补 freeze_record amendment）。
+
+**修订定义**：
+- **原判据①（保留于 §3.1，文字不动）**：双侧 raw-level equivalence
+  `|U_cf(raw) − U_adam(raw)| ≤ 0.10·U_adam(raw)`（per-domain 全过）——意在"模型身份等价门"。
+- **A1 后判据①**：一侧 raw-level **non-inferiority** `U_cf(raw) ≤ 1.10·U_adam(raw)`
+  （per-domain 全过）——闭式判官相对 Adam 参照**不显著更差**即过；闭式 loss 更低（更优）恒过，
+  仅当闭式比 Adam 更差 >10% 才 FAIL。改称 **`raw-level non-inferiority gate` / estimator
+  compatibility gate**；10%、②③′④、trainer、ε/δ 规则、seeds 一律不改。
+- **语义收窄（必须随之声明）**：C0 **不再确立**闭式判官与 Adam-DLinear 的**绝对水平等价**。
+  ②③′④ 仅支持 **decision concordance**（②排序 / ③′ top-1 决策 / ④符号），**不**证明 CF gain
+  与 Adam gain **数值幅度**相同。V 门③（Adam co-gate）只提供 **Adam regime 的 non-harm** 检查
+  （防"ridge 上获益、Adam 上明显有害"的 edit 晋升），**不**把 ridge 的 gain 数值解释为 Adam gain。
+- **P6 主效应 estimand（随 A1 明确）**：主效应属于 **frozen ridge-DLinear training objective**；
+  Adam co-gate 只验证**跨估计器无显著反向伤害（non-harm）**，**不**验证效应幅度可迁移。
+
+**不主张（防越证）**：A1 **不**主张 fred_md 的 CF−Adam 偏移是 **program-invariant** 常数
+（D4 证否：range=[−0.02975, +0.00571]，非统一水平位移，做差不自然抵消）；A1 **不**主张
+Adam magnitude equivalence。
+
+**出处链（诊断证据 D1–D10，只读，不入 claim 分支）**：
+- 起因：C0 首跑 identity gate ① fred_md FAIL——U_cf=0.201106、U_adam=0.230858、
+  **signed relative offset = −12.887%**（闭式 loss **更低=更优**，非更差）。
+- D1 训练曲线欠收敛（末10%斜率仍降）；D2 匹配 L2(1e-3) 仅 0.2309→0.2294（不入 U_cf±10%）；
+  D3 延长×2/×4 gap 反变宽（0.0298→0.0347→0.0381）；D4 CF−Adam **非** program-invariant；
+  D5 四域仅 fred 越 ±10%（其余|rel|≤3.33%），闭式系统性 ≤ Adam；D6 fred 非最病态（covid 更病态）；
+  D7 fred 四序列窗数全等（147）→ 加权 no-op；D8 weighted-Adam 全 96-fit **①仍 FAIL**（bit 级同）；
+  D9 窗协议逐项全一致（stride/窗数/L/H/核/zscore）→ 无窗协议混杂；
+  **D10（前置门）Adam+L2(1e-3)+×8(960ep)+cosine lr 3 seeds → U_mean=0.200197（vs U_cf 0.201106，
+  rel −0.452%，≤±3%）→ 两估计器在共享目标极限一致**，残差 gap = 优化路径效应（非隐藏 bug）。
+- 诊断文件：`results/Stage2/C0Run/diag/{D1..D10,fingerprint_check}.json`（sha 见 freeze_record A1）。
+
+**披露义务（VERDICT/appendix 必须给出）**：
+1. 每域 signed offset 与 signed relative offset（不止 abs_diff）；
+2. D4 非统一偏移（range=[−0.02975,+0.00571]）——不声称做差抵消；
+3. limitations：regime transfer 由门③ non-harm 验证，效应幅度不跨估计器可迁移；
+4. 保留原始 FAIL（原 C0 freeze/result、原判据①、fred −12.887%、amendment 提出时点、D/V/U 未开、
+   A1 前后代码/prereg/freeze SHA、新旧 C0 record 链式引用），**不得用重跑 PASS 覆盖原 FAIL**。
+
+**实现留痕**：`p6/c0_runner.py::evaluate_identity_gate` ① 单处改一侧判定 + 输出字段增
+`signed_offset / signed_relative_offset / upper_bound / upper_noninferiority_pass /
+criterion_semantics`；测试 `test_gate_criterion1_boundary` 更新 + 新增
+`test_gate_criterion1_noninferiority_a1`（构造"判官更差 11%"→仍 FAIL，证门未整体削弱）。
+sha 变更全部登记于 `freeze_record.json` 的 `amendments[A1]`。
