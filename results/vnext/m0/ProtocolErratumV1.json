@@ -1,0 +1,38 @@
+{
+  "schema_version": "vnext-protocol-erratum/1",
+  "date": "2026-07-15",
+  "status": "OPEN_BLOCKING_M0_REPRODUCTION",
+  "scope": "benchmark-v0.2 frozen program-pool behavioural pin",
+  "summary": "The behavioural-equivalence fixture does not preserve or bind the synthetic probe input bytes. Under the mandated Darwin/arm64 frozen environment, the reconstructed probe input differs from the input implicitly represented by the frozen raw-output digest, so the eight output mismatches cannot distinguish fixture drift from operator drift.",
+  "evidence": {
+    "frozen_environment_lock_sha": "6fbe954da35e5467e849ef071e357a95e246e504f6c2b08ac64bd8f1e56f78e7",
+    "python": "3.10.19",
+    "platform": "Darwin/arm64",
+    "numpy_cross_checks": ["1.26.4", "2.2.6", "2.3.5"],
+    "frozen_raw_output_and_implicit_probe_input_sha256": "9a3049d734abb175214c6a0c6e6d78d78834cc9985bdb38939319bd0c1cd4a5e",
+    "reconstructed_probe_input_sha256": "78b9ccc195254ad5cbcbd42f00f8043af9d9c9d3f26000980de91a3d8ba72422",
+    "behaviour_pin_failures": "8/8",
+    "program_pool_frozen_sha256": "6858078a846040fed0452f054c48349dfafff438929c895c246c9646c915ebf4",
+    "program_pool_regenerated_sha256": "195edf80ee309c8dc2f39a09584b7322a6c67dff300d1bff4f8825bd507427c2"
+  },
+  "what_passed_before_stop": {
+    "raw_and_legacy_assets": "53/53",
+    "shadow_registry_sha256": "8b031c189c8064a4b9567d4dd61faa1548e7fb289ee53e326023698638045410",
+    "clean_base_records": "1919/1919",
+    "clean_base_content_sha256": "eddbb9440fa0362e27d5632805985827cc1218b3b10795948dfc082204fce966",
+    "split_manifest_sha256": "5726589c99321d4b510066cc8dbb396f1bab33e0b9df920be5daaf032a2f2542",
+    "support_a_subsplit_sha256": "4e98535abc61c2900dc6bdf1574ac7b6b8d16ccd67193eef6d12547a3edf0512",
+    "corruption_grid_sha256": "aad0b2439291a4cf5096a782745146a9835fecc11c2ae7821be86b1975d4a06b"
+  },
+  "required_resolution": [
+    "Recover the exact probe input bytes or the original environment/platform that reproduces SHA 9a3049d7...",
+    "Bind the recovered probe input SHA and complete environment fingerprint to the behavioural-equivalence evidence",
+    "Rerun all eight output pins before starting L3-L9 downstream training"
+  ],
+  "prohibited_resolution": [
+    "Do not replace the expected output hashes with values observed in the new environment",
+    "Do not treat pool membership equality as behavioural equivalence",
+    "Do not start Task G or consume any fresh holdout while this erratum is open"
+  ],
+  "task_g_authorized": false
+}
