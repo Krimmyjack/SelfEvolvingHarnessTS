@@ -3,15 +3,29 @@
 SelfEvolvingHarnessTS is an active preparation-method harness with one contract layer,
 one operator registry, one runtime, and one evolving method line.
 
-## Active structure
+## Current project framework
 
-- `contracts/` — task, program, and method contracts.
-- `operators/` and `conditioning/` — canonical preparation mechanics.
-- `runtime/` — the sole executor and fast path.
-- `methods/h_ref_v02/` — frozen reference method.
-- `methods/ttha/` — the next active method line when implemented.
-- `evaluation/benchmark_v02/` — auxiliary frozen evaluator.
-- `artifacts/frozen/benchmark_v02/` — immutable benchmark evidence.
+```text
+SelfEvolvingHarnessTS/
+├── contracts/       # Task, Program, and Method public contracts
+├── conditioning/    # Time-series features, period detection, and condition routing
+├── operators/       # Canonical operator implementations and the sole registry
+├── runtime/         # Sole executor, fast path, trace, and error model
+├── methods/         # Current H_ref_v02 reference; future TTHA active method line
+├── evaluation/      # Auxiliary Benchmark-v0.2 evaluation environment
+├── artifacts/       # Frozen evidence and architecture-cleanup manifests
+├── experiments/     # Git recovery instructions; no importable historical source
+├── tests/           # Functional tests grouped by contracts, components, and integration
+└── docs/            # Current architecture designs and implementation records
+```
+
+The active execution path is:
+
+```text
+TaskSpec -> Method -> Runtime -> Operators
+                   ^
+              Conditioning
+```
 
 ## Verification
 
