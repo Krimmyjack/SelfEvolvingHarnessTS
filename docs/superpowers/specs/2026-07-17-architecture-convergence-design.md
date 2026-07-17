@@ -161,7 +161,7 @@ No method or evaluation package may copy a project operator. External vendoring 
 
 ### 6.5 Evaluation
 
-`evaluation/benchmark_v02/` owns formal, low-frequency, frozen judgment. It privately owns targets, role policies, metrics, and signed evaluation semantics.
+`evaluation/benchmark_v02/` owns formal, low-frequency, frozen judgment. It privately owns targets, role policies, metrics, and signed evaluation semantics. Ownership is logical, not physical: the frozen benchmark-v0.2 package is not relocated during Phases 0-4, and `evaluation/benchmark_v02/` contains only the compatibility layer; any later relocation follows the Tier A byte/behavior equivalence rule.
 
 `evaluation/minipipe/` owns high-frequency mechanism development: synthetic oracle generation, the information wall, intervention receipts, attribution, proposal review, and paired replay.
 
@@ -285,8 +285,8 @@ There is no permanent `h_ref_v02 -> p6.fast_path` adapter chain.
 
 ### 11.4 Phase 3: Active TTHA line
 
-- create `methods/ttha/`;
-- implement minipipe in `evaluation/minipipe/`;
+- create `methods/ttha/`, initializing its harness from the frozen H_ref configuration (fingerprint-verified equivalent), so that minipipe edit cycles start from an H_ref-equivalent H0 while `methods/h_ref_v02/` remains frozen as the comparison baseline;
+- create the `evaluation/minipipe/` package boundary: directory skeleton, information-wall layout, and architecture tests. Minipipe functionality is implemented on its own track per the minipipe plan document and does not gate Phase 4;
 - use canonical contracts, operators, and runtime without project-code vendoring.
 
 ### 11.5 Phase 4: Historical cleanup
@@ -309,6 +309,8 @@ After active legacy imports reach zero, decide whether to move the logically con
 5. **Frozen-protocol tests** protect benchmark splits, metrics, digests, resource roles, and signed behavior.
 6. **Integration tests** run at least one H_ref and one TTHA/minipipe case through the canonical contract and runtime.
 7. **Architecture tests** parse imports and reject forbidden dependency edges.
+
+Two standing execution rules apply to every phase: all test and equivalence evidence is produced under the project's canonical interpreter (conda `project`) only; and any file move or rename must re-verify `.gitattributes` path matching and line-ending policy before digests are compared, because path-scoped attribute rules stop matching silently after moves and CRLF conversion has previously corrupted frozen digests.
 
 Archived code is not part of the active test matrix. Its reproducibility is owned by the pre-refactor tag and its recorded environment.
 
