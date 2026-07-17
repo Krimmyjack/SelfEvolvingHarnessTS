@@ -188,7 +188,7 @@ def dataset_manifest_document(observed_datasets: Mapping[str, int]) -> dict[str,
     if unknown:
         raise KeyError(
             "probe produced datasets with no declared claim tier or domain: "
-            f"{unknown}. Declare them in benchmark/datasets.py before freezing."
+            f"{unknown}. Declare them in evaluation/benchmark_v02/datasets.py before freezing."
         )
     return {
         "schema_version": "benchmark-dataset-manifest/1",

@@ -7,9 +7,9 @@ from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
 
-from ..operators.registry import OPERATOR_METADATA, canonicalize
-from ..runtime.fast_path import prepared_artifact, run_fast_path
-from ..policy.task_spec import TaskSpec
+from ...contracts.task import TaskSpec
+from ...operators.registry import OPERATOR_METADATA, canonicalize
+from ...runtime.fast_path import prepared_artifact, run_fast_path
 from .method_api import MethodSeriesView, PreparedSeries
 
 

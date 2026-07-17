@@ -1,5 +1,47 @@
-"""Compatibility boundary for the frozen benchmark-v0.2 evaluator."""
+"""Frozen Benchmark-v0.2 evaluator and canonical-method adapter."""
+from __future__ import annotations
 
-from .method_compat import BenchmarkMethodAdapter, run_h_ref_batch
+BENCHMARK_VERSION = "benchmark-v0.2"
+KNOWN_BENCHMARK_VERSIONS = ("benchmark-v0", "benchmark-v0.1", "benchmark-v0.2")
 
-__all__ = ["BenchmarkMethodAdapter", "run_h_ref_batch"]
+HEADLINE_LOOKBACK = 48
+HEADLINE_HORIZON = 48
+HEADLINE_MIN_LENGTH = 207
+
+MODEL_SEEDS = (0, 1, 2)
+CORRUPTION_REPLICATES = (0, 1)
+
+HARM_THRESHOLD = 0.05
+HARM_THRESHOLD_KIND = "conventional"
+SATURATION_GAP = 0.02
+SATURATION_GAP_KIND = "conventional"
+
+BOOTSTRAP_B = 2000
+BOOTSTRAP_MASTER_SEED = 20260713
+
+DESIGN_COMMIT = "9e57da9"
+EXTERNAL_ADDENDUM_SHA256 = (
+    "468c65fbcb36f48a47a351597f99d9ccebd876fff39d3378923500a8c3ed45ff"
+)
+
+from .method_compat import BenchmarkMethodAdapter, run_h_ref_batch  # noqa: E402
+
+__all__ = [
+    "BENCHMARK_VERSION",
+    "BOOTSTRAP_B",
+    "BOOTSTRAP_MASTER_SEED",
+    "BenchmarkMethodAdapter",
+    "CORRUPTION_REPLICATES",
+    "DESIGN_COMMIT",
+    "EXTERNAL_ADDENDUM_SHA256",
+    "HARM_THRESHOLD",
+    "HARM_THRESHOLD_KIND",
+    "HEADLINE_HORIZON",
+    "HEADLINE_LOOKBACK",
+    "HEADLINE_MIN_LENGTH",
+    "KNOWN_BENCHMARK_VERSIONS",
+    "MODEL_SEEDS",
+    "SATURATION_GAP",
+    "SATURATION_GAP_KIND",
+    "run_h_ref_batch",
+]

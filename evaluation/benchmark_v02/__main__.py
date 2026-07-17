@@ -5,7 +5,7 @@ import argparse
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
-from .benchmark.runner import default_cli_handlers
+from .runner import default_cli_handlers
 
 
 def _paths(parser: argparse.ArgumentParser, *, out: bool = True) -> None:
@@ -15,7 +15,9 @@ def _paths(parser: argparse.ArgumentParser, *, out: bool = True) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="python -m SelfEvolvingHarnessTS.run_benchmark")
+    parser = argparse.ArgumentParser(
+        prog="python -m SelfEvolvingHarnessTS.evaluation.benchmark_v02"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     acquire = subparsers.add_parser("acquire")

@@ -1,8 +1,8 @@
 import numpy as np
 
-from SelfEvolvingHarnessTS.benchmark.method_api import MethodSeriesView
 from SelfEvolvingHarnessTS.contracts.method import PreparationRequest, PreparationStatus
 from SelfEvolvingHarnessTS.contracts.task import forecast_task_spec_v1
+from SelfEvolvingHarnessTS.evaluation.benchmark_v02.method_api import MethodSeriesView
 from SelfEvolvingHarnessTS.evaluation.benchmark_v02.method_compat import BenchmarkMethodAdapter
 from SelfEvolvingHarnessTS.methods.h_ref_v02.method import HRefV02Method
 

@@ -37,9 +37,9 @@ from typing import Any, Mapping
 
 import numpy as np
 
-from ..operators import _provenance
-from ..operators._common import _HAS_SCIPY
-from ..operators.registry import OPERATOR_METADATA, canonicalize, get_operator
+from ...operators import _provenance
+from ...operators._common import _HAS_SCIPY
+from ...operators.registry import OPERATOR_METADATA, canonicalize, get_operator
 from .ingestion import canonical_ingest
 from .method_api import MethodSeriesView, PreparedSeries, validate_prepared
 
@@ -221,7 +221,7 @@ CAPABILITY_GAPS: tuple[Mapping[str, str], ...] = (
 # hashing modules the pool never reaches -- would invalidate a frozen pool for edits that
 # provably cannot move a single number, and a freeze that cries wolf gets ignored.
 _POOL_CODE_FILES: tuple[str, ...] = (
-    "benchmark/programs.py",
+    "evaluation/benchmark_v02/programs.py",
     "operators/_common.py",
     "operators/registry.py",
     "operators/s1_denoise.py",
@@ -267,7 +267,7 @@ def assert_pool_dependencies() -> dict[str, str]:
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 
 def _code_digests() -> dict[str, str]:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Mapping
 
-from ...benchmark.method_api import MethodSeriesView, PreparedSeries as BenchmarkPreparedSeries
+from .method_api import MethodSeriesView, PreparedSeries as BenchmarkPreparedSeries
 from ...contracts.method import Method, PreparationRequest, PreparationStatus
 from ...contracts.task import TaskSpec
 from ...methods.h_ref_v02.config import default_state

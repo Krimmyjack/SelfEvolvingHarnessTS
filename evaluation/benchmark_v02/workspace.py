@@ -47,6 +47,7 @@ SPLIT_SALT = "benchmark-v0-split-salt-v1"
 MAX_NATURAL_MISSING_RATE = 0.30
 MAX_IRREGULAR_SAMPLING_RATE = 0.05
 REGIME_THRESHOLDS = {"high": 0.60, "moderate": 0.35}
+_BUNDLED_LEGACY = Path(__file__).resolve().parent / "data" / "legacy"
 
 
 def _sha256_file(path: Path) -> str:
@@ -65,8 +66,8 @@ def _bound_raw(path: Path) -> RawAsset:
     )
 
 
-def _probe_consumed_traffic(project_root: Path) -> set[str]:
-    path = project_root / "results" / "Stage2" / "P6Probes" / "u_admission_v2_traffic_hourly.json"
+def _probe_consumed_traffic() -> set[str]:
+    path = _BUNDLED_LEGACY / "u_admission_v2_traffic_hourly.json"
     if not path.is_file():
         return set()
     payload = json.loads(path.read_text("utf-8"))
@@ -332,14 +333,13 @@ def probe_workspace(
     derived_root = Path(work_root) if work_root is not None else data_root
     output.mkdir(parents=True, exist_ok=True)
     clean_root = derived_root / "clean_base"
-    project_root = Path(__file__).resolve().parents[1]
     values_by_uid: dict[str, np.ndarray] = {}
     timestamps_by_uid: dict[str, np.ndarray] = {}
     records: list[SeriesRecord] = []
     legacy_keys: set[tuple[str, str]] = set()
 
     if include_legacy:
-        metadata_path = project_root / "data" / "_artifacts" / "monash_clean.meta.jsonl"
+        metadata_path = _BUNDLED_LEGACY / "monash_clean.meta.jsonl"
         legacy_records = import_legacy_inventory(metadata_path)
         values_path = metadata_path.with_name("monash_clean.npz")
         with np.load(values_path, allow_pickle=True) as archive:
@@ -367,7 +367,7 @@ def probe_workspace(
             legacy_keys.add((record.dataset_id.split(":", 1)[-1], record.entity_id))
 
     coordinates, blocking = metr_la_blocking(data_root)
-    consumed_traffic = _probe_consumed_traffic(project_root)
+    consumed_traffic = _probe_consumed_traffic()
     for source_id, dataset_id, parsed, raw_asset, overlap_group in _automatic_parsed(
         data_root,
         min_length=min_length,

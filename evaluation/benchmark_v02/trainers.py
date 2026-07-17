@@ -13,7 +13,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from ..evaluators._torch_models import DLinear, LSTMForecaster
+from .models import DLinear, LSTMForecaster
 from . import HEADLINE_HORIZON, HEADLINE_LOOKBACK
 from .ingestion import IngestionInvalid, canonical_ingest
 

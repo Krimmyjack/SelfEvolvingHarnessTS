@@ -9,8 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
-from ..evaluation.benchmark_v02.method_compat import run_h_ref_batch
-from ..runtime.fast_path import prepared_artifact
+from ...runtime.fast_path import prepared_artifact
+from .method_compat import run_h_ref_batch
 from . import BENCHMARK_VERSION, HEADLINE_HORIZON
 from .baselines import (
     ProgramLoss,

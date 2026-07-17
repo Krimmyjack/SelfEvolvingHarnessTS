@@ -10,8 +10,8 @@ from typing import Any, Callable, Mapping, Protocol, Sequence, runtime_checkable
 
 import numpy as np
 
-from ..operators.registry import OPERATOR_METADATA, canonicalize
-from ..policy.task_spec import TaskSpec
+from ...contracts.task import TaskSpec
+from ...operators.registry import OPERATOR_METADATA, canonicalize
 
 __all__ = [
     "BenchmarkMethod",
