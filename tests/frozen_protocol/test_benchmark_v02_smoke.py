@@ -74,3 +74,14 @@ def test_benchmark_bundled_inputs_and_program_smoke():
     values = np.array([1.0, np.nan, 3.0, 4.0])
     raw = apply_program("raw", values, period=2)
     assert np.array_equal(raw, values, equal_nan=True)
+
+
+def test_frozen_benchmark_evidence_has_one_owner():
+    root = Path(__file__).resolve().parents[2]
+    cleanup = json.loads(
+        (root / "artifacts" / "manifests" / "active_tree_cleanup.json").read_text("utf-8")
+    )
+    expected = set(cleanup["benchmark_relocation"]["evidence"]["files"])
+    frozen = root / "artifacts" / "frozen" / "benchmark_v02"
+    assert expected <= {path.name for path in frozen.iterdir() if path.is_file()}
+    assert not (root / "results").joinpath("Benchmark_v0_2").exists()
