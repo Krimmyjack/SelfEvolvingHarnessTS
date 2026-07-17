@@ -9,8 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
-from ..p6.fast_path import prepared_artifact, run_fast_path
-from ..p6.harness_state import default_state
+from ..evaluation.benchmark_v02.method_compat import run_h_ref_batch
+from ..runtime.fast_path import prepared_artifact
 from . import BENCHMARK_VERSION, HEADLINE_HORIZON
 from .baselines import (
     ProgramLoss,
@@ -607,9 +607,8 @@ def _evaluate_role(
             # by every program, so it is computed once here rather than once per program.
             normalization = {uid: NormalizationState.fit(inner[uid]) for uid in inner}
 
-            state = default_state()
             started = time.perf_counter()
-            h_ref_choices = run_fast_path(inner, state, state.sampler.expected_total)
+            h_ref_choices = run_h_ref_batch(inner)
             prepare_times.append(time.perf_counter() - started)
 
             prepared_history_by_program: dict[str, dict[str, np.ndarray]] = {}

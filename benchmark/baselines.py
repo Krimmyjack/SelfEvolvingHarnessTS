@@ -8,7 +8,7 @@ from typing import Any, Callable, Mapping, Sequence
 import numpy as np
 
 from ..operators.registry import OPERATOR_METADATA, canonicalize
-from ..p6.fast_path import prepared_artifact, run_fast_path
+from ..runtime.fast_path import prepared_artifact, run_fast_path
 from ..policy.task_spec import TaskSpec
 from .method_api import MethodSeriesView, PreparedSeries
 
@@ -227,4 +227,3 @@ __all__ = [
     "oracle_transfer",
     "select_best_fixed",
 ]
-
