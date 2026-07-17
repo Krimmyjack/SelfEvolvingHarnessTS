@@ -1,21 +1,15 @@
-# Benchmark bulk materializations are local, immutable data assets, reproducible from
-# the pinned sources in acquisition_manifest.json. clean_base is derived per benchmark
-# version (see workspace.probe_workspace: overlap_group is a protocol decision, so a
-# version that redefines it needs its own derived layer).
-data/benchmark_v0/raw/
-data/benchmark_v0/clean_base/
-data/benchmark_v0/probe_cache/
-data/benchmark_v0_1/clean_base/
-data/benchmark_v0_2/clean_base/
+# Benchmark source and derived data are local; manifests and bundled legacy inputs remain tracked.
+evaluation/benchmark_v02/data/raw/
+evaluation/benchmark_v02/data/clean_base/
+evaluation/benchmark_v02/data/probe_cache/
+evaluation/benchmark_v02/data/incoming/**/*.zip
+evaluation/benchmark_v02/data/incoming/**/*.zip.asset.json
+evaluation/benchmark_v02/data/incoming/**/*.csv
+evaluation/benchmark_v02/data/incoming/**/*.csv.asset.json
 
-# Account-gated manual sources (GEFCom, ENTSO-E) are user-supplied archives, not repo
-# content. Their identity lives in acquisition_manifest.json as a SHA256, which is what
-# reproducibility actually needs. The incoming/README.md stays tracked.
-data/benchmark_v0/incoming/**/*.zip
-data/benchmark_v0/incoming/**/*.zip.asset.json
-data/benchmark_v0/incoming/**/*.csv
-data/benchmark_v0/incoming/**/*.csv.asset.json
-
-# Python runtime noise.
+# Runtime/test noise.
 __pycache__/
 *.py[cod]
+.pytest_cache/
+_pytest_*/
+*.zip
