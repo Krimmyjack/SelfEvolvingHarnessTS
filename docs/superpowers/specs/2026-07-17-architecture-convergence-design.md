@@ -4,6 +4,12 @@
 >
 > **Scope:** Converge the active project architecture without reinterpreting frozen scientific evidence. Historical implementations are preserved by Git tag and evidence manifests, not by keeping every old import path alive in the current source tree.
 
+> **Agent-centric update:**
+> [`2026-07-17-agent-centric-minipipe-m0-design.md`](2026-07-17-agent-centric-minipipe-m0-design.md)
+> supersedes this document wherever it proposes H_ref as an active/importable
+> method or as a minipipe execution arm. H_ref is historical evidence only; TTHA
+> is the sole active method in the target architecture.
+
 ## 1. Problem Statement
 
 `SelfEvolvingHarnessTS` grew by adding a new implementation surface for each research phase. The repository now contains multiple harness state models, multiple fast-path entry points, phase-specific runners, frozen benchmark code, experiment diagnostics, and tracked results in the same active package.
