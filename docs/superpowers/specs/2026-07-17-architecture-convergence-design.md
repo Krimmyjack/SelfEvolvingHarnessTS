@@ -10,6 +10,15 @@
 > method or as a minipipe execution arm. H_ref is historical evidence only; TTHA
 > is the sole active method in the target architecture.
 
+> **Benchmark ownership update:**
+> [`2026-07-17-active-tree-cleanup-design.md`](2026-07-17-active-tree-cleanup-design.md)
+> supersedes this document's `method_compat.py`-only benchmark sketch. The complete
+> benchmark-v0.2 package now has one active owner under
+> `evaluation/benchmark_v02/`. Its 25 relocated frozen evidence files are protected
+> by moved-path `.gitattributes` rules and SHA-256 entries in
+> `artifacts/manifests/active_tree_cleanup.json`, enforced by the frozen-protocol
+> smoke test.
+
 ## 1. Problem Statement
 
 `SelfEvolvingHarnessTS` grew by adding a new implementation surface for each research phase. The repository now contains multiple harness state models, multiple fast-path entry points, phase-specific runners, frozen benchmark code, experiment diagnostics, and tracked results in the same active package.
