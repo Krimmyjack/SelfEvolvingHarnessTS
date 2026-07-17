@@ -53,7 +53,7 @@ SelfEvolvingHarnessTS/
 │   ├── h_ref_v02/
 │   └── ttha/                 # created by the later TTHA implementation track
 ├── evaluation/
-│   └── benchmark_v02/        # code, metrics, runner, adapter, data manifest
+│   └── benchmark_v02/        # code, metrics, runner, adapter, required benchmark data
 ├── artifacts/
 │   ├── manifests/
 │   └── frozen/
@@ -69,7 +69,9 @@ SelfEvolvingHarnessTS/
 │   └── frozen_protocol/
 ```
 
-`conditioning/` stays because canonical operators currently use its period estimator.
+`conditioning/` stays because canonical operators currently use its period estimator. The
+small active subset of global thresholds it consumes becomes `conditioning/thresholds.py`;
+the broad historical `config/` package is not retained.
 Benchmark-v0.2 has one physical code owner: `evaluation/benchmark_v02/`. Its command-line
 entry is `python -m SelfEvolvingHarnessTS.evaluation.benchmark_v02`; there is no top-level
 `run_benchmark.py`. Frozen evidence has one physical owner under
@@ -85,9 +87,18 @@ During that promotion, two active imports crossing into legacy packages must be 
 2. promoted `trainers.py` uses a benchmark-owned `models.py`, after which the legacy
    `evaluators/` package can be removed.
 
-The benchmark acquisition manifest and its ignored incoming-data location move beneath
+The active conditioning constants (`STRUCT_FEATS_DIM`, `ALPHA_DISTANCE`, bin thresholds,
+and quality-profile thresholds) move from `config/thresholds.py` into
+`conditioning/thresholds.py`. `conditioning/binning.py`, `distance.py`, and `key.py` then
+use the local owner, after which `config/` can be removed without breaking canonical
+operators.
+
+The benchmark acquisition manifest, ignored incoming-data location, and the bundled Monash
+legacy inventory consumed by the default probe move beneath
 `evaluation/benchmark_v02/data/`. All internal imports and path resolution become relative
-to that owner.
+to that owner. The traffic admission inventory currently read from the historical P6 result
+tree moves into the same benchmark-owned legacy-data directory. ECG5000 and loaders used
+only by retired classification experiments are not retained.
 
 No other canonical package currently imports `p6`, `harness`, `policy`, `sandbox`,
 `slow_path`, `memory`, or `llm`.
@@ -139,13 +150,18 @@ Keep:
 
 - the benchmark acquisition manifest and concise data instructions under
   `evaluation/benchmark_v02/data/`;
+- `monash_clean.npz` and `monash_clean.meta.jsonl` under
+  `evaluation/benchmark_v02/data/legacy/`, because the default benchmark probe consumes
+  them directly;
+- `u_admission_v2_traffic_hourly.json` under the same legacy-data owner, because it defines
+  the traffic series already consumed before the frozen benchmark split;
 - the byte-identical Benchmark-v0.2 result/protocol files under
   `artifacts/frozen/benchmark_v02/`;
 - architecture manifests, including an old-path-to-new-path relocation map.
 
 Remove:
 
-- legacy data artifacts and P1–P6 data loaders that only serve retired runners;
+- ECG5000, historical data loaders, and data artifacts that only serve retired runners;
 - every historical result tree other than the files promoted into the frozen artifact owner;
 - tracked experiment logs and generated caches.
 
@@ -218,7 +234,7 @@ The cleanup is complete when:
 - deterministic ladder SHAs and fixed-probe artifact digests remain unchanged;
 - the canonical H_ref method and benchmark adapter smoke tests pass;
 - focused operator/runtime/contract/architecture tests pass under the project interpreter;
-- the tracked file count is materially reduced from the current 1,132 files, with a target
+- the tracked file count is materially reduced from the current 1,158 files, with a target
   below 180;
 - the cleanup branch is Git-clean and the other Agent's main-worktree changes remain
   untouched.
