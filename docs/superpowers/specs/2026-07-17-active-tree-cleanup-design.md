@@ -53,14 +53,11 @@ SelfEvolvingHarnessTS/
 │   ├── h_ref_v02/
 │   └── ttha/                 # created by the later TTHA implementation track
 ├── evaluation/
-│   └── benchmark_v02/
-├── benchmark/                    # temporarily retains the frozen physical evaluator
-├── data/
-│   └── benchmark_v0/
+│   └── benchmark_v02/        # code, metrics, runner, adapter, data manifest
 ├── artifacts/
-│   └── manifests/
-├── results/
-│   └── Benchmark_v0_2/
+│   ├── manifests/
+│   └── frozen/
+│       └── benchmark_v02/   # immutable results, manifests, and protocol evidence
 ├── experiments/
 │   └── archive/README.md
 ├── docs/
@@ -70,23 +67,27 @@ SelfEvolvingHarnessTS/
 │   ├── runtime/
 │   ├── integration/
 │   └── frozen_protocol/
-└── run_benchmark.py              # temporary until the unified CLI track
 ```
 
 `conditioning/` stays because canonical operators currently use its period estimator.
-The physical `benchmark/` package stays until benchmark-v0.2 is either retired or moved
-behind a fully self-contained evaluation package. Neither directory is a historical branch
-in the cleaned tree.
+Benchmark-v0.2 has one physical code owner: `evaluation/benchmark_v02/`. Its command-line
+entry is `python -m SelfEvolvingHarnessTS.evaluation.benchmark_v02`; there is no top-level
+`run_benchmark.py`. Frozen evidence has one physical owner under
+`artifacts/frozen/benchmark_v02/`.
 
 ## 4. Required Promotions Before Deletion
 
-Two active imports still cross into legacy packages and must be resolved first:
+The physical `benchmark/` package is promoted in full into `evaluation/benchmark_v02/`.
+During that promotion, two active imports crossing into legacy packages must be resolved:
 
-1. `benchmark/method_api.py` and `benchmark/baselines.py` must import `TaskSpec` from
-   `contracts.task`, after which `policy/` can be removed.
-2. `benchmark/trainers.py` must use a frozen benchmark-owned model module under
-   `evaluation/benchmark_v02/` (or a canonical model package), after which the legacy
+1. promoted `method_api.py` and `baselines.py` import `TaskSpec` from `contracts.task`,
+   after which `policy/` can be removed;
+2. promoted `trainers.py` uses a benchmark-owned `models.py`, after which the legacy
    `evaluators/` package can be removed.
+
+The benchmark acquisition manifest and its ignored incoming-data location move beneath
+`evaluation/benchmark_v02/data/`. All internal imports and path resolution become relative
+to that owner.
 
 No other canonical package currently imports `p6`, `harness`, `policy`, `sandbox`,
 `slow_path`, `memory`, or `llm`.
@@ -101,8 +102,8 @@ permanent shims. Active callers already have canonical replacements.
 
 Remove historical root-level runner and experiment modules, including the P1–P6, E32,
 confirmatory, family, gym, long-run, ablation, proposer, updater, replication, transfer,
-and calibration entry points. Keep only the package initializer and the temporary active
-benchmark entry point.
+and calibration entry points. Keep only the package initializer; the benchmark entry moves
+to its package-local `__main__.py`.
 
 Remove tracked root logs and historical narrative files (`BUILD.md`, `EXECUTION_LOG.md`,
 and `ONBOARDING.md`) after their still-relevant usage information is replaced by a concise
@@ -124,26 +125,34 @@ Remove these legacy implementation packages after the two promotions above:
 - `policy/`
 - `sandbox/`
 - `slow_path/`
+- top-level `benchmark/`
+- top-level `data/`
+- top-level `results/`
 
 Potentially useful LLM, retrieval, memory, or edit logic is not retained speculatively.
 When TTHA needs a mechanism, it is recovered from the tag, characterized if necessary,
 and promoted intentionally into the active architecture.
 
-### 5.3 Data and results
+### 5.3 Benchmark evidence and data
 
 Keep:
 
-- `data/benchmark_v0/` and the benchmark data instructions needed to acquire its sources;
-- `results/Benchmark_v0_2/` as the current frozen judgment evidence;
-- architecture manifests and concise frozen evidence pointers.
+- the benchmark acquisition manifest and concise data instructions under
+  `evaluation/benchmark_v02/data/`;
+- the byte-identical Benchmark-v0.2 result/protocol files under
+  `artifacts/frozen/benchmark_v02/`;
+- architecture manifests, including an old-path-to-new-path relocation map.
 
 Remove:
 
-- legacy `data/_artifacts/` and P1–P6 data loaders that only serve retired runners;
-- all result trees other than `results/Benchmark_v0_2/`;
+- legacy data artifacts and P1–P6 data loaders that only serve retired runners;
+- every historical result tree other than the files promoted into the frozen artifact owner;
 - tracked experiment logs and generated caches.
 
-The cleanup does not add large historical archives to `artifacts/`.
+Frozen Benchmark-v0.2 files are moved without rewriting their contents. Existing signed
+documents may mention their former paths; the relocation manifest records that mapping
+instead of mutating historical evidence. Large raw datasets remain external/ignored and
+are not copied into `artifacts/`.
 
 ### 5.4 Tests
 
@@ -171,7 +180,8 @@ tests alive.
 - `runtime` depends on contracts/operators and the injected or frozen method definition;
   it never imports retired packages.
 - `methods` depends on contracts/runtime/operators, not benchmark internals.
-- `evaluation` may adapt a canonical method to the frozen benchmark.
+- `evaluation/benchmark_v02` owns the complete auxiliary evaluator and may adapt a
+  canonical method; no other benchmark package exists.
 - active code never imports `experiments` or a removed namespace.
 
 An architecture test must reject imports of every removed top-level namespace.
@@ -179,14 +189,17 @@ An architecture test must reject imports of every removed top-level namespace.
 ## 7. Execution Order
 
 1. Record a machine-readable cleanup manifest with the recovery tag and removal groups.
-2. Promote the two remaining active dependencies out of `policy/` and `evaluators/`.
-3. Add or consolidate the minimal active smoke tests and observe them passing.
-4. Remove legacy root files, packages, results, data, and historical tests in explicit
+2. Promote the physical benchmark package, its model dependency, and its data manifest
+   into `evaluation/benchmark_v02/` while switching TaskSpec to `contracts`.
+3. Move frozen Benchmark-v0.2 evidence byte-for-byte into
+   `artifacts/frozen/benchmark_v02/` and record path relocation.
+4. Add or consolidate the minimal active smoke tests and observe them passing.
+5. Remove legacy root files, packages, results, data, and historical tests in explicit
    reviewed groups.
-5. Replace historical onboarding material with an active `README.md`.
-6. Tighten `.gitignore`, `.gitattributes`, and architecture rules to the remaining tree.
-7. Run the focused active suite and fixed H_ref/benchmark fingerprints.
-8. Report the final file-count reduction and any intentionally retained temporary edge.
+6. Replace historical onboarding material with an active `README.md`.
+7. Tighten `.gitignore`, `.gitattributes`, and architecture rules to the remaining tree.
+8. Run the focused active suite and fixed H_ref/benchmark fingerprints.
+9. Report the final file-count reduction and any intentionally retained temporary edge.
 
 Deletion is performed with explicit Git paths. Broad recursive deletion against the
 workspace root is forbidden.
@@ -197,14 +210,16 @@ The cleanup is complete when:
 
 - the active worktree contains no retired package listed in section 5.2;
 - root-level historical runners and tracked logs are gone;
-- only `results/Benchmark_v0_2/` remains under `results/`;
+- top-level `benchmark/`, `data/`, `results/`, and `run_benchmark.py` are gone;
+- benchmark code appears only under `evaluation/benchmark_v02/` and frozen benchmark
+  evidence only under `artifacts/frozen/benchmark_v02/`;
 - `rg` finds no active imports of retired namespaces;
 - canonical H_ref state SHA remains `4e7e4ac5b40c941d`;
 - deterministic ladder SHAs and fixed-probe artifact digests remain unchanged;
 - the canonical H_ref method and benchmark adapter smoke tests pass;
 - focused operator/runtime/contract/architecture tests pass under the project interpreter;
 - the tracked file count is materially reduced from the current 1,132 files, with a target
-  below 200 unless benchmark evidence alone makes that impossible;
+  below 180;
 - the cleanup branch is Git-clean and the other Agent's main-worktree changes remain
   untouched.
 
@@ -213,6 +228,7 @@ that suite is deleted together with the functionality it tested.
 
 ## 9. Deferred Work
 
-This cleanup does not implement TTHA, minipipe, a unified CLI, or method-performance
-improvements. It creates the small active tree in which those features can be built without
-competing with historical branches.
+This cleanup does not implement TTHA, minipipe, the project-wide unified CLI, or
+method-performance improvements. Benchmark-v0.2 receives only its package-local module
+entry so its auxiliary evaluator remains runnable. The cleanup creates the small active
+tree in which the later features can be built without competing with historical branches.
