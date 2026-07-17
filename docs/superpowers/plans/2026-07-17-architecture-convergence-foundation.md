@@ -10,6 +10,10 @@
 
 ## Global Constraints
 
+- Product priority is functional completeness, component convergence, method quality, and
+  measurable performance. Tests should be focused evidence for those outcomes; avoid
+  expanding benchmark infrastructure or exhaustive low-risk validation unless it protects
+  frozen scientific evidence or an active compatibility boundary.
 - Run every test with `D:\Anaconda_envs\envs\project\python.exe`; from WSL this is `/mnt/d/Anaconda_envs/envs/project/python.exe`.
 - Run test commands from `/mnt/c/Users/辉/desktop/agent`, not from the package directory.
 - Always pass `--basetemp=SelfEvolvingHarnessTS/_pytest_architecture` because the Windows default pytest temp root is not accessible in this environment.
