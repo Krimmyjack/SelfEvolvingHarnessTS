@@ -1,39 +1,7 @@
-# Auto detect text files and perform LF normalization
 * text=auto
-
-# Files whose SHA256 is pinned somewhere must never be rewritten by git.
-#
-# `text=auto` stores LF in the object database and restores CRLF on Windows checkout.
-# For an ordinary source file that is harmless. For an artifact whose *bytes are its
-# identity* -- a frozen registry, a split manifest, a design document mirrored by digest
-# -- it is fatal: the checked-out file no longer hashes to the digest recorded inside the
-# benchmark manifest, so the integrity check meant to catch tampering fires on a clean
-# checkout instead.
-#
-# `-text` disables newline translation entirely, so these paths round-trip byte-exactly
-# on every platform. The writers (benchmark/materialize.py: write_text_lf) emit LF, so
-# the bytes are identical everywhere.
-results/Benchmark_v0/** -text
-results/Benchmark_v0_1/** -text
-results/Benchmark_v0_2/** -text
-data/benchmark_v0/acquisition_manifest.json -text
-docs/benchmark/** -text
-
-# ── 2026-07-14: the same hazard, one layer deeper — **Python source can be digest-pinned too**
-#
-# `results/Benchmark_v0_2/program_pool.json` pins the SHA256 of the *source files* that
-# implement the frozen program pool (`benchmark/programs.py::_POOL_CODE_FILES`):
-#   benchmark/programs.py, operators/_common.py, operators/registry.py,
-#   operators/s1_denoise.py, operators/s1_outlier.py
-# Those are ordinary `.py` files, so they fell under `* text=auto` and were exempt from
-# nothing -- meaning a clean Windows checkout restores them with CRLF, their SHA256 changes,
-# and every one of those pins goes stale **on an untouched clone**. The pins were computed on
-# LF bytes; nothing checked them, so the breakage stayed invisible.
-#
-# `eol=lf` (rather than `-text`) because it is the stronger guarantee for source: git
-# normalizes to LF on the way in *and* checks out LF on every platform, so the working-tree
-# bytes are the same everywhere no matter how a contributor's editor is configured.
-#
-# `tests/test_frozen_action_surfaces.py::test_pool_code_files_are_lf_so_a_clean_checkout_still_hashes`
-# enforces this: any pool code file containing CRLF fails the suite.
 *.py text eol=lf
+
+# Frozen evidence and bundled benchmark inputs must round-trip byte-exactly.
+artifacts/frozen/benchmark_v02/** -text
+evaluation/benchmark_v02/data/acquisition_manifest.json -text
+evaluation/benchmark_v02/data/legacy/** -text

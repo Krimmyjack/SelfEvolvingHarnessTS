@@ -11,7 +11,7 @@ from typing import Any, Dict
 
 import numpy as np
 
-from ..config.thresholds import ALPHA_DISTANCE
+from .thresholds import ALPHA_DISTANCE
 from .key import STRUCT_FEAT_NAMES
 
 # 各维粗尺度（把量纲不同的特征压到可比量级；period/SNR 大，其余多在 [0,1]）

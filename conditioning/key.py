@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from ..config import thresholds as TH
+from . import thresholds as TH
 
 try:                                   # ADF 单位根检验（可选）
     from statsmodels.tsa.stattools import adfuller as _adfuller
