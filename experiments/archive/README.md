@@ -1,11 +1,14 @@
 # Historical experiment recovery
 
-The current tree contains only active code and concise evidence pointers. Full P0-P6,
-E32, confirmatory, and legacy harness implementations are recovered from Git tag
-`pre-architecture-convergence-2026-07-17`.
+The active tree does not store importable historical source. Full P0-P6, E32,
+confirmatory, and former harness implementations are recovered from Git tag
+`pre-architecture-convergence-2026-07-17` at commit
+`1e75305770815c256d5b295b7ad6b8cb6cffe4b4`.
 
-Archived code must not be copied back into an importable package. Promote a still-useful
-contract or mechanism into the canonical architecture with characterization tests instead.
-Frozen scientific evidence remains under `artifacts/frozen/`, `artifacts/manifests/`, and
-the existing signed benchmark result directories until their physical artifact migration
-is separately approved.
+The exact cleanup boundary and benchmark relocation map are recorded in
+`artifacts/manifests/active_tree_cleanup.json`. Frozen Benchmark-v0.2 evidence lives under
+`artifacts/frozen/benchmark_v02/`.
+
+Do not copy an old package back wholesale. Recover the needed mechanism, characterize its
+required behavior, and promote it into the canonical contracts/operators/runtime/methods
+structure.

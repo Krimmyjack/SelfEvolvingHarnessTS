@@ -1,0 +1,10 @@
+"""Thresholds required by the active conditioning feature layer."""
+
+STRUCT_FEATS_DIM = 10
+ALPHA_DISTANCE = 0.5
+BIN_SNR_SPLIT_DB = 4.0
+BIN_MISSING_ANY = 0.0
+OUTLIER_MAD_K = 3.5
+SNR_DB_NOISY = 10.0
+TREND_STRENGTH_DRIFT = 0.3
+ADF_NONSTATIONARY_P = 0.05

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Dict, Tuple
 
-from ..config import thresholds as TH
+from . import thresholds as TH
 
 
 def pattern_bin(struct_feats: Dict[str, float]) -> str:
