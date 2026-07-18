@@ -11,7 +11,13 @@ from SelfEvolvingHarnessTS.contracts.canonical import (
     canonical_sha256,
 )
 from SelfEvolvingHarnessTS.contracts.public_boundary import assert_public_payload
-from SelfEvolvingHarnessTS.runtime.agent_backend import AgentBackend, AgentRequest, AgentResponse
+from SelfEvolvingHarnessTS.runtime.agent_backend import (
+    DEFAULT_AGENT_BASE_URL,
+    DEFAULT_AGENT_MODEL,
+    AgentBackend,
+    AgentRequest,
+    AgentResponse,
+)
 from SelfEvolvingHarnessTS.runtime.errors import ProtocolViolation
 
 from .public_tools import PublicToolGateway, PublicToolReceipt
@@ -101,9 +107,18 @@ def _memory_prompt(memory: object) -> dict[str, object]:
 
 
 class TTHAAgentCore:
-    def __init__(self, backend: AgentBackend, tools: PublicToolGateway):
+    def __init__(
+        self,
+        backend: AgentBackend,
+        tools: PublicToolGateway,
+        *,
+        model: str = DEFAULT_AGENT_MODEL,
+        base_url: str = DEFAULT_AGENT_BASE_URL,
+    ):
         self.backend = backend
         self.tools = tools
+        self.model = model
+        self.base_url = base_url
 
     @staticmethod
     def load_stage_schema(name: str) -> Mapping[str, object]:
@@ -209,6 +224,8 @@ class TTHAAgentCore:
                 effective_harness_view_sha=harness_view.effective_harness_view_sha,
                 tool_context_sha=tool_context_sha,
                 source_harness_snapshot_sha=source_snapshot_sha,
+                model=self.model,
+                base_url=self.base_url,
             )
             request_hashes.append(request.semantic_request_hash())
             response = self.backend.complete(request)

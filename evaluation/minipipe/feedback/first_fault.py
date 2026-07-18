@@ -298,15 +298,6 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
         if facts.mechanism_identified is False or facts.mechanism_identified is None:
             mechanism_status = AssessmentStatus.UNKNOWN
             mechanism_fault = mechanism_cause = "MECHANISM_UNKNOWN"
-        elif facts.public_probe_gains:
-            ordered = sorted((float(value) for value in facts.public_probe_gains.values()), reverse=True)
-            best = ordered[0]
-            second = ordered[1] if len(ordered) > 1 else -math.inf
-            if best < float(rules["probe_gain_min"]) or best - second < float(
-                rules["probe_margin_min"]
-            ):
-                mechanism_status = AssessmentStatus.UNKNOWN
-                mechanism_fault = mechanism_cause = "MECHANISM_UNKNOWN"
     assessments.append(
         _assessment(
             facts,
@@ -342,7 +333,15 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
     assessments.append(retrieval)
 
     effective = _effective_candidates(facts, rules)
-    if effective:
+    if not facts.is_target:
+        supply = _assessment(
+            facts,
+            rules,
+            Stage.CANDIDATE_SUPPLY,
+            AssessmentStatus.NOT_APPLICABLE,
+            rule="non_target_supply_not_required",
+        )
+    elif effective:
         supply = _assessment(
             facts,
             rules,
@@ -369,7 +368,15 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
     identity_u = float(facts.candidate_utilities.get("identity", facts.corrupt_u))
     chosen_u = float(facts.candidate_utilities.get(facts.chosen_candidate_id, identity_u))
     regret = max((float(value) for value in facts.candidate_utilities.values()), default=identity_u) - chosen_u
-    if effective and regret >= float(rules["selection_regret_min"]):
+    if not facts.is_target:
+        selection = _assessment(
+            facts,
+            rules,
+            Stage.CANDIDATE_SELECTION,
+            AssessmentStatus.NOT_APPLICABLE,
+            rule="non_target_selection_not_required",
+        )
+    elif effective and regret >= float(rules["selection_regret_min"]):
         selection = _assessment(
             facts,
             rules,

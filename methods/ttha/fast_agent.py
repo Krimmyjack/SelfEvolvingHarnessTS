@@ -179,6 +179,22 @@ class TTHAFastAgent:
             for request_hash in stage.request_hashes
         )
         candidates = pool.candidates if pool is not None else (Candidate.identity(),)
+        candidate_program_steps = {
+            candidate.candidate_id: tuple(
+                (op, params) for op, params in candidate.program.execution_steps()
+            )
+            for candidate in candidates
+            if candidate.program is not None
+        }
+        cache_hit_flags = tuple(
+            bool(
+                getattr(stage.response.cache_receipt, "hit", False)
+                if stage.response.cache_receipt is not None
+                else False
+            )
+            for stage in stages
+            for _request_hash in stage.request_hashes
+        )
         return DecisionTrace(
             case_id=request.series_uid,
             public_observation_ids=observation_ids,
@@ -201,6 +217,8 @@ class TTHAFastAgent:
             verification_actions=verification_actions,
             effect_equivalent_to_identity=identity_equivalent,
             series_length=request.values.size,
+            candidate_program_steps=candidate_program_steps,
+            agent_cache_hit_flags=cache_hit_flags,
         )
 
     def prepare(

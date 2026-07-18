@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any
 
@@ -34,6 +34,12 @@ class DecisionTrace:
     verification_actions: tuple[str, ...]
     effect_equivalent_to_identity: bool
     series_length: int | None = None
+    # Grader-only execution material. It is never included in the normalized
+    # behavior signature or any Agent-facing payload.
+    candidate_program_steps: Mapping[
+        str, tuple[tuple[str, Mapping[str, object]], ...]
+    ] = field(default_factory=dict)
+    agent_cache_hit_flags: tuple[bool, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.case_id, str) or not self.case_id:
@@ -42,6 +48,8 @@ class DecisionTrace:
             raise ValueError("candidate IDs and program SHAs must align")
         if len(self.candidate_ids) != len(set(self.candidate_ids)):
             raise ValueError("DecisionTrace candidate IDs must be unique")
+        if not set(self.candidate_program_steps).issubset(set(self.candidate_ids)):
+            raise ValueError("candidate program material must name a supplied candidate")
         if not isinstance(self.chosen_candidate_id, str):
             raise ValueError("chosen_candidate_id must be a string")
         for start, end in self.inspected_regions:
@@ -71,6 +79,11 @@ class DecisionTrace:
             self,
             "tool_calls",
             tuple(_freeze_json(call) for call in self.tool_calls),
+        )
+        object.__setattr__(
+            self,
+            "candidate_program_steps",
+            _freeze_json(self.candidate_program_steps),
         )
 
 

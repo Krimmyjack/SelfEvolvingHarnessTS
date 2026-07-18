@@ -102,6 +102,8 @@ class TTHASlowAgent:
             public_input={
                 "failure_pattern_card": _plain(card),
                 "writable_surface_catalog": _plain(surface_catalog),
+                "base_harness_sha": snapshot.harness_content_sha,
+                "dependency_precondition_shas": _plain(snapshot.dependency_shas),
             },
             harness_view=view,
             output_schema_name="slow_edit_v1",
