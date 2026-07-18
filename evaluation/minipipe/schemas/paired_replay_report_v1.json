@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "paired-replay-report/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "edit_id",
+    "parent_runtime_bundle_sha",
+    "candidate_runtime_bundle_sha",
+    "rules_sha",
+    "facts",
+    "verdict",
+    "target_case_ids",
+    "risk_case_ids",
+    "out_of_scope_pairs",
+    "confirmed_surface",
+    "attribution_additions",
+    "infrastructure_error",
+    "report_sha"
+  ],
+  "properties": {
+    "schema_version": {"const": "paired-replay-report/1"},
+    "edit_id": {"type": "string"},
+    "parent_runtime_bundle_sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "candidate_runtime_bundle_sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "rules_sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "facts": {"type": "object"},
+    "verdict": {"enum": ["DEAD_EDIT", "BEHAVIOR_CHANGED_NO_GAIN", "TARGET_RECOVERED_WITH_HARM", "PARTIAL_RECOVERY", "SUPPORTED_EDIT", "UNEXPECTED_GAIN", "INCONCLUSIVE"]},
+    "target_case_ids": {"type": "array", "items": {"type": "string"}},
+    "risk_case_ids": {"type": "array", "items": {"type": "string"}},
+    "out_of_scope_pairs": {"type": "array", "items": {"type": "object"}},
+    "confirmed_surface": {"type": ["string", "null"]},
+    "attribution_additions": {"type": "array", "items": {"type": "string"}},
+    "infrastructure_error": {"type": ["string", "null"]},
+    "report_sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

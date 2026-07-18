@@ -7,11 +7,19 @@ from .edit_controller import (
     StaleEditError,
     SurfaceRegistry,
 )
+from .paired import EditVerdict, PairedReplayRunner, ReplayFacts, derive_verdict
+from .risk_sets import AutomaticRiskSetBuilder, AutomaticRiskSetReceipt
 
 __all__ = [
     "AppliedEditReceipt",
+    "AutomaticRiskSetBuilder",
+    "AutomaticRiskSetReceipt",
     "EditAuthorizationError",
     "EditController",
+    "EditVerdict",
+    "PairedReplayRunner",
+    "ReplayFacts",
     "StaleEditError",
     "SurfaceRegistry",
+    "derive_verdict",
 ]
