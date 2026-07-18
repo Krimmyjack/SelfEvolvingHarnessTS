@@ -4,11 +4,11 @@
 
 **Goal:** Build the first executable, two-cycle TTHA Harness-evolution loop in which one Agent core supplies and selects preparation programs on the fast path, proposes one-surface Harness edits on the slow path, and receives mechanically attributed paired-replay feedback.
 
-**Architecture:** Add typed Candidate/Harness contracts and a generic runtime above the existing canonical operator registry and executor. TTHA owns an immutable, domain-naive H0 and one permission-separated Agent core; `evaluation/minipipe` owns synthetic cases, the private Chronos valuator, probes, fault attribution, sanitization, edit replay, and lineage. Complete the new vertical path before severing the remaining H_ref imports, then remove H_ref from the active tree while retaining its three fixed programs as grader-private historical witnesses.
+**Architecture:** Add typed Candidate/Harness contracts and a generic runtime above the existing canonical operator registry and executor. TTHA owns an immutable, domain-naive H0 and one permission-separated Agent core; `evaluation/minipipe` owns synthetic cases, the private Chronos valuator, public fixed probes, fault attribution, sanitization, edit replay, and lineage. Complete the new vertical path before severing the remaining H_ref imports, then remove H_ref from the active tree. Any historical H_ref reproduction artifact is an inert grader-private fossil under `_frozen_reference/`, never an active baseline, candidate supplier, or TTHA dependency.
 
-**Tech Stack:** Python 3.10.19, NumPy 2.2.6, PyTorch 2.12.0+cu126, `chronos-forecasting` 2.3.0, Transformers 5.12.1, OpenAI Responses API with GPT-5.5, Requests, stdlib `dataclasses`/`enum`/`hashlib`/`json`/`pathlib`/`typing`, pytest.
+**Tech Stack:** Python 3.10.19, NumPy 2.2.6, PyTorch 2.12.0+cu126, `chronos-forecasting` 2.3.0, Transformers 5.12.1, OpenAI Python SDK 2.45.0, an OpenAI-compatible Chat Completions relay using model alias `gpt-5.5`, stdlib `dataclasses`/`enum`/`hashlib`/`json`/`pathlib`/`typing`, pytest.
 
-**Source specification:** `docs/superpowers/specs/2026-07-17-agent-centric-minipipe-m0-design.md` at commit `a227bcdfb45d`.
+**Source specification:** `docs/superpowers/specs/2026-07-17-agent-centric-minipipe-m0-design.md`, including the approved 2026-07-18 contract amendments.
 
 ## Global Constraints
 
@@ -17,7 +17,7 @@
 - New production code may import `contracts`, `operators`, `runtime`, and `methods/ttha`; TTHA must never import `evaluation/minipipe`.
 - No new operator implementation, copied operator registry, arbitrary Python edit, downstream-model search, Harness Tree, or candidate-J-assisted selection belongs in M0.
 - The same `TTHAAgentCore` instance type serves fast and slow roles. Role prompts, visible inputs, tools, and permissions differ; the underlying Agent backend and HarnessSnapshot are shared.
-- Fast-path prompts receive only typed public inputs. Clean values, injection labels/indices, candidate utilities, exact rankings, private receipts, and oracle witnesses remain grader-private.
+- Fast-path prompts receive only typed public inputs. Clean values, injection labels/indices, candidate utilities, exact rankings, private receipts, and oracle witnesses remain grader-private. The sole evaluator-derived exception is the fixed, deployment-computable `R_public` probe panel defined below.
 - The Agent never certifies its own PASS/FAIL status. Runtime facts enter `DecisionTrace`; deterministic grader rules produce `StageAssessment` and `FaultAttribution`.
 - The runtime injects one tagged identity candidate, identity occupies one configured slot and cannot be filtered, and absence of `chosen_candidate_id` is a protocol failure.
 - `K=3` is the M0 configuration default: identity plus at most two Agent PROGRAM candidates. It is not encoded as a permanent contract invariant.
@@ -25,8 +25,10 @@
 - Slow-path edits are restricted to one declared textual, structured-rule, or scalar-config surface. Python/runtime/compiler/operator edits are rejected.
 - A SkillEntry ADD is one atomic source edit; file existence is membership and the retrieval index is a deterministic derived artifact.
 - A surface is only confirmed after single-surface paired replay verifies the predicted behavior change. Narrative attribution alone never confirms responsibility.
-- Candidate utility and arbitrary evaluator queries stay private. The Agent's only evaluator-derived fast-path evidence is the fixed versioned ProbeAPI.
-- Tests and default acceptance runs make no network calls. Live Agent calls use the OpenAI Responses API and require `OPENAI_API_KEY`; Chronos loads the pinned local Hugging Face snapshot with `local_files_only=True`.
+- Candidate utility and arbitrary evaluator queries stay private. The Agent's only evaluator-derived fast-path evidence is the fixed versioned public ProbeAPI; private clean-future probe value never crosses the wall.
+- The deployment-observable vocabulary, its schema, and observation-tool code are read-only wall substrate in M0. The slow Agent cannot edit them.
+- Every semantic content hash uses versioned `m0-c14n/1` canonicalization; raw file bytes, platform newlines, and JSON key order do not define semantic identity.
+- Tests and default acceptance runs make no network calls. Live Agent calls use Chat Completions at `https://api.agicto.cn/v1`, model alias `gpt-5.5`, and an API key supplied only through `AGICTO_API_KEY`; Chronos loads the pinned local Hugging Face snapshot with `local_files_only=True`.
 - At most three edits enter replay and at most one edit is promoted per cycle. M0 must execute two consecutive cycles from one command.
 - Commit after every task. Do not combine tasks into one commit even when implementation is fast.
 - Execute these dependent tasks inline and sequentially unless the user explicitly requests sub-agent delegation; the plan header names compatible execution skills but does not itself authorize delegation.
@@ -67,11 +69,25 @@ No downstream model is trained inside M0.
 
 ### Agent backend
 
-Production code defines one `AgentBackend.complete(AgentRequest) -> AgentResponse` protocol. Automated tests and the default smoke command use an immutable replay backend. Live runs use OpenAI's Responses API at `https://api.openai.com/v1/responses`, authenticate only through `OPENAI_API_KEY`, and set `store=false` so the local cache remains the replay authority.
+Production code defines one `AgentBackend.complete(AgentRequest) -> AgentResponse` protocol. Automated tests and the default smoke command use an immutable replay backend. Live runs use the relay-safe Chat Completions adapter described below; the local immutable cache remains the replay authority.
 
-The default Agent model family is GPT-5.5 and the reproducible M0 model identity is the dated snapshot `gpt-5.5-2026-04-23`. `M0_AGENT_MODEL` may explicitly override that value for a non-reference run, but the exact requested model, returned model identity/fingerprint, reasoning effort, and request schemas enter the cache record and `run_context_sha`. Both fast and slow roles initially use `reasoning.effort="medium"`; role prompts, permissions, public inputs, tools, and structured output schemas provide the separation. M0 does not silently switch to another model family or to the mutable latest-model recommendation.
+The live adapter uses `openai==2.45.0` and constructs `OpenAI(api_key=..., base_url="https://api.agicto.cn/v1")`, then calls `client.chat.completions.create(messages=..., model="gpt-5.5")`. The key is read by the CLI from `AGICTO_API_KEY`, passed explicitly to the adapter, never written into a config/artifact/cache, and never logged. `M0_AGENT_MODEL` and `M0_AGENT_BASE_URL` may explicitly override the defaults for a non-reference run; both values, the SDK version, and capability flags enter the cache record and `run_context_sha`.
 
-Agent stage outputs use strict Structured Outputs through `text.format` with `type="json_schema"`. Public tool interactions use Responses function tools and return `function_call_output` items. Requests omit sampling-temperature controls, set a versioned `max_output_tokens`, preserve malformed successful responses as Agent behavior, and never cache transient transport, HTTP 429, or 5xx failures.
+The relay has only demonstrated ordinary Chat Completions, so M0 does **not** assume Responses API support, provider-native function calling, `response_format`, strict Structured Outputs, reasoning controls, or provider seed support. Instead, resolved messages include a local `agent-envelope/1` contract. The assistant must emit exactly one JSON object with either:
+
+```json
+{"schema_version":"agent-envelope/1","kind":"tool_request","call_id":"call-1","tool_name":"inspect_public_series","arguments":{}}
+```
+
+or:
+
+```json
+{"schema_version":"agent-envelope/1","kind":"stage_result","stage":"select","payload":{"chosen_candidate_id":"identity"}}
+```
+
+The runtime validates this envelope, executes allowlisted public tools locally, appends the assistant envelope and one typed `tool-result/1` user message, and calls Chat Completions again. Invalid JSON or schema is cached as Agent behavior. Transient connection/time-out errors, HTTP 408/409/429, and 5xx failures are infrastructure errors and are not cached.
+
+`gpt-5.5` is a relay model alias, not a verifiable dated provider snapshot. M0 therefore makes no snapshot-level model claim. Reproducibility comes from the exact effective-request identity, immutable raw-response cache, offline replay backend, and recorded provider metadata when present.
 
 ### Corpus and verdict constants
 
@@ -97,6 +113,10 @@ Check in `evaluation/minipipe/config/m0_rules.json` with these exact values:
   "agent_program_slots": 2,
   "infrastructure_retries": 1,
   "probe_betas": [0.25, 0.50, 0.75],
+  "public_probe_origins": [96, 120, 144, 168],
+  "public_probe_horizon": 24,
+  "public_probe_min_finite_targets": 12,
+  "public_probe_round_decimals": 6,
   "corpus": {
     "base_seeds": [101, 202, 303],
     "context_length": 192,
@@ -128,6 +148,8 @@ All probes expose `beta in {0.25, 0.50, 0.75}` and larger beta is always more ag
 
 ### Canonical contracts and runtime
 
+- `requirements-m0.txt` — incremental M0 dependency lock containing `openai==2.45.0`.
+- `contracts/canonical.py` — `m0-c14n/1` text/JSON/JSONL normalization and SHA helpers.
 - `contracts/candidate.py` — tagged identity/PROGRAM candidate identity.
 - `contracts/harness.py` — SkillEntry, HarnessSnapshot, EditManifest, and semantic hashes.
 - `contracts/observables.py` — closed deployment-observable feature vocabulary and applicability-AST validator.
@@ -138,12 +160,14 @@ All probes expose `beta in {0.25, 0.50, 0.75}` and larger beta is always more ag
 - `contracts/schemas/edit_manifest_v2.json` — PATCH/ADD edit contract shape.
 - `runtime/candidate_pool.py` — identity injection, deduplication, risk filtering, selection validation, and effect-equivalence.
 - `runtime/decision_trace.py` — runtime fact records and normalized behavior signatures.
-- `runtime/agent_backend.py` — provider-independent request/response protocol, GPT-5.5 Responses adapter, and immutable replay backend.
+- `runtime/agent_backend.py` — provider-independent request/response protocol, relay-safe GPT-5.5 Chat Completions adapter, and immutable replay backend.
 - `runtime/llm_cache.py` — effective-request cache and immutable response records.
 
 ### TTHA method
 
 - `methods/ttha/agent_core.py` — shared role-aware Agent invocation and schema parsing.
+- `methods/ttha/schemas/agent_envelope_v1.json` — local tool-request/stage-result response envelope.
+- `methods/ttha/schemas/tool_result_v1.json` — typed local public-tool result message.
 - `methods/ttha/public_tools.py` — deployment-observable tool gateway.
 - `methods/ttha/retrieval.py` — deterministic bootstrap/capability retrieval and effective Harness view.
 - `methods/ttha/fast_agent.py` — inspect, propose, select, compile, execute orchestration.
@@ -161,12 +185,13 @@ All probes expose `beta in {0.25, 0.50, 0.75}` and larger beta is always more ag
 - `evaluation/minipipe/corpus/generate.py` — deterministic target and risk cases.
 - `evaluation/minipipe/corpus/injections.py` — four private injection mechanisms.
 - `evaluation/minipipe/valuation/chronos.py` — pinned frozen Chronos adapter.
+- `evaluation/minipipe/valuation/rolling_observed.py` — deployment-computable rolling-origin public probe valuator.
 - `evaluation/minipipe/valuation/model_manifest.json` — exact model/runtime identity.
 - `evaluation/minipipe/valuation/outcomes.py` — U, D, G, NRR, collateral, and regret.
 - `evaluation/minipipe/probes/features.py` — closed public feature vocabulary and extraction.
-- `evaluation/minipipe/probes/panel.py` — four beta response curves and period diagnostic.
+- `evaluation/minipipe/probes/panel.py` — separated public rolling-origin and private clean-future response panels.
 - `evaluation/minipipe/probes/expressibility.py` — oracle/observable witnesses and three-valued status.
-- `evaluation/minipipe/baselines/fixed_program_baseline_v1.json` — grader-private historical and positive witnesses.
+- `evaluation/minipipe/baselines/fixed_program_baseline_v1.json` — independently authored grader-private positive witnesses.
 - `evaluation/minipipe/feedback/first_fault.py` — ordered deterministic StageAssessment rules.
 - `evaluation/minipipe/feedback/router.py` — cause-to-surface/skill-kind authorization.
 - `evaluation/minipipe/feedback/sanitize.py` — private-to-public wall.
@@ -182,6 +207,7 @@ All probes expose `beta in {0.25, 0.50, 0.75}` and larger beta is always more ag
 - `tests/contracts/test_candidate_contract.py`
 - `tests/contracts/test_harness_contract.py`
 - `tests/runtime/test_candidate_pool.py`
+- `tests/runtime/test_agent_backend.py`
 - `tests/runtime/test_llm_cache.py`
 - `tests/methods/test_ttha_h0.py`
 - `tests/methods/test_ttha_agent.py`
@@ -201,6 +227,7 @@ All probes expose `beta in {0.25, 0.50, 0.75}` and larger beta is always more ag
 
 **Files:**
 
+- Create: `contracts/canonical.py`
 - Create: `contracts/candidate.py`
 - Create: `contracts/harness.py`
 - Create: `contracts/observables.py`
@@ -212,11 +239,12 @@ All probes expose `beta in {0.25, 0.50, 0.75}` and larger beta is always more ag
 - Modify: `contracts/__init__.py`
 - Test: `tests/contracts/test_candidate_contract.py`
 - Test: `tests/contracts/test_harness_contract.py`
+- Test: `tests/contracts/test_canonical.py`
 
 **Interfaces:**
 
 - Consumes: `contracts.program.Program`, canonical JSON-native data.
-- Produces: `CandidateKind`, `Candidate`, `SkillKind`, `SkillEntry`, `MemoryEntry`, `HarnessSnapshot`, `EditOperation`, `EditManifest`, `canonical_sha256(value)`, Skill/Memory loaders, `OBSERVABLE_FEATURES`, and `validate_applicability(ast)`.
+- Produces: `CandidateKind`, `Candidate`, `SkillKind`, `SkillEntry`, `MemoryEntry`, `HarnessSnapshot`, `EditOperation`, `EditManifest`, `canonical_text_bytes`, `parse_json_document`, `canonical_json_bytes`, `canonical_json_document_bytes`, `canonical_jsonl_bytes`, `canonical_sha256`, Skill/Memory loaders, `OBSERVABLE_FEATURES`, and `validate_applicability(ast)`.
 
 - [ ] **Step 1: Write failing Candidate contract tests**
 
@@ -373,6 +401,8 @@ def test_add_manifest_requires_absent_precondition():
         )
 ```
 
+Also create `tests/contracts/test_canonical.py` with fixtures proving that LF versus CRLF, an optional UTF-8 BOM, JSON key order, insignificant JSON whitespace, and canonically equivalent Unicode strings produce the same semantic digest. Assert that duplicate JSON keys, NaN/Infinity, NUL-containing text, and invalid UTF-8 are rejected. Assert JSONL order is stable and meaningful: individual rows are canonicalized but permuting rows changes the digest.
+
 - [ ] **Step 5: Run the Harness tests and verify the missing symbols failure**
 
 Run the two contract test files. Expected: Candidate tests pass and Harness tests fail during import because `contracts.harness` does not exist.
@@ -447,7 +477,16 @@ class EditManifest:
     falsification_condition: tuple[str, ...] = ()
 ```
 
-`load_skill_entry` must reject keys outside the eight schema fields and reject `case_id`, `injection_type`, `injection_indices`, `D`, `G`, `J`, `pattern_id`, and `private_receipt` explicitly. It accepts the three declared SkillKind values so the H0 compiler can load bootstrap and safety entries. `load_learned_skill_entry` wraps it and additionally requires `skill_kind=capability`. `canonical_sha256` uses sorted compact JSON with `allow_nan=False` and returns the full 64-character digest.
+`load_skill_entry` must reject keys outside the eight schema fields and reject `case_id`, `injection_type`, `injection_indices`, `D`, `G`, `J`, `pattern_id`, and `private_receipt` explicitly. It accepts the three declared SkillKind values so the H0 compiler can load bootstrap and safety entries. `load_learned_skill_entry` wraps it and additionally requires `skill_kind=capability`.
+
+Implement `contracts/canonical.py` as the only semantic hashing path, with `CANONICALIZATION_VERSION = "m0-c14n/1"`:
+
+- text: require valid UTF-8, remove one leading BOM, reject NUL, normalize `CRLF` and bare `CR` to `LF`, normalize Unicode to NFC, trim only trailing newline code points, then append exactly one `LF`;
+- JSON: `parse_json_document(raw_bytes)` decodes UTF-8 after optional BOM removal, detects duplicate keys, and rejects non-finite numbers; `canonical_json_bytes(parsed_value)` recursively NFC-normalizes string keys/values, rejects a collision created by normalization, then serializes with `sort_keys=True`, `ensure_ascii=False`, `separators=(",", ":")`, and `allow_nan=False` to UTF-8 without BOM; `canonical_json_document_bytes` composes the two without treating a raw JSON document as a JSON string value;
+- JSONL: canonicalize every nonblank row as JSON, preserve declared row order, join rows with one `LF`, and end with one `LF`;
+- `canonical_sha256(value)` accepts a parsed JSON-native value and hashes its canonical JSON bytes.
+
+The canonicalization version and implementation-source SHA are dependency locks. A raw provider response keeps both its original-byte hash and, when parseable, its semantic JSON hash; it is never silently rewritten in the cache.
 
 `contracts/observables.py` owns this closed M0 vocabulary and no other module may extend it at runtime:
 
@@ -615,25 +654,17 @@ Write:
 
 `compile_snapshot` must:
 
-1. read authoring files in sorted relative-path order;
+1. read authoring files in sorted relative-path order and canonicalize them with `m0-c14n/1` before semantic hashing;
 2. parse every bootstrap/learned SkillEntry;
 3. verify exactly the three required bootstrap IDs and no duplicate ID;
 4. reject capability skills or memory rows in H0;
 5. derive a retrieval index sorted by `skill_id`;
 6. compute `harness_content_sha` from resolved semantic objects only;
-7. compute an operator implementation bundle hash from sorted bytes of `operators/*.py` plus canonical `OPERATOR_METADATA`;
+7. compute an operator implementation bundle hash from sorted `m0-c14n/1` text of `operators/*.py` plus canonical `OPERATOR_METADATA`;
 8. compute `runtime_bundle_sha` from content SHA, operator bundle SHA, schema hashes, compiler source hash, and retrieval compiler version;
 9. compare all values with `snapshot.lock.json` when `verify_lock=True`.
 
-Use this canonical helper:
-
-```python
-def sha256_json(value: object) -> str:
-    payload = json.dumps(
-        value, sort_keys=True, ensure_ascii=True, separators=(",", ":"), allow_nan=False
-    )
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-```
+Import canonicalization helpers from `contracts.canonical`; do not define a second JSON hashing recipe in the compiler. Include `canonicalization_version` and the canonicalizer source SHA in `snapshot.lock.json`.
 
 `SnapshotStore.materialize` creates `runs/minipipe/harness_snapshots/<runtime_bundle_sha>/` by writing resolved JSON and copied source entries, refuses an existing directory with different bytes, and writes provenance outside semantic content. `set_active` atomically replaces a small `active.json` pointer; it never edits checked-in H0.
 
@@ -667,6 +698,8 @@ cd /mnt/c/Users/辉/Desktop/Agent/.worktrees/architecture-convergence
 ```
 
 Expected: `snapshot.lock.json` is rewritten with `harness_content_sha`, `runtime_bundle_sha`, `operator_bundle_sha`, dependency hashes, and compiler version; a second invocation without `--write-lock` exits 0 and prints the same two snapshot hashes.
+
+Add a test that copies H0 while changing Markdown to CRLF/BOM and reorders keys/whitespace in JSON authoring files. The copied H0 must compile to the same `harness_content_sha`; a semantic field change must not.
 
 - [ ] **Step 6: Run H0 tests**
 
@@ -812,10 +845,11 @@ git commit -m "feat: add generic candidate pool and decision trace"
 
 ---
 
-### Task 4: Add the GPT-5.5 Responses Backend and Effective-Request Cache
+### Task 4: Add the Relay-Safe GPT-5.5 Chat Backend and Effective-Request Cache
 
 **Files:**
 
+- Create: `requirements-m0.txt`
 - Create: `runtime/agent_backend.py`
 - Create: `runtime/llm_cache.py`
 - Modify: `runtime/__init__.py`
@@ -824,82 +858,72 @@ git commit -m "feat: add generic candidate pool and decision trace"
 
 **Interfaces:**
 
-- Consumes: JSON-native prompts/tools/schemas, `OPENAI_API_KEY`, optional `M0_AGENT_MODEL`.
-- Produces: `AgentRequest`, `AgentResponse`, `AgentTransportError`, `AgentBackend`, `OpenAIResponsesBackend`, `ReplayAgentBackend`, `EffectiveRequestCache`, and `CachedAgentBackend`.
+- Consumes: exact resolved Chat Completions messages, local envelope/tool schemas, `AGICTO_API_KEY`, optional `M0_AGENT_MODEL`/`M0_AGENT_BASE_URL`.
+- Produces: `AgentRequest`, `AgentResponse`, `AgentTransportError`, `AgentBackend`, `AgictoChatCompletionsBackend`, `ReplayAgentBackend`, `EffectiveRequestCache`, and `CachedAgentBackend`.
 
-- [ ] **Step 1: Write failing GPT-5.5 request-shape tests**
+- [ ] **Step 1: Pin the SDK and write failing relay request-shape tests**
 
 ```python
-import json
+from types import SimpleNamespace
 
 from SelfEvolvingHarnessTS.runtime.agent_backend import (
     AgentRequest,
-    OpenAIResponsesBackend,
+    AgictoChatCompletionsBackend,
 )
 
 
-class FakeResponse:
-    status_code = 200
-
-    def json(self):
-        return {
-            "id": "resp_m0_1",
-            "model": "gpt-5.5-2026-04-23",
-            "output": [{
-                "type": "message",
-                "content": [{"type": "output_text", "text": '{"chosen_candidate_id":"identity"}'}],
-            }],
-            "usage": {"input_tokens": 10, "output_tokens": 4},
-        }
-
-    def raise_for_status(self):
-        return None
-
-
-class FakeSession:
+class FakeCompletions:
     def __init__(self):
         self.calls = []
 
-    def post(self, url, *, headers, json, timeout):
-        self.calls.append((url, headers, json, timeout))
-        return FakeResponse()
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        message = SimpleNamespace(content='{"schema_version":"agent-envelope/1",'
+                                          '"kind":"stage_result","stage":"select",'
+                                          '"payload":{"chosen_candidate_id":"identity"}}')
+        return SimpleNamespace(
+            id="chatcmpl-m0-1",
+            model="gpt-5.5",
+            choices=[SimpleNamespace(message=message, finish_reason="stop")],
+            usage=SimpleNamespace(prompt_tokens=10, completion_tokens=8),
+            model_dump=lambda **_: {
+                "id": "chatcmpl-m0-1",
+                "model": "gpt-5.5",
+                "choices": [{"message": {"content": message.content}, "finish_reason": "stop"}],
+            },
+        )
 
 
-def test_responses_request_uses_pinned_gpt55_strict_schema_and_no_server_state():
-    session = FakeSession()
-    backend = OpenAIResponsesBackend(api_key="test-key", session=session)
+def test_chat_request_uses_relay_alias_and_no_unproven_provider_features():
+    completions = FakeCompletions()
+    client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+    backend = AgictoChatCompletionsBackend(client=client)
     request = AgentRequest.for_stage(
         case_id="case-1",
         role="fast",
         stage="select",
         call_index=0,
         replicate_id="r0",
-        instructions="Select one candidate.",
-        input_items=({"role": "user", "content": "public input"},),
-        tools=(),
-        output_schema_name="fast_select_v1",
-        output_schema={
-            "type": "object",
-            "properties": {"chosen_candidate_id": {"type": "string"}},
-            "required": ["chosen_candidate_id"],
-            "additionalProperties": False,
-        },
+        messages=(
+            {"role": "system", "content": "Return agent-envelope/1 JSON only."},
+            {"role": "user", "content": "Select from the public candidate pool."},
+        ),
+        envelope_schema_sha="4" * 64,
+        tool_schema_sha="5" * 64,
+        tool_result_schema_sha="6" * 64,
+        stage_schema_sha="7" * 64,
         public_case_view_sha="1" * 64,
         effective_harness_view_sha="2" * 64,
         tool_context_sha="3" * 64,
     )
 
     result = backend.complete(request)
-    url, headers, payload, timeout = session.calls[0]
-    assert url == "https://api.openai.com/v1/responses"
-    assert headers["Authorization"] == "Bearer test-key"
-    assert payload["model"] == "gpt-5.5-2026-04-23"
-    assert payload["reasoning"] == {"effort": "medium"}
-    assert payload["store"] is False
-    assert payload["text"]["format"]["type"] == "json_schema"
-    assert payload["text"]["format"]["strict"] is True
-    assert result.parsed_output == {"chosen_candidate_id": "identity"}
+    payload = completions.calls[0]
+    assert payload == {"model": "gpt-5.5", "messages": list(request.messages)}
+    assert result.parsed_envelope["payload"]["chosen_candidate_id"] == "identity"
 ```
+
+Write `requirements-m0.txt` with exactly `openai==2.45.0`. Unit tests inject a fake client and make no network call. A separate constructor test monkeypatches `openai.OpenAI` and asserts `api_key`, `base_url="https://api.agicto.cn/v1"`, and the timeout are passed without exposing the key in `repr`, exceptions, or request/cache records.
 
 - [ ] **Step 2: Write failing cache-identity and malformed-response tests**
 
@@ -916,7 +940,9 @@ def test_full_snapshot_provenance_does_not_change_semantic_request_hash(tmp_path
 
 
 def test_effective_view_change_invalidates_cache(tmp_path, request):
-    backend = ReplayAgentBackend([AgentResponse.valid({"ok": True}, raw_response={"id": "r1"})])
+    envelope = {"schema_version": "agent-envelope/1", "kind": "stage_result",
+                "stage": "select", "payload": {"chosen_candidate_id": "identity"}}
+    backend = ReplayAgentBackend([AgentResponse.valid(envelope, raw_response={"id": "r1"})])
     cached = CachedAgentBackend(backend, EffectiveRequestCache(tmp_path))
     cached.complete(request)
     changed = replace(request, effective_harness_view_sha="9" * 64)
@@ -927,15 +953,15 @@ def test_effective_view_change_invalidates_cache(tmp_path, request):
 def test_successful_malformed_response_is_cached(tmp_path, request):
     malformed = AgentResponse(
         transport_ok=True,
-        raw_response={"id": "r-bad", "output": []},
-        output_items=(),
-        parsed_output=None,
-        parse_status="INVALID_STRUCTURED_OUTPUT",
-        provider_metadata={"model": "gpt-5.5-2026-04-23"},
+        raw_response={"id": "r-bad", "choices": [{"message": {"content": "not-json"}}]},
+        assistant_text="not-json",
+        parsed_envelope=None,
+        parse_status="INVALID_AGENT_ENVELOPE",
+        provider_metadata={"model": "gpt-5.5"},
     )
     backend = ReplayAgentBackend([malformed])
     cached = CachedAgentBackend(backend, EffectiveRequestCache(tmp_path))
-    assert cached.complete(request).parse_status == "INVALID_STRUCTURED_OUTPUT"
+    assert cached.complete(request).parse_status == "INVALID_AGENT_ENVELOPE"
     assert cached.complete(request).raw_response["id"] == "r-bad"
     assert backend.call_count == 1
 ```
@@ -956,12 +982,12 @@ Expected: collection fails because `runtime.agent_backend` and `runtime.llm_cach
 
 - [ ] **Step 4: Implement the provider-independent request and response contracts**
 
-Use immutable JSON-native fields and make the exact model snapshot part of the semantic request:
+Use immutable JSON-native fields and make the exact relay request part of semantic identity:
 
 ```python
-DEFAULT_AGENT_MODEL = "gpt-5.5-2026-04-23"
-DEFAULT_REASONING_EFFORT = "medium"
-DEFAULT_MAX_OUTPUT_TOKENS = 4096
+DEFAULT_AGENT_MODEL = "gpt-5.5"
+DEFAULT_AGENT_BASE_URL = "https://api.agicto.cn/v1"
+OPENAI_SDK_VERSION = "2.45.0"
 
 
 @dataclass(frozen=True)
@@ -971,33 +997,38 @@ class AgentRequest:
     stage: str
     call_index: int
     replicate_id: str
-    instructions: str
-    input_items: tuple[Mapping[str, object], ...]
-    tools: tuple[Mapping[str, object], ...]
-    output_schema_name: str
-    output_schema: Mapping[str, object]
+    messages: tuple[Mapping[str, object], ...]
+    envelope_schema_sha: str
+    tool_schema_sha: str
+    tool_result_schema_sha: str
+    stage_schema_sha: str
     public_case_view_sha: str
     effective_harness_view_sha: str
     tool_context_sha: str
     source_harness_snapshot_sha: str = ""
     model: str = DEFAULT_AGENT_MODEL
-    reasoning_effort: str = DEFAULT_REASONING_EFFORT
-    max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS
-    provider_seed: int | None = None
+    base_url: str = DEFAULT_AGENT_BASE_URL
+    sdk_version: str = OPENAI_SDK_VERSION
+    capability_flags: Mapping[str, bool] = field(default_factory=lambda: {
+        "native_tools": False,
+        "structured_outputs": False,
+        "reasoning_controls": False,
+        "provider_seed": False,
+    })
     cache_schema_version: str = "effective-request/1"
 
     def semantic_request_hash(self) -> str:
         return canonical_sha256({
-            "provider": "openai-responses",
+            "provider": "agicto-chat-completions",
+            "base_url": self.base_url,
             "model": self.model,
-            "reasoning_effort": self.reasoning_effort,
-            "max_output_tokens": self.max_output_tokens,
-            "provider_seed": self.provider_seed,
-            "instructions": self.instructions,
-            "input_items": self.input_items,
-            "tools": self.tools,
-            "output_schema_name": self.output_schema_name,
-            "output_schema": self.output_schema,
+            "sdk_version": self.sdk_version,
+            "capability_flags": self.capability_flags,
+            "messages": self.messages,
+            "envelope_schema_sha": self.envelope_schema_sha,
+            "tool_schema_sha": self.tool_schema_sha,
+            "tool_result_schema_sha": self.tool_result_schema_sha,
+            "stage_schema_sha": self.stage_schema_sha,
             "public_case_view_sha": self.public_case_view_sha,
             "effective_harness_view_sha": self.effective_harness_view_sha,
             "tool_context_sha": self.tool_context_sha,
@@ -1005,37 +1036,26 @@ class AgentRequest:
         })
 ```
 
-`source_harness_snapshot_sha` is provenance and is intentionally excluded. Validate role as `fast|slow`, stage/name as canonical strings, SHA fields as full lowercase digests, reasoning effort as `none|low|medium|high|xhigh`, and require JSON-native finite values.
+`source_harness_snapshot_sha` is provenance and is intentionally excluded. Validate role as `fast|slow`, stage/name as canonical strings, SHA fields as full lowercase digests, the HTTPS base URL as a canonical origin ending in `/v1`, and all messages as finite JSON-native values. `AgentRequest.for_stage` never reads environment variables.
 
-`AgentRequest.for_stage` is the validating constructor used by callers; it canonicalizes tuples/maps, fills the pinned model/reasoning/token defaults, and never reads environment variables. `AgentResponse` stores `transport_ok`, exact raw response, normalized output items, parsed structured output or null, `parse_status`, and provider metadata. `ReplayAgentBackend` accepts either an ordered sequence for focused unit tests or an immutable CacheKey/semantic-hash mapping loaded from JSONL for full offline replay. It raises `KeyError("replay response exhausted")` or a replay-miss error when a fixture is incomplete, exposes `clone()` and `call_count`, and is the backend used by all default tests and offline acceptance runs.
+`AgentResponse` stores `transport_ok`, exact raw response, assistant text, parsed local envelope or null, `parse_status`, finish reason, and provider metadata. `ReplayAgentBackend` accepts either an ordered sequence for focused tests or an immutable semantic-hash mapping loaded from JSONL. It raises on a replay miss, exposes `clone()` and `call_count`, and is the backend used by default tests and offline acceptance runs.
 
-- [ ] **Step 5: Implement the OpenAI Responses adapter**
+- [ ] **Step 5: Implement the Chat Completions adapter**
 
-Construct this payload exactly:
+For every request, call only:
 
 ```python
-payload = {
-    "model": request.model,
-    "instructions": request.instructions,
-    "input": list(request.input_items),
-    "tools": list(request.tools),
-    "text": {"format": {
-        "type": "json_schema",
-        "name": request.output_schema_name,
-        "strict": True,
-        "schema": dict(request.output_schema),
-    }},
-    "reasoning": {"effort": request.reasoning_effort},
-    "max_output_tokens": request.max_output_tokens,
-    "store": False,
-}
+completion = client.chat.completions.create(
+    model=request.model,
+    messages=list(request.messages),
+)
 ```
 
-Omit `tools` when empty and omit provider seed when unsupported by the endpoint. Extract all `output` items. Concatenate `output_text` content from message items and parse one JSON value; retain `function_call` items with their `call_id`, `name`, and JSON arguments so the Agent core can return a `function_call_output` item containing the same call ID and a JSON-string tool result on the next request. A success containing function calls but no final message has `parse_status="TOOL_CALLS"`, not malformed output. Preserve response ID, reported model, system fingerprint when present, and usage as provenance.
+Do not send `tools`, `tool_choice`, `response_format`, reasoning fields, seed, temperature, `store`, or undocumented relay parameters in M0. Extract `choices[0].message.content`; require a nonempty string containing exactly one JSON value and validate it locally against `agent-envelope/1`. Preserve `completion.model_dump(mode="json")` as the raw response plus response ID, returned model, finish reason, and usage as provenance.
 
-Raise `AgentTransportError` for request exceptions, HTTP 408/409/429, and 5xx. Convert a successful 2xx response with absent/invalid structured text into `parse_status="INVALID_STRUCTURED_OUTPUT"`; do not raise it as infrastructure failure.
+Map OpenAI SDK connection/time-out errors, rate limits, and API status 408/409/429/5xx to `AgentTransportError`. A successful response with absent, non-JSON, multiple-JSON, or schema-invalid content becomes `parse_status="INVALID_AGENT_ENVELOPE"`; it is Agent behavior, not infrastructure failure.
 
-The adapter constructor defaults to `base_url="https://api.openai.com/v1"`, `timeout_seconds=120`, and requires an explicit key argument. The CLI obtains that key from `OPENAI_API_KEY`; production modules never read or log it themselves.
+The adapter constructor accepts either an injected client or explicit `api_key`, `base_url="https://api.agicto.cn/v1"`, and `timeout_seconds=120`. Only the CLI reads `AGICTO_API_KEY`; production modules never read or log it themselves. Reject an empty key before constructing the SDK client.
 
 - [ ] **Step 6: Implement the immutable effective-request cache**
 
@@ -1052,7 +1072,7 @@ class CacheKey:
     semantic_request_hash: str
 ```
 
-Store each response at `<cache_root>/<sha256(canonical CacheKey)>.json`. The record contains key, source snapshot SHA, request model/reasoning identity, raw response, output items, parsed response, parse status, response hash, provider metadata, and `created_at` provenance. Writes use a temporary file plus `Path.replace`; an existing key with different response bytes raises `ValueError("immutable cache collision")`.
+Store each response at `<cache_root>/<sha256(canonical CacheKey)>.json`. The record contains key, source snapshot SHA, relay origin, requested model alias, SDK version, capability flags, exact messages, local schema hashes, raw response, assistant text, parsed envelope, parse status, raw-response hash, semantic-response hash when parseable, provider metadata, and `created_at` provenance. It never contains the API key or authorization header. Writes use a temporary file plus `Path.replace`; an existing key with different response bytes raises `ValueError("immutable cache collision")`.
 
 `CachedAgentBackend.complete` returns a hit before invoking its delegate. It writes every transport-success response, including malformed output, and never writes an `AgentTransportError`. Expose `CacheReceipt(hit, key_sha, response_hash)` and attach it to the returned response so paired replay can prove eligible reuse.
 
@@ -1068,13 +1088,13 @@ cd /mnt/c/Users/辉/Desktop/Agent/.worktrees/architecture-convergence
   --basetemp=SelfEvolvingHarnessTS/_pytest_m0_t04_green
 ```
 
-Expected: all tests pass and `FakeSession` records exactly one HTTP call.
+Expected: all tests pass, `FakeCompletions` records exactly one SDK call, and no test requires a key or network access.
 
 - [ ] **Step 8: Commit Task 4**
 
 ```bash
-git add runtime tests/runtime/test_agent_backend.py tests/runtime/test_llm_cache.py
-git commit -m "feat: add reproducible GPT-5.5 agent backend"
+git add requirements-m0.txt runtime tests/runtime/test_agent_backend.py tests/runtime/test_llm_cache.py
+git commit -m "feat: add relay-safe GPT-5.5 agent backend"
 ```
 
 ---
@@ -1089,6 +1109,8 @@ git commit -m "feat: add reproducible GPT-5.5 agent backend"
 - Create: `methods/ttha/fast_agent.py`
 - Create: `methods/ttha/slow_agent.py`
 - Create: `methods/ttha/method.py`
+- Create: `methods/ttha/schemas/agent_envelope_v1.json`
+- Create: `methods/ttha/schemas/tool_result_v1.json`
 - Create: `methods/ttha/schemas/fast_inspect_v1.json`
 - Create: `methods/ttha/schemas/fast_propose_v1.json`
 - Create: `methods/ttha/schemas/fast_select_v1.json`
@@ -1183,9 +1205,9 @@ class PublicToolGateway(Protocol):
         raise NotImplementedError
 ```
 
-`PublicToolReceipt` records tool name, normalized public arguments/result, context SHA, and receipt SHA. The default gateway exposes only observable summary/localization tools plus the fixed probe panel injected by the composition root. It rejects paths, arbitrary evaluator queries, candidate IDs, `J`, `U`, clean values, injection metadata, and undeclared tool names. Slow role exposes no series/evaluator tool; it receives only the sanitized card and surface descriptions.
+`PublicToolReceipt` records tool name, normalized public arguments/result, context SHA, and receipt SHA. The complete fixed probe panel is computed and attached to `PublicAgentInput` before the Agent call; it is not calculated in response to a model query. If the gateway exposes `read_fixed_probe_panel`, that zero-argument tool only returns the same immutable attached receipt and cannot select probes/beta values or trigger evaluation. The default gateway otherwise exposes only observable summary/localization tools. It rejects paths, arbitrary evaluator queries, candidate IDs, `J`, absolute `U`, `R_private`, clean values, injection metadata, and undeclared tool names. Slow role exposes no series/evaluator tool; it receives only the sanitized card and surface descriptions.
 
-- [ ] **Step 5: Implement one role-aware Agent core and Responses tool loop**
+- [ ] **Step 5: Implement one role-aware Agent core and local-envelope tool loop**
 
 Use one class, not separate model clients. Its concrete public method is
 `run_stage(*, role: AgentRole, stage: str, case_id: str, public_input: Mapping[str, object], harness_view: EffectiveHarnessView, output_schema_name: str, output_schema: Mapping[str, object], source_snapshot_sha: str) -> AgentStageResult`.
@@ -1202,7 +1224,9 @@ class TTHAAgentCore:
         self.tools = tools
 ```
 
-Resolve instructions, public input, tool schemas, and output schema before constructing `AgentRequest`. For each returned function call, invoke the gateway and append one Responses `function_call_output` input item; increment `call_index` and call the same backend again. Stop after eight tool rounds with an Agent protocol failure. Never accept model-emitted tool receipts or PASS/FAIL judgments as runtime truth.
+Resolve the system instruction, public input, allowed local tool descriptions, expected stage schema, and `agent-envelope/1` contract into exact Chat Completions messages before constructing `AgentRequest`. Do not pass provider-native tool or structured-output parameters. For a validated `kind="tool_request"` envelope, require a fresh canonical `call_id`, invoke the gateway, append the assistant's exact JSON envelope, then append one user message containing a `tool-result/1` JSON object with the matching call ID and immutable receipt. Increment `call_index` and call the same backend again. A `kind="stage_result"` envelope must name the requested stage and its payload must validate against that stage's local schema. Stop after eight tool rounds with an Agent protocol failure. Never accept model-emitted tool receipts or PASS/FAIL judgments as runtime truth.
+
+The two envelope schemas use `additionalProperties: false`. `tool-result/1` contains only `schema_version`, `call_id`, `tool_name`, `ok`, `public_result`, and `receipt_sha`; it cannot carry arbitrary prose or private handles. Duplicate call IDs, mismatched tool names, undeclared tools, and a stage result for the wrong stage are protocol failures recorded in the trace.
 
 Load the four checked-in strict schemas. `fast_inspect_v1` returns inspected region fractions, requested public tools, and uncertainty; `fast_propose_v1` returns zero to two candidate objects with non-empty operator steps; `fast_select_v1` returns one `chosen_candidate_id` plus public verification actions; `slow_edit_v1` returns one EditManifest-shaped object and no filesystem patch text.
 
@@ -1254,7 +1278,7 @@ cd /mnt/c/Users/辉/Desktop/Agent/.worktrees/architecture-convergence
   --basetemp=SelfEvolvingHarnessTS/_pytest_m0_t05
 ```
 
-Expected: all tests pass without `OPENAI_API_KEY` and without network access.
+Expected: all tests pass without `AGICTO_API_KEY` and without network access.
 
 - [ ] **Step 9: Commit Task 5**
 
@@ -1351,6 +1375,7 @@ class PublicCaseView:
     values: np.ndarray
     task_kind: str
     public_features: Mapping[str, object]
+    public_probe_panel: Mapping[str, object] | None
     public_case_view_sha: str
 
 
@@ -1377,7 +1402,7 @@ class PrivateSyntheticCase:
         )
 ```
 
-Copy arrays, make them read-only, reject non-one-dimensional or wrong-length data, and hash float64 bytes plus structural metadata. `PublicCaseView.create` computes the hash and `with_features(features)` returns a rehashed immutable view after Task 8 extraction. `PublicCaseView.to_json()` serializes NaNs as explicit missing-position runs plus finite values, not non-standard JSON NaN literals. Public IDs are `m0-0001` onward and reveal neither purpose nor family.
+Copy arrays, make them read-only, reject non-one-dimensional or wrong-length data, and hash float64 bytes plus structural metadata. `PublicCaseView.create` computes the hash with `public_probe_panel=None`; `with_features(features)` and `with_probe_panel(public_receipt)` return rehashed immutable views after Task 8. `with_probe_panel` accepts only the strict public receipt serializer and refuses private receipt types. `PublicCaseView.to_json()` serializes NaNs as explicit missing-position runs plus finite values, not non-standard JSON NaN literals. Public IDs are `m0-0001` onward and reveal neither purpose nor family.
 
 - [ ] **Step 4: Implement exact deterministic base series and four injections**
 
@@ -1446,6 +1471,7 @@ git commit -m "feat: add deterministic minipipe corpus contracts"
 
 - Create: `evaluation/minipipe/valuation/__init__.py`
 - Create: `evaluation/minipipe/valuation/chronos.py`
+- Create: `evaluation/minipipe/valuation/rolling_observed.py`
 - Create: `evaluation/minipipe/valuation/outcomes.py`
 - Create: `evaluation/minipipe/valuation/model_manifest.json`
 - Test: `tests/minipipe/test_valuator.py`
@@ -1453,7 +1479,7 @@ git commit -m "feat: add deterministic minipipe corpus contracts"
 **Interfaces:**
 
 - Consumes: private case contexts/futures and the locally cached Chronos snapshot.
-- Produces: `FrozenChronosValuator`, `ValuationReceipt`, `OutcomeView`, `evaluate_outcome`, and `evaluate_candidate_regret`.
+- Produces: `FrozenChronosValuator`, `ValuationReceipt`, `RollingObservedValuator`, `RollingObservedReceipt`, `OutcomeView`, `evaluate_outcome`, and `evaluate_candidate_regret`.
 
 - [ ] **Step 1: Write failing deterministic-utility and sign-convention tests**
 
@@ -1536,6 +1562,8 @@ If the local snapshot is absent, raise a typed `FrozenModelUnavailable` naming t
 
 `ValuationReceipt` contains model manifest SHA, input/future/forecast SHAs, `loss_j`, `utility_u`, fill fraction, scale, prediction length, and evaluator status. It contains no Agent-facing serializer.
 
+Implement `RollingObservedValuator` as a separate deployment-computable adapter over the same frozen model. For origins `(96, 120, 144, 168)` and horizon `24`, it forecasts each held-out slice using only the prefix before that origin, scores against the already-observed corrupt slice, and normalizes by `max(std(finite prefix), 1e-8)`. A probe transformation may change only the prefix; the held-out target slice is always read from the unchanged public corrupt series. Exclude an origin with fewer than 12 finite target values; if no origin survives, return `status="UNKNOWN"` rather than a fabricated score. Batch the surviving origins per arm and record origin list, model/input/target/forecast SHAs, per-origin losses, mean public utility, and status. This receipt contains no clean future, injection metadata, or private outcome value.
+
 - [ ] **Step 5: Implement the private outcome ledger**
 
 Define:
@@ -1563,7 +1591,7 @@ Set `over_restoration = prepared_u - clean_u > utility_tolerance`. Candidate reg
 
 - [ ] **Step 6: Run fake-pipeline unit tests and one pinned-local smoke test**
 
-Mark the real model test `@pytest.mark.frozen_model` and assert two evaluations of one case have identical forecast SHA and utility within `1e-12`. Run:
+Mark the real model test `@pytest.mark.frozen_model` and assert two private evaluations and two rolling-observed evaluations of one case have identical forecast SHA and utility within `1e-12`. Add tests proving an intervention never changes its held-out target slice, invalid origins are excluded, all-invalid origins yield `UNKNOWN`, and no private field appears in `RollingObservedReceipt.to_public_dict()`. Run:
 
 ```bash
 cd /mnt/c/Users/辉/Desktop/Agent/.worktrees/architecture-convergence
@@ -1578,7 +1606,7 @@ Expected: unit and local-model tests pass without network access. If the pinned 
 
 ```bash
 git add evaluation/minipipe/valuation tests/minipipe/test_valuator.py
-git commit -m "feat: add frozen Chronos valuation ledger"
+git commit -m "feat: add private and rolling-observed Chronos valuation"
 ```
 
 ---
@@ -1598,7 +1626,7 @@ git commit -m "feat: add frozen Chronos valuation ledger"
 **Interfaces:**
 
 - Consumes: canonical operators/executor, public corrupt context, private cases for grader-only witnesses, and Task 7 valuator.
-- Produces: `extract_public_features`, `ProbeSpec`, `ProbePanel.run`, `PeriodDiagnostic`, `ExpressibilityStatus`, and `evaluate_expressibility`.
+- Produces: `extract_public_features`, `ProbeSpec`, `ProbePanel.run_public`, `ProbePanel.run_private`, `PublicProbePanelReceipt`, `PrivateProbePanelReceipt`, `PeriodDiagnostic`, `ExpressibilityStatus`, and `evaluate_expressibility`.
 
 - [ ] **Step 1: Write failing monotonic-beta, diagnostic-only, and proof-asymmetry tests**
 
@@ -1615,17 +1643,24 @@ def test_every_repair_probe_has_three_monotonic_strengths():
 
 
 def test_period_is_diagnostic_only_and_declares_repair_unavailable(period_case, panel):
-    result = panel.run(period_case.to_public_view())
+    result = panel.run_public(period_case.to_public_view())
     assert result.period_diagnostic.repair_available is False
     assert "period" not in result.response_curves
 
 
-def test_oracle_yes_observable_no_is_parameterization_gap(expressibility_fixture):
+def test_oracle_yes_existing_feature_not_derived_is_procedure_gap(expressibility_fixture):
     result = expressibility_fixture(oracle_succeeds=True, observable_succeeds=False,
-                                    observable_derivation_proven_impossible=True)
+                                    required_feature_is_in_closed_vocabulary=True)
     assert result.oracle_witness.succeeded is True
     assert result.status is ExpressibilityStatus.EXPRESSIBILITY_UNKNOWN
-    assert result.cause_code == "OBSERVABLE_PARAMETERIZATION_GAP"
+    assert result.cause_code == "OBSERVABLE_DERIVATION_PROCEDURE_GAP"
+
+
+def test_missing_required_public_feature_is_noneditable_schema_gap(expressibility_fixture):
+    result = expressibility_fixture(oracle_succeeds=True, observable_succeeds=False,
+                                    required_feature_is_in_closed_vocabulary=False)
+    assert result.status is ExpressibilityStatus.EXPRESSIBILITY_UNKNOWN
+    assert result.cause_code == "OBSERVABLE_FEATURE_SCHEMA_GAP"
 
 
 def test_absent_complete_period_class_proves_unavailable(period_case, expressibility):
@@ -1653,27 +1688,35 @@ Compute only features declared in `contracts/observables.py`:
 
 The extractor returns a mapping restricted to the closed vocabulary plus a `feature_context_sha`. The composition root calls `structural_view.with_features(extracted.mapping)` before any Agent request. The extractor never accepts clean data or private injection parameters.
 
-- [ ] **Step 4: Implement the versioned probe panel exactly as locked**
+- [ ] **Step 4: Implement separate public and private probe panels exactly as locked**
 
 `ProbeSpec` stores name, beta tuple, human-independent aggressiveness tuple, mapping version, required detected region, operator IDs, and implementation SHA. Implement the four transformations exactly from the locked mappings. All operator execution goes through `runtime.executor`; no copied operator functions are allowed.
 
-For each beta record prepared SHA, modified indices, utility, and response `R(beta)=U(probe)-U(corrupt)`. Use the same case, evaluator manifest, filled context policy, and seed for all values. Classify response shape with `probe_gain_min` and `probe_margin_min`; for example, a positive middle response followed by a drop greater than the margin is `overdose_collapse`.
+`run_public` is always computed before the fast Agent. It applies each of the four repair probes at all three beta values to the prefix at each fixed rolling origin, invokes `RollingObservedValuator`, and records `R_public(beta)=U_public(probe)-U_public(corrupt)`. Use one shared corrupt baseline batch plus exactly twelve probe-arm batches. The schedule, origins, horizon, finite-target rule, evaluator manifest, and probe specs are fixed, so the Agent cannot choose queries or timing. Round only the public serialized deltas to six decimals; internal scoring retains full precision.
+
+`PublicProbePanelReceipt` contains only panel/spec/evaluator/input/feature-context SHAs, period diagnostic, status, and for each fixed point: probe ID, beta, rounded `R_public`, modified fraction, response shape, and receipt SHA. It contains no absolute `J/U`, `R_private`, clean reference, candidate ID/program/value, injection metadata, or arbitrary operator parameters. The panel is a deliberately accepted bounded leakage surface: an Agent may reproduce a fixed panel transformation and infer its measured public score, but the panel point is an instrument, not a candidate-utility query.
+
+`run_private` executes the same fixed probe arms after the case is graded and records `R_private(beta)=U_private(probe)-U_private(corrupt)` against clean future. It shares deterministic model/config inputs but never serializes through ProbeAPI. Record public/private curve agreement privately as an instrumentation field; disagreement does not authorize exposing private values.
+
+Classify both response shapes with `probe_gain_min` and `probe_margin_min`; for example, a positive middle response followed by a drop greater than the margin is `overdose_collapse`. `run_public` and `run_private` must have distinct receipt types and serializers so an accidental private field cannot cross the wall.
 
 The period diagnostic returns pre/post estimates, change score, ACF/spectral consistency, and `repair_available=false`; it performs no transformation and no candidate utility query for the Agent.
 
 - [ ] **Step 5: Add the private baseline and proof-safe expressibility logic**
 
-Check in a schema-versioned private baseline containing the three historical H_ref programs verbatim:
+Check in a schema-versioned private positive-witness catalog independently authored from the canonical registry:
 
 ```json
 [
   [["impute_linear", {}]],
-  [["impute_linear", {}], ["winsorize", {}], ["denoise_savgol", {}]],
-  [["impute_linear", {}], ["denoise_median", {"window": 9}]]
+  [["hampel_filter", {}]],
+  [["repair_level_shift", {}]]
 ]
 ```
 
-Also declare bounded observable witness grammars for missing (`impute_linear`), impulsive/outlier (`hampel_filter` and `winsorize`), and level shift (`repair_level_shift`). Locations and parameters must come from `extract_public_features`; the oracle arm may separately use private affected indices. The file lives under `evaluation/minipipe/baselines`, is loaded only by the grader, and is never imported by `methods/ttha`.
+Declare bounded observable witness grammars for missing (`impute_linear` plus mechanism-distinct registry alternatives), impulsive/outlier (`hampel_filter` and `winsorize`), and level shift (`repair_level_shift`). Locations and parameters must come from `extract_public_features`; the oracle arm may separately use private affected indices. The file lives under `evaluation/minipipe/baselines`, is loaded only by the grader, and is never imported by `methods/ttha`. It is not an H_ref artifact; historical reproduction material remains isolated under `evaluation/benchmark_v02/_frozen_reference/`.
+
+Co-design the witness grammar and four-family corpus through a checked coverage matrix. Each repairable family/signature must have at least one observable witness route; `period_change` must have an unavailable-class receipt. Hash the corpus definition, witness catalog, parameterization rules, and coverage matrix into one joint instrument SHA so either side cannot drift silently.
 
 Write `transformation_classes.json` with a complete category declaration derived from canonical `OPERATOR_METADATA` and this required-family map:
 
@@ -1686,7 +1729,9 @@ Write `transformation_classes.json` with a complete category declaration derived
 }
 ```
 
-`PROVEN_EXPRESSIBLE` requires a successful observable-parameterized witness. Oracle-only success never signs a library gap. `PROVEN_UNAVAILABLE` requires the complete category declaration and an absent required class; this is expected only for period correction. Failed finite search without such proof remains `EXPRESSIBILITY_UNKNOWN`. Oracle success plus a demonstrated lack of public parameterization yields cause `OBSERVABLE_PARAMETERIZATION_GAP`, but does not falsely claim the operator class is unavailable.
+Use the transformation-class map in both directions. Family → required class selects witnesses and proves a declared class unavailable. Operator category → implied mechanism claim supplies a supplemental stage-4 mechanism signal from a selected Program. It is not the sole mechanism rule because a supply gap may have no Program at all.
+
+`PROVEN_EXPRESSIBLE` requires a successful observable-parameterized witness. Oracle-only success never signs a library gap. `PROVEN_UNAVAILABLE` requires the complete category declaration and an absent required class; this is expected only for period correction. Failed finite search without such proof remains `EXPRESSIBILITY_UNKNOWN`. Oracle success plus failed public parameterization routes to `OBSERVABLE_DERIVATION_PROCEDURE_GAP` when the needed feature already exists in the closed vocabulary, or `OBSERVABLE_FEATURE_SCHEMA_GAP` when it does not. The former may edit only `inspect_and_localize`; the latter is an M0 backlog item. Neither result falsely claims an operator class is unavailable.
 
 - [ ] **Step 6: Run probe tests with the fake valuator and canonical registry**
 
@@ -1699,7 +1744,7 @@ cd /mnt/c/Users/辉/Desktop/Agent/.worktrees/architecture-convergence
   --basetemp=SelfEvolvingHarnessTS/_pytest_m0_t08
 ```
 
-Expected: all tests pass; the test proves no canonical operator has category `period_correction` and that all four repair probes have strictly ordered aggressiveness.
+Expected: all tests pass; the public panel always contains exactly twelve fixed `R_public` points, the private panel never enters its serializer, no canonical operator has category `period_correction`, and all four repair probes have strictly ordered aggressiveness.
 
 - [ ] **Step 7: Commit Task 8**
 
@@ -1797,7 +1842,7 @@ class CaseFeedback:
     private_receipt_refs: tuple[str, ...]
 ```
 
-Outcome carries Task 7 fields and candidate utilities/regret privately. Mechanism carries localization IoU, observable features, response curves, period diagnostic, witness receipts, and expressibility status. Behavior is mechanically projected from DecisionTrace and forced-replay facts. Update attribution initially contains only `suspect_surface_templates`; its `confirmed_surface` must be null before paired replay.
+Outcome carries Task 7 fields and candidate utilities/regret privately. Mechanism carries localization IoU, observable features, separate `R_public`/`R_private` curves, their agreement receipt, period diagnostic, witness receipts, transformation-class implied claims, and expressibility status. Only the sanitized public probe receipt may later cross the wall. Behavior is mechanically projected from DecisionTrace and forced-replay facts. Update attribution initially contains only `suspect_surface_templates`; its `confirmed_surface` must be null before paired replay.
 
 - [ ] **Step 4: Implement the ordered deterministic assessments**
 
@@ -1823,7 +1868,7 @@ Each `StageAssessment` stores `PASS|FAIL|UNKNOWN|NOT_APPLICABLE`, evidence recei
 1. `ELIGIBILITY`: target `D < critic_damage_min` → `CRITIC_BLIND`/instrumentation; risk cases are eligible for risk checks but have damage `NOT_APPLICABLE`.
 2. `OBSERVATION`: discriminative public evidence absent → `OBSERVATION_GAP`; evidence exists but trace did not inspect/call it → `OBSERVATION_PROCEDURE_GAP`.
 3. `LOCALIZATION`: non-local cases → `NOT_APPLICABLE`; IoU `<=0.10` → `LOCALIZATION_MISS`; IoU `>=0.30` → PASS; the open interval is `LOCALIZATION_UNKNOWN`.
-4. `MECHANISM`: no repair probe exceeds `probe_gain_min`, or best-versus-second margin is below `probe_margin_min`, → `MECHANISM_UNKNOWN`; discriminative evidence exists but Agent behavior contradicts it → `MECHANISM_AMBIGUITY`. Period is the explicit diagnostic-only exception: a versioned period-change diagnostic above its declared threshold passes mechanism identification without pretending a repair response exists.
+4. `MECHANISM`: no public repair probe exceeds `probe_gain_min`, or best-versus-second margin is below `probe_margin_min`, → `MECHANISM_UNKNOWN`; discriminative public evidence exists but Agent behavior contradicts it → `MECHANISM_AMBIGUITY`. The selected Program's operator category supplies a supplemental implied claim through the same transformation-class mapping used by witnesses; absence of a Program does not itself fail mechanism. Period is the explicit diagnostic-only exception: a versioned period-change diagnostic above its declared threshold passes mechanism identification without pretending a repair response exists.
 5. `RETRIEVAL_POLICY`: an existing capability skill succeeds when forced but normal effective view lacks it → `RETRIEVAL_MISS`.
 6. `CANDIDATE_SUPPLY`: no effect-distinct candidate reaches `candidate_gain_min`; choose the cause using the expressibility/skill/forced replay decision tree below.
 7. `CANDIDATE_SELECTION`: an effective candidate exists and chosen regret is at least `selection_regret_min` → `SELECTION_MISS`.
@@ -1832,6 +1877,8 @@ Each `StageAssessment` stores `PASS|FAIL|UNKNOWN|NOT_APPLICABLE`, evidence recei
 10. `OUTCOME_RISK`: chosen target gains less than threshold → outcome gap; clean/genuine risk loses more than epsilon or scope expands → `RISK_GAP`.
 
 Fold assessments by stopping at the first `FAIL` or `UNKNOWN` after eligibility. An earlier `UNKNOWN` cannot be skipped to claim a later causal failure. `NOT_APPLICABLE` and `PASS` continue. Pre-Agent `CRITIC_BLIND` never routes to a Harness edit.
+
+Load every numerical rule from `m0-rules/1`; do not embed another threshold in Python. A PROGRAM is effective only when it is effect-distinct from identity and `U(candidate)-U(identity) >= candidate_gain_min`. `SELECTION_MISS` requires at least one effective candidate and `max_c U(c)-U(chosen) >= selection_regret_min`. Risk stability uses `delta U >= -risk_epsilon` for in-scope clean/genuine cases and exact effective-view/cache/behavior equality for out-of-scope cases. Every `StageAssessment.decision_rule_id` is `<rule-name>@<m0_rules_sha>` so historical decisions remain auditable after a threshold revision.
 
 - [ ] **Step 5: Implement the supply-cause decision tree and proof asymmetry**
 
@@ -1842,8 +1889,10 @@ PROVEN_UNAVAILABLE required class
   → OPERATOR_GAP / CAPABILITY_BACKLOG
 EXPRESSIBILITY_UNKNOWN
   → EXPRESSIBILITY_UNKNOWN / EVIDENCE_BACKLOG
-OBSERVABLE_PARAMETERIZATION_GAP receipt
-  → observation feature/tool surface
+OBSERVABLE_DERIVATION_PROCEDURE_GAP (needed feature already declared)
+  → bootstrap inspect_and_localize procedure surface
+OBSERVABLE_FEATURE_SCHEMA_GAP (needed feature absent from closed vocabulary)
+  → OBSERVATION_CAPABILITY_BACKLOG / non-editable in M0
 PROVEN_EXPRESSIBLE + no capability skill
   → SKILL_LIBRARY_GAP / ADD SkillEntry
 skill exists + forced succeeds + normal retrieval absent
@@ -1865,7 +1914,10 @@ Write `fault_routes.json` with exactly the cause classes from design §7. `Fault
 - bootstrap procedure edits for family/capability faults;
 - capability edits for `RISK_GAP` unless the target is an existing capability risk guard;
 - all M0 edits for `OPERATOR_GAP` and `EXPRESSIBILITY_UNKNOWN`;
-- observation-tool Python code edits; M0 may only edit declared observation procedure/config surfaces.
+- all M0 edits for `OBSERVABLE_FEATURE_SCHEMA_GAP`;
+- the observable feature schema/vocabulary and observation-tool Python code; only `OBSERVABLE_DERIVATION_PROCEDURE_GAP` may route to the declared `inspect_and_localize` bootstrap surface.
+
+Because H0 has no capability skills, build `RETRIEVAL_MISS` and `SKILL_CONTENT_GAP` acceptance fixtures from immutable test-only snapshots seeded with one capability SkillEntry. Never weaken H0 merely to make those branches reachable in tests.
 
 - [ ] **Step 7: Run attribution and router tests**
 
@@ -1878,7 +1930,7 @@ cd /mnt/c/Users/辉/Desktop/Agent/.worktrees/architecture-convergence
   --basetemp=SelfEvolvingHarnessTS/_pytest_m0_t09
 ```
 
-Expected: fixtures distinguish all six acceptance causes and an oracle-only witness cannot produce `SKILL_LIBRARY_GAP`.
+Expected: fixtures distinguish library, retrieval, skill-content, proposal-control, selection, operator, observable-derivation, observable-schema, and evidence-unknown causes; an oracle-only witness cannot produce `SKILL_LIBRARY_GAP`.
 
 - [ ] **Step 8: Commit Task 9**
 
@@ -1918,7 +1970,7 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.feedback.sanitize import sanitize
 FORBIDDEN_PUBLIC_KEYS = {
     "private_family", "private_severity", "oracle_affected_indices",
     "clean_context", "clean_future", "candidate_utilities", "loss_j",
-    "utility_u", "injection_type", "confirmed_surface",
+    "utility_u", "R_private", "injection_type", "confirmed_surface",
 }
 
 
@@ -1956,6 +2008,7 @@ Never recursively delete a blacklist from a private object. Instead construct `F
 opaque case_id
 first_stage/fault_code/cause_code/actionability
 observable feature bins and probe direction/shape labels
+fixed ProbeAPI point IDs, beta values, rounded R_public, modified fractions, and receipt SHAs
 normalized BehaviorSignature
 public tool/operator/skill IDs already visible to the Agent
 sanitized intervention receipt IDs
@@ -1963,7 +2016,7 @@ suspect surface templates
 success/counterexample opaque IDs
 ```
 
-Do not expose numeric `U/J/D/G/NRR`, candidate rankings, oracle locations/family, clean values, private witness parameters, or confirmed surfaces. Quantize public numeric signatures to declared bins before cards are made. Validate every applicability AST through Task 1.
+Do not expose numeric `U/J/D/G/NRR/R_private`, candidate rankings, oracle locations/family, clean values, private witness parameters, or confirmed surfaces. The sole judge-derived numeric exception is the already authorized fixed `R_public` receipt. Quantize other public numeric signatures to declared bins before cards are made. Validate every applicability AST through Task 1.
 
 `PublicArtifactReader` accepts a configured public root and resolves every path with `Path.resolve()`. It requires `candidate_path.is_relative_to(public_root)` and `.json|.jsonl|.md` suffixes. Prompt constructors receive typed objects from this reader; they do not accept arbitrary paths.
 
@@ -1985,6 +2038,9 @@ Separately compute `ClusterPurityReceipt` from private labels: oracle mechanism 
 4. `evaluation/minipipe/baselines` is absent from the transitive imports of `methods/ttha`;
 5. all applicability construction calls route through `validate_applicability`;
 6. public schema property names are disjoint from `FORBIDDEN_PUBLIC_KEYS`.
+7. the only evaluator-derived public fields match `PublicProbePanelReceipt` exactly and no `R_private` serializer is reachable;
+8. neither the slow Agent nor `EditManifest` targets can name `observable_feature_v1.json`, `contracts/observables.py`, feature-extractor code, or public-tool code;
+9. H_ref reproduction code is reachable only from `evaluation/benchmark_v02/_frozen_reference/`, never from TTHA, minipipe, generic runtime, or `evaluation/minipipe/baselines`.
 
 Add a runtime contract test that serializes every object passed to a replay backend and searches recursively for private keys and candidate utility/loss fields.
 
@@ -2127,9 +2183,9 @@ Before touching a snapshot, verify:
 3. operation and precondition kind match the surface;
 4. the fault router authorizes target class and skill kind for the confirmed cause;
 5. all dependency precondition SHAs equal the snapshot lock;
-6. applicability validates against the closed public vocabulary;
+6. SkillEntry and MemoryEntry applicability validate against the closed public vocabulary; the observable vocabulary/schema, feature extraction, and public-tool surfaces are categorically non-editable;
 7. tools are canonical, non-deprecated, and task-compatible;
-8. deployable `new_value`/`minimal_patch` strings contain no private field names, opaque case IDs, source pattern IDs, filesystem paths, or code blocks; manifest provenance may retain `target_pattern_id` outside deployable content;
+8. deployable `new_value`/`minimal_patch` strings contain no private field names, opaque case IDs, source pattern IDs, filesystem paths, candidate values, or code blocks; manifest provenance may retain `target_pattern_id` outside deployable content. This same forbidden-field scan applies recursively to SkillEntry and MemoryEntry bodies, applicability, and risk guards;
 9. PATCH supplies `minimal_patch` only and ADD supplies `new_value` only;
 10. behavior-prediction strings use the M0 predicate DSL:
     `retrieve_skill:<id>`, `supply_operator:<id>`, `supply_effect_distinct`,
@@ -2142,9 +2198,11 @@ Reject arbitrary narrative as a machine behavior predicate. Natural-language rat
 
 `SnapshotStore.fork(parent_runtime_bundle_sha, edit_id)` copies the resolved authoring tree into a new temporary sibling directory. Apply the edit only there, deterministically rebuild the retrieval index, compile a general snapshot lock, then compare source bytes against the parent.
 
-Map every changed source path/JSON pointer back through `SurfaceRegistry` and require exactly one semantic surface. Derived index/lock/provenance changes are recorded separately and cannot satisfy the one-surface rule. Atomically rename the compiled candidate into `runs/minipipe/harness_snapshots/<runtime_bundle_sha>/`; leave both roots intact. A collision with different bytes fails loudly.
+Map every changed canonical semantic path/JSON pointer back through `SurfaceRegistry` and require exactly one semantic surface. Formatting-only differences that canonicalize identically are not edits. Derived index/lock/provenance changes are recorded separately and cannot satisfy the one-surface rule. Atomically rename the compiled candidate into `runs/minipipe/harness_snapshots/<runtime_bundle_sha>/`; leave both roots intact. A collision with different bytes fails loudly.
 
 For ADD, validate canonical `skill_id`, path containment beneath `skills/learned`, file absence, exact schema, `skill_kind=capability`, and deterministic index order. File presence is membership; do not add or edit a separate member list.
+
+For MemoryEntry ADD, require the strict `memory-entry/1` loader from Task 1, a canonical ID, public-only applicability, and the identical oracle/private-field prohibition used for SkillEntry. Memory is never a looser free-text escape hatch through the information wall.
 
 - [ ] **Step 6: Run edit-controller and H0 regression tests**
 
@@ -2248,7 +2306,7 @@ Deduplicate by case ID and retain category membership on the receipt. The slow A
 Define an injected `CaseRunner.run(snapshot, case, cache) -> CaseRunReceipt`. `PairedReplayRunner`:
 
 1. runs H_t for every Stage A case first;
-2. then runs H_t+edit with the same case bytes, evaluator/probe manifest, replicate ID, and provider seed;
+2. then runs H_t+edit with the same case bytes, evaluator/probe manifest, replicate ID, and effective-request cache; the relay exposes no relied-upon provider seed;
 3. records content/bundle/run-context SHAs for both arms;
 4. retries a typed infrastructure failure once with the identical request;
 5. treats a second infrastructure failure as `INCONCLUSIVE`, keeps the edit pending, and appends infrastructure backlog;
@@ -2268,7 +2326,7 @@ For in-scope clean/genuine-event risks, require `delta_U >= -risk_epsilon`.
 
 Evaluate the Task 11 predicate DSL from mechanical receipts. `prediction_verified` is true only when every declared predicate passes. `behavior_change_status` separately says whether normalized behavior changed at all. Then evaluate targets:
 
-- full recovery: at least `0.67` of target cases have gain improvement `>=0.01` over baseline and median improvement `>=0.01`;
+- full recovery: at least `target_recovery_fraction` of target cases improve over the baseline arm by at least `candidate_gain_min`, and median improvement is at least `target_median_gain_min`;
 - partial: positive median improvement but either threshold is missed;
 - no gain: median improvement `<= utility_tolerance`;
 - risk/scope failure overrides full/partial recovery as harmful.
@@ -2285,6 +2343,8 @@ scope_status
 ```
 
 If outcome improves but predicted behavior did not occur, label `UNEXPECTED_GAIN`; retain evidence, do not promote, return the pattern for a rewritten explanation and fresh replay. If the suspected surface changed but did not cause predicted behavior, add `UPDATE_MISATTRIBUTION` to the attribution receipt; do not infer that code before intervention. Write `confirmed_surface=target_surface_id` only when the predicted behavior is mechanically verified. This may confirm behavioral control even for no-gain/harmful outcomes, but only `SUPPORTED_EDIT` confirms the full behavior→outcome contract and is eligible for promotion.
+
+Load all named thresholds from the exact `decision_rule_id`/`m0_rules_sha` used during StageAssessment. Do not substitute Python defaults during replay. This keeps supply, selection, target-majority, and risk decisions on one versioned threshold family.
 
 - [ ] **Step 6: Run Stage B and record missed or interaction regressions**
 
@@ -2426,15 +2486,18 @@ Promote at most one. Immediately before promotion recheck base/surface/dependenc
 
 `M0CycleRunner.run_cycle` executes the twelve design §12 steps in order and writes artifacts atomically. Non-actionable `OPERATOR_GAP`, expressibility unknown, critic blind, and infrastructure incidents go to separate private backlogs and never consume an edit slot.
 
+Within each case, construct the public view and complete fixed `R_public` panel before the first fast-Agent call. Run the fast Agent next, then compute private clean-future outcome, candidate regret, `R_private`, expressibility, and CaseFeedback. A composition root must never accidentally compute a private receipt and pass the same object into the public tool gateway.
+
 - [ ] **Step 5: Compute snapshot, runtime, and run-context identities**
 
 `RunContext` hashes:
 
 ```text
 runtime_bundle_sha
-backend kind (openai-responses or offline-replay)
-requested model identity (default gpt-5.5-2026-04-23)
-reasoning effort and max output tokens
+backend kind (agicto-chat-completions or offline-replay)
+relay base URL and API style
+requested model alias (default gpt-5.5)
+OpenAI Python SDK version and provider-capability flags
 reported response model/fingerprint set when available
 Python/NumPy/Torch/Transformers/Chronos versions
 valuator manifest SHA
@@ -2442,7 +2505,7 @@ probe specs/rules/corpus SHAs
 platform/device determinism flags
 ```
 
-The mutable alias `gpt-5.5` is never substituted for the pinned snapshot in the reference configuration. If `M0_AGENT_MODEL` overrides it, the run context necessarily changes. Offline fixture runs have backend identity `offline-contract-replay/1` and never claim their responses came from OpenAI.
+`gpt-5.5` is deliberately recorded as a relay alias, never upgraded in the report to a dated snapshot claim. If `M0_AGENT_MODEL` or `M0_AGENT_BASE_URL` overrides a default, the run context necessarily changes. Offline fixture runs have backend identity `offline-contract-replay/1` and never claim their responses came from the relay or OpenAI.
 
 - [ ] **Step 6: Build an immutable offline response tape without oracle leakage**
 
@@ -2456,7 +2519,7 @@ The mutable alias `gpt-5.5` is never substituted for the pinned snapshot in the 
 
 The fixture builder runs the two-cycle composition once with this policy while recording `(CacheKey, AgentResponse)` rows, then reruns from the written JSONL using only `ReplayAgentBackend` and asserts zero author-policy calls. Check in the resulting canonical tape with its own SHA and `fixture_source="contract_policy_not_openai"`. A changed prompt/H0/schema produces a replay miss and forces intentional tape regeneration.
 
-- [ ] **Step 7: Implement CLI backend selection with GPT-5.5 as the live default**
+- [ ] **Step 7: Implement relay Chat Completions backend selection with GPT-5.5 as the live default**
 
 Expose:
 
@@ -2466,7 +2529,7 @@ python -m SelfEvolvingHarnessTS.cli.minipipe run \
   --run-dir runs/minipipe/reference
 ```
 
-The default `--backend openai` builds `OpenAIResponsesBackend` with `OPENAI_API_KEY`, `M0_AGENT_MODEL` defaulting to `gpt-5.5-2026-04-23`, and reasoning effort `medium`. Missing key fails before corpus execution with a concise configuration error. `--backend replay --replay-file <path>` is explicit, makes no network calls, and is used by CI/default smoke. `--model` may override the environment but is always recorded. Do not add a silent fallback from OpenAI to fixture replay.
+The default `--backend agicto` builds `AgictoChatCompletionsBackend`. It reads the key only from `AGICTO_API_KEY`, uses `M0_AGENT_BASE_URL` defaulting to `https://api.agicto.cn/v1`, and uses `M0_AGENT_MODEL` defaulting to `gpt-5.5`. A missing key fails before corpus execution with a concise configuration error that names only the environment variable. `--backend replay --replay-file <path>` is explicit, makes no network calls, and is used by CI/default smoke. `--model` and `--base-url` may override the environment but are always recorded. Do not add a silent fallback from the relay to fixture replay, and never accept an API key as a command-line flag.
 
 Other required flags are `--h0-root`, `--rules`, `--valuator-manifest`, `--resume`, and `--overwrite-empty-run-dir`. Resume verifies lineage and all snapshot locks. Never overwrite a non-empty run directory unless it is the same resumable run.
 
@@ -2592,7 +2655,7 @@ This compatibility fossil has strict boundaries:
 - it is importable only from `evaluation/benchmark_v02`;
 - it is absent from `methods`, `runtime`, active registry, TTHA, minipipe, H0, prompts, candidate pools, and skill creation;
 - it cannot be selected as an M0 method or baseline;
-- the minipipe retains only the three fixed program witnesses in its private JSON;
+- the minipipe's positive-witness catalog is independently authored from canonical operator contracts and contains no import or provenance dependency on this fossil;
 - architecture tests fail if any non-benchmark module imports `_frozen_reference`.
 
 Delete the active method adapter rather than wrapping or aliasing it. This satisfies the user's requirement that H_ref provide no capability to the Agent while preserving old benchmark byte/numeric reproducibility.
@@ -2611,7 +2674,7 @@ Move the old known fast-path fingerprint assertions into `tests/frozen_protocol/
 
 - [ ] **Step 6: Update the README composition diagram and commands**
 
-Document TTHA as the sole active method, H0 as domain-naive, GPT-5.5 snapshot as the live Agent default, and the two-cycle offline/live commands. Label `_frozen_reference` clearly as a benchmark-v0.2 reproduction fossil, not an Agent Harness input. Do not present H_ref as an available method or compatibility option.
+Document TTHA as the sole active method, H0 as domain-naive, the relay alias `gpt-5.5` as the live Agent default, `AGICTO_API_KEY` as the secret input, and the two-cycle offline/live commands. State explicitly that the alias is not a dated snapshot claim. Label `_frozen_reference` clearly as a benchmark-v0.2 reproduction fossil, not an Agent Harness input. Do not present H_ref as an available method or compatibility option.
 
 - [ ] **Step 7: Run targeted retirement and frozen-protocol tests**
 
@@ -2677,19 +2740,19 @@ git commit -m "refactor: retire H_ref from active method runtime"
 | 1. TTHA active, no active H_ref | 14 | `test_no_active_h_ref_method_or_runtime_remains` |
 | 2. No TTHA/generic-runtime H_ref import | 10, 14 | `test_ttha_dependency_rules.py`, `test_no_active_h_ref.py` import scans |
 | 3. One Agent core serves both roles | 5 | `test_fast_and_slow_paths_share_the_same_agent_core` |
-| 4. Stable, domain-naive H0 | 2 | `test_h0_is_stable_procedural_and_domain_naive` |
+| 4. Stable, canonicalized, domain-naive H0 | 1, 2 | canonical LF/CRLF/JSON-order fixtures and `test_h0_is_stable_procedural_and_domain_naive` |
 | 5. Stale lock/dependency fails | 2, 11 | H0 lock mismatch and stale edit tests |
-| 6. Oracle/judge walls | 10 | sanitizer, public-reader, prompt-payload leak tests |
+| 6. Oracle/judge walls | 7, 8, 10 | sanitizer, public-reader, prompt-payload leak tests; only fixed `R_public` crosses |
 | 7. Identity and explicit choice | 1, 3, 5 | Candidate, pool, and identity-abstention tests |
 | 8. Effect-equivalence contract | 3 | `test_effect_equivalence_uses_shape_dtype_and_bytes` plus tolerance fixture |
-| 9. Six fault causes distinguished | 9 | first-fault parameterized fixtures |
+| 9. Fault causes distinguished with seeded-skill fixtures | 9 | first-fault parameterized fixtures including both observable-gap branches |
 | 10. Oracle-only cannot sign library edit | 8, 9 | witness proof-asymmetry tests |
 | 11. Fault router authorizes kind/surface | 9, 11 | router matrix and bootstrap rejection tests |
 | 12. Atomic ADD; derived index | 11 | `test_add_skill_is_one_source_surface_and_index_is_derived` |
 | 13. Single owner and stale replay | 11 | overlap, diff ownership, and precondition fixtures |
-| 14. Monotonic probes; diagnostic period | 8 | probe-spec and period-diagnostic tests |
+| 14. Monotonic probes; dual receipts; diagnostic period | 7, 8 | fixed twelve-point `R_public`, private-only `R_private`, probe-spec, and period tests |
 | 15. Correct period abstention, separate backlog | 9, 12 | period ledger fixture |
-| 16. Effective-request cache identity | 4, 5 | cache provenance/effective-view tests |
+| 16. Relay-safe effective-request cache identity | 4, 5 | exact Chat messages, alias/origin/SDK identity, cache provenance/effective-view tests |
 | 17. Out-of-scope view/cache/behavior equality | 12 | out-of-scope and top-k displacement tests |
 | 18. Verdict coverage | 12 | `test_verdict_truth_table` and infrastructure retry fixture |
 | 19. Promotion lineage completeness | 13 | two-cycle lineage assertions |
@@ -2719,13 +2782,14 @@ HarnessSnapshot (semantic content, no path)
 PrivateSyntheticCase
   → structural PublicCaseView
   → public feature extraction and rehashed PublicCaseView
+  → always-computed fixed rolling-origin R_public panel
   → TTHAAgentCore request
   → runtime DecisionTrace
-  → private CaseFeedback
+  → private outcome, R_private, and CaseFeedback
   → allowlist sanitizer
   → public FailurePatternCard
   → untrusted EditManifest
   → controller validation and isolated replay
 ```
 
-The implementation is not complete merely because the CLI exits zero. Completion requires all twenty coverage rows, both fixed-seed runs, the frozen benchmark digest check, an offline no-network run, and evidence that the live backend's default request model is exactly `gpt-5.5-2026-04-23`.
+The implementation is not complete merely because the CLI exits zero. Completion requires all twenty coverage rows, both fixed-seed runs, the frozen benchmark digest check, an offline no-network run, and evidence that the live backend sends model alias exactly `gpt-5.5` to the configured Chat Completions relay while making no dated-snapshot reproducibility claim.

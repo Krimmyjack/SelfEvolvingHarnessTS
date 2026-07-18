@@ -1,6 +1,6 @@
 # Agent-Centric Minipipe M0 Design
 
-**Status:** frozen M0 design after design and worktree audit
+**Status:** frozen M0 design after design/worktree audit and approved 2026-07-18 contract amendments
 
 **Date:** 2026-07-17
 
@@ -14,8 +14,11 @@ capability and is not part of the target runtime, minipipe, method registry, or
 evaluation composition root.
 
 Historical reproducibility for `H_ref` is preserved through a Git tag, frozen
-artifacts, environment metadata, and archived reports. It must not remain as an
-importable active method. This decision supersedes the parts of
+artifacts, environment metadata, archived reports, and one evaluation-private
+benchmark-v0.2 reproduction fossil. That fossil may live only under
+`evaluation/benchmark_v02/_frozen_reference/`; it is not an active method,
+cannot be imported by TTHA/minipipe/generic runtime, and cannot enter prompts,
+candidates, skills, or M0 baselines. This decision supersedes the parts of
 `2026-07-17-architecture-convergence-design.md` that proposed an active
 `methods/h_ref_v02/` package or H_ref/TTHA dual-method integration tests.
 
@@ -55,7 +58,8 @@ M0 does not implement:
 - direct candidate-value access by the fast Agent;
 - downstream-model search, although candidate contracts reserve a model field;
 - full retraining of downstream models;
-- H_ref execution or active H_ref compatibility layers.
+- H_ref execution in M0 or any active H_ref compatibility layer; the isolated
+  benchmark-v0.2 reproduction fossil is the sole exception.
 
 ## 3. System roles and dependency direction
 
@@ -150,6 +154,51 @@ methods/ttha/harness/h0/
 The compiler must fail at startup when the resolved H0 content or any locked
 dependency differs from `snapshot.lock.json`. H0 is immutable after freeze;
 subsequent H_t snapshots are controller-created copies, not edits to H0.
+
+#### 3.1.2 M0 LLM transport profile
+
+The live Agent backend uses the OpenAI Python SDK `2.45.0` against an
+OpenAI-compatible relay. M0's configured transport identity is:
+
+```text
+api_style = chat_completions
+base_url = https://api.agicto.cn/v1
+model = gpt-5.5
+api_key_env = AGICTO_API_KEY
+```
+
+The key is never checked in, logged, cached, hashed, or written into run
+artifacts. The composition root reads it from `AGICTO_API_KEY` and constructs
+`OpenAI(api_key=..., base_url=...)`. A live call uses
+`client.chat.completions.create(messages=resolved_messages, model="gpt-5.5")`.
+The base URL and model alias are configurable only through explicit run
+configuration and enter `run_context_sha`.
+
+Only ordinary Chat Completions text output is required from the relay. Native
+Responses API, provider-side function calling, `response_format`, and strict
+Structured Outputs are not assumed because the relay has not supplied a
+versioned capability contract for them. M0 therefore uses a local,
+schema-validated `agent-envelope/1` JSON protocol:
+
+```text
+kind = tool_request
+  call_id, tool_name, arguments
+
+kind = stage_result
+  stage, payload
+```
+
+The runtime validates the envelope and stage payload, executes declared public
+tools locally, and appends a typed `tool-result/1` user message before the next
+Chat Completions call. Invalid JSON/schema output is recorded as Agent behavior.
+No silent switch to native provider tools is allowed. A future native-tools path
+requires an explicit, tested provider-capability flag and a distinct run context.
+
+The relay model name `gpt-5.5` is an alias, not a verifiable dated OpenAI
+snapshot. M0 does not claim snapshot-level reproducibility for live calls;
+scientific repeatability comes from immutable effective-request/response caching
+and offline replay. Requested alias, returned model/fingerprint when present,
+SDK version, relay identity, and raw response hash are recorded as provenance.
 
 ### 3.2 Minipipe
 
@@ -274,6 +323,31 @@ The first failed, actionable stage becomes `first_actionable_fault`. Eligibility
 failures such as `NON_ACTIONABLE_CASE` and `CRITIC_BLIND` are pre-Agent outcomes
 and route to corpus/evaluator instrumentation, not to an Agent skill edit.
 
+All scientific cutoffs come from the versioned `m0-rules/1` grader
+configuration; no stage may embed a second threshold. M0 fixes:
+
+```text
+critic_damage_min = 0.01
+candidate_gain_min = 0.01
+selection_regret_min = 0.01
+risk_epsilon = 0.005
+target_recovery_fraction = 0.67
+target_median_gain_min = 0.01
+utility_tolerance = 0.000001
+```
+
+A PROGRAM is an effective/acceptable supply candidate only when it is not
+effect-equivalent to identity and
+`U(candidate) - U(identity) >= candidate_gain_min`. Selection fails when the
+best effective candidate exists and
+`max_c U(c) - U(chosen) >= selection_regret_min`. A target cluster fully
+recovers only when at least `ceil(0.67 * n_target)` cases improve over the
+baseline arm by at least `candidate_gain_min` and the median improvement is at
+least `target_median_gain_min`. In-scope clean/genuine-event risks are stable
+when `delta U >= -risk_epsilon`; out-of-scope risks remain subject to exact
+effective-view/cache/behavior equality. Every `decision_rule_id` includes the
+rule name plus the canonical grader-config SHA.
+
 For selection, the grader privately evaluates the frozen candidate pool. If an
 acceptable candidate was present but not chosen, the fault is `SELECTION_MISS`.
 If no acceptable candidate was supplied, it is `CANDIDATE_SUPPLY_GAP`. Thus M0 can
@@ -307,6 +381,17 @@ The common supply and selection routes are:
 `UPDATE_MISATTRIBUTION` is not inferred from correlation. It is written only when
 a single-surface replay shows that changing the suspected surface did not produce
 the predicted behavior.
+
+Mechanism scoring and expressibility share one versioned transformation-class
+map. Its forward direction maps mechanism family to required operator class for
+witness routing and `PROVEN_UNAVAILABLE`; its reverse direction maps the
+categories of proposed/selected Program steps to an Agent-implied mechanism
+claim. On synthetic cases the grader may compare that implied claim with the
+private family label. This is supplemental evidence: an absent Program cannot
+fail mechanism scoring by itself, because a valid `SKILL_LIBRARY_GAP` occurs
+before any capability Program exists. Observable/probe evidence remains the
+primary mechanism-stage input; conflicting Program claims can yield
+`MECHANISM_AMBIGUITY`.
 
 ## 5. CaseFeedback: four views
 
@@ -353,12 +438,30 @@ Mechanism evidence includes block attribution, localization receipts, observable
 statistics, optional context-alignment signals, and fixed operator-response
 curves. It does not assert an injection label in deployable feedback.
 
-Each probe exposes a unified monotonic intervention strength:
+Each probe exposes a unified monotonic intervention strength and two explicitly
+separated receipts:
 
 ```text
 beta in {0.25, 0.50, 0.75}
-R_operator(beta) = U(probe(operator, beta)) - U(corrupt)
+R_public(operator, beta)
+  = U_rolling_observed(probe(operator, beta)) - U_rolling_observed(corrupt)
+
+R_private(operator, beta)
+  = U_clean_future(probe(operator, beta)) - U_clean_future(corrupt)
 ```
+
+`R_public` is deployment-computable. It uses fixed rolling origins
+`{96, 120, 144, 168}` inside the already observed 192-point context, horizon 24,
+the same frozen TSFM, and only finite raw observations in the historical target
+window. At each origin the probe is localized/parameterized and applied only to
+the prefix available at that origin; it cannot read the held-out target window.
+Each logical probe evaluation batches all eligible origins; windows with
+fewer than 12 finite target points are excluded and the receipt is `UNKNOWN` if
+no origin remains. The corrupt baseline origins are evaluated once and reused.
+`R_private` uses the synthetic clean future and never crosses the oracle wall.
+The grader stores both and records their sign/shape agreement as critic-quality
+evidence. A disagreement cannot be hidden by substituting private values into
+the Agent prompt.
 
 Larger `beta` always means a more aggressive intervention. `ProbeSpec` versions
 the mapping from beta to operator-native parameters. Beta makes response shapes
@@ -373,6 +476,21 @@ containing pre/post period estimates, a change score, spectral/ACF consistency,
 and `repair_available=false`. It is presented only as a diagnostic.
 The panel is a fixed instrument, not an arbitrary J-query API.
 
+Before fast-path selection, `ProbeAPI` always computes the complete public
+4-by-3 panel; the Agent cannot choose which probes or beta values to query.
+One shared corrupt-baseline batch plus twelve fixed probe batches are charged to
+the case's probe budget. Its public `probe-panel/1` receipt contains panel/spec/
+valuator SHAs and, for every point, probe ID, beta, `R_public` rounded to six
+decimals, modified fraction, status, and response-shape label. It contains no
+absolute `J/U`, clean-future value, candidate ID, candidate ranking, or
+`R_private`. Period diagnostics are included separately without a repair value.
+
+An Agent may construct a PROGRAM equivalent to one of the twelve fixed public
+probe interventions and therefore has bounded prior evidence about that action.
+M0 accepts this bounded leakage because the panel is fixed, always computed, and
+deployment-computable. Such a probe receipt is not a candidate-J query; exact
+candidate values and arbitrary evaluator access remain forbidden.
+
 Expressibility uses two distinct witnesses:
 
 - an **oracle-parameterized witness** may use private injection location or other
@@ -384,8 +502,20 @@ Expressibility uses two distinct witnesses:
 
 `SKILL_LIBRARY_GAP` requires a successful observable witness. Oracle success with
 an explicitly demonstrated failure to derive the required public parameterization
-is `OBSERVABLE_PARAMETERIZATION_GAP` and routes to observation/feature extraction,
-not to a skill. Merely failing to find an observable witness remains
+is split by evidence:
+
+- `OBSERVABLE_DERIVATION_PROCEDURE_GAP`: the required feature already exists in
+  the closed vocabulary, but the Agent did not compute/use it; this may edit the
+  `inspect_and_localize` bootstrap procedure;
+- `OBSERVABLE_FEATURE_SCHEMA_GAP`: the required deployment-observable feature or
+  tool does not exist in the closed vocabulary; this is a non-editable M0
+  instrumentation backlog item.
+
+The closed observable vocabulary and its schema are read-only dependencies of
+the wall. The slow Agent can never add a feature name, change its semantics, or
+edit feature/tool implementation. A future vocabulary expansion is a reviewed
+code/schema release that changes dependency and runtime-bundle SHAs, not a
+Harness edit. Merely failing to find an observable witness remains
 `EXPRESSIBILITY_UNKNOWN`; search failure is not proof of impossibility.
 
 Expressibility status is three-valued:
@@ -435,8 +565,10 @@ would collapse by construction and the selector would be optimized to please the
 judge, including through deletion and over-smoothing.
 
 The fast Agent's only M0 access to evaluator evidence is the declared fixed
-`ProbeAPI`. Candidate-J-assisted selection is reserved for an explicit M1 A/B arm
-with risk monitoring; it is not a default capability.
+`ProbeAPI`, and only its deployment-computable `R_public` receipt may cross the
+wall. `R_private`, absolute loss/utility, exact candidate values, and arbitrary
+queries remain private. Candidate-J-assisted selection is reserved for an
+explicit M1 A/B arm with risk monitoring; it is not a default capability.
 
 ### 6.3 Mechanical enforcement
 
@@ -470,27 +602,29 @@ cache namespace =
 
 `semantic_request_hash` covers:
 
-- provider, requested model identity, reported revision/fingerprint when
-  available, decoding parameters, and provider seed;
-- exact resolved system/user/tool messages;
-- tool and output schemas;
+- relay identity/base URL (never the key), `chat_completions` API style, OpenAI
+  SDK version, requested model alias, exact request kwargs, and declared
+  provider-capability flags;
+- exact resolved system/user/assistant/tool-result messages;
+- local `agent-envelope/1`, tool, tool-result, and stage-output schemas;
 - `public_case_view_sha` and every versioned tool/data context reachable through
   the request;
 - `effective_harness_view_sha`, covering only instruction sections, retrieved
   skills/memories, and controls consumed by that call;
 - cache schema version.
 
-The cache record separately stores `source_harness_snapshot_sha`, raw response,
-parsed response, parse status, response hash, and provider metadata as
+The cache record separately stores `source_harness_snapshot_sha`, raw SDK response,
+assistant text, parsed response, parse status, response hash, and returned
+model/fingerprint/usage metadata as
 provenance. Successful transport responses are immutable even when parsing fails,
 because malformed output is Agent behavior. Transient transport/provider errors
 are not cached.
 
 Identical effective requests replay deterministically. A scoped edit that changes
 the full snapshot but leaves an out-of-scope case's effective view and tool
-context unchanged reuses the baseline response. A prompt-changing edit can share
-a provider seed where supported, but cache reuse does not make different prompts
-strict common-random-number draws.
+context unchanged reuses the baseline response. The configured relay contract
+does not promise a seed, so different prompts are not claimed to be strict
+common-random-number draws; only identical effective requests reuse responses.
 
 For out-of-scope paired replay, the baseline arm is materialized first. The edit
 arm must have the same `effective_harness_view_sha` and reuse every eligible LLM
@@ -538,6 +672,22 @@ expressibility evidence. Failure of this finite arm supplies no negative proof.
 Oracle-parameterized programs are recorded separately and cannot sign
 `SKILL_LIBRARY_GAP`.
 
+The observable witness grammar in this baseline and the synthetic corpus are one
+reviewed instrument. A checked coverage matrix must show at least one successful
+observable witness route for each M0 repairable family (`missing`,
+`impulsive_outlier`, and `level_shift`) and an explicit unavailable-class receipt
+for `period_change`. Adding a corpus signature without a corresponding observable
+witness route intentionally limits it to `EXPRESSIBILITY_UNKNOWN`; changing the
+witness grammar or corpus invalidates the joint instrument SHA and requires
+review.
+
+Because H0 begins with an empty capability library, early natural cycles cannot
+produce `RETRIEVAL_MISS` or `SKILL_CONTENT_GAP`. Acceptance fixtures for those
+causes use test-only immutable snapshots seeded with a capability SkillEntry:
+one fixture suppresses normal retrieval while forced retrieval succeeds; another
+retrieves the skill but supplies no effective Program. Seeded snapshots are test
+instruments, never alternative H0 content.
+
 The fault router contains a versioned, executable cause-to-target table. M0's
 minimum mapping is:
 
@@ -549,13 +699,15 @@ minimum mapping is:
 | `RETRIEVAL_MISS` | retrieval/applicability |
 | `PROPOSAL_CONTROL_GAP` | proposal control |
 | `SELECTION_MISS` | selection control |
-| `OBSERVABLE_PARAMETERIZATION_GAP` | observation feature/tool surface |
+| `OBSERVABLE_DERIVATION_PROCEDURE_GAP` | existing `inspect_and_localize` bootstrap procedure |
+| `OBSERVABLE_FEATURE_SCHEMA_GAP` | no M0 edit; instrumentation/schema backlog |
 | `OPERATOR_GAP` | no M0 edit; operator capability backlog |
 | `EXPRESSIBILITY_UNKNOWN` | no edit; evidence backlog |
 
 An EditManifest whose surface class is not allowed for its confirmed cause is
 rejected before replay. This mechanically prevents scoped family knowledge from
-being hidden in an always-injected bootstrap procedure.
+being hidden in an always-injected bootstrap procedure. It also prevents the
+slow Agent from editing the observable vocabulary that enforces the oracle wall.
 
 ## 8. Harness surfaces and edit contract
 
@@ -598,6 +750,24 @@ SkillEntry
 Case IDs, injection labels/indices, D/G/J values, private receipts, and source
 FailurePatternCard IDs are forbidden in the deployable entry. They remain in the
 EditManifest and lineage provenance.
+
+Scoped memory uses an equally strict structured entry:
+
+```text
+MemoryEntry
+  schema_version: memory-entry/1
+  memory_id
+  revision
+  body
+  observable_applicability
+  risk_guards
+```
+
+Memory ADD/PATCH runs the same recursive forbidden-field scan, closed-vocabulary
+applicability validation, canonical-ID/path containment checks, dependency checks,
+and one-surface diff validation as SkillEntry. Case/pattern provenance remains in
+the EditManifest/lineage and cannot be copied into deployable memory. Memory is
+not a weaker side channel around the oracle wall.
 
 The surface registry declares a dynamic template:
 
@@ -657,6 +827,11 @@ For `ADD SkillEntry`, the controller mechanically verifies:
 6. the source diff contains exactly one new SkillEntry;
 7. skill, operator, feature, candidate, and compiler dependency hashes are current;
 8. the retrieval index rebuild is deterministic.
+
+For `ADD/PATCH MemoryEntry`, the controller applies the corresponding
+`memory-entry/1` schema plus checks 4–7 above, replacing skill/tool-specific
+checks with canonical memory ID, snapshot-local path, and deterministic memory
+retrieval-index checks.
 
 The predicted behavior for a library edit includes retrieval of the new skill,
 at least one effect-distinct PROGRAM using allowed tools, retention of identity,
@@ -748,6 +923,27 @@ M0 maintains:
 - rejected and inconclusive edits;
 - parent snapshot, manifest, and replay receipt for every transition.
 
+All semantic content hashes use `m0-c14n/1`; SHA is never computed directly
+from checkout-dependent authoring bytes:
+
+- text authoring inputs decode as UTF-8, reject NUL/invalid bytes, remove one
+  UTF-8 BOM if present, normalize CRLF/CR to LF, normalize Unicode to NFC, and
+  end with exactly one LF;
+- JSON rejects duplicate keys and non-finite numbers, normalizes all strings to
+  NFC, then serializes with sorted keys, UTF-8/no BOM,
+  `ensure_ascii=False`, `separators=(",", ":")`, and `allow_nan=False`;
+- JSONL canonicalizes each parsed row as JSON and joins rows with one LF while
+  preserving declared semantic row order (or a schema-declared stable ID sort);
+- raw provider responses retain their original SDK JSON/raw-text hash plus a
+  separate parsed semantic hash; authoring canonicalization never rewrites Agent
+  behavior evidence.
+
+The canonicalization version and implementation SHA are locked dependencies of
+`runtime_bundle_sha`. `.gitattributes` still enforces LF for source hygiene, but
+lock correctness does not depend on a developer's Git/Windows newline settings.
+A canonicalization-version change invalidates old semantic hashes explicitly
+rather than masquerading as a Harness edit.
+
 Snapshot and run identity are separated:
 
 ```text
@@ -807,12 +1003,15 @@ contracts/
   harness.py
   schemas/
     skill_entry_v1.json
+    memory_entry_v1.json
+    observable_feature_v1.json
     harness_snapshot_v1.json
     edit_manifest_v2.json
 runtime/
   executor.py                # canonical operator execution
   candidate_pool.py          # generic identity/PROGRAM pool
   decision_trace.py
+  agent_backend.py           # relay-safe Chat Completions adapter
   llm_cache.py
 operators/                   # the single canonical operator registry
 methods/ttha/
@@ -843,9 +1042,12 @@ either.
 The current `runtime/fast_path.py` is a migration source, not the target generic
 runtime: it directly imports H_ref state, grammar, and defaults. Generic candidate
 pool mechanics must accept injected supplier, selector, risk policy, and canonical
-Candidate contracts. TTHA supplies the Agent implementation. H_ref fixed programs
-are frozen into the private JSON baseline, after which `methods/h_ref_v02/` is
-removed from the target active tree rather than retained as compatibility code.
+Candidate contracts. TTHA supplies the Agent implementation. The grader-private
+positive-witness catalog is independently authored from canonical operator
+contracts and has no H_ref import or provenance dependency. `methods/h_ref_v02/`
+is removed from the target active tree rather than retained as compatibility
+code. Only the benchmark-v0.2-private `_frozen_reference` reproduction fossil
+described in §1 may retain its historical selector implementation.
 
 ## 12. One M0 cycle
 
@@ -853,11 +1055,13 @@ removed from the target active tree rather than retained as compatibility code.
    cycle-0 snapshot.
 2. Build a controlled corpus spanning clean/genuine events and four families:
    missing, impulsive/outlier, level shift, and period change.
-3. Construct typed `PublicCaseView` objects and run the Agent fast path with
-   runtime identity plus at most two PROGRAM candidates.
-4. Record `DecisionTrace` mechanically.
+3. Construct typed `PublicCaseView` objects, compute the complete deployment-
+   observable `R_public` ProbeAPI panel, and attach its public receipt.
+4. Run the Agent fast path with runtime identity plus at most two PROGRAM
+   candidates and record `DecisionTrace` mechanically.
 5. Privately evaluate corruption, selected output, effective candidate pool,
-   collateral, repair-response curves, and period diagnostics.
+   collateral, `R_private` curves, public/private curve agreement, and period
+   diagnostics.
 6. Run oracle- and observable-parameterized witness checks where required and
    assign three-valued expressibility status.
 7. Derive stage/fault/cause assessments and the first actionable fault.
@@ -896,31 +1100,37 @@ M0 is complete when one command can run at least two consecutive cycles and:
 2. TTHA and generic runtime code do not import `methods.h_ref_v02`;
 3. the same TTHA Agent core executes both permission-separated roles;
 4. repeated H0 compilation produces the same content and bundle SHAs, with empty
-   capability library and memory;
-5. H0 lock mismatch or stale schema/operator/compiler dependency fails loudly;
+   capability library and memory, across LF/CRLF and JSON key-order variants;
+5. H0 lock mismatch, canonicalization-version mismatch, or stale
+   schema/operator/compiler dependency fails loudly;
 6. the public prompt path cannot import/read private artifacts and candidate J
-   values never appear in fast-path inputs or public traces;
+   values never appear in fast-path inputs or public traces; only the fixed
+   deployment-computable `R_public` ProbeAPI receipt may cross the judge wall;
 7. identity is always present, cannot be risk-filtered, occupies one configured
    slot, and a missing `chosen_candidate_id` is a protocol failure;
 8. deterministic effect-equivalence to identity follows the declared byte or
    numerical-tolerance contract;
 9. fixtures distinguish `SKILL_LIBRARY_GAP`, `RETRIEVAL_MISS`,
    `SKILL_CONTENT_GAP`, `SELECTION_MISS`, `OPERATOR_GAP`, and
-   `EXPRESSIBILITY_UNKNOWN`;
+   `EXPRESSIBILITY_UNKNOWN`, using seeded-skill snapshots where H0 cannot
+   naturally exercise retrieval/content faults;
 10. oracle-only success cannot sign a library edit, while an observable witness
-    can;
+    can, and the corpus/witness coverage matrix covers every repairable family;
 11. the fault router rejects skill kinds/surface classes not allowed for the
-    confirmed cause;
+    confirmed cause, while the slow Agent cannot edit the observable vocabulary;
 12. an `ADD SkillEntry` changes one absent structured source surface, and the
     retrieval index changes only as a deterministic derived artifact;
 13. every accepted diff maps to exactly one owned surface and stale
     surface/dependency preconditions force replay;
 14. repair-probe beta mappings are monotonic/versioned and run under common
-    seeds, while period is diagnostic-only;
+    seeds; the always-computed public 4-by-3 panel contains only `R_public`, the
+    private panel contains `R_private`, and period is diagnostic-only;
 15. a correctly abstained period-change fixture records Agent success and a
     separate system `OPERATOR_GAP` backlog event;
-16. identical effective LLM requests, including public case/tool-context hashes,
-    replay the same cache record; full-snapshot-only changes do not force misses;
+16. identical relay Chat Completions requests, including base URL/model/SDK,
+    exact messages, local envelope schemas, public case/tool-context hashes, and
+    effective Harness view, replay the same cache record; full-snapshot-only
+    changes do not force misses;
 17. out-of-scope replay requires equal effective-view SHA, eligible cache reuse,
     and no normalized behavior diff;
 18. paired fixtures exercise at least dead, supported, harmful, unexpected-gain,
@@ -928,7 +1138,8 @@ M0 is complete when one command can run at least two consecutive cycles and:
 19. every promoted snapshot has a parent, manifest, paired-replay receipt, and
     final core-regression result;
 20. repeated fixed-seed runs reproduce normalized behavior signatures and
-    scientific verdicts within declared tolerances.
+    scientific verdicts within declared tolerances, with live model-alias
+    variability isolated by immutable response caching/replay.
 
 These criteria establish the causal feedback skeleton. More sophisticated
 clustering, learned model routing, candidate-J A/B experiments, Pareto selection,
