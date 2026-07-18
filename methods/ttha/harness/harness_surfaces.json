@@ -1,0 +1,18 @@
+{
+  "schema_version": "harness-surfaces/1",
+  "surfaces": [
+    {"surface_template_id":"instruction.core","owner":"instruction.md","target_class":"instruction","surface_type":"text","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"bootstrap_skills.entries/{skill_id}.body","owner":"skills/bootstrap/{skill_id}.json","json_pointer":"/body","target_class":"bootstrap_procedure","surface_type":"text","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"skill_library.entries/{skill_id}","owner":"skills/learned","path_template":"skills/learned/{skill_id}.json","target_class":"capability","surface_type":"structured_entry","allowed_operations":["ADD"],"precondition":"ABSENT","value_schema":"skill-entry/1","atomic":true,"derived_outputs":["retrieval_index"]},
+    {"surface_template_id":"skill_library.entries/{skill_id}.body","owner":"skills/learned/{skill_id}.json","json_pointer":"/body","target_class":"capability","surface_type":"text","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"skill_library.entries/{skill_id}.observable_applicability","owner":"skills/learned/{skill_id}.json","json_pointer":"/observable_applicability","target_class":"capability","surface_type":"structured_rule","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":["retrieval_index"]},
+    {"surface_template_id":"skill_library.entries/{skill_id}.risk_guards","owner":"skills/learned/{skill_id}.json","json_pointer":"/risk_guards","target_class":"capability","surface_type":"structured_rule","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"retrieval.capability.top_k","owner":"retrieval.json","json_pointer":"/capability/top_k","target_class":"retrieval","surface_type":"scalar","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":["retrieval_index"]},
+    {"surface_template_id":"candidate_policy.agent_program_slots","owner":"candidate_policy.json","json_pointer":"/agent_program_slots","target_class":"candidate_control","surface_type":"scalar","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"candidate_policy.proposal_guidance","owner":"candidate_policy.json","json_pointer":"/proposal_guidance","target_class":"candidate_control","surface_type":"text","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"candidate_policy.selection_guidance","owner":"candidate_policy.json","json_pointer":"/selection_guidance","target_class":"selection_control","surface_type":"text","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"verification.rules","owner":"verification.json","target_class":"verification","surface_type":"structured_rule","allowed_operations":["PATCH"],"precondition":"SHA","atomic":true,"derived_outputs":[]},
+    {"surface_template_id":"memory.entries/{memory_id}","owner":"memories.jsonl","target_class":"memory","surface_type":"structured_entry","allowed_operations":["ADD"],"precondition":"ABSENT","value_schema":"memory-entry/1","atomic":true,"derived_outputs":["retrieval_index"]}
+  ],
+  "read_only": ["compiler.py", "store.py", "contracts/observables.py", "contracts/schemas/observable_feature_v1.json", "operators", "runtime", "prompt_builders", "retrieval_index"]
+}
