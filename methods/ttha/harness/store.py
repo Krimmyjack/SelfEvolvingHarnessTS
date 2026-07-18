@@ -164,6 +164,29 @@ class SnapshotStore:
             raise
         return MaterializedSnapshot(destination, snapshot, parent_sha)
 
+    def fork(self, parent: MaterializedSnapshot, edit_id: str) -> Path:
+        if not isinstance(parent, MaterializedSnapshot):
+            raise TypeError("snapshot fork requires a MaterializedSnapshot parent")
+        if parent.root.resolve() != (self.root / parent.runtime_bundle_sha).resolve():
+            raise ValueError("parent snapshot does not belong to this store")
+        forks_root = self.root.parent / ".harness_forks"
+        forks_root.mkdir(parents=True, exist_ok=True)
+        temporary = Path(tempfile.mkdtemp(prefix=f"{edit_id}-", dir=forks_root))
+        try:
+            shutil.copytree(parent.root, temporary, dirs_exist_ok=True)
+        except Exception:
+            shutil.rmtree(temporary, ignore_errors=True)
+            raise
+        return temporary
+
+    def discard_fork(self, root: Path) -> None:
+        root = Path(root).resolve()
+        forks_root = (self.root.parent / ".harness_forks").resolve()
+        if not root.is_relative_to(forks_root) or root == forks_root:
+            raise ValueError("refusing to discard a path outside the controlled fork root")
+        if root.exists():
+            shutil.rmtree(root)
+
     def set_active(self, runtime_bundle_sha: str) -> None:
         if not (self.root / runtime_bundle_sha).is_dir():
             raise ValueError("cannot activate an unmaterialized runtime bundle")

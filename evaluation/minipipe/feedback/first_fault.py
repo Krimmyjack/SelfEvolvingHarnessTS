@@ -149,7 +149,7 @@ def _supply_failure(facts: CaseFacts) -> tuple[str, str, tuple[str, ...]]:
         return (
             "OBSERVABLE_DERIVATION_PROCEDURE_GAP",
             "EDITABLE_M0",
-            ("bootstrap.inspect_and_localize.body",),
+            ("bootstrap_skills.entries/inspect_and_localize.body",),
         )
     if facts.expressibility_cause == "OBSERVABLE_FEATURE_SCHEMA_GAP":
         return "OBSERVABLE_FEATURE_SCHEMA_GAP", "OBSERVATION_CAPABILITY_BACKLOG", ()
@@ -223,7 +223,7 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
                 rule="agent_inspected_public_evidence",
                 fault="OBSERVATION_PROCEDURE_GAP",
                 cause="OBSERVATION_PROCEDURE_GAP",
-                surfaces=("bootstrap.inspect_and_localize.body",),
+                surfaces=("bootstrap_skills.entries/inspect_and_localize.body",),
             )
         )
     else:
@@ -264,7 +264,7 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             rule="localization_iou_interval",
             fault="LOCALIZATION_MISS",
             cause="LOCALIZATION_PROCEDURE_GAP",
-            surfaces=("bootstrap.inspect_and_localize.body",),
+            surfaces=("bootstrap_skills.entries/inspect_and_localize.body",),
         )
     elif facts.localization_iou >= float(rules["localization_pass_iou_min"]):
         localization = _assessment(
