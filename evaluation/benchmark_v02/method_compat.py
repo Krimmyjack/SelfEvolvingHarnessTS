@@ -5,8 +5,10 @@ from typing import Mapping
 from .method_api import MethodSeriesView, PreparedSeries as BenchmarkPreparedSeries
 from ...contracts.method import Method, PreparationRequest, PreparationStatus
 from ...contracts.task import TaskSpec
-from ...methods.h_ref_v02.config import default_state
-from ...runtime.fast_path import run_fast_path
+from ._frozen_reference.config import default_state as _legacy_default_state
+from ._frozen_reference.fast_path import (
+    run_legacy_reference_batch as _run_legacy_reference_batch,
+)
 
 
 class BenchmarkMethodAdapter:
@@ -38,9 +40,11 @@ class BenchmarkMethodAdapter:
         )
 
 
-def run_h_ref_batch(views):
-    state = default_state()
-    return run_fast_path(views, state, state.sampler.expected_total)
+def _run_frozen_reference_batch(views):
+    """Run the retired benchmark arm without exposing it as an active method."""
+
+    state = _legacy_default_state()
+    return _run_legacy_reference_batch(views, state, state.sampler.expected_total)
 
 
-__all__ = ["BenchmarkMethodAdapter", "run_h_ref_batch"]
+__all__ = ["BenchmarkMethodAdapter"]

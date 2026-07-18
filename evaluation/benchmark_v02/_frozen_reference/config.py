@@ -60,8 +60,8 @@ __all__ = [
     "H0_ALLOCATION",
     "H0_EXPECTED_TOTAL_K",
     "HREF_OPERATOR_DEFAULTS",
-    "HRefEditError",
-    "HRefState",
+    "LegacyReferenceEditError",
+    "LegacyReferenceState",
     "KNOWN_FEATURES",
     "P0_FEATURE_ALLOWLIST",
     "P6EditError",
@@ -503,3 +503,5 @@ def default_state(expected_total_K: int = H0_EXPECTED_TOTAL_K) -> HRefState:
 # Transitional names used only by legacy P6 imports.
 P6HarnessState = HRefState
 P6EditError = HRefEditError
+LegacyReferenceState = HRefState
+LegacyReferenceEditError = HRefEditError

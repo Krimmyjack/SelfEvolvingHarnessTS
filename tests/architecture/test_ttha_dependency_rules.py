@@ -30,15 +30,13 @@ def test_ttha_never_imports_evaluation_or_h_ref():
     assert violations == []
 
 
-def test_generic_runtime_has_no_active_method_imports_except_retirement_fossil():
+def test_generic_runtime_has_no_active_method_imports():
     violations = []
     for path in sorted((ROOT / "runtime").rglob("*.py")):
         for name in _imports(path):
             if "methods.ttha" in name or "methods.h_ref_v02" in name:
                 violations.append((path.relative_to(ROOT).as_posix(), name))
-    # Task 14 moves this final benchmark-v0.2 compatibility implementation out
-    # of generic runtime and tightens this assertion to an empty list.
-    assert violations == [("runtime/fast_path.py", "..methods.h_ref_v02.config")]
+    assert violations == []
 
 
 def test_prompt_and_request_constructors_do_not_read_files():

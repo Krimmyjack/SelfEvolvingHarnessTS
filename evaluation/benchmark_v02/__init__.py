@@ -24,7 +24,7 @@ EXTERNAL_ADDENDUM_SHA256 = (
     "468c65fbcb36f48a47a351597f99d9ccebd876fff39d3378923500a8c3ed45ff"
 )
 
-from .method_compat import BenchmarkMethodAdapter, run_h_ref_batch  # noqa: E402
+from .method_compat import BenchmarkMethodAdapter  # noqa: E402
 
 __all__ = [
     "BENCHMARK_VERSION",
@@ -43,5 +43,4 @@ __all__ = [
     "MODEL_SEEDS",
     "SATURATION_GAP",
     "SATURATION_GAP_KIND",
-    "run_h_ref_batch",
 ]

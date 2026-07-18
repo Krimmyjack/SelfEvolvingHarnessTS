@@ -47,8 +47,8 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Seque
 
 import numpy as np
 
-from .executor import ExecutionResult, run_pipeline
-from ..methods.h_ref_v02.config import (
+from ....runtime.executor import ExecutionResult, run_pipeline
+from .config import (
     DET_PROGRAM_STEPS,
     GRAMMAR_DENOISERS,
     GRAMMAR_IMPUTERS,
@@ -91,7 +91,7 @@ __all__ = [
     "proxy_score",
     "random_grammar_sampler",
     "resolve_steps",
-    "run_fast_path",
+    "run_legacy_reference_batch",
     "select",
     "toy_fingerprint",
 ]
@@ -578,6 +578,12 @@ def run_fast_path(
         {uid: r.chosen for uid, r in runs.items()},
         {uid: r.stats for uid, r in runs.items()},
     )
+
+
+# Benchmark-private compatibility name.  The historical implementation keeps
+# its internal function name so the frozen numerical path changes as little as
+# possible, while callers outside this fossil only see its archival role.
+run_legacy_reference_batch = run_fast_path
 
 
 # ════════════════════════════ paired validator（capability matrix 第 4 项） ════════════════════════════
