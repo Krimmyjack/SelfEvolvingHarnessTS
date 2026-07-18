@@ -187,6 +187,8 @@ def _operator_bundle_sha() -> tuple[str, str]:
 def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
     contracts_root = _PACKAGE_ROOT / "contracts"
     schema_root = contracts_root / "schemas"
+    runtime_root = _PACKAGE_ROOT / "runtime"
+    ttha_root = _PACKAGE_ROOT / "methods" / "ttha"
     canonicalizer_source_sha = _canonical_file_sha(contracts_root / "canonical.py", kind="text")
     compiler_source_sha = _canonical_file_sha(Path(__file__), kind="text")
     operator_bundle_sha, operator_registry_sha = _operator_bundle_sha()
@@ -201,6 +203,31 @@ def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
     }
     for path in sorted(schema_root.glob("*.json"), key=lambda item: item.name):
         dependencies[f"schema:{path.stem}"] = _canonical_file_sha(path, kind="json")
+    for filename in (
+        "agent_backend.py",
+        "candidate_pool.py",
+        "decision_trace.py",
+        "executor.py",
+        "llm_cache.py",
+    ):
+        dependencies[f"runtime:{Path(filename).stem}"] = _canonical_file_sha(
+            runtime_root / filename,
+            kind="text",
+        )
+    for filename in (
+        "agent_core.py",
+        "fast_agent.py",
+        "method.py",
+        "public_tools.py",
+        "retrieval.py",
+        "slow_agent.py",
+    ):
+        dependencies[f"ttha:{Path(filename).stem}"] = _canonical_file_sha(
+            ttha_root / filename,
+            kind="text",
+        )
+    for path in sorted((ttha_root / "schemas").glob("*.json"), key=lambda item: item.name):
+        dependencies[f"agent_schema:{path.stem}"] = _canonical_file_sha(path, kind="json")
     return dependencies, operator_bundle_sha, canonicalizer_source_sha, compiler_source_sha
 
 

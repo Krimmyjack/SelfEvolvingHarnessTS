@@ -1,0 +1,30 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"slow-edit/1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["edit_manifest"],
+  "properties":{
+    "edit_manifest":{
+      "type":"object",
+      "additionalProperties":false,
+      "required":["edit_id","base_harness_sha","target_pattern_id","target_surface_id","operation","surface_precondition","dependency_precondition_shas","predicted_agent_behavior_change","predicted_data_effect","falsification_condition"],
+      "properties":{
+        "edit_id":{"type":"string"},
+        "base_harness_sha":{"type":"string"},
+        "target_pattern_id":{"type":"string"},
+        "target_surface_id":{"type":"string"},
+        "operation":{"enum":["PATCH","ADD"]},
+        "surface_precondition":{"type":"object"},
+        "dependency_precondition_shas":{"type":"object"},
+        "minimal_patch":{"type":["object","null"]},
+        "new_value":{"type":["object","null"]},
+        "observable_applicability":{"type":["object","null"]},
+        "predicted_agent_behavior_change":{"type":"array","items":{"type":"string"}},
+        "predicted_data_effect":{"type":"array","items":{"type":"string"}},
+        "automatically_selected_risk_cases":{"type":"array","items":{"type":"string"}},
+        "falsification_condition":{"type":"array","items":{"type":"string"}}
+      }
+    }
+  }
+}
