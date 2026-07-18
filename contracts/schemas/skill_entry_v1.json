@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skill-entry/1",
+  "title": "SkillEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "skill_kind", "revision", "body", "observable_applicability", "allowed_tools", "risk_guards"],
+  "properties": {
+    "schema_version": {"const": "skill-entry/1"},
+    "skill_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"},
+    "skill_kind": {"enum": ["bootstrap_procedure", "capability", "safety"]},
+    "revision": {"type": "integer", "minimum": 1},
+    "body": {"type": "string", "minLength": 1},
+    "observable_applicability": {"type": "object"},
+    "allowed_tools": {"type": "array", "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"}, "uniqueItems": true},
+    "risk_guards": {"type": "object"}
+  }
+}

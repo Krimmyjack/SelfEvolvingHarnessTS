@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "observable-feature/1",
+  "title": "Observable applicability leaf",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature", "op", "value"],
+      "properties": {
+        "feature": {"enum": ["missing_fraction", "longest_missing_run_fraction", "local_robust_z_peak", "estimated_region_start_fraction", "estimated_region_end_fraction", "level_excursion_score", "period_change_score"]},
+        "op": {"enum": [">", ">=", "<", "<=", "=="]},
+        "value": {"type": "number"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature", "op", "value"],
+      "properties": {
+        "feature": {"const": "period_repair_available"},
+        "op": {"const": "=="},
+        "value": {"type": "boolean"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature", "op", "value"],
+      "properties": {
+        "feature": {"enum": ["task_kind", "imputation_probe_direction", "clipping_probe_direction", "denoising_probe_direction", "level_probe_direction"]},
+        "op": {"const": "=="},
+        "value": {"type": "string"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature", "op", "value"],
+      "properties": {
+        "feature": {"enum": ["task_kind", "imputation_probe_direction", "clipping_probe_direction", "denoising_probe_direction", "level_probe_direction"]},
+        "op": {"const": "in"},
+        "value": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    }
+  ]
+}

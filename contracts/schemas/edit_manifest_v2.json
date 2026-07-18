@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "edit-manifest/2",
+  "title": "EditManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["edit_id", "base_harness_sha", "target_pattern_id", "target_surface_id", "operation", "surface_precondition", "dependency_precondition_shas"],
+  "properties": {
+    "edit_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"},
+    "base_harness_sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "target_pattern_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"},
+    "target_surface_id": {"type": "string", "minLength": 1},
+    "operation": {"enum": ["PATCH", "ADD"]},
+    "surface_precondition": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"const": "ABSENT"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "sha"], "properties": {"kind": {"const": "SHA"}, "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}
+      ]
+    },
+    "dependency_precondition_shas": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+    "minimal_patch": {"type": ["object", "null"]},
+    "new_value": {"type": ["object", "null"]},
+    "observable_applicability": {"type": ["object", "null"]},
+    "predicted_agent_behavior_change": {"type": "array", "items": {"type": "string"}},
+    "predicted_data_effect": {"type": "array", "items": {"type": "string"}},
+    "automatically_selected_risk_cases": {"type": "array", "items": {"type": "string"}},
+    "falsification_condition": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {"if": {"properties": {"operation": {"const": "ADD"}}, "required": ["operation"]}, "then": {"required": ["new_value"], "properties": {"minimal_patch": {"type": "null"}}}},
+    {"if": {"properties": {"operation": {"const": "PATCH"}}, "required": ["operation"]}, "then": {"required": ["minimal_patch"], "properties": {"new_value": {"type": "null"}}}}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "memory-entry/1",
+  "title": "MemoryEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "memory_id", "revision", "body", "observable_applicability", "risk_guards"],
+  "properties": {
+    "schema_version": {"const": "memory-entry/1"},
+    "memory_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"},
+    "revision": {"type": "integer", "minimum": 1},
+    "body": {"type": "string", "minLength": 1},
+    "observable_applicability": {"type": "object"},
+    "risk_guards": {"type": "object"}
+  }
+}
