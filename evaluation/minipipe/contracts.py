@@ -45,6 +45,8 @@ def _freeze_json(value: Any) -> Any:
 
 
 def _plain(value: Any) -> Any:
+    if isinstance(value, Enum):
+        return value.value
     if isinstance(value, Mapping):
         return {str(key): _plain(nested) for key, nested in value.items()}
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
@@ -319,10 +321,142 @@ class ArtifactRoots:
         return cls(public=public, private=private)
 
 
+class Stage(str, Enum):
+    ELIGIBILITY = "ELIGIBILITY"
+    OBSERVATION = "OBSERVATION"
+    LOCALIZATION = "LOCALIZATION"
+    MECHANISM = "MECHANISM"
+    RETRIEVAL_POLICY = "RETRIEVAL_POLICY"
+    CANDIDATE_SUPPLY = "CANDIDATE_SUPPLY"
+    CANDIDATE_SELECTION = "CANDIDATE_SELECTION"
+    COMPILATION = "COMPILATION"
+    EXECUTION = "EXECUTION"
+    OUTCOME_RISK = "OUTCOME_RISK"
+
+
+class AssessmentStatus(str, Enum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    UNKNOWN = "UNKNOWN"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+
+
+@dataclass(frozen=True)
+class StageAssessment:
+    stage: Stage
+    status: AssessmentStatus
+    fault_code: str | None
+    cause_code: str | None
+    evidence_refs: tuple[str, ...]
+    decision_rule_id: str
+    suspect_surface_templates: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class FaultAttribution:
+    first_stage: str | None
+    fault_code: str
+    cause_code: str
+    actionability: str
+    suspect_surface_templates: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class OutcomeFeedback:
+    clean_u: float
+    corrupt_u: float
+    prepared_u: float
+    damage_d: float
+    repair_gain_g: float
+    nrr: float | None
+    over_restoration: bool
+    selection_regret: float
+    candidate_utilities: Mapping[str, float]
+    chosen_candidate_id: str
+    target_window_gain: float | None
+    outside_window_change: float | None
+    counterpart_change: float | None
+    non_target_collateral: float | None
+    agent_decision_status: str
+    system_capability_status: str
+
+
+@dataclass(frozen=True)
+class MechanismFeedback:
+    localization_iou: float | None
+    observable_features: Mapping[str, object]
+    r_public_curves: Mapping[str, object]
+    r_private_curves: Mapping[str, object]
+    curve_agreement_receipt_ref: str | None
+    period_diagnostic: Mapping[str, object]
+    witness_receipt_refs: tuple[str, ...]
+    implied_mechanism_claims: tuple[str, ...]
+    expressibility_status: str
+    expressibility_cause: str | None
+    oracle_family: str | None
+    oracle_affected_indices: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class BehaviorFeedback:
+    decision_trace_ref: str | None
+    behavior_signature: Mapping[str, object]
+    inspected_discriminative_evidence: bool
+    normal_retrieval: bool
+    forced_skill_succeeds: bool
+    skill_retrieved: bool
+    compilation_status: str
+    execution_status: str
+
+
+@dataclass(frozen=True)
+class UpdateAttributionFeedback:
+    suspect_surface_templates: tuple[str, ...]
+    confirmed_surface: str | None
+    actionability: str
+
+
+@dataclass(frozen=True)
+class CaseFeedback:
+    schema_version: str
+    case_id: str
+    outcome: OutcomeFeedback
+    mechanism: MechanismFeedback
+    behavior: BehaviorFeedback
+    update_attribution: UpdateAttributionFeedback
+    assessments: tuple[StageAssessment, ...]
+    fault_attribution: FaultAttribution
+    private_receipt_refs: tuple[str, ...]
+
+    def to_private_json(self) -> dict[str, object]:
+        return _plain(
+            {
+                "schema_version": self.schema_version,
+                "case_id": self.case_id,
+                "outcome": self.outcome.__dict__,
+                "mechanism": self.mechanism.__dict__,
+                "behavior": self.behavior.__dict__,
+                "update_attribution": self.update_attribution.__dict__,
+                "assessments": [assessment.__dict__ for assessment in self.assessments],
+                "fault_attribution": self.fault_attribution.__dict__,
+                "private_receipt_refs": self.private_receipt_refs,
+            }
+        )
+
+
 __all__ = [
+    "AssessmentStatus",
     "ArtifactRoots",
+    "BehaviorFeedback",
+    "CaseFeedback",
     "CasePurpose",
+    "FaultAttribution",
+    "MechanismFeedback",
+    "OutcomeFeedback",
     "PrivateSyntheticCase",
     "PublicCaseView",
+    "Stage",
+    "StageAssessment",
+    "UpdateAttributionFeedback",
     "serialize_series",
 ]
