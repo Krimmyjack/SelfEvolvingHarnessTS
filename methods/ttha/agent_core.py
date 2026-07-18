@@ -145,6 +145,7 @@ class TTHAAgentCore:
         system = (
             harness_view.instruction
             + "\nRuntime rule: return exactly one agent-envelope/1 JSON value. "
+            + "Never concatenate multiple JSON values in one response. "
             + "The outer envelope is mandatory; never return the stage payload by "
             + "itself and never use schema_name/content as substitute wrapper keys. "
             + "Do not emit PASS/FAIL judgments or hidden reasoning.\nResolved Harness: "
@@ -153,19 +154,40 @@ class TTHAAgentCore:
         response_contract = {
             "outer_envelope_required": True,
             "bare_stage_payload_forbidden": True,
+            "exactly_one_json_value_per_response": True,
             "stage_result_template": (
                 '{"schema_version":"agent-envelope/1","kind":"stage_result",'
                 f'"stage":"{stage}","payload":<OBJECT SATISFYING '
                 f'{output_schema_name}>}}'
             ),
-            "tool_request_template": {
-                "schema_version": "agent-envelope/1",
-                "kind": "tool_request",
-                "call_id": "unique_call_id",
-                "tool_name": "one_allowed_local_tool_name",
-                "arguments": {},
-            },
         }
+        if tool_schemas:
+            response_contract.update(
+                {
+                    "tool_request_allowed": True,
+                    "tool_request_rule": (
+                        "Request exactly one allowed tool, then stop the response "
+                        "immediately and wait for its tool-result/1 message. Do not "
+                        "append another tool request or a stage result."
+                    ),
+                    "tool_request_template": {
+                        "schema_version": "agent-envelope/1",
+                        "kind": "tool_request",
+                        "call_id": "unique_call_id",
+                        "tool_name": "one_allowed_local_tool_name",
+                        "arguments": {},
+                    },
+                }
+            )
+        else:
+            response_contract.update(
+                {
+                    "tool_request_allowed": False,
+                    "tool_request_rule": (
+                        "No local tool is allowed in this stage; return one stage_result."
+                    ),
+                }
+            )
         user_payload = {
             "schema_version": "public-agent-input/1",
             "role": role.value,

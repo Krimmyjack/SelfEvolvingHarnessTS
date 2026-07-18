@@ -220,9 +220,53 @@ def test_live_prompt_makes_outer_agent_envelope_unambiguous():
     contract = prompt["response_contract"]
     assert contract["outer_envelope_required"] is True
     assert contract["bare_stage_payload_forbidden"] is True
+    assert contract["exactly_one_json_value_per_response"] is True
+    assert contract["tool_request_allowed"] is True
+    assert "stop the response immediately" in contract["tool_request_rule"]
     assert '"stage":"inspect"' in contract["stage_result_template"]
     assert prompt["stage_payload_schema_name"] == "fast_inspect_v1"
     assert "output_schema" not in prompt
+
+
+def test_prompt_does_not_advertise_tool_requests_in_a_tool_free_stage():
+    response = AgentResponse.valid(
+        {
+            "schema_version": "agent-envelope/1",
+            "kind": "no_proposal",
+            "stage": "edit",
+            "reason_code": "insufficient_public_evidence",
+        },
+        raw_response={"id": "replay-no-proposal"},
+    )
+
+    class CapturingBackend:
+        def __init__(self):
+            self.requests = []
+
+        def complete(self, request):
+            self.requests.append(request)
+            return response
+
+    backend = CapturingBackend()
+    gateway = LocalPublicToolGateway(np.arange(8.0), task_kind="forecast")
+    h0 = compile_snapshot(H0_ROOT)
+    core = TTHAAgentCore(backend, gateway)
+    core.run_stage(
+        role="slow",
+        stage="edit",
+        case_id="case-tool-free-prompt",
+        public_input={"features": gateway.public_features},
+        harness_view=resolve_harness_view(h0, gateway.public_features, role="slow"),
+        output_schema_name="slow_edit_v1",
+        output_schema=core.load_stage_schema("slow_edit_v1"),
+        source_snapshot_sha=h0.runtime_bundle_sha,
+    )
+
+    prompt = json.loads(backend.requests[0].messages[1]["content"])
+    contract = prompt["response_contract"]
+    assert prompt["allowed_local_tools"] == []
+    assert contract["tool_request_allowed"] is False
+    assert "tool_request_template" not in contract
 
 
 def test_fast_path_compiles_selects_and_executes_program():
