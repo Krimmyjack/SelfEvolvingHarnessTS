@@ -162,6 +162,8 @@ class ValuationReceipt:
 class FrozenChronosValuator:
     """Private frozen-model evaluator. Its receipt is never Agent-facing."""
 
+    valuation_source = "PINNED_FROZEN_CHRONOS"
+
     def __init__(
         self,
         *,
@@ -171,6 +173,7 @@ class FrozenChronosValuator:
         manifest, manifest_sha = load_model_manifest(manifest_path)
         self.manifest = manifest
         self.model_manifest_sha = manifest_sha
+        self.ingestion_policy_id = str(manifest["ingestion_policy"])
         self.pipeline = pipeline if pipeline is not None else _load_local_pipeline(manifest)
 
     def evaluate(
@@ -222,8 +225,8 @@ class FrozenChronosValuator:
         if not math.isfinite(loss):
             raise InfrastructureError("valuation loss is non-finite")
         return ValuationReceipt(
-            valuation_source="PINNED_FROZEN_CHRONOS",
-            ingestion_policy_id=str(self.manifest["ingestion_policy"]),
+            valuation_source=self.valuation_source,
+            ingestion_policy_id=self.ingestion_policy_id,
             model_manifest_sha=self.model_manifest_sha,
             input_sha=_array_sha(raw),
             # Retained as a compatibility/debugging instrument: it now hashes

@@ -27,7 +27,10 @@ def test_utility_is_negative_clean_scaled_nrmse_and_native_nan_ingestion_is_reco
     context[10:12] = np.nan
     clean_context = np.arange(192, dtype=float)
     future = np.ones(48, dtype=float)
-    receipt = FrozenChronosValuator(pipeline=FakeChronos()).evaluate(
+    valuator = FrozenChronosValuator(pipeline=FakeChronos())
+    assert valuator.valuation_source == "PINNED_FROZEN_CHRONOS"
+    assert valuator.ingestion_policy_id == "chronos_native_nan_mask/v1"
+    receipt = valuator.evaluate(
         context, future, scale_context=clean_context
     )
     expected_j = 1.0 / np.std(np.arange(192, dtype=float))
