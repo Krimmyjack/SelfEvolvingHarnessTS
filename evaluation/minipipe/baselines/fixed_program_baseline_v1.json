@@ -1,0 +1,31 @@
+{
+  "schema_version": "fixed-program-baseline/1",
+  "visibility": "grader_private_only",
+  "parameterization_rules_version": "observable-witness-grammar/1",
+  "positive_witness_catalog": [
+    [["impute_linear", {}]],
+    [["hampel_filter", {}]],
+    [["repair_level_shift", {}]]
+  ],
+  "observable_witnesses": {
+    "missing": [
+      [["impute_linear", {}]],
+      [["impute_ar", {}]],
+      [["period_complete", {"period_from": "pre_period"}]]
+    ],
+    "impulsive_outlier": [
+      [["hampel_filter", {"window": 7, "n_sigmas": 3.0}]],
+      [["winsorize", {"limits": 0.05}]]
+    ],
+    "level_shift": [
+      [["repair_level_shift", {}]]
+    ],
+    "period_change": []
+  },
+  "coverage_matrix": {
+    "missing": "observable_witness_required",
+    "impulsive_outlier": "observable_witness_required",
+    "level_shift": "observable_witness_required",
+    "period_change": "declared_unavailable_class_required"
+  }
+}
