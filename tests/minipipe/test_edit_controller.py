@@ -40,7 +40,12 @@ def add_skill_manifest(h0_snapshot):
         surface_precondition={"kind": "ABSENT"},
         dependency_precondition_shas={
             "operator_registry": h0_snapshot.snapshot.dependency_shas["operator_registry"],
+            "operator_bundle": h0_snapshot.snapshot.dependency_shas["operator_bundle"],
             "observable_contract": h0_snapshot.snapshot.dependency_shas["observable_contract"],
+            "schema:skill_entry_v1": h0_snapshot.snapshot.dependency_shas[
+                "schema:skill_entry_v1"
+            ],
+            "surface_registry": h0_snapshot.snapshot.dependency_shas["surface_registry"],
         },
         new_value={
             "schema_version": "skill-entry/1",
@@ -115,12 +120,39 @@ def test_stale_surface_or_dependency_precondition_requires_replay(
 ):
     stale = replace(
         add_skill_manifest,
-        dependency_precondition_shas={"operator_registry": "0" * 64},
+        dependency_precondition_shas={
+            **dict(add_skill_manifest.dependency_precondition_shas),
+            "operator_registry": "0" * 64,
+        },
     )
     with pytest.raises(StaleEditError, match="operator_registry"):
         controller.apply_to_fork(
             h0_snapshot,
             stale,
+            confirmed_cause="SKILL_LIBRARY_GAP",
+        )
+
+
+def test_missing_or_extra_dependency_preconditions_are_rejected(
+    controller, h0_snapshot, add_skill_manifest
+):
+    missing = dict(add_skill_manifest.dependency_precondition_shas)
+    missing.pop("surface_registry")
+    with pytest.raises(ValueError, match="missing required dependency"):
+        controller.validate(
+            h0_snapshot,
+            replace(add_skill_manifest, dependency_precondition_shas=missing),
+            confirmed_cause="SKILL_LIBRARY_GAP",
+        )
+
+    extra = {
+        **dict(add_skill_manifest.dependency_precondition_shas),
+        "compiler_source": h0_snapshot.snapshot.dependency_shas["compiler_source"],
+    }
+    with pytest.raises(ValueError, match="unexpected dependency"):
+        controller.validate(
+            h0_snapshot,
+            replace(add_skill_manifest, dependency_precondition_shas=extra),
             confirmed_cause="SKILL_LIBRARY_GAP",
         )
 

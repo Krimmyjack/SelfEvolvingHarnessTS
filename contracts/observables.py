@@ -6,6 +6,9 @@ from types import MappingProxyType
 from typing import Any
 
 
+PERIOD_RELIABILITY_MIN = 0.75
+
+
 OBSERVABLE_FEATURES = MappingProxyType(
     {
         "task_kind": "string",
@@ -16,6 +19,8 @@ OBSERVABLE_FEATURES = MappingProxyType(
         "estimated_region_end_fraction": "number",
         "level_excursion_score": "number",
         "period_change_score": "number",
+        "period_reliability": "number",
+        "period_evidence_status": "string",
         "period_repair_available": "boolean",
         "imputation_probe_direction": "string",
         "clipping_probe_direction": "string",
@@ -91,4 +96,8 @@ def validate_applicability(ast: Mapping[str, Any]) -> None:
     _validate_leaf(ast)
 
 
-__all__ = ["OBSERVABLE_FEATURES", "validate_applicability"]
+__all__ = [
+    "OBSERVABLE_FEATURES",
+    "PERIOD_RELIABILITY_MIN",
+    "validate_applicability",
+]

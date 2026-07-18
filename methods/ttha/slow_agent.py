@@ -70,13 +70,15 @@ def _public_features_from_card(card: Mapping[str, object]) -> dict[str, object]:
 class TTHASlowAgent:
     def __init__(self, core: TTHAAgentCore):
         self.core = core
+        self.last_no_proposal_reason: str | None = None
 
     def propose_edit(
         self,
         card: Mapping[str, object],
         surface_catalog: Mapping[str, object] | Sequence[Mapping[str, object]],
         snapshot: HarnessSnapshot,
-    ) -> EditManifest:
+    ) -> EditManifest | None:
+        self.last_no_proposal_reason = None
         if not isinstance(card, Mapping):
             raise TypeError("FailurePatternCard must be a mapping")
         _reject_private_or_path(card, path="card")
@@ -110,6 +112,9 @@ class TTHASlowAgent:
             output_schema=self.core.load_stage_schema("slow_edit_v1"),
             source_snapshot_sha=snapshot.runtime_bundle_sha,
         )
+        if stage.no_proposal_reason is not None:
+            self.last_no_proposal_reason = stage.no_proposal_reason
+            return None
         manifest = stage.payload["edit_manifest"]
         manifest_applicability = manifest.get("observable_applicability")
         if manifest_applicability is not None:

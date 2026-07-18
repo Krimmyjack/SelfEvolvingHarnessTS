@@ -39,6 +39,9 @@ class WitnessReceipt:
     succeeded: bool
     program_sha: str | None
     gain: float | None
+    baseline_model_input_sha: str | None
+    witness_model_input_sha: str | None
+    model_input_distinct: bool | None
     receipt_sha: str
 
 
@@ -53,19 +56,38 @@ class ExpressibilityResult:
     joint_instrument_sha: str | None
 
 
-def _witness(kind: str, succeeded: bool, *, gain: float | None = None, program_sha: str | None = None) -> WitnessReceipt:
+def _witness(
+    kind: str,
+    succeeded: bool,
+    *,
+    gain: float | None = None,
+    program_sha: str | None = None,
+    baseline_model_input_sha: str | None = None,
+    witness_model_input_sha: str | None = None,
+) -> WitnessReceipt:
+    distinct = (
+        None
+        if baseline_model_input_sha is None or witness_model_input_sha is None
+        else baseline_model_input_sha != witness_model_input_sha
+    )
     payload = {
-        "schema_version": "expressibility-witness/1",
+        "schema_version": "expressibility-witness/2",
         "witness_kind": kind,
         "succeeded": bool(succeeded),
         "program_sha": program_sha,
         "gain": gain,
+        "baseline_model_input_sha": baseline_model_input_sha,
+        "witness_model_input_sha": witness_model_input_sha,
+        "model_input_distinct": distinct,
     }
     return WitnessReceipt(
         witness_kind=kind,
         succeeded=bool(succeeded),
         program_sha=program_sha,
         gain=gain,
+        baseline_model_input_sha=baseline_model_input_sha,
+        witness_model_input_sha=witness_model_input_sha,
+        model_input_distinct=distinct,
         receipt_sha=canonical_sha256(payload),
     )
 
@@ -208,8 +230,10 @@ class ExpressibilityEvaluator:
         programs = catalog.get(family, [])
         best_gain: float | None = None
         best_sha: str | None = None
+        best_input_sha: str | None = None
         best_oracle_gain: float | None = None
         best_oracle_sha: str | None = None
+        best_oracle_input_sha: str | None = None
         for raw_program in programs:
             if not isinstance(raw_program, list):
                 raise ValueError("witness program must be a list")
@@ -226,6 +250,7 @@ class ExpressibilityEvaluator:
             if best_gain is None or gain > best_gain:
                 best_gain = gain
                 best_sha = _program_sha(raw_program)
+                best_input_sha = receipt.filled_context_sha
             oracle_artifact = case.corrupt_context.copy()
             affected = np.asarray(case.oracle_affected_indices, dtype=int)
             if affected.size:
@@ -239,20 +264,35 @@ class ExpressibilityEvaluator:
             if best_oracle_gain is None or oracle_gain > best_oracle_gain:
                 best_oracle_gain = oracle_gain
                 best_oracle_sha = _program_sha(raw_program)
+                best_oracle_input_sha = oracle_receipt.filled_context_sha
         threshold = float(self.rules["candidate_gain_min"])
-        succeeded = best_gain is not None and best_gain >= threshold
-        oracle_succeeded = best_oracle_gain is not None and best_oracle_gain >= threshold
+        succeeded = (
+            best_input_sha is not None
+            and best_input_sha != baseline.filled_context_sha
+            and best_gain is not None
+            and best_gain >= threshold
+        )
+        oracle_succeeded = (
+            best_oracle_input_sha is not None
+            and best_oracle_input_sha != baseline.filled_context_sha
+            and best_oracle_gain is not None
+            and best_oracle_gain >= threshold
+        )
         observable = _witness(
             "observable_parameterized",
             succeeded,
             gain=best_gain,
             program_sha=best_sha,
+            baseline_model_input_sha=baseline.filled_context_sha,
+            witness_model_input_sha=best_input_sha,
         )
         oracle = _witness(
             "oracle_parameterized",
             oracle_succeeded,
             gain=best_oracle_gain,
             program_sha=best_oracle_sha,
+            baseline_model_input_sha=baseline.filled_context_sha,
+            witness_model_input_sha=best_oracle_input_sha,
         )
         if succeeded:
             return ExpressibilityResult(

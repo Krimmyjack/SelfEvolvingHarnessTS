@@ -18,7 +18,12 @@ from SelfEvolvingHarnessTS.contracts.canonical import (
     canonical_sha256,
     parse_json_document,
 )
-from SelfEvolvingHarnessTS.contracts.harness import EditManifest, HarnessSnapshot, SkillKind
+from SelfEvolvingHarnessTS.contracts.harness import (
+    EditManifest,
+    EditOperation,
+    HarnessSnapshot,
+    SkillKind,
+)
 from SelfEvolvingHarnessTS.contracts.method import PreparationRequest, PreparationStatus
 from SelfEvolvingHarnessTS.contracts.program import Program
 from SelfEvolvingHarnessTS.contracts.task import forecast_task_spec_v1
@@ -54,6 +59,7 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.probes.panel import (
 from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
     AppliedEditReceipt,
     EditController,
+    StaleEditError,
     SurfaceRegistry,
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.replay.lineage import HarnessLineage
@@ -84,6 +90,7 @@ from SelfEvolvingHarnessTS.runtime.agent_backend import (
     DEFAULT_AGENT_BASE_URL,
     DEFAULT_AGENT_MODEL,
     OPENAI_SDK_VERSION,
+    ReplayTapeMiss,
 )
 from SelfEvolvingHarnessTS.runtime.decision_trace import BehaviorSignature, DecisionTrace
 from SelfEvolvingHarnessTS.runtime.executor import run_pipeline
@@ -163,6 +170,39 @@ def _manifest_json(manifest: EditManifest) -> dict[str, object]:
     }
 
 
+def _manifest_from_json(value: object) -> EditManifest:
+    if not isinstance(value, Mapping):
+        raise ValueError("persisted EditManifest must be an object")
+    return EditManifest(
+        edit_id=str(value["edit_id"]),
+        base_harness_sha=str(value["base_harness_sha"]),
+        target_pattern_id=str(value["target_pattern_id"]),
+        target_surface_id=str(value["target_surface_id"]),
+        operation=EditOperation(str(value["operation"])),
+        surface_precondition=dict(value["surface_precondition"]),
+        dependency_precondition_shas=dict(value["dependency_precondition_shas"]),
+        minimal_patch=(
+            None if value.get("minimal_patch") is None else dict(value["minimal_patch"])
+        ),
+        new_value=(
+            None if value.get("new_value") is None else dict(value["new_value"])
+        ),
+        observable_applicability=(
+            None
+            if value.get("observable_applicability") is None
+            else dict(value["observable_applicability"])
+        ),
+        predicted_agent_behavior_change=tuple(
+            value.get("predicted_agent_behavior_change", ())
+        ),
+        predicted_data_effect=tuple(value.get("predicted_data_effect", ())),
+        automatically_selected_risk_cases=tuple(
+            value.get("automatically_selected_risk_cases", ())
+        ),
+        falsification_condition=tuple(value.get("falsification_condition", ())),
+    )
+
+
 def _version(distribution: str) -> str:
     try:
         return importlib.metadata.version(distribution)
@@ -196,6 +236,8 @@ class RunContext:
     reported_response_models: tuple[str, ...]
     versions: Mapping[str, str]
     valuator_manifest_sha: str
+    valuation_source: str
+    ingestion_policy_id: str
     probe_specs_sha: str
     rules_sha: str
     corpus_sha: str
@@ -216,7 +258,7 @@ class RunContext:
         base_url: str,
     ) -> "RunContext":
         payload = {
-            "schema_version": "m0-run-context/1",
+            "schema_version": "m0-run-context/2",
             "runtime_bundle_sha": snapshot.runtime_bundle_sha,
             "backend_kind": _backend_kind(backend),
             "relay_base_url": base_url,
@@ -238,6 +280,8 @@ class RunContext:
                 "chronos_forecasting": _version("chronos-forecasting"),
             },
             "valuator_manifest_sha": str(valuator.model_manifest_sha),
+            "valuation_source": str(valuator.valuation_source),
+            "ingestion_policy_id": str(valuator.ingestion_policy_id),
             "probe_specs_sha": probe_specs_sha,
             "rules_sha": rules.rules_sha,
             "corpus_sha": canonical_sha256(
@@ -256,7 +300,7 @@ class RunContext:
             },
         }
         return cls(
-            schema_version="m0-run-context/1",
+            schema_version="m0-run-context/2",
             runtime_bundle_sha=snapshot.runtime_bundle_sha,
             backend_kind=str(payload["backend_kind"]),
             relay_base_url=base_url,
@@ -269,6 +313,8 @@ class RunContext:
             reported_response_models=(),
             versions=MappingProxyType(dict(payload["versions"])),
             valuator_manifest_sha=str(valuator.model_manifest_sha),
+            valuation_source=str(valuator.valuation_source),
+            ingestion_policy_id=str(valuator.ingestion_policy_id),
             probe_specs_sha=probe_specs_sha,
             rules_sha=rules.rules_sha,
             corpus_sha=str(payload["corpus_sha"]),
@@ -409,6 +455,9 @@ class _CycleCaseRunner:
             origins=tuple(int(value) for value in rules["public_probe_origins"]),
             horizon=int(rules["public_probe_horizon"]),
             min_finite_targets=int(rules["public_probe_min_finite_targets"]),
+            model_manifest_sha=str(valuator.model_manifest_sha),
+            valuation_source=str(valuator.valuation_source),
+            ingestion_policy_id=str(valuator.ingestion_policy_id),
         )
         self.panel = ProbePanel(
             rolling_valuator=rolling,
@@ -544,6 +593,8 @@ class _CycleCaseRunner:
             is_target=case.purpose is CasePurpose.TARGET,
             private_family=case.private_family,
             oracle_affected_indices=case.oracle_affected_indices,
+            valuation_source=prepared_receipt.valuation_source,
+            ingestion_policy_id=prepared_receipt.ingestion_policy_id,
             clean_u=clean_receipt.utility_u,
             corrupt_u=corrupt_receipt.utility_u,
             prepared_u=prepared_receipt.utility_u,
@@ -640,6 +691,7 @@ class _CycleCaseRunner:
             ),
             identity_retained="identity" in trace.candidate_ids,
             modified_fraction=len(trace.modified_indices) / case.corrupt_context.size,
+            localization_iou=assessment.feedback.mechanism.localization_iou,
             run_context_sha=self.run_context_sha,
             agent_decision_status=assessment.feedback.outcome.agent_decision_status,
             system_capability_status=assessment.feedback.outcome.system_capability_status,
@@ -663,6 +715,49 @@ class _CycleCaseRunner:
         if not isinstance(case, PrivateSyntheticCase):
             raise TypeError("M0 case runner requires PrivateSyntheticCase")
         return self.evaluate(snapshot, case).receipt
+
+
+@dataclass(frozen=True)
+class _PendingEdit:
+    manifest: EditManifest
+    cause_code: str
+    target_case_ids: tuple[str, ...]
+    origin_cycle_id: str
+    deferred_cycles: int = 0
+
+    def to_json(self) -> dict[str, object]:
+        return {
+            "schema_version": "pending-edit/1",
+            "manifest": _manifest_json(self.manifest),
+            "cause_code": self.cause_code,
+            "target_case_ids": list(self.target_case_ids),
+            "origin_cycle_id": self.origin_cycle_id,
+            "deferred_cycles": self.deferred_cycles,
+        }
+
+    @classmethod
+    def from_json(cls, value: object) -> "_PendingEdit":
+        if not isinstance(value, Mapping) or set(value) != {
+            "schema_version",
+            "manifest",
+            "cause_code",
+            "target_case_ids",
+            "origin_cycle_id",
+            "deferred_cycles",
+        }:
+            raise ValueError("pending edit row does not match pending-edit/1")
+        if value["schema_version"] != "pending-edit/1":
+            raise ValueError("pending edit schema version mismatch")
+        deferred = int(value["deferred_cycles"])
+        if deferred < 0:
+            raise ValueError("pending edit deferred_cycles cannot be negative")
+        return cls(
+            manifest=_manifest_from_json(value["manifest"]),
+            cause_code=str(value["cause_code"]),
+            target_case_ids=tuple(str(item) for item in value["target_case_ids"]),
+            origin_cycle_id=str(value["origin_cycle_id"]),
+            deferred_cycles=deferred,
+        )
 
 
 @dataclass(frozen=True)
@@ -734,21 +829,132 @@ class M0CycleRunner:
         self.controller = EditController(store)
         self.risk_builder = AutomaticRiskSetBuilder()
 
-    @staticmethod
-    def _surface_catalog() -> list[dict[str, object]]:
-        value = parse_json_document(_SURFACES.read_bytes())
-        if not isinstance(value, dict) or not isinstance(value.get("surfaces"), list):
-            raise ValueError("invalid Harness surface catalog")
-        return [
-            {
-                "surface_id": surface["surface_template_id"],
-                "target_class": surface["target_class"],
-                "surface_type": surface["surface_type"],
-                "allowed_operations": surface["allowed_operations"],
+    def _surface_catalog(
+        self,
+        parent: MaterializedSnapshot,
+    ) -> list[dict[str, object]]:
+        catalog: list[dict[str, object]] = []
+        for definition in self.controller.surfaces.definitions:
+            template = definition.surface_template_id
+            if "{skill_id}" in template:
+                if definition.precondition == "ABSENT":
+                    surface_ids = (template,)
+                else:
+                    skills = parent.snapshot.skills
+                    if definition.target_class == "bootstrap_procedure":
+                        skills = tuple(
+                            skill
+                            for skill in skills
+                            if skill.skill_kind is SkillKind.BOOTSTRAP_PROCEDURE
+                        )
+                    else:
+                        skills = tuple(
+                            skill
+                            for skill in skills
+                            if skill.skill_kind is SkillKind.CAPABILITY
+                        )
+                    surface_ids = tuple(
+                        template.format(skill_id=skill.skill_id) for skill in skills
+                    )
+            elif "{memory_id}" in template:
+                if definition.precondition == "ABSENT":
+                    surface_ids = (template,)
+                else:
+                    surface_ids = tuple(
+                        template.format(memory_id=memory.memory_id)
+                        for memory in parent.snapshot.memories
+                    )
+            else:
+                surface_ids = (template,)
+
+            dependency_preconditions = {
+                key: parent.snapshot.dependency_shas[key]
+                for key in definition.required_dependency_keys
             }
-            for surface in value["surfaces"]
-            if isinstance(surface, dict)
-        ]
+            for surface_id in surface_ids:
+                precondition: dict[str, object] = {"kind": definition.precondition}
+                if definition.precondition == "SHA":
+                    precondition["sha"] = self.controller.surface_precondition_sha(
+                        parent,
+                        surface_id,
+                    )
+                catalog.append(
+                    {
+                        "surface_id": surface_id,
+                        "surface_template_id": template,
+                        "target_class": definition.target_class,
+                        "surface_type": definition.surface_type,
+                        "allowed_operations": list(definition.allowed_operations),
+                        "surface_precondition": precondition,
+                        "required_dependency_keys": list(
+                            definition.required_dependency_keys
+                        ),
+                        "dependency_precondition_shas": dependency_preconditions,
+                    }
+                )
+        return catalog
+
+    @property
+    def _pending_path(self) -> Path:
+        return self.private_root / "pending_edits.json"
+
+    def _load_pending(self) -> tuple[_PendingEdit, ...]:
+        if not self._pending_path.is_file():
+            return ()
+        payload = parse_json_document(self._pending_path.read_bytes())
+        if not isinstance(payload, Mapping) or set(payload) != {
+            "schema_version",
+            "edits",
+        }:
+            raise ValueError("pending edit store does not match pending-edit-set/1")
+        if payload["schema_version"] != "pending-edit-set/1" or not isinstance(
+            payload["edits"], list
+        ):
+            raise ValueError("invalid pending edit store")
+        rows = tuple(_PendingEdit.from_json(item) for item in payload["edits"])
+        edit_ids = [row.manifest.edit_id for row in rows]
+        if len(edit_ids) != len(set(edit_ids)):
+            raise ValueError("pending edit store contains duplicate edit IDs")
+        return tuple(sorted(rows, key=lambda row: row.manifest.edit_id))
+
+    def _write_pending(self, rows: Sequence[_PendingEdit]) -> None:
+        ordered = sorted(rows, key=lambda row: row.manifest.edit_id)
+        _write_json(
+            self._pending_path,
+            {
+                "schema_version": "pending-edit-set/1",
+                "edits": [row.to_json() for row in ordered],
+            },
+        )
+
+    def _rebase_pending(
+        self,
+        row: _PendingEdit,
+        parent: MaterializedSnapshot,
+    ) -> EditManifest | None:
+        manifest = row.manifest
+        resolved = self.controller.surfaces.resolve(manifest.target_surface_id)
+        required = set(resolved.definition.required_dependency_keys)
+        if set(manifest.dependency_precondition_shas) != required:
+            return None
+        if any(
+            parent.snapshot.dependency_shas.get(key) != digest
+            for key, digest in manifest.dependency_precondition_shas.items()
+        ):
+            return None
+        rebased = replace(
+            manifest,
+            base_harness_sha=parent.harness_content_sha,
+        )
+        try:
+            self.controller.validate(
+                parent,
+                rebased,
+                confirmed_cause=row.cause_code,
+            )
+        except StaleEditError:
+            return None
+        return rebased
 
     @staticmethod
     def _priority(
@@ -790,6 +996,7 @@ class M0CycleRunner:
         reports: Sequence[PairedReplayReport],
         operator_backlog: Sequence[Mapping[str, object]],
         incidents: Sequence[Mapping[str, object]],
+        no_proposals: Sequence[Mapping[str, object]],
     ) -> tuple[Path, Path]:
         cycle_root = self.run_root / "cycles" / cycle_id
         public = cycle_root / "public"
@@ -806,6 +1013,7 @@ class M0CycleRunner:
             "schema_version": "edit-manifest-set/1",
             "cycle_id": cycle_id,
             "edits": [_manifest_json(manifest) for manifest in manifests],
+            "no_proposals": [_plain(item) for item in no_proposals],
         }
         report_payload = {
             "schema_version": "paired-replay-report-set/1",
@@ -895,7 +1103,7 @@ class M0CycleRunner:
         actionable = sorted(
             (card for card in patterns if card.actionability == "EDITABLE_M0"),
             key=lambda card: self._priority(card, feedback_by_id),
-        )[: int(self.rules["max_edits_per_cycle"])]
+        )
         public_features = {
             evaluation.case.case_id: evaluation.feedback.mechanism.observable_features
             for evaluation in evaluations
@@ -903,8 +1111,11 @@ class M0CycleRunner:
         manifests: list[EditManifest] = []
         reports: list[PairedReplayReport] = []
         applied_by_edit: dict[str, AppliedEditReceipt] = {}
-        pattern_by_edit: dict[str, FailurePatternCard] = {}
+        cause_by_edit: dict[str, str] = {}
+        target_ids_by_edit: dict[str, tuple[str, ...]] = {}
+        pending_origin_by_edit: dict[str, _PendingEdit] = {}
         incidents: list[Mapping[str, object]] = []
+        no_proposals: list[Mapping[str, object]] = []
         slow_gateway = LocalPublicToolGateway(
             np.zeros(192, dtype=np.float64), task_kind="forecast"
         )
@@ -915,35 +1126,59 @@ class M0CycleRunner:
             base_url=self.base_url,
         )
         slow_agent = TTHASlowAgent(slow_core)
-        surface_catalog = self._surface_catalog()
+        surface_catalog = self._surface_catalog(starting)
         replay = PairedReplayRunner(
             self.case_runner,
             rules=self.rules,
             cache=self.cache,
         )
         cases_by_id = {case.case_id: case for case in self.corpus.all_cases}
+        retained_pending: list[_PendingEdit] = []
+        replay_slots = int(self.rules["max_edits_per_cycle"])
 
-        for card in actionable:
+        def record_incident(pattern_id: str, exc: Exception) -> None:
+            incident_type = (
+                "NO_TAPE_ENTRY"
+                if isinstance(exc, ReplayTapeMiss)
+                else type(exc).__name__
+            )
+            incidents.append(
+                MappingProxyType(
+                    {
+                        "schema_version": "cycle-incident/1",
+                        "cycle_id": cycle_id,
+                        "pattern_id": pattern_id,
+                        "incident_type": incident_type,
+                        "stage": "slow_edit_or_replay",
+                        "message_sha": canonical_sha256({"message": str(exc)}),
+                    }
+                )
+            )
+
+        def evaluate_manifest(
+            manifest: EditManifest,
+            *,
+            cause_code: str,
+            target_case_ids: Sequence[str],
+        ) -> bool:
             try:
-                manifest = slow_agent.propose_edit(
-                    card.to_json(), surface_catalog, starting.snapshot
-                )
-                risk_receipt = self.risk_builder.build(
-                    card, self.corpus.all_cases, feedback_by_id
-                )
-                manifest = replace(
-                    manifest,
-                    automatically_selected_risk_cases=risk_receipt.case_ids,
-                )
+                if manifest.edit_id in applied_by_edit:
+                    raise ValueError("duplicate edit ID in one cycle")
                 applied = self.controller.apply_to_fork(
                     starting,
                     manifest,
-                    confirmed_cause=card.cause_code,
+                    confirmed_cause=cause_code,
                 )
-                target_cases = tuple(cases_by_id[case_id] for case_id in card.case_ids)
+                target_cases = tuple(
+                    cases_by_id[case_id]
+                    for case_id in target_case_ids
+                    if case_id in cases_by_id
+                )
+                if len(target_cases) != len(tuple(target_case_ids)):
+                    raise ValueError("edit target case is absent from the frozen corpus")
                 risk_cases = tuple(
                     cases_by_id[case_id]
-                    for case_id in risk_receipt.case_ids
+                    for case_id in manifest.automatically_selected_risk_cases
                     if case_id in cases_by_id
                 )
                 out_of_scope = self._applicability_out_of_scope(
@@ -963,21 +1198,13 @@ class M0CycleRunner:
                     stage_b_cases=self.corpus.all_cases,
                 )
             except Exception as exc:
-                incidents.append(
-                    MappingProxyType(
-                        {
-                            "schema_version": "cycle-incident/1",
-                            "cycle_id": cycle_id,
-                            "pattern_id": card.pattern_id,
-                            "incident_type": type(exc).__name__,
-                        }
-                    )
-                )
-                continue
+                record_incident(manifest.target_pattern_id, exc)
+                return False
             manifests.append(manifest)
             reports.append(report)
             applied_by_edit[manifest.edit_id] = applied
-            pattern_by_edit[manifest.edit_id] = card
+            cause_by_edit[manifest.edit_id] = cause_code
+            target_ids_by_edit[manifest.edit_id] = tuple(target_case_ids)
             manifest_sha = canonical_sha256(_manifest_json(manifest))
             self.lineage.append(
                 event_kind="EDIT_EVALUATED",
@@ -989,6 +1216,109 @@ class M0CycleRunner:
                 paired_replay_report_sha=report.report_sha,
                 verdict=report.verdict.value,
                 scope_kind="scoped_candidate",
+            )
+            return True
+
+        pending_claims: set[tuple[str, tuple[str, ...]]] = set()
+        for row in self._load_pending():
+            claim = (row.cause_code, tuple(sorted(row.target_case_ids)))
+            if replay_slots <= 0:
+                deferred = row.deferred_cycles + 1
+                if deferred >= 2:
+                    self.lineage.append(
+                        event_kind="EXPIRED",
+                        cycle_id=cycle_id,
+                        active_snapshot_sha=starting.runtime_bundle_sha,
+                        edit_manifest_sha=canonical_sha256(
+                            _manifest_json(row.manifest)
+                        ),
+                        verdict="NOT_REPLAYED_WITHIN_TWO_CYCLES",
+                        scope_kind="scoped_candidate",
+                    )
+                else:
+                    retained_pending.append(replace(row, deferred_cycles=deferred))
+                    self.lineage.append(
+                        event_kind="PENDING",
+                        cycle_id=cycle_id,
+                        active_snapshot_sha=starting.runtime_bundle_sha,
+                        edit_manifest_sha=canonical_sha256(
+                            _manifest_json(row.manifest)
+                        ),
+                        verdict="DEFERRED_BY_REPLAY_LIMIT",
+                        scope_kind="scoped_candidate",
+                        metadata={"deferred_cycles": deferred},
+                    )
+                continue
+            rebased = self._rebase_pending(row, starting)
+            if rebased is None:
+                self.lineage.append(
+                    event_kind="SUPERSEDED",
+                    cycle_id=cycle_id,
+                    active_snapshot_sha=starting.runtime_bundle_sha,
+                    edit_manifest_sha=canonical_sha256(_manifest_json(row.manifest)),
+                    verdict="PRECONDITION_NO_LONGER_VALID",
+                    scope_kind="scoped_candidate",
+                )
+                continue
+            self.lineage.append(
+                event_kind="REQUEUED",
+                cycle_id=cycle_id,
+                parent_snapshot_sha=starting.runtime_bundle_sha,
+                active_snapshot_sha=starting.runtime_bundle_sha,
+                edit_manifest_sha=canonical_sha256(_manifest_json(rebased)),
+                verdict="PENDING_REPLAY",
+                scope_kind="scoped_candidate",
+                metadata={"origin_cycle_id": row.origin_cycle_id},
+            )
+            pending_origin_by_edit[rebased.edit_id] = row
+            pending_claims.add(claim)
+            replay_slots -= 1
+            if not evaluate_manifest(
+                rebased,
+                cause_code=row.cause_code,
+                target_case_ids=row.target_case_ids,
+            ):
+                # Infrastructure/protocol interruption is not a scientific
+                # rejection; retain the edit for another bounded attempt.
+                retained_pending.append(replace(row, deferred_cycles=0))
+
+        for card in actionable:
+            if replay_slots <= 0:
+                break
+            claim = (card.cause_code, tuple(sorted(card.case_ids)))
+            if claim in pending_claims:
+                continue
+            try:
+                manifest = slow_agent.propose_edit(
+                    card.to_json(), surface_catalog, starting.snapshot
+                )
+            except Exception as exc:
+                record_incident(card.pattern_id, exc)
+                continue
+            if manifest is None:
+                no_proposals.append(
+                    MappingProxyType(
+                        {
+                            "schema_version": "no-edit-proposal/1",
+                            "pattern_id": card.pattern_id,
+                            "reason_code": slow_agent.last_no_proposal_reason
+                            or "no_authorized_minimal_edit",
+                        }
+                    )
+                )
+                continue
+            risk_receipt = self.risk_builder.build(
+                card, self.corpus.all_cases, feedback_by_id
+            )
+            manifest = replace(
+                manifest,
+                automatically_selected_risk_cases=risk_receipt.case_ids,
+            )
+            replay_slots -= 1
+            evaluate_manifest(
+                manifest,
+                cause_code=card.cause_code,
+                target_case_ids=card.case_ids,
             )
 
         supported = sorted(
@@ -1005,7 +1335,11 @@ class M0CycleRunner:
             if winner is not None and report.edit_id == winner.edit_id:
                 continue
             manifest = next(item for item in manifests if item.edit_id == report.edit_id)
-            event_kind = "PENDING" if report.verdict is EditVerdict.SUPPORTED_EDIT else "REJECTED"
+            stays_pending = report.verdict in {
+                EditVerdict.SUPPORTED_EDIT,
+                EditVerdict.INCONCLUSIVE,
+            }
+            event_kind = "PENDING" if stays_pending else "REJECTED"
             self.lineage.append(
                 event_kind=event_kind,
                 cycle_id=cycle_id,
@@ -1017,11 +1351,24 @@ class M0CycleRunner:
                 verdict=report.verdict.value,
                 scope_kind="scoped_candidate",
             )
+            if stays_pending:
+                origin = pending_origin_by_edit.get(report.edit_id)
+                retained_pending.append(
+                    _PendingEdit(
+                        manifest=manifest,
+                        cause_code=cause_by_edit[report.edit_id],
+                        target_case_ids=target_ids_by_edit[report.edit_id],
+                        origin_cycle_id=(
+                            origin.origin_cycle_id if origin is not None else cycle_id
+                        ),
+                        deferred_cycles=0,
+                    )
+                )
 
         if winner is not None:
             manifest = next(item for item in manifests if item.edit_id == winner.edit_id)
             applied = applied_by_edit[winner.edit_id]
-            cause = pattern_by_edit[winner.edit_id].cause_code
+            cause = cause_by_edit[winner.edit_id]
             self.controller.validate(starting, manifest, confirmed_cause=cause)
             final_regression_sha = self._final_regression_sha(
                 applied.candidate_snapshot
@@ -1042,6 +1389,8 @@ class M0CycleRunner:
                 scope_kind="active_scoped_edit",
             )
 
+        self._write_pending(retained_pending)
+
         public, private = self._write_artifacts(
             cycle_id=cycle_id,
             evaluations=evaluations,
@@ -1050,6 +1399,7 @@ class M0CycleRunner:
             reports=reports,
             operator_backlog=operator_backlog,
             incidents=incidents,
+            no_proposals=no_proposals,
         )
         summary = CycleSummary(
             cycle_id=cycle_id,

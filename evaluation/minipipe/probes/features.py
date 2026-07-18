@@ -8,7 +8,10 @@ from typing import Mapping
 import numpy as np
 
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
-from SelfEvolvingHarnessTS.contracts.observables import OBSERVABLE_FEATURES
+from SelfEvolvingHarnessTS.contracts.observables import (
+    OBSERVABLE_FEATURES,
+    PERIOD_RELIABILITY_MIN,
+)
 
 
 _MAD_TO_SIGMA = 1.4826
@@ -37,6 +40,16 @@ def _longest_run(mask: np.ndarray) -> int:
         return 0
     boundaries = np.flatnonzero(np.diff(indices) > 1) + 1
     return max(len(group) for group in np.split(indices, boundaries))
+
+
+def _longest_observed_segment(values: np.ndarray) -> np.ndarray:
+    finite_indices = np.flatnonzero(np.isfinite(values))
+    if finite_indices.size == 0:
+        return np.asarray([], dtype=np.float64)
+    boundaries = np.flatnonzero(np.diff(finite_indices) > 1) + 1
+    groups = np.split(finite_indices, boundaries)
+    best = max(groups, key=len)
+    return np.asarray(values[best], dtype=np.float64)
 
 
 def _expand(mask: np.ndarray, radius: int = 2) -> np.ndarray:
@@ -72,9 +85,13 @@ def _dominant_spectral_period(values: np.ndarray) -> float:
     return float(1.0 / frequencies[best])
 
 
-def _period_summary(filled: np.ndarray) -> tuple[int, int, float, float]:
-    pre = filled[:80]
-    post = filled[-80:]
+def _period_summary(values: np.ndarray) -> tuple[int, int, float, float, float, str]:
+    pre_raw = values[:80]
+    post_raw = values[-80:]
+    pre = _longest_observed_segment(pre_raw)
+    post = _longest_observed_segment(post_raw)
+    if pre.size < 16 or post.size < 16:
+        return 4, 4, 0.0, 0.0, 0.0, "UNKNOWN"
     pre_period = _dominant_acf_period(pre)
     post_period = _dominant_acf_period(post)
     score = abs(post_period - pre_period) / max(pre_period, 1)
@@ -83,7 +100,25 @@ def _period_summary(filled: np.ndarray) -> tuple[int, int, float, float]:
         1.0 - min(abs(pre_period - spectral[0]) / max(pre_period, 1), 1.0),
         1.0 - min(abs(post_period - spectral[1]) / max(post_period, 1), 1.0),
     )
-    return pre_period, post_period, float(score), float(np.mean(agreements))
+    coverage = min(pre.size / pre_raw.size, post.size / post_raw.size)
+    longest_gap = max(
+        _longest_run(~np.isfinite(pre_raw)),
+        _longest_run(~np.isfinite(post_raw)),
+    )
+    gap_penalty = max(
+        0.0,
+        1.0 - longest_gap / max(min(pre_period, post_period), 4),
+    )
+    reliability = float(np.clip(coverage * gap_penalty, 0.0, 1.0))
+    status = "OK" if reliability >= PERIOD_RELIABILITY_MIN else "UNKNOWN"
+    return (
+        pre_period,
+        post_period,
+        float(score) if status == "OK" else 0.0,
+        float(np.mean(agreements)) if status == "OK" else 0.0,
+        reliability,
+        status,
+    )
 
 
 def _level_candidate(
@@ -142,6 +177,8 @@ class PublicFeatureExtraction:
     pre_period: int
     post_period: int
     acf_spectral_consistency: float
+    period_reliability: float
+    period_evidence_status: str
 
     def with_probe_directions(
         self,
@@ -195,7 +232,14 @@ def extract_public_features(
         end_fraction = float((selected[-1] + 1) / values.size)
     else:
         start_fraction = end_fraction = 0.0
-    pre_period, post_period, period_score, consistency = _period_summary(filled)
+    (
+        pre_period,
+        post_period,
+        period_score,
+        consistency,
+        period_reliability,
+        period_evidence_status,
+    ) = _period_summary(values)
     mapping: dict[str, object] = {
         "task_kind": str(task_kind),
         "missing_fraction": float(np.mean(missing)),
@@ -205,6 +249,8 @@ def extract_public_features(
         "estimated_region_end_fraction": end_fraction,
         "level_excursion_score": level_score,
         "period_change_score": period_score,
+        "period_reliability": period_reliability,
+        "period_evidence_status": period_evidence_status,
         "period_repair_available": False,
     }
     if not set(mapping) <= set(OBSERVABLE_FEATURES):
@@ -230,6 +276,8 @@ def extract_public_features(
         pre_period=pre_period,
         post_period=post_period,
         acf_spectral_consistency=consistency,
+        period_reliability=period_reliability,
+        period_evidence_status=period_evidence_status,
     )
 
 

@@ -363,6 +363,8 @@ class FaultAttribution:
 
 @dataclass(frozen=True)
 class OutcomeFeedback:
+    valuation_source: str
+    ingestion_policy_id: str
     clean_u: float
     corrupt_u: float
     prepared_u: float

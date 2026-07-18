@@ -10,7 +10,6 @@ from .chronos import (
     FrozenChronosValuator,
     _array,
     _array_sha,
-    _fill_nonfinite,
     _finite_scale,
     _predict_mean,
 )
@@ -21,6 +20,8 @@ PrefixTransform = Callable[[np.ndarray, int], np.ndarray]
 
 @dataclass(frozen=True)
 class RollingObservedReceipt:
+    valuation_source: str
+    ingestion_policy_id: str
     model_manifest_sha: str
     origins: tuple[int, ...]
     excluded_origins: tuple[int, ...]
@@ -59,10 +60,17 @@ class RollingObservedValuator:
         horizon: int = 24,
         min_finite_targets: int = 12,
         manifest_path: Path | None = None,
+        model_manifest_sha: str | None = None,
+        valuation_source: str | None = None,
+        ingestion_policy_id: str | None = None,
     ) -> None:
         base = FrozenChronosValuator(pipeline=pipeline, manifest_path=manifest_path)
         self.pipeline = base.pipeline
-        self.model_manifest_sha = base.model_manifest_sha
+        self.model_manifest_sha = model_manifest_sha or base.model_manifest_sha
+        self.valuation_source = valuation_source or "PINNED_FROZEN_CHRONOS"
+        self.ingestion_policy_id = (
+            ingestion_policy_id or str(base.manifest["ingestion_policy"])
+        )
         self.origins = tuple(int(origin) for origin in origins)
         self.horizon = int(horizon)
         self.min_finite_targets = int(min_finite_targets)
@@ -78,7 +86,7 @@ class RollingObservedValuator:
         values = _array(series, length=192, field="rolling series")
         surviving: list[int] = []
         excluded: list[int] = []
-        filled_prefixes: list[np.ndarray] = []
+        model_prefixes: list[np.ndarray] = []
         transformed_prefixes: list[np.ndarray] = []
         targets: list[np.ndarray] = []
 
@@ -99,18 +107,20 @@ class RollingObservedValuator:
                 if transformed.shape != prefix.shape:
                     raise ValueError("prefix transform must preserve prefix shape")
                 prefix = transformed.copy()
-            try:
-                filled, _ = _fill_nonfinite(prefix)
-            except ValueError:
+            if np.any(np.isinf(prefix)) or not np.any(np.isfinite(prefix)):
                 excluded.append(origin)
                 continue
             surviving.append(origin)
             transformed_prefixes.append(prefix)
-            filled_prefixes.append(filled)
+            # Chronos-Bolt consumes NaN as an observation mask.  Do not apply
+            # an ingestion repair that overlaps the Agent's operator space.
+            model_prefixes.append(prefix.copy())
             targets.append(target)
 
         if not surviving:
             return RollingObservedReceipt(
+                valuation_source=self.valuation_source,
+                ingestion_policy_id=self.ingestion_policy_id,
                 model_manifest_sha=self.model_manifest_sha,
                 origins=(),
                 excluded_origins=tuple(excluded),
@@ -128,7 +138,7 @@ class RollingObservedValuator:
 
             contexts = [
                 torch.as_tensor(prefix, dtype=torch.float32, device="cpu")
-                for prefix in filled_prefixes
+                for prefix in model_prefixes
             ]
         except (ImportError, RuntimeError, TypeError, ValueError) as exc:
             from SelfEvolvingHarnessTS.runtime.errors import InfrastructureError
@@ -152,6 +162,8 @@ class RollingObservedValuator:
             losses.append(float(np.sqrt(np.mean(np.square(error))) / scale))
 
         return RollingObservedReceipt(
+            valuation_source=self.valuation_source,
+            ingestion_policy_id=self.ingestion_policy_id,
             model_manifest_sha=self.model_manifest_sha,
             origins=tuple(surviving),
             excluded_origins=tuple(excluded),

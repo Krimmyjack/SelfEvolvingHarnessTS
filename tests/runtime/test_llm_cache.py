@@ -6,6 +6,7 @@ from SelfEvolvingHarnessTS.runtime.agent_backend import (
     AgentRequest,
     AgentResponse,
     ReplayAgentBackend,
+    ReplayTapeMiss,
 )
 from SelfEvolvingHarnessTS.runtime.llm_cache import CachedAgentBackend, EffectiveRequestCache
 
@@ -54,7 +55,7 @@ def test_effective_view_change_invalidates_cache(tmp_path, agent_request):
     first = cached.complete(agent_request)
     assert first.cache_receipt.hit is False
     changed = replace(agent_request, effective_harness_view_sha="9" * 64)
-    with pytest.raises(KeyError, match="replay response exhausted"):
+    with pytest.raises(ReplayTapeMiss, match="NO_TAPE_ENTRY"):
         cached.complete(changed)
 
 

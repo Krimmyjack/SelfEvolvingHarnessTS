@@ -18,6 +18,9 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.rolling_observed import
     RollingObservedValuator,
 )
 from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
+from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
+    extract_public_features as extract_agent_public_features,
+)
 
 
 class FakeChronos:
@@ -62,8 +65,20 @@ def test_period_is_diagnostic_only_and_declares_repair_unavailable():
     panel = ProbePanel(rolling_valuator=rolling, rules=rules)
     result = panel.run_public(case.to_public_view())
     assert result.period_diagnostic.repair_available is False
+    assert result.period_diagnostic.evidence_status == "OK"
     assert "period" not in result.response_curves
     assert sum(len(points) for points in result.response_curves.values()) == 12
+
+
+def test_missing_contamination_makes_period_evidence_unknown_in_both_views():
+    values = np.sin(2.0 * np.pi * np.arange(192, dtype=float) / 12.0)
+    values[20:52] = np.nan
+    grader = extract_public_features(values)
+    agent = extract_agent_public_features(values, task_kind="forecast")
+    assert grader.period_evidence_status == "UNKNOWN"
+    assert grader.mapping["period_change_score"] == 0.0
+    assert agent["period_evidence_status"] == "UNKNOWN"
+    assert agent["period_change_score"] == 0.0
 
 
 def test_public_panel_serializer_has_no_absolute_or_private_values():

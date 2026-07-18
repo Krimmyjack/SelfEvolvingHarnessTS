@@ -145,10 +145,13 @@ def resolve_harness_view(
         key=lambda skill: skill.skill_id,
     )
     capabilities: list[tuple[int, SkillEntry]] = []
+    all_capabilities: list[SkillEntry] = []
     safety: list[SkillEntry] = []
     for skill in snapshot.skills:
         if skill.skill_kind is SkillKind.BOOTSTRAP_PROCEDURE:
             continue
+        if skill.skill_kind is SkillKind.CAPABILITY:
+            all_capabilities.append(skill)
         matched, score = evaluate_applicability(
             skill.observable_applicability, public_features
         )
@@ -161,20 +164,25 @@ def resolve_harness_view(
     retrieval = snapshot.retrieval
     capability_rule = retrieval.get("capability", {})
     top_k = capability_rule.get("top_k", 0) if isinstance(capability_rule, Mapping) else 0
-    ranked_capabilities = [
-        skill
-        for _, skill in sorted(
-            capabilities,
-            key=lambda item: (-item[0], item[1].skill_id),
-        )[: int(top_k)]
-    ]
+    ranked_capabilities = (
+        sorted(all_capabilities, key=lambda skill: skill.skill_id)
+        if role == "slow"
+        else [
+            skill
+            for _, skill in sorted(
+                capabilities,
+                key=lambda item: (-item[0], item[1].skill_id),
+            )[: int(top_k)]
+        ]
+    )
     selected_skills = tuple(
         [*bootstrap, *ranked_capabilities, *sorted(safety, key=lambda skill: skill.skill_id)]
     )
     selected_memories = tuple(
         memory
         for memory in sorted(snapshot.memories, key=lambda item: item.memory_id)
-        if evaluate_applicability(memory.observable_applicability, public_features)[0]
+        if role == "slow"
+        or evaluate_applicability(memory.observable_applicability, public_features)[0]
     )
     if role == "fast":
         controls = {

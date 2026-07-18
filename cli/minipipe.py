@@ -93,6 +93,8 @@ def _run(args: argparse.Namespace) -> int:
         )
     print(f"active_snapshot_sha={result.active_snapshot_sha}")
     print(f"run_context_sha={result.run_context.run_context_sha}")
+    print(f"valuation_source={result.run_context.valuation_source}")
+    print(f"ingestion_policy_id={result.run_context.ingestion_policy_id}")
     return 0
 
 

@@ -13,6 +13,7 @@ from .agent_backend import (
     AgentTransportError,
     AgictoChatCompletionsBackend,
     ReplayAgentBackend,
+    ReplayTapeMiss,
 )
 from .decision_trace import BehaviorSignature, DecisionTrace
 from .executor import ExecutionResult, run_pipeline
@@ -34,6 +35,7 @@ __all__ = [
     "EffectiveRequestCache",
     "ProtocolChoiceError",
     "ReplayAgentBackend",
+    "ReplayTapeMiss",
     "effect_equivalent_to_identity",
     "execute_selected",
     "run_pipeline",

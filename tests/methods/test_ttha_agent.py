@@ -113,6 +113,34 @@ def test_out_of_scope_skill_does_not_change_effective_view():
     assert baseline.effective_harness_view_sha == edited.effective_harness_view_sha
 
 
+def test_slow_optimizer_can_inspect_an_out_of_scope_capability_for_retrieval_repair():
+    h0 = compile_snapshot(H0_ROOT)
+    capability_skill = load_skill_entry(
+        {
+            "schema_version": "skill-entry/1",
+            "skill_id": "overly_strict_missing_v1",
+            "skill_kind": "capability",
+            "revision": 1,
+            "body": "Use bounded missing-value repair.",
+            "observable_applicability": {
+                "feature": "missing_fraction",
+                "op": ">",
+                "value": 0.9,
+            },
+            "allowed_tools": ["impute_linear"],
+            "risk_guards": {},
+        }
+    )
+    snapshot = replace(h0, skills=(*h0.skills, capability_skill))
+    public_features = {"task_kind": "forecast", "missing_fraction": 0.1}
+    assert capability_skill.skill_id not in resolve_harness_view(
+        snapshot, public_features, role="fast"
+    ).skill_ids
+    assert capability_skill.skill_id in resolve_harness_view(
+        snapshot, public_features, role="slow"
+    ).skill_ids
+
+
 def test_local_tool_request_is_executed_then_same_stage_resumes():
     tool_request = AgentResponse.valid(
         {
@@ -263,3 +291,36 @@ def test_slow_path_returns_untrusted_add_skill_manifest():
     )
     assert manifest.operation is EditOperation.ADD
     assert manifest.new_value["skill_id"] == "local_outlier_repair_v1"
+
+
+def test_slow_path_can_return_an_explicit_no_proposal_envelope():
+    h0 = compile_snapshot(H0_ROOT)
+    backend = ReplayAgentBackend(
+        [
+            AgentResponse.valid(
+                {
+                    "schema_version": "agent-envelope/1",
+                    "kind": "no_proposal",
+                    "stage": "edit",
+                    "reason_code": "no_authorized_minimal_edit",
+                },
+                raw_response={"id": "no-proposal"},
+            )
+        ]
+    )
+    slow = TTHASlowAgent(
+        TTHAAgentCore(
+            backend,
+            LocalPublicToolGateway(np.arange(8.0), task_kind="forecast"),
+        )
+    )
+    manifest = slow.propose_edit(
+        {
+            "pattern_id": "pattern-1",
+            "observable_signature": {"task_kind": "forecast"},
+        },
+        [],
+        h0,
+    )
+    assert manifest is None
+    assert slow.last_no_proposal_reason == "no_authorized_minimal_edit"

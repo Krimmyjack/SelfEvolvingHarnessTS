@@ -10,6 +10,7 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.outcomes import evaluat
 from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.rolling_observed import (
     RollingObservedValuator,
 )
+from SelfEvolvingHarnessTS.runtime.executor import run_pipeline
 
 
 class FakeChronos:
@@ -21,7 +22,7 @@ class FakeChronos:
         return quantiles, mean
 
 
-def test_utility_is_negative_clean_scaled_nrmse_and_fill_is_recorded():
+def test_utility_is_negative_clean_scaled_nrmse_and_native_nan_ingestion_is_recorded():
     context = np.arange(192, dtype=float)
     context[10:12] = np.nan
     clean_context = np.arange(192, dtype=float)
@@ -32,7 +33,36 @@ def test_utility_is_negative_clean_scaled_nrmse_and_fill_is_recorded():
     expected_j = 1.0 / np.std(np.arange(192, dtype=float))
     assert receipt.loss_j == pytest.approx(expected_j)
     assert receipt.utility_u == pytest.approx(-expected_j)
-    assert receipt.fill_fraction == pytest.approx(2 / 192)
+    assert receipt.valuation_source == "PINNED_FROZEN_CHRONOS"
+    assert receipt.ingestion_policy_id == "chronos_native_nan_mask/v1"
+    assert receipt.missing_fraction == pytest.approx(2 / 192)
+    assert receipt.fill_fraction == 0.0
+    assert receipt.filled_context_sha == receipt.input_sha
+
+
+def test_identity_and_linear_imputation_do_not_collapse_to_one_model_input():
+    context = np.arange(192, dtype=float)
+    context[40:52] = np.nan
+    clean_context = np.arange(192, dtype=float)
+    future = np.ones(48, dtype=float)
+    valuator = FrozenChronosValuator(pipeline=FakeChronos())
+    identity = valuator.evaluate(context, future, scale_context=clean_context)
+    indices = np.arange(context.size)
+    finite = np.isfinite(context)
+    imputed = np.interp(indices, indices[finite], context[finite])
+    witness = valuator.evaluate(imputed, future, scale_context=clean_context)
+    assert identity.filled_context_sha != witness.filled_context_sha
+
+
+def test_native_nan_ingestion_rejects_infinity():
+    context = np.arange(192, dtype=float)
+    context[10] = np.inf
+    with pytest.raises(ValueError, match="not infinity"):
+        FrozenChronosValuator(pipeline=FakeChronos()).evaluate(
+            context,
+            np.ones(48, dtype=float),
+            scale_context=np.arange(192, dtype=float),
+        )
 
 
 def test_outcome_definitions_use_higher_is_better_utility():
@@ -117,3 +147,59 @@ def test_pinned_local_model_is_deterministic_without_network():
     assert rolling_first.mean_public_utility == pytest.approx(
         rolling_second.mean_public_utility, abs=1e-12
     )
+
+
+@pytest.mark.frozen_model
+def test_pinned_valuator_is_sensitive_to_one_observable_witness_per_expressible_family():
+    rules_path = (
+        Path(__file__).resolve().parents[2]
+        / "evaluation"
+        / "minipipe"
+        / "config"
+        / "m0_rules.json"
+    )
+    rules = load_m0_rules(rules_path)
+    corpus = build_core_corpus(rules)
+    witnesses = {
+        "missing": [("impute_linear", {})],
+        "impulsive_outlier": [
+            ("hampel_filter", {"window": 7, "n_sigmas": 3.0})
+        ],
+        "level_shift": [("repair_level_shift", {})],
+    }
+    valuator = FrozenChronosValuator()
+    for family, program in witnesses.items():
+        sensitive = False
+        for case in (
+            item for item in corpus.targets if item.private_family == family
+        ):
+            execution = run_pipeline(
+                program,
+                case.corrupt_context,
+                source="valuator-sensitivity-test",
+            )
+            assert execution.ok and execution.artifact is not None
+            if np.array_equal(
+                execution.artifact,
+                case.corrupt_context,
+                equal_nan=True,
+            ):
+                continue
+            identity = valuator.evaluate(
+                case.corrupt_context,
+                case.clean_future,
+                scale_context=case.clean_context,
+            )
+            witness = valuator.evaluate(
+                execution.artifact,
+                case.clean_future,
+                scale_context=case.clean_context,
+            )
+            if (
+                witness.filled_context_sha != identity.filled_context_sha
+                and abs(witness.utility_u - identity.utility_u)
+                >= float(rules["candidate_gain_min"])
+            ):
+                sensitive = True
+                break
+        assert sensitive, f"valuator is insensitive to the {family} witness family"

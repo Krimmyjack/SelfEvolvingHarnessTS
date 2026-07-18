@@ -195,6 +195,16 @@ def _validate_envelope(value: object) -> dict[str, Any]:
                 raise ValueError(f"{field_name} must be canonical")
         if not isinstance(value["arguments"], dict):
             raise ValueError("tool arguments must be an object")
+    elif kind == "no_proposal":
+        expected = {"schema_version", "kind", "stage", "reason_code"}
+        if set(value) != expected or value["stage"] != "edit":
+            raise ValueError("no_proposal is valid for the edit stage only")
+        if value["reason_code"] not in {
+            "insufficient_public_evidence",
+            "no_authorized_minimal_edit",
+            "risk_too_high",
+        }:
+            raise ValueError("unknown no_proposal reason_code")
     else:
         raise ValueError("unknown agent envelope kind")
     canonical_json_bytes(value)
@@ -257,6 +267,10 @@ class AgentResponse:
 
 class AgentTransportError(InfrastructureError):
     """A relay request did not yield a transport-success response."""
+
+
+class ReplayTapeMiss(InfrastructureError):
+    """An immutable offline replay has no response for the effective request."""
 
 
 class AgentBackend(Protocol):
@@ -379,13 +393,15 @@ class ReplayAgentBackend:
     def complete(self, request: AgentRequest) -> AgentResponse:
         if self._ordered is not None:
             if self._call_count >= len(self._ordered):
-                raise KeyError("replay response exhausted")
+                raise ReplayTapeMiss("NO_TAPE_ENTRY: ordered replay response exhausted")
             response = self._ordered[self._call_count]
         else:
             assert self._mapped is not None
             semantic_hash = request.semantic_request_hash()
             if semantic_hash not in self._mapped:
-                raise KeyError(f"replay miss for semantic request {semantic_hash}")
+                raise ReplayTapeMiss(
+                    f"NO_TAPE_ENTRY: semantic request {semantic_hash}"
+                )
             response = self._mapped[semantic_hash]
         self._call_count += 1
         return response
@@ -406,5 +422,6 @@ __all__ = [
     "DEFAULT_AGENT_MODEL",
     "OPENAI_SDK_VERSION",
     "ReplayAgentBackend",
+    "ReplayTapeMiss",
     "parse_agent_envelope",
 ]

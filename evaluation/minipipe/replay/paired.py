@@ -147,6 +147,7 @@ class CaseRunReceipt:
     chosen_candidate_kind: str = "identity"
     identity_retained: bool = True
     modified_fraction: float = 0.0
+    localization_iou: float | None = None
     run_context_sha: str = ""
     agent_decision_status: str = "ASSESSED"
     system_capability_status: str = "AVAILABLE_OR_UNKNOWN"
@@ -158,6 +159,10 @@ class CaseRunReceipt:
             raise ValueError("chosen candidate kind must be identity or program")
         if not 0.0 <= float(self.modified_fraction) <= 1.0:
             raise ValueError("modified fraction must lie in [0, 1]")
+        if self.localization_iou is not None and not 0.0 <= float(
+            self.localization_iou
+        ) <= 1.0:
+            raise ValueError("localization IoU must lie in [0, 1]")
 
     @property
     def all_eligible_calls_reused(self) -> bool:
@@ -300,6 +305,13 @@ class PairedReplayRunner:
             elif predicate.startswith("scope_modified_fraction<="):
                 limit = float(predicate.split("<=", 1)[1])
                 passed = all(receipt.modified_fraction <= limit for receipt in candidate_receipts)
+            elif predicate.startswith("localization_iou>="):
+                threshold = float(predicate.split(">=", 1)[1])
+                passed = all(
+                    receipt.localization_iou is not None
+                    and receipt.localization_iou >= threshold
+                    for receipt in candidate_receipts
+                )
             else:
                 passed = False
             if not passed:

@@ -182,17 +182,21 @@ class PeriodDiagnostic:
     post_period: int
     period_change_score: float
     acf_spectral_consistency: float
+    reliability: float
+    evidence_status: str
     repair_available: bool
     receipt_sha: str
 
     @classmethod
     def from_features(cls, features: PublicFeatureExtraction) -> "PeriodDiagnostic":
         payload = {
-            "schema_version": "period-diagnostic/1",
+            "schema_version": "period-diagnostic/2",
             "pre_period": features.pre_period,
             "post_period": features.post_period,
             "period_change_score": features.mapping["period_change_score"],
             "acf_spectral_consistency": features.acf_spectral_consistency,
+            "reliability": features.period_reliability,
+            "evidence_status": features.period_evidence_status,
             "repair_available": False,
         }
         return cls(
@@ -200,6 +204,8 @@ class PeriodDiagnostic:
             post_period=features.post_period,
             period_change_score=float(features.mapping["period_change_score"]),
             acf_spectral_consistency=features.acf_spectral_consistency,
+            reliability=features.period_reliability,
+            evidence_status=features.period_evidence_status,
             repair_available=False,
             receipt_sha=canonical_sha256(payload),
         )
@@ -210,6 +216,8 @@ class PeriodDiagnostic:
             "post_period": self.post_period,
             "period_change_score": self.period_change_score,
             "acf_spectral_consistency": self.acf_spectral_consistency,
+            "reliability": self.reliability,
+            "evidence_status": self.evidence_status,
             "repair_available": self.repair_available,
             "receipt_sha": self.receipt_sha,
         }

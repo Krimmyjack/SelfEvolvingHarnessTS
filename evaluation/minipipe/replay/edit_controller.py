@@ -52,6 +52,7 @@ _BEHAVIOR_PREDICATES = (
     re.compile(r"identity_retained"),
     re.compile(r"effective_view_unchanged_out_of_scope"),
     re.compile(r"scope_modified_fraction<=\d+(?:\.\d+)?"),
+    re.compile(r"localization_iou>=\d+(?:\.\d+)?"),
 )
 _FORBIDDEN_TEXT_TERMS = (
     "clean_future",
@@ -94,6 +95,7 @@ class SurfaceDefinition:
     allowed_skill_kinds: tuple[str, ...]
     mutually_exclusive_with: tuple[str, ...]
     derived_outputs: tuple[str, ...]
+    required_dependency_keys: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -155,9 +157,20 @@ class SurfaceRegistry:
                     str(item) for item in raw.get("mutually_exclusive_with", [])
                 ),
                 derived_outputs=tuple(str(item) for item in raw.get("derived_outputs", [])),
+                required_dependency_keys=tuple(
+                    str(item) for item in raw.get("required_dependency_keys", [])
+                ),
             )
             if not definition.atomic:
                 raise ValueError("every M0 surface must be atomic")
+            if (
+                not definition.required_dependency_keys
+                or len(definition.required_dependency_keys)
+                != len(set(definition.required_dependency_keys))
+            ):
+                raise ValueError(
+                    "every M0 surface must declare unique required dependency keys"
+                )
             owner_key = (definition.owner, definition.json_pointer)
             if owner_key in seen_owners:
                 raise ValueError(f"overlapping surface owner: {owner_key}")
@@ -302,6 +315,10 @@ def _validate_behavior_predicates(predicates: tuple[str, ...]) -> None:
             limit = float(predicate.split("<=", 1)[1])
             if not 0.0 <= limit <= 1.0:
                 raise ValueError("scope_modified_fraction predicate must lie in [0, 1]")
+        if predicate.startswith("localization_iou>="):
+            threshold = float(predicate.split(">=", 1)[1])
+            if not 0.0 <= threshold <= 1.0:
+                raise ValueError("localization_iou predicate must lie in [0, 1]")
         if predicate.startswith("supply_operator:"):
             operator_id = predicate.split(":", 1)[1]
             if operator_id not in OPERATOR_NAMES:
@@ -433,6 +450,20 @@ class EditController:
                 f"{confirmed_cause} does not authorize {manifest.target_surface_id}"
             ) from exc
 
+        declared_dependencies = set(manifest.dependency_precondition_shas)
+        required_dependencies = set(definition.required_dependency_keys)
+        missing_dependencies = sorted(required_dependencies - declared_dependencies)
+        extra_dependencies = sorted(declared_dependencies - required_dependencies)
+        if missing_dependencies:
+            raise ValueError(
+                "missing required dependency preconditions: "
+                + ", ".join(missing_dependencies)
+            )
+        if extra_dependencies:
+            raise ValueError(
+                "unexpected dependency preconditions: "
+                + ", ".join(extra_dependencies)
+            )
         for name, expected in manifest.dependency_precondition_shas.items():
             actual = parent.snapshot.dependency_shas.get(name)
             if actual is None or actual != expected:

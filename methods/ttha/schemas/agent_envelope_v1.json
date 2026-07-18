@@ -24,6 +24,17 @@
         "tool_name":{"type":"string","pattern":"^[a-z][a-z0-9_]*$"},
         "arguments":{"type":"object"}
       }
+    },
+    {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["schema_version","kind","stage","reason_code"],
+      "properties":{
+        "schema_version":{"const":"agent-envelope/1"},
+        "kind":{"const":"no_proposal"},
+        "stage":{"const":"edit"},
+        "reason_code":{"enum":["insufficient_public_evidence","no_authorized_minimal_edit","risk_too_high"]}
+      }
     }
   ]
 }

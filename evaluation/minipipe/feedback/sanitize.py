@@ -48,6 +48,8 @@ def _numeric_bin(feature: str, value: float) -> str:
         edges = (0.0, 0.01, 0.05, 0.20)
     elif feature == "period_change_score":
         edges = (0.0, 0.10, 0.25, 0.50)
+    elif feature == "period_reliability":
+        edges = (0.0, 0.25, 0.50, 0.75)
     else:
         edges = (0.0, 1.0, 3.0, 6.0)
     labels = ("zero", "very_low", "low", "medium", "high")
@@ -64,10 +66,14 @@ def _numeric_bin(feature: str, value: float) -> str:
 
 def _observable_signature(features: Mapping[str, object]) -> dict[str, object]:
     signature: dict[str, object] = {}
+    period_status = str(features.get("period_evidence_status", "UNKNOWN"))
     for feature, value in sorted(features.items()):
         if feature not in OBSERVABLE_FEATURES:
             continue
         kind = OBSERVABLE_FEATURES[feature]
+        if feature == "period_change_score" and period_status != "OK":
+            signature[feature] = "unknown"
+            continue
         if kind == "number" and isinstance(value, (int, float)) and not isinstance(value, bool):
             signature[feature] = _numeric_bin(feature, float(value))
         elif kind == "boolean" and isinstance(value, bool):

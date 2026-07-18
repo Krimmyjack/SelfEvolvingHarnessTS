@@ -24,6 +24,7 @@ from SelfEvolvingHarnessTS.runtime.llm_cache import CacheKey
 
 
 FIXTURE_SOURCE = "contract_policy_not_openai"
+_SPARSE_LOCALIZATION_MARKER = "sparse_localization_subregions/v1"
 
 
 def _plain(value: Any) -> Any:
@@ -55,6 +56,25 @@ def _stage(stage: str, payload: Mapping[str, object]) -> AgentResponse:
     )
 
 
+def _no_proposal(reason_code: str) -> AgentResponse:
+    return AgentResponse.valid(
+        {
+            "schema_version": "agent-envelope/1",
+            "kind": "no_proposal",
+            "stage": "edit",
+            "reason_code": reason_code,
+        },
+        raw_response={
+            "id": f"fixture-no-proposal-{reason_code}",
+            "model": "offline-contract-policy/1",
+        },
+        provider_metadata={
+            "fixture_source": FIXTURE_SOURCE,
+            "returned_model": "offline-contract-policy/1",
+        },
+    )
+
+
 def _public_input(request: AgentRequest) -> Mapping[str, object]:
     if len(request.messages) < 2:
         raise ValueError("contract-policy request has no public user payload")
@@ -76,6 +96,30 @@ def _resolved_harness(request: AgentRequest) -> Mapping[str, object]:
     if not isinstance(parsed, dict):
         raise ValueError("resolved Harness must be an object")
     return parsed
+
+
+def _surface_contract(
+    public: Mapping[str, object],
+    *,
+    surface_id: str | None = None,
+    surface_template_id: str | None = None,
+) -> Mapping[str, object]:
+    catalog = public.get("writable_surface_catalog")
+    if not isinstance(catalog, Sequence) or isinstance(catalog, (str, bytes, bytearray)):
+        raise ValueError("contract-policy request has no surface catalog")
+    matches = [
+        item
+        for item in catalog
+        if isinstance(item, Mapping)
+        and (surface_id is None or item.get("surface_id") == surface_id)
+        and (
+            surface_template_id is None
+            or item.get("surface_template_id") == surface_template_id
+        )
+    ]
+    if len(matches) != 1:
+        raise ValueError("surface catalog does not resolve one writable contract")
+    return matches[0]
 
 
 def _bin_is_positive(value: object) -> bool:
@@ -161,6 +205,7 @@ class ContractPolicyBackend:
         self.call_count += 1
         public = _public_input(request)
         if request.stage == "inspect":
+            harness = _resolved_harness(request)
             features = public.get("features", {})
             if not isinstance(features, Mapping):
                 features = {}
@@ -168,10 +213,44 @@ class ContractPolicyBackend:
             end = float(features.get("estimated_region_end_fraction", 1.0))
             start = min(max(start, 0.0), 0.999999)
             end = min(max(end, start + 1.0 / 192.0), 1.0)
+            inspected = [[start, end]]
+            skills = harness.get("skills", [])
+            localization_body = next(
+                (
+                    str(skill.get("body", ""))
+                    for skill in skills
+                    if isinstance(skill, Mapping)
+                    and skill.get("skill_id") == "inspect_and_localize"
+                ),
+                "",
+            )
+            if (
+                _SPARSE_LOCALIZATION_MARKER in localization_body
+                and float(features.get("local_robust_z_peak", 0.0)) >= 4.0
+                and end - start >= 0.15
+            ):
+                # This fixture has only deployment-visible aggregate bounds.  A
+                # patched procedural skill turns a broad sparse-peak span into
+                # four narrow hypotheses instead of claiming the whole span.
+                hypothesis_count = 2 if end - start < 0.22 else 4
+                centers = np.linspace(
+                    start,
+                    end,
+                    num=hypothesis_count,
+                    endpoint=True,
+                )
+                half_width = 0.75 / 192.0
+                inspected = [
+                    [
+                        max(0.0, float(center) - half_width),
+                        min(1.0, float(center) + half_width),
+                    ]
+                    for center in centers
+                ]
             return _stage(
                 "inspect",
                 {
-                    "inspected_region_fractions": [[start, end]],
+                    "inspected_region_fractions": inspected,
                     "requested_public_tools": [],
                     "uncertainty": "low" if (end - start) < 0.75 else "high",
                 },
@@ -219,8 +298,107 @@ class ContractPolicyBackend:
             )
         if request.stage == "edit":
             card = public.get("failure_pattern_card", {})
-            if not isinstance(card, Mapping) or card.get("cause_code") != "SKILL_LIBRARY_GAP":
-                raise ValueError("contract policy only authors SKILL_LIBRARY_GAP edits")
+            if not isinstance(card, Mapping):
+                raise ValueError("contract policy requires a failure pattern card")
+            cause_code = str(card.get("cause_code", ""))
+            pattern_id = str(card["pattern_id"])
+            base_sha = str(public["base_harness_sha"])
+
+            if cause_code == "LOCALIZATION_PROCEDURE_GAP":
+                target = "bootstrap_skills.entries/inspect_and_localize.body"
+                surface = _surface_contract(public, surface_id=target)
+                manifest = {
+                    "edit_id": f"edit-localization-{pattern_id[-8:]}",
+                    "base_harness_sha": base_sha,
+                    "target_pattern_id": pattern_id,
+                    "target_surface_id": target,
+                    "operation": "PATCH",
+                    "surface_precondition": _plain(surface["surface_precondition"]),
+                    "dependency_precondition_shas": _plain(
+                        surface["dependency_precondition_shas"]
+                    ),
+                    "minimal_patch": {
+                        "value": (
+                            "Inspect public missingness, robust local deviation, level "
+                            "continuity, and period-consistency evidence. When a high "
+                            "robust-z signal spans a broad low-density region, preserve "
+                            "multiple narrow localization hypotheses instead of merging "
+                            "them into one interval. Procedure marker: "
+                            f"{_SPARSE_LOCALIZATION_MARKER}."
+                        )
+                    },
+                    "observable_applicability": None,
+                    "predicted_agent_behavior_change": [
+                        "localization_iou>=0.30",
+                        "identity_retained",
+                    ],
+                    "predicted_data_effect": [
+                        "localization evidence becomes actionable"
+                    ],
+                    "automatically_selected_risk_cases": [],
+                    "falsification_condition": [
+                        "predicted localization change absent",
+                        "target utility gain absent",
+                    ],
+                }
+                return _stage("edit", {"edit_manifest": manifest})
+
+            if cause_code == "RETRIEVAL_MISS":
+                harness = _resolved_harness(request)
+                capability = next(
+                    (
+                        skill
+                        for skill in harness.get("skills", [])
+                        if isinstance(skill, Mapping)
+                        and skill.get("skill_kind") == "capability"
+                    ),
+                    None,
+                )
+                if capability is None:
+                    return _no_proposal("insufficient_public_evidence")
+                skill_id = str(capability["skill_id"])
+                tools = capability.get("allowed_tools", [])
+                if not isinstance(tools, list) or not tools:
+                    return _no_proposal("no_authorized_minimal_edit")
+                operator_id = str(tools[0])
+                target = (
+                    f"skill_library.entries/{skill_id}.observable_applicability"
+                )
+                surface = _surface_contract(public, surface_id=target)
+                applicability = {
+                    "feature": "missing_fraction",
+                    "op": ">",
+                    "value": 0.0,
+                }
+                manifest = {
+                    "edit_id": f"edit-retrieval-{pattern_id[-8:]}",
+                    "base_harness_sha": base_sha,
+                    "target_pattern_id": pattern_id,
+                    "target_surface_id": target,
+                    "operation": "PATCH",
+                    "surface_precondition": _plain(surface["surface_precondition"]),
+                    "dependency_precondition_shas": _plain(
+                        surface["dependency_precondition_shas"]
+                    ),
+                    "minimal_patch": {"value": applicability},
+                    "observable_applicability": applicability,
+                    "predicted_agent_behavior_change": [
+                        f"retrieve_skill:{skill_id}",
+                        f"supply_operator:{operator_id}",
+                        "supply_effect_distinct",
+                        "identity_retained",
+                    ],
+                    "predicted_data_effect": ["target utility improves"],
+                    "automatically_selected_risk_cases": [],
+                    "falsification_condition": [
+                        "skill remains unretrieved",
+                        "target gain absent",
+                    ],
+                }
+                return _stage("edit", {"edit_manifest": manifest})
+
+            if cause_code != "SKILL_LIBRARY_GAP":
+                return _no_proposal("no_authorized_minimal_edit")
             signature = card.get("observable_signature", {})
             if not isinstance(signature, Mapping):
                 raise ValueError("failure pattern has no observable signature")
@@ -228,16 +406,20 @@ class ContractPolicyBackend:
             if family in {None, "period_change"}:
                 raise ValueError("pattern has no authorable capability edit")
             skill_id, operator_id, applicability, body = _skill_contract(family)
-            pattern_id = str(card["pattern_id"])
-            base_sha = str(public["base_harness_sha"])
+            surface = _surface_contract(
+                public,
+                surface_template_id="skill_library.entries/{skill_id}",
+            )
             manifest = {
                 "edit_id": f"edit-{family.replace('_', '-')}-{pattern_id[-8:]}",
                 "base_harness_sha": base_sha,
                 "target_pattern_id": pattern_id,
                 "target_surface_id": f"skill_library.entries/{skill_id}",
                 "operation": "ADD",
-                "surface_precondition": {"kind": "ABSENT"},
-                "dependency_precondition_shas": {},
+                "surface_precondition": _plain(surface["surface_precondition"]),
+                "dependency_precondition_shas": _plain(
+                    surface["dependency_precondition_shas"]
+                ),
                 "new_value": {
                     "schema_version": "skill-entry/1",
                     "skill_id": skill_id,
@@ -372,7 +554,9 @@ class _LastValuePipeline:
         rows = []
         for context in contexts:
             values = np.asarray(context, dtype=np.float64).reshape(-1)
-            rows.append(np.full(prediction_length, values[-1], dtype=np.float32))
+            observed = values[np.isfinite(values)]
+            last = float(observed[-1]) if observed.size else 0.0
+            rows.append(np.full(prediction_length, last, dtype=np.float32))
         mean = torch.as_tensor(np.stack(rows), dtype=torch.float32)
         return mean[:, :, None], mean
 
@@ -380,8 +564,14 @@ class _LastValuePipeline:
 class DeterministicContractValuator:
     """Private fixture score: distance to the paired clean scale context."""
 
+    valuation_source = "DETERMINISTIC_CONTRACT_FIXTURE"
+    ingestion_policy_id = "fixture_mask_aware_plus_missing_penalty/v2"
     model_manifest_sha = canonical_sha256(
-        {"schema_version": "deterministic-contract-valuator/1"}
+        {
+            "schema_version": "deterministic-contract-valuator/2",
+            "valuation_source": valuation_source,
+            "ingestion_policy_id": ingestion_policy_id,
+        }
     )
 
     def __init__(self) -> None:
@@ -420,19 +610,25 @@ class DeterministicContractValuator:
         if not math.isfinite(loss):
             raise ValueError("deterministic contract loss is non-finite")
         forecast_sha = canonical_sha256(
-            {"kind": "contract-distance", "input": self._array_sha(filled)}
+            {
+                "kind": "contract-distance-mask-aware",
+                "input": self._array_sha(raw),
+            }
         )
         missing = int(np.count_nonzero(~finite))
         return ValuationReceipt(
+            valuation_source=self.valuation_source,
+            ingestion_policy_id=self.ingestion_policy_id,
             model_manifest_sha=self.model_manifest_sha,
             input_sha=self._array_sha(raw),
-            filled_context_sha=self._array_sha(filled),
+            filled_context_sha=self._array_sha(raw),
             future_sha=self._array_sha(future),
             forecast_sha=forecast_sha,
             loss_j=loss,
             utility_u=-loss,
             missing_count=missing,
-            fill_fraction=missing / raw.size,
+            missing_fraction=missing / raw.size,
+            fill_fraction=0.0,
             scale=scale,
             prediction_length=future.size,
             status="OK",

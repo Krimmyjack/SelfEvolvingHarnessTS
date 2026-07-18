@@ -14,7 +14,16 @@ from SelfEvolvingHarnessTS.contracts.canonical import (
 
 
 _EVENT_KINDS = frozenset(
-    {"GENESIS", "EDIT_EVALUATED", "PROMOTED", "REJECTED", "PENDING"}
+    {
+        "GENESIS",
+        "EDIT_EVALUATED",
+        "PROMOTED",
+        "REJECTED",
+        "PENDING",
+        "REQUEUED",
+        "SUPERSEDED",
+        "EXPIRED",
+    }
 )
 
 
@@ -213,4 +222,3 @@ class HarnessLineage:
 
 
 __all__ = ["HarnessLineage", "LineageEvent"]
-

@@ -30,6 +30,7 @@ _EXPECTED_MANIFEST = {
     "point_forecast": "mean",
     "loss": "nrmse_clean_context_scale",
     "utility": "negative_loss",
+    "ingestion_policy": "chronos_native_nan_mask/v1",
 }
 
 
@@ -48,18 +49,6 @@ def _array_sha(values: np.ndarray) -> str:
     canonical = np.asarray(values, dtype="<f8").copy()
     canonical[np.isnan(canonical)] = np.nan
     return hashlib.sha256(canonical.tobytes(order="C")).hexdigest()
-
-
-def _fill_nonfinite(values: np.ndarray) -> tuple[np.ndarray, int]:
-    finite = np.isfinite(values)
-    missing_count = int(values.size - np.count_nonzero(finite))
-    if not np.any(finite):
-        raise ValueError("context must contain at least one finite value")
-    if missing_count == 0:
-        return values.copy(), 0
-    indices = np.arange(values.size, dtype=np.float64)
-    filled = np.interp(indices, indices[finite], values[finite])
-    return np.asarray(filled, dtype=np.float64), missing_count
 
 
 def _finite_scale(values: np.ndarray) -> float:
@@ -153,6 +142,8 @@ def _load_local_pipeline(manifest: dict[str, object]) -> object:
 
 @dataclass(frozen=True)
 class ValuationReceipt:
+    valuation_source: str
+    ingestion_policy_id: str
     model_manifest_sha: str
     input_sha: str
     filled_context_sha: str
@@ -161,6 +152,7 @@ class ValuationReceipt:
     loss_j: float
     utility_u: float
     missing_count: int
+    missing_fraction: float
     fill_fraction: float
     scale: float
     prediction_length: int
@@ -199,13 +191,26 @@ class FrozenChronosValuator:
         )
         if not np.all(np.isfinite(future)):
             raise ValueError("clean_future must contain only finite values")
-        filled, missing_count = _fill_nonfinite(raw)
+        if np.any(np.isinf(raw)):
+            raise ValueError("context may contain NaN missing values but not infinity")
+        finite = np.isfinite(raw)
+        if not np.any(finite):
+            raise ValueError("context must contain at least one observed value")
+        # Chronos-Bolt 2.3.0 derives an observation mask from NaNs.  Preserve
+        # that native representation so the identity arm is not silently
+        # converted into the canonical impute_linear repair arm.
+        model_context = raw.copy()
+        missing_count = int(raw.size - np.count_nonzero(finite))
         scale = _finite_scale(scale_values)
 
         try:
             import torch
 
-            tensor = torch.as_tensor(filled, dtype=torch.float32, device="cpu").reshape(1, -1)
+            tensor = torch.as_tensor(
+                model_context,
+                dtype=torch.float32,
+                device="cpu",
+            ).reshape(1, -1)
         except (ImportError, RuntimeError, TypeError, ValueError) as exc:
             raise InfrastructureError("CPU float32 tensor construction failed") from exc
         forecast = _predict_mean(
@@ -217,15 +222,20 @@ class FrozenChronosValuator:
         if not math.isfinite(loss):
             raise InfrastructureError("valuation loss is non-finite")
         return ValuationReceipt(
+            valuation_source="PINNED_FROZEN_CHRONOS",
+            ingestion_policy_id=str(self.manifest["ingestion_policy"]),
             model_manifest_sha=self.model_manifest_sha,
             input_sha=_array_sha(raw),
-            filled_context_sha=_array_sha(filled),
+            # Retained as a compatibility/debugging instrument: it now hashes
+            # the exact model input, including the canonical NaN mask.
+            filled_context_sha=_array_sha(model_context),
             future_sha=_array_sha(future),
             forecast_sha=_array_sha(forecast),
             loss_j=loss,
             utility_u=-loss,
             missing_count=missing_count,
-            fill_fraction=missing_count / context_length,
+            missing_fraction=missing_count / context_length,
+            fill_fraction=0.0,
             scale=scale,
             prediction_length=prediction_length,
             status="OK",

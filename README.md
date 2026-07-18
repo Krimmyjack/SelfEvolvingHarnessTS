@@ -49,6 +49,12 @@ The checked-in replay tape runs two complete cycles without network access:
   --run-dir SelfEvolvingHarnessTS/runs/minipipe/offline-demo
 ```
 
+This deterministic replay is contract evidence: it proves that candidate generation,
+fault routing, one-surface edits, paired replay, and lineage work end to end. Its
+synthetic valuation receipts are explicitly labeled
+`DETERMINISTIC_CONTRACT_FIXTURE`; an edit promoted by this replay is not, by itself,
+evidence of improvement under the frozen Chronos judge.
+
 For a live run, provide the secret only through the environment. The default relay and
 model are `https://api.agicto.cn/v1` and `gpt-5.5`:
 
@@ -63,7 +69,8 @@ export AGICTO_API_KEY='...'
 
 The live path uses the relay for Agent decisions and the frozen Chronos manifest for
 valuation. Secrets are neither written into snapshots/artifacts nor included in request
-hashes.
+hashes. Scientific runs should report `valuation_source=PINNED_FROZEN_CHRONOS` and
+retain the immutable Agent-response cache used by paired replay.
 
 ## Verification
 

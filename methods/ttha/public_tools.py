@@ -9,6 +9,7 @@ from typing import Any, Protocol, TYPE_CHECKING
 import numpy as np
 
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
+from SelfEvolvingHarnessTS.contracts.observables import PERIOD_RELIABILITY_MIN
 
 if TYPE_CHECKING:
     from .agent_core import AgentRole
@@ -58,6 +59,16 @@ def _longest_true_run(mask: np.ndarray) -> int:
     return longest
 
 
+def _longest_observed_segment(values: np.ndarray) -> np.ndarray:
+    finite_indices = np.flatnonzero(np.isfinite(values))
+    if finite_indices.size == 0:
+        return np.asarray([], dtype=np.float64)
+    boundaries = np.flatnonzero(np.diff(finite_indices) > 1) + 1
+    groups = np.split(finite_indices, boundaries)
+    best = max(groups, key=len)
+    return np.asarray(values[best], dtype=np.float64)
+
+
 def _robust_scale(values: np.ndarray) -> float:
     finite = values[np.isfinite(values)]
     if finite.size < 2:
@@ -89,6 +100,34 @@ def _dominant_period(values: np.ndarray) -> float | None:
         for lag in range(2, max_lag + 1)
     ]
     return float(int(np.argmax(scores)) + 2)
+
+
+def _period_features(values: np.ndarray) -> tuple[float, float, str]:
+    window = min(80, values.size // 2)
+    if window < 16:
+        return 0.0, 0.0, "UNKNOWN"
+    pre_raw = values[:window]
+    post_raw = values[-window:]
+    pre = _longest_observed_segment(pre_raw)
+    post = _longest_observed_segment(post_raw)
+    first_period = _dominant_period(pre)
+    second_period = _dominant_period(post)
+    if first_period is None or second_period is None:
+        return 0.0, 0.0, "UNKNOWN"
+    coverage = min(pre.size / window, post.size / window)
+    longest_gap = max(
+        _longest_true_run(~np.isfinite(pre_raw)),
+        _longest_true_run(~np.isfinite(post_raw)),
+    )
+    gap_penalty = max(
+        0.0,
+        1.0 - longest_gap / max(min(first_period, second_period), 4.0),
+    )
+    reliability = float(np.clip(coverage * gap_penalty, 0.0, 1.0))
+    if reliability < PERIOD_RELIABILITY_MIN:
+        return 0.0, reliability, "UNKNOWN"
+    score = abs(second_period - first_period) / max(first_period, 1.0)
+    return float(score), reliability, "OK"
 
 
 def _probe_direction(values: object) -> str:
@@ -145,13 +184,7 @@ def extract_public_features(
     else:
         region_start = 0.0
         region_end = 1.0
-    midpoint = array.size // 2
-    first_period = _dominant_period(filled[:midpoint])
-    second_period = _dominant_period(filled[midpoint:])
-    if first_period is None or second_period is None:
-        period_change = 0.0
-    else:
-        period_change = abs(second_period - first_period) / max(first_period, second_period, 1.0)
+    period_change, period_reliability, period_evidence_status = _period_features(array)
     panel = fixed_probe_panel or {}
     features = {
         "task_kind": task_kind,
@@ -162,6 +195,8 @@ def extract_public_features(
         "estimated_region_end_fraction": region_end,
         "level_excursion_score": level_score,
         "period_change_score": float(period_change),
+        "period_reliability": period_reliability,
+        "period_evidence_status": period_evidence_status,
         "period_repair_available": False,
         "imputation_probe_direction": _probe_direction(panel.get("imputation", ())),
         "clipping_probe_direction": _probe_direction(panel.get("clipping", ())),

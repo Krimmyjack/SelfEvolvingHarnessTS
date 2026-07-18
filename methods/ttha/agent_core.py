@@ -90,6 +90,7 @@ class AgentStageResult:
     response: AgentResponse
     tool_receipts: tuple[PublicToolReceipt, ...]
     request_hashes: tuple[str, ...]
+    no_proposal_reason: str | None = None
 
 
 def _skill_prompt(skill: object) -> dict[str, object]:
@@ -244,6 +245,20 @@ class TTHAAgentCore:
                     response=response,
                     tool_receipts=tuple(receipts),
                     request_hashes=tuple(request_hashes),
+                )
+            if envelope["kind"] == "no_proposal":
+                if role is not AgentRole.SLOW or stage != "edit":
+                    raise AgentProtocolError(
+                        "no_proposal is valid for the slow edit stage only"
+                    )
+                return AgentStageResult(
+                    role=role,
+                    stage=stage,
+                    payload=MappingProxyType({}),
+                    response=response,
+                    tool_receipts=tuple(receipts),
+                    request_hashes=tuple(request_hashes),
+                    no_proposal_reason=str(envelope["reason_code"]),
                 )
             if tool_rounds >= 8:
                 raise AgentProtocolError("tool round limit exceeded")

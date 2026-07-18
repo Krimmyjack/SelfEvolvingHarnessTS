@@ -32,6 +32,8 @@ class CaseFacts:
     is_target: bool = True
     private_family: str | None = None
     oracle_affected_indices: tuple[int, ...] = ()
+    valuation_source: str = "UNSPECIFIED"
+    ingestion_policy_id: str = "UNSPECIFIED"
     clean_u: float = -0.10
     corrupt_u: float = -0.40
     prepared_u: float = -0.38
@@ -311,7 +313,15 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
         )
     )
 
-    if facts.capability_skill_exists and facts.forced_skill_succeeds and not facts.normal_retrieval:
+    if not facts.is_target:
+        retrieval = _assessment(
+            facts,
+            rules,
+            Stage.RETRIEVAL_POLICY,
+            AssessmentStatus.NOT_APPLICABLE,
+            rule="non_target_retrieval_not_attributed",
+        )
+    elif facts.capability_skill_exists and facts.forced_skill_succeeds and not facts.normal_retrieval:
         retrieval = _assessment(
             facts,
             rules,
@@ -529,6 +539,8 @@ def assess_case(
         schema_version="case-feedback/1",
         case_id=facts.case_id,
         outcome=OutcomeFeedback(
+            valuation_source=facts.valuation_source,
+            ingestion_policy_id=facts.ingestion_policy_id,
             clean_u=float(facts.clean_u),
             corrupt_u=float(facts.corrupt_u),
             prepared_u=float(facts.prepared_u),
