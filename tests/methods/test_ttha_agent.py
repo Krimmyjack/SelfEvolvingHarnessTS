@@ -1,3 +1,4 @@
+import json
 from dataclasses import replace
 from pathlib import Path
 
@@ -178,6 +179,50 @@ def test_local_tool_request_is_executed_then_same_stage_resumes():
     assert result.payload["uncertainty"] == "low"
     assert result.tool_receipts[0].tool_name == "summarize_series"
     assert backend.call_count == 2
+
+
+def test_live_prompt_makes_outer_agent_envelope_unambiguous():
+    response = _stage(
+        "inspect",
+        {
+            "inspected_region_fractions": [[0.0, 1.0]],
+            "requested_public_tools": [],
+            "uncertainty": "low",
+        },
+    )
+
+    class CapturingBackend:
+        def __init__(self):
+            self.requests = []
+
+        def complete(self, request):
+            self.requests.append(request)
+            return response
+
+    backend = CapturingBackend()
+    gateway = LocalPublicToolGateway(np.arange(8.0), task_kind="forecast")
+    h0 = compile_snapshot(H0_ROOT)
+    core = TTHAAgentCore(backend, gateway)
+    core.run_stage(
+        role="fast",
+        stage="inspect",
+        case_id="case-envelope-prompt",
+        public_input={"features": gateway.public_features},
+        harness_view=resolve_harness_view(h0, gateway.public_features),
+        output_schema_name="fast_inspect_v1",
+        output_schema=core.load_stage_schema("fast_inspect_v1"),
+        source_snapshot_sha=h0.runtime_bundle_sha,
+    )
+
+    request = backend.requests[0]
+    assert "never return the stage payload by itself" in request.messages[0]["content"]
+    prompt = json.loads(request.messages[1]["content"])
+    contract = prompt["response_contract"]
+    assert contract["outer_envelope_required"] is True
+    assert contract["bare_stage_payload_forbidden"] is True
+    assert '"stage":"inspect"' in contract["stage_result_template"]
+    assert prompt["stage_payload_schema_name"] == "fast_inspect_v1"
+    assert "output_schema" not in prompt
 
 
 def test_fast_path_compiles_selects_and_executes_program():

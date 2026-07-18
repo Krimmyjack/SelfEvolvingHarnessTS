@@ -145,17 +145,36 @@ class TTHAAgentCore:
         system = (
             harness_view.instruction
             + "\nRuntime rule: return exactly one agent-envelope/1 JSON value. "
+            + "The outer envelope is mandatory; never return the stage payload by "
+            + "itself and never use schema_name/content as substitute wrapper keys. "
             + "Do not emit PASS/FAIL judgments or hidden reasoning.\nResolved Harness: "
             + canonical_json_bytes(resolved_harness).decode("utf-8")
         )
+        response_contract = {
+            "outer_envelope_required": True,
+            "bare_stage_payload_forbidden": True,
+            "stage_result_template": (
+                '{"schema_version":"agent-envelope/1","kind":"stage_result",'
+                f'"stage":"{stage}","payload":<OBJECT SATISFYING '
+                f'{output_schema_name}>}}'
+            ),
+            "tool_request_template": {
+                "schema_version": "agent-envelope/1",
+                "kind": "tool_request",
+                "call_id": "unique_call_id",
+                "tool_name": "one_allowed_local_tool_name",
+                "arguments": {},
+            },
+        }
         user_payload = {
             "schema_version": "public-agent-input/1",
             "role": role.value,
             "stage": stage,
             "public_input": _plain(public_input),
             "allowed_local_tools": _plain(tool_schemas),
-            "output_schema_name": output_schema_name,
-            "output_schema": _plain(output_schema),
+            "response_contract": response_contract,
+            "stage_payload_schema_name": output_schema_name,
+            "stage_payload_schema": _plain(output_schema),
         }
         return (
             {"role": "system", "content": system},
