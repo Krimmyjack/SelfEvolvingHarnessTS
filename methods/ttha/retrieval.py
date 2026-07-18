@@ -13,7 +13,10 @@ from SelfEvolvingHarnessTS.contracts.harness import (
     SkillEntry,
     SkillKind,
 )
-from SelfEvolvingHarnessTS.contracts.observables import validate_applicability
+from SelfEvolvingHarnessTS.contracts.observables import (
+    observable_numeric_bin,
+    validate_applicability,
+)
 
 
 def _freeze_json(value: Any) -> Any:
@@ -68,6 +71,11 @@ def _evaluate(
     actual = public_features[feature]
     expected = ast["value"]
     operation = ast["op"]
+    if isinstance(actual, (int, float)) and not isinstance(actual, bool):
+        if isinstance(expected, str):
+            actual = observable_numeric_bin(str(feature), float(actual))
+        elif operation == "in" and isinstance(expected, Sequence):
+            actual = observable_numeric_bin(str(feature), float(actual))
     if operation == "in":
         return bool(actual in expected), 1
     if operation in _NUMERIC_OPERATORS:

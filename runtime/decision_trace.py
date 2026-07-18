@@ -34,6 +34,10 @@ class DecisionTrace:
     verification_actions: tuple[str, ...]
     effect_equivalent_to_identity: bool
     series_length: int | None = None
+    # PROGRAM candidates that executed successfully but produced the exact raw
+    # bytes. This is supplier-level evidence, so it intentionally includes
+    # candidates later removed by risk or pool filtering.
+    supplied_noop_candidate_ids: tuple[str, ...] = ()
     # Grader-only execution material. It is never included in the normalized
     # behavior signature or any Agent-facing payload.
     candidate_program_steps: Mapping[
@@ -50,6 +54,13 @@ class DecisionTrace:
             raise ValueError("DecisionTrace candidate IDs must be unique")
         if not set(self.candidate_program_steps).issubset(set(self.candidate_ids)):
             raise ValueError("candidate program material must name a supplied candidate")
+        if (
+            len(self.supplied_noop_candidate_ids)
+            != len(set(self.supplied_noop_candidate_ids))
+            or "identity" in self.supplied_noop_candidate_ids
+            or any(not isinstance(value, str) or not value for value in self.supplied_noop_candidate_ids)
+        ):
+            raise ValueError("supplied no-op IDs must be unique PROGRAM candidate IDs")
         if not isinstance(self.chosen_candidate_id, str):
             raise ValueError("chosen_candidate_id must be a string")
         for start, end in self.inspected_regions:
@@ -150,6 +161,7 @@ class BehaviorSignature:
             ),
             "verification_actions": list(trace.verification_actions),
             "effect_equivalent_to_identity": trace.effect_equivalent_to_identity,
+            "supplied_noop_candidate_ids": list(trace.supplied_noop_candidate_ids),
         }
         return cls(
             normalized_behavior=_freeze_json(normalized),

@@ -42,6 +42,7 @@ _TOP_LEVEL_KEYS = frozenset(
 )
 _CORPUS_KEYS = frozenset(
     {
+        "corpus_version",
         "base_seeds",
         "context_length",
         "future_length",
@@ -92,6 +93,8 @@ def load_m0_rules(path: Path) -> M0Rules:
         raise ValueError("M0 corpus rules keys mismatch")
     if corpus["context_length"] != 192 or corpus["future_length"] != 48:
         raise ValueError("M0 corpus lengths are frozen at 192 + 48")
+    if corpus["corpus_version"] != "m0-corpus/2":
+        raise ValueError("M0 corpus definition must use m0-corpus/2")
     if tuple(corpus["severities"]) != ("mild", "severe"):
         raise ValueError("M0 severities must be mild and severe")
     if value["candidate_pool_size"] != 1 + value["agent_program_slots"]:

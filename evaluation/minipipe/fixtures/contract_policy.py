@@ -15,6 +15,7 @@ from SelfEvolvingHarnessTS.contracts.canonical import (
     parse_json_document,
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.chronos import ValuationReceipt
+from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA
 from SelfEvolvingHarnessTS.runtime.agent_backend import (
     AgentRequest,
     AgentResponse,
@@ -25,6 +26,14 @@ from SelfEvolvingHarnessTS.runtime.llm_cache import CacheKey
 
 FIXTURE_SOURCE = "contract_policy_not_openai"
 _SPARSE_LOCALIZATION_MARKER = "sparse_localization_subregions/v1"
+_NEGATIVE_PROBE_ABSTENTION_MARKER = "negative_matching_probe_abstention/v1"
+
+_CATEGORY_PROBE_DIRECTION = {
+    "impute": "imputation_probe_direction",
+    "outlier": "clipping_probe_direction",
+    "denoise": "denoising_probe_direction",
+    "structural": "level_probe_direction",
+}
 
 
 def _plain(value: Any) -> Any:
@@ -190,6 +199,26 @@ def _skill_contract(family: str) -> tuple[str, str, Mapping[str, object], str]:
     raise ValueError(f"no M0 capability skill is defined for {family}")
 
 
+def _candidate_has_negative_matching_probe(
+    candidate: Mapping[str, object],
+    features: Mapping[str, object],
+) -> bool:
+    steps = candidate.get("steps", ())
+    if not isinstance(steps, Sequence) or isinstance(steps, (str, bytes, bytearray)):
+        return False
+    for step in steps:
+        if not isinstance(step, Mapping):
+            continue
+        operator_id = step.get("op")
+        if not isinstance(operator_id, str) or operator_id not in OPERATOR_METADATA:
+            continue
+        category = str(OPERATOR_METADATA[operator_id]["category"])
+        feature = _CATEGORY_PROBE_DIRECTION.get(category)
+        if feature is not None and features.get(feature) == "negative":
+            return True
+    return False
+
+
 class ContractPolicyBackend:
     """Public-request-only fixture author; never used as scientific evidence."""
 
@@ -280,10 +309,30 @@ class ContractPolicyBackend:
                 )
             return _stage("propose", {"candidates": candidates})
         if request.stage == "select":
+            harness = _resolved_harness(request)
+            controls = harness.get("controls", {})
+            candidate_policy = (
+                controls.get("candidate_policy", {})
+                if isinstance(controls, Mapping)
+                else {}
+            )
+            selection_guidance = (
+                str(candidate_policy.get("selection_guidance", ""))
+                if isinstance(candidate_policy, Mapping)
+                else ""
+            )
+            features = public.get("features", {})
+            if not isinstance(features, Mapping):
+                features = {}
             candidates = public.get("candidates", [])
             chosen = "identity"
             for candidate in candidates if isinstance(candidates, list) else []:
                 if isinstance(candidate, Mapping) and candidate.get("kind") == "program":
+                    if (
+                        _NEGATIVE_PROBE_ABSTENTION_MARKER in selection_guidance
+                        and _candidate_has_negative_matching_probe(candidate, features)
+                    ):
+                        continue
                     chosen = str(candidate["candidate_id"])
                     break
             return _stage(
@@ -339,6 +388,46 @@ class ContractPolicyBackend:
                     "falsification_condition": [
                         "predicted localization change absent",
                         "target utility gain absent",
+                    ],
+                }
+                return _stage("edit", {"edit_manifest": manifest})
+
+            if cause_code == "PROBE_SELECTION_CONTRADICTION":
+                target = "candidate_policy.selection_guidance"
+                surface = _surface_contract(public, surface_id=target)
+                manifest = {
+                    "edit_id": f"edit-negative-probe-selection-{pattern_id[-8:]}",
+                    "base_harness_sha": base_sha,
+                    "target_pattern_id": pattern_id,
+                    "target_surface_id": target,
+                    "operation": "PATCH",
+                    "surface_precondition": _plain(surface["surface_precondition"]),
+                    "dependency_precondition_shas": _plain(
+                        surface["dependency_precondition_shas"]
+                    ),
+                    "minimal_patch": {
+                        "value": (
+                            "Choose one candidate explicitly. Prefer identity when "
+                            "public evidence is insufficient. When the fixed probe "
+                            "matching a candidate's transformation category has a "
+                            "negative direction, choose identity unless public evidence "
+                            "contains an explicit countervailing safety justification. "
+                            "Policy marker: "
+                            f"{_NEGATIVE_PROBE_ABSTENTION_MARKER}."
+                        )
+                    },
+                    "observable_applicability": None,
+                    "predicted_agent_behavior_change": [
+                        "choose_candidate_kind:identity",
+                        "identity_retained",
+                    ],
+                    "predicted_data_effect": [
+                        "avoid negative-probe restoration harm"
+                    ],
+                    "automatically_selected_risk_cases": [],
+                    "falsification_condition": [
+                        "negative matching probe still selects a program",
+                        "target utility does not improve relative to the harmful choice",
                     ],
                 }
                 return _stage("edit", {"edit_manifest": manifest})

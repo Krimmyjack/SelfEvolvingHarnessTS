@@ -64,6 +64,9 @@ def _operator_public_contract(name: str) -> dict[str, object]:
         "changes_target_space": metadata["changes_target_space"],
         "requires_dependency": metadata["requires_dependency"],
         "dependency_policy": metadata["dependency_policy"],
+        "public_parameter_bindings": dict(
+            metadata.get("public_parameter_bindings", {})
+        ),
     }
 
 
@@ -111,6 +114,26 @@ def _modified_indices(raw: np.ndarray, prepared: np.ndarray) -> tuple[int, ...]:
         return tuple(range(max(raw.size, prepared.size)))
     equal = np.equal(raw, prepared) | (np.isnan(raw) & np.isnan(prepared))
     return tuple(int(index) for index in np.flatnonzero(~equal))
+
+
+def _supplied_noop_ids(
+    candidates: Sequence[Candidate],
+    values: np.ndarray,
+) -> tuple[str, ...]:
+    noops: list[str] = []
+    for candidate in candidates:
+        if candidate.kind is not CandidateKind.PROGRAM or candidate.program is None:
+            continue
+        execution = run_pipeline(
+            candidate.program.execution_steps(), values, source=candidate.source
+        )
+        if (
+            execution.ok
+            and execution.artifact is not None
+            and effect_equivalent_to_identity(values, execution.artifact)
+        ):
+            noops.append(candidate.candidate_id)
+    return tuple(noops)
 
 
 def _inside_regions(index: int, regions: tuple[tuple[int, int], ...]) -> bool:
@@ -162,6 +185,7 @@ class TTHAFastAgent:
         modified_indices: tuple[int, ...],
         verification_actions: tuple[str, ...],
         identity_equivalent: bool,
+        supplied_noop_candidate_ids: tuple[str, ...],
     ) -> DecisionTrace:
         tool_calls = tuple(
             {
@@ -217,6 +241,7 @@ class TTHAFastAgent:
             verification_actions=verification_actions,
             effect_equivalent_to_identity=identity_equivalent,
             series_length=request.values.size,
+            supplied_noop_candidate_ids=supplied_noop_candidate_ids,
             candidate_program_steps=candidate_program_steps,
             agent_cache_hit_flags=cache_hit_flags,
         )
@@ -246,6 +271,7 @@ class TTHAFastAgent:
         pool: CandidatePool | None = None
         chosen_id = ""
         verification_actions: tuple[str, ...] = ()
+        supplied_noop_candidate_ids: tuple[str, ...] = ()
         compilation_status = "not_started"
         try:
             inspect = self.core.run_stage(
@@ -285,6 +311,9 @@ class TTHAFastAgent:
             )
             stages.append(propose)
             supplied = _compile_candidates(propose.payload, request)
+            supplied_noop_candidate_ids = _supplied_noop_ids(
+                supplied, request.values
+            )
             total_k = int(snapshot.candidate_policy["total_k"])
             pool = CandidatePool.build(supplied, total_k=total_k)
             pool = pool.apply_risk(
@@ -340,6 +369,7 @@ class TTHAFastAgent:
                 modified_indices=(),
                 verification_actions=verification_actions,
                 identity_equivalent=False,
+                supplied_noop_candidate_ids=supplied_noop_candidate_ids,
             )
             return (
                 PreparationResult(
@@ -367,6 +397,7 @@ class TTHAFastAgent:
                 modified_indices=(),
                 verification_actions=verification_actions,
                 identity_equivalent=True,
+                supplied_noop_candidate_ids=supplied_noop_candidate_ids,
             )
             return (
                 PreparationResult(
@@ -399,6 +430,7 @@ class TTHAFastAgent:
                 modified_indices=(),
                 verification_actions=verification_actions,
                 identity_equivalent=False,
+                supplied_noop_candidate_ids=supplied_noop_candidate_ids,
             )
             return (
                 PreparationResult(
@@ -426,6 +458,7 @@ class TTHAFastAgent:
             modified_indices=modified,
             verification_actions=verification_actions,
             identity_equivalent=equivalent,
+            supplied_noop_candidate_ids=supplied_noop_candidate_ids,
         )
         return (
             PreparationResult(

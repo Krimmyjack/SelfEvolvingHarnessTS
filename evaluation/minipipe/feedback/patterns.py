@@ -34,6 +34,7 @@ def _capability_state(cause_code: str) -> str:
         "SKILL_CONTENT_GAP",
         "PROPOSAL_CONTROL_GAP",
         "SELECTION_MISS",
+        "PROBE_SELECTION_CONTRADICTION",
         "IMPLEMENTATION_MISMATCH",
         "EXECUTION_MISMATCH",
         "OUTCOME_GAP",
@@ -121,6 +122,18 @@ class ClusterPurityReceipt:
     support_count: int
     low_mechanism_purity: bool
     receipt_sha: str
+
+    def to_private_json(self) -> dict[str, object]:
+        return {
+            "schema_version": "cluster-purity-receipt/1",
+            "pattern_id": self.pattern_id,
+            "oracle_mechanism_purity": self.oracle_mechanism_purity,
+            "best_intervention_purity": self.best_intervention_purity,
+            "target_surface_purity": self.target_surface_purity,
+            "support_count": self.support_count,
+            "low_mechanism_purity": self.low_mechanism_purity,
+            "receipt_sha": self.receipt_sha,
+        }
 
 
 def _mode_mapping(evidences: Sequence[FailurePatternEvidence]) -> Mapping[str, object]:
@@ -262,13 +275,33 @@ def compute_cluster_purity(
     surfaces: list[str] = []
     for feedback in selected:
         curves = feedback.mechanism.r_private_curves
-        numeric = {
-            str(key): float(value)
-            for key, value in curves.items()
-            if isinstance(value, (int, float)) and not isinstance(value, bool)
-        }
-        if numeric:
-            best_interventions.append(max(numeric, key=numeric.get))
+        curve_maxima: dict[str, float] = {}
+        for key, value in curves.items():
+            gains: list[float] = []
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                gains.append(float(value))
+            elif isinstance(value, Mapping):
+                for gain_key in ("r_private", "delta", "gain"):
+                    gain = value.get(gain_key)
+                    if isinstance(gain, (int, float)) and not isinstance(gain, bool):
+                        gains.append(float(gain))
+            elif isinstance(value, Sequence) and not isinstance(
+                value, (str, bytes, bytearray)
+            ):
+                for point in value:
+                    if not isinstance(point, Mapping):
+                        continue
+                    for gain_key in ("r_private", "delta", "gain"):
+                        gain = point.get(gain_key)
+                        if isinstance(gain, (int, float)) and not isinstance(
+                            gain, bool
+                        ):
+                            gains.append(float(gain))
+                            break
+            if gains:
+                curve_maxima[str(key)] = max(gains)
+        if curve_maxima:
+            best_interventions.append(max(curve_maxima, key=curve_maxima.get))
         surfaces.extend(feedback.update_attribution.suspect_surface_templates[:1])
     mechanism_purity = _purity([str(value) for value in families])
     payload = {

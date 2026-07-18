@@ -3,11 +3,16 @@ from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from SelfEvolvingHarnessTS.contracts.harness import EditOperation, load_skill_entry
 from SelfEvolvingHarnessTS.contracts.method import PreparationRequest, PreparationStatus
 from SelfEvolvingHarnessTS.contracts.task import forecast_task_spec_v1
-from SelfEvolvingHarnessTS.methods.ttha.agent_core import TTHAAgentCore
+from SelfEvolvingHarnessTS.methods.ttha.agent_core import (
+    AgentProtocolError,
+    TTHAAgentCore,
+    validate_local_schema,
+)
 from SelfEvolvingHarnessTS.methods.ttha.fast_agent import TTHAFastAgent
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.public_tools import LocalPublicToolGateway
@@ -413,3 +418,125 @@ def test_slow_path_can_return_an_explicit_no_proposal_envelope():
     )
     assert manifest is None
     assert slow.last_no_proposal_reason == "no_authorized_minimal_edit"
+
+
+def test_slow_schema_exposes_closed_recursive_applicability_with_numeric_bins():
+    schema = TTHAAgentCore.load_stage_schema("slow_edit_v1")
+    h0 = compile_snapshot(H0_ROOT)
+    base = {
+        "edit_id": "edit-period-observation",
+        "base_harness_sha": h0.harness_content_sha,
+        "target_pattern_id": "pattern-period",
+        "target_surface_id": "bootstrap_skills.entries/inspect_and_localize.body",
+        "operation": "PATCH",
+        "surface_precondition": {"kind": "SHA", "sha": "0" * 64},
+        "dependency_precondition_shas": {},
+        "minimal_patch": {"append_text": "Preserve reliable public period evidence."},
+        "observable_applicability": {
+            "all": [
+                {"feature": "period_change_score", "op": "==", "value": "high"},
+                {"feature": "period_evidence_status", "op": "==", "value": "OK"},
+            ]
+        },
+        "predicted_agent_behavior_change": ["preserve_period_observation"],
+        "predicted_data_effect": ["better_localization"],
+        "falsification_condition": ["predicted_behavior_absent"],
+    }
+    validate_local_schema({"edit_manifest": base}, schema)
+
+    invalid = dict(base)
+    invalid["observable_applicability"] = {"period_change_score": "high"}
+    with pytest.raises(AgentProtocolError):
+        validate_local_schema({"edit_manifest": invalid}, schema)
+
+
+def test_fast_propose_schema_forbids_identity_program_and_nonregistry_ops():
+    schema = TTHAAgentCore.load_stage_schema("fast_propose_v1")
+    valid = {
+        "candidates": [
+            {
+                "candidate_id": "agent-0",
+                "steps": [{"op": "impute_linear", "params": {}}],
+            }
+        ]
+    }
+    validate_local_schema(valid, schema)
+    literal_identity = {
+        "candidates": [
+            {
+                "candidate_id": "identity",
+                "steps": [{"op": "impute_linear", "params": {}}],
+            }
+        ]
+    }
+    identity_operator = {
+        "candidates": [
+            {
+                "candidate_id": "agent-0",
+                "steps": [{"op": "identity", "params": {}}],
+            }
+        ]
+    }
+    with pytest.raises(AgentProtocolError):
+        validate_local_schema(literal_identity, schema)
+    with pytest.raises(AgentProtocolError):
+        validate_local_schema(identity_operator, schema)
+
+
+def test_slow_stage_retries_once_with_schema_error_feedback():
+    h0 = compile_snapshot(H0_ROOT)
+    common = {
+        "edit_id": "edit-retry",
+        "base_harness_sha": h0.harness_content_sha,
+        "target_pattern_id": "pattern-retry",
+        "target_surface_id": "bootstrap_skills.entries/inspect_and_localize.body",
+        "operation": "PATCH",
+        "surface_precondition": {"kind": "SHA", "sha": "0" * 64},
+        "dependency_precondition_shas": {},
+        "minimal_patch": {"append_text": "Inspect narrow public subregions."},
+        "predicted_agent_behavior_change": ["inspect_narrow_regions"],
+        "predicted_data_effect": ["localization_iou_improves"],
+        "falsification_condition": ["predicted_behavior_absent"],
+    }
+    invalid = dict(common)
+    invalid["observable_applicability"] = {"period_change_score": "high"}
+    corrected = dict(common)
+    corrected["observable_applicability"] = {
+        "feature": "period_change_score",
+        "op": "==",
+        "value": "high",
+    }
+
+    class CapturingBackend:
+        def __init__(self):
+            self.requests = []
+            self.responses = [
+                _stage("edit", {"edit_manifest": invalid}),
+                _stage("edit", {"edit_manifest": corrected}),
+            ]
+
+        def complete(self, request):
+            self.requests.append(request)
+            return self.responses[len(self.requests) - 1]
+
+    backend = CapturingBackend()
+    slow = TTHASlowAgent(
+        TTHAAgentCore(
+            backend,
+            LocalPublicToolGateway(np.arange(8.0), task_kind="forecast"),
+        )
+    )
+    manifest = slow.propose_edit(
+        {
+            "pattern_id": "pattern-retry",
+            "observable_signature": {"period_change_score": "high"},
+        },
+        [{"surface_id": "bootstrap_skills.entries/inspect_and_localize.body"}],
+        h0,
+    )
+    assert manifest is not None
+    assert manifest.observable_applicability["value"] == "high"
+    assert len(backend.requests) == 2
+    retry_feedback = json.loads(backend.requests[1].messages[-1]["content"])
+    assert retry_feedback["schema_version"] == "stage-validation-error/1"
+    assert "observable_applicability" in retry_feedback["error"]

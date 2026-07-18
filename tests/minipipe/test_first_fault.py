@@ -34,6 +34,29 @@ def test_effective_candidate_present_but_unchosen_is_selection_miss():
     assert result.attribution.cause_code == "SELECTION_MISS"
 
 
+def test_negative_matching_probe_and_selected_repair_routes_to_selection_control():
+    facts = _passing(
+        damage_d=-0.02,
+        chosen_candidate_id="agent-0",
+        chosen_probe_directions=("negative",),
+        chosen_gain=-0.05,
+    )
+    result = assess_case(facts, rules=_rules())
+    assert result.attribution.first_stage == "ELIGIBILITY"
+    assert result.attribution.cause_code == "PROBE_SELECTION_CONTRADICTION"
+    assert result.attribution.actionability == "EDITABLE_M0"
+    assert result.attribution.suspect_surface_templates == (
+        "candidate_policy.selection_guidance",
+    )
+    route = FaultRouter().authorize(
+        "PROBE_SELECTION_CONTRADICTION",
+        target_class="selection_control",
+        operation="PATCH",
+        target_surface_id="candidate_policy.selection_guidance",
+    )
+    assert route.actionability == "EDITABLE_M0"
+
+
 def test_observable_witness_without_capability_skill_is_library_gap():
     facts = _passing(
         candidate_utilities={"identity": -0.4},

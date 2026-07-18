@@ -42,6 +42,7 @@ class CaseFacts:
     candidate_utilities: Mapping[str, float] = field(default_factory=dict)
     effect_distinct_candidate_ids: tuple[str, ...] = ()
     chosen_candidate_id: str = "identity"
+    chosen_probe_directions: tuple[str, ...] = ()
     public_evidence_discriminative: bool = True
     agent_inspected_evidence: bool = True
     localization_required: bool = True
@@ -168,7 +169,7 @@ def _supply_failure(facts: CaseFacts) -> tuple[str, str, tuple[str, ...]]:
             return (
                 "PROPOSAL_CONTROL_GAP",
                 "EDITABLE_M0",
-                ("controls.proposal",),
+                ("candidate_policy.proposal_guidance",),
             )
         return (
             "SKILL_CONTENT_GAP",
@@ -180,7 +181,24 @@ def _supply_failure(facts: CaseFacts) -> tuple[str, str, tuple[str, ...]]:
 
 def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessment, ...]:
     assessments: list[StageAssessment] = []
-    if facts.is_target and facts.damage_d < float(rules["critic_damage_min"]):
+    if (
+        facts.is_target
+        and facts.chosen_candidate_id != "identity"
+        and "negative" in facts.chosen_probe_directions
+    ):
+        assessments.append(
+            _assessment(
+                facts,
+                rules,
+                Stage.ELIGIBILITY,
+                AssessmentStatus.FAIL,
+                rule="selected_probe_direction",
+                fault="PROBE_SELECTION_CONTRADICTION",
+                cause="PROBE_SELECTION_CONTRADICTION",
+                surfaces=("candidate_policy.selection_guidance",),
+            )
+        )
+    elif facts.is_target and facts.damage_d < float(rules["critic_damage_min"]):
         assessments.append(
             _assessment(
                 facts,
@@ -395,7 +413,7 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             rule="selection_regret_min",
             fault="SELECTION_MISS",
             cause="SELECTION_MISS",
-            surfaces=("controls.selection",),
+            surfaces=("candidate_policy.selection_guidance",),
         )
     else:
         selection = _assessment(
@@ -416,7 +434,7 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             rule="canonical_compilation",
             fault="IMPLEMENTATION_MISMATCH",
             cause="IMPLEMENTATION_MISMATCH",
-            surfaces=("controls.proposal",),
+            surfaces=("candidate_policy.proposal_guidance",),
         )
     else:
         compilation = _assessment(
@@ -475,7 +493,7 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             rule="candidate_gain_min",
             fault="OUTCOME_GAP",
             cause="OUTCOME_GAP",
-            surfaces=("controls.proposal",),
+            surfaces=("candidate_policy.proposal_guidance",),
         )
     else:
         outcome = _assessment(

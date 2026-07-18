@@ -9,7 +9,9 @@ from typing import Any, Protocol, TYPE_CHECKING
 import numpy as np
 
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
-from SelfEvolvingHarnessTS.contracts.observables import PERIOD_RELIABILITY_MIN
+from SelfEvolvingHarnessTS.runtime.public_features import (
+    extract_public_features as _extract_base_features,
+)
 
 if TYPE_CHECKING:
     from .agent_core import AgentRole
@@ -48,88 +50,6 @@ def _freeze_json(value: Any) -> Any:
     return value
 
 
-def _longest_true_run(mask: np.ndarray) -> int:
-    longest = current = 0
-    for value in mask:
-        if bool(value):
-            current += 1
-            longest = max(longest, current)
-        else:
-            current = 0
-    return longest
-
-
-def _longest_observed_segment(values: np.ndarray) -> np.ndarray:
-    finite_indices = np.flatnonzero(np.isfinite(values))
-    if finite_indices.size == 0:
-        return np.asarray([], dtype=np.float64)
-    boundaries = np.flatnonzero(np.diff(finite_indices) > 1) + 1
-    groups = np.split(finite_indices, boundaries)
-    best = max(groups, key=len)
-    return np.asarray(values[best], dtype=np.float64)
-
-
-def _robust_scale(values: np.ndarray) -> float:
-    finite = values[np.isfinite(values)]
-    if finite.size < 2:
-        return 0.0
-    median = float(np.median(finite))
-    scale = 1.4826 * float(np.median(np.abs(finite - median)))
-    if not math.isfinite(scale) or scale <= 0:
-        scale = float(np.std(finite))
-    return max(scale, 0.0) if math.isfinite(scale) else 0.0
-
-
-def _dominant_period(values: np.ndarray) -> float | None:
-    finite = values[np.isfinite(values)]
-    if finite.size < 12:
-        return None
-    centered = finite - np.mean(finite)
-    energy = float(np.dot(centered, centered))
-    if energy <= 0:
-        return None
-    max_lag = min(48, finite.size // 3)
-    if max_lag < 2:
-        return None
-    scores = [
-        float(np.dot(centered[:-lag], centered[lag:]))
-        / math.sqrt(
-            max(float(np.dot(centered[:-lag], centered[:-lag])), 1e-12)
-            * max(float(np.dot(centered[lag:], centered[lag:])), 1e-12)
-        )
-        for lag in range(2, max_lag + 1)
-    ]
-    return float(int(np.argmax(scores)) + 2)
-
-
-def _period_features(values: np.ndarray) -> tuple[float, float, str]:
-    window = min(80, values.size // 2)
-    if window < 16:
-        return 0.0, 0.0, "UNKNOWN"
-    pre_raw = values[:window]
-    post_raw = values[-window:]
-    pre = _longest_observed_segment(pre_raw)
-    post = _longest_observed_segment(post_raw)
-    first_period = _dominant_period(pre)
-    second_period = _dominant_period(post)
-    if first_period is None or second_period is None:
-        return 0.0, 0.0, "UNKNOWN"
-    coverage = min(pre.size / window, post.size / window)
-    longest_gap = max(
-        _longest_true_run(~np.isfinite(pre_raw)),
-        _longest_true_run(~np.isfinite(post_raw)),
-    )
-    gap_penalty = max(
-        0.0,
-        1.0 - longest_gap / max(min(first_period, second_period), 4.0),
-    )
-    reliability = float(np.clip(coverage * gap_penalty, 0.0, 1.0))
-    if reliability < PERIOD_RELIABILITY_MIN:
-        return 0.0, reliability, "UNKNOWN"
-    score = abs(second_period - first_period) / max(first_period, 1.0)
-    return float(score), reliability, "OK"
-
-
 def _probe_direction(values: object) -> str:
     if not isinstance(values, Sequence) or isinstance(values, (str, bytes, bytearray)):
         return "unknown"
@@ -159,45 +79,10 @@ def extract_public_features(
     task_kind: str,
     fixed_probe_panel: Mapping[str, object] | None = None,
 ) -> Mapping[str, object]:
-    array = np.asarray(values, dtype=np.float64).ravel()
-    if array.size == 0:
-        raise ValueError("public feature extraction requires a non-empty series")
-    missing = ~np.isfinite(array)
-    finite = array[np.isfinite(array)]
-    median = float(np.median(finite)) if finite.size else 0.0
-    scale = _robust_scale(array)
-    filled = array.copy()
-    filled[missing] = median
-    robust_z = np.abs(filled - median) / scale if scale > 0 else np.zeros_like(filled)
-    local_peak = float(np.max(robust_z)) if robust_z.size else 0.0
-    adjacent = np.abs(np.diff(filled))
-    level_score = float(np.max(adjacent) / scale) if adjacent.size and scale > 0 else 0.0
-    affected = np.flatnonzero(missing)
-    if affected.size == 0:
-        affected = np.flatnonzero(robust_z >= 3.5)
-    if affected.size == 0 and adjacent.size and level_score >= 3.5:
-        jump = int(np.argmax(adjacent)) + 1
-        affected = np.arange(jump, array.size)
-    if affected.size:
-        region_start = float(affected[0] / array.size)
-        region_end = float((affected[-1] + 1) / array.size)
-    else:
-        region_start = 0.0
-        region_end = 1.0
-    period_change, period_reliability, period_evidence_status = _period_features(array)
+    base = _extract_base_features(values, task_kind=task_kind)
     panel = fixed_probe_panel or {}
     features = {
-        "task_kind": task_kind,
-        "missing_fraction": float(np.mean(missing)),
-        "longest_missing_run_fraction": float(_longest_true_run(missing) / array.size),
-        "local_robust_z_peak": local_peak,
-        "estimated_region_start_fraction": region_start,
-        "estimated_region_end_fraction": region_end,
-        "level_excursion_score": level_score,
-        "period_change_score": float(period_change),
-        "period_reliability": period_reliability,
-        "period_evidence_status": period_evidence_status,
-        "period_repair_available": False,
+        **dict(base.mapping),
         "imputation_probe_direction": _probe_direction(panel.get("imputation", ())),
         "clipping_probe_direction": _probe_direction(panel.get("clipping", ())),
         "denoising_probe_direction": _probe_direction(panel.get("denoising", ())),

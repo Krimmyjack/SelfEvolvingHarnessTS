@@ -217,8 +217,11 @@ class TTHAAgentCore:
         output_schema_name: str,
         output_schema: Mapping[str, object],
         source_snapshot_sha: str,
+        validation_retries: int = 0,
     ) -> AgentStageResult:
         role = AgentRole(role)
+        if validation_retries < 0:
+            raise ValueError("validation_retries must be non-negative")
         validate_local_schema({}, {"type": "object"}, path="internal")
         tool_schemas = self.tools.schemas_for(role=role, stage=stage)
         tool_context_sha = (
@@ -249,6 +252,7 @@ class TTHAAgentCore:
         receipts: list[PublicToolReceipt] = []
         call_ids: set[str] = set()
         tool_rounds = 0
+        validation_failures = 0
         call_index = 0
         while True:
             request = AgentRequest.for_stage(
@@ -278,7 +282,31 @@ class TTHAAgentCore:
                 if envelope["stage"] != stage:
                     raise AgentProtocolError("stage_result names the wrong stage")
                 payload = envelope["payload"]
-                validate_local_schema(payload, output_schema)
+                try:
+                    validate_local_schema(payload, output_schema)
+                except AgentProtocolError as exc:
+                    if validation_failures >= validation_retries:
+                        raise
+                    correction = {
+                        "schema_version": "stage-validation-error/1",
+                        "stage": stage,
+                        "error": str(exc),
+                        "instruction": (
+                            "Return one corrected stage_result envelope that satisfies "
+                            "the unchanged stage payload schema."
+                        ),
+                    }
+                    messages = (
+                        *messages,
+                        {"role": "assistant", "content": response.assistant_text},
+                        {
+                            "role": "user",
+                            "content": canonical_json_bytes(correction).decode("utf-8"),
+                        },
+                    )
+                    validation_failures += 1
+                    call_index += 1
+                    continue
                 return AgentStageResult(
                     role=role,
                     stage=stage,

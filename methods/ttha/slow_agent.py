@@ -111,6 +111,7 @@ class TTHASlowAgent:
             output_schema_name="slow_edit_v1",
             output_schema=self.core.load_stage_schema("slow_edit_v1"),
             source_snapshot_sha=snapshot.runtime_bundle_sha,
+            validation_retries=1,
         )
         if stage.no_proposal_reason is not None:
             self.last_no_proposal_reason = stage.no_proposal_reason

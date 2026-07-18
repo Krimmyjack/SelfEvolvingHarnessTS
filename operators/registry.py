@@ -43,6 +43,7 @@ _CONTRACT_BASE = {
     "requires_dependency": None,       # 非 numpy 依赖
     "fallback_policy": "none",         # 退化**输入**下的回退："none" | "explicit_record→<op>" | "numpy_equivalent"
     "dependency_policy": None,         # 依赖**缺失**时："hard_fail" | "recorded_fallback"；无依赖 → None
+    "public_parameter_bindings": {},   # 可从部署可观察特征机械绑定的参数；空字典表示无声明
 }
 
 
@@ -97,7 +98,15 @@ OPERATOR_SPECS = [
      _c(allowed_tasks=_NON_ANOMALY, destructive=True)),      # 纯 numpy
     # —— E-3.3 R1：结构断层修复（填 benchmark 预先声明的 structural_break 能力缺口）——
     ("repair_level_shift", "structural", "s1", ["destructive"], s1_structural.repair_level_shift, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True)),      # 纯 numpy（无 ruptures 依赖）
+     _c(
+         allowed_tasks=_NON_ANOMALY,
+         destructive=True,
+         public_parameter_bindings={
+             "region_start_fraction": "estimated_region_start_fraction",
+             "region_end_fraction": "estimated_region_end_fraction",
+             "estimated_offset": "estimated_level_offset",
+         },
+     )),      # 纯 numpy（无 ruptures 依赖）
     ("stl_decompose", "decompose", "s1", [], s1_decompose.stl_decompose, False,
      _c(allowed_tasks=_NON_ANOMALY, requires_dependency="statsmodels",
         dependency_policy="recorded_fallback",

@@ -28,7 +28,7 @@ class RouteAuthorization:
 class FaultRouter:
     def __init__(self, path: Path = _ROUTES_PATH) -> None:
         value = parse_json_document(path.read_bytes())
-        if not isinstance(value, dict) or value.get("schema_version") != "fault-routes/1":
+        if not isinstance(value, dict) or value.get("schema_version") != "fault-routes/2":
             raise ValueError("invalid fault route table")
         routes = value.get("routes")
         if not isinstance(routes, dict):

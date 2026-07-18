@@ -78,8 +78,7 @@ def test_add_manifest_requires_absent_precondition():
 def test_applicability_enforces_feature_types_and_nonempty_nodes():
     with pytest.raises(ValueError, match="non-empty"):
         validate_applicability({"all": []})
-    with pytest.raises(ValueError, match="numeric value"):
+    with pytest.raises(ValueError, match="bin label"):
         validate_applicability(
             {"feature": "missing_fraction", "op": ">", "value": "large"}
         )
-

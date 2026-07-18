@@ -44,6 +44,7 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.feedback.first_fault import (
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.feedback.patterns import (
     FailurePatternCard,
+    compute_cluster_purity,
     mine_failure_patterns,
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.probes.expressibility import (
@@ -396,6 +397,30 @@ def _program_steps(trace: DecisionTrace, candidate_id: str) -> list[tuple[str, d
     return [(str(op), dict(params)) for op, params in raw]
 
 
+_PROBE_FEATURE_BY_OPERATOR_CATEGORY = {
+    "impute": "imputation_probe_direction",
+    "outlier": "clipping_probe_direction",
+    "denoise": "denoising_probe_direction",
+    "structural": "level_probe_direction",
+}
+
+
+def _chosen_probe_directions(
+    trace: DecisionTrace,
+    chosen_candidate_id: str,
+    observable_features: Mapping[str, object],
+) -> tuple[str, ...]:
+    directions: set[str] = set()
+    for operator_id, _params in _program_steps(trace, chosen_candidate_id):
+        metadata = OPERATOR_METADATA.get(operator_id)
+        if metadata is None:
+            continue
+        feature = _PROBE_FEATURE_BY_OPERATOR_CATEGORY.get(str(metadata["category"]))
+        if feature is not None and isinstance(observable_features.get(feature), str):
+            directions.add(str(observable_features[feature]))
+    return tuple(sorted(directions))
+
+
 def _target_metrics(
     case: PrivateSyntheticCase,
     prepared: np.ndarray,
@@ -603,6 +628,9 @@ class _CycleCaseRunner:
             candidate_utilities=MappingProxyType(candidate_utilities),
             effect_distinct_candidate_ids=tuple(effect_distinct),
             chosen_candidate_id=chosen_id,
+            chosen_probe_directions=_chosen_probe_directions(
+                trace, chosen_id, gateway.public_features
+            ),
             public_evidence_discriminative=public_panel.status == "OK",
             agent_inspected_evidence=bool(trace.inspected_regions),
             localization_required=case.purpose is CasePurpose.TARGET,
@@ -997,6 +1025,7 @@ class M0CycleRunner:
         operator_backlog: Sequence[Mapping[str, object]],
         incidents: Sequence[Mapping[str, object]],
         no_proposals: Sequence[Mapping[str, object]],
+        slow_attempts: Sequence[Mapping[str, object]],
     ) -> tuple[Path, Path]:
         cycle_root = self.run_root / "cycles" / cycle_id
         public = cycle_root / "public"
@@ -1020,6 +1049,57 @@ class M0CycleRunner:
             "cycle_id": cycle_id,
             "reports": [report.to_private_json() for report in reports],
         }
+        purity_payload = {
+            "schema_version": "cluster-purity-set/1",
+            "cycle_id": cycle_id,
+            "receipts": [
+                compute_cluster_purity(card, tuple(item.feedback for item in evaluations)).to_private_json()
+                for card in patterns
+            ],
+        }
+        target_evaluations = [
+            item for item in evaluations if item.case.purpose is CasePurpose.TARGET
+        ]
+        family_supply: dict[str, dict[str, object]] = {}
+        for family in sorted({item.case.private_family for item in target_evaluations}):
+            family_rows = [
+                item for item in target_evaluations if item.case.private_family == family
+            ]
+            distinct = sum(item.receipt.supplied_effect_distinct for item in family_rows)
+            family_supply[family] = {
+                "target_case_count": len(family_rows),
+                "effect_distinct_supply_count": distinct,
+                "effect_distinct_supply_rate": (
+                    distinct / len(family_rows) if family_rows else 0.0
+                ),
+            }
+        noop_case_count = sum(
+            bool(item.trace.supplied_noop_candidate_ids) for item in evaluations
+        )
+        metrics_payload = {
+            "schema_version": "m0-cycle-instrument-metrics/1",
+            "cycle_id": cycle_id,
+            "case_count": len(evaluations),
+            "supplied_noop_case_count": noop_case_count,
+            "supplied_noop_case_rate": (
+                noop_case_count / len(evaluations) if evaluations else 0.0
+            ),
+            "supplied_noop_candidate_count": sum(
+                len(item.trace.supplied_noop_candidate_ids) for item in evaluations
+            ),
+            "probe_selection_contradiction_case_count": sum(
+                item.feedback.fault_attribution.cause_code
+                == "PROBE_SELECTION_CONTRADICTION"
+                for item in evaluations
+            ),
+            "family_effect_distinct_supply": family_supply,
+            "slow_edit_attempt_count": len(slow_attempts),
+            "slow_edit_ast_valid_count": sum(
+                item.get("outcome") in {"VALID_MANIFEST", "NO_PROPOSAL"}
+                for item in slow_attempts
+            ),
+            "slow_edit_attempts": [_plain(item) for item in slow_attempts],
+        }
         markdown = [f"# Failure patterns: {cycle_id}", ""]
         for card in patterns:
             markdown.extend(
@@ -1039,6 +1119,8 @@ class M0CycleRunner:
             (public / "failure_patterns.md", "\n".join(markdown).encode("utf-8")),
             (public / "edit_manifest.json", canonical_json_bytes(manifest_payload) + b"\n"),
             (private / "paired_replay_report.json", canonical_json_bytes(report_payload) + b"\n"),
+            (private / "cluster_purity.json", canonical_json_bytes(purity_payload) + b"\n"),
+            (private / "cycle_instrument_metrics.json", canonical_json_bytes(metrics_payload) + b"\n"),
             (private / "operator_capability_backlog.jsonl", b"".join(canonical_json_bytes(row) + b"\n" for row in operator_backlog)),
             (private / "infrastructure_backlog.jsonl", b"".join(canonical_json_bytes(row) + b"\n" for row in incidents)),
         )
@@ -1116,6 +1198,7 @@ class M0CycleRunner:
         pending_origin_by_edit: dict[str, _PendingEdit] = {}
         incidents: list[Mapping[str, object]] = []
         no_proposals: list[Mapping[str, object]] = []
+        slow_attempts: list[Mapping[str, object]] = []
         slow_gateway = LocalPublicToolGateway(
             np.zeros(192, dtype=np.float64), task_kind="forecast"
         )
@@ -1293,9 +1376,30 @@ class M0CycleRunner:
                     card.to_json(), surface_catalog, starting.snapshot
                 )
             except Exception as exc:
+                slow_attempts.append(
+                    MappingProxyType(
+                        {
+                            "pattern_id": card.pattern_id,
+                            "cause_code": card.cause_code,
+                            "outcome": "PROTOCOL_OR_CONTROLLER_FAILURE",
+                            "error_type": type(exc).__name__,
+                        }
+                    )
+                )
                 record_incident(card.pattern_id, exc)
                 continue
             if manifest is None:
+                slow_attempts.append(
+                    MappingProxyType(
+                        {
+                            "pattern_id": card.pattern_id,
+                            "cause_code": card.cause_code,
+                            "outcome": "NO_PROPOSAL",
+                            "reason_code": slow_agent.last_no_proposal_reason
+                            or "no_authorized_minimal_edit",
+                        }
+                    )
+                )
                 no_proposals.append(
                     MappingProxyType(
                         {
@@ -1307,6 +1411,16 @@ class M0CycleRunner:
                     )
                 )
                 continue
+            slow_attempts.append(
+                MappingProxyType(
+                    {
+                        "pattern_id": card.pattern_id,
+                        "cause_code": card.cause_code,
+                        "outcome": "VALID_MANIFEST",
+                        "edit_id": manifest.edit_id,
+                    }
+                )
+            )
             risk_receipt = self.risk_builder.build(
                 card, self.corpus.all_cases, feedback_by_id
             )
@@ -1400,6 +1514,7 @@ class M0CycleRunner:
             operator_backlog=operator_backlog,
             incidents=incidents,
             no_proposals=no_proposals,
+            slow_attempts=slow_attempts,
         )
         summary = CycleSummary(
             cycle_id=cycle_id,

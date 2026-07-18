@@ -83,6 +83,7 @@ def _trace() -> DecisionTrace:
         verification_actions=("scope_checked",),
         effect_equivalent_to_identity=False,
         series_length=100,
+        supplied_noop_candidate_ids=("agent-noop",),
     )
 
 
@@ -97,3 +98,8 @@ def test_behavior_signature_excludes_case_and_request_provenance():
     assert BehaviorSignature.from_trace(first).behavior_signature_sha == (
         BehaviorSignature.from_trace(second).behavior_signature_sha
     )
+
+
+def test_behavior_signature_records_supplier_level_noop_candidates():
+    signature = BehaviorSignature.from_trace(_trace()).normalized_behavior
+    assert signature["supplied_noop_candidate_ids"] == ("agent-noop",)

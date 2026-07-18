@@ -212,6 +212,7 @@ def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
         "decision_trace.py",
         "executor.py",
         "llm_cache.py",
+        "public_features.py",
     ):
         dependencies[f"runtime:{Path(filename).stem}"] = _canonical_file_sha(
             runtime_root / filename,

@@ -43,7 +43,10 @@ def inject_target(seed: int, family: str, severity: str) -> InjectionResult:
     clean_future = base[CONTEXT_LENGTH:].copy()
     scale = _scale(clean_context)
     if family == "missing":
-        start, length = (108, 12) if severity == "mild" else (102, 30)
+        # Put missingness in the recent, forecast-relevant tail while leaving
+        # observed values on both sides.  The v1 mid-context gap was often a
+        # benign Chronos mask and could not test repair capability reliably.
+        start, length = (174, 12) if severity == "mild" else (156, 30)
         affected = tuple(range(start, start + length))
         corrupt[list(affected)] = np.nan
     elif family == "impulsive_outlier":

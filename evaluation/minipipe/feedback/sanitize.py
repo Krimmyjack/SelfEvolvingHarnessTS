@@ -11,6 +11,7 @@ from SelfEvolvingHarnessTS.contracts.canonical import (
 )
 from SelfEvolvingHarnessTS.contracts.observables import (
     OBSERVABLE_FEATURES,
+    observable_numeric_bin,
     validate_applicability,
 )
 from SelfEvolvingHarnessTS.contracts.public_boundary import assert_public_payload
@@ -31,37 +32,12 @@ _BEHAVIOR_ALLOWLIST = frozenset(
         "modified_region_fractions",
         "verification_actions",
         "effect_equivalent_to_identity",
+        "supplied_noop_candidate_ids",
     }
 )
 _PROBE_POINT_ALLOWLIST = frozenset(
     {"probe_id", "beta", "r_public", "modified_fraction", "response_shape", "receipt_sha"}
 )
-
-
-def _numeric_bin(feature: str, value: float) -> str:
-    if feature in {
-        "missing_fraction",
-        "longest_missing_run_fraction",
-        "estimated_region_start_fraction",
-        "estimated_region_end_fraction",
-    }:
-        edges = (0.0, 0.01, 0.05, 0.20)
-    elif feature == "period_change_score":
-        edges = (0.0, 0.10, 0.25, 0.50)
-    elif feature == "period_reliability":
-        edges = (0.0, 0.25, 0.50, 0.75)
-    else:
-        edges = (0.0, 1.0, 3.0, 6.0)
-    labels = ("zero", "very_low", "low", "medium", "high")
-    if value <= edges[0]:
-        return labels[0]
-    if value < edges[1]:
-        return labels[1]
-    if value < edges[2]:
-        return labels[2]
-    if value < edges[3]:
-        return labels[3]
-    return labels[4]
 
 
 def _observable_signature(features: Mapping[str, object]) -> dict[str, object]:
@@ -75,7 +51,7 @@ def _observable_signature(features: Mapping[str, object]) -> dict[str, object]:
             signature[feature] = "unknown"
             continue
         if kind == "number" and isinstance(value, (int, float)) and not isinstance(value, bool):
-            signature[feature] = _numeric_bin(feature, float(value))
+            signature[feature] = observable_numeric_bin(feature, float(value))
         elif kind == "boolean" and isinstance(value, bool):
             signature[feature] = value
         elif kind == "string" and isinstance(value, str):

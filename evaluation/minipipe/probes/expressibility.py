@@ -19,7 +19,7 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.chronos import (
 from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
 from SelfEvolvingHarnessTS.runtime.executor import run_pipeline
 
-from .features import extract_public_features
+from .features import PublicFeatureExtraction, extract_public_features
 
 
 _CLASS_PATH = Path(__file__).with_name("transformation_classes.json")
@@ -149,7 +149,7 @@ def _program_sha(program: Sequence[Sequence[object]]) -> str:
 def _resolve_program(
     program: Sequence[Sequence[object]],
     *,
-    pre_period: int,
+    features: PublicFeatureExtraction,
 ) -> list[tuple[str, dict[str, object]]]:
     steps: list[tuple[str, dict[str, object]]] = []
     for entry in program:
@@ -157,7 +157,15 @@ def _resolve_program(
             raise ValueError("invalid witness program entry")
         params = dict(entry[1])
         if params.pop("period_from", None) == "pre_period":
-            params["period"] = int(pre_period)
+            params["period"] = int(features.pre_period)
+        for source_key in tuple(params):
+            if not source_key.endswith("_from"):
+                continue
+            target_key = source_key[: -len("_from")]
+            feature_name = params.pop(source_key)
+            if not isinstance(feature_name, str) or feature_name not in features.mapping:
+                raise ValueError("unknown public feature parameter binding")
+            params[target_key] = features.mapping[feature_name]
         steps.append((entry[0], params))
     return steps
 
@@ -237,7 +245,7 @@ class ExpressibilityEvaluator:
         for raw_program in programs:
             if not isinstance(raw_program, list):
                 raise ValueError("witness program must be a list")
-            steps = _resolve_program(raw_program, pre_period=feature_context.pre_period)
+            steps = _resolve_program(raw_program, features=feature_context)
             execution = run_pipeline(steps, case.corrupt_context, source="private_witness")
             if not execution.ok or execution.artifact is None:
                 continue

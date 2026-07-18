@@ -150,7 +150,21 @@ def _apply_probe(
         selected = features.region_mask & np.isfinite(raw)
         output[selected] = (1.0 - beta) * raw[selected] + beta * repaired[selected]
     elif probe_name == "level_correction":
-        repaired = _execute(raw, "repair_level_shift", {})
+        if not np.any(features.level_mask):
+            return output, 0.0
+        repaired = _execute(
+            raw,
+            "repair_level_shift",
+            {
+                "region_start_fraction": features.mapping[
+                    "estimated_region_start_fraction"
+                ],
+                "region_end_fraction": features.mapping[
+                    "estimated_region_end_fraction"
+                ],
+                "estimated_offset": features.estimated_excursion_offset,
+            },
+        )
         selected = features.level_mask & np.isfinite(raw)
         output[selected] = raw[selected] + beta * (repaired[selected] - raw[selected])
     else:

@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
+import numpy as np
+
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
 from SelfEvolvingHarnessTS.contracts.harness import EditManifest, EditOperation
 from SelfEvolvingHarnessTS.evaluation.minipipe.cycle import _manifest_json, run_cycles
@@ -15,6 +17,10 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
 )
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
+from SelfEvolvingHarnessTS.methods.ttha.agent_core import AgentRole, TTHAAgentCore
+from SelfEvolvingHarnessTS.methods.ttha.public_tools import LocalPublicToolGateway
+from SelfEvolvingHarnessTS.methods.ttha.retrieval import resolve_harness_view
+from SelfEvolvingHarnessTS.methods.ttha.slow_agent import TTHASlowAgent
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -114,11 +120,66 @@ def _seed_broad_localization_procedure(root: Path) -> Path:
         predicted_data_effect=("seed fixture only",),
         falsification_condition=("seed fixture could not be materialized",),
     )
-    return controller.apply_to_fork(
+    current = controller.apply_to_fork(
         parent,
         manifest,
         confirmed_cause="LOCALIZATION_PROCEDURE_GAP",
-    ).candidate_root
+    ).candidate_snapshot
+    capabilities = (
+        (
+            "observed_missing_repair_seed_v1",
+            "impute_linear",
+            {"feature": "missing_fraction", "op": ">", "value": 0.0},
+        ),
+        (
+            "local_peak_repair_seed_v1",
+            "hampel_filter",
+            {"feature": "local_robust_z_peak", "op": ">=", "value": 4.0},
+        ),
+        (
+            "bounded_level_repair_seed_v1",
+            "repair_level_shift",
+            {"feature": "level_excursion_score", "op": ">=", "value": 3.0},
+        ),
+    )
+    for skill_id, operator_id, applicability in capabilities:
+        target = f"skill_library.entries/{skill_id}"
+        definition = controller.surfaces.resolve(target).definition
+        seed = EditManifest(
+            edit_id=f"seed-{skill_id}",
+            base_harness_sha=current.harness_content_sha,
+            target_pattern_id=f"pattern-seeded-{skill_id}",
+            target_surface_id=target,
+            operation=EditOperation.ADD,
+            surface_precondition={"kind": "ABSENT"},
+            dependency_precondition_shas={
+                key: current.snapshot.dependency_shas[key]
+                for key in definition.required_dependency_keys
+            },
+            new_value={
+                "schema_version": "skill-entry/1",
+                "skill_id": skill_id,
+                "skill_kind": "capability",
+                "revision": 1,
+                "body": "Test-only planted capability for PATCH cycle isolation.",
+                "observable_applicability": applicability,
+                "allowed_tools": [operator_id],
+                "risk_guards": {
+                    "max_modified_fraction": 0.25,
+                    "preserve_outside_candidate_region": True,
+                },
+            },
+            observable_applicability=applicability,
+            predicted_agent_behavior_change=("identity_retained",),
+            predicted_data_effect=("seed fixture only",),
+            falsification_condition=("seed fixture could not be materialized",),
+        )
+        current = controller.apply_to_fork(
+            current,
+            seed,
+            confirmed_cause="SKILL_LIBRARY_GAP",
+        ).candidate_snapshot
+    return current.root
 
 
 def test_two_cycles_promote_at_most_one_edit_and_reproduce_scientific_outputs(
@@ -150,6 +211,8 @@ def test_primary_artifacts_exist_in_their_correct_visibility_roots(tmp_path):
     assert (result.public_root / "failure_patterns.md").is_file()
     assert (result.public_root / "edit_manifest.json").is_file()
     assert (result.private_root / "paired_replay_report.json").is_file()
+    assert (result.private_root / "cluster_purity.json").is_file()
+    assert (result.private_root / "cycle_instrument_metrics.json").is_file()
     assert (result.run_root / "harness_lineage.jsonl").is_file()
     assert (result.private_root / "operator_capability_backlog.jsonl").is_file()
     assert resumed.active_snapshot_sha == result.active_snapshot_sha
@@ -214,6 +277,96 @@ def test_bootstrap_patch_reaches_a_scientific_reject_verdict(tmp_path):
         and event.verdict in {"BEHAVIOR_CHANGED_NO_GAIN", "DEAD_EDIT"}
     ]
     assert evaluated
+
+
+def test_selection_patch_changes_negative_probe_choice_only(tmp_path):
+    store = SnapshotStore(tmp_path / "selection-snapshots")
+    parent = store.materialize(compile_snapshot(H0_ROOT))
+    controller = EditController(store)
+    target = "candidate_policy.selection_guidance"
+    definition = controller.surfaces.resolve(target).definition
+    catalog = [
+        {
+            "surface_id": target,
+            "surface_template_id": target,
+            "target_class": definition.target_class,
+            "surface_type": definition.surface_type,
+            "allowed_operations": list(definition.allowed_operations),
+            "surface_precondition": {
+                "kind": "SHA",
+                "sha": controller.surface_precondition_sha(parent, target),
+            },
+            "required_dependency_keys": list(definition.required_dependency_keys),
+            "dependency_precondition_shas": {
+                key: parent.snapshot.dependency_shas[key]
+                for key in definition.required_dependency_keys
+            },
+        }
+    ]
+    backend = ContractPolicyBackend()
+    gateway = LocalPublicToolGateway(np.zeros(192), task_kind="forecast")
+    core = TTHAAgentCore(backend, gateway)
+    manifest = TTHASlowAgent(core).propose_edit(
+        {
+            "pattern_id": "pattern-negative-probe-selection",
+            "cause_code": "PROBE_SELECTION_CONTRADICTION",
+            "observable_signature": {
+                "imputation_probe_direction": "negative"
+            },
+        },
+        catalog,
+        parent.snapshot,
+    )
+    assert manifest is not None
+    assert manifest.target_surface_id == target
+    candidate = controller.apply_to_fork(
+        parent,
+        manifest,
+        confirmed_cause="PROBE_SELECTION_CONTRADICTION",
+    ).candidate_snapshot
+
+    features = {"imputation_probe_direction": "negative"}
+    public_input = {
+        "features": features,
+        "inspection": {"inspected_region_fractions": [[0.0, 1.0]]},
+        "candidates": [
+            {
+                "candidate_id": "identity",
+                "kind": "identity",
+                "program_sha": None,
+                "steps": [],
+            },
+            {
+                "candidate_id": "agent-0",
+                "kind": "program",
+                "program_sha": "0" * 64,
+                "steps": [{"op": "impute_linear", "params": {}}],
+            },
+        ],
+    }
+    schema = core.load_stage_schema("fast_select_v1")
+    before = core.run_stage(
+        role=AgentRole.FAST,
+        stage="select",
+        case_id="m0-0001",
+        public_input=public_input,
+        harness_view=resolve_harness_view(parent.snapshot, features),
+        output_schema_name="fast_select_v1",
+        output_schema=schema,
+        source_snapshot_sha=parent.runtime_bundle_sha,
+    )
+    after = core.run_stage(
+        role=AgentRole.FAST,
+        stage="select",
+        case_id="m0-0001",
+        public_input=public_input,
+        harness_view=resolve_harness_view(candidate.snapshot, features),
+        output_schema_name="fast_select_v1",
+        output_schema=schema,
+        source_snapshot_sha=candidate.runtime_bundle_sha,
+    )
+    assert before.payload["chosen_candidate_id"] == "agent-0"
+    assert after.payload["chosen_candidate_id"] == "identity"
 
 
 def test_pending_edit_requeues_and_stale_duplicate_is_superseded(tmp_path):
