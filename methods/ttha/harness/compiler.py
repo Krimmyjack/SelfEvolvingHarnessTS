@@ -199,6 +199,9 @@ def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
         "operator_registry": operator_registry_sha,
         "candidate_contract": _canonical_file_sha(contracts_root / "candidate.py", kind="text"),
         "observable_contract": _canonical_file_sha(contracts_root / "observables.py", kind="text"),
+        "public_boundary_contract": _canonical_file_sha(
+            contracts_root / "public_boundary.py", kind="text"
+        ),
         "surface_registry": _canonical_file_sha(Path(__file__).with_name("harness_surfaces.json"), kind="json"),
     }
     for path in sorted(schema_root.glob("*.json"), key=lambda item: item.name):
@@ -220,6 +223,7 @@ def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
         "method.py",
         "public_tools.py",
         "retrieval.py",
+        "schema_contracts.py",
         "slow_agent.py",
     ):
         dependencies[f"ttha:{Path(filename).stem}"] = _canonical_file_sha(
