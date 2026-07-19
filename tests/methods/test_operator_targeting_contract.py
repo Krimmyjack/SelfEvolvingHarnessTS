@@ -2,7 +2,6 @@ import numpy as np
 
 from SelfEvolvingHarnessTS.contracts.candidate import Candidate
 from SelfEvolvingHarnessTS.contracts.program import Program
-from SelfEvolvingHarnessTS.methods.ttha.fast_agent import _risk_allows
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import EffectiveHarnessView
 from SelfEvolvingHarnessTS.operators.registry import (
     OPERATOR_NAMES,
@@ -10,6 +9,7 @@ from SelfEvolvingHarnessTS.operators.registry import (
     operator_targeting_mode,
 )
 from SelfEvolvingHarnessTS.runtime.executor import run_pipeline
+from SelfEvolvingHarnessTS.runtime.candidate_verification import verify_candidate
 from SelfEvolvingHarnessTS.runtime.public_features import extract_public_features
 
 
@@ -34,6 +34,26 @@ def _candidate(operator_id: str, params: dict[str, object]) -> Candidate:
         Program.from_steps([(operator_id, params)], source="targeting-contract-test"),
         source="targeting-contract-test",
     )
+
+
+def _risk_allows(
+    candidate: Candidate,
+    values: np.ndarray,
+    view: EffectiveHarnessView,
+    inspected_regions: tuple[tuple[int, int], ...],
+) -> bool:
+    verification = view.controls["verification"]
+    return verify_candidate(
+        candidate,
+        values,
+        allowed_operators=OPERATOR_NAMES,
+        inspected_regions=inspected_regions,
+        maximum_modified_fraction=float(verification["max_modified_fraction"]),
+        preserve_outside_inspected_region=bool(
+            verification["preserve_outside_candidate_region"]
+        ),
+        require_finite_output=False,
+    ).selectable
 
 
 def test_every_canonical_operator_declares_a_valid_targeting_mode():

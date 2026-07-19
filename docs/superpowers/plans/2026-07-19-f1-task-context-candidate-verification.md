@@ -1,6 +1,6 @@
 # F1 Implementation Plan: TaskContext and Candidate Verification
 
-**Status:** active implementation plan
+**Status:** CLOSED_PASS; implementation and live functional qualification complete
 
 **Parent release:** `m0-agent-harness-v0.1.0`
 
@@ -215,6 +215,16 @@ On pass, publish an `f1-integration-receipt/1` and advance to F2a instrument
 maintenance. F2a first calibrates the flat public level probe and missing-family
 readability without modifying H2. F2b then adds the frozen-classifier query-only
 classification adapter defined in the F-track specification.
+
+Closed evidence:
+
+- integration receipt:
+  `artifacts/manifests/f1_integration_receipt_20260719.json`;
+- real-agent pilot: `f1-forecast-pilot-20260719-live1`, 6 correct-contract and
+  2 matched neutral-contract cases, 30 GPT-5.5 calls;
+- full regression: 286 passed, zero failed; and
+- H2 authoring content remained byte-identical in semantic content while the
+  F1 runtime compatibility binding changed independently.
 
 On failure, emit a typed resolution:
 

@@ -1,0 +1,103 @@
+{
+  "schema_version": "f1-integration-receipt/1",
+  "status": "CLOSED_PASS",
+  "implementation_commit": "d0eabd4e3a6bde9a7b70b54c4bbb12db233e97ae",
+  "implementation_state": "COMMITTED_IMPLEMENTATION_VALIDATED",
+  "release_tag": "f1-task-context-v0.2.0",
+  "scientific_role": "forecast-only functional qualification of TaskContext and mechanical candidate verification",
+  "fixed_axes": {
+    "task": "forecast",
+    "downstream_model": "fixed:m0",
+    "agent_model": "gpt-5.5",
+    "harness_promotion_enabled": false,
+    "model_selection_enabled": false
+  },
+  "harness_binding": {
+    "source_release_tag": "m0-agent-harness-v0.1.0",
+    "h2_harness_content_sha": "8f3845b09322109c878892d88d79810d07d303841574b1df10b3b94e33fca35e",
+    "historical_m0_runtime_bundle_sha": "7035aef5d57499e21a58b0dc44124255fdfd833eb744815ba63c7befef44f709",
+    "f1_runtime_bundle_sha": "7cb9fa3370cd2e579563d39273af4eae39d765214a953a11ed5756d5d7aae7ea",
+    "harness_content_unchanged": true,
+    "harness_edit": false,
+    "compatibility_receipt": "artifacts/compatibility/f1-h2/runtime_binding.json",
+    "compatibility_receipt_file_sha256": "52ef4ffe91170856b9681b69aa44c11e4759edb7eedeb5d5edf8b20cfbe3b057"
+  },
+  "full_suite": {
+    "command": "/mnt/d/Anaconda_envs/envs/project/python.exe -m pytest SelfEvolvingHarnessTS/tests -q --tb=short",
+    "passed": 286,
+    "failed": 0,
+    "duration_seconds": 1139.68,
+    "network_calls": 0
+  },
+  "live_pilot": {
+    "run_id": "f1-forecast-pilot-20260719-live1",
+    "status": "PASS",
+    "preregistration": "artifacts/manifests/f1_forecast_pilot_preregistration_20260719.json",
+    "preregistration_file_sha256": "5416555eb078076372d84e09406aa6ff6c9bbb1a5607dcb7c24cb82cb0e44e2a",
+    "preregistration_semantic_sha": "59131bce01751dc90f9e8895b2fed303a95f57a677616b1ccb0e4f0377426896",
+    "correct_contract_cases_completed": 6,
+    "neutral_contract_cases_completed": 2,
+    "matched_neutral_behavior_changes": 2,
+    "api_calls": 30,
+    "prompt_tokens": 145830,
+    "completion_tokens": 9800,
+    "returned_models": [
+      "gpt-5.5"
+    ],
+    "public_report": "artifacts/functional/f1/public_forecast_pilot_report.json",
+    "public_report_file_sha256": "de291e7f6ab7b722260e247b0704e75d885489bf3a8ba29ee6bbf5422aa19106",
+    "source_public_report_file_sha256": "784c438d774e9c0b4a4569ebef3b136a49833b399ad5fc55eb58ab5067df0940",
+    "private_report_semantic_sha": "2e001c90572d8f001162248d0b27db466f6fe37d76e4620c75cb7b19217c338a",
+    "private_report_file_sha256": "157452388c0775d75fe10eed2e94b8847ec0d30d2e2677f3d6916b565c59e56f"
+  },
+  "functional_checks": {
+    "task_context_bound_to_all_agent_stages": true,
+    "run_dependency_binding_verified": true,
+    "all_selectable_candidates_have_public_receipts": true,
+    "rejected_candidates_have_trace_only_rejection_receipts": true,
+    "receipts_visible_only_after_candidate_execution": true,
+    "selected_execution_artifact_reused": true,
+    "candidate_receipts_exclude_private_utility": true,
+    "correct_and_neutral_contracts_change_real_agent_behavior": true,
+    "released_h2_content_unchanged": true
+  },
+  "diagnostic_readings": {
+    "correct_contract_program_selections": 3,
+    "correct_contract_identity_selections": 3,
+    "positive_program_outcomes": 2,
+    "harmful_program_outcomes": 1,
+    "correct_period_or_genuine_event_abstentions": 2,
+    "interpretation": "The F1 interfaces work. The outcome readings are diagnostic inputs for F2a and are not an F1 capability-promotion result."
+  },
+  "next_cycle_resolutions": [
+    {
+      "resolution": "INSTRUMENT_CHANGE_REQUEST",
+      "target": "missing public-probe coverage semantics",
+      "evidence": "A late missing case exposed a flat public imputation curve while the selected canonical imputation changed final model behavior and harmed private forecast utility.",
+      "f2a_question": "Distinguish a genuinely flat response from a probe arm that has no effect-distinct, scoreable rolling origin."
+    },
+    {
+      "resolution": "INSTRUMENT_CHANGE_REQUEST",
+      "target": "level-correction public evidence",
+      "evidence": "One beneficial level repair was rejected under the stricter forecast contract while a matched neutral contract selected it.",
+      "f2a_question": "Determine whether public level evidence is unobserved, insensitive, or genuinely neutral before considering any later Harness edit."
+    }
+  ],
+  "private_archive": {
+    "restore_receipt": "artifacts/functional/f1/private_restore_receipt.json",
+    "restore_receipt_file_sha256": "7cdc5488a64acac2ac431aa01c018f8d17fb6b1fa04c13dc6c6973b7394e9fa6",
+    "archive_sha256": "ce926075141db023d75dcf070c63aac5987bbb77cbb702e158ece9040ce60db8",
+    "entry_count": 36,
+    "secret_scan_status": "PASS",
+    "restore_status": "PASS"
+  },
+  "claim_limits": [
+    "F1 establishes task-objective and candidate-receipt plumbing on the frozen forecasting path; it does not establish a new Harness capability.",
+    "Behavioral differences between correct and neutral TaskContext prove that the real Agent consumed the contract, not that either contract is globally optimal.",
+    "The run does not establish classification, task-conditioned evolution, downstream-model selection, or natural-data transfer."
+  ],
+  "notes": [
+    "The release tag points to the evidence commit containing this receipt, while implementation_commit identifies the exact production source tree exercised by the full suite.",
+    "F2a must keep H2 content frozen and treat instrument changes as a separately versioned dependency epoch."
+  ]
+}

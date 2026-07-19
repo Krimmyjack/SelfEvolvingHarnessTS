@@ -1,7 +1,7 @@
 # Post-M0 Functional Evolution Design: Task-Conditioned TTHA
 
-**Status:** M0-R released as `m0-agent-harness-v0.1.0`; F1 is the active
-framework-development stage
+**Status:** M0-R released as `m0-agent-harness-v0.1.0`; F1 functional
+integration passed; F2a instrument maintenance is the active stage
 
 **Date:** 2026-07-18
 
@@ -89,7 +89,8 @@ The released project state is:
     release tag: m0-agent-harness-v0.1.0
     implementation commit: b2b799dbf352b564551b8706a2366cfac685f980
     receipt commit: 95e4e76
-    F1 integration readiness: READY
+    F1 functional integration: CLOSED_PASS
+    F2a instrument maintenance: READY
 
 The release exports H2 as a tracked, recompilable snapshot, keeps a redacted
 evidence manifest and derived CapabilityLedger in Git, and binds private
@@ -1026,8 +1027,9 @@ framework from learning the wrong capability or corrupting its own objective.
 | Stage | Entry gate | Functional output | Next-stage gate |
 | --- | --- | --- | --- |
 | M0-R | completed | tagged H2 release and restorable evidence | `m0-agent-harness-v0.1.0` |
-| F1 | tagged M0 | TaskContext and candidate receipts in existing path | small live protocol pass |
-| F2 | F1 path stable | forecast/classification adapters | readable cross-task conflict |
+| F1 | tagged M0 | TaskContext and candidate receipts in existing path | `f1-integration-receipt/1` pass |
+| F2a | F1 path stable | calibrated forecast evidence instruments | level/missing calibration pass |
+| F2b | F2a instrument stable | forecast/classification adapters | readable cross-task conflict |
 | F3 | adapters readable | one shared task-conditioned H* | held-out reuse and bounded risk |
 | F4 | candidate H* frozen | released Harness snapshot | functional qualification pass |
 | F5 | preparation release useful | bounded model selection | joint path works without regressions |
@@ -1036,12 +1038,13 @@ framework from learning the wrong capability or corrupting its own objective.
 The active implementation order is strict:
 
 1. preserve the completed M0-R tag and immutable H2 release;
-2. implement F1 as additive contract/receipt plumbing;
-3. build the smallest forecast/classification adapter slice in F2;
-4. evolve one shared H* in F3;
-5. qualify that H* in F4;
-6. add model selection in F5; and
-7. integrate natural data in F6.
+2. preserve the closed F1 TaskContext/receipt contracts and evidence;
+3. calibrate the public forecast instruments in F2a without editing H2;
+4. build the smallest forecast/classification adapter slice in F2b;
+5. evolve one shared H* in F3;
+6. qualify that H* in F4;
+7. add model selection in F5; and
+8. integrate natural data in F6.
 
 Planning or code archaeology for later phases may occur in parallel. Later-phase
 code must not be merged into the active path before its entry gate passes.
