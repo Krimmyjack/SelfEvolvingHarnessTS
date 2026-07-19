@@ -235,6 +235,8 @@ class TTHAAgentCore:
         output_schema_name: str,
         output_schema: Mapping[str, object],
         source_snapshot_sha: str,
+        task_context_sha: str = "",
+        run_context_sha: str = "",
         validation_retries: int = 0,
         post_validator: Callable[[Mapping[str, object]], None] | None = None,
     ) -> AgentStageResult:
@@ -332,6 +334,8 @@ class TTHAAgentCore:
                 public_case_view_sha=public_agent_input.public_case_view_sha,
                 effective_harness_view_sha=harness_view.effective_harness_view_sha,
                 tool_context_sha=tool_context_sha,
+                task_context_sha=task_context_sha,
+                run_context_sha=run_context_sha,
                 source_harness_snapshot_sha=source_snapshot_sha,
                 model=self.model,
                 base_url=self.base_url,

@@ -44,6 +44,11 @@ class DecisionTrace:
         str, tuple[tuple[str, Mapping[str, object]], ...]
     ] = field(default_factory=dict)
     agent_cache_hit_flags: tuple[bool, ...] = ()
+    task_context_sha: str = ""
+    run_context_sha: str = ""
+    selectable_candidate_ids: tuple[str, ...] = ()
+    candidate_receipt_shas: Mapping[str, str] = field(default_factory=dict)
+    rejection_receipts: tuple[Mapping[str, object], ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.case_id, str) or not self.case_id:
@@ -63,6 +68,11 @@ class DecisionTrace:
             raise ValueError("supplied no-op IDs must be unique PROGRAM candidate IDs")
         if not isinstance(self.chosen_candidate_id, str):
             raise ValueError("chosen_candidate_id must be a string")
+        if self.selectable_candidate_ids:
+            if self.selectable_candidate_ids != self.candidate_ids:
+                raise ValueError("selectable candidate IDs must align with candidate_ids")
+        if not set(self.candidate_receipt_shas).issubset(set(self.candidate_ids)):
+            raise ValueError("candidate receipts must name selectable candidates")
         for start, end in self.inspected_regions:
             if isinstance(start, bool) or isinstance(end, bool) or start < 0 or end <= start:
                 raise ValueError("inspected regions must be non-empty non-negative intervals")
@@ -95,6 +105,16 @@ class DecisionTrace:
             self,
             "candidate_program_steps",
             _freeze_json(self.candidate_program_steps),
+        )
+        object.__setattr__(
+            self,
+            "candidate_receipt_shas",
+            _freeze_json(self.candidate_receipt_shas),
+        )
+        object.__setattr__(
+            self,
+            "rejection_receipts",
+            tuple(_freeze_json(receipt) for receipt in self.rejection_receipts),
         )
 
 
@@ -163,6 +183,20 @@ class BehaviorSignature:
             "effect_equivalent_to_identity": trace.effect_equivalent_to_identity,
             "supplied_noop_candidate_ids": list(trace.supplied_noop_candidate_ids),
         }
+        if trace.task_context_sha:
+            normalized.update(
+                {
+                    "task_context_sha": trace.task_context_sha,
+                    "selectable_candidate_ids": list(
+                        trace.selectable_candidate_ids or trace.candidate_ids
+                    ),
+                    "candidate_receipt_shas": dict(trace.candidate_receipt_shas),
+                    "rejection_codes": [
+                        receipt.get("rejection_code", "")
+                        for receipt in trace.rejection_receipts
+                    ],
+                }
+            )
         return cls(
             normalized_behavior=_freeze_json(normalized),
             behavior_signature_sha=canonical_sha256(normalized),

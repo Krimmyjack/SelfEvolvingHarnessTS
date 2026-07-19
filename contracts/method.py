@@ -7,7 +7,8 @@ from typing import Any, Mapping, Protocol
 import numpy as np
 
 from .program import Program
-from .task import TaskSpec
+from .run_context import RunDependencyBinding
+from .task import TaskContext, TaskSpec
 
 
 def _array_copy(values: Any, name: str) -> np.ndarray:
@@ -44,6 +45,8 @@ class PreparationRequest:
     values: np.ndarray
     task_spec: TaskSpec
     observed_pattern_spec: Mapping[str, float] = field(default_factory=dict)
+    task_context: TaskContext | None = None
+    run_dependency_binding: RunDependencyBinding | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "series_uid", _uid(self.series_uid))
@@ -51,6 +54,20 @@ class PreparationRequest:
         object.__setattr__(self, "observed_pattern_spec", dict(self.observed_pattern_spec))
         if not isinstance(self.task_spec, TaskSpec):
             raise TypeError("task_spec must be TaskSpec")
+        if self.task_context is not None:
+            if not isinstance(self.task_context, TaskContext):
+                raise TypeError("task_context must be TaskContext or None")
+            if self.task_context.task_spec != self.task_spec:
+                raise ValueError("task_context.task_spec must equal task_spec")
+        if self.run_dependency_binding is not None:
+            if not isinstance(self.run_dependency_binding, RunDependencyBinding):
+                raise TypeError(
+                    "run_dependency_binding must be RunDependencyBinding or None"
+                )
+            if self.task_context is None:
+                raise ValueError("run_dependency_binding requires task_context")
+            if self.run_dependency_binding.task_context_sha != self.task_context.sha():
+                raise ValueError("run dependency TaskContext SHA mismatch")
 
 
 @dataclass(frozen=True)

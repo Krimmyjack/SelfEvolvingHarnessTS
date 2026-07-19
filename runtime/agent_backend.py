@@ -102,6 +102,8 @@ class AgentRequest:
     public_case_view_sha: str
     effective_harness_view_sha: str
     tool_context_sha: str
+    task_context_sha: str = ""
+    run_context_sha: str = ""
     source_harness_snapshot_sha: str = ""
     model: str = DEFAULT_AGENT_MODEL
     base_url: str = DEFAULT_AGENT_BASE_URL
@@ -134,6 +136,16 @@ class AgentRequest:
         ):
             _require_sha(getattr(self, field_name), field_name=field_name)
         _require_sha(
+            self.task_context_sha,
+            field_name="task_context_sha",
+            optional=True,
+        )
+        _require_sha(
+            self.run_context_sha,
+            field_name="run_context_sha",
+            optional=True,
+        )
+        _require_sha(
             self.source_harness_snapshot_sha,
             field_name="source_harness_snapshot_sha",
             optional=True,
@@ -153,8 +165,7 @@ class AgentRequest:
         return cls(**values)
 
     def semantic_request_hash(self) -> str:
-        return canonical_sha256(
-            {
+        identity = {
                 "provider": "agicto-chat-completions",
                 "base_url": self.base_url,
                 "model": self.model,
@@ -170,7 +181,9 @@ class AgentRequest:
                 "tool_context_sha": self.tool_context_sha,
                 "cache_schema_version": self.cache_schema_version,
             }
-        )
+        if self.task_context_sha:
+            identity["task_context_sha"] = self.task_context_sha
+        return canonical_sha256(identity)
 
 
 def _validate_envelope(value: object) -> dict[str, Any]:

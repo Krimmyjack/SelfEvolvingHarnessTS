@@ -14,6 +14,8 @@ from SelfEvolvingHarnessTS.contracts.observables import (
     OBSERVABLE_FEATURES,
     validate_applicability,
 )
+from SelfEvolvingHarnessTS.contracts.run_context import RunDependencyBinding
+from SelfEvolvingHarnessTS.contracts.task import TaskContext
 
 from .agent_core import (
     AgentRole,
@@ -118,6 +120,8 @@ class TTHASlowAgent:
         manifest_preflight: Callable[[EditManifest], None] | None = None,
         allowed_operator_contracts: Sequence[Mapping[str, object]] = (),
         fixed_probe_contracts: Mapping[str, object] | None = None,
+        task_context: TaskContext | None = None,
+        run_dependency_binding: RunDependencyBinding | None = None,
     ) -> EditManifest | None:
         self.last_no_proposal_reason = None
         self.last_stage_result = None
@@ -131,6 +135,11 @@ class TTHASlowAgent:
         _reject_private_or_path(
             fixed_probe_contracts or {}, path="fixed_probe_contracts"
         )
+        if run_dependency_binding is not None:
+            if task_context is None:
+                raise ValueError("slow run dependency binding requires TaskContext")
+            if run_dependency_binding.task_context_sha != task_context.sha():
+                raise ValueError("slow run dependency TaskContext SHA mismatch")
         applicability = card.get("observable_applicability")
         if applicability is not None:
             if not isinstance(applicability, Mapping):
@@ -165,11 +174,7 @@ class TTHASlowAgent:
             if manifest_preflight is not None:
                 manifest_preflight(proposed)
 
-        stage = self.core.run_stage(
-            role=AgentRole.SLOW,
-            stage="edit",
-            case_id=pattern_id,
-            public_input={
+        public_input = {
                 "failure_pattern_card": _plain(card),
                 "writable_surface_catalog": _plain(surface_catalog),
                 "base_harness_sha": snapshot.harness_content_sha,
@@ -182,11 +187,26 @@ class TTHASlowAgent:
                     "entry_id listed in existing_entry_inventory. PATCH an existing "
                     "authorized surface instead."
                 ),
-            },
+            }
+        if task_context is not None:
+            public_input["task_context"] = task_context.to_dict()
+            public_input["task_context_sha"] = task_context.sha()
+
+        stage = self.core.run_stage(
+            role=AgentRole.SLOW,
+            stage="edit",
+            case_id=pattern_id,
+            public_input=public_input,
             harness_view=view,
             output_schema_name="slow_edit_v1",
             output_schema=self.core.load_stage_schema("slow_edit_v1"),
             source_snapshot_sha=snapshot.runtime_bundle_sha,
+            task_context_sha=task_context.sha() if task_context is not None else "",
+            run_context_sha=(
+                run_dependency_binding.sha()
+                if run_dependency_binding is not None
+                else ""
+            ),
             validation_retries=1,
             post_validator=post_validate,
         )

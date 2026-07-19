@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "task-context/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_spec", "quality_contract", "deployment_constraints"],
+  "properties": {
+    "schema_version": {"const": "task-context/1"},
+    "task_spec": {"$ref": "#/$defs/task_spec"},
+    "quality_contract": {"$ref": "#/$defs/quality_contract"},
+    "deployment_constraints": {"$ref": "#/$defs/deployment_constraints"}
+  },
+  "$defs": {
+    "task_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_type", "target_semantics", "label_availability", "metric", "horizon", "downstream_model_class", "forbidden_modifications"],
+      "properties": {
+        "task_type": {"enum": ["forecast", "classification", "anomaly_detection"]},
+        "target_semantics": {"enum": ["future_values", "class_label", "anomaly_events"]},
+        "label_availability": {"enum": ["history_only", "train_labels", "unlabeled"]},
+        "metric": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "direction"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "direction": {"enum": ["lower_is_better", "higher_is_better"]}
+          }
+        },
+        "horizon": {"type": ["integer", "null"], "minimum": 1},
+        "downstream_model_class": {"type": "string", "minLength": 1},
+        "forbidden_modifications": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "quality_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "contract_id", "task_type", "objective", "preserve", "harms", "evidence_expectations", "verification_dimensions", "abstention_conditions"],
+      "properties": {
+        "schema_version": {"const": "task-quality-contract/1"},
+        "contract_id": {"type": "string", "pattern": "^[a-z][a-z0-9._:-]*[a-z0-9]$"},
+        "task_type": {"enum": ["forecast", "classification", "anomaly_detection"]},
+        "objective": {"enum": ["forecast_future_values", "preserve_class_evidence", "preserve_anomaly_evidence"]},
+        "preserve": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["observed_values_outside_suspect_region", "temporal_order", "series_length", "forecast_relevant_structure", "class_relevant_structure", "anomaly_events"]}},
+        "harms": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["unnecessary_modification", "global_over_smoothing", "future_information_use", "out_of_scope_change", "event_erasure"]}},
+        "evidence_expectations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["public_observation", "fixed_public_probe_panel", "candidate_execution_receipt"]}},
+        "verification_dimensions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["operator_legality", "execution_success", "finite_output", "shape_preservation", "effect_distinctness", "modification_scope"]}},
+        "abstention_conditions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["insufficient_public_evidence", "no_effect_distinct_candidate", "risk_guard_failure", "capability_unavailable"]}}
+      }
+    },
+    "deployment_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "constraint_id", "model_policy", "fixed_downstream_model_id", "maximum_candidates", "maximum_modified_fraction"],
+      "properties": {
+        "schema_version": {"const": "deployment-constraint/1"},
+        "constraint_id": {"type": "string", "pattern": "^[a-z][a-z0-9._:-]*[a-z0-9]$"},
+        "model_policy": {"const": "fixed"},
+        "fixed_downstream_model_id": {"type": "string", "minLength": 1},
+        "maximum_candidates": {"type": "integer", "minimum": 1},
+        "maximum_modified_fraction": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    }
+  }
+}

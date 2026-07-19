@@ -7,7 +7,12 @@ import pytest
 
 from SelfEvolvingHarnessTS.contracts.harness import EditOperation, load_skill_entry
 from SelfEvolvingHarnessTS.contracts.method import PreparationRequest, PreparationStatus
-from SelfEvolvingHarnessTS.contracts.task import forecast_task_spec_v1
+from SelfEvolvingHarnessTS.contracts.run_context import RunDependencyBinding
+from SelfEvolvingHarnessTS.contracts.task import (
+    deployment_constraints_v1,
+    forecast_task_context_v1,
+    forecast_task_spec_v1,
+)
 from SelfEvolvingHarnessTS.methods.ttha.agent_core import (
     AgentProtocolError,
     TTHAAgentCore,
@@ -19,6 +24,7 @@ from SelfEvolvingHarnessTS.methods.ttha.public_tools import LocalPublicToolGatew
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import resolve_harness_view
 from SelfEvolvingHarnessTS.methods.ttha.slow_agent import TTHASlowAgent
 from SelfEvolvingHarnessTS.runtime.agent_backend import AgentResponse, ReplayAgentBackend
+from SelfEvolvingHarnessTS.runtime import candidate_verification
 
 
 H0_ROOT = Path(__file__).resolve().parents[2] / "methods" / "ttha" / "harness" / "h0"
@@ -63,6 +69,36 @@ def _request(values=None):
         np.asarray(values if values is not None else [1.0, 2.0, 3.0]),
         forecast_task_spec_v1(horizon=1),
         {},
+    )
+
+
+def _f1_request(values, *, maximum_modified_fraction=0.35):
+    task = forecast_task_spec_v1(horizon=1)
+    context = forecast_task_context_v1(
+        task_spec=task,
+        deployment_constraints=deployment_constraints_v1(
+            maximum_modified_fraction=maximum_modified_fraction
+        ),
+    )
+    binding = RunDependencyBinding(
+        task_context_sha=context.sha(),
+        evaluator_adapter_id="forecast-chronos-v1",
+        instrument_epoch="probe-instrument/3",
+        corpus_epoch="f1-live-slice-v1",
+        capability_bundle_sha="1" * 64,
+        runtime_sha="2" * 64,
+        harness_sha="3" * 64,
+        code_commit="4" * 40,
+        provider_id="agicto-chat-completions",
+        model_id="gpt-5.5",
+    )
+    return PreparationRequest(
+        "series-f1",
+        np.asarray(values, dtype=float),
+        task,
+        {},
+        task_context=context,
+        run_dependency_binding=binding,
     )
 
 
@@ -401,6 +437,138 @@ def test_fast_path_compiles_selects_and_executes_program():
     assert result.program.steps[0].op == "impute_linear"
     assert trace.modified_indices == (1,)
     assert trace.chosen_candidate_id == "agent-0"
+
+
+def test_f1_task_context_and_receipts_reach_select_with_single_execution(monkeypatch):
+    values = np.asarray([1.0, np.nan, 3.0, 4.0])
+    responses = [
+        _stage(
+            "inspect",
+            {
+                "inspected_region_fractions": [[0.0, 1.0]],
+                "requested_public_tools": [],
+                "uncertainty": "low",
+            },
+        ),
+        _stage(
+            "propose",
+            {
+                "candidates": [
+                    {
+                        "candidate_id": "fill-gap",
+                        "steps": [{"op": "impute_linear", "params": {}}],
+                    }
+                ]
+            },
+        ),
+        _stage(
+            "select",
+            {
+                "chosen_candidate_id": "fill-gap",
+                "verification_actions": ["runtime_receipt_checked"],
+            },
+        ),
+    ]
+
+    class CapturingBackend:
+        def __init__(self):
+            self.requests = []
+
+        def complete(self, request):
+            self.requests.append(request)
+            return responses[len(self.requests) - 1]
+
+    calls = 0
+    original = candidate_verification.run_pipeline
+
+    def counted(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(candidate_verification, "run_pipeline", counted)
+    backend = CapturingBackend()
+    request = _f1_request(values)
+    result, trace = TTHAFastAgent(
+        TTHAAgentCore(
+            backend,
+            LocalPublicToolGateway(values, task_kind="forecast"),
+        )
+    ).prepare(request, compile_snapshot(H0_ROOT))
+
+    assert result.status is PreparationStatus.PREPARED
+    assert calls == 1
+    assert {item.task_context_sha for item in backend.requests} == {
+        request.task_context.sha()
+    }
+    assert {item.run_context_sha for item in backend.requests} == {
+        request.run_dependency_binding.sha()
+    }
+    prompts = [json.loads(item.messages[1]["content"]) for item in backend.requests]
+    assert all(
+        prompt["public_input"]["task_context_sha"] == request.task_context.sha()
+        for prompt in prompts
+    )
+    select_candidate = prompts[-1]["public_input"]["candidates"][1]
+    assert "candidates" not in prompts[0]["public_input"]
+    assert "candidates" not in prompts[1]["public_input"]
+    assert "verification_receipt" not in json.dumps(prompts[0], sort_keys=True)
+    assert "verification_receipt" not in json.dumps(prompts[1], sort_keys=True)
+    assert select_candidate["verification_receipt"]["execution_ok"] is True
+    assert select_candidate["verification_receipt"]["modified_fraction"] == 0.25
+    assert trace.task_context_sha == request.task_context.sha()
+    assert trace.run_context_sha == request.run_dependency_binding.sha()
+    assert set(trace.candidate_receipt_shas) == {"identity", "fill-gap"}
+
+
+def test_f1_rejected_candidate_is_not_selectable_but_remains_in_trace():
+    values = np.asarray([1.0, 2.0, 3.0, 4.0])
+    responses = [
+        _stage(
+            "inspect",
+            {
+                "inspected_region_fractions": [[0.0, 1.0]],
+                "requested_public_tools": [],
+                "uncertainty": "low",
+            },
+        ),
+        _stage(
+            "propose",
+            {
+                "candidates": [
+                    {
+                        "candidate_id": "global-winsorize",
+                        "steps": [
+                            {"op": "winsorize", "params": {"limits": 0.25}}
+                        ],
+                    }
+                ]
+            },
+        ),
+        _stage(
+            "select",
+            {
+                "chosen_candidate_id": "identity",
+                "verification_actions": ["overflow_candidate_rejected"],
+            },
+        ),
+    ]
+    request = _f1_request(values, maximum_modified_fraction=0.05)
+    backend = ReplayAgentBackend(responses)
+    result, trace = TTHAFastAgent(
+        TTHAAgentCore(
+            backend,
+            LocalPublicToolGateway(values, task_kind="forecast"),
+        )
+    ).prepare(request, compile_snapshot(H0_ROOT))
+
+    assert result.status is PreparationStatus.ABSTAINED
+    assert trace.candidate_ids == ("identity",)
+    assert trace.rejection_receipts[0]["candidate_id"] == "global-winsorize"
+    assert (
+        trace.rejection_receipts[0]["rejection_code"]
+        == "MODIFICATION_FRACTION_EXCEEDED"
+    )
 
 
 def test_malformed_agent_output_is_behavior_failure():

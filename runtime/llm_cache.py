@@ -144,6 +144,8 @@ class EffectiveRequestCache:
             "schema_version": "agent-cache-record/1",
             "key": key.to_dict(),
             "source_harness_snapshot_sha": request.source_harness_snapshot_sha,
+            "task_context_sha": request.task_context_sha,
+            "run_context_sha": request.run_context_sha,
             "relay_origin": request.base_url,
             "requested_model_alias": request.model,
             "sdk_version": request.sdk_version,

@@ -132,3 +132,15 @@ def test_budgeted_backend_counts_usage_and_hard_fails_before_extra_call():
     with pytest.raises(AgentCallBudgetExceeded):
         backend.complete(request_for_stage(call_index=1))
     assert len(completions.calls) == 1
+
+
+def test_task_context_changes_semantic_request_but_run_provenance_does_not():
+    legacy = request_for_stage()
+    task_bound = request_for_stage(task_context_sha="8" * 64)
+    other_run = request_for_stage(
+        task_context_sha="8" * 64,
+        run_context_sha="9" * 64,
+    )
+
+    assert legacy.semantic_request_hash() != task_bound.semantic_request_hash()
+    assert task_bound.semantic_request_hash() == other_run.semantic_request_hash()

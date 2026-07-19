@@ -198,10 +198,15 @@ def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
         "operator_bundle": operator_bundle_sha,
         "operator_registry": operator_registry_sha,
         "candidate_contract": _canonical_file_sha(contracts_root / "candidate.py", kind="text"),
+        "method_contract": _canonical_file_sha(contracts_root / "method.py", kind="text"),
         "observable_contract": _canonical_file_sha(contracts_root / "observables.py", kind="text"),
         "public_boundary_contract": _canonical_file_sha(
             contracts_root / "public_boundary.py", kind="text"
         ),
+        "run_context_contract": _canonical_file_sha(
+            contracts_root / "run_context.py", kind="text"
+        ),
+        "task_contract": _canonical_file_sha(contracts_root / "task.py", kind="text"),
         "surface_registry": _canonical_file_sha(Path(__file__).with_name("harness_surfaces.json"), kind="json"),
     }
     for path in sorted(schema_root.glob("*.json"), key=lambda item: item.name):
@@ -209,6 +214,7 @@ def _dependency_shas() -> tuple[dict[str, str], str, str, str]:
     for filename in (
         "agent_backend.py",
         "candidate_pool.py",
+        "candidate_verification.py",
         "decision_trace.py",
         "executor.py",
         "llm_cache.py",
@@ -376,6 +382,19 @@ def compile_snapshot(root: Path, verify_lock: bool = True) -> HarnessSnapshot:
     return receipt.snapshot
 
 
+def compile_compatible_snapshot(
+    root: Path,
+    *,
+    expected_harness_content_sha: str,
+) -> HarnessSnapshot:
+    """Rebind immutable authoring content to the current runtime dependency set."""
+
+    snapshot = compile_snapshot(root, verify_lock=False)
+    if snapshot.harness_content_sha != expected_harness_content_sha:
+        raise ValueError("compatibility compile changed Harness semantic content")
+    return snapshot
+
+
 def write_lock(root: Path) -> Path:
     root = Path(root).resolve()
     receipt = _compile(root)
@@ -405,6 +424,7 @@ __all__ = [
     "COMPILER_VERSION",
     "RETRIEVAL_COMPILER_VERSION",
     "compile_snapshot",
+    "compile_compatible_snapshot",
     "memory_entry_to_dict",
     "skill_entry_to_dict",
     "snapshot_to_dict",

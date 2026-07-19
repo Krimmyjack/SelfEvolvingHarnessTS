@@ -26,7 +26,8 @@ from SelfEvolvingHarnessTS.contracts.harness import (
 )
 from SelfEvolvingHarnessTS.contracts.method import PreparationRequest, PreparationStatus
 from SelfEvolvingHarnessTS.contracts.program import Program
-from SelfEvolvingHarnessTS.contracts.task import forecast_task_spec_v1
+from SelfEvolvingHarnessTS.contracts.run_context import RunDependencyBinding
+from SelfEvolvingHarnessTS.contracts.task import TaskContext, forecast_task_spec_v1
 from SelfEvolvingHarnessTS.evaluation.minipipe.config import M0Rules, load_m0_rules
 from SelfEvolvingHarnessTS.evaluation.minipipe.contracts import (
     CaseFeedback,
@@ -484,6 +485,8 @@ class _CycleCaseRunner:
         run_context_sha: str,
         model: str,
         base_url: str,
+        task_context: TaskContext | None = None,
+        run_dependency_binding: RunDependencyBinding | None = None,
     ) -> None:
         self.backend = backend
         self.valuator = valuator
@@ -491,6 +494,15 @@ class _CycleCaseRunner:
         self.run_context_sha = run_context_sha
         self.model = model
         self.base_url = base_url
+        self.task_context = task_context
+        self.run_dependency_binding = run_dependency_binding
+        if run_dependency_binding is not None:
+            if task_context is None:
+                raise ValueError("run dependency binding requires TaskContext")
+            if run_dependency_binding.task_context_sha != task_context.sha():
+                raise ValueError("run dependency binding names another TaskContext")
+            if run_dependency_binding.sha() != run_context_sha:
+                raise ValueError("run_context_sha must equal the dependency binding SHA")
         rolling = RollingObservedValuator(
             pipeline=valuator.pipeline,
             origins=tuple(int(value) for value in rules["public_probe_origins"]),
@@ -520,11 +532,19 @@ class _CycleCaseRunner:
         snapshot: MaterializedSnapshot,
         case: PrivateSyntheticCase,
     ) -> _CaseEvaluation:
+        task_spec = (
+            self.task_context.task_spec
+            if self.task_context is not None
+            else forecast_task_spec_v1(
+                horizon=48,
+                downstream_model_class="frozen_tsfm_m0",
+            )
+        )
         public_panel = self._public_panel(case)
         agent_panel = _agent_panel(public_panel)
         gateway = LocalPublicToolGateway(
             case.corrupt_context,
-            task_kind="forecast",
+            task_kind=task_spec.task_type,
             fixed_probe_panel=agent_panel,
         )
         public_view = (
@@ -542,11 +562,10 @@ class _CycleCaseRunner:
             PreparationRequest(
                 case.case_id,
                 case.corrupt_context,
-                forecast_task_spec_v1(
-                    horizon=48,
-                    downstream_model_class="frozen_tsfm_m0",
-                ),
+                task_spec,
                 {},
+                task_context=self.task_context,
+                run_dependency_binding=self.run_dependency_binding,
             ),
             snapshot.snapshot,
             fixed_probe_panel=agent_panel,

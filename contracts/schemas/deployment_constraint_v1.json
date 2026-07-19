@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deployment-constraint/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "constraint_id", "model_policy", "fixed_downstream_model_id", "maximum_candidates", "maximum_modified_fraction"],
+  "properties": {
+    "schema_version": {"const": "deployment-constraint/1"},
+    "constraint_id": {"type": "string", "pattern": "^[a-z][a-z0-9._:-]*[a-z0-9]$"},
+    "model_policy": {"const": "fixed"},
+    "fixed_downstream_model_id": {"type": "string", "minLength": 1},
+    "maximum_candidates": {"type": "integer", "minimum": 1},
+    "maximum_modified_fraction": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+  }
+}

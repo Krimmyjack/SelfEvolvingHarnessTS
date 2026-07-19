@@ -25,10 +25,12 @@ from SelfEvolvingHarnessTS.operators.registry import (
 from SelfEvolvingHarnessTS.runtime.candidate_pool import (
     CandidatePool,
     ProtocolChoiceError,
-    effect_equivalent_to_identity,
+)
+from SelfEvolvingHarnessTS.runtime.candidate_verification import (
+    CandidateExecutionArtifact,
+    verify_candidate,
 )
 from SelfEvolvingHarnessTS.runtime.decision_trace import DecisionTrace
-from SelfEvolvingHarnessTS.runtime.executor import ExecutionResult, run_pipeline
 
 from .agent_core import (
     AgentProtocolError,
@@ -202,56 +204,20 @@ def _regions_from_fractions(
     return tuple(regions)
 
 
-def _modified_indices(raw: np.ndarray, prepared: np.ndarray) -> tuple[int, ...]:
-    if raw.shape != prepared.shape:
-        return tuple(range(max(raw.size, prepared.size)))
-    equal = np.equal(raw, prepared) | (np.isnan(raw) & np.isnan(prepared))
-    return tuple(int(index) for index in np.flatnonzero(~equal))
-
-
-def _supplied_noop_ids(
-    candidates: Sequence[Candidate],
-    values: np.ndarray,
-) -> tuple[str, ...]:
-    noops: list[str] = []
-    for candidate in candidates:
-        if candidate.kind is not CandidateKind.PROGRAM or candidate.program is None:
-            continue
-        execution = run_pipeline(
-            candidate.program.execution_steps(), values, source=candidate.source
-        )
-        if (
-            execution.ok
-            and execution.artifact is not None
-            and effect_equivalent_to_identity(values, execution.artifact)
-        ):
-            noops.append(candidate.candidate_id)
-    return tuple(noops)
-
-
-def _inside_regions(index: int, regions: tuple[tuple[int, int], ...]) -> bool:
-    return any(start <= index < end for start, end in regions)
-
-
-def _risk_allows(
-    candidate: Candidate,
-    values: np.ndarray,
+def _verification_limits(
+    request: PreparationRequest,
     view: EffectiveHarnessView,
-    inspected_regions: tuple[tuple[int, int], ...],
-) -> bool:
-    if candidate.kind is CandidateKind.IDENTITY:
-        return True
-    assert candidate.program is not None
-    execution = run_pipeline(
-        candidate.program.execution_steps(), values, source=candidate.source
-    )
-    if not execution.ok or execution.artifact is None or execution.artifact.shape != values.shape:
-        return False
-    modified = _modified_indices(values, execution.artifact)
+) -> tuple[float, bool]:
     verification = view.controls.get("verification", {})
     if not isinstance(verification, Mapping):
-        return False
+        return 0.0, True
     maxima = [float(verification.get("max_modified_fraction", 1.0))]
+    if request.task_context is not None:
+        maxima.append(
+            float(
+                request.task_context.deployment_constraints.maximum_modified_fraction
+            )
+        )
     preserve_outside = verification.get("preserve_outside_candidate_region") is True
     for skill in view.skills:
         guards = skill.risk_guards
@@ -267,18 +233,19 @@ def _risk_allows(
         preserve_outside = preserve_outside or (
             guards.get("preserve_outside_candidate_region") is True
         )
-    maximum = min(maxima)
-    if len(modified) / max(values.size, 1) > maximum:
-        return False
-    targeting_modes = {
-        operator_targeting_mode(operator_id)
-        for operator_id, _params in candidate.program.execution_steps()
+    return min(maxima), preserve_outside
+
+
+def _task_binding(
+    request: PreparationRequest, *, legacy_inspect_stage: bool = False
+) -> dict[str, object]:
+    if request.task_context is None:
+        return {"task": request.task_spec.to_dict()} if legacy_inspect_stage else {}
+    return {
+        "task": request.task_spec.to_dict(),
+        "task_context": request.task_context.to_dict(),
+        "task_context_sha": request.task_context.sha(),
     }
-    intrinsically_targeted = targeting_modes == {"intrinsic"}
-    if preserve_outside and inspected_regions and not intrinsically_targeted:
-        if any(not _inside_regions(index, inspected_regions) for index in modified):
-            return False
-    return True
 
 
 class TTHAFastAgent:
@@ -300,6 +267,8 @@ class TTHAFastAgent:
         verification_actions: tuple[str, ...],
         identity_equivalent: bool,
         supplied_noop_candidate_ids: tuple[str, ...],
+        candidate_artifacts: Mapping[str, CandidateExecutionArtifact],
+        rejection_receipts: tuple[Mapping[str, object], ...],
     ) -> DecisionTrace:
         tool_calls = tuple(
             {
@@ -358,6 +327,24 @@ class TTHAFastAgent:
             supplied_noop_candidate_ids=supplied_noop_candidate_ids,
             candidate_program_steps=candidate_program_steps,
             agent_cache_hit_flags=cache_hit_flags,
+            task_context_sha=(request.task_context.sha() if request.task_context else ""),
+            run_context_sha=(
+                request.run_dependency_binding.sha()
+                if request.run_dependency_binding
+                else ""
+            ),
+            selectable_candidate_ids=tuple(
+                candidate.candidate_id for candidate in candidates
+            ),
+            candidate_receipt_shas={
+                candidate_id: artifact.receipt.receipt_sha
+                for candidate_id, artifact in candidate_artifacts.items()
+                if request.task_context is not None
+                and candidate_id in {candidate.candidate_id for candidate in candidates}
+            },
+            rejection_receipts=(
+                rejection_receipts if request.task_context is not None else ()
+            ),
         )
 
     def prepare(
@@ -386,14 +373,23 @@ class TTHAFastAgent:
         chosen_id = ""
         verification_actions: tuple[str, ...] = ()
         supplied_noop_candidate_ids: tuple[str, ...] = ()
+        candidate_artifacts: dict[str, CandidateExecutionArtifact] = {}
+        rejection_receipts: tuple[Mapping[str, object], ...] = ()
+        chosen_artifact: CandidateExecutionArtifact | None = None
         compilation_status = "not_started"
+        task_context_sha = request.task_context.sha() if request.task_context else ""
+        run_context_sha = (
+            request.run_dependency_binding.sha()
+            if request.run_dependency_binding
+            else ""
+        )
         try:
             inspect = self.core.run_stage(
                 role=AgentRole.FAST,
                 stage="inspect",
                 case_id=request.series_uid,
                 public_input={
-                    "task": request.task_spec.to_dict(),
+                    **_task_binding(request, legacy_inspect_stage=True),
                     "features": _plain(features),
                     "fixed_probe_panel": _plain(fixed_probe_panel or {}),
                 },
@@ -401,6 +397,8 @@ class TTHAFastAgent:
                 output_schema_name="fast_inspect_v1",
                 output_schema=self.core.load_stage_schema("fast_inspect_v1"),
                 source_snapshot_sha=snapshot.runtime_bundle_sha,
+                task_context_sha=task_context_sha,
+                run_context_sha=run_context_sha,
                 validation_retries=1,
             )
             stages.append(inspect)
@@ -413,6 +411,7 @@ class TTHAFastAgent:
                 stage="propose",
                 case_id=request.series_uid,
                 public_input={
+                    **_task_binding(request),
                     "features": _plain(features),
                     "inspection": _plain(inspect.payload),
                     "fixed_probe_panel": _plain(fixed_probe_panel or {}),
@@ -424,6 +423,8 @@ class TTHAFastAgent:
                 output_schema_name="fast_propose_v1",
                 output_schema=self.core.load_stage_schema("fast_propose_v1"),
                 source_snapshot_sha=snapshot.runtime_bundle_sha,
+                task_context_sha=task_context_sha,
+                run_context_sha=run_context_sha,
                 validation_retries=1,
                 post_validator=lambda payload: _validate_public_parameter_bindings(
                     payload, features, fixed_probe_panel
@@ -431,19 +432,52 @@ class TTHAFastAgent:
             )
             stages.append(propose)
             supplied = _compile_candidates(propose.payload, request)
-            supplied_noop_candidate_ids = _supplied_noop_ids(
-                supplied, request.values
-            )
             total_k = int(snapshot.candidate_policy["total_k"])
-            pool = CandidatePool.build(supplied, total_k=total_k)
-            pool = pool.apply_risk(
-                lambda candidate: _risk_allows(
-                    candidate, request.values, view, inspected_regions
+            if request.task_context is not None:
+                total_k = min(
+                    total_k,
+                    request.task_context.deployment_constraints.maximum_candidates,
                 )
+            pool = CandidatePool.build(supplied, total_k=total_k)
+            maximum_modified_fraction, preserve_outside = _verification_limits(
+                request, view
+            )
+            verified = tuple(
+                verify_candidate(
+                    candidate,
+                    request.values,
+                    allowed_operators=allowed,
+                    inspected_regions=inspected_regions,
+                    maximum_modified_fraction=maximum_modified_fraction,
+                    preserve_outside_inspected_region=preserve_outside,
+                    require_finite_output=request.task_context is not None,
+                )
+                for candidate in pool.candidates
+            )
+            candidate_artifacts = {
+                artifact.candidate.candidate_id: artifact for artifact in verified
+            }
+            supplied_noop_candidate_ids = tuple(
+                artifact.candidate.candidate_id
+                for artifact in verified
+                if artifact.candidate.kind is CandidateKind.PROGRAM
+                and artifact.receipt.effect_equivalent_to_identity
+            )
+            rejection_receipts = tuple(
+                artifact.receipt.to_dict()
+                for artifact in verified
+                if not artifact.selectable
+            )
+            pool = CandidatePool(
+                tuple(
+                    artifact.candidate for artifact in verified if artifact.selectable
+                ),
+                total_k,
             )
             compilation_status = "ok"
-            public_candidates = [
-                {
+            public_candidates = []
+            for candidate in pool.candidates:
+                candidate_payload = {
                     "candidate_id": candidate.candidate_id,
                     "kind": candidate.kind.value,
                     "program_sha": candidate.program.sha() if candidate.program else None,
@@ -456,13 +490,21 @@ class TTHAFastAgent:
                         else []
                     ),
                 }
-                for candidate in pool.candidates
-            ]
+                if request.task_context is not None:
+                    artifact = candidate_artifacts[candidate.candidate_id]
+                    candidate_payload["verification_receipt"] = (
+                        artifact.receipt.to_dict()
+                    )
+                    candidate_payload["verification_receipt_sha"] = (
+                        artifact.receipt.receipt_sha
+                    )
+                public_candidates.append(candidate_payload)
             select = self.core.run_stage(
                 role=AgentRole.FAST,
                 stage="select",
                 case_id=request.series_uid,
                 public_input={
+                    **_task_binding(request),
                     "features": _plain(features),
                     "inspection": _plain(inspect.payload),
                     "fixed_probe_panel": _plain(fixed_probe_panel or {}),
@@ -472,12 +514,15 @@ class TTHAFastAgent:
                 output_schema_name="fast_select_v1",
                 output_schema=self.core.load_stage_schema("fast_select_v1"),
                 source_snapshot_sha=snapshot.runtime_bundle_sha,
+                task_context_sha=task_context_sha,
+                run_context_sha=run_context_sha,
                 validation_retries=1,
             )
             stages.append(select)
             chosen_id = select.payload["chosen_candidate_id"]
             verification_actions = tuple(select.payload["verification_actions"])
             chosen = pool.require_choice(chosen_id)
+            chosen_artifact = candidate_artifacts[chosen.candidate_id]
         except (AgentProtocolError, ProtocolChoiceError, ValueError, TypeError) as exc:
             trace = self._trace(
                 request=request,
@@ -492,6 +537,8 @@ class TTHAFastAgent:
                 verification_actions=verification_actions,
                 identity_equivalent=False,
                 supplied_noop_candidate_ids=supplied_noop_candidate_ids,
+                candidate_artifacts=candidate_artifacts,
+                rejection_receipts=rejection_receipts,
             )
             return (
                 PreparationResult(
@@ -520,6 +567,8 @@ class TTHAFastAgent:
                 verification_actions=verification_actions,
                 identity_equivalent=True,
                 supplied_noop_candidate_ids=supplied_noop_candidate_ids,
+                candidate_artifacts=candidate_artifacts,
+                rejection_receipts=rejection_receipts,
             )
             return (
                 PreparationResult(
@@ -531,40 +580,16 @@ class TTHAFastAgent:
                 trace,
             )
         assert chosen.program is not None
-        execution: ExecutionResult = run_pipeline(
-            chosen.program.execution_steps(), request.values, source=chosen.source
-        )
+        assert chosen_artifact is not None and chosen_artifact.prepared_values is not None
         receipt = ExecutionReceipt(
-            ok=execution.ok,
-            error=execution.error,
-            trace=tuple(dict(row) for row in execution.trace),
+            ok=True,
+            trace=tuple(dict(row) for row in chosen_artifact.execution_trace),
         )
-        if not execution.ok or execution.artifact is None:
-            trace = self._trace(
-                request=request,
-                view=view,
-                stages=stages,
-                inspected_regions=inspected_regions,
-                pool=pool,
-                chosen_candidate_id=chosen_id,
-                compilation_status=compilation_status,
-                execution_status="failed",
-                modified_indices=(),
-                verification_actions=verification_actions,
-                identity_equivalent=False,
-                supplied_noop_candidate_ids=supplied_noop_candidate_ids,
-            )
-            return (
-                PreparationResult(
-                    PreparationStatus.FAILED, None, chosen.program, receipt
-                ),
-                trace,
-            )
-        modified = _modified_indices(request.values, execution.artifact)
-        equivalent = effect_equivalent_to_identity(request.values, execution.artifact)
+        modified = chosen_artifact.modified_indices
+        equivalent = chosen_artifact.receipt.effect_equivalent_to_identity
         prepared = PreparedSeries(
             request.series_uid,
-            execution.artifact,
+            chosen_artifact.prepared_values,
             tuple(step.op for step in chosen.program.steps),
             "original_units",
         )
@@ -581,6 +606,8 @@ class TTHAFastAgent:
             verification_actions=verification_actions,
             identity_equivalent=equivalent,
             supplied_noop_candidate_ids=supplied_noop_candidate_ids,
+            candidate_artifacts=candidate_artifacts,
+            rejection_receipts=rejection_receipts,
         )
         return (
             PreparationResult(
