@@ -1,0 +1,26 @@
+{
+  "schema_version":"skill-entry/1",
+  "skill_id":"closed_level_excursion_repair_v2",
+  "skill_kind":"capability",
+  "revision":1,
+  "body":"When deployment-visible evidence shows a strong excursion that returns before the context boundary, propose exactly one repair_level_shift candidate. Set canonical operator parameter region_start_fraction equal to public feature estimated_region_start_fraction, region_end_fraction equal to estimated_region_end_fraction, and estimated_offset equal to estimated_level_offset. Retain identity, preserve values outside that region, allow the closed region to cover at most 0.35 of the context, and do not repair an excursion continuing to the context boundary.",
+  "observable_applicability":{
+    "all":[
+      {"feature":"level_excursion_score","op":">=","value":2.5},
+      {"feature":"missing_fraction","op":"==","value":0.0},
+      {"feature":"estimated_region_end_fraction","op":"<=","value":0.95},
+      {
+        "any":[
+          {"feature":"estimated_level_offset","op":">=","value":0.4},
+          {"feature":"estimated_level_offset","op":"<=","value":-0.4}
+        ]
+      }
+    ]
+  },
+  "allowed_tools":["repair_level_shift"],
+  "risk_guards":{
+    "max_modified_fraction":0.35,
+    "preserve_outside_candidate_region":true,
+    "require_identity_candidate":true
+  }
+}

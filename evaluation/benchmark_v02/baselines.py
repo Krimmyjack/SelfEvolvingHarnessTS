@@ -9,7 +9,10 @@ import numpy as np
 
 from ...contracts.task import TaskSpec
 from ...operators.registry import OPERATOR_METADATA, canonicalize
-from ...runtime.fast_path import prepared_artifact, run_fast_path
+from ._frozen_reference.fast_path import (
+    prepared_artifact,
+    run_legacy_reference_batch,
+)
 from .method_api import MethodSeriesView, PreparedSeries
 
 
@@ -158,8 +161,8 @@ class OracleInSample:
         return oracle_insample(query_losses)
 
 
-class HRefBaseline:
-    """Benchmark-contract wrapper around the current P6 det+random fast path."""
+class LegacyReferenceBaseline:
+    """Benchmark-only wrapper around the retired P6 det+random reference."""
 
     method_id = "h_ref"
 
@@ -168,14 +171,14 @@ class HRefBaseline:
         *,
         state: Any,
         budget: int,
-        run_path: Callable[..., Mapping[str, Any]] = run_fast_path,
+        run_path: Callable[..., Mapping[str, Any]] = run_legacy_reference_batch,
         materialize_choice: Callable[[Any, np.ndarray], np.ndarray | None] = prepared_artifact,
     ) -> None:
         if isinstance(budget, bool) or not isinstance(budget, int) or budget < 1:
-            raise ValueError("H_ref budget must be a positive integer")
+            raise ValueError("legacy reference budget must be a positive integer")
         expected = getattr(getattr(state, "sampler", None), "expected_total", budget)
         if int(expected) != budget:
-            raise BaselineProtocolError("H_ref budget disagrees with frozen state")
+            raise BaselineProtocolError("legacy reference budget disagrees with frozen state")
         self._state = state
         self._budget = budget
         self._run_path = run_path
@@ -201,12 +204,16 @@ class HRefBaseline:
         for requested in operators:
             metadata = OPERATOR_METADATA.get(canonicalize(requested))
             if metadata is None:
-                raise BaselineProtocolError(f"H_ref selected unknown operator {requested!r}")
+                raise BaselineProtocolError(
+                    f"legacy reference selected unknown operator {requested!r}"
+                )
             if bool(metadata.get("changes_target_space")):
-                raise BaselineProtocolError("H_ref selected a forbidden target-space operator")
+                raise BaselineProtocolError(
+                    "legacy reference selected a forbidden target-space operator"
+                )
         artifact = self._materialize_choice(choice, values)
         if artifact is None:
-            raise BaselineProtocolError("H_ref candidate execution failed")
+            raise BaselineProtocolError("legacy reference candidate execution failed")
         return PreparedSeries(
             series_uid=series_view.series_uid,
             values=np.asarray(artifact),
@@ -217,7 +224,7 @@ class HRefBaseline:
 
 __all__ = [
     "BaselineProtocolError",
-    "HRefBaseline",
+    "LegacyReferenceBaseline",
     "OracleInSample",
     "OracleTransfer",
     "ProgramLoss",

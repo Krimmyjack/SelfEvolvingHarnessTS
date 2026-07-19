@@ -10,6 +10,7 @@ import pytest
 
 from SelfEvolvingHarnessTS.operators import s1_denoise as den
 from SelfEvolvingHarnessTS.operators import s1_impute as imp
+from SelfEvolvingHarnessTS.operators import s1_structural as structural
 from SelfEvolvingHarnessTS.operators import _provenance as prov
 
 RNG = np.random.default_rng(0)
@@ -113,3 +114,21 @@ def test_denoisers_are_semantically_distinct():
 def test_dependency_fingerprint_records_versions():
     fp = prov.dependency_fingerprint()
     assert "numpy" in fp and "pywt" in fp
+
+
+def test_level_repair_accepts_complete_deployment_observable_binding():
+    clean = np.sin(2 * np.pi * np.arange(120, dtype=float) / 24.0)
+    corrupt = clean.copy()
+    corrupt[36:84] += 2.0
+    repaired = structural.repair_level_shift(
+        corrupt,
+        region_start_fraction=36 / 120,
+        region_end_fraction=84 / 120,
+        estimated_offset=2.0,
+    )
+    np.testing.assert_allclose(repaired, clean, atol=1e-12)
+    with pytest.raises(ValueError):
+        structural.repair_level_shift(
+            corrupt,
+            region_start_fraction=36 / 120,
+        )

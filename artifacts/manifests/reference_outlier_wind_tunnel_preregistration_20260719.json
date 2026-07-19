@@ -1,0 +1,29 @@
+{
+  "schema_version":"reference-wind-tunnel-preregistration/3",
+  "scientific_role":"positive_control_not_autonomous_growth_evidence",
+  "calibration_asset":"evaluation/minipipe/calibration/reference_skill_entries/sparse_public_outlier_repair_v1.json",
+  "instrument_epoch":"probe-instrument/2",
+  "target_family":"impulsive_outlier",
+  "expected_operator":"hampel_filter",
+  "target_gate":{
+    "target_count":6,
+    "minimum_behavior_flips":4,
+    "behavior_flip_definition":"baseline chooses identity and edited arm chooses a program with a changed normalized behavior signature",
+    "flipped_case_mean_repair_gain_g_min_exclusive":0.0
+  },
+  "risk_gate":{
+    "risk_case_policy":"all impulsive-outlier clean or contextual counterparts in m0-corpus/2",
+    "allowed_regressions":0,
+    "allowed_reference_skill_retrievals":0
+  },
+  "behavior_funnel":[
+    "retrieve_skill:sparse_public_outlier_repair_v1",
+    "supply_operator:hampel_filter",
+    "supply_effect_distinct",
+    "choose_candidate_kind:program",
+    "identity_retained",
+    "scope_modified_fraction<=0.05"
+  ],
+  "primary_call_budget_max":90,
+  "preauthorized_second_lever":null
+}

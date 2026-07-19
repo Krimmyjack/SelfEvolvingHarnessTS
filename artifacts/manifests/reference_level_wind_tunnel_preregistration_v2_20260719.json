@@ -1,0 +1,36 @@
+{
+  "schema_version":"reference-wind-tunnel-preregistration/2",
+  "supersedes":"artifacts/manifests/reference_level_wind_tunnel_preregistration_20260719.json",
+  "prior_run_report_sha":"d32b8f71ea049c19d4fe832f907fc4142e4a7c2e95e47f0d15b7a86762d377d9",
+  "calibration_correction":"The v1 gate was infeasible because level target regions occupy 0.2083 to 0.3385 of context while reference and global scope caps were 0.20 and 0.25. V2 aligns the positive-control skill and H0 verification cap at 0.35 and makes registry-declared parameter bindings executable contract requirements.",
+  "calibration_asset":"evaluation/minipipe/calibration/reference_skill_entries/closed_level_excursion_repair_v2.json",
+  "scientific_role":"positive_control_not_autonomous_growth_evidence",
+  "instrument_epoch":"probe-instrument/2",
+  "target_gate":{
+    "level_target_count":6,
+    "minimum_behavior_flips":4,
+    "behavior_flip_definition":"baseline chooses identity and edited arm chooses a program with a changed normalized behavior signature",
+    "flipped_case_mean_repair_gain_g_min_exclusive":0.0
+  },
+  "risk_gate":{
+    "risk_case_policy":"all level-shift genuine-event cases in m0-corpus/2",
+    "allowed_regressions":0,
+    "allowed_reference_skill_retrievals":0
+  },
+  "behavior_funnel":[
+    "retrieve_skill:closed_level_excursion_repair_v2",
+    "supply_operator:repair_level_shift",
+    "supply_effect_distinct",
+    "choose_candidate_kind:program",
+    "identity_retained",
+    "scope_modified_fraction<=0.35"
+  ],
+  "prior_paid_calls":58,
+  "primary_call_budget_max":82,
+  "cumulative_call_budget_max":140,
+  "preauthorized_second_lever":{
+    "trigger":"reference skill is retrieved and an effect-distinct program is supplied, but the fast Agent still chooses identity",
+    "target_surface":"candidate_policy.selection_guidance",
+    "operation":"PATCH"
+  }
+}

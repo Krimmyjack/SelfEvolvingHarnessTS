@@ -21,6 +21,7 @@ impute_ema 被判为与 forward_fill 冗余、impute_fft 与 seasonal_fill 冗�
 """
 from __future__ import annotations
 
+import math
 import warnings
 
 import numpy as np
@@ -30,8 +31,29 @@ from ._provenance import record
 from ..conditioning.period import guess_period_robust_v1 as _guess_period
 
 
-def impute_linear(x, **_) -> np.ndarray:
-    return interp_nan(as_1d(x))
+def impute_linear(x, strength: float = 1.0, **_) -> np.ndarray:
+    """Linear interpolation with an optional, canonical monotonic dose.
+
+    ``strength=1`` is the historical operator.  Lower strengths still fill every
+    missing point, but interpolate between the finite-series median (the neutral
+    anchor) and the full linear repair.  Making this dose part of the operator is
+    what lets a fixed ProbeAPI arm and an Agent PROGRAM execute byte-identical
+    transformations; the probe must not perform a hidden blend after execution.
+    """
+
+    numeric_strength = float(strength)
+    if not math.isfinite(numeric_strength) or not 0.0 <= numeric_strength <= 1.0:
+        raise ValueError("impute_linear strength must be finite and in [0, 1]")
+    raw = as_1d(x).astype(float)
+    missing = np.isnan(raw)
+    repaired = interp_nan(raw)
+    if numeric_strength == 1.0 or not missing.any():
+        return repaired
+    finite = raw[np.isfinite(raw)]
+    anchor = float(np.median(finite)) if finite.size else 0.0
+    output = raw.copy()
+    output[missing] = anchor + numeric_strength * (repaired[missing] - anchor)
+    return output
 
 
 def impute_fft(x, cutoff_ratio: float = 0.1, **_) -> np.ndarray:

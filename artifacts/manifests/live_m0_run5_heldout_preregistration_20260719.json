@@ -1,0 +1,61 @@
+{
+  "schema_version": "promoted-edit-heldout-preregistration/1",
+  "preregistration_id": "run5-promoted-scoped-selection-heldout-20260719",
+  "registered_before_screening_and_api_run": true,
+  "scientific_role": "conditional_heldout_reuse_test",
+  "source_run_id": "live-scientific-20260719-run5",
+  "source_run_context_sha": "092e489ecdb6180efa0d23143355eab9eea85767f0ebecc29f61fda861af3681",
+  "source_edit_id": "patch-level-shift-flat-probe-selection",
+  "source_paired_replay_report_sha": "17ff1e6b4b5bb50d5bb1e10ee6cdd81efa94e1a6f6e3f131b4e2c760cdc605d9",
+  "parent_runtime_bundle_sha": "971b359eabfdd6d1684bccc1742015f4959c1d270fc6a91a5359ff9887f9dd21",
+  "promoted_runtime_bundle_sha": "7035aef5d57499e21a58b0dc44124255fdfd833eb744815ba63c7befef44f709",
+  "promoted_skill_id": "level_shift_contrast_candidate",
+  "requested_model": "gpt-5.5",
+  "relay_base_url": "https://api.agicto.cn/v1",
+  "probe_instrument_epoch": "probe-instrument/3",
+  "probe_specs_sha": "74ba13d163c7e7c15b627beb24c2e264dffd6c91ac9f8a0027437bc6dcbaea03",
+  "screening": {
+    "candidate_seed_pool_in_order": [1607, 1708, 1809, 1910, 2011, 2112, 2213, 2314, 2415, 2516, 2617, 2718],
+    "eligible_family": "level_shift",
+    "eligible_severities": ["mild", "severe"],
+    "selection_rule": "Using deployment-visible public features and the frozen public probe panel only, select the first four seed/severity cases whose H2 effective fast Harness view retrieves level_shift_contrast_candidate.",
+    "minimum_selected_target_cases": 4,
+    "outcome_blind": true,
+    "forbidden_during_screening": [
+      "clean future",
+      "damage or repair gain",
+      "candidate utility",
+      "oracle affected indices",
+      "held-out Agent response"
+    ],
+    "insufficient_support_rule": "If fewer than four eligible cases are found in the frozen pool, stop as INCONCLUSIVE_APPLICABILITY_SUPPORT and do not expand or reorder the pool."
+  },
+  "paired_evaluation": {
+    "target_cases": "the first four outcome-blind selected level-shift cases",
+    "risk_and_scope_cases": "every other generated target and risk case belonging to the selected seeds",
+    "comparison": "exact promoted H1 parent versus exact promoted H2 child, sharing one effective-request cache",
+    "hard_uncached_api_call_limit": 320,
+    "same_case_cache_from_prior_runs_allowed": false
+  },
+  "success_gate": {
+    "required_verdict": "SUPPORTED_EDIT",
+    "minimum_target_recovery_fraction": 0.67,
+    "minimum_median_target_improvement": 0.01,
+    "requires_original_behavior_prediction": true,
+    "requires_risk_pass": true,
+    "requires_scope_pass": true,
+    "requires_all_out_of_scope_effective_views_equal": true,
+    "requires_all_out_of_scope_behaviors_equal": true
+  },
+  "data_separation": {
+    "excluded_run4_training_seeds": [101, 202, 303],
+    "excluded_run4_heldout_target_seeds": [505, 606, 909, 1102],
+    "excluded_run5_development_seeds": [1203, 1405, 1506],
+    "claim": "Only the four selected cases from this new pool count as H2 held-out target evidence."
+  },
+  "interpretation_limits": [
+    "Success demonstrates conditional reuse of the scoped selection PATCH on new seeds matching the learned observable scope; it is not a population-wide accuracy claim.",
+    "Failure must be classified as applicability support, behavior transfer, value transfer, risk, scope, or infrastructure failure; thresholds cannot be changed afterward.",
+    "The held-out run cannot edit or further evolve the Harness."
+  ]
+}

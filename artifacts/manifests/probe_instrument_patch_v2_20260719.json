@@ -1,0 +1,51 @@
+{
+  "schema_version":"instrument-patch-receipt/1",
+  "patch_id":"probe-instrument-v2",
+  "old_instrument_epoch":"probe-instrument/1",
+  "new_instrument_epoch":"probe-instrument/2",
+  "old_probe_specs_sha":"8e41d8fd1521f1da102114a67b3d19c6bc3854aa58e12284a6bb856632bd2bf8",
+  "new_probe_specs_sha":"9549b1d363d5371e900585c671d347566c56f68b2f8c1ace3f8c6ad16805d929",
+  "predicted_measurement_changes":[
+    "every imputation dose changes all deployment-observed missing positions to finite values",
+    "the maximum imputation dose is byte-equivalent to canonical impute_linear",
+    "the maximum denoising and level-correction doses equal their canonical public-parameterized repairs",
+    "at least one missing and one level-shift calibration witness has a non-flat response curve"
+  ],
+  "calibration_case_classes":[
+    "core-corpus-v2 missing targets",
+    "core-corpus-v2 level-shift targets"
+  ],
+  "regression_case_classes":[
+    "risk_clean",
+    "risk_genuine_event",
+    "impulsive_outlier",
+    "period_change"
+  ],
+  "wall_invariant":"all probe localization and level parameters remain derived only from deployment-observable features",
+  "calibration_receipt":{
+    "schema_version":"probe-instrument-calibration/1",
+    "receipt_sha":"e6f51e56ccd1779c22d7026cd9ea75513344f482bbfebfec4c2ffabf5af1611e",
+    "valuator_manifest_sha":"de85bf2d322a07e57ab69bfbf5f4ab9ab06d1bff717df1c5754239075dbf08f0",
+    "ingestion_policy_id":"chronos_native_nan_mask/v1",
+    "gain_threshold":0.01,
+    "witnesses":[
+      {
+        "family":"missing",
+        "case_id":"m0-0018",
+        "probe_id":"imputation",
+        "beta":0.75,
+        "response_r_private":0.12920195872774742,
+        "model_input_changed":true
+      },
+      {
+        "family":"level_shift",
+        "case_id":"m0-0022",
+        "probe_id":"level_correction",
+        "beta":0.75,
+        "response_r_private":0.6089659297548984,
+        "model_input_changed":true
+      }
+    ]
+  },
+  "status":"PASS"
+}

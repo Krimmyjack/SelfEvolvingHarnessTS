@@ -98,6 +98,8 @@ forecast 下是修复、anomaly 下是破坏。
 """
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from ._common import as_1d, interp_nan, robust_sigma
@@ -225,7 +227,11 @@ def _excursion_offsets(n: int, edges: list[tuple[int, int]], levels: list[float]
 
 def repair_level_shift(x, period: int = 0, t_threshold: float = 3.5,
                        min_jump_sigma: float = 1.0, min_segment: int = 10,
-                       max_breaks: int = 5, **_) -> np.ndarray:
+                       max_breaks: int = 5,
+                       region_start_fraction: float | None = None,
+                       region_end_fraction: float | None = None,
+                       estimated_offset: float | None = None,
+                       **_) -> np.ndarray:
     """检测水平断层，**撤销其中"上去又回来"的暂态偏移**；持续型 regime 变更保留。无命中 → 恒等。
 
     契约：destructive=True（改动已观测点取值）、preserves_observed=False、
@@ -238,6 +244,44 @@ def repair_level_shift(x, period: int = 0, t_threshold: float = 3.5,
     """
     y = interp_nan(as_1d(x))
     n = y.size
+
+    explicit = (
+        region_start_fraction,
+        region_end_fraction,
+        estimated_offset,
+    )
+    if any(value is not None for value in explicit):
+        if not all(
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(float(value))
+            for value in explicit
+        ):
+            raise ValueError(
+                "observable level repair requires three finite numeric parameters"
+            )
+        start_fraction = float(region_start_fraction)
+        end_fraction = float(region_end_fraction)
+        offset = float(estimated_offset)
+        if not 0.0 <= start_fraction < end_fraction <= 1.0:
+            raise ValueError("observable level repair fractions are out of bounds")
+        start = min(n - 1, max(0, int(np.floor(start_fraction * n))))
+        end = min(n, max(start + 1, int(np.ceil(end_fraction * n))))
+        if offset == 0.0:
+            record(
+                "repair_level_shift",
+                "repair_level_shift",
+                "observable_zero_offset_identity",
+            )
+            return y
+        output = y.copy()
+        output[start:end] -= offset
+        record(
+            "repair_level_shift",
+            "repair_level_shift",
+            "observable_parameterized_excursion",
+        )
+        return output
 
     p = int(period) if isinstance(period, (int, float)) and not isinstance(period, bool) and period >= 2 else 0
     if p < 2:

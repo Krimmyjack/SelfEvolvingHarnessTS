@@ -1,0 +1,57 @@
+{
+  "schema_version": "live-m0-continuation-preregistration/1",
+  "preregistration_id": "live-m0-run5-scoped-selection-training-20260719",
+  "planned_run_id": "live-scientific-20260719-run5",
+  "registered_before_run5_api_calls": true,
+  "scientific_role": "post-heldout-development-cycle",
+  "scientific_question": "Can the slow Agent turn a candidate-selection regret owned by one retrieved capability Skill into a safe single-surface Skill-body PATCH that is supported on new development seeds?",
+  "triggering_evidence": {
+    "heldout_report_sha": "86329bfaf25a69ed2d26f264a83d92f511b1cde16876100b1f8d6f8116b2cdf7",
+    "heldout_verdict": "PARTIAL_RECOVERY",
+    "target_recovery_fraction": 0.5,
+    "median_target_improvement": 0.10890974252930097,
+    "risk_status": "PASS",
+    "scope_status": "PASS",
+    "mechanism_diagnosis": "All four held-out targets retrieved the learned Skill and supplied an effect-distinct repair_level_shift candidate, but two still selected identity. This is a scoped selection gap, not a retrieval or candidate-supply gap."
+  },
+  "requested_model": "gpt-5.5",
+  "relay_base_url": "https://api.agicto.cn/v1",
+  "cycles": 1,
+  "hard_uncached_api_call_limit": 320,
+  "initial_snapshot": {
+    "harness_content_sha": "614310edc3dc40be4be8e41faf5fe824098ac5b23d111fef7eb1d86984237cc8",
+    "runtime_bundle_sha": "971b359eabfdd6d1684bccc1742015f4959c1d270fc6a91a5359ff9887f9dd21",
+    "source_run_id": "live-scientific-20260719-run4",
+    "promoted_skill_id": "level_shift_contrast_candidate"
+  },
+  "frozen_inputs": {
+    "rules_sha": "e0693a714832ac86c092e14e4915f238d976af080b8c3afd7b8b6974e14449f8",
+    "corpus_instance_sha": "2296713a1ee51afa97b35c11ce06d97d78ed1d37ae29644e8e0aa6739a335ac2",
+    "development_seeds": [1203, 1405, 1506],
+    "probe_instrument_epoch": "probe-instrument/3",
+    "probe_specs_sha": "74ba13d163c7e7c15b627beb24c2e264dffd6c91ac9f8a0027437bc6dcbaea03",
+    "valuation_source": "frozen_chronos_bolt",
+    "ingestion_policy_id": "chronos_native_nan_mask/v1"
+  },
+  "seed_provenance": {
+    "selection": "These were the three remaining severe level-shift seeds whose public effective view matched the Skill during the outcome-blind Run 4 held-out screening.",
+    "prior_agent_or_outcome_access": false,
+    "not_heldout_claim": "Run 5 is development data. These seeds cannot be used as future held-out evidence."
+  },
+  "attribution_contract": {
+    "single_retrieved_capability_with_selection_regret": "SCOPED_SELECTION_GAP routes to skill_library.entries/{retrieved_skill_id}.body PATCH.",
+    "multiple_or_no_owning_capabilities": "SELECTION_MISS remains routed to global candidate_policy.selection_guidance.",
+    "reason": "Prefer the narrowest causally implicated deployable surface and avoid making all defect families globally more aggressive."
+  },
+  "success_gate": {
+    "minimum_evidence": "At least one new development case exposes selection regret after retrieving level_shift_contrast_candidate.",
+    "edit_channel": "A controller-authorized PATCH enters paired replay and receives a non-INCONCLUSIVE verdict.",
+    "growth": "The predicted selection behavior changes, target recovery and median gain pass frozen rules, all automatic risk and scope checks pass, and the PATCH is promoted."
+  },
+  "anti_leakage_and_stop_rules": [
+    "Do not modify H1 using the four completed held-out target outcomes and then retest those targets as held-out evidence.",
+    "Do not change grader thresholds, probe doses, injection parameters, or risk selection rules.",
+    "If no development case exhibits selection regret, report that fact and do not manufacture a PATCH.",
+    "Any H2 promotion requires a separately preregistered held-out test on entirely new seeds."
+  ]
+}

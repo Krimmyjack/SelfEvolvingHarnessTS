@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "candidate-verification-receipt/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "candidate_id", "candidate_kind", "status", "program_sha", "operator_legality_ok", "compilation_ok", "execution_ok", "shape_preserved", "finite_output", "effect_equivalent_to_identity", "modified_fraction", "modified_region_fractions", "outside_inspected_region_modified", "warnings", "rejection_code"],
+  "properties": {
+    "schema_version": {"const": "candidate-verification-receipt/1"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "candidate_kind": {"enum": ["identity", "program"]},
+    "status": {"enum": ["valid", "warning", "rejected"]},
+    "program_sha": {"type": ["string", "null"]},
+    "operator_legality_ok": {"type": "boolean"},
+    "compilation_ok": {"type": "boolean"},
+    "execution_ok": {"type": "boolean"},
+    "shape_preserved": {"type": "boolean"},
+    "finite_output": {"type": "boolean"},
+    "effect_equivalent_to_identity": {"type": "boolean"},
+    "modified_fraction": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "modified_region_fractions": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number", "minimum": 0.0, "maximum": 1.0}}},
+    "outside_inspected_region_modified": {"type": "boolean"},
+    "warnings": {"type": "array", "uniqueItems": true, "items": {"enum": ["EFFECT_EQUIVALENT_TO_IDENTITY"]}},
+    "rejection_code": {"enum": ["", "OPERATOR_NOT_ALLOWED", "EXECUTION_FAILED", "SHAPE_MISMATCH", "NONFINITE_OUTPUT", "MODIFICATION_FRACTION_EXCEEDED", "OUTSIDE_SCOPE_MODIFICATION"]}
+  }
+}

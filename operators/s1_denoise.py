@@ -6,6 +6,8 @@ symmetric mode + 仅修脏点），杜绝旧版病态（整段 periodization 重
 """
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from ._common import as_1d, interp_nan, moving_average, sliding_median_symmetric, _HAS_SCIPY, _sps, _ndi
@@ -36,7 +38,7 @@ def smooth_ma(x, window: int = 5, **_) -> np.ndarray:
     return moving_average(y, int(window))
 
 
-def denoise_median(x, window: int = 5, **_) -> np.ndarray:
+def denoise_median(x, window: int = 5, strength: float = 1.0, **_) -> np.ndarray:
     """滑动中值（S0.7-8 边界修复：symmetric 镜像边界，弃 `scipy.signal.medfilt` 零填充）。
 
     旧版 medfilt 零填充把末端 (w−1)/2 点拉向 0，而 forecasting 恰用末窗做编码输入——
@@ -44,6 +46,9 @@ def denoise_median(x, window: int = 5, **_) -> np.ndarray:
     scipy 路径 = `ndimage.median_filter(mode="reflect")`；numpy 回退 = 同 padding 语义的滑动中值
     （两路径逐点一致，S0.7-8 语义一致性测试守卫）。偶数窗上调为奇数；window≥n 钳到最大奇数≤n。
     """
+    numeric_strength = float(strength)
+    if not math.isfinite(numeric_strength) or not 0.0 <= numeric_strength <= 1.0:
+        raise ValueError("denoise_median strength must be finite and in [0, 1]")
     y = interp_nan(as_1d(x))
     n = y.size
     w = max(1, int(window))
@@ -54,8 +59,12 @@ def denoise_median(x, window: int = 5, **_) -> np.ndarray:
     if w <= 1 or n <= 1:
         return y
     if _HAS_SCIPY:
-        return _ndi.median_filter(y, size=w, mode="reflect")
-    return sliding_median_symmetric(y, w)
+        repaired = _ndi.median_filter(y, size=w, mode="reflect")
+    else:
+        repaired = sliding_median_symmetric(y, w)
+    if numeric_strength == 1.0:
+        return repaired
+    return y + numeric_strength * (repaired - y)
 
 
 def denoise_wavelet(x, wavelet: str = "db4", level=None, **_) -> np.ndarray:

@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"fast-propose/1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["candidates"],
+  "properties":{
+    "candidates":{
+      "type":"array","maxItems":2,
+      "items":{
+        "type":"object","additionalProperties":false,
+        "required":["candidate_id","steps"],
+        "properties":{
+          "candidate_id":{"type":"string","pattern":"^(?!identity$)[a-z][a-z0-9_-]*$"},
+          "steps":{
+            "type":"array","minItems":1,"maxItems":4,
+            "items":{"$comment":"canonical operator step branches are injected at load time"}
+          }
+        }
+      }
+    }
+  }
+}

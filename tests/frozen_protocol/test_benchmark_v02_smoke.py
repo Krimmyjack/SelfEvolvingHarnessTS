@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 import json
 from pathlib import Path
@@ -83,5 +84,22 @@ def test_frozen_benchmark_evidence_has_one_owner():
     )
     expected = set(cleanup["benchmark_relocation"]["evidence"]["files"])
     frozen = root / "artifacts" / "frozen" / "benchmark_v02"
-    assert expected <= {path.name for path in frozen.iterdir() if path.is_file()}
+    assert expected == {path.name for path in frozen.iterdir() if path.is_file()}
     assert not (root / "results").joinpath("Benchmark_v0_2").exists()
+
+
+def test_frozen_benchmark_evidence_matches_pinned_digests():
+    root = Path(__file__).resolve().parents[2]
+    cleanup = json.loads(
+        (root / "artifacts" / "manifests" / "active_tree_cleanup.json").read_text("utf-8")
+    )
+    evidence = cleanup["benchmark_relocation"]["evidence"]
+    assert evidence["digest_algorithm"] == "sha256"
+    expected = evidence["sha256_by_file"]
+    assert set(expected) == set(evidence["files"])
+    frozen = root / "artifacts" / "frozen" / "benchmark_v02"
+    actual = {
+        name: hashlib.sha256((frozen / name).read_bytes()).hexdigest()
+        for name in sorted(expected)
+    }
+    assert actual == expected
