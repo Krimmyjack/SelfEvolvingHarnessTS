@@ -10,7 +10,8 @@ from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
-RELEASE_ROOT = PACKAGE_ROOT / "artifacts" / "releases" / "m0-h2" / "harness"
+RELEASE_DIR = PACKAGE_ROOT / "artifacts" / "releases" / "m0-h2"
+RELEASE_ROOT = RELEASE_DIR / "harness"
 EXPECTED_CONTENT_SHA = "8f3845b09322109c878892d88d79810d07d303841574b1df10b3b94e33fca35e"
 EXPECTED_RUNTIME_SHA = "7035aef5d57499e21a58b0dc44124255fdfd833eb744815ba63c7befef44f709"
 
@@ -33,3 +34,22 @@ def test_m0_h2_resolved_snapshot_matches_authoring_content() -> None:
     )
 
     assert resolved == snapshot_to_dict(snapshot)
+
+
+def test_m0_release_manifest_and_capability_ledger_match_snapshot() -> None:
+    snapshot = compile_snapshot(RELEASE_ROOT)
+    manifest = parse_json_document((RELEASE_DIR / "release_manifest.json").read_bytes())
+    ledger = parse_json_document((RELEASE_DIR / "capability_ledger.json").read_bytes())
+    receipt = parse_json_document((RELEASE_DIR / "restore_receipt.json").read_bytes())
+
+    assert manifest["implementation_commit"] == "b2b799dbf352b564551b8706a2366cfac685f980"
+    assert manifest["harness"]["harness_content_sha"] == snapshot.harness_content_sha
+    assert manifest["harness"]["runtime_bundle_sha"] == snapshot.runtime_bundle_sha
+    assert receipt["status"] == "PASS"
+    assert receipt["archive"]["sha256"] == manifest["private_bundle"]["archive_sha256"]
+
+    capability = ledger["capabilities"][0]
+    assert capability["capability_id"] == "level_shift_contrast_candidate"
+    assert capability["heldout_reuse"]["positive_incremental_reuse"] == 3
+    assert capability["heldout_reuse"]["out_of_scope_behavior_changes"] == 0
+    assert capability["heldout_reuse"]["out_of_scope_case_count"] == 44
