@@ -176,7 +176,7 @@ No method or evaluation package may copy a project operator. External vendoring 
 
 ### 6.5 Evaluation
 
-`evaluation/benchmark_v02/` owns formal, low-frequency, frozen judgment. It privately owns targets, role policies, metrics, and signed evaluation semantics. Ownership is logical, not physical: the frozen benchmark-v0.2 package is not relocated during Phases 0-4, and `evaluation/benchmark_v02/` contains only the compatibility layer; any later relocation follows the Tier A byte/behavior equivalence rule.
+`evaluation/benchmark_v02/` owns formal, low-frequency, frozen judgment. It privately owns targets, role policies, metrics, and signed evaluation semantics. The promoted frozen package remains byte- and behavior-locked by its manifest digests and frozen-protocol tests.
 
 `evaluation/minipipe/` owns high-frequency mechanism development: synthetic oracle generation, the information wall, intervention receipts, attribution, proposal review, and paired replay.
 
@@ -300,8 +300,8 @@ There is no permanent `h_ref_v02 -> p6.fast_path` adapter chain.
 
 ### 11.4 Phase 3: Active TTHA line
 
-- create `methods/ttha/`, initializing its harness from the frozen H_ref configuration (fingerprint-verified equivalent), so that minipipe edit cycles start from an H_ref-equivalent H0 while `methods/h_ref_v02/` remains frozen as the comparison baseline;
-- create the `evaluation/minipipe/` package boundary: directory skeleton, information-wall layout, and architecture tests. Minipipe functionality is implemented on its own track per the minipipe plan document and does not gate Phase 4;
+- create `methods/ttha/` with a procedurally complete, domain-naive H0 that is independent of H_ref;
+- implement the feedback, attribution, edit, and replay minipipe in `evaluation/minipipe/`;
 - use canonical contracts, operators, and runtime without project-code vendoring.
 
 ### 11.5 Phase 4: Historical cleanup
