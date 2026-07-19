@@ -274,6 +274,93 @@ def test_prompt_does_not_advertise_tool_requests_in_a_tool_free_stage():
     assert "tool_request_template" not in contract
 
 
+def test_fast_propose_and_select_receive_the_fixed_probe_contracts():
+    class CapturingBackend:
+        def __init__(self):
+            self.requests = []
+            self.responses = _identity_responses()
+
+        def complete(self, request):
+            self.requests.append(request)
+            return self.responses[len(self.requests) - 1]
+
+    fixed_panel = {
+        "probe_contracts": {
+            "schema_version": "fixed-probe-contracts/1",
+            "contracts_sha": "1" * 64,
+            "probes": {},
+        }
+    }
+    values = np.arange(8.0)
+    backend = CapturingBackend()
+    gateway = LocalPublicToolGateway(
+        values,
+        task_kind="forecast",
+        fixed_probe_panel=fixed_panel,
+    )
+    TTHAFastAgent(TTHAAgentCore(backend, gateway)).prepare(
+        _request(values),
+        compile_snapshot(H0_ROOT),
+        fixed_probe_panel=fixed_panel,
+    )
+    assert [request.stage for request in backend.requests] == [
+        "inspect",
+        "propose",
+        "select",
+    ]
+    for request in backend.requests[1:]:
+        prompt = json.loads(request.messages[1]["content"])
+        assert prompt["public_input"]["fixed_probe_panel"] == fixed_panel
+
+
+def test_slow_edit_prompt_receives_operator_and_probe_contracts():
+    response = AgentResponse.valid(
+        {
+            "schema_version": "agent-envelope/1",
+            "kind": "no_proposal",
+            "stage": "edit",
+            "reason_code": "insufficient_public_evidence",
+        },
+        raw_response={"id": "slow-contract-capture"},
+    )
+
+    class CapturingBackend:
+        def __init__(self):
+            self.requests = []
+
+        def complete(self, request):
+            self.requests.append(request)
+            return response
+
+    backend = CapturingBackend()
+    slow = TTHASlowAgent(
+        TTHAAgentCore(
+            backend,
+            LocalPublicToolGateway(np.arange(8.0), task_kind="forecast"),
+        )
+    )
+    operator_contracts = ({"name": "hampel_filter", "targeting_mode": "intrinsic"},)
+    probe_contracts = {
+        "schema_version": "fixed-probe-contracts/1",
+        "contracts_sha": "2" * 64,
+        "probes": {},
+    }
+    slow.propose_edit(
+        {
+            "pattern_id": "pattern-contracts",
+            "observable_signature": {"task_kind": "forecast"},
+        },
+        [],
+        compile_snapshot(H0_ROOT),
+        allowed_operator_contracts=operator_contracts,
+        fixed_probe_contracts=probe_contracts,
+    )
+    prompt = json.loads(backend.requests[0].messages[1]["content"])
+    public_input = prompt["public_input"]
+    assert public_input["allowed_operator_contracts"] == list(operator_contracts)
+    assert public_input["fixed_probe_contracts"] == probe_contracts
+
+
 def test_fast_path_compiles_selects_and_executes_program():
     values = np.asarray([1.0, np.nan, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
     responses = [
@@ -324,7 +411,7 @@ def test_malformed_agent_output_is_behavior_failure():
         parsed_envelope=None,
         parse_status="INVALID_AGENT_ENVELOPE",
     )
-    responses = [_identity_responses()[0], malformed]
+    responses = [_identity_responses()[0], malformed, malformed]
     values = np.asarray([1.0, 2.0, 3.0])
     core = TTHAAgentCore(
         ReplayAgentBackend(responses),
@@ -361,6 +448,7 @@ def test_slow_path_returns_untrusted_add_skill_manifest():
         "surface_precondition": {"kind": "ABSENT"},
         "dependency_precondition_shas": {},
         "new_value": new_skill,
+        "observable_applicability": new_skill["observable_applicability"],
         "predicted_agent_behavior_change": ["retrieve_skill:local_outlier_repair_v1"],
         "predicted_data_effect": ["target_gain"],
         "falsification_condition": ["skill_not_retrieved"],
@@ -431,14 +519,14 @@ def test_slow_schema_exposes_closed_recursive_applicability_with_numeric_bins():
         "operation": "PATCH",
         "surface_precondition": {"kind": "SHA", "sha": "0" * 64},
         "dependency_precondition_shas": {},
-        "minimal_patch": {"append_text": "Preserve reliable public period evidence."},
+        "minimal_patch": {"value": "Preserve reliable public period evidence."},
         "observable_applicability": {
             "all": [
                 {"feature": "period_change_score", "op": "==", "value": "high"},
                 {"feature": "period_evidence_status", "op": "==", "value": "OK"},
             ]
         },
-        "predicted_agent_behavior_change": ["preserve_period_observation"],
+        "predicted_agent_behavior_change": ["identity_retained"],
         "predicted_data_effect": ["better_localization"],
         "falsification_condition": ["predicted_behavior_absent"],
     }
@@ -483,6 +571,211 @@ def test_fast_propose_schema_forbids_identity_program_and_nonregistry_ops():
         validate_local_schema(identity_operator, schema)
 
 
+def test_fast_propose_schema_exposes_canonical_public_parameter_bindings():
+    schema = TTHAAgentCore.load_stage_schema("fast_propose_v1")
+    canonical = {
+        "candidates": [
+            {
+                "candidate_id": "repair-level",
+                "steps": [
+                    {
+                        "op": "repair_level_shift",
+                        "params": {
+                            "region_start_fraction": 0.5,
+                            "region_end_fraction": 0.75,
+                            "estimated_offset": 1.0,
+                        },
+                    }
+                ],
+            }
+        ]
+    }
+    validate_local_schema(canonical, schema)
+    wrong_feature_names = {
+        "candidates": [
+            {
+                "candidate_id": "repair-level",
+                "steps": [
+                    {
+                        "op": "repair_level_shift",
+                        "params": {
+                            "estimated_region_start_fraction": 0.5,
+                            "estimated_region_end_fraction": 0.75,
+                            "estimated_level_offset": 1.0,
+                        },
+                    }
+                ],
+            }
+        ]
+    }
+    with pytest.raises(AgentProtocolError):
+        validate_local_schema(wrong_feature_names, schema)
+
+
+def test_fast_propose_schema_exposes_closed_probe_operator_parameters():
+    schema = TTHAAgentCore.load_stage_schema("fast_propose_v1")
+    valid = {
+        "candidates": [
+            {
+                "candidate_id": "bounded-outlier",
+                "steps": [
+                    {
+                        "op": "hampel_filter",
+                        "params": {
+                            "window": 7,
+                            "n_sigmas": 8.0,
+                            "global_z_min": 4.0,
+                        },
+                    }
+                ],
+            }
+        ]
+    }
+    validate_local_schema(valid, schema)
+    invalid = json.loads(json.dumps(valid))
+    invalid["candidates"][0]["steps"][0]["params"]["hidden_mask"] = True
+    with pytest.raises(AgentProtocolError):
+        validate_local_schema(invalid, schema)
+
+
+def test_fast_propose_retries_mismatched_public_parameter_values():
+    index = np.arange(192, dtype=float)
+    values = np.sin(2.0 * np.pi * index / 24.0)
+    values[120:168] += 2.0
+    gateway = LocalPublicToolGateway(values, task_kind="forecast")
+    features = gateway.public_features
+    correct_params = {
+        "region_start_fraction": features["estimated_region_start_fraction"],
+        "region_end_fraction": features["estimated_region_end_fraction"],
+        "estimated_offset": features["estimated_level_offset"],
+    }
+    wrong_params = dict(correct_params)
+    wrong_params["estimated_offset"] = float(correct_params["estimated_offset"]) + 0.1
+    inspect = _stage(
+        "inspect",
+        {
+            "inspected_region_fractions": [
+                [
+                    features["estimated_region_start_fraction"],
+                    features["estimated_region_end_fraction"],
+                ]
+            ],
+            "requested_public_tools": [],
+            "uncertainty": "low",
+        },
+    )
+    proposal = lambda params: _stage(
+        "propose",
+        {
+            "candidates": [
+                {
+                    "candidate_id": "repair-level",
+                    "steps": [{"op": "repair_level_shift", "params": params}],
+                }
+            ]
+        },
+    )
+    select = _stage(
+        "select",
+        {
+            "chosen_candidate_id": "repair-level",
+            "verification_actions": ["public_parameter_binding_checked"],
+        },
+    )
+    backend = ReplayAgentBackend(
+        [inspect, proposal(wrong_params), proposal(correct_params), select]
+    )
+    core = TTHAAgentCore(backend, gateway)
+    result, trace = TTHAFastAgent(core).prepare(
+        PreparationRequest(
+            "series-level",
+            values,
+            forecast_task_spec_v1(horizon=1),
+            {},
+        ),
+        compile_snapshot(H0_ROOT),
+    )
+    assert result.status is PreparationStatus.PREPARED
+    assert trace.chosen_candidate_id == "repair-level"
+    assert backend.call_count == 4
+
+
+def test_matched_skill_risk_guard_is_enforced_by_runtime_pool():
+    index = np.arange(192, dtype=float)
+    values = np.sin(2.0 * np.pi * index / 24.0)
+    values[120:168] += 2.0
+    gateway = LocalPublicToolGateway(values, task_kind="forecast")
+    features = gateway.public_features
+    h0 = compile_snapshot(H0_ROOT)
+    constrained = load_skill_entry(
+        {
+            "schema_version": "skill-entry/1",
+            "skill_id": "narrow-level-only-v1",
+            "skill_kind": "capability",
+            "revision": 1,
+            "body": "Use only a very narrow public level repair.",
+            "observable_applicability": {"const": True},
+            "allowed_tools": ["repair_level_shift"],
+            "risk_guards": {
+                "max_modified_fraction": 0.05,
+                "preserve_outside_candidate_region": True,
+            },
+        }
+    )
+    snapshot = replace(h0, skills=(*h0.skills, constrained))
+    params = {
+        "region_start_fraction": features["estimated_region_start_fraction"],
+        "region_end_fraction": features["estimated_region_end_fraction"],
+        "estimated_offset": features["estimated_level_offset"],
+    }
+    responses = [
+        _stage(
+            "inspect",
+            {
+                "inspected_region_fractions": [
+                    [
+                        features["estimated_region_start_fraction"],
+                        features["estimated_region_end_fraction"],
+                    ]
+                ],
+                "requested_public_tools": [],
+                "uncertainty": "low",
+            },
+        ),
+        _stage(
+            "propose",
+            {
+                "candidates": [
+                    {
+                        "candidate_id": "repair-level",
+                        "steps": [{"op": "repair_level_shift", "params": params}],
+                    }
+                ]
+            },
+        ),
+        _stage(
+            "select",
+            {
+                "chosen_candidate_id": "identity",
+                "verification_actions": ["skill_scope_guard_applied"],
+            },
+        ),
+    ]
+    result, trace = TTHAFastAgent(
+        TTHAAgentCore(ReplayAgentBackend(responses), gateway)
+    ).prepare(
+        PreparationRequest(
+            "series-level-guard",
+            values,
+            forecast_task_spec_v1(horizon=1),
+            {},
+        ),
+        snapshot,
+    )
+    assert result.status is PreparationStatus.ABSTAINED
+    assert trace.candidate_ids == ("identity",)
+
+
 def test_slow_stage_retries_once_with_schema_error_feedback():
     h0 = compile_snapshot(H0_ROOT)
     common = {
@@ -493,8 +786,8 @@ def test_slow_stage_retries_once_with_schema_error_feedback():
         "operation": "PATCH",
         "surface_precondition": {"kind": "SHA", "sha": "0" * 64},
         "dependency_precondition_shas": {},
-        "minimal_patch": {"append_text": "Inspect narrow public subregions."},
-        "predicted_agent_behavior_change": ["inspect_narrow_regions"],
+        "minimal_patch": {"value": "Inspect narrow public subregions."},
+        "predicted_agent_behavior_change": ["localization_iou>=0.30"],
         "predicted_data_effect": ["localization_iou_improves"],
         "falsification_condition": ["predicted_behavior_absent"],
     }
@@ -538,5 +831,6 @@ def test_slow_stage_retries_once_with_schema_error_feedback():
     assert manifest.observable_applicability["value"] == "high"
     assert len(backend.requests) == 2
     retry_feedback = json.loads(backend.requests[1].messages[-1]["content"])
-    assert retry_feedback["schema_version"] == "stage-validation-error/1"
-    assert "observable_applicability" in retry_feedback["error"]
+    assert retry_feedback["schema_version"] == "stage-validation-error/2"
+    assert retry_feedback["error_code"] == "STAGE_SCHEMA_INVALID"
+    assert "observable_applicability" in retry_feedback["public_message"]

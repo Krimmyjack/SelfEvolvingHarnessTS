@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
-from typing import Any
+from typing import Any, Callable
 
 from SelfEvolvingHarnessTS.contracts.canonical import (
     canonical_json_bytes,
@@ -57,6 +57,20 @@ class AgentProtocolError(ProtocolViolation):
     """The model returned an invalid local envelope or stage payload."""
 
 
+class StagePostValidationError(AgentProtocolError):
+    """Public-safe feedback from a validator that runs after schema parsing."""
+
+    def __init__(self, error_code: str, public_message: str, *, retryable: bool):
+        if not isinstance(error_code, str) or not error_code:
+            raise ValueError("post-validation error_code must be non-empty")
+        if not isinstance(public_message, str) or not public_message:
+            raise ValueError("post-validation public_message must be non-empty")
+        super().__init__(public_message)
+        self.error_code = error_code
+        self.public_message = public_message
+        self.retryable = bool(retryable)
+
+
 def validate_local_schema(
     value: object,
     schema: Mapping[str, object],
@@ -91,6 +105,10 @@ class AgentStageResult:
     tool_receipts: tuple[PublicToolReceipt, ...]
     request_hashes: tuple[str, ...]
     no_proposal_reason: str | None = None
+    validation_attempt_count: int = 1
+    validation_retry_count: int = 0
+    first_pass_valid: bool = True
+    validation_error_codes: tuple[str, ...] = ()
 
 
 def _skill_prompt(skill: object) -> dict[str, object]:
@@ -218,6 +236,7 @@ class TTHAAgentCore:
         output_schema: Mapping[str, object],
         source_snapshot_sha: str,
         validation_retries: int = 0,
+        post_validator: Callable[[Mapping[str, object]], None] | None = None,
     ) -> AgentStageResult:
         role = AgentRole(role)
         if validation_retries < 0:
@@ -253,7 +272,51 @@ class TTHAAgentCore:
         call_ids: set[str] = set()
         tool_rounds = 0
         validation_failures = 0
+        validation_error_codes: list[str] = []
         call_index = 0
+
+        def retry_with_static_feedback(
+            response: AgentResponse,
+            *,
+            error_code: str,
+            public_message: str,
+        ) -> bool:
+            nonlocal messages, validation_failures, call_index
+            if validation_failures >= validation_retries:
+                return False
+            correction = {
+                "schema_version": "stage-validation-error/2",
+                "stage": stage,
+                "error_code": error_code,
+                "public_message": public_message,
+                "required_outer_format": (
+                    '{"schema_version":"agent-envelope/1",'
+                    '"kind":"stage_result",'
+                    f'"stage":"{stage}","payload":{{...}}}}'
+                ),
+                "instruction": (
+                    "Return exactly one corrected JSON envelope. Reuse the unchanged "
+                    "public input and stage schema; do not explain the correction."
+                ),
+            }
+            messages = (
+                *messages,
+                {"role": "assistant", "content": response.assistant_text},
+                {
+                    "role": "user",
+                    "content": canonical_json_bytes(correction).decode("utf-8"),
+                },
+            )
+            validation_failures += 1
+            validation_error_codes.append(error_code)
+            call_index += 1
+            return True
+
+        def raise_with_validation_context(exc: Exception) -> None:
+            setattr(exc, "validation_retry_count", validation_failures)
+            setattr(exc, "validation_error_codes", tuple(validation_error_codes))
+            raise exc
+
         while True:
             request = AgentRequest.for_stage(
                 case_id=case_id,
@@ -276,37 +339,51 @@ class TTHAAgentCore:
             request_hashes.append(request.semantic_request_hash())
             response = self.backend.complete(request)
             if response.parse_status != "VALID_AGENT_ENVELOPE" or response.parsed_envelope is None:
-                raise AgentProtocolError("invalid agent-envelope/1 response")
+                if retry_with_static_feedback(
+                    response,
+                    error_code="AGENT_ENVELOPE_INVALID",
+                    public_message=(
+                        "The response was not one valid agent-envelope/1 JSON value."
+                    ),
+                ):
+                    continue
+                raise_with_validation_context(
+                    AgentProtocolError("invalid agent-envelope/1 response")
+                )
             envelope = response.parsed_envelope
             if envelope["kind"] == "stage_result":
                 if envelope["stage"] != stage:
-                    raise AgentProtocolError("stage_result names the wrong stage")
+                    if retry_with_static_feedback(
+                        response,
+                        error_code="WRONG_STAGE",
+                        public_message="The stage_result names a different stage.",
+                    ):
+                        continue
+                    raise_with_validation_context(
+                        AgentProtocolError("stage_result names the wrong stage")
+                    )
                 payload = envelope["payload"]
                 try:
                     validate_local_schema(payload, output_schema)
                 except AgentProtocolError as exc:
-                    if validation_failures >= validation_retries:
-                        raise
-                    correction = {
-                        "schema_version": "stage-validation-error/1",
-                        "stage": stage,
-                        "error": str(exc),
-                        "instruction": (
-                            "Return one corrected stage_result envelope that satisfies "
-                            "the unchanged stage payload schema."
-                        ),
-                    }
-                    messages = (
-                        *messages,
-                        {"role": "assistant", "content": response.assistant_text},
-                        {
-                            "role": "user",
-                            "content": canonical_json_bytes(correction).decode("utf-8"),
-                        },
-                    )
-                    validation_failures += 1
-                    call_index += 1
-                    continue
+                    if retry_with_static_feedback(
+                        response,
+                        error_code="STAGE_SCHEMA_INVALID",
+                        public_message=str(exc),
+                    ):
+                        continue
+                    raise_with_validation_context(exc)
+                if post_validator is not None:
+                    try:
+                        post_validator(payload)
+                    except StagePostValidationError as exc:
+                        if exc.retryable and retry_with_static_feedback(
+                            response,
+                            error_code=exc.error_code,
+                            public_message=exc.public_message,
+                        ):
+                            continue
+                        raise_with_validation_context(exc)
                 return AgentStageResult(
                     role=role,
                     stage=stage,
@@ -314,6 +391,10 @@ class TTHAAgentCore:
                     response=response,
                     tool_receipts=tuple(receipts),
                     request_hashes=tuple(request_hashes),
+                    validation_attempt_count=1 + validation_failures,
+                    validation_retry_count=validation_failures,
+                    first_pass_valid=validation_failures == 0,
+                    validation_error_codes=tuple(validation_error_codes),
                 )
             if envelope["kind"] == "no_proposal":
                 if role is not AgentRole.SLOW or stage != "edit":
@@ -328,6 +409,10 @@ class TTHAAgentCore:
                     tool_receipts=tuple(receipts),
                     request_hashes=tuple(request_hashes),
                     no_proposal_reason=str(envelope["reason_code"]),
+                    validation_attempt_count=1 + validation_failures,
+                    validation_retry_count=validation_failures,
+                    first_pass_valid=validation_failures == 0,
+                    validation_error_codes=tuple(validation_error_codes),
                 )
             if tool_rounds >= 8:
                 raise AgentProtocolError("tool round limit exceeded")
@@ -369,5 +454,6 @@ __all__ = [
     "AgentStageResult",
     "PublicAgentInput",
     "TTHAAgentCore",
+    "StagePostValidationError",
     "validate_local_schema",
 ]

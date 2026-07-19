@@ -8,10 +8,12 @@ from .candidate_pool import (
 )
 from .agent_backend import (
     AgentBackend,
+    AgentCallBudgetExceeded,
     AgentRequest,
     AgentResponse,
     AgentTransportError,
     AgictoChatCompletionsBackend,
+    BudgetedAgentBackend,
     ReplayAgentBackend,
     ReplayTapeMiss,
 )
@@ -22,10 +24,12 @@ from .llm_cache import CacheKey, CacheReceipt, CachedAgentBackend, EffectiveRequ
 __all__ = [
     "BehaviorSignature",
     "AgentBackend",
+    "AgentCallBudgetExceeded",
     "AgentRequest",
     "AgentResponse",
     "AgentTransportError",
     "AgictoChatCompletionsBackend",
+    "BudgetedAgentBackend",
     "CacheKey",
     "CacheReceipt",
     "CandidatePool",

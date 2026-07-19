@@ -14,6 +14,8 @@ from .panel import (
     ProbePanel,
     ProbeSpec,
     PublicProbePanelReceipt,
+    materialize_probe_program,
+    public_probe_contracts,
 )
 
 __all__ = [
@@ -29,4 +31,6 @@ __all__ = [
     "PublicProbePanelReceipt",
     "evaluate_expressibility",
     "extract_public_features",
+    "materialize_probe_program",
+    "public_probe_contracts",
 ]

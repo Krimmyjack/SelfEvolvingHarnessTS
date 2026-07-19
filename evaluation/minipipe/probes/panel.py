@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import math
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Mapping
@@ -9,6 +8,7 @@ from typing import Mapping
 import numpy as np
 
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
+from SelfEvolvingHarnessTS.contracts.observables import OUTLIER_Z_THRESHOLD
 from SelfEvolvingHarnessTS.evaluation.minipipe.config import M0Rules
 from SelfEvolvingHarnessTS.evaluation.minipipe.contracts import (
     PrivateSyntheticCase,
@@ -26,7 +26,8 @@ from .features import PublicFeatureExtraction, extract_public_features
 
 
 _BETAS = (0.25, 0.50, 0.75)
-_MAPPING_VERSION = "m0-probe-map/1"
+_MAPPING_VERSION = "m0-probe-map/3"
+PROBE_INSTRUMENT_EPOCH = "probe-instrument/3"
 
 
 @dataclass(frozen=True)
@@ -35,8 +36,10 @@ class ProbeSpec:
     betas: tuple[float, float, float]
     aggressiveness: tuple[float, float, float]
     mapping_version: str
+    instrument_epoch: str
     required_detected_region: str
     operator_ids: tuple[str, ...]
+    parameterization: tuple[Mapping[str, object], ...]
     implementation_sha: str
 
 
@@ -46,24 +49,29 @@ def _spec(
     aggressiveness: tuple[float, float, float],
     required_region: str,
     operator_ids: tuple[str, ...],
-    mapping: Mapping[str, object],
+    parameterization: tuple[Mapping[str, object], ...],
 ) -> ProbeSpec:
+    if len(parameterization) != len(_BETAS):
+        raise ValueError("one canonical program template is required per probe beta")
     payload = {
         "name": name,
         "betas": list(_BETAS),
         "aggressiveness": list(aggressiveness),
         "mapping_version": _MAPPING_VERSION,
+        "instrument_epoch": PROBE_INSTRUMENT_EPOCH,
         "required_detected_region": required_region,
         "operator_ids": list(operator_ids),
-        "mapping": dict(mapping),
+        "parameterization": [dict(item) for item in parameterization],
     }
     return ProbeSpec(
         name=name,
         betas=_BETAS,
         aggressiveness=aggressiveness,
         mapping_version=_MAPPING_VERSION,
+        instrument_epoch=PROBE_INSTRUMENT_EPOCH,
         required_detected_region=required_region,
         operator_ids=operator_ids,
+        parameterization=tuple(MappingProxyType(dict(item)) for item in parameterization),
         implementation_sha=canonical_sha256(payload),
     )
 
@@ -72,31 +80,88 @@ M0_PROBE_SPECS = MappingProxyType(
     {
         "imputation": _spec(
             "imputation",
-            aggressiveness=_BETAS,
+            aggressiveness=(1.0 / 3.0, 2.0 / 3.0, 1.0),
             required_region="missing_positions",
             operator_ids=("impute_linear",),
-            mapping={"rule": "first_ceil_beta_times_detected_missing"},
+            parameterization=tuple(
+                {
+                    "steps": [
+                        {
+                            "op": "impute_linear",
+                            "params": {"strength": strength},
+                        }
+                    ]
+                }
+                for strength in (1.0 / 3.0, 2.0 / 3.0, 1.0)
+            ),
         ),
         "clipping": _spec(
             "clipping",
             aggressiveness=(1.0 / 8.0, 1.0 / 5.0, 1.0 / 3.0),
             required_region="local_robust_z_points",
             operator_ids=("hampel_filter",),
-            mapping={"n_sigmas": [8.0, 5.0, 3.0], "window": 7},
+            parameterization=tuple(
+                {
+                    "steps": [
+                        {
+                            "op": "hampel_filter",
+                            "params": {
+                                "window": 7,
+                                "n_sigmas": n_sigmas,
+                                "global_z_min": OUTLIER_Z_THRESHOLD,
+                            },
+                        }
+                    ]
+                }
+                for n_sigmas in (8.0, 5.0, 3.0)
+            ),
         ),
         "denoising": _spec(
             "denoising",
-            aggressiveness=_BETAS,
-            required_region="estimated_candidate_region",
+            aggressiveness=(1.0 / 3.0, 2.0 / 3.0, 1.0),
+            required_region="entire_observed_context",
             operator_ids=("denoise_median",),
-            mapping={"window": 5, "blend": "(1-beta)*raw+beta*denoised"},
+            parameterization=tuple(
+                {
+                    "steps": [
+                        {
+                            "op": "denoise_median",
+                            "params": {"window": 5, "strength": strength},
+                        }
+                    ]
+                }
+                for strength in (1.0 / 3.0, 2.0 / 3.0, 1.0)
+            ),
         ),
         "level_correction": _spec(
             "level_correction",
-            aggressiveness=_BETAS,
+            aggressiveness=(1.0 / 3.0, 2.0 / 3.0, 1.0),
             required_region="estimated_excursion_region",
             operator_ids=("repair_level_shift",),
-            mapping={"blend": "raw+beta*(canonical_repair-raw)"},
+            parameterization=tuple(
+                {
+                    "steps": [
+                        {
+                            "op": "repair_level_shift",
+                            "params": {
+                                "region_start_fraction": {
+                                    "feature": "estimated_region_start_fraction",
+                                    "scale": 1.0,
+                                },
+                                "region_end_fraction": {
+                                    "feature": "estimated_region_end_fraction",
+                                    "scale": 1.0,
+                                },
+                                "estimated_offset": {
+                                    "feature": "estimated_level_offset",
+                                    "scale": strength,
+                                },
+                            },
+                        }
+                    ]
+                }
+                for strength in (1.0 / 3.0, 2.0 / 3.0, 1.0)
+            ),
         ),
     }
 )
@@ -111,13 +176,135 @@ def _changed_fraction(before: np.ndarray, after: np.ndarray) -> float:
     return float(np.mean(changed))
 
 
-def _execute(values: np.ndarray, op: str, params: dict[str, object]) -> np.ndarray:
-    result = run_pipeline([(op, params)], values, source="fixed_probe")
+def _plain_contract(value: object) -> object:
+    if isinstance(value, Mapping):
+        return {str(key): _plain_contract(nested) for key, nested in value.items()}
+    if isinstance(value, tuple | list):
+        return [_plain_contract(nested) for nested in value]
+    return value
+
+
+def _probe_arm_index(spec: ProbeSpec, beta: float) -> int:
+    try:
+        return spec.betas.index(float(beta))
+    except ValueError as exc:
+        raise ValueError("probe beta is outside the fixed dose schedule") from exc
+
+
+def _resolve_parameter(value: object, features: Mapping[str, object]) -> object:
+    if not isinstance(value, Mapping):
+        return value
+    if set(value) != {"feature", "scale"}:
+        raise ValueError("probe parameter binding must contain feature and scale only")
+    feature = value["feature"]
+    scale = value["scale"]
+    if not isinstance(feature, str) or feature not in features:
+        raise ValueError(f"probe parameter references unavailable feature: {feature!r}")
+    feature_value = features[feature]
+    if (
+        isinstance(feature_value, bool)
+        or not isinstance(feature_value, (int, float))
+        or isinstance(scale, bool)
+        or not isinstance(scale, (int, float))
+    ):
+        raise ValueError("probe numeric binding requires numeric feature and scale")
+    return float(feature_value) * float(scale)
+
+
+def materialize_probe_program(
+    probe_name: str,
+    beta: float,
+    features: Mapping[str, object],
+) -> tuple[tuple[str, dict[str, object]], ...]:
+    """Instantiate one fixed arm as a canonical runtime Program.
+
+    Every value comes either from the versioned template or a declared public
+    feature binding.  An unavailable public region produces explicit identity
+    (an empty step tuple), never a hidden post-execution array edit.
+    """
+
+    if probe_name not in M0_PROBE_SPECS:
+        raise ValueError(f"unknown fixed probe: {probe_name}")
+    spec = M0_PROBE_SPECS[probe_name]
+    template = spec.parameterization[_probe_arm_index(spec, beta)]
+    raw_steps = template.get("steps")
+    if not isinstance(raw_steps, list | tuple):
+        raise ValueError("probe program template must contain steps")
+    steps: list[tuple[str, dict[str, object]]] = []
+    for raw_step in raw_steps:
+        if not isinstance(raw_step, Mapping) or set(raw_step) != {"op", "params"}:
+            raise ValueError("probe step template must contain op and params only")
+        op = raw_step["op"]
+        params = raw_step["params"]
+        if not isinstance(op, str) or not isinstance(params, Mapping):
+            raise ValueError("probe step template has invalid op or params")
+        steps.append(
+            (
+                op,
+                {
+                    str(key): _resolve_parameter(value, features)
+                    for key, value in params.items()
+                },
+            )
+        )
+    if probe_name == "level_correction":
+        start = float(features.get("estimated_region_start_fraction", 0.0))
+        end = float(features.get("estimated_region_end_fraction", 0.0))
+        offset = float(features.get("estimated_level_offset", 0.0))
+        if end <= start or offset == 0.0:
+            return ()
+    return tuple(steps)
+
+
+def public_probe_contracts(
+    features: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    """Serialize the fixed arm templates, optionally with current-context programs."""
+
+    probes: dict[str, object] = {}
+    for name, spec in M0_PROBE_SPECS.items():
+        arms: list[dict[str, object]] = []
+        for index, beta in enumerate(spec.betas):
+            arm: dict[str, object] = {
+                "beta": beta,
+                "aggressiveness": spec.aggressiveness[index],
+                "program_template": _plain_contract(spec.parameterization[index]),
+            }
+            if features is not None:
+                steps = materialize_probe_program(name, beta, features)
+                arm["current_context_program_steps"] = [
+                    {"op": op, "params": params} for op, params in steps
+                ]
+                arm["current_context_applicable"] = bool(steps)
+            arms.append(arm)
+        probes[name] = {
+            "required_detected_region": spec.required_detected_region,
+            "operator_ids": list(spec.operator_ids),
+            "arms": arms,
+            "implementation_sha": spec.implementation_sha,
+        }
+    payload = {
+        "schema_version": "fixed-probe-contracts/1",
+        "mapping_version": _MAPPING_VERSION,
+        "instrument_epoch": PROBE_INSTRUMENT_EPOCH,
+        "probes": probes,
+    }
+    payload["contracts_sha"] = canonical_sha256(payload)
+    return payload
+
+
+def _execute_program(
+    values: np.ndarray,
+    steps: tuple[tuple[str, dict[str, object]], ...],
+) -> np.ndarray:
+    if not steps:
+        return np.asarray(values, dtype=np.float64).copy()
+    result = run_pipeline(steps, values, source="fixed_probe")
     if not result.ok or result.artifact is None:
-        raise RuntimeError(f"fixed probe operator failed: {op}")
+        raise RuntimeError(f"fixed probe program failed: {steps!r}")
     output = np.asarray(result.artifact, dtype=np.float64)
     if output.shape != values.shape:
-        raise RuntimeError(f"fixed probe operator changed shape: {op}")
+        raise RuntimeError("fixed probe program changed shape")
     return output
 
 
@@ -128,47 +315,8 @@ def _apply_probe(
 ) -> tuple[np.ndarray, float]:
     raw = np.asarray(values, dtype=np.float64).copy()
     features = extract_public_features(raw)
-    output = raw.copy()
-    if probe_name == "imputation":
-        repaired = _execute(raw, "impute_linear", {})
-        count = int(math.ceil(beta * len(features.missing_indices)))
-        selected = features.missing_indices[:count]
-        if selected:
-            output[np.asarray(selected, dtype=int)] = repaired[np.asarray(selected, dtype=int)]
-    elif probe_name == "clipping":
-        thresholds = {0.25: 8.0, 0.50: 5.0, 0.75: 3.0}
-        repaired = _execute(
-            raw,
-            "hampel_filter",
-            {"window": 7, "n_sigmas": thresholds[float(beta)]},
-        )
-        selected = np.asarray(features.outlier_indices, dtype=int)
-        if selected.size:
-            output[selected] = repaired[selected]
-    elif probe_name == "denoising":
-        repaired = _execute(raw, "denoise_median", {"window": 5})
-        selected = features.region_mask & np.isfinite(raw)
-        output[selected] = (1.0 - beta) * raw[selected] + beta * repaired[selected]
-    elif probe_name == "level_correction":
-        if not np.any(features.level_mask):
-            return output, 0.0
-        repaired = _execute(
-            raw,
-            "repair_level_shift",
-            {
-                "region_start_fraction": features.mapping[
-                    "estimated_region_start_fraction"
-                ],
-                "region_end_fraction": features.mapping[
-                    "estimated_region_end_fraction"
-                ],
-                "estimated_offset": features.estimated_excursion_offset,
-            },
-        )
-        selected = features.level_mask & np.isfinite(raw)
-        output[selected] = raw[selected] + beta * (repaired[selected] - raw[selected])
-    else:
-        raise ValueError(f"unknown fixed probe: {probe_name}")
+    steps = materialize_probe_program(probe_name, float(beta), features.mapping)
+    output = _execute_program(raw, steps)
     return output, _changed_fraction(raw, output)
 
 
@@ -263,9 +411,11 @@ class PublicProbePoint:
 class PublicProbePanelReceipt:
     panel_sha: str
     spec_bundle_sha: str
+    instrument_epoch: str
     evaluator_manifest_sha: str
     input_sha: str
     feature_context_sha: str
+    probe_contracts: Mapping[str, object]
     period_diagnostic: PeriodDiagnostic
     response_curves: Mapping[str, tuple[PublicProbePoint, ...]]
     status: str
@@ -280,12 +430,14 @@ class PublicProbePanelReceipt:
 
     def to_public_dict(self) -> dict[str, object]:
         return {
-            "schema_version": "public-probe-panel/1",
+            "schema_version": "public-probe-panel/2",
             "panel_sha": self.panel_sha,
             "spec_bundle_sha": self.spec_bundle_sha,
+            "instrument_epoch": self.instrument_epoch,
             "evaluator_manifest_sha": self.evaluator_manifest_sha,
             "input_sha": self.input_sha,
             "feature_context_sha": self.feature_context_sha,
+            "probe_contracts": _plain_contract(self.probe_contracts),
             "period_diagnostic": self.period_diagnostic.to_public_dict(),
             "points": [
                 point.to_public_dict(round_decimals=self.round_decimals)
@@ -312,6 +464,7 @@ class PrivateProbePanelReceipt:
     case_id: str
     input_private_sha: str
     evaluator_manifest_sha: str
+    instrument_epoch: str
     response_curves: Mapping[str, tuple[PrivateProbePoint, ...]]
     public_private_curve_agreement: float | None
     status: str
@@ -351,6 +504,7 @@ class ProbePanel:
         if not isinstance(case, PublicCaseView):
             raise TypeError("public probe panel accepts PublicCaseView only")
         features = extract_public_features(case.values, task_kind=case.task_kind)
+        probe_contracts = public_probe_contracts(features.mapping)
         baseline = self.rolling_valuator.evaluate(case.values)
         curves: dict[str, tuple[PublicProbePoint, ...]] = {}
         all_ok = baseline.mean_public_utility is not None
@@ -403,11 +557,13 @@ class ProbePanel:
             curves[name] = tuple(replace(point, response_shape=shape) for point in raw_points)
         period = PeriodDiagnostic.from_features(features)
         payload = {
-            "schema_version": "public-probe-panel/1",
+            "schema_version": "public-probe-panel/2",
+            "instrument_epoch": PROBE_INSTRUMENT_EPOCH,
             "spec_bundle_sha": self.spec_bundle_sha,
             "evaluator_manifest_sha": self.rolling_valuator.model_manifest_sha,
             "input_sha": case.public_case_view_sha,
             "feature_context_sha": features.feature_context_sha,
+            "probe_contracts_sha": probe_contracts["contracts_sha"],
             "period_receipt_sha": period.receipt_sha,
             "point_shas": [
                 point.receipt_sha
@@ -419,9 +575,11 @@ class ProbePanel:
         return PublicProbePanelReceipt(
             panel_sha=canonical_sha256(payload),
             spec_bundle_sha=self.spec_bundle_sha,
+            instrument_epoch=PROBE_INSTRUMENT_EPOCH,
             evaluator_manifest_sha=self.rolling_valuator.model_manifest_sha,
             input_sha=case.public_case_view_sha,
             feature_context_sha=features.feature_context_sha,
+            probe_contracts=MappingProxyType(probe_contracts),
             period_diagnostic=period,
             response_curves=MappingProxyType(curves),
             status="OK" if all_ok else "UNKNOWN",
@@ -505,6 +663,7 @@ class ProbePanel:
             )
         payload = {
             "schema_version": "private-probe-panel/1",
+            "instrument_epoch": PROBE_INSTRUMENT_EPOCH,
             "case_private_sha": case.private_sha,
             "evaluator_manifest_sha": self.private_valuator.model_manifest_sha,
             "point_shas": [
@@ -519,6 +678,7 @@ class ProbePanel:
             case_id=case.case_id,
             input_private_sha=case.private_sha,
             evaluator_manifest_sha=self.private_valuator.model_manifest_sha,
+            instrument_epoch=PROBE_INSTRUMENT_EPOCH,
             response_curves=MappingProxyType(curves),
             public_private_curve_agreement=agreement,
             status="OK",
@@ -527,9 +687,12 @@ class ProbePanel:
 
 __all__ = [
     "M0_PROBE_SPECS",
+    "PROBE_INSTRUMENT_EPOCH",
     "PeriodDiagnostic",
     "PrivateProbePanelReceipt",
     "ProbePanel",
     "ProbeSpec",
     "PublicProbePanelReceipt",
+    "materialize_probe_program",
+    "public_probe_contracts",
 ]

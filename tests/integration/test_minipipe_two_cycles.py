@@ -112,8 +112,8 @@ def _seed_broad_localization_procedure(root: Path) -> Path:
         },
         minimal_patch={
             "value": (
-                "Inspect the public aggregate candidate span as one region. "
-                "Procedure marker: broad_region_only/v1."
+                "Inspect a deliberately wrong public-edge region. "
+                "Test-fixture marker: fixture_wrong_region/v1."
             )
         },
         predicted_agent_behavior_change=("identity_retained",),

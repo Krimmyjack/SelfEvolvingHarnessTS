@@ -1,0 +1,55 @@
+{
+  "schema_version": "promoted-edit-heldout-preregistration/1",
+  "preregistration_id": "run4-promoted-edit-heldout-20260719",
+  "registered_before_screening_and_api_run": true,
+  "scientific_role": "conditional_heldout_reuse_test",
+  "source_run_id": "live-scientific-20260719-run4",
+  "source_run_context_sha": "630cdb682874eb846bcd398a3f2e562bebe010125a8c13471bc38869e36f8e68",
+  "source_edit_id": "add_level_shift_contrast_skill",
+  "source_paired_replay_report_sha": "f9f1da25a7ca0f7734335705c572317c16f77eb9845ed27dce8618e1b3047f87",
+  "parent_runtime_bundle_sha": "7a84458be3ce99f164bb384a17a64902cce079d1ab20649319327e81ceea071d",
+  "promoted_runtime_bundle_sha": "971b359eabfdd6d1684bccc1742015f4959c1d270fc6a91a5359ff9887f9dd21",
+  "promoted_skill_id": "level_shift_contrast_candidate",
+  "requested_model": "gpt-5.5",
+  "relay_base_url": "https://api.agicto.cn/v1",
+  "probe_instrument_epoch": "probe-instrument/3",
+  "probe_specs_sha": "74ba13d163c7e7c15b627beb24c2e264dffd6c91ac9f8a0027437bc6dcbaea03",
+  "screening": {
+    "candidate_seed_pool_in_order": [404, 505, 606, 707, 808, 909, 1001, 1102, 1203, 1304, 1405, 1506],
+    "eligible_family": "level_shift",
+    "eligible_severities": ["mild", "severe"],
+    "selection_rule": "Using deployment-visible public features and the frozen public probe panel only, select the first four seed/severity cases whose effective fast Harness view retrieves level_shift_contrast_candidate.",
+    "minimum_selected_target_cases": 4,
+    "outcome_blind": true,
+    "forbidden_during_screening": [
+      "clean future",
+      "damage or repair gain",
+      "candidate utility",
+      "oracle affected indices",
+      "held-out Agent response"
+    ],
+    "insufficient_support_rule": "If fewer than four eligible cases are found in the frozen pool, stop as INCONCLUSIVE_APPLICABILITY_SUPPORT and do not expand or reorder the pool."
+  },
+  "paired_evaluation": {
+    "target_cases": "the four outcome-blind selected level-shift cases",
+    "risk_and_scope_cases": "every other generated target and risk case belonging to the selected seeds",
+    "comparison": "domain-naive H0 versus the exact promoted snapshot, sharing one effective-request cache",
+    "hard_uncached_api_call_limit": 180,
+    "same_case_cache_from_source_run_allowed": false
+  },
+  "success_gate": {
+    "required_verdict": "SUPPORTED_EDIT",
+    "minimum_target_recovery_fraction": 0.67,
+    "minimum_median_target_improvement": 0.01,
+    "requires_original_behavior_prediction": true,
+    "requires_risk_pass": true,
+    "requires_scope_pass": true,
+    "requires_all_out_of_scope_effective_views_equal": true,
+    "requires_all_out_of_scope_behaviors_equal": true
+  },
+  "interpretation_limits": [
+    "Success demonstrates conditional reuse on new seeds and severities matching the learned observable scope; it is not a population-wide accuracy claim.",
+    "Failure must be classified as applicability support, behavior transfer, value transfer, risk, scope, or infrastructure failure; thresholds cannot be changed afterward.",
+    "The held-out run cannot edit or further evolve the Harness."
+  ]
+}

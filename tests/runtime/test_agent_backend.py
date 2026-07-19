@@ -5,8 +5,10 @@ import pytest
 
 from SelfEvolvingHarnessTS.runtime.agent_backend import (
     AgentRequest,
+    AgentCallBudgetExceeded,
     AgentTransportError,
     AgictoChatCompletionsBackend,
+    BudgetedAgentBackend,
 )
 
 
@@ -114,3 +116,19 @@ def test_recognized_timeout_is_mapped_to_transport_error():
     )
     with pytest.raises(AgentTransportError, match="relay transport failed"):
         backend.complete(request_for_stage())
+
+
+def test_budgeted_backend_counts_usage_and_hard_fails_before_extra_call():
+    completions = FakeCompletions()
+    delegate = AgictoChatCompletionsBackend(
+        client=SimpleNamespace(chat=SimpleNamespace(completions=completions))
+    )
+    backend = BudgetedAgentBackend(delegate, maximum_calls=1)
+    backend.complete(request_for_stage())
+    assert backend.calls == 1
+    assert backend.prompt_tokens == 10
+    assert backend.completion_tokens == 8
+    assert backend.returned_models == {"gpt-5.5"}
+    with pytest.raises(AgentCallBudgetExceeded):
+        backend.complete(request_for_stage(call_index=1))
+    assert len(completions.calls) == 1

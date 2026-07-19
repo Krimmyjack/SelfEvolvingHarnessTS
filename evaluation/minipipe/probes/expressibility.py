@@ -16,7 +16,11 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.contracts import PrivateSynthetic
 from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.chronos import (
     FrozenChronosValuator,
 )
-from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
+from SelfEvolvingHarnessTS.operators.registry import (
+    OPERATOR_METADATA,
+    OPERATOR_NAMES,
+    operator_targeting_mode,
+)
 from SelfEvolvingHarnessTS.runtime.executor import run_pipeline
 
 from .features import PublicFeatureExtraction, extract_public_features
@@ -54,6 +58,7 @@ class ExpressibilityResult:
     required_transformation_class: str | None
     missing_transformation_class: str | None
     joint_instrument_sha: str | None
+    external_localization_required: bool = True
 
 
 def _witness(
@@ -101,6 +106,7 @@ def evaluate_expressibility(
     missing_transformation_class: str | None = None,
     complete_class_absence_proof: bool = False,
     joint_instrument_sha: str | None = None,
+    external_localization_required: bool = True,
 ) -> ExpressibilityResult:
     observable = _witness("observable_parameterized", observable_succeeds)
     oracle = _witness("oracle_parameterized", oracle_succeeds)
@@ -132,6 +138,7 @@ def evaluate_expressibility(
         required_transformation_class=required_transformation_class,
         missing_transformation_class=missing,
         joint_instrument_sha=joint_instrument_sha,
+        external_localization_required=external_localization_required,
     )
 
 
@@ -144,6 +151,35 @@ def _load_object(path: Path) -> dict[str, object]:
 
 def _program_sha(program: Sequence[Sequence[object]]) -> str:
     return canonical_sha256({"schema_version": "witness-program/1", "steps": list(program)})
+
+
+def program_requires_external_localization(
+    program: Sequence[Sequence[object]],
+) -> bool:
+    """Return whether an Agent must localize a region before this program can run.
+
+    Localization is a property of the executable parameterization contract, not
+    of an injected defect label. Operators such as imputers and Hampel filters
+    find their own affected sites. An operator whose canonical public bindings
+    consume both deployment-visible region boundaries instead depends on an
+    upstream localization decision.
+
+    Unknown operators are rejected rather than optimistically treated as
+    self-localizing. This helper is grader-side and never exposes the witness
+    program to the Agent.
+    """
+
+    for entry in program:
+        if (
+            len(entry) != 2
+            or not isinstance(entry[0], str)
+            or not isinstance(entry[1], Mapping)
+        ):
+            raise ValueError("invalid witness program entry")
+        operator_id = entry[0]
+        if operator_targeting_mode(operator_id) == "external_region":
+            return True
+    return False
 
 
 def _resolve_program(
@@ -216,6 +252,7 @@ class ExpressibilityEvaluator:
                 missing_transformation_class=required_class,
                 complete_class_absence_proof=True,
                 joint_instrument_sha=self.joint_instrument_sha,
+                external_localization_required=False,
             )
         if self.valuator is None:
             return evaluate_expressibility(
@@ -242,6 +279,7 @@ class ExpressibilityEvaluator:
         best_oracle_gain: float | None = None
         best_oracle_sha: str | None = None
         best_oracle_input_sha: str | None = None
+        best_external_localization_required = True
         for raw_program in programs:
             if not isinstance(raw_program, list):
                 raise ValueError("witness program must be a list")
@@ -259,6 +297,9 @@ class ExpressibilityEvaluator:
                 best_gain = gain
                 best_sha = _program_sha(raw_program)
                 best_input_sha = receipt.filled_context_sha
+                best_external_localization_required = (
+                    program_requires_external_localization(raw_program)
+                )
             oracle_artifact = case.corrupt_context.copy()
             affected = np.asarray(case.oracle_affected_indices, dtype=int)
             if affected.size:
@@ -311,6 +352,9 @@ class ExpressibilityEvaluator:
                 required_transformation_class=required_class,
                 missing_transformation_class=None,
                 joint_instrument_sha=self.joint_instrument_sha,
+                external_localization_required=(
+                    best_external_localization_required
+                ),
             )
         cause = (
             "OBSERVABLE_DERIVATION_PROCEDURE_GAP"
@@ -325,6 +369,7 @@ class ExpressibilityEvaluator:
             required_transformation_class=required_class,
             missing_transformation_class=None,
             joint_instrument_sha=self.joint_instrument_sha,
+            external_localization_required=best_external_localization_required,
         )
 
 
@@ -346,4 +391,5 @@ __all__ = [
     "WitnessReceipt",
     "evaluate_expressibility",
     "implied_mechanism_for_operator",
+    "program_requires_external_localization",
 ]

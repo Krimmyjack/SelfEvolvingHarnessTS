@@ -8,6 +8,13 @@ from typing import Any
 
 PERIOD_RELIABILITY_MIN = 0.75
 
+# Public robust-z semantics are part of the deployment-observable contract.  The
+# feature extractor, any intrinsic operator gate, and the fixed ProbeAPI must use
+# these exact values; duplicating them would let the three surfaces drift while
+# still appearing to describe the same evidence.
+PUBLIC_ROBUST_Z_MAD_FLOOR = 1e-8
+OUTLIER_Z_THRESHOLD = 4.0
+
 
 OBSERVABLE_FEATURES = MappingProxyType(
     {
@@ -182,7 +189,9 @@ __all__ = [
     "OBSERVABLE_FEATURES",
     "OBSERVABLE_NUMERIC_BIN_LABELS",
     "OBSERVABLE_STRING_DOMAINS",
+    "OUTLIER_Z_THRESHOLD",
     "PERIOD_RELIABILITY_MIN",
+    "PUBLIC_ROBUST_Z_MAD_FLOOR",
     "observable_numeric_bin",
     "validate_applicability",
 ]

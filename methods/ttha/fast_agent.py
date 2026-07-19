@@ -17,7 +17,11 @@ from SelfEvolvingHarnessTS.contracts.method import (
     PreparedSeries,
 )
 from SelfEvolvingHarnessTS.contracts.program import Program
-from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
+from SelfEvolvingHarnessTS.operators.registry import (
+    OPERATOR_METADATA,
+    OPERATOR_NAMES,
+    operator_targeting_mode,
+)
 from SelfEvolvingHarnessTS.runtime.candidate_pool import (
     CandidatePool,
     ProtocolChoiceError,
@@ -26,7 +30,13 @@ from SelfEvolvingHarnessTS.runtime.candidate_pool import (
 from SelfEvolvingHarnessTS.runtime.decision_trace import DecisionTrace
 from SelfEvolvingHarnessTS.runtime.executor import ExecutionResult, run_pipeline
 
-from .agent_core import AgentProtocolError, AgentRole, AgentStageResult, TTHAAgentCore
+from .agent_core import (
+    AgentProtocolError,
+    AgentRole,
+    AgentStageResult,
+    StagePostValidationError,
+    TTHAAgentCore,
+)
 from .public_tools import extract_public_features
 from .retrieval import EffectiveHarnessView, resolve_harness_view
 
@@ -53,7 +63,7 @@ def _allowed_operators(request: PreparationRequest) -> tuple[str, ...]:
     return tuple(allowed)
 
 
-def _operator_public_contract(name: str) -> dict[str, object]:
+def public_operator_contract(name: str) -> dict[str, object]:
     metadata = OPERATOR_METADATA[name]
     return {
         "name": name,
@@ -67,7 +77,22 @@ def _operator_public_contract(name: str) -> dict[str, object]:
         "public_parameter_bindings": dict(
             metadata.get("public_parameter_bindings", {})
         ),
+        "public_parameter_schema": _plain(
+            metadata.get("public_parameter_schema") or {"type": "object"}
+        ),
+        "targeting_mode": operator_targeting_mode(name),
     }
+
+
+def public_operator_contracts_for_task(task_kind: str) -> tuple[dict[str, object], ...]:
+    """Return the deployment-safe operator menu from the registry single source."""
+
+    return tuple(
+        public_operator_contract(name)
+        for name in OPERATOR_NAMES
+        if task_kind in OPERATOR_METADATA[name]["allowed_tasks"]
+        and not OPERATOR_METADATA[name].get("shape_changing")
+    )
 
 
 def _compile_candidates(
@@ -93,6 +118,74 @@ def _compile_candidates(
             Candidate.program_candidate(candidate_id, program, source="agent")
         )
     return tuple(candidates)
+
+
+def _validate_public_parameter_bindings(
+    payload: Mapping[str, object],
+    public_features: Mapping[str, object],
+    fixed_probe_panel: Mapping[str, object] | None = None,
+) -> None:
+    fixed_step_signatures: set[bytes] = set()
+    contracts = (fixed_probe_panel or {}).get("probe_contracts", {})
+    probes = contracts.get("probes", {}) if isinstance(contracts, Mapping) else {}
+    if isinstance(probes, Mapping):
+        for probe in probes.values():
+            if not isinstance(probe, Mapping):
+                continue
+            arms = probe.get("arms", ())
+            if not isinstance(arms, Sequence) or isinstance(
+                arms, (str, bytes, bytearray)
+            ):
+                continue
+            for arm in arms:
+                if not isinstance(arm, Mapping):
+                    continue
+                steps = arm.get("current_context_program_steps", ())
+                if not isinstance(steps, Sequence) or isinstance(
+                    steps, (str, bytes, bytearray)
+                ):
+                    continue
+                for step in steps:
+                    if isinstance(step, Mapping):
+                        fixed_step_signatures.add(canonical_json_bytes(step))
+    for candidate in payload["candidates"]:
+        for step in candidate["steps"]:
+            operator_name = step["op"]
+            bindings = OPERATOR_METADATA[operator_name].get(
+                "public_parameter_bindings", {}
+            )
+            if not bindings:
+                continue
+            if canonical_json_bytes(step) in fixed_step_signatures:
+                continue
+            params = step["params"]
+            expected_keys = set(bindings)
+            if set(params) != expected_keys:
+                raise StagePostValidationError(
+                    "PUBLIC_PARAMETER_BINDING_INVALID",
+                    (
+                        f"{operator_name} params must contain exactly the canonical "
+                        f"keys {sorted(expected_keys)} declared in its public parameter "
+                        "bindings."
+                    ),
+                    retryable=True,
+                )
+            mismatched = [
+                parameter
+                for parameter, feature in bindings.items()
+                if feature not in public_features
+                or params[parameter] != public_features[feature]
+            ]
+            if mismatched:
+                raise StagePostValidationError(
+                    "PUBLIC_PARAMETER_BINDING_INVALID",
+                    (
+                        f"{operator_name} bound parameter values must exactly equal "
+                        "their deployment-visible feature values from the declared "
+                        f"mapping; mismatched keys: {sorted(mismatched)}."
+                    ),
+                    retryable=True,
+                )
 
 
 def _regions_from_fractions(
@@ -158,10 +251,31 @@ def _risk_allows(
     verification = view.controls.get("verification", {})
     if not isinstance(verification, Mapping):
         return False
-    maximum = float(verification.get("max_modified_fraction", 1.0))
+    maxima = [float(verification.get("max_modified_fraction", 1.0))]
+    preserve_outside = verification.get("preserve_outside_candidate_region") is True
+    for skill in view.skills:
+        guards = skill.risk_guards
+        if not isinstance(guards, Mapping):
+            continue
+        skill_maximum = guards.get("max_modified_fraction")
+        if (
+            isinstance(skill_maximum, (int, float))
+            and not isinstance(skill_maximum, bool)
+            and math.isfinite(float(skill_maximum))
+        ):
+            maxima.append(float(skill_maximum))
+        preserve_outside = preserve_outside or (
+            guards.get("preserve_outside_candidate_region") is True
+        )
+    maximum = min(maxima)
     if len(modified) / max(values.size, 1) > maximum:
         return False
-    if verification.get("preserve_outside_candidate_region") is True and inspected_regions:
+    targeting_modes = {
+        operator_targeting_mode(operator_id)
+        for operator_id, _params in candidate.program.execution_steps()
+    }
+    intrinsically_targeted = targeting_modes == {"intrinsic"}
+    if preserve_outside and inspected_regions and not intrinsically_targeted:
         if any(not _inside_regions(index, inspected_regions) for index in modified):
             return False
     return True
@@ -287,6 +401,7 @@ class TTHAFastAgent:
                 output_schema_name="fast_inspect_v1",
                 output_schema=self.core.load_stage_schema("fast_inspect_v1"),
                 source_snapshot_sha=snapshot.runtime_bundle_sha,
+                validation_retries=1,
             )
             stages.append(inspect)
             inspected_regions = _regions_from_fractions(
@@ -300,14 +415,19 @@ class TTHAFastAgent:
                 public_input={
                     "features": _plain(features),
                     "inspection": _plain(inspect.payload),
+                    "fixed_probe_panel": _plain(fixed_probe_panel or {}),
                     "allowed_operator_contracts": [
-                        _operator_public_contract(name) for name in allowed
+                        public_operator_contract(name) for name in allowed
                     ],
                 },
                 harness_view=view,
                 output_schema_name="fast_propose_v1",
                 output_schema=self.core.load_stage_schema("fast_propose_v1"),
                 source_snapshot_sha=snapshot.runtime_bundle_sha,
+                validation_retries=1,
+                post_validator=lambda payload: _validate_public_parameter_bindings(
+                    payload, features, fixed_probe_panel
+                ),
             )
             stages.append(propose)
             supplied = _compile_candidates(propose.payload, request)
@@ -345,12 +465,14 @@ class TTHAFastAgent:
                 public_input={
                     "features": _plain(features),
                     "inspection": _plain(inspect.payload),
+                    "fixed_probe_panel": _plain(fixed_probe_panel or {}),
                     "candidates": public_candidates,
                 },
                 harness_view=view,
                 output_schema_name="fast_select_v1",
                 output_schema=self.core.load_stage_schema("fast_select_v1"),
                 source_snapshot_sha=snapshot.runtime_bundle_sha,
+                validation_retries=1,
             )
             stages.append(select)
             chosen_id = select.payload["chosen_candidate_id"]
@@ -468,4 +590,8 @@ class TTHAFastAgent:
         )
 
 
-__all__ = ["TTHAFastAgent"]
+__all__ = [
+    "TTHAFastAgent",
+    "public_operator_contract",
+    "public_operator_contracts_for_task",
+]

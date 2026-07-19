@@ -278,6 +278,44 @@ class AgentBackend(Protocol):
         raise NotImplementedError
 
 
+class AgentCallBudgetExceeded(InfrastructureError):
+    """A bounded live run exhausted its preregistered relay-call budget."""
+
+
+class BudgetedAgentBackend:
+    def __init__(self, delegate: AgentBackend, *, maximum_calls: int) -> None:
+        if (
+            isinstance(maximum_calls, bool)
+            or not isinstance(maximum_calls, int)
+            or maximum_calls < 1
+        ):
+            raise ValueError("maximum_calls must be a positive integer")
+        self.delegate = delegate
+        self.maximum_calls = maximum_calls
+        self.calls = 0
+        self.prompt_tokens = 0
+        self.completion_tokens = 0
+        self.returned_models: set[str] = set()
+
+    def complete(self, request: AgentRequest) -> AgentResponse:
+        if self.calls >= self.maximum_calls:
+            raise AgentCallBudgetExceeded(
+                f"Agent call budget exhausted at {self.maximum_calls}"
+            )
+        self.calls += 1
+        response = self.delegate.complete(request)
+        metadata = response.provider_metadata
+        if isinstance(metadata, Mapping):
+            usage = metadata.get("usage", {})
+            if isinstance(usage, Mapping):
+                self.prompt_tokens += int(usage.get("prompt_tokens") or 0)
+                self.completion_tokens += int(usage.get("completion_tokens") or 0)
+            returned = metadata.get("returned_model")
+            if isinstance(returned, str) and returned:
+                self.returned_models.add(returned)
+        return response
+
+
 class AgictoChatCompletionsBackend:
     def __init__(
         self,
@@ -413,11 +451,13 @@ class ReplayAgentBackend:
 
 
 __all__ = [
+    "AgentCallBudgetExceeded",
     "AgentBackend",
     "AgentRequest",
     "AgentResponse",
     "AgentTransportError",
     "AgictoChatCompletionsBackend",
+    "BudgetedAgentBackend",
     "DEFAULT_AGENT_BASE_URL",
     "DEFAULT_AGENT_MODEL",
     "OPENAI_SDK_VERSION",

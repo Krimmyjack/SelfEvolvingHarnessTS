@@ -15,7 +15,13 @@
 """
 from __future__ import annotations
 
+import math
+
 import numpy as np
+
+from SelfEvolvingHarnessTS.contracts.observables import (
+    PUBLIC_ROBUST_Z_MAD_FLOOR,
+)
 
 from ._common import MAD_TO_SIGMA, as_1d, interp_nan, odd_window, sliding_mad_symmetric
 from ._provenance import record
@@ -44,7 +50,13 @@ def outlier_mad(x, k: float = 3.5, **_) -> np.ndarray:
     return np.clip(y, med - k * scale, med + k * scale)
 
 
-def hampel_filter(x, window: int = 7, n_sigmas: float = 3.0, **_) -> np.ndarray:
+def hampel_filter(
+    x,
+    window: int = 7,
+    n_sigmas: float = 3.0,
+    global_z_min: float | None = None,
+    **_,
+) -> np.ndarray:
     """Hampel 滤波：滚动 MAD 判据 + **仅替换命中点**（点式，非整段平滑、非全局裁剪）。
 
     判据：|y[i] − med[i]| > n_sigmas × 1.4826 × mad[i]，其中 med/mad 是以 i 为中心、
@@ -70,6 +82,18 @@ def hampel_filter(x, window: int = 7, n_sigmas: float = 3.0, **_) -> np.ndarray:
     allowed_tasks 排除 anomaly——它删的正是 anomaly 要检的 spike。
     与 winsorize/outlier_iqr/outlier_mad 的机制区分见模块 docstring。
     """
+    numeric_n_sigmas = float(n_sigmas)
+    if not math.isfinite(numeric_n_sigmas) or numeric_n_sigmas <= 0.0:
+        raise ValueError("hampel_filter n_sigmas must be finite and positive")
+    if global_z_min is not None:
+        numeric_global_z_min = float(global_z_min)
+        if not math.isfinite(numeric_global_z_min) or numeric_global_z_min < 0.0:
+            raise ValueError(
+                "hampel_filter global_z_min must be finite and non-negative"
+            )
+    else:
+        numeric_global_z_min = None
+
     y = interp_nan(as_1d(x))
     n = y.size
     w = odd_window(window, n)
@@ -79,7 +103,16 @@ def hampel_filter(x, window: int = 7, n_sigmas: float = 3.0, **_) -> np.ndarray:
 
     med, mad = sliding_mad_symmetric(y, w)
     sigma = MAD_TO_SIGMA * mad
-    hit = (sigma > 0.0) & (np.abs(y - med) > float(n_sigmas) * sigma)
+    hit = (sigma > 0.0) & (np.abs(y - med) > numeric_n_sigmas * sigma)
+    if numeric_global_z_min is not None:
+        global_median = float(np.median(y))
+        global_mad = float(np.median(np.abs(y - global_median)))
+        global_scale = max(
+            MAD_TO_SIGMA * global_mad,
+            PUBLIC_ROBUST_Z_MAD_FLOOR,
+        )
+        global_z = np.abs(y - global_median) / global_scale
+        hit &= global_z >= numeric_global_z_min
     if not hit.any():
         record("hampel_filter", "hampel_filter", "no_outlier_identity")
         return y

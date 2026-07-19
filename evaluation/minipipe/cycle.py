@@ -53,9 +53,11 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.probes.expressibility import (
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.probes.panel import (
     M0_PROBE_SPECS,
+    PROBE_INSTRUMENT_EPOCH,
     PrivateProbePanelReceipt,
     ProbePanel,
     PublicProbePanelReceipt,
+    public_probe_contracts,
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
     AppliedEditReceipt,
@@ -76,8 +78,14 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.replay.risk_sets import (
 from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.rolling_observed import (
     RollingObservedValuator,
 )
-from SelfEvolvingHarnessTS.methods.ttha.agent_core import TTHAAgentCore
-from SelfEvolvingHarnessTS.methods.ttha.fast_agent import TTHAFastAgent
+from SelfEvolvingHarnessTS.methods.ttha.agent_core import (
+    StagePostValidationError,
+    TTHAAgentCore,
+)
+from SelfEvolvingHarnessTS.methods.ttha.fast_agent import (
+    TTHAFastAgent,
+    public_operator_contracts_for_task,
+)
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import (
     MaterializedSnapshot,
@@ -212,6 +220,9 @@ def _version(distribution: str) -> str:
 
 
 def _backend_kind(backend: object) -> str:
+    delegate = getattr(backend, "delegate", None)
+    if delegate is not None:
+        return _backend_kind(delegate)
     name = type(backend).__name__
     if name == "ReplayAgentBackend":
         return "offline-contract-replay/1"
@@ -240,6 +251,7 @@ class RunContext:
     valuation_source: str
     ingestion_policy_id: str
     probe_specs_sha: str
+    probe_instrument_epoch: str
     rules_sha: str
     corpus_sha: str
     platform_flags: Mapping[str, object]
@@ -259,7 +271,7 @@ class RunContext:
         base_url: str,
     ) -> "RunContext":
         payload = {
-            "schema_version": "m0-run-context/2",
+            "schema_version": "m0-run-context/3",
             "runtime_bundle_sha": snapshot.runtime_bundle_sha,
             "backend_kind": _backend_kind(backend),
             "relay_base_url": base_url,
@@ -284,6 +296,7 @@ class RunContext:
             "valuation_source": str(valuator.valuation_source),
             "ingestion_policy_id": str(valuator.ingestion_policy_id),
             "probe_specs_sha": probe_specs_sha,
+            "probe_instrument_epoch": PROBE_INSTRUMENT_EPOCH,
             "rules_sha": rules.rules_sha,
             "corpus_sha": canonical_sha256(
                 {
@@ -301,7 +314,7 @@ class RunContext:
             },
         }
         return cls(
-            schema_version="m0-run-context/2",
+            schema_version="m0-run-context/3",
             runtime_bundle_sha=snapshot.runtime_bundle_sha,
             backend_kind=str(payload["backend_kind"]),
             relay_base_url=base_url,
@@ -317,6 +330,7 @@ class RunContext:
             valuation_source=str(valuator.valuation_source),
             ingestion_policy_id=str(valuator.ingestion_policy_id),
             probe_specs_sha=probe_specs_sha,
+            probe_instrument_epoch=PROBE_INSTRUMENT_EPOCH,
             rules_sha=rules.rules_sha,
             corpus_sha=str(payload["corpus_sha"]),
             platform_flags=MappingProxyType(dict(payload["platform_flags"])),
@@ -339,7 +353,7 @@ class _CaseEvaluation:
 
 
 def _agent_panel(receipt: PublicProbePanelReceipt) -> dict[str, object]:
-    return {
+    panel = {
         name: [
             {
                 "beta": point.beta,
@@ -352,6 +366,8 @@ def _agent_panel(receipt: PublicProbePanelReceipt) -> dict[str, object]:
         ]
         for name in M0_PROBE_SPECS
     }
+    panel["probe_contracts"] = _plain(receipt.probe_contracts)
+    return panel
 
 
 def _public_curves(receipt: PublicProbePanelReceipt) -> dict[str, object]:
@@ -633,7 +649,14 @@ class _CycleCaseRunner:
             ),
             public_evidence_discriminative=public_panel.status == "OK",
             agent_inspected_evidence=bool(trace.inspected_regions),
-            localization_required=case.purpose is CasePurpose.TARGET,
+            # External interval localization is only actionable when the best
+            # observable witness consumes public region-boundary parameters.
+            # Self-localizing operators (for example imputation and Hampel)
+            # must not be blocked by an unrelated interval-IoU gate.
+            localization_required=(
+                case.purpose is CasePurpose.TARGET
+                and expression.external_localization_required
+            ),
             localization_iou=_localization_iou(
                 trace.inspected_regions, case.oracle_affected_indices
             ),
@@ -659,6 +682,7 @@ class _CycleCaseRunner:
             capability_skill_exists=bool(capability_skills),
             normal_retrieval=bool(retrieved_capability_ids) or not capability_skills,
             skill_retrieved=bool(retrieved_capability_ids),
+            retrieved_capability_skill_ids=tuple(sorted(retrieved_capability_ids)),
             forced_skill_succeeds=bool(capability_skills),
             proposed_candidate_exists=any(
                 candidate_id != "identity" for candidate_id in trace.candidate_ids
@@ -988,15 +1012,31 @@ class M0CycleRunner:
     def _priority(
         card: FailurePatternCard,
         feedback_by_id: Mapping[str, CaseFeedback],
-    ) -> tuple[float, float, float, str]:
+    ) -> tuple[float, float, float, float, str]:
         feedback = [feedback_by_id[case_id] for case_id in card.case_ids]
         median_damage = float(np.median([item.outcome.damage_d for item in feedback]))
+        median_opportunity = float(
+            np.median(
+                [
+                    max(item.outcome.damage_d, item.outcome.selection_regret)
+                    for item in feedback
+                ]
+            )
+        )
         pass_count = sum(
             assessment.status.value == "PASS"
             for item in feedback
             for assessment in item.assessments
         )
-        return (-card.support_count, -median_damage, -pass_count, card.pattern_id)
+        # Replay slots are an experimental budget. A large zero-value cluster
+        # must not crowd out a smaller repairable high-damage cluster.
+        return (
+            -median_opportunity,
+            -median_damage,
+            -card.support_count,
+            -pass_count,
+            card.pattern_id,
+        )
 
     @staticmethod
     def _applicability_out_of_scope(
@@ -1077,7 +1117,7 @@ class M0CycleRunner:
             bool(item.trace.supplied_noop_candidate_ids) for item in evaluations
         )
         metrics_payload = {
-            "schema_version": "m0-cycle-instrument-metrics/1",
+            "schema_version": "m0-cycle-instrument-metrics/2",
             "cycle_id": cycle_id,
             "case_count": len(evaluations),
             "supplied_noop_case_count": noop_case_count,
@@ -1095,9 +1135,30 @@ class M0CycleRunner:
             "family_effect_distinct_supply": family_supply,
             "slow_edit_attempt_count": len(slow_attempts),
             "slow_edit_ast_valid_count": sum(
-                item.get("outcome") in {"VALID_MANIFEST", "NO_PROPOSAL"}
+                bool(item.get("stage_schema_valid"))
                 for item in slow_attempts
             ),
+            "slow_edit_first_pass_valid_count": sum(
+                bool(item.get("first_pass_valid")) for item in slow_attempts
+            ),
+            "slow_edit_valid_after_retry_count": sum(
+                bool(item.get("stage_schema_valid"))
+                and int(item.get("validation_retry_count", 0)) > 0
+                for item in slow_attempts
+            ),
+            "slow_edit_validation_retry_count": sum(
+                int(item.get("validation_retry_count", 0))
+                for item in slow_attempts
+            ),
+            "slow_edit_funnel": {
+                stage: sum(bool(item.get(stage.lower())) for item in slow_attempts)
+                for stage in (
+                    "STAGE_SCHEMA_VALID",
+                    "MANIFEST_CONSTRUCTED",
+                    "CONTROLLER_ACCEPTED",
+                    "ENTERED_REPLAY",
+                )
+            },
             "slow_edit_attempts": [_plain(item) for item in slow_attempts],
         }
         markdown = [f"# Failure patterns: {cycle_id}", ""]
@@ -1371,34 +1432,79 @@ class M0CycleRunner:
             claim = (card.cause_code, tuple(sorted(card.case_ids)))
             if claim in pending_claims:
                 continue
+            def preflight(proposed: EditManifest) -> None:
+                try:
+                    self.controller.validate(
+                        starting,
+                        proposed,
+                        confirmed_cause=card.cause_code,
+                    )
+                except Exception as exc:
+                    feedback = self.controller.public_feedback_for_error(exc)
+                    raise StagePostValidationError(
+                        feedback.error_code,
+                        feedback.public_message,
+                        retryable=feedback.retryable,
+                    ) from exc
+
             try:
                 manifest = slow_agent.propose_edit(
-                    card.to_json(), surface_catalog, starting.snapshot
+                    card.to_json(),
+                    surface_catalog,
+                    starting.snapshot,
+                    manifest_preflight=preflight,
+                    allowed_operator_contracts=public_operator_contracts_for_task(
+                        "forecast"
+                    ),
+                    fixed_probe_contracts=public_probe_contracts(),
                 )
             except Exception as exc:
+                error_code = getattr(exc, "error_code", type(exc).__name__)
+                retry_count = int(getattr(exc, "validation_retry_count", 0))
+                stage_schema_valid = isinstance(exc, StagePostValidationError)
                 slow_attempts.append(
-                    MappingProxyType(
-                        {
-                            "pattern_id": card.pattern_id,
-                            "cause_code": card.cause_code,
-                            "outcome": "PROTOCOL_OR_CONTROLLER_FAILURE",
-                            "error_type": type(exc).__name__,
-                        }
-                    )
+                    {
+                        "pattern_id": card.pattern_id,
+                        "cause_code": card.cause_code,
+                        "outcome": "PROTOCOL_OR_CONTROLLER_FAILURE",
+                        "error_type": type(exc).__name__,
+                        "error_code": error_code,
+                        "stage_schema_valid": stage_schema_valid,
+                        "manifest_constructed": (
+                            stage_schema_valid
+                            and error_code != "MANIFEST_CONSTRUCTION_INVALID"
+                        ),
+                        "controller_accepted": False,
+                        "entered_replay": False,
+                        "first_pass_valid": False,
+                        "validation_retry_count": retry_count,
+                        "validation_error_codes": list(
+                            getattr(exc, "validation_error_codes", ())
+                        ),
+                    }
                 )
                 record_incident(card.pattern_id, exc)
                 continue
             if manifest is None:
+                stage_result = slow_agent.last_stage_result
+                assert stage_result is not None
                 slow_attempts.append(
-                    MappingProxyType(
-                        {
-                            "pattern_id": card.pattern_id,
-                            "cause_code": card.cause_code,
-                            "outcome": "NO_PROPOSAL",
-                            "reason_code": slow_agent.last_no_proposal_reason
-                            or "no_authorized_minimal_edit",
-                        }
-                    )
+                    {
+                        "pattern_id": card.pattern_id,
+                        "cause_code": card.cause_code,
+                        "outcome": "NO_PROPOSAL",
+                        "reason_code": slow_agent.last_no_proposal_reason
+                        or "no_authorized_minimal_edit",
+                        "stage_schema_valid": True,
+                        "manifest_constructed": False,
+                        "controller_accepted": False,
+                        "entered_replay": False,
+                        "first_pass_valid": stage_result.first_pass_valid,
+                        "validation_retry_count": stage_result.validation_retry_count,
+                        "validation_error_codes": list(
+                            stage_result.validation_error_codes
+                        ),
+                    }
                 )
                 no_proposals.append(
                     MappingProxyType(
@@ -1411,16 +1517,22 @@ class M0CycleRunner:
                     )
                 )
                 continue
-            slow_attempts.append(
-                MappingProxyType(
-                    {
-                        "pattern_id": card.pattern_id,
-                        "cause_code": card.cause_code,
-                        "outcome": "VALID_MANIFEST",
-                        "edit_id": manifest.edit_id,
-                    }
-                )
-            )
+            stage_result = slow_agent.last_stage_result
+            assert stage_result is not None
+            attempt_row: dict[str, object] = {
+                "pattern_id": card.pattern_id,
+                "cause_code": card.cause_code,
+                "outcome": "CONTROLLER_ACCEPTED",
+                "edit_id": manifest.edit_id,
+                "stage_schema_valid": True,
+                "manifest_constructed": True,
+                "controller_accepted": True,
+                "entered_replay": False,
+                "first_pass_valid": stage_result.first_pass_valid,
+                "validation_retry_count": stage_result.validation_retry_count,
+                "validation_error_codes": list(stage_result.validation_error_codes),
+            }
+            slow_attempts.append(attempt_row)
             risk_receipt = self.risk_builder.build(
                 card, self.corpus.all_cases, feedback_by_id
             )
@@ -1429,7 +1541,7 @@ class M0CycleRunner:
                 automatically_selected_risk_cases=risk_receipt.case_ids,
             )
             replay_slots -= 1
-            evaluate_manifest(
+            attempt_row["entered_replay"] = evaluate_manifest(
                 manifest,
                 cause_code=card.cause_code,
                 target_case_ids=card.case_ids,

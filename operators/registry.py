@@ -44,7 +44,13 @@ _CONTRACT_BASE = {
     "fallback_policy": "none",         # 退化**输入**下的回退："none" | "explicit_record→<op>" | "numpy_equivalent"
     "dependency_policy": None,         # 依赖**缺失**时："hard_fail" | "recorded_fallback"；无依赖 → None
     "public_parameter_bindings": {},   # 可从部署可观察特征机械绑定的参数；空字典表示无声明
+    "public_parameter_schema": None,   # 可公开给 Agent 的闭合参数形状；None 保留历史开放形状
+    # 算子如何确定修改位置：global=全局变换；intrinsic=算子内部识别命中点；
+    # external_region=必须消费 Agent 提供的公开区间参数。
+    "targeting_mode": "global",
 }
+
+OPERATOR_TARGETING_MODES = frozenset({"global", "intrinsic", "external_region"})
 
 
 def _c(**kw) -> dict:
@@ -56,20 +62,31 @@ def _c(**kw) -> dict:
 # (name, category, stage, tags, fn, shape_changing, contract) —— canonical 算子（单一真源）
 OPERATOR_SPECS = [
     ("impute_linear", "impute", "s1", [], s1_impute.impute_linear, False,
-     _c(preserves_observed=True)),
+     _c(
+         preserves_observed=True,
+         targeting_mode="intrinsic",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {
+                 "strength": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+             },
+         },
+     )),
     ("impute_fft", "impute", "s1", [], s1_impute.impute_fft, False,
-     _c(preserves_observed=True, fallback_policy="explicit_record→impute_linear")),
+     _c(preserves_observed=True, targeting_mode="intrinsic",
+        fallback_policy="explicit_record→impute_linear")),
     ("impute_ema", "impute", "s1", [], s1_impute.impute_ema, False,
-     _c(preserves_observed=True)),
+     _c(preserves_observed=True, targeting_mode="intrinsic")),
     ("period_complete", "impute", "s1", [], s1_impute.period_complete, False,
-     _c(preserves_observed=True)),
+     _c(preserves_observed=True, targeting_mode="intrinsic")),
     # —— E-3.3 R2：模型预测族插补（机制上与上面的复制/插值族可区分）——
     ("impute_ssm", "impute", "s1", [], s1_impute.impute_ssm, False,
-     _c(preserves_observed=True, requires_dependency="statsmodels",
+     _c(preserves_observed=True, targeting_mode="intrinsic", requires_dependency="statsmodels",
         dependency_policy="hard_fail",                       # 缺 statsmodels → raise，**绝不降级到 EMA**
         fallback_policy="explicit_record→impute_linear")),   # 仅退化输入（观测点过少/平滑器异常）
     ("impute_ar", "impute", "s1", [], s1_impute.impute_ar, False,
-     _c(preserves_observed=True,                             # 纯 numpy：无依赖
+     _c(preserves_observed=True, targeting_mode="intrinsic", # 纯 numpy：无依赖
         fallback_policy="explicit_record→impute_linear")),   # 仅退化输入（滞后窗口不足/递推发散）
     ("denoise_savgol", "denoise", "s1", ["smoothing"], s1_denoise.denoise_savgol, False,
      _c(allowed_tasks=_NON_ANOMALY, requires_dependency="scipy",
@@ -79,8 +96,20 @@ OPERATOR_SPECS = [
         dependency_policy="recorded_fallback",
         fallback_policy="explicit_record→denoise_savgol")),
     ("denoise_median", "denoise", "s1", ["smoothing"], s1_denoise.denoise_median, False,
-     _c(allowed_tasks=_NON_ANOMALY, requires_dependency="scipy",
-        dependency_policy="recorded_fallback", fallback_policy="numpy_equivalent")),
+     _c(
+         allowed_tasks=_NON_ANOMALY,
+         requires_dependency="scipy",
+         dependency_policy="recorded_fallback",
+         fallback_policy="numpy_equivalent",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {
+                 "window": {"type": "integer", "minimum": 1},
+                 "strength": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+             },
+         },
+     )),
     ("smooth_ma", "denoise", "s1", ["smoothing"], s1_denoise.smooth_ma, False,
      _c(allowed_tasks=_NON_ANOMALY)),   # 纯 numpy（无依赖），symmetric 边界；F0 剂量维
     ("denoise_stl", "denoise", "s1", ["smoothing"], s1_denoise.denoise_stl, False,
@@ -88,19 +117,33 @@ OPERATOR_SPECS = [
         dependency_policy="recorded_fallback",               # 与 impute_ssm 的 hard_fail 刻意不同
         fallback_policy="explicit_record→denoise_savgol")),
     ("winsorize", "outlier", "s1", ["destructive"], s1_outlier.winsorize, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True)),
+     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
     ("outlier_iqr", "outlier", "s1", ["destructive"], s1_outlier.outlier_iqr, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True)),
+     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
     ("outlier_mad", "outlier", "s1", ["destructive"], s1_outlier.outlier_mad, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True)),
+     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
     # —— E-3.3 R3：局部自适应点式离群修复（与上面三个全局阈值裁剪算子机制不同）——
     ("hampel_filter", "outlier", "s1", ["destructive"], s1_outlier.hampel_filter, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True)),      # 纯 numpy
+     _c(
+         allowed_tasks=_NON_ANOMALY,
+         destructive=True,
+         targeting_mode="intrinsic",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {
+                 "window": {"type": "integer", "minimum": 3},
+                 "n_sigmas": {"type": "number", "minimum": 0.1},
+                 "global_z_min": {"type": "number", "minimum": 0.0},
+             },
+         },
+     )),                                                     # 纯 numpy
     # —— E-3.3 R1：结构断层修复（填 benchmark 预先声明的 structural_break 能力缺口）——
     ("repair_level_shift", "structural", "s1", ["destructive"], s1_structural.repair_level_shift, False,
      _c(
          allowed_tasks=_NON_ANOMALY,
          destructive=True,
+         targeting_mode="external_region",
          public_parameter_bindings={
              "region_start_fraction": "estimated_region_start_fraction",
              "region_end_fraction": "estimated_region_end_fraction",
@@ -163,6 +206,18 @@ OPERATOR_NAMES = tuple(name for (name, *_rest) in OPERATOR_SPECS)   # canonical 
 def canonicalize(name: str) -> str:
     """旧 ID → canonical；canonical/未知名原样返回（未知名由 get_operator/executor 报错）。"""
     return ALIASES.get(name, name)
+
+
+def operator_targeting_mode(name: str) -> str:
+    """Return the declared modification-targeting contract for one operator."""
+
+    canonical = canonicalize(name)
+    if canonical not in OPERATOR_METADATA:
+        raise KeyError(f"unknown operator: {name!r}")
+    mode = str(OPERATOR_METADATA[canonical].get("targeting_mode", ""))
+    if mode not in OPERATOR_TARGETING_MODES:
+        raise ValueError(f"invalid targeting_mode for operator {canonical!r}")
+    return mode
 
 
 def get_operator(name: str) -> Callable:

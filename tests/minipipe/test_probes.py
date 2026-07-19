@@ -10,9 +10,17 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.probes.expressibility import (
     ExpressibilityEvaluator,
     ExpressibilityStatus,
     evaluate_expressibility,
+    program_requires_external_localization,
 )
 from SelfEvolvingHarnessTS.evaluation.minipipe.probes.features import extract_public_features
-from SelfEvolvingHarnessTS.evaluation.minipipe.probes.panel import M0_PROBE_SPECS, ProbePanel
+from SelfEvolvingHarnessTS.evaluation.minipipe.probes.panel import (
+    M0_PROBE_SPECS,
+    PROBE_INSTRUMENT_EPOCH,
+    ProbePanel,
+    _apply_probe,
+    materialize_probe_program,
+    public_probe_contracts,
+)
 from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.chronos import FrozenChronosValuator
 from SelfEvolvingHarnessTS.evaluation.minipipe.valuation.rolling_observed import (
     RollingObservedValuator,
@@ -21,6 +29,7 @@ from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR
 from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
     extract_public_features as extract_agent_public_features,
 )
+from SelfEvolvingHarnessTS.runtime.executor import run_pipeline
 
 
 class FakeChronos:
@@ -47,6 +56,93 @@ def test_every_repair_probe_has_three_monotonic_strengths():
         assert spec.betas == (0.25, 0.50, 0.75)
         assert spec.aggressiveness == tuple(sorted(spec.aggressiveness))
         assert len(set(spec.aggressiveness)) == 3
+        assert spec.instrument_epoch == PROBE_INSTRUMENT_EPOCH
+
+
+def test_imputation_doses_all_change_model_input_and_max_matches_canonical_repair():
+    values = np.sin(np.arange(192, dtype=float) / 8.0)
+    values[140:152] = np.nan
+    canonical = run_pipeline(
+        [("impute_linear", {})], values, source="probe-calibration"
+    ).artifact
+    assert canonical is not None
+    for beta in (0.25, 0.50, 0.75):
+        transformed, modified_fraction = _apply_probe(values, "imputation", beta)
+        assert np.isfinite(transformed).all()
+        assert modified_fraction > 0.0
+    maximum, _ = _apply_probe(values, "imputation", 0.75)
+    np.testing.assert_array_equal(maximum, canonical)
+
+
+def test_level_max_dose_matches_canonical_public_parameterized_repair():
+    _, corpus = _rules_and_corpus()
+    case = next(
+        case for case in corpus.targets if case.private_family == "level_shift"
+    )
+    features = extract_public_features(case.corrupt_context)
+    canonical = run_pipeline(
+        [
+            (
+                "repair_level_shift",
+                {
+                    "region_start_fraction": features.mapping[
+                        "estimated_region_start_fraction"
+                    ],
+                    "region_end_fraction": features.mapping[
+                        "estimated_region_end_fraction"
+                    ],
+                    "estimated_offset": features.estimated_excursion_offset,
+                },
+            )
+        ],
+        case.corrupt_context,
+        source="probe-calibration",
+    ).artifact
+    assert canonical is not None
+    maximum, modified_fraction = _apply_probe(
+        case.corrupt_context, "level_correction", 0.75
+    )
+    assert modified_fraction > 0.0
+    np.testing.assert_array_equal(maximum, canonical)
+
+
+def test_every_fixed_probe_arm_is_exactly_one_materialized_canonical_program():
+    _, corpus = _rules_and_corpus()
+    cases = {
+        family: next(case for case in corpus.targets if case.private_family == family)
+        for family in ("missing", "impulsive_outlier", "level_shift")
+    }
+    inputs = {
+        "imputation": cases["missing"].corrupt_context,
+        "clipping": cases["impulsive_outlier"].corrupt_context,
+        "denoising": cases["impulsive_outlier"].corrupt_context,
+        "level_correction": cases["level_shift"].corrupt_context,
+    }
+    for probe_name, values in inputs.items():
+        features = extract_public_features(values)
+        for beta in M0_PROBE_SPECS[probe_name].betas:
+            steps = materialize_probe_program(probe_name, beta, features.mapping)
+            execution = run_pipeline(steps, values, source="probe-equivalence-test")
+            assert execution.ok and execution.artifact is not None
+            actual, _modified_fraction = _apply_probe(values, probe_name, beta)
+            np.testing.assert_array_equal(actual, execution.artifact)
+
+
+def test_public_probe_contract_discloses_templates_and_current_programs():
+    _, corpus = _rules_and_corpus()
+    case = next(
+        case for case in corpus.targets if case.private_family == "impulsive_outlier"
+    )
+    features = extract_public_features(case.corrupt_context)
+    contracts = public_probe_contracts(features.mapping)
+    assert contracts["instrument_epoch"] == PROBE_INSTRUMENT_EPOCH
+    clipping = contracts["probes"]["clipping"]
+    assert len(clipping["arms"]) == 3
+    mild = clipping["arms"][0]["current_context_program_steps"][0]
+    assert mild == {
+        "op": "hampel_filter",
+        "params": {"window": 7, "n_sigmas": 8.0, "global_z_min": 4.0},
+    }
 
 
 def test_public_feature_extractor_is_closed_and_deterministic():
@@ -140,6 +236,26 @@ def test_absent_complete_period_class_proves_unavailable():
     result = ExpressibilityEvaluator().evaluate(case)
     assert result.status is ExpressibilityStatus.PROVEN_UNAVAILABLE
     assert result.missing_transformation_class == "period_correction"
+    assert result.external_localization_required is False
+
+
+def test_witness_program_contract_distinguishes_internal_and_external_localization():
+    assert not program_requires_external_localization(
+        [["hampel_filter", {"window": 7, "n_sigmas": 3.0}]]
+    )
+    assert not program_requires_external_localization([["impute_linear", {}]])
+    assert program_requires_external_localization(
+        [
+            [
+                "repair_level_shift",
+                {
+                    "region_start_fraction_from": "estimated_region_start_fraction",
+                    "region_end_fraction_from": "estimated_region_end_fraction",
+                    "estimated_offset_from": "estimated_level_offset",
+                },
+            ]
+        ]
+    )
 
 
 def test_transformation_class_declaration_is_complete_for_canonical_registry():

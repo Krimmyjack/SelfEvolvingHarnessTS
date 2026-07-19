@@ -34,6 +34,35 @@ def test_effective_candidate_present_but_unchosen_is_selection_miss():
     assert result.attribution.cause_code == "SELECTION_MISS"
 
 
+def test_single_retrieved_capability_owns_its_scoped_selection_gap():
+    facts = _passing(
+        candidate_utilities={"identity": -0.4, "agent-0": -0.2},
+        effect_distinct_candidate_ids=("agent-0",),
+        chosen_candidate_id="identity",
+        chosen_gain=0.0,
+        retrieved_capability_skill_ids=("level_shift_contrast_candidate",),
+    )
+
+    result = assess_case(facts, rules=_rules())
+
+    assert result.attribution.first_stage == "CANDIDATE_SELECTION"
+    assert result.attribution.fault_code == "SELECTION_MISS"
+    assert result.attribution.cause_code == "SCOPED_SELECTION_GAP"
+    assert result.attribution.suspect_surface_templates == (
+        "skill_library.entries/level_shift_contrast_candidate.body",
+    )
+    route = FaultRouter().authorize(
+        "SCOPED_SELECTION_GAP",
+        target_class="capability",
+        skill_kind="capability",
+        operation="PATCH",
+        target_surface_id=(
+            "skill_library.entries/level_shift_contrast_candidate.body"
+        ),
+    )
+    assert route.actionability == "EDITABLE_M0"
+
+
 def test_negative_matching_probe_and_selected_repair_routes_to_selection_control():
     facts = _passing(
         damage_d=-0.02,
@@ -71,6 +100,41 @@ def test_observable_witness_without_capability_skill_is_library_gap():
     assert result.attribution.suspect_surface_templates == (
         "skill_library.entries/{skill_id}",
     )
+
+
+def test_self_localizing_witness_is_not_blocked_by_interval_iou():
+    facts = _passing(
+        localization_required=False,
+        localization_iou=0.0,
+        candidate_utilities={"identity": -0.4},
+        effect_distinct_candidate_ids=(),
+        chosen_candidate_id="identity",
+        expressibility_status="PROVEN_EXPRESSIBLE",
+        capability_skill_exists=False,
+    )
+
+    result = assess_case(facts, rules=_rules())
+
+    assert result.assessments[2].status is AssessmentStatus.NOT_APPLICABLE
+    assert result.attribution.first_stage == "CANDIDATE_SUPPLY"
+    assert result.attribution.cause_code == "SKILL_LIBRARY_GAP"
+
+
+def test_externally_parameterized_witness_still_requires_localization():
+    facts = _passing(
+        localization_required=True,
+        localization_iou=0.0,
+        candidate_utilities={"identity": -0.4},
+        effect_distinct_candidate_ids=(),
+        chosen_candidate_id="identity",
+        expressibility_status="PROVEN_EXPRESSIBLE",
+        capability_skill_exists=False,
+    )
+
+    result = assess_case(facts, rules=_rules())
+
+    assert result.attribution.first_stage == "LOCALIZATION"
+    assert result.attribution.cause_code == "LOCALIZATION_PROCEDURE_GAP"
 
 
 def test_forced_existing_skill_success_is_retrieval_miss():
@@ -111,11 +175,34 @@ def test_period_unavailable_identity_is_agent_success_and_system_gap():
         chosen_candidate_id="identity",
         expressibility_status="PROVEN_UNAVAILABLE",
         required_transformation_class="period_correction",
+        agent_inspected_evidence=False,
+        localization_iou=0.0,
     )
     result = assess_case(facts, rules=_rules())
     assert result.feedback.outcome.agent_decision_status == "CORRECT_IDENTITY"
     assert result.feedback.outcome.system_capability_status == "OPERATOR_GAP"
     assert result.attribution.actionability == "CAPABILITY_BACKLOG"
+    assert result.attribution.cause_code == "OPERATOR_GAP"
+    assert result.attribution.first_stage == "CANDIDATE_SUPPLY"
+
+
+def test_non_target_case_is_not_mined_for_observation_or_localization_faults():
+    facts = _passing(
+        is_target=False,
+        damage_d=0.0,
+        agent_inspected_evidence=False,
+        localization_iou=0.0,
+        candidate_utilities={"identity": -0.4},
+        effect_distinct_candidate_ids=(),
+        chosen_candidate_id="identity",
+        chosen_gain=0.0,
+    )
+
+    result = assess_case(facts, rules=_rules())
+
+    assert result.attribution.cause_code == "NO_ACTIONABLE_FAULT"
+    assert result.assessments[1].status is AssessmentStatus.NOT_APPLICABLE
+    assert result.assessments[2].status is AssessmentStatus.NOT_APPLICABLE
 
 
 def test_uncertain_localization_stops_false_downstream_attribution():

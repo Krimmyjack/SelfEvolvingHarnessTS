@@ -65,6 +65,7 @@ class CaseFacts:
     capability_skill_exists: bool = True
     normal_retrieval: bool = True
     skill_retrieved: bool = True
+    retrieved_capability_skill_ids: tuple[str, ...] = ()
     forced_skill_succeeds: bool = True
     constrained_proposal_succeeds: bool = False
     proposed_candidate_exists: bool = True
@@ -181,7 +182,23 @@ def _supply_failure(facts: CaseFacts) -> tuple[str, str, tuple[str, ...]]:
 
 def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessment, ...]:
     assessments: list[StageAssessment] = []
-    if (
+    correct_unavailable_identity = (
+        facts.is_target
+        and facts.chosen_candidate_id == "identity"
+        and facts.expressibility_status == "PROVEN_UNAVAILABLE"
+    )
+    agent_diagnostics_applicable = facts.is_target and not correct_unavailable_identity
+    if not facts.is_target:
+        assessments.append(
+            _assessment(
+                facts,
+                rules,
+                Stage.ELIGIBILITY,
+                AssessmentStatus.NOT_APPLICABLE,
+                rule="non_target_eligibility_not_attributed",
+            )
+        )
+    elif (
         facts.is_target
         and facts.chosen_candidate_id != "identity"
         and "negative" in facts.chosen_probe_directions
@@ -221,7 +238,21 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             )
         )
 
-    if not facts.public_evidence_discriminative:
+    if not agent_diagnostics_applicable:
+        assessments.append(
+            _assessment(
+                facts,
+                rules,
+                Stage.OBSERVATION,
+                AssessmentStatus.NOT_APPLICABLE,
+                rule=(
+                    "correct_unavailable_identity_observation_not_required"
+                    if facts.is_target
+                    else "non_target_observation_not_attributed"
+                ),
+            )
+        )
+    elif not facts.public_evidence_discriminative:
         assessments.append(
             _assessment(
                 facts,
@@ -257,7 +288,19 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             )
         )
 
-    if not facts.localization_required:
+    if not agent_diagnostics_applicable:
+        localization = _assessment(
+            facts,
+            rules,
+            Stage.LOCALIZATION,
+            AssessmentStatus.NOT_APPLICABLE,
+            rule=(
+                "correct_unavailable_identity_localization_not_required"
+                if facts.is_target
+                else "non_target_localization_not_attributed"
+            ),
+        )
+    elif not facts.localization_required:
         localization = _assessment(
             facts,
             rules,
@@ -306,11 +349,17 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
         )
     assessments.append(localization)
 
-    mechanism_status = AssessmentStatus.PASS
+    mechanism_status = (
+        AssessmentStatus.PASS
+        if agent_diagnostics_applicable
+        else AssessmentStatus.NOT_APPLICABLE
+    )
     mechanism_fault: str | None = None
     mechanism_cause: str | None = None
     mechanism_surfaces: tuple[str, ...] = ()
-    if facts.mechanism_contradiction:
+    if not agent_diagnostics_applicable:
+        pass
+    elif facts.mechanism_contradiction:
         mechanism_status = AssessmentStatus.FAIL
         mechanism_fault = mechanism_cause = "MECHANISM_AMBIGUITY"
         mechanism_surfaces = ("skill_library.entries/{skill_id}.body",)
@@ -331,13 +380,17 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
         )
     )
 
-    if not facts.is_target:
+    if not facts.is_target or correct_unavailable_identity:
         retrieval = _assessment(
             facts,
             rules,
             Stage.RETRIEVAL_POLICY,
             AssessmentStatus.NOT_APPLICABLE,
-            rule="non_target_retrieval_not_attributed",
+            rule=(
+                "correct_unavailable_identity_retrieval_not_required"
+                if facts.is_target
+                else "non_target_retrieval_not_attributed"
+            ),
         )
     elif facts.capability_skill_exists and facts.forced_skill_succeeds and not facts.normal_retrieval:
         retrieval = _assessment(
@@ -405,6 +458,15 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             rule="non_target_selection_not_required",
         )
     elif effective and regret >= float(rules["selection_regret_min"]):
+        scoped_skill_ids = tuple(sorted(set(facts.retrieved_capability_skill_ids)))
+        if len(scoped_skill_ids) == 1:
+            selection_cause = "SCOPED_SELECTION_GAP"
+            selection_surfaces = (
+                f"skill_library.entries/{scoped_skill_ids[0]}.body",
+            )
+        else:
+            selection_cause = "SELECTION_MISS"
+            selection_surfaces = ("candidate_policy.selection_guidance",)
         selection = _assessment(
             facts,
             rules,
@@ -412,8 +474,8 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
             AssessmentStatus.FAIL,
             rule="selection_regret_min",
             fault="SELECTION_MISS",
-            cause="SELECTION_MISS",
-            surfaces=("candidate_policy.selection_guidance",),
+            cause=selection_cause,
+            surfaces=selection_surfaces,
         )
     else:
         selection = _assessment(
@@ -473,7 +535,15 @@ def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessmen
         facts.risk_delta_u is not None
         and facts.risk_delta_u < -float(rules["risk_epsilon"])
     ) or not facts.scope_stable
-    if risk_failed or facts.over_restoration:
+    if correct_unavailable_identity:
+        outcome = _assessment(
+            facts,
+            rules,
+            Stage.OUTCOME_RISK,
+            AssessmentStatus.NOT_APPLICABLE,
+            rule="correct_unavailable_identity_outcome_not_attributed",
+        )
+    elif risk_failed or facts.over_restoration:
         outcome = _assessment(
             facts,
             rules,

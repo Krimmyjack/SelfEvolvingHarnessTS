@@ -6,8 +6,13 @@ import pytest
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
 from SelfEvolvingHarnessTS.contracts.harness import EditManifest, EditOperation
 from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
+    AddTargetExistsError,
     EditAuthorizationError,
     EditController,
+    EditContextError,
+    EditShapeError,
+    NoOpEditError,
+    PrivateBoundaryViolation,
     StaleEditError,
 )
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
@@ -115,6 +120,32 @@ def test_add_does_not_mutate_parent_or_checked_in_h0(
     assert (receipt.candidate_root / "skills/learned/local_outlier_repair_v1.json").is_file()
 
 
+def test_add_cannot_reuse_bootstrap_id_and_feedback_is_retryable(
+    controller, h0_snapshot, add_skill_manifest
+):
+    existing_id = "build_contrastive_candidates"
+    existing_value = {
+        **dict(add_skill_manifest.new_value),
+        "skill_id": existing_id,
+    }
+    duplicate = replace(
+        add_skill_manifest,
+        target_surface_id=f"skill_library.entries/{existing_id}",
+        new_value=existing_value,
+    )
+    with pytest.raises(AddTargetExistsError):
+        controller.validate(
+            h0_snapshot,
+            duplicate,
+            confirmed_cause="SKILL_LIBRARY_GAP",
+        )
+    feedback = controller.public_feedback_for_error(
+        AddTargetExistsError("already exists")
+    )
+    assert feedback.error_code == "ADD_TARGET_EXISTS"
+    assert feedback.retryable is True
+
+
 def test_stale_surface_or_dependency_precondition_requires_replay(
     controller, h0_snapshot, add_skill_manifest
 ):
@@ -138,7 +169,7 @@ def test_missing_or_extra_dependency_preconditions_are_rejected(
 ):
     missing = dict(add_skill_manifest.dependency_precondition_shas)
     missing.pop("surface_registry")
-    with pytest.raises(ValueError, match="missing required dependency"):
+    with pytest.raises(EditContextError, match="missing required dependency"):
         controller.validate(
             h0_snapshot,
             replace(add_skill_manifest, dependency_precondition_shas=missing),
@@ -149,7 +180,7 @@ def test_missing_or_extra_dependency_preconditions_are_rejected(
         **dict(add_skill_manifest.dependency_precondition_shas),
         "compiler_source": h0_snapshot.snapshot.dependency_shas["compiler_source"],
     }
-    with pytest.raises(ValueError, match="unexpected dependency"):
+    with pytest.raises(EditContextError, match="unexpected dependency"):
         controller.validate(
             h0_snapshot,
             replace(add_skill_manifest, dependency_precondition_shas=extra),
@@ -169,9 +200,14 @@ def test_capability_fault_cannot_edit_bootstrap(controller, h0_snapshot):
             "kind": "SHA",
             "sha": controller.surface_precondition_sha(h0_snapshot, target),
         },
-        dependency_precondition_shas={},
+        dependency_precondition_shas={
+            key: h0_snapshot.snapshot.dependency_shas[key]
+            for key in controller.surfaces.resolve(target).definition.required_dependency_keys
+        },
         minimal_patch={"value": "Inspect every public candidate region before proposing."},
         predicted_agent_behavior_change=("identity_retained",),
+        predicted_data_effect=("target behavior changes",),
+        falsification_condition=("predicted behavior is absent",),
     )
     with pytest.raises(EditAuthorizationError, match="SKILL_LIBRARY_GAP"):
         controller.apply_to_fork(
@@ -181,6 +217,47 @@ def test_capability_fault_cannot_edit_bootstrap(controller, h0_snapshot):
         )
 
 
+def test_patch_that_repeats_active_surface_is_retryable_no_op(
+    controller, h0_snapshot
+):
+    target = "bootstrap_skills.entries/inspect_and_localize.body"
+    surface = controller.surfaces.resolve(target)
+    active_body = next(
+        skill.body
+        for skill in h0_snapshot.snapshot.skills
+        if skill.skill_id == "inspect_and_localize"
+    )
+    manifest = EditManifest(
+        edit_id="patch-bootstrap-noop-v1",
+        base_harness_sha=h0_snapshot.harness_content_sha,
+        target_pattern_id="pattern-a1b2c3d4e5f6",
+        target_surface_id=target,
+        operation=EditOperation.PATCH,
+        surface_precondition={
+            "kind": "SHA",
+            "sha": controller.surface_precondition_sha(h0_snapshot, target),
+        },
+        dependency_precondition_shas={
+            key: h0_snapshot.snapshot.dependency_shas[key]
+            for key in surface.definition.required_dependency_keys
+        },
+        minimal_patch={"value": active_body},
+        predicted_agent_behavior_change=("identity_retained",),
+        predicted_data_effect=("target behavior changes",),
+        falsification_condition=("predicted behavior is absent",),
+    )
+
+    with pytest.raises(NoOpEditError):
+        controller.validate(
+            h0_snapshot,
+            manifest,
+            confirmed_cause="OBSERVATION_PROCEDURE_GAP",
+        )
+    feedback = controller.public_feedback_for_error(NoOpEditError("unchanged"))
+    assert feedback.error_code == "NO_OP_EDIT"
+    assert feedback.retryable is True
+
+
 def test_arbitrary_behavior_prediction_is_rejected(
     controller, h0_snapshot, add_skill_manifest
 ):
@@ -188,7 +265,7 @@ def test_arbitrary_behavior_prediction_is_rejected(
         add_skill_manifest,
         predicted_agent_behavior_change=("the agent should probably do better",),
     )
-    with pytest.raises(ValueError, match="behavior predicate"):
+    with pytest.raises(EditShapeError, match="predicted_agent_behavior_change"):
         controller.validate(h0_snapshot, invalid, confirmed_cause="SKILL_LIBRARY_GAP")
 
 
@@ -200,7 +277,12 @@ def test_memory_body_cannot_be_a_private_field_escape_hatch(controller, h0_snaps
         target_surface_id="memory.entries/leaky_memory_v1",
         operation=EditOperation.ADD,
         surface_precondition={"kind": "ABSENT"},
-        dependency_precondition_shas={},
+        dependency_precondition_shas={
+            key: h0_snapshot.snapshot.dependency_shas[key]
+            for key in controller.surfaces.resolve(
+                "memory.entries/leaky_memory_v1"
+            ).definition.required_dependency_keys
+        },
         new_value={
             "schema_version": "memory-entry/1",
             "memory_id": "leaky_memory_v1",
@@ -209,7 +291,10 @@ def test_memory_body_cannot_be_a_private_field_escape_hatch(controller, h0_snaps
             "observable_applicability": {"const": True},
             "risk_guards": {},
         },
+        observable_applicability={"const": True},
         predicted_agent_behavior_change=("identity_retained",),
+        predicted_data_effect=("target behavior changes",),
+        falsification_condition=("predicted behavior is absent",),
     )
-    with pytest.raises(ValueError, match="forbidden deployable text"):
+    with pytest.raises(PrivateBoundaryViolation, match="public boundary"):
         controller.validate(h0_snapshot, manifest, confirmed_cause="PROTOCOL_GAP")

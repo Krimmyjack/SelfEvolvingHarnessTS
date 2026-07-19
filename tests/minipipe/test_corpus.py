@@ -5,7 +5,10 @@ import numpy as np
 import pytest
 
 from SelfEvolvingHarnessTS.evaluation.minipipe.config import load_m0_rules
-from SelfEvolvingHarnessTS.evaluation.minipipe.corpus.generate import build_core_corpus
+from SelfEvolvingHarnessTS.evaluation.minipipe.corpus.generate import (
+    build_core_corpus,
+    build_heldout_corpus,
+)
 
 
 RULES = (
@@ -38,6 +41,18 @@ def test_core_corpus_is_24_targets_plus_12_risks_and_reproducible(m0_rules):
     }
     target_numbers = {int(case.case_id.split("-")[1]) for case in first.targets}
     assert target_numbers != set(range(1, 25))
+
+
+def test_heldout_builder_allows_preregistered_size_without_weakening_core_lock():
+    rules = json.loads(RULES.read_text(encoding="utf-8"))
+    rules["corpus"]["base_seeds"] = [404, 505, 606, 707]
+
+    heldout = build_heldout_corpus(rules)
+
+    assert len(heldout.targets) == 32
+    assert len(heldout.risks) == 16
+    with pytest.raises(ValueError, match="24 targets and 12 risks"):
+        build_core_corpus(rules)
 
 
 def test_public_view_contains_only_corrupt_context_and_opaque_identity(m0_rules):

@@ -185,7 +185,7 @@ class PublicCaseView:
         if "private" in receipt_type or not hasattr(public_receipt, "to_public_dict"):
             raise TypeError("with_probe_panel accepts a strict public probe receipt only")
         panel = public_receipt.to_public_dict()
-        if not isinstance(panel, Mapping) or panel.get("schema_version") != "public-probe-panel/1":
+        if not isinstance(panel, Mapping) or panel.get("schema_version") != "public-probe-panel/2":
             raise TypeError("invalid public probe receipt serializer")
         frozen = _freeze_json(panel)
         digest = canonical_sha256(

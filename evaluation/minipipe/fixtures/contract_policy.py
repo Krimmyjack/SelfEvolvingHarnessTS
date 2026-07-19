@@ -26,6 +26,7 @@ from SelfEvolvingHarnessTS.runtime.llm_cache import CacheKey
 
 FIXTURE_SOURCE = "contract_policy_not_openai"
 _SPARSE_LOCALIZATION_MARKER = "sparse_localization_subregions/v1"
+_FORCED_LOCALIZATION_MISS_MARKER = "fixture_wrong_region/v1"
 _NEGATIVE_PROBE_ABSTENTION_MARKER = "negative_matching_probe_abstention/v1"
 
 _CATEGORY_PROBE_DIRECTION = {
@@ -253,7 +254,19 @@ class ContractPolicyBackend:
                 ),
                 "",
             )
-            if (
+            if _FORCED_LOCALIZATION_MISS_MARKER in localization_body:
+                # The planted PATCH-cycle fixture must create its target fault
+                # mechanically.  Do not rely on an older feature extractor
+                # happening to estimate the wrong interval: instrument
+                # calibration is allowed to improve independently of this
+                # controller-path test.  Select the opposite public edge so
+                # the planted behavior is observably wrong without oracle
+                # access.
+                if (start + end) / 2.0 >= 0.5:
+                    inspected = [[0.0, min(0.1, max(start / 2.0, 1.0 / 192.0))]]
+                else:
+                    inspected = [[max(0.9, end + (1.0 - end) / 2.0), 1.0]]
+            elif (
                 _SPARSE_LOCALIZATION_MARKER in localization_body
                 and float(features.get("local_robust_z_peak", 0.0)) >= 4.0
                 and end - start >= 0.15

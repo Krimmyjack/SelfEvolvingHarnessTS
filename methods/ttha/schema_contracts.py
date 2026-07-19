@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from SelfEvolvingHarnessTS.contracts.canonical import parse_json_document
-from SelfEvolvingHarnessTS.operators.registry import OPERATOR_NAMES
+from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
 from SelfEvolvingHarnessTS.runtime.errors import ProtocolViolation
 
 
@@ -18,6 +18,7 @@ _OBSERVABLE_SCHEMA = (
     / "schemas"
     / "observable_feature_v1.json"
 )
+_CONTRACT_SCHEMA_ROOT = _OBSERVABLE_SCHEMA.parent
 _STAGE_SCHEMA_FILES = {
     "fast_inspect_v1": "fast_inspect_v1.json",
     "fast_propose_v1": "fast_propose_v1.json",
@@ -43,22 +44,130 @@ def load_stage_schema(name: str) -> dict[str, Any]:
     schema = load_schema(_STAGE_SCHEMA_FILES[name])
     if name == "fast_propose_v1":
         try:
-            operator_schema = schema["properties"]["candidates"]["items"][
-                "properties"
-            ]["steps"]["items"]["properties"]["op"]
+            steps = schema["properties"]["candidates"]["items"]["properties"][
+                "steps"
+            ]
+            step_schema = steps["items"]
         except (KeyError, TypeError) as exc:
             raise ValueError("fast propose schema has no operator injection point") from exc
-        if not isinstance(operator_schema, dict) or operator_schema.get("enum") != []:
+        if (
+            not isinstance(step_schema, dict)
+            or step_schema.get("$comment")
+            != "canonical operator step branches are injected at load time"
+        ):
             raise ValueError("fast propose operator injection point drifted")
-        operator_schema["enum"] = list(OPERATOR_NAMES)
+        branches: list[dict[str, object]] = []
+        for operator_name in OPERATOR_NAMES:
+            metadata = OPERATOR_METADATA[operator_name]
+            bindings = metadata.get(
+                "public_parameter_bindings", {}
+            )
+            if not isinstance(bindings, Mapping):
+                raise ValueError("operator public_parameter_bindings must be an object")
+            declared_parameter_schema = metadata.get("public_parameter_schema")
+            if declared_parameter_schema is not None and not isinstance(
+                declared_parameter_schema, Mapping
+            ):
+                raise ValueError("operator public_parameter_schema must be an object")
+            if bindings and declared_parameter_schema is not None:
+                raise ValueError(
+                    "operator cannot declare both bound and free public parameters"
+                )
+            params_schema: dict[str, object] = (
+                dict(declared_parameter_schema)
+                if isinstance(declared_parameter_schema, Mapping)
+                else {"type": "object"}
+            )
+            if bindings:
+                params_schema.update(
+                    {
+                        "additionalProperties": False,
+                        "required": sorted(str(key) for key in bindings),
+                        "properties": {
+                            str(key): {"type": "number"} for key in sorted(bindings)
+                        },
+                    }
+                )
+            branches.append(
+                {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["op", "params"],
+                    "properties": {
+                        "op": {"const": operator_name},
+                        "params": params_schema,
+                    },
+                }
+            )
+        steps["items"] = {"oneOf": branches}
     if name == "slow_edit_v1":
         definitions = schema.get("$defs")
-        if not isinstance(definitions, dict) or "observable_leaf" not in definitions:
-            raise ValueError("slow edit schema has no observable leaf injection point")
+        required_injections = {
+            "observable_leaf",
+            "behavior_predicate",
+            "learned_skill_entry",
+            "memory_entry",
+        }
+        if not isinstance(definitions, dict) or not required_injections.issubset(definitions):
+            raise ValueError("slow edit schema injection points drifted")
         observable_leaf = parse_json_document(_OBSERVABLE_SCHEMA.read_bytes())
         if not isinstance(observable_leaf, dict):
             raise ValueError("observable feature schema must be an object")
         definitions["observable_leaf"] = observable_leaf
+
+        behavior = load_schema("behavior_predicate_v1.json")
+        behavior_branches = behavior.get("oneOf")
+        if not isinstance(behavior_branches, list):
+            raise ValueError("behavior predicate schema has no branches")
+        injection = next(
+            (
+                branch
+                for branch in behavior_branches
+                if isinstance(branch, dict)
+                and branch.get("$comment")
+                == "canonical forecast operator values are injected at load time"
+            ),
+            None,
+        )
+        if not isinstance(injection, dict) or injection.get("enum") != []:
+            raise ValueError("behavior predicate operator injection point drifted")
+        forecast_operators = tuple(
+            sorted(
+                name
+                for name, metadata in OPERATOR_METADATA.items()
+                if metadata.get("deprecated") is not True
+                and "forecast" in metadata.get("allowed_tasks", ())
+            )
+        )
+        injection["enum"] = [f"supply_operator:{name}" for name in forecast_operators]
+        definitions["behavior_predicate"] = behavior
+
+        learned_skill = parse_json_document(
+            (_CONTRACT_SCHEMA_ROOT / "skill_entry_v1.json").read_bytes()
+        )
+        memory_entry = parse_json_document(
+            (_CONTRACT_SCHEMA_ROOT / "memory_entry_v1.json").read_bytes()
+        )
+        if not isinstance(learned_skill, dict) or not isinstance(memory_entry, dict):
+            raise ValueError("deployable entry schemas must be objects")
+        learned_properties = learned_skill.get("properties")
+        memory_properties = memory_entry.get("properties")
+        if not isinstance(learned_properties, dict) or not isinstance(memory_properties, dict):
+            raise ValueError("deployable entry schema properties drifted")
+        learned_properties["skill_kind"] = {"const": "capability"}
+        learned_properties["observable_applicability"] = {
+            "$ref": "#/$defs/applicability"
+        }
+        learned_properties["allowed_tools"] = {
+            "type": "array",
+            "items": {"enum": list(forecast_operators)},
+            "uniqueItems": True,
+        }
+        memory_properties["observable_applicability"] = {
+            "$ref": "#/$defs/applicability"
+        }
+        definitions["learned_skill_entry"] = learned_skill
+        definitions["memory_entry"] = memory_entry
     return schema
 
 
@@ -117,6 +226,7 @@ def _validate_local_schema(
         ):
             matches = 0
             errors: list[str] = []
+            preferred_errors: list[str] = []
             for branch in branches:
                 if not isinstance(branch, Mapping):
                     continue
@@ -124,11 +234,27 @@ def _validate_local_schema(
                     _validate_local_schema(value, branch, root=root, path=path)
                 except LocalSchemaError as exc:
                     errors.append(str(exc))
+                    if isinstance(value, Mapping):
+                        branch_properties = branch.get("properties")
+                        if isinstance(branch_properties, Mapping):
+                            operation_schema = branch_properties.get("operation")
+                            if (
+                                isinstance(operation_schema, Mapping)
+                                and operation_schema.get("const")
+                                == value.get("operation")
+                            ):
+                                preferred_errors.append(str(exc))
                 else:
                     matches += 1
             valid = matches == required_matches if required_matches is not None else matches > 0
             if not valid:
-                detail = errors[0] if errors else "no branch matched"
+                detail = (
+                    preferred_errors[0]
+                    if preferred_errors
+                    else errors[0]
+                    if errors
+                    else "no branch matched"
+                )
                 raise LocalSchemaError(
                     f"{path} does not satisfy {keyword} ({matches} matches): {detail}"
                 )
@@ -165,6 +291,16 @@ def _validate_local_schema(
                     _validate_local_schema(
                         value[key], child_schema, root=root, path=f"{path}.{key}"
                     )
+        additional_schema = schema.get("additionalProperties")
+        if isinstance(additional_schema, Mapping):
+            known = set(properties) if isinstance(properties, Mapping) else set()
+            for key in set(value) - known:
+                _validate_local_schema(
+                    value[key],
+                    additional_schema,
+                    root=root,
+                    path=f"{path}.{key}",
+                )
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         minimum = schema.get("minItems")
         maximum = schema.get("maxItems")

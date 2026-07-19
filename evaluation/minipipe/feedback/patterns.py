@@ -34,6 +34,7 @@ def _capability_state(cause_code: str) -> str:
         "SKILL_CONTENT_GAP",
         "PROPOSAL_CONTROL_GAP",
         "SELECTION_MISS",
+        "SCOPED_SELECTION_GAP",
         "PROBE_SELECTION_CONTRADICTION",
         "IMPLEMENTATION_MISMATCH",
         "EXECUTION_MISMATCH",

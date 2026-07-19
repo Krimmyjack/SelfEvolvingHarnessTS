@@ -33,6 +33,11 @@ from SelfEvolvingHarnessTS.methods.ttha.harness.store import (
     MaterializedSnapshot,
     SnapshotStore,
 )
+from SelfEvolvingHarnessTS.methods.ttha.schema_contracts import (
+    LocalSchemaError,
+    load_stage_schema,
+    validate_local_schema,
+)
 from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
 
 
@@ -44,16 +49,6 @@ _SURFACE_PATH = (
     / "harness_surfaces.json"
 )
 _CANONICAL_ID = r"[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*"
-_BEHAVIOR_PREDICATES = (
-    re.compile(rf"retrieve_skill:{_CANONICAL_ID}"),
-    re.compile(rf"supply_operator:{_CANONICAL_ID}"),
-    re.compile(r"supply_effect_distinct"),
-    re.compile(r"choose_candidate_kind:(?:identity|program)"),
-    re.compile(r"identity_retained"),
-    re.compile(r"effective_view_unchanged_out_of_scope"),
-    re.compile(r"scope_modified_fraction<=\d+(?:\.\d+)?"),
-    re.compile(r"localization_iou>=\d+(?:\.\d+)?"),
-)
 _FORBIDDEN_TEXT_TERMS = (
     "clean_future",
     "clean_context",
@@ -76,8 +71,28 @@ class StaleEditError(EditControllerError):
     """The edit was replayed against a stale content or dependency precondition."""
 
 
+class AddTargetExistsError(StaleEditError):
+    """A public ADD identifier collided with an existing Harness entry."""
+
+
 class EditAuthorizationError(EditControllerError):
     """The attributed cause does not authorize the requested Harness surface."""
+
+
+class EditShapeError(EditControllerError):
+    """A proposed edit violates the public, static slow-edit contract."""
+
+
+class PrivateBoundaryViolation(EditControllerError):
+    """A deployable edit attempted to encode private or path-derived evidence."""
+
+
+class EditContextError(EditControllerError):
+    """A public catalog or dependency declaration is inconsistent."""
+
+
+class NoOpEditError(EditContextError):
+    """A PATCH would leave the declared Harness surface unchanged."""
 
 
 @dataclass(frozen=True)
@@ -217,6 +232,19 @@ class SurfaceRegistry:
 
 
 @dataclass(frozen=True)
+class ShapeValidatedEdit:
+    manifest: EditManifest
+    parsed_entry: SkillEntry | MemoryEntry | None
+
+
+@dataclass(frozen=True)
+class PublicEditValidationFeedback:
+    error_code: str
+    public_message: str
+    retryable: bool
+
+
+@dataclass(frozen=True)
 class ValidatedEdit:
     manifest: EditManifest
     surface: ResolvedSurface
@@ -305,24 +333,35 @@ def _scan_deployable(value: object) -> None:
         raise ValueError("forbidden deployable text contains code or filesystem paths")
 
 
-def _validate_behavior_predicates(predicates: tuple[str, ...]) -> None:
-    if not predicates:
-        raise ValueError("at least one falsifiable behavior predicate is required")
-    for predicate in predicates:
-        if not any(pattern.fullmatch(predicate) for pattern in _BEHAVIOR_PREDICATES):
-            raise ValueError(f"invalid M0 behavior predicate: {predicate}")
-        if predicate.startswith("scope_modified_fraction<="):
-            limit = float(predicate.split("<=", 1)[1])
-            if not 0.0 <= limit <= 1.0:
-                raise ValueError("scope_modified_fraction predicate must lie in [0, 1]")
-        if predicate.startswith("localization_iou>="):
-            threshold = float(predicate.split(">=", 1)[1])
-            if not 0.0 <= threshold <= 1.0:
-                raise ValueError("localization_iou predicate must lie in [0, 1]")
-        if predicate.startswith("supply_operator:"):
-            operator_id = predicate.split(":", 1)[1]
-            if operator_id not in OPERATOR_NAMES:
-                raise ValueError("behavior predicate names a non-canonical operator")
+def _manifest_shape_payload(manifest: EditManifest) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "edit_id": manifest.edit_id,
+        "base_harness_sha": manifest.base_harness_sha,
+        "target_pattern_id": manifest.target_pattern_id,
+        "target_surface_id": manifest.target_surface_id,
+        "operation": manifest.operation.value,
+        "surface_precondition": dict(manifest.surface_precondition),
+        "dependency_precondition_shas": dict(
+            manifest.dependency_precondition_shas
+        ),
+        "predicted_agent_behavior_change": list(
+            manifest.predicted_agent_behavior_change
+        ),
+        "predicted_data_effect": list(manifest.predicted_data_effect),
+        "automatically_selected_risk_cases": list(
+            manifest.automatically_selected_risk_cases
+        ),
+        "falsification_condition": list(manifest.falsification_condition),
+    }
+    if manifest.minimal_patch is not None:
+        payload["minimal_patch"] = dict(manifest.minimal_patch)
+    if manifest.new_value is not None:
+        payload["new_value"] = dict(manifest.new_value)
+    if manifest.observable_applicability is not None:
+        payload["observable_applicability"] = dict(
+            manifest.observable_applicability
+        )
+    return payload
 
 
 class EditController:
@@ -363,12 +402,17 @@ class EditController:
             if target_id is None:
                 raise ValueError("dynamic ADD surface has no entry ID")
             if definition.value_schema == "skill-entry/1":
-                path = parent.root / surface.owner_path()
-                if path.exists():
-                    raise StaleEditError(f"ADD target already exists: {surface.surface_id}")
+                if any(
+                    skill.skill_id == target_id for skill in parent.snapshot.skills
+                ):
+                    raise AddTargetExistsError(
+                        f"ADD target already exists: {surface.surface_id}"
+                    )
             elif definition.value_schema == "memory-entry/1":
                 if any(memory.memory_id == target_id for memory in parent.snapshot.memories):
-                    raise StaleEditError(f"ADD target already exists: {surface.surface_id}")
+                    raise AddTargetExistsError(
+                        f"ADD target already exists: {surface.surface_id}"
+                    )
             return None
         path = parent.root / surface.owner_path()
         if definition.surface_type == "text" and path.suffix == ".md":
@@ -387,47 +431,115 @@ class EditController:
             raise ValueError("ABSENT surface has no content SHA")
         return canonical_sha256(value)
 
-    def validate(
+    def validate_shape(self, manifest: EditManifest) -> ShapeValidatedEdit:
+        """Validate only immutable, public edit syntax and deployable content.
+
+        This is deliberately the same resolved schema shown to the slow Agent.
+        Dynamic authorization, dependency, and stale-state checks belong to
+        :meth:`validate_context` and are not duplicated here.
+        """
+        if not isinstance(manifest, EditManifest):
+            raise TypeError("edit shape validation requires an EditManifest")
+        payload = _manifest_shape_payload(manifest)
+        try:
+            validate_local_schema(
+                {"edit_manifest": payload},
+                load_stage_schema("slow_edit_v1"),
+                path="slow_edit",
+            )
+        except LocalSchemaError as exc:
+            raise EditShapeError(str(exc)) from exc
+
+        deployable = (
+            manifest.new_value
+            if manifest.new_value is not None
+            else manifest.minimal_patch
+        )
+        try:
+            _scan_deployable(deployable)
+        except ValueError as exc:
+            raise PrivateBoundaryViolation(
+                "deployable edit violates the public boundary"
+            ) from exc
+
+        parsed_entry: SkillEntry | MemoryEntry | None = None
+        if manifest.new_value is not None:
+            schema_version = manifest.new_value.get("schema_version")
+            try:
+                if schema_version == "skill-entry/1":
+                    parsed_entry = load_learned_skill_entry(manifest.new_value)
+                    for operator_id in parsed_entry.allowed_tools:
+                        metadata = OPERATOR_METADATA.get(operator_id)
+                        if (
+                            operator_id not in OPERATOR_NAMES
+                            or metadata is None
+                            or metadata.get("deprecated") is True
+                            or "forecast" not in metadata["allowed_tasks"]
+                        ):
+                            raise ValueError(
+                                f"SkillEntry tool is not forecast-compatible: {operator_id}"
+                            )
+                elif schema_version == "memory-entry/1":
+                    parsed_entry = load_memory_entry(manifest.new_value)
+                else:
+                    raise ValueError("ADD new_value has an unknown deployable schema")
+            except ValueError as exc:
+                raise EditShapeError(str(exc)) from exc
+            if manifest.observable_applicability is None or dict(
+                manifest.observable_applicability
+            ) != dict(parsed_entry.observable_applicability):
+                raise EditShapeError(
+                    "manifest and deployable entry applicability must match"
+                )
+        return ShapeValidatedEdit(manifest=manifest, parsed_entry=parsed_entry)
+
+    def validate_context(
         self,
         parent: MaterializedSnapshot,
-        manifest: EditManifest,
+        shaped: ShapeValidatedEdit,
         *,
         confirmed_cause: str,
     ) -> ValidatedEdit:
         if not isinstance(parent, MaterializedSnapshot):
-            raise TypeError("edit validation requires a MaterializedSnapshot")
-        if not isinstance(manifest, EditManifest):
-            raise TypeError("edit validation requires an EditManifest")
+            raise TypeError("edit context validation requires a MaterializedSnapshot")
+        if not isinstance(shaped, ShapeValidatedEdit):
+            raise TypeError("edit context validation requires a ShapeValidatedEdit")
+        manifest = shaped.manifest
         if manifest.base_harness_sha != parent.harness_content_sha:
             raise StaleEditError("base_harness_sha does not match the active parent")
-        surface = self.surfaces.resolve(manifest.target_surface_id)
+        try:
+            surface = self.surfaces.resolve(manifest.target_surface_id)
+        except ValueError as exc:
+            raise EditAuthorizationError(
+                "target_surface_id is not an authorized M0 surface"
+            ) from exc
         definition = surface.definition
         if manifest.operation.value not in definition.allowed_operations:
-            raise ValueError("edit operation is not allowed for the resolved surface")
+            raise EditContextError(
+                "operation does not match the public writable-surface catalog"
+            )
         if manifest.surface_precondition.get("kind") != definition.precondition:
-            raise ValueError("surface precondition kind does not match the registry")
+            raise EditContextError(
+                "surface precondition does not match the public catalog"
+            )
 
-        deployable = manifest.new_value if manifest.new_value is not None else manifest.minimal_patch
-        _scan_deployable(deployable)
-        _validate_behavior_predicates(manifest.predicted_agent_behavior_change)
-
-        parsed_entry: SkillEntry | MemoryEntry | None = None
+        parsed_entry = shaped.parsed_entry
         skill_kind: str | None = None
         if definition.value_schema == "skill-entry/1":
-            if not isinstance(manifest.new_value, Mapping):
-                raise ValueError("SkillEntry ADD requires a structured new_value")
-            parsed_entry = load_learned_skill_entry(manifest.new_value)
+            if not isinstance(parsed_entry, SkillEntry):
+                raise EditShapeError("SkillEntry surface requires a SkillEntry new_value")
             expected_id = surface.parameters.get("skill_id")
             if parsed_entry.skill_id != expected_id:
-                raise ValueError("SkillEntry ID does not match the target surface")
+                raise EditShapeError("SkillEntry ID does not match the target surface")
             skill_kind = parsed_entry.skill_kind.value
         elif definition.value_schema == "memory-entry/1":
-            if not isinstance(manifest.new_value, Mapping):
-                raise ValueError("MemoryEntry ADD requires a structured new_value")
-            parsed_entry = load_memory_entry(manifest.new_value)
+            if not isinstance(parsed_entry, MemoryEntry):
+                raise EditShapeError("MemoryEntry surface requires a MemoryEntry new_value")
             expected_id = surface.parameters.get("memory_id")
             if parsed_entry.memory_id != expected_id:
-                raise ValueError("MemoryEntry ID does not match the target surface")
+                raise EditShapeError("MemoryEntry ID does not match the target surface")
+        elif parsed_entry is not None:
+            raise EditShapeError("PATCH surface cannot carry a deployable entry")
         elif definition.allowed_skill_kinds:
             if definition.target_class == "bootstrap_procedure":
                 skill_kind = "bootstrap_procedure"
@@ -455,12 +567,12 @@ class EditController:
         missing_dependencies = sorted(required_dependencies - declared_dependencies)
         extra_dependencies = sorted(declared_dependencies - required_dependencies)
         if missing_dependencies:
-            raise ValueError(
+            raise EditContextError(
                 "missing required dependency preconditions: "
                 + ", ".join(missing_dependencies)
             )
         if extra_dependencies:
-            raise ValueError(
+            raise EditContextError(
                 "unexpected dependency preconditions: "
                 + ", ".join(extra_dependencies)
             )
@@ -473,32 +585,90 @@ class EditController:
             expected_sha = str(manifest.surface_precondition["sha"])
             if current is None or canonical_sha256(current) != expected_sha:
                 raise StaleEditError(f"surface precondition is stale: {surface.surface_id}")
+            replacement = dict(manifest.minimal_patch or {})["value"]
+            if current == replacement:
+                raise NoOpEditError(
+                    f"PATCH does not change the surface: {surface.surface_id}"
+                )
         elif current is not None:
             raise StaleEditError(f"ADD surface is no longer absent: {surface.surface_id}")
 
-        if isinstance(parsed_entry, SkillEntry):
-            if manifest.observable_applicability is not None and dict(
-                manifest.observable_applicability
-            ) != dict(parsed_entry.observable_applicability):
-                raise ValueError("manifest and SkillEntry applicability differ")
-            for operator_id in parsed_entry.allowed_tools:
-                metadata = OPERATOR_METADATA.get(operator_id)
-                if (
-                    operator_id not in OPERATOR_NAMES
-                    or metadata is None
-                    or metadata.get("deprecated") is True
-                ):
-                    raise ValueError(f"SkillEntry tool is not canonical: {operator_id}")
-                if "forecast" not in metadata["allowed_tasks"]:
-                    raise ValueError(f"SkillEntry tool is incompatible with forecast: {operator_id}")
-        if manifest.operation is EditOperation.PATCH:
-            if not isinstance(manifest.minimal_patch, Mapping) or set(manifest.minimal_patch) != {"value"}:
-                raise ValueError("M0 PATCH minimal_patch must contain exactly one value field")
         return ValidatedEdit(
             manifest=manifest,
             surface=surface,
             parsed_entry=parsed_entry,
             skill_kind=skill_kind,
+        )
+
+    @staticmethod
+    def public_feedback_for_error(
+        exc: Exception,
+    ) -> PublicEditValidationFeedback:
+        """Map controller failures to a non-leaking retry contract.
+
+        Messages are deliberately static. Private-wall and authorization failures
+        never reveal which hidden field or unavailable surface caused rejection.
+        """
+        if isinstance(exc, AddTargetExistsError):
+            return PublicEditValidationFeedback(
+                "ADD_TARGET_EXISTS",
+                "The requested new entry ID already exists; choose a fresh canonical ID.",
+                True,
+            )
+        if isinstance(exc, NoOpEditError):
+            return PublicEditValidationFeedback(
+                "NO_OP_EDIT",
+                "The PATCH value is already active; propose a materially different authorized edit or abstain.",
+                True,
+            )
+        if isinstance(exc, EditShapeError):
+            return PublicEditValidationFeedback(
+                "EDIT_SHAPE_INVALID",
+                "The manifest violates a static cross-field edit requirement.",
+                True,
+            )
+        if isinstance(exc, EditContextError):
+            return PublicEditValidationFeedback(
+                "PUBLIC_CONTEXT_MISMATCH",
+                "Copy the operation, precondition, and dependency block exactly from one public catalog entry.",
+                True,
+            )
+        if isinstance(exc, PrivateBoundaryViolation):
+            return PublicEditValidationFeedback(
+                "PRIVATE_BOUNDARY_VIOLATION",
+                "The proposal violates the deployment-observable information boundary.",
+                False,
+            )
+        if isinstance(exc, EditAuthorizationError):
+            return PublicEditValidationFeedback(
+                "UNAUTHORIZED_SURFACE",
+                "The attributed fault does not authorize this edit.",
+                False,
+            )
+        if isinstance(exc, StaleEditError):
+            return PublicEditValidationFeedback(
+                "STALE_PRECONDITION",
+                "The edit precondition is stale and requires a new optimization pass.",
+                False,
+            )
+        return PublicEditValidationFeedback(
+            "INFRASTRUCTURE_ERROR",
+            "The edit could not be validated because of a non-correctable controller error.",
+            False,
+        )
+
+    def validate(
+        self,
+        parent: MaterializedSnapshot,
+        manifest: EditManifest,
+        *,
+        confirmed_cause: str,
+    ) -> ValidatedEdit:
+        shaped = self.validate_shape(manifest)
+        return self.validate_context(
+            parent,
+            shaped,
+            confirmed_cause=confirmed_cause,
         )
 
     @staticmethod
@@ -603,6 +773,7 @@ __all__ = [
     "AppliedEditReceipt",
     "EditAuthorizationError",
     "EditController",
+    "NoOpEditError",
     "StaleEditError",
     "SurfaceRegistry",
 ]

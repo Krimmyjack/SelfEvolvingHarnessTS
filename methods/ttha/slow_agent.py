@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import PurePath
-from typing import Any
+from typing import Any, Callable
 
 from SelfEvolvingHarnessTS.contracts.harness import (
     EditManifest,
@@ -15,7 +15,12 @@ from SelfEvolvingHarnessTS.contracts.observables import (
     validate_applicability,
 )
 
-from .agent_core import AgentRole, TTHAAgentCore
+from .agent_core import (
+    AgentRole,
+    AgentStageResult,
+    StagePostValidationError,
+    TTHAAgentCore,
+)
 from .retrieval import resolve_harness_view
 
 
@@ -71,54 +76,17 @@ class TTHASlowAgent:
     def __init__(self, core: TTHAAgentCore):
         self.core = core
         self.last_no_proposal_reason: str | None = None
+        self.last_stage_result: AgentStageResult | None = None
 
-    def propose_edit(
-        self,
-        card: Mapping[str, object],
-        surface_catalog: Mapping[str, object] | Sequence[Mapping[str, object]],
-        snapshot: HarnessSnapshot,
-    ) -> EditManifest | None:
-        self.last_no_proposal_reason = None
-        if not isinstance(card, Mapping):
-            raise TypeError("FailurePatternCard must be a mapping")
-        _reject_private_or_path(card, path="card")
-        _reject_private_or_path(surface_catalog, path="surface_catalog")
-        applicability = card.get("observable_applicability")
-        if applicability is not None:
-            if not isinstance(applicability, Mapping):
-                raise ValueError("card observable_applicability must be an object")
-            validate_applicability(applicability)
-        public_features = _public_features_from_card(card)
-        view = resolve_harness_view(
-            snapshot,
-            public_features,
-            role="slow",
-        )
-        pattern_id = card.get("pattern_id", "pattern-unknown")
-        if not isinstance(pattern_id, str):
-            raise ValueError("card pattern_id must be a string")
-        stage = self.core.run_stage(
-            role=AgentRole.SLOW,
-            stage="edit",
-            case_id=pattern_id,
-            public_input={
-                "failure_pattern_card": _plain(card),
-                "writable_surface_catalog": _plain(surface_catalog),
-                "base_harness_sha": snapshot.harness_content_sha,
-                "dependency_precondition_shas": _plain(snapshot.dependency_shas),
-            },
-            harness_view=view,
-            output_schema_name="slow_edit_v1",
-            output_schema=self.core.load_stage_schema("slow_edit_v1"),
-            source_snapshot_sha=snapshot.runtime_bundle_sha,
-            validation_retries=1,
-        )
-        if stage.no_proposal_reason is not None:
-            self.last_no_proposal_reason = stage.no_proposal_reason
-            return None
-        manifest = stage.payload["edit_manifest"]
+    @staticmethod
+    def _manifest_from_payload(payload: Mapping[str, object]) -> EditManifest:
+        manifest = payload["edit_manifest"]
+        if not isinstance(manifest, Mapping):
+            raise ValueError("edit_manifest must be an object")
         manifest_applicability = manifest.get("observable_applicability")
         if manifest_applicability is not None:
+            if not isinstance(manifest_applicability, Mapping):
+                raise ValueError("manifest observable_applicability must be an object")
             validate_applicability(manifest_applicability)
         return EditManifest(
             edit_id=manifest["edit_id"],
@@ -140,6 +108,93 @@ class TTHASlowAgent:
             ),
             falsification_condition=tuple(manifest["falsification_condition"]),
         )
+
+    def propose_edit(
+        self,
+        card: Mapping[str, object],
+        surface_catalog: Mapping[str, object] | Sequence[Mapping[str, object]],
+        snapshot: HarnessSnapshot,
+        *,
+        manifest_preflight: Callable[[EditManifest], None] | None = None,
+        allowed_operator_contracts: Sequence[Mapping[str, object]] = (),
+        fixed_probe_contracts: Mapping[str, object] | None = None,
+    ) -> EditManifest | None:
+        self.last_no_proposal_reason = None
+        self.last_stage_result = None
+        if not isinstance(card, Mapping):
+            raise TypeError("FailurePatternCard must be a mapping")
+        _reject_private_or_path(card, path="card")
+        _reject_private_or_path(surface_catalog, path="surface_catalog")
+        _reject_private_or_path(
+            allowed_operator_contracts, path="allowed_operator_contracts"
+        )
+        _reject_private_or_path(
+            fixed_probe_contracts or {}, path="fixed_probe_contracts"
+        )
+        applicability = card.get("observable_applicability")
+        if applicability is not None:
+            if not isinstance(applicability, Mapping):
+                raise ValueError("card observable_applicability must be an object")
+            validate_applicability(applicability)
+        public_features = _public_features_from_card(card)
+        view = resolve_harness_view(
+            snapshot,
+            public_features,
+            role="slow",
+        )
+        pattern_id = card.get("pattern_id", "pattern-unknown")
+        if not isinstance(pattern_id, str):
+            raise ValueError("card pattern_id must be a string")
+        existing_inventory = [
+            {"entry_id": skill.skill_id, "entry_kind": skill.skill_kind.value}
+            for skill in snapshot.skills
+        ] + [
+            {"entry_id": memory.memory_id, "entry_kind": "memory"}
+            for memory in snapshot.memories
+        ]
+
+        def post_validate(payload: Mapping[str, object]) -> None:
+            try:
+                proposed = self._manifest_from_payload(payload)
+            except (KeyError, TypeError, ValueError) as exc:
+                raise StagePostValidationError(
+                    "MANIFEST_CONSTRUCTION_INVALID",
+                    "The schema-valid payload cannot be constructed as one EditManifest.",
+                    retryable=True,
+                ) from exc
+            if manifest_preflight is not None:
+                manifest_preflight(proposed)
+
+        stage = self.core.run_stage(
+            role=AgentRole.SLOW,
+            stage="edit",
+            case_id=pattern_id,
+            public_input={
+                "failure_pattern_card": _plain(card),
+                "writable_surface_catalog": _plain(surface_catalog),
+                "base_harness_sha": snapshot.harness_content_sha,
+                "dependency_precondition_shas": _plain(snapshot.dependency_shas),
+                "existing_entry_inventory": existing_inventory,
+                "allowed_operator_contracts": _plain(allowed_operator_contracts),
+                "fixed_probe_contracts": _plain(fixed_probe_contracts or {}),
+                "add_rule": (
+                    "ADD creates one new capability or memory entry. Never target an "
+                    "entry_id listed in existing_entry_inventory. PATCH an existing "
+                    "authorized surface instead."
+                ),
+            },
+            harness_view=view,
+            output_schema_name="slow_edit_v1",
+            output_schema=self.core.load_stage_schema("slow_edit_v1"),
+            source_snapshot_sha=snapshot.runtime_bundle_sha,
+            validation_retries=1,
+            post_validator=post_validate,
+        )
+        self.last_stage_result = stage
+        if stage.no_proposal_reason is not None:
+            self.last_no_proposal_reason = stage.no_proposal_reason
+            return None
+        return self._manifest_from_payload(stage.payload)
 
 
 __all__ = ["TTHASlowAgent"]

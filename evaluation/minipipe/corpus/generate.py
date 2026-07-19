@@ -48,7 +48,7 @@ def _rules_parts(rules: Mapping[str, object]) -> tuple[Mapping[str, object], str
     return corpus, rules_sha
 
 
-def build_core_corpus(rules: Mapping[str, object]) -> CoreCorpus:
+def _build_corpus(rules: Mapping[str, object]) -> CoreCorpus:
     corpus_rules, rules_sha = _rules_parts(rules)
     if corpus_rules["context_length"] != 192 or corpus_rules["future_length"] != 48:
         raise ValueError("M0 corpus generator requires 192 context and 48 future values")
@@ -127,9 +127,25 @@ def build_core_corpus(rules: Mapping[str, object]) -> CoreCorpus:
         cases.append(case)
     targets = tuple(case for case in cases if case.purpose is CasePurpose.TARGET)
     risks = tuple(case for case in cases if case.purpose is not CasePurpose.TARGET)
-    if len(targets) != 24 or len(risks) != 12:
-        raise ValueError("M0 core corpus must contain 24 targets and 12 risks")
     return CoreCorpus(targets=targets, risks=risks, rules_sha=rules_sha)
+
+
+def build_core_corpus(rules: Mapping[str, object]) -> CoreCorpus:
+    """Build the frozen three-seed M0 scientific corpus."""
+
+    corpus = _build_corpus(rules)
+    if len(corpus.targets) != 24 or len(corpus.risks) != 12:
+        raise ValueError("M0 core corpus must contain 24 targets and 12 risks")
+    return corpus
+
+
+def build_heldout_corpus(rules: Mapping[str, object]) -> CoreCorpus:
+    """Build a preregistered held-out slice without weakening the core-size lock."""
+
+    corpus = _build_corpus(rules)
+    if not corpus.targets or not corpus.risks:
+        raise ValueError("held-out corpus must contain target and risk cases")
+    return corpus
 
 
 def _write_public_case(view: PublicCaseView, root: Path) -> None:
@@ -165,4 +181,9 @@ def write_case_artifacts(
     return roots
 
 
-__all__ = ["CoreCorpus", "build_core_corpus", "write_case_artifacts"]
+__all__ = [
+    "CoreCorpus",
+    "build_core_corpus",
+    "build_heldout_corpus",
+    "write_case_artifacts",
+]

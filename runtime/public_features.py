@@ -10,13 +10,13 @@ import numpy as np
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
 from SelfEvolvingHarnessTS.contracts.observables import (
     OBSERVABLE_FEATURES,
+    OUTLIER_Z_THRESHOLD,
     PERIOD_RELIABILITY_MIN,
+    PUBLIC_ROBUST_Z_MAD_FLOOR,
 )
 
 
 _MAD_TO_SIGMA = 1.4826
-_MAD_FLOOR = 1e-8
-_OUTLIER_Z_THRESHOLD = 4.0
 _LEVEL_BOUNDARY_THRESHOLD = 0.85
 _LEVEL_MIN_WIDTH = 40
 _LEVEL_MAX_WIDTH = 96
@@ -254,9 +254,9 @@ def extract_public_features(
     filled = _fill(values)
     median = float(np.median(filled))
     mad = float(np.median(np.abs(filled - median)))
-    scale = max(_MAD_TO_SIGMA * mad, _MAD_FLOOR)
+    scale = max(_MAD_TO_SIGMA * mad, PUBLIC_ROBUST_Z_MAD_FLOOR)
     robust_z = np.abs(filled - median) / scale
-    outliers = robust_z >= _OUTLIER_Z_THRESHOLD
+    outliers = robust_z >= OUTLIER_Z_THRESHOLD
     outlier_region = _expand(outliers)
     missing_region = _expand(missing)
     if np.any(missing):
