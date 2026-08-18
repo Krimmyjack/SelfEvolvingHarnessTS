@@ -24,6 +24,7 @@ OBSERVABLE_FEATURES = MappingProxyType(
         "local_robust_z_peak": "number",
         "estimated_region_start_fraction": "number",
         "estimated_region_end_fraction": "number",
+        "post_shift_support_sufficient": "boolean",
         "level_excursion_score": "number",
         "estimated_level_offset": "number",
         "period_change_score": "number",

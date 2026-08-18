@@ -8,6 +8,8 @@ from SelfEvolvingHarnessTS.contracts.method import PreparationRequest
 from SelfEvolvingHarnessTS.contracts.run_context import RunDependencyBinding
 from SelfEvolvingHarnessTS.contracts.task import (
     TaskQualityContract,
+    classification_local_event_task_quality_contract_v1,
+    classification_task_context_v1,
     classification_task_spec_v1,
     forecast_neutral_task_quality_contract_v1,
     forecast_task_context_v1,
@@ -124,3 +126,24 @@ def test_neutral_forecast_contract_is_distinct_but_keeps_task_identity() -> None
     assert correct.task_spec == neutral.task_spec
     assert correct.sha() != neutral.sha()
     assert neutral.quality_contract.preserve == ("temporal_order", "series_length")
+
+
+def test_classification_context_distinguishes_coarse_repair_from_event_erasure_risk() -> None:
+    coarse = classification_task_context_v1()
+    local_event = classification_task_context_v1(
+        quality_contract=classification_local_event_task_quality_contract_v1()
+    )
+
+    assert coarse.task_spec == local_event.task_spec == classification_task_spec_v1()
+    assert "class_relevant_structure" in coarse.quality_contract.preserve
+    assert "event_erasure" not in coarse.quality_contract.harms
+    assert "class_relevant_structure" in local_event.quality_contract.preserve
+    assert "event_erasure" in local_event.quality_contract.harms
+    assert "risk_guard_failure" in local_event.quality_contract.abstention_conditions
+    assert coarse.quality_contract.contract_id == "classification-global-coarse-quality-v1"
+    assert local_event.quality_contract.contract_id == "classification-local-event-quality-v1"
+    assert coarse.deployment_constraints.constraint_id == "classification-fixed-consumer-v1"
+    assert coarse.deployment_constraints.fixed_downstream_model_id == (
+        "fixed:classification-consumer-v1"
+    )
+    assert "label_evidence_scope" not in str(local_event.to_dict())

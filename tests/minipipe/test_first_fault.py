@@ -160,6 +160,7 @@ def test_retrieved_skill_that_still_cannot_supply_is_content_gap():
         skill_retrieved=True,
         forced_skill_succeeds=False,
         expressibility_status="PROVEN_EXPRESSIBLE",
+        constrained_proposal_succeeds=False,
     )
     result = assess_case(facts, rules=_rules())
     assert result.attribution.cause_code == "SKILL_CONTENT_GAP"

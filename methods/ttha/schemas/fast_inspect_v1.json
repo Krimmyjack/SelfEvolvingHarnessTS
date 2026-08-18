@@ -1,18 +1,97 @@
 {
-  "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"fast-inspect/1",
-  "type":"object",
-  "additionalProperties":false,
-  "required":["inspected_region_fractions","requested_public_tools","uncertainty"],
-  "properties":{
-    "inspected_region_fractions":{
-      "type":"array",
-      "items":{
-        "type":"array","minItems":2,"maxItems":2,
-        "items":{"type":"number","minimum":0.0,"maximum":1.0}
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "fast-inspect/1",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "inspected_region_fractions",
+  "requested_public_tools",
+  "uncertainty"
+ ],
+ "properties": {
+  "inspected_region_fractions": {
+   "type": "array",
+   "items": {
+    "type": "array",
+    "minItems": 2,
+    "maxItems": 2,
+    "items": {
+     "type": "number",
+     "minimum": 0.0,
+     "maximum": 1.0
+    }
+   }
+  },
+  "requested_public_tools": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "uniqueItems": true
+  },
+  "uncertainty": {
+   "enum": [
+    "low",
+    "medium",
+    "high"
+   ]
+  },
+  "pattern_hypotheses": {
+   "$comment": "最多两个结构化 Pattern 假设（SKILL_CONTENT_MIGRATION 2026-08-14：让 inspect 的语义显式化，propose 可引用）。可选字段——设为必填会破坏 SealedProbeBackend/冻结回放带的旧载荷；软强制由 inspect_and_localize skill 文本执行。",
+   "type": "array",
+   "maxItems": 2,
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "hypothesis_id",
+     "pattern_type",
+     "region_fractions",
+     "evidence_features",
+     "confidence"
+    ],
+    "properties": {
+     "hypothesis_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+     },
+     "pattern_type": {
+      "enum": [
+       "missingness",
+       "extreme_deviation",
+       "level_excursion",
+       "period_inconsistency",
+       "regime_ambiguity",
+       "no_actionable_signal"
+      ]
+     },
+     "region_fractions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+       "type": "number",
+       "minimum": 0.0,
+       "maximum": 1.0
       }
-    },
-    "requested_public_tools":{"type":"array","items":{"type":"string"},"uniqueItems":true},
-    "uncertainty":{"enum":["low","medium","high"]}
+     },
+     "evidence_features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "string"
+      },
+      "uniqueItems": true
+     },
+     "confidence": {
+      "enum": [
+       "low",
+       "medium",
+       "high"
+      ]
+     }
+    }
+   }
   }
+ }
 }

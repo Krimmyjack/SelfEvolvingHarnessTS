@@ -47,6 +47,10 @@ class DecisionTrace:
     task_context_sha: str = ""
     run_context_sha: str = ""
     selectable_candidate_ids: tuple[str, ...] = ()
+    # E0（用户裁决 2026-08-12）：Memory 注入分辨率公开——no_memory /
+    # rendered / rendered_empty（渲染了但无 Reference）/ contrast_pack /
+    # contrast_pack_empty——A5 不得静默退化成 A3（注入失败必须可观测）。
+    memory_resolution_status: str = "no_memory"
     candidate_receipt_shas: Mapping[str, str] = field(default_factory=dict)
     rejection_receipts: tuple[Mapping[str, object], ...] = ()
 

@@ -235,6 +235,90 @@ def parse_agent_envelope(assistant_text: str) -> tuple[Mapping[str, object] | No
     return _freeze_json(envelope), "VALID_AGENT_ENVELOPE"
 
 
+def _json_document_spans(text: str) -> list[tuple[int, int]]:
+    """顶层 JSON 文档的 (start, end) 片段列表（brace 匹配 + 字符串/转义
+    感知）。遇到未闭合文档即停止（其后无完整文档可言）。"""
+    spans: list[tuple[int, int]] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] != "{":
+            i += 1
+            continue
+        depth = 0
+        in_string = False
+        escaped = False
+        j = i
+        closed = False
+        while j < n:
+            ch = text[j]
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif ch == "\\":
+                    escaped = True
+                elif ch == '"':
+                    in_string = False
+            elif ch == '"':
+                in_string = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    spans.append((i, j + 1))
+                    closed = True
+                    break
+            j += 1
+        if not closed:
+            break  # 未闭合——后续内容不再扫描
+        i = j + 1
+    return spans
+
+
+def _whitespace_only(text: str) -> bool:
+    return not text.strip()
+
+
+def rescue_trailing_envelope(
+    assistant_text: str,
+) -> tuple[str | None, str]:
+    """窄信封救援（P0，用户裁决 2026-08-14）：只恢复**已观察到的**错误类——
+
+      严格解析失败 且 恰好两个完整顶层 JSON 文档 且 两文档之间/前后只有
+      空白 且 第一个是合法 tool_request 信封 且 第二个也是合法 agent
+      envelope（任意 kind）且 尾部无其他非空内容。
+
+    命中 → 返回 (规范化首信封 JSON 文本, "RECOVERED_TRAILING_ENVELOPE")；
+    调用方须用首信封继续正常循环，并把对话中的 assistant_text 规范化
+    为该文本（原始双 JSON 不得写回对话）。未命中 → (None, "NOT_RESCUED")。
+
+    禁止泛化：stage_result 打头、第二个文档非法、三个及以上文档、任意
+    夹杂文本均不救援（保持错误重试路径）。"""
+    if not isinstance(assistant_text, str) or not assistant_text.strip():
+        return None, "NOT_RESCUED"
+    spans = _json_document_spans(assistant_text)
+    if len(spans) != 2:
+        return None, "NOT_RESCUED"
+    (s1, e1), (s2, e2) = spans
+    if not _whitespace_only(assistant_text[:s1]):
+        return None, "NOT_RESCUED"
+    if not _whitespace_only(assistant_text[e1:s2]):
+        return None, "NOT_RESCUED"
+    if not _whitespace_only(assistant_text[e2:]):
+        return None, "NOT_RESCUED"
+    try:
+        first = parse_json_document(assistant_text[s1:e1].encode("utf-8"))
+        _validate_envelope(first)
+        second = parse_json_document(assistant_text[s2:e2].encode("utf-8"))
+        _validate_envelope(second)
+    except (TypeError, ValueError, UnicodeError):
+        return None, "NOT_RESCUED"
+    if first.get("kind") != "tool_request":
+        return None, "NOT_RESCUED"
+    return canonical_json_bytes(first).decode("utf-8"), "RECOVERED_TRAILING_ENVELOPE"
+
+
 @dataclass(frozen=True)
 class AgentResponse:
     transport_ok: bool
@@ -245,6 +329,10 @@ class AgentResponse:
     finish_reason: str = ""
     provider_metadata: Mapping[str, object] = field(default_factory=dict)
     cache_receipt: object | None = None
+    # 窄信封救援标记（P0 2026-08-14）：空串 = 未救援；
+    # "RECOVERED_TRAILING_ENVELOPE" = 双 JSON 拼接已按首 tool_request
+    # 信封救援（assistant_text 已规范化为首信封）。
+    parse_recovery: str = ""
 
     def __post_init__(self) -> None:
         canonical_json_bytes(self.raw_response)
@@ -396,6 +484,21 @@ class AgictoChatCompletionsBackend:
         if not isinstance(assistant_text, str):
             assistant_text = ""
         envelope, parse_status = parse_agent_envelope(assistant_text)
+        parse_recovery = ""
+        if parse_status != "VALID_AGENT_ENVELOPE":
+            # P0 窄信封救援（用户裁决 2026-08-14）：双 JSON 拼接 → 首
+            # tool_request 信封按正常循环处理；assistant_text 规范化为
+            # 首信封（原始双 JSON 不得写回对话）。
+            rescued_text, recovery = rescue_trailing_envelope(assistant_text)
+            if rescued_text is not None:
+                rescued_envelope, rescued_status = parse_agent_envelope(
+                    rescued_text
+                )
+                if rescued_status == "VALID_AGENT_ENVELOPE":
+                    assistant_text = rescued_text
+                    envelope = rescued_envelope
+                    parse_status = rescued_status
+                    parse_recovery = recovery
         try:
             raw_response = completion.model_dump(mode="json")
         except (AttributeError, TypeError):
@@ -421,6 +524,7 @@ class AgictoChatCompletionsBackend:
             parse_status=parse_status,
             finish_reason=provider_metadata["finish_reason"],
             provider_metadata=provider_metadata,
+            parse_recovery=parse_recovery,
         )
 
 
@@ -477,4 +581,5 @@ __all__ = [
     "ReplayAgentBackend",
     "ReplayTapeMiss",
     "parse_agent_envelope",
+    "rescue_trailing_envelope",
 ]

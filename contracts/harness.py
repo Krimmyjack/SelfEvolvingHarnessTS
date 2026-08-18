@@ -188,6 +188,10 @@ class EditManifest:
     predicted_data_effect: tuple[str, ...] = ()
     automatically_selected_risk_cases: tuple[str, ...] = ()
     falsification_condition: tuple[str, ...] = ()
+    # P3.1-B2（用户裁决 2026-08-11）：Typed Patch Binding——Slow Agent
+    # 选择 FailurePatternCard 白名单中的 Patch ID（Runtime-owned 冻结
+    # steps），不再手写 frozen steps。可选字段（最小结构化变更）。
+    patch_id: str | None = None
 
     def __post_init__(self) -> None:
         _require_canonical_id(self.edit_id, field="edit_id")
@@ -322,7 +326,29 @@ def load_learned_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
     skill = load_skill_entry(payload)
     if skill.skill_kind is not SkillKind.CAPABILITY:
         raise ValueError("learned SkillEntry must have skill_kind=capability")
+    _reject_mixed_card_authority(skill)
     return skill
+
+
+def _reject_mixed_card_authority(skill: SkillEntry) -> None:
+    """最小权限守卫（2026-08-16，本地评审第 2 条）。
+
+    Ordering Card（``risk_guards.card_kind == "ordering-control/1"``）与
+    Executable Program Skill 共用 ``skill-entry/1`` 载体和 ``skills/learned/``
+    目录。二者权限不同：前者**只重排** Fast 已供应的候选，后者经
+    ``_skill_frozen_candidates`` 变成可执行候选（``cand_skill_<id>``）。
+
+    真正的分界只有一条——body 里有没有 ``Frozen program steps:`` 这个字面
+    marker。若一张卡**同时**声明 ordering 身份又带上该 marker，它会同时拿到
+    两种权限，后续任何「顺序改进 vs 程序改进」的归因都会被污染。
+    这里在**加载期**直接拒绝，而不是靠构造方自觉。
+    """
+    guards = skill.risk_guards or {}
+    if guards.get("card_kind") == "ordering-control/1" and             "Frozen program steps:" in (skill.body or ""):
+        raise ValueError(
+            "ordering-control/1 card must not carry a frozen program "
+            "(body contains 'Frozen program steps:'): an ordering card "
+            "reorders supplied candidates and must never supply one")
 
 
 def load_memory_entry(payload: Mapping[str, object]) -> MemoryEntry:

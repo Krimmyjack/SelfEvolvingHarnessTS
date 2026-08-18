@@ -80,6 +80,23 @@ OPERATOR_SPECS = [
      _c(preserves_observed=True, targeting_mode="intrinsic")),
     ("period_complete", "impute", "s1", [], s1_impute.period_complete, False,
      _c(preserves_observed=True, targeting_mode="intrinsic")),
+    ("period_median_complete", "impute", "s1", [],
+     s1_impute.period_median_complete, False,
+     _c(
+         preserves_observed=True,
+         targeting_mode="intrinsic",
+         fallback_policy="explicit_record→impute_linear",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "required": ["period"],
+             "properties": {
+                 "period": {"type": "integer", "minimum": 2},
+                 "cycles": {"type": "integer", "minimum": 1, "default": 3},
+                 "min_donors": {"type": "integer", "minimum": 1, "default": 2},
+             },
+         },
+     )),
     # —— E-3.3 R2：模型预测族插补（机制上与上面的复制/插值族可区分）——
     ("impute_ssm", "impute", "s1", [], s1_impute.impute_ssm, False,
      _c(preserves_observed=True, targeting_mode="intrinsic", requires_dependency="statsmodels",

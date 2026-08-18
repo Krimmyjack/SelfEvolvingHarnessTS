@@ -22,6 +22,7 @@ impute_ema 被判为与 forward_fill 冗余、impute_fft 与 seasonal_fill 冗�
 from __future__ import annotations
 
 import math
+import numbers
 import warnings
 
 import numpy as np
@@ -112,6 +113,63 @@ def period_complete(x, period: int = 0, **_) -> np.ndarray:
         if j >= 0 and not np.isnan(y[j]):
             y[i] = y[j]
     return interp_nan(y)
+
+
+def period_median_complete(
+    x,
+    period: int = 0,
+    cycles: int = 3,
+    min_donors: int = 2,
+    **_,
+) -> np.ndarray:
+    """Fill each gap from the median of originally observed prior cycles.
+
+    Donors are read only from the immutable input snapshot, so values filled at
+    earlier missing positions can never become donors for later positions.  A
+    point without enough donors falls back to the historical linear imputer at
+    that point only; observed values are always preserved.
+    """
+
+    def _integer(name: str, value: object, *, minimum: int) -> int:
+        if isinstance(value, bool) or not isinstance(value, numbers.Integral):
+            raise ValueError(f"period_median_complete {name} must be an integer")
+        parsed = int(value)
+        if parsed < minimum:
+            raise ValueError(
+                f"period_median_complete {name} must be >= {minimum}"
+            )
+        return parsed
+
+    p = _integer("period", period, minimum=2)
+    n_cycles = _integer("cycles", cycles, minimum=1)
+    required = _integer("min_donors", min_donors, minimum=1)
+    if required > n_cycles:
+        raise ValueError("period_median_complete min_donors must be <= cycles")
+
+    raw = as_1d(x).astype(float)
+    missing = np.isnan(raw)
+    if not missing.any():
+        return raw
+    fallback = interp_nan(raw)
+    output = raw.copy()
+    fallback_count = 0
+    for i in np.flatnonzero(missing):
+        donors = [
+            raw[i - k * p]
+            for k in range(1, n_cycles + 1)
+            if i - k * p >= 0 and np.isfinite(raw[i - k * p])
+        ]
+        if len(donors) >= required:
+            output[i] = float(np.median(donors))
+        else:
+            output[i] = fallback[i]
+            fallback_count += 1
+    record(
+        "period_median_complete",
+        "period_median_complete",
+        f"linear_fallback_on_{fallback_count}_points" if fallback_count else "",
+    )
+    return output
 
 
 # ════════════════════════ 模型预测族（E-3.3 R2，2026-07-14） ════════════════════════

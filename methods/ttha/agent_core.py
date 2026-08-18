@@ -179,6 +179,29 @@ class TTHAAgentCore:
                 f'{output_schema_name}>}}'
             ),
         }
+        # Wave 4 修复（2026-08-13 checker/reviewer 裁决）：SLOW edit 阶段
+        # 教学 no_proposal 信封（后端要求字段集精确相等 + reason_code
+        # 下划线枚举——此前模型从未被教过该信封 → 弃权意图坍缩成
+        # manifest（Wave 4a edit_id=abstain-... 回退证据））
+        if role is AgentRole.SLOW and stage == "edit":
+            response_contract.update(
+                {
+                    "no_proposal_allowed": True,
+                    "no_proposal_rule": (
+                        "If the public evidence is insufficient to justify "
+                        "any edit, return a no_proposal envelope instead of "
+                        "a stage_result. Use the exact field set below."
+                    ),
+                    "no_proposal_template": {
+                        "schema_version": "agent-envelope/1",
+                        "kind": "no_proposal",
+                        "stage": "edit",
+                        "reason_code": (
+                            "insufficient_public_evidence | "
+                            "no_authorized_minimal_edit | risk_too_high"),
+                    },
+                }
+            )
         if tool_schemas:
             response_contract.update(
                 {
@@ -286,16 +309,24 @@ class TTHAAgentCore:
             nonlocal messages, validation_failures, call_index
             if validation_failures >= validation_retries:
                 return False
+            outer_hint = (
+                '{"schema_version":"agent-envelope/1",'
+                '"kind":"stage_result",'
+                f'"stage":"{stage}","payload":{{...}}}}'
+            )
+            if role is AgentRole.SLOW and stage == "edit":
+                outer_hint += (
+                    ' OR {"schema_version":"agent-envelope/1",'
+                    '"kind":"no_proposal","stage":"edit",'
+                    '"reason_code":"<one of: insufficient_public_evidence | '
+                    'no_authorized_minimal_edit | risk_too_high>"}'
+                )
             correction = {
                 "schema_version": "stage-validation-error/2",
                 "stage": stage,
                 "error_code": error_code,
                 "public_message": public_message,
-                "required_outer_format": (
-                    '{"schema_version":"agent-envelope/1",'
-                    '"kind":"stage_result",'
-                    f'"stage":"{stage}","payload":{{...}}}}'
-                ),
+                "required_outer_format": outer_hint,
                 "instruction": (
                     "Return exactly one corrected JSON envelope. Reuse the unchanged "
                     "public input and stage schema; do not explain the correction."

@@ -1,0 +1,617 @@
+"""Experience Memory — 工作包 1 最小接线（deepseek 副本，2026-08-06）。
+
+三个组件：
+- ExperienceEpisode：一次合法 Action–Response 的最小记录（relation/validity/evidence_level/local_status）
+- SignedEpisodeRetriever：确定性四步检索（硬过滤 → 同域分开 → 轻量 Context 距离 → 对照包）
+- CurrentHarnessState：当前视图（RESTRICTED/REJECTED 覆盖旧 ACTIVE），Fast Path 唯一读取入口
+
+设计依据：docs/WORK_PACK_1_EXPERIENCE_RUNTIME_DESIGN.md（审核稿 §5.2 + 评议最小框架）。
+约束：不建平台、不依赖原项目深层模块（仅标准库）、不读取 outcome/Query future。
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+# ---------------------------------------------------------------------------
+# 1. ExperienceEpisode
+# ---------------------------------------------------------------------------
+
+# relation 枚举
+RELATION_POSITIVE = "POSITIVE"
+RELATION_NEGATIVE = "NEGATIVE"
+RELATION_CONFLICT = "CONFLICT"
+RELATION_ABSTAIN = "ABSTAIN"
+RELATIONS = (RELATION_POSITIVE, RELATION_NEGATIVE, RELATION_CONFLICT, RELATION_ABSTAIN)
+
+# local_status 枚举（近期只启用 4 个；SHARED_* 跨域实验时再启用）
+STATUS_EPISODE_ONLY = "EPISODE_ONLY"
+STATUS_LOCAL_DRAFT = "LOCAL_DRAFT"
+STATUS_LOCAL_ACTIVE = "LOCAL_ACTIVE"
+STATUS_RESTRICTED = "RESTRICTED"
+LOCAL_STATUSES = (STATUS_EPISODE_ONLY, STATUS_LOCAL_DRAFT, STATUS_LOCAL_ACTIVE, STATUS_RESTRICTED)
+
+# evidence_level 枚举
+EVIDENCE_SUPPORT = "SUPPORT"
+EVIDENCE_FULL_POLICY = "FULL_POLICY"
+EVIDENCE_DELAYED = "DELAYED"
+
+# response_validity 枚举：仪器故障（API timeout/fit crash/compile failure/metric 无效）
+# 不算负向经验，默认不参与检索
+VALIDITY_VALID = "VALID"
+VALIDITY_INSTRUMENT_INVALID = "INSTRUMENT_INVALID"
+
+# 禁止进入 Episode 的私有字段（复用 v6 _contrast_episode 的 forbidden 检查）
+_FORBIDDEN_KEYS = frozenset(
+    {"dataset_id", "series_uid", "filename", "file_name", "path", "query_future", "future"}
+)
+
+
+@dataclass(frozen=True)
+class ExperienceEpisode:
+    episode_id: str
+    schema_version: str
+    task_consumer_key: str
+    domain_namespace: str
+    context_summary: Mapping[str, object]
+    workflow_signature: str
+    support_response: Mapping[str, object]
+    delayed_response: Mapping[str, object]
+    relation: str
+    evidence_level: str
+    response_validity: str
+    local_status: str
+    pattern_view: str = "default"
+    evidence_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.schema_version != "experience-episode/1":
+            raise ValueError("ExperienceEpisode schema_version must be experience-episode/1")
+        if self.relation not in RELATIONS:
+            raise ValueError(f"invalid relation: {self.relation}")
+        if self.local_status not in LOCAL_STATUSES:
+            raise ValueError(f"invalid local_status: {self.local_status}")
+        if self.response_validity not in (VALIDITY_VALID, VALIDITY_INSTRUMENT_INVALID):
+            raise ValueError(f"invalid response_validity: {self.response_validity}")
+        if self.evidence_level not in (EVIDENCE_SUPPORT, EVIDENCE_FULL_POLICY, EVIDENCE_DELAYED):
+            raise ValueError(f"invalid evidence_level: {self.evidence_level}")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "episode_id": self.episode_id,
+            "schema_version": self.schema_version,
+            "task_consumer_key": self.task_consumer_key,
+            "domain_namespace": self.domain_namespace,
+            "context_summary": dict(self.context_summary),
+            "workflow_signature": self.workflow_signature,
+            "support_response": dict(self.support_response),
+            "delayed_response": dict(self.delayed_response),
+            "relation": self.relation,
+            "evidence_level": self.evidence_level,
+            "response_validity": self.response_validity,
+            "local_status": self.local_status,
+            "pattern_view": self.pattern_view,
+            "evidence_refs": list(self.evidence_refs),
+        }
+
+
+def _check_private_fields(obj: object, *, path: str = "") -> None:
+    """私有字段检查：dataset_id/series_uid/path/query_future 等不得进入 Episode。"""
+    if isinstance(obj, Mapping):
+        for key, nested in obj.items():
+            if str(key).lower() in _FORBIDDEN_KEYS:
+                raise ValueError(f"private field entered episode: {key}")
+            _check_private_fields(nested, path=f"{path}.{key}")
+    elif isinstance(obj, Sequence) and not isinstance(obj, (str, bytes, bytearray)):
+        for nested in obj:
+            _check_private_fields(nested, path=path)
+
+
+def workflow_signature_of(program_steps: object) -> str:
+    """算子序列的确定性指纹（只含算子名与顺序，不含参数值）。
+
+    真实 v6 steps 结构为 {"op": ..., "params": {...}}——`op` 是首要键，
+    兼容 operator/name/program 旧键。steps 非空但解析不到任何算子时返回
+    "unknown"（显式暴露"声明≠执行"问题），只有 steps 为空/None 才返回
+    "identity"（真正什么都没做）。
+    """
+    names: list[str] = []
+    if isinstance(program_steps, Sequence) and not isinstance(program_steps, (str, bytes)):
+        for step in program_steps:
+            if isinstance(step, Mapping):
+                op = (
+                    step.get("op")
+                    or step.get("operator")
+                    or step.get("name")
+                    or step.get("program")
+                )
+                if isinstance(op, str) and op:
+                    names.append(op)
+    if names:
+        return "|".join(names)
+    if program_steps is None or (
+        isinstance(program_steps, Sequence) and len(program_steps) == 0
+    ):
+        return "identity"
+    return "unknown"
+
+
+def canonical_sha256(obj: object) -> str:
+    payload = json.dumps(obj, sort_keys=True, ensure_ascii=False, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+# ---------------------------------------------------------------------------
+# 2. SignedEpisodeRetriever（确定性四步）
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class ContrastPack:
+    """Fast Path 得到的对照包：最相似的成功/失败/冲突 + 证据充分性。"""
+
+    positive: ExperienceEpisode | None
+    negative: ExperienceEpisode | None
+    conflict: ExperienceEpisode | None
+    evidence_sufficient: bool
+    retrieval_note: str
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "positive": self.positive.to_dict() if self.positive else None,
+            "negative": self.negative.to_dict() if self.negative else None,
+            "conflict": self.conflict.to_dict() if self.conflict else None,
+            "evidence_sufficient": self.evidence_sufficient,
+            "retrieval_note": self.retrieval_note,
+        }
+
+
+def _context_distance(a: Mapping[str, object], b: Mapping[str, object]) -> float:
+    """轻量 Context 距离：三个维度（cohort/local_pattern/program_geometry）的数值 L1。
+
+    维度缺失时按 0 计（保守：缺特征不惩罚，由硬过滤兜底）。
+    """
+    total = 0.0
+    for dim in ("cohort", "local_pattern", "program_geometry"):
+        av = a.get(dim)
+        bv = b.get(dim)
+        if not isinstance(av, Mapping) or not isinstance(bv, Mapping):
+            continue
+        keys = set(av) & set(bv)
+        for key in keys:
+            x, y = av[key], bv[key]
+            if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+                total += abs(float(x) - float(y))
+            elif isinstance(x, str) and isinstance(y, str) and x != y:
+                total += 1.0
+    return total
+
+
+class SignedEpisodeRetriever:
+    """确定性四步检索：硬过滤 → 同域分开 → 轻量距离 → 对照包。不训练、不读取 outcome。"""
+
+    def __init__(
+        self,
+        episodes: Sequence[ExperienceEpisode],
+        *,
+        task_consumer_key: str,
+        allowed_operators: Sequence[str] = (),
+        pattern_view: str | None = None,
+    ) -> None:
+        self._episodes = tuple(episodes)
+        self._task_consumer_key = task_consumer_key
+        self._allowed_operators = tuple(allowed_operators)
+        self._pattern_view = pattern_view
+
+    def _hard_filter(self, episode: ExperienceEpisode) -> bool:
+        if episode.response_validity != VALIDITY_VALID:
+            return False  # 仪器故障不参与检索
+        # task/consumer 精确匹配（规范 key 统一后不用前缀兼容——避免不同
+        # Consumer 的经验混用）
+        if episode.task_consumer_key != self._task_consumer_key:
+            return False
+        if self._pattern_view is not None and episode.pattern_view != self._pattern_view:
+            return False  # 区别化：只在匹配的 pattern 视角内检索
+        if self._allowed_operators:
+            ops = tuple(episode.workflow_signature.split("|"))
+            # identity/unknown 无信息量（什么都没做 / 解析失败），显式排除；
+            # 其余 token（算子名或 workflow 名，词汇表由调用方与签名保持一致）
+            informative = [op for op in ops if op and op not in ("identity", "unknown")]
+            if not informative:
+                return False
+            if not any(op in self._allowed_operators for op in informative):
+                return False
+        return True
+
+    def retrieve(
+        self,
+        context_summary: Mapping[str, object],
+        domain_namespace: str,
+    ) -> ContrastPack:
+        """按公开 Context 检索，返回对照包。不读取 outcome/Query future。"""
+        candidates = [ep for ep in self._episodes if self._hard_filter(ep)]
+        if not candidates:
+            return ContrastPack(None, None, None, False, "no valid episodes")
+
+        # 同域优先：同 domain 的 episode 先排序；跨域仅作补充
+        def key(ep: ExperienceEpisode) -> tuple[int, float, str]:
+            same_domain = 0 if ep.domain_namespace == domain_namespace else 1
+            return (same_domain, _context_distance(ep.context_summary, context_summary), ep.episode_id)
+
+        ranked = sorted(candidates, key=key)
+        positive = next((ep for ep in ranked if ep.relation == RELATION_POSITIVE), None)
+        negative = next((ep for ep in ranked if ep.relation == RELATION_NEGATIVE), None)
+        conflict = next((ep for ep in ranked if ep.relation == RELATION_CONFLICT), None)
+        count = len(ranked)
+        note = f"{count} valid episodes; same-domain-first; signed pack (pos/neg/conflict)"
+        # 证据充分性：至少存在一个正或负经验，且同域优先命中
+        sufficient = positive is not None or negative is not None
+        return ContrastPack(positive, negative, conflict, sufficient, note)
+
+
+# ---------------------------------------------------------------------------
+# 3. CurrentHarnessState（当前视图）
+# ---------------------------------------------------------------------------
+
+@dataclass
+class CurrentHarnessState:
+    """Fast Path 唯一读取的当前视图。RESTRICTED/REJECTED 覆盖旧 ACTIVE。"""
+
+    local_skills: dict[str, str] = field(default_factory=dict)  # skill_id -> status
+    restrictions: list[dict[str, object]] = field(default_factory=list)
+    rejected_bets: list[dict[str, object]] = field(default_factory=list)
+    schema_version: str = "current-harness-state/1"
+
+    def apply_episode_status(self, episode: ExperienceEpisode) -> None:
+        """按 Episode 的 local_status 更新视图；RESTRICTED 覆盖 ACTIVE。"""
+        key = episode.episode_id
+        if episode.local_status == STATUS_RESTRICTED:
+            self.local_skills[key] = STATUS_RESTRICTED
+            self.restrictions.append(
+                {
+                    "skill_id": key,
+                    "reason": str(episode.support_response.get("restriction_reason") or "restricted"),
+                    "evidence_ref": episode.evidence_refs[0] if episode.evidence_refs else None,
+                }
+            )
+        elif episode.relation == RELATION_NEGATIVE and episode.local_status == STATUS_EPISODE_ONLY:
+            self.rejected_bets.append(
+                {
+                    "skill_id": key,
+                    "relation": episode.relation,
+                    "evidence_ref": episode.evidence_refs[0] if episode.evidence_refs else None,
+                }
+            )
+        else:
+            # 已有 RESTRICTED 记录时，后到的 ACTIVE 不覆盖
+            if self.local_skills.get(key) != STATUS_RESTRICTED:
+                self.local_skills[key] = episode.local_status
+
+    def is_restricted(self, skill_id: str) -> bool:
+        return self.local_skills.get(skill_id) == STATUS_RESTRICTED
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "local_skills": dict(self.local_skills),
+            "restrictions": [dict(r) for r in self.restrictions],
+            "rejected_bets": [dict(r) for r in self.rejected_bets],
+        }
+
+
+# ---------------------------------------------------------------------------
+# 4. 报告加载（工作包 1 数据源：v6 报告 + e288 + target_local_v2）
+# ---------------------------------------------------------------------------
+
+def build_episode(
+    *,
+    episode_id: str,
+    task_consumer_key: str,
+    domain_namespace: str,
+    context_summary: Mapping[str, object],
+    workflow_signature: str,
+    support_response: Mapping[str, object],
+    delayed_response: Mapping[str, object],
+    relation: str,
+    evidence_level: str,
+    response_validity: str = VALIDITY_VALID,
+    local_status: str = STATUS_EPISODE_ONLY,
+    pattern_view: str = "default",
+    evidence_refs: Sequence[str] = (),
+) -> ExperienceEpisode:
+    """构造 Episode 并执行私有字段检查（构造即检查，防泄漏进 Memory）。"""
+    raw = {
+        "context_summary": dict(context_summary),
+        "support_response": dict(support_response),
+        "delayed_response": dict(delayed_response),
+    }
+    _check_private_fields(raw)
+    return ExperienceEpisode(
+        episode_id=episode_id,
+        schema_version="experience-episode/1",
+        task_consumer_key=task_consumer_key,
+        domain_namespace=domain_namespace,
+        context_summary=dict(context_summary),
+        workflow_signature=workflow_signature,
+        support_response=dict(support_response),
+        delayed_response=dict(delayed_response),
+        relation=relation,
+        evidence_level=evidence_level,
+        response_validity=response_validity,
+        local_status=local_status,
+        pattern_view=pattern_view,
+        evidence_refs=tuple(evidence_refs),
+    )
+
+
+def load_episodes_from_v6_reports(reports_dir: Path) -> list[ExperienceEpisode]:
+    """从三个已暴露报告构造 Episode（工作包 1 数据源，机制重放用）。
+
+    - v6 report generation A（NN5）：POSITIVE（support gain > 0）
+    - target_local_v2（REJECTED）：NEGATIVE（Target 验证拒绝）
+    - e288（v1 RESTRICTED，POSITIVE_SUPPORT_FALSE_CONFIRMED_HARM_ON_FRESH_TARGET）：CONFLICT
+    """
+    episodes: list[ExperienceEpisode] = []
+
+    def read(name: str) -> dict[str, object]:
+        path = reports_dir / name
+        if not path.is_file():
+            raise FileNotFoundError(f"missing report: {path}")
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    # --- Episode 1: POSITIVE（v6 generation A / NN5）---
+    v6 = read("autonomous_natural_acquisition_cycle_v6_report.json")
+    gen = v6.get("stages", {}).get("generation", [])
+    item_a = next((g for g in gen if isinstance(g, dict) and g.get("environment") == "A"), None)
+    if item_a is not None:
+        steps = item_a.get("accepted_program_steps") or item_a.get("final_program_steps")
+        episodes.append(
+            build_episode(
+                episode_id="v6_nn5_support_positive",
+                task_consumer_key="forecast|ridge_smase",
+                domain_namespace="nn5",
+                context_summary={
+                    "cohort": {"series_count": 32, "evaluation_series_count": 8},
+                    "local_pattern": {"support_gain": float(item_a.get("support_gain") or 0.0)},
+                    "program_geometry": {"scope": "training_rows"},
+                },
+                workflow_signature=workflow_signature_of(steps),
+                support_response={
+                    "gain": item_a.get("support_gain"),
+                    "accepted": True,
+                    "selection_gain": item_a.get("selection_gain"),
+                },
+                delayed_response={"evaluated": False, "gain": None},
+                relation=RELATION_POSITIVE,
+                evidence_level=EVIDENCE_SUPPORT,
+                local_status=STATUS_LOCAL_DRAFT,
+                evidence_refs=["artifacts/functional/e2/autonomous_natural_acquisition_cycle_v6_report.json"],
+            )
+        )
+
+    # --- Episode 2: NEGATIVE（target_local_v2 REJECTED）---
+    rejected = read("historical_policy_episode_workflow_target_local_v2_rejected.json")
+    if rejected.get("status") == "REJECTED":
+        episodes.append(
+            build_episode(
+                episode_id="historical_policy_episode_workflow_target_local_v2",
+                task_consumer_key="forecast|ridge_smase",
+                domain_namespace="target_local",
+                context_summary={
+                    "cohort": {"series_count": 12, "evaluation_series_count": 4},
+                    "local_pattern": {"support_gain": None},
+                    "program_geometry": {"scope": "historical_origins"},
+                },
+                workflow_signature="W_rowblock|W_curation|W_temporal_origin",
+                support_response={
+                    "gain": None,
+                    "accepted": False,
+                    "rejection": str(rejected.get("status")),
+                },
+                delayed_response={"evaluated": False, "gain": None},
+                relation=RELATION_NEGATIVE,
+                evidence_level=EVIDENCE_FULL_POLICY,
+                local_status=STATUS_EPISODE_ONLY,
+                evidence_refs=["artifacts/functional/e2/historical_policy_episode_workflow_target_local_v2_rejected.json"],
+            )
+        )
+
+    # --- Episode 3: CONFLICT（e288：v1 曾 ACTIVE → Support 正但 fresh Target 有害 → RESTRICTED）---
+    e288 = read("historical_policy_episode_workflow_state_update_e288.json")
+    if e288.get("status") == "RESTRICTED":
+        episodes.append(
+            build_episode(
+                episode_id="historical_policy_episode_workflow_v1",
+                task_consumer_key="forecast|ridge_smase",
+                domain_namespace="multi_source",
+                context_summary={
+                    "cohort": {"series_count": 12, "evaluation_series_count": 4},
+                    "local_pattern": {"support_gain": None},
+                    "program_geometry": {"scope": "historical_origins"},
+                },
+                workflow_signature="W_rowblock|W_curation|W_temporal_origin",
+                support_response={
+                    "gain": None,
+                    "accepted": True,
+                    "restriction_reason": str(e288.get("reason")),
+                },
+                delayed_response={
+                    "evaluated": True,
+                    "gain": None,
+                    "harm_on_fresh_target": True,
+                },
+                relation=RELATION_CONFLICT,
+                evidence_level=EVIDENCE_DELAYED,
+                local_status=STATUS_RESTRICTED,
+                evidence_refs=["artifacts/functional/e2/historical_policy_episode_workflow_state_update_e288.json"],
+            )
+        )
+
+    return episodes
+
+
+def episode_from_dict(d: Mapping[str, object]) -> "ExperienceEpisode":
+    """从 to_dict() 产物恢复 Episode（episodes.json round-trip）。"""
+    return ExperienceEpisode(
+        episode_id=str(d["episode_id"]),
+        schema_version=str(d["schema_version"]),
+        task_consumer_key=str(d["task_consumer_key"]),
+        domain_namespace=str(d["domain_namespace"]),
+        context_summary=dict(d.get("context_summary") or {}),
+        workflow_signature=str(d.get("workflow_signature") or ""),
+        support_response=dict(d.get("support_response") or {}),
+        delayed_response=dict(d.get("delayed_response") or {}),
+        relation=str(d["relation"]),
+        evidence_level=str(d.get("evidence_level") or "SUPPORT"),
+        response_validity=str(d.get("response_validity") or VALIDITY_VALID),
+        local_status=str(d.get("local_status") or STATUS_EPISODE_ONLY),
+        pattern_view=str(d.get("pattern_view") or "default"),
+        evidence_refs=tuple(str(x) for x in (d.get("evidence_refs") or [])),
+    )
+
+
+def load_experience_episodes(path: Path) -> list["ExperienceEpisode"]:
+    """从 JSON 文件加载 Episode 列表（工作包 1 的持久化产物）。"""
+    if not path.is_file():
+        return []
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        return []
+    return [episode_from_dict(d) for d in raw if isinstance(d, Mapping)]
+
+
+def resolve_experience_contrast_pack(
+    episodes: Sequence["ExperienceEpisode"],
+    features: Mapping[str, object],
+    task_consumer_key: str,
+    *,
+    pattern_view: str | None = None,
+    allowed_operators: Sequence[str] = (),
+) -> "ContrastPack | None":
+    """方法层接线（fast_agent.prepare 注入点）：按当前特征检索经验对照包。
+
+    审查修订（2026-08-08）：
+    - allowed_operators 过滤（只检索当前允许算子的经验，与 compile 一致性）；
+    - 无 episodes / 无共同可识别特征时返回 None（安全不注入）；
+    - 特征 = extract_public_features 的输出；与 Episode.context_summary.local_pattern
+      使用相同键（审查 ③——特征键对齐）。
+    """
+    if not episodes:
+        return None
+    retriever = SignedEpisodeRetriever(
+        episodes,
+        task_consumer_key=task_consumer_key,
+        pattern_view=pattern_view,
+        allowed_operators=allowed_operators,
+    )
+    # 特征键对齐：Episode 的 context_summary.local_pattern 用数值标量特征
+    local_pattern = {k: v for k, v in dict(features).items()
+                     if isinstance(v, (int, float))}
+    if not local_pattern:
+        return None  # 无共同可识别特征 → 不注入（审查 ③）
+    query_context = {
+        "cohort": {"series_count": 1, "evaluation_series_count": 0},
+        "local_pattern": local_pattern,
+        "program_geometry": {"scope": "training_rows"},
+    }
+    return retriever.retrieve(query_context, domain_namespace="")
+
+
+def render_experience_pack(pack: Mapping[str, object]) -> str:
+    """把对照包渲染成 TIMECLAW 风格 fenced 前缀块（prompts.py:18 模式借鉴）。
+
+    设计（TIMECLAW 验证 + 用户裁决）：
+    - fenced 前缀、任务指令之前（LLM 注意力必然经过的位置）；
+    - 祈使指令（"Use them as a guide"），弱化忽略许可为安全阀；
+    - 内容=可行动的句子（方向），**不含 gain 数值**——TIMECLAW 消融发现
+      GT 答案导致 answer-anchoring 损害精度（summarize_trajectory 故意省略）；
+    - 结构化 JSON 原样保留在 payload（不手工改写、不排序）。
+    """
+    entries: list[str] = []
+    pos = pack.get("positive")
+    neg = pack.get("negative")
+    conf = pack.get("conflict")
+    # Memory 语义修正（用户裁决 2026-08-13）：
+    #  1) 同一 workflow 同时命中正负（Context 无法区分）→ 合并为
+    #     AMBIGUOUS 块——不得同时给出"优先尝试"和"避免"两个方向；
+    #  2) Support-only 正例（delayed 未评估）不得表述成 delayed-positive
+    #     （夸大证据等级）。
+    if (isinstance(pos, Mapping) and isinstance(neg, Mapping)
+            and pos.get("workflow_signature")
+            == neg.get("workflow_signature")):
+        op = pos.get("workflow_signature", "")
+        entries.append(
+            f"Reference 1: candidate operator(s) [{op}] produced both positive and "
+            "negative Support outcomes in similar contexts, and the current "
+            "observations cannot distinguish the two conditions. Treat the candidate "
+            "as AMBIGUOUS — confirm on the current Support before relying on it, and "
+            "do not treat it as a strong prior in either direction."
+        )
+    elif isinstance(pos, Mapping):
+        op = pos.get("workflow_signature", "")
+        dr = pos.get("delayed_response") or {}
+        if bool(dr.get("evaluated")) and isinstance(dr.get("gain"), (int, float)) \
+                and float(dr["gain"]) >= 0:
+            tail = "Support and delayed segments both positive"
+        else:
+            tail = ("Support segment positive; delayed segment not yet evaluated"
+                    if not bool(dr.get("evaluated"))
+                    else "Support segment positive; delayed segment pending")
+        entries.append(
+            f"Reference 1: candidate operator(s) [{op}] were verified beneficial on "
+            f"held-in data in a similar context ({tail}). Consider them as priors "
+            "to confirm again on the current Support."
+        )
+    elif isinstance(neg, Mapping):
+        op = neg.get("workflow_signature", "")
+        entries.append(
+            f"Reference 2: candidate operator(s) [{op}] were verified harmful on held-in "
+            "data in this domain (Support segment negative). Avoid them."
+        )
+    if isinstance(conf, Mapping):
+        op = conf.get("workflow_signature", "")
+        entries.append(
+            f"Reference 3: candidate operator(s) [{op}] showed a Support-positive but "
+            "delayed-negative flip. Treat as risk; confirm on the delayed segment before "
+            "relying on it."
+        )
+    if not entries:
+        return ""
+    body = "\n\n".join(entries)
+    return (
+        "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\n"
+        "Below are similar prior trials in this context and how their candidate "
+        "operators behaved on held-in data. Use them as a guide for operator choice. "
+        "The correct choice for the current data may differ; do not copy blindly, and "
+        "ignore them if the context clearly does not match.\n\n"
+        f"{body}\n"
+        "=== END REFERENCES ===\n\n"
+    )
+
+
+__all__ = [
+    "ExperienceEpisode",
+    "ContrastPack",
+    "SignedEpisodeRetriever",
+    "CurrentHarnessState",
+    "build_episode",
+    "load_episodes_from_v6_reports",
+    "workflow_signature_of",
+    "canonical_sha256",
+    "render_experience_pack",
+    "episode_from_dict",
+    "load_experience_episodes",
+    "resolve_experience_contrast_pack",
+    "RELATION_POSITIVE",
+    "RELATION_NEGATIVE",
+    "RELATION_CONFLICT",
+    "STATUS_EPISODE_ONLY",
+    "STATUS_LOCAL_DRAFT",
+    "STATUS_LOCAL_ACTIVE",
+    "STATUS_RESTRICTED",
+    "VALIDITY_VALID",
+    "VALIDITY_INSTRUMENT_INVALID",
+]

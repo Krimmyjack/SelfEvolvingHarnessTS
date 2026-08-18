@@ -412,9 +412,10 @@ def deployment_constraints_v1(
     maximum_candidates: int = 3,
     maximum_modified_fraction: float = 0.35,
     fixed_downstream_model_id: str = "fixed:m0",
+    constraint_id: str = "forecast-fixed-m0-v1",
 ) -> DeploymentConstraintSpec:
     return DeploymentConstraintSpec(
-        constraint_id="forecast-fixed-m0-v1",
+        constraint_id=constraint_id,
         model_policy="fixed",
         fixed_downstream_model_id=fixed_downstream_model_id,
         maximum_candidates=maximum_candidates,
@@ -459,6 +460,121 @@ def classification_task_spec_v1(
     )
 
 
+def classification_global_coarse_task_quality_contract_v1() -> TaskQualityContract:
+    """Classification quality where class evidence is global/coarse and repairable."""
+
+    return TaskQualityContract(
+        contract_id="classification-global-coarse-quality-v1",
+        task_type="classification",
+        objective="preserve_class_evidence",
+        preserve=(
+            "observed_values_outside_suspect_region",
+            "temporal_order",
+            "series_length",
+            "class_relevant_structure",
+        ),
+        harms=(
+            "unnecessary_modification",
+            "global_over_smoothing",
+            "future_information_use",
+            "out_of_scope_change",
+        ),
+        evidence_expectations=(
+            "public_observation",
+            "fixed_public_probe_panel",
+            "candidate_execution_receipt",
+        ),
+        verification_dimensions=(
+            "operator_legality",
+            "execution_success",
+            "finite_output",
+            "shape_preservation",
+            "effect_distinctness",
+            "modification_scope",
+        ),
+        abstention_conditions=(
+            "insufficient_public_evidence",
+            "no_effect_distinct_candidate",
+            "risk_guard_failure",
+            "capability_unavailable",
+        ),
+    )
+
+
+def classification_local_event_task_quality_contract_v1() -> TaskQualityContract:
+    """Classification quality where local events are evidence and erasure is harmful."""
+
+    return TaskQualityContract(
+        contract_id="classification-local-event-quality-v1",
+        task_type="classification",
+        objective="preserve_class_evidence",
+        preserve=(
+            "temporal_order",
+            "series_length",
+            "class_relevant_structure",
+        ),
+        harms=(
+            "event_erasure",
+            "unnecessary_modification",
+            "global_over_smoothing",
+            "future_information_use",
+            "out_of_scope_change",
+        ),
+        evidence_expectations=(
+            "public_observation",
+            "fixed_public_probe_panel",
+            "candidate_execution_receipt",
+        ),
+        verification_dimensions=(
+            "operator_legality",
+            "execution_success",
+            "finite_output",
+            "shape_preservation",
+            "effect_distinctness",
+            "modification_scope",
+        ),
+        abstention_conditions=(
+            "risk_guard_failure",
+            "insufficient_public_evidence",
+            "no_effect_distinct_candidate",
+            "capability_unavailable",
+        ),
+    )
+
+
+def classification_task_context_v1(
+    *,
+    task_spec: TaskSpec | None = None,
+    quality_contract: TaskQualityContract | None = None,
+    deployment_constraints: DeploymentConstraintSpec | None = None,
+) -> TaskContext:
+    """Build a classification context using only the existing closed vocabulary."""
+
+    resolved_task = task_spec or classification_task_spec_v1()
+    if resolved_task.task_type != "classification":
+        raise ValueError(
+            "classification_task_context_v1 requires a classification TaskSpec"
+        )
+    resolved_quality = (
+        quality_contract or classification_global_coarse_task_quality_contract_v1()
+    )
+    if resolved_quality.task_type != "classification":
+        raise ValueError(
+            "classification_task_context_v1 requires a classification quality contract"
+        )
+    return TaskContext(
+        task_spec=resolved_task,
+        quality_contract=resolved_quality,
+        deployment_constraints=deployment_constraints
+        or deployment_constraints_v1(
+            constraint_id="classification-fixed-consumer-v1",
+            fixed_downstream_model_id="fixed:classification-consumer-v1",
+            maximum_candidates=2,
+            maximum_modified_fraction=0.1,
+        ),
+    )
+
+
 def anomaly_task_spec_v1(
     *,
     downstream_model_class: str = "residual_zscore_detector",
@@ -493,6 +609,9 @@ __all__ = [
     "MetricSpec",
     "TaskSpec",
     "anomaly_task_spec_v1",
+    "classification_global_coarse_task_quality_contract_v1",
+    "classification_local_event_task_quality_contract_v1",
+    "classification_task_context_v1",
     "classification_task_spec_v1",
     "deployment_constraints_v1",
     "forecast_task_context_v1",

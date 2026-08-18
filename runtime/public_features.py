@@ -24,6 +24,12 @@ _LEVEL_WINDOW = 24
 _LEVEL_SCORE_SCALE = 3.0
 _LEVEL_TAIL_REFINEMENT = 8
 _LEVEL_MIN_POST = 12
+# Downstream forecast Task windows use CONTEXT_LENGTH=192 + HORIZON=48.
+# One full frozen seasonal period (24 points) of post-shift support is the
+# minimum required before repair_level_shift can leave a stable reference for
+# the downstream Ridge fit.
+_DOWNSTREAM_WINDOW_POINTS = 240
+_POST_SHIFT_SUPPORT_MIN_POINTS = 24
 
 
 def _array_sha(values: np.ndarray) -> str:
@@ -290,6 +296,10 @@ def extract_public_features(
         "local_robust_z_peak": float(np.max(robust_z)),
         "estimated_region_start_fraction": start_fraction,
         "estimated_region_end_fraction": end_fraction,
+        "post_shift_support_sufficient": bool(
+            max(0.0, (1.0 - end_fraction) * _DOWNSTREAM_WINDOW_POINTS)
+            >= _POST_SHIFT_SUPPORT_MIN_POINTS
+        ),
         "level_excursion_score": level_score,
         "estimated_level_offset": offset,
         "period_change_score": period_score,

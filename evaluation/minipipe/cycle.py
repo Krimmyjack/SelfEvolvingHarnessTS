@@ -703,6 +703,12 @@ class _CycleCaseRunner:
             skill_retrieved=bool(retrieved_capability_ids),
             retrieved_capability_skill_ids=tuple(sorted(retrieved_capability_ids)),
             forced_skill_succeeds=bool(capability_skills),
+            # Controlled minipipe positive control: these synthetic cases are
+            # constructed with full private knowledge and no proposal-control
+            # manipulation, so a retrieved-but-insufficient capability is a
+            # known content gap.  The online adapter must NOT copy this
+            # without a real constrained-proposal experiment (Unknown -> None).
+            constrained_proposal_succeeds=False,
             proposed_candidate_exists=any(
                 candidate_id != "identity" for candidate_id in trace.candidate_ids
             ),
