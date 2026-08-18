@@ -617,6 +617,19 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         for row in rows for arm_row in arms(row)
         if arm_row["stop_reason"] == STOP_REQUEST_OBSERVATION
     ]
+    # An abstention that followed an envelope retry and produced no proposal
+    # is protocol degradation.  It is reported, but it is not evidence of a
+    # decision fault and must not be what routes the run to a Surface edit.
+    degraded = {
+        (entry["task_episode_id"], entry["arm"])
+        for entry in protocol_quality(rows)[
+            "abstentions_that_followed_an_envelope_retry_with_no_proposal"
+        ]
+    }
+    barren_arms = [
+        entry for entry in barren_arms
+        if (entry["task_episode_id"], entry["arm"]) not in degraded
+    ]
     no_candidate = [
         {"task_episode_id": row["task_episode_id"], "arm": arm_row["arm"]}
         for row in rows for arm_row in arms(row)
@@ -675,11 +688,72 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "support_probes_spent_without_a_draft": wasted_probes,
         "arm_tasks_requesting_an_absent_observation": requested_observation,
         "arm_tasks_with_no_proposal": no_candidate,
+        "arm_tasks_excluded_as_protocol_degradation": sorted(degraded),
         "workspace_tool_calls": tool_calls,
         "note": (
             "One bad result is enough to open the diagnosis and is not enough "
             "to authorize a General clause; the per-clause evidence threshold "
             "is applied at the Slow stage, on distinct Task counts."
+        ),
+    }
+
+
+def protocol_quality(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """How much of the run was the model failing to format, not deciding.
+
+    The stage loop already retries one malformed envelope with static
+    feedback, and a retry that lands on a schema-valid but *empty* payload
+    ends the Task in ABSTAIN.  That is protocol degradation wearing an
+    Agent decision's clothes, and the frozen reporting rule is that a
+    mechanical failure must never be read as behaviour.  So it is counted
+    here and named, rather than being silently folded into the abstention
+    rate.  It is a readout, not a Gate: the affected Task stays in the run
+    and stays visible.
+    """
+    stage_count = 0
+    retried_stages: list[dict[str, Any]] = []
+    suspect: list[dict[str, Any]] = []
+    for row in rows:
+        for arm in (COLD_ARM, WARM_ARM):
+            if arm not in row:
+                continue
+            arm_row = row[arm]
+            retried_here = False
+            for stage in arm_row["stages"]:
+                stage_count += 1
+                if int(stage.get("validation_retry_count") or 0) <= 0:
+                    continue
+                retried_here = True
+                retried_stages.append({
+                    "task_episode_id": row["task_episode_id"],
+                    "arm": arm,
+                    "stage": stage["stage"],
+                    "validation_error_codes": list(
+                        stage.get("validation_error_codes") or ()
+                    ),
+                })
+            if (
+                retried_here
+                and not arm_row["proposals"]
+                and arm_row["stop_reason"] == STOP_ABSTAIN
+            ):
+                suspect.append({
+                    "task_episode_id": row["task_episode_id"],
+                    "arm": arm,
+                    "stop_reason": arm_row["stop_reason"],
+                })
+    return {
+        "stage_call_count": stage_count,
+        "stages_needing_an_envelope_retry": len(retried_stages),
+        "envelope_retry_rate": (
+            len(retried_stages) / stage_count if stage_count else None
+        ),
+        "retried_stages": retried_stages,
+        "abstentions_that_followed_an_envelope_retry_with_no_proposal": suspect,
+        "role": (
+            "reporting integrity readout; an abstention listed here is "
+            "protocol degradation, not a considered decision, and must not be "
+            "counted as one. Never a Gate."
         ),
     }
 
@@ -1127,6 +1201,7 @@ def run_g1_pipeline(
         "first_fault": attribution,
         "slow_and_replay": slow,
         "exploration_concentration": concentration,
+        "protocol_quality": protocol_quality(scored),
         "cost_by_arm": cost,
         "cost_columns_are_separate": (
             "Workspace tool calls, LLM calls, real Support probes and charged "
