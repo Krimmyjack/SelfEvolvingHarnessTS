@@ -3795,6 +3795,200 @@ def run_weather_a5a3(report_path: Path = REPORT_REL) -> dict[str, Any]:
     }
 
 
+# ------------------------------- Program Binding Contract Audit (zero Outcome)
+
+
+def program_binding_contract_audit(
+    values: Mapping[str, Any],
+    train_uids: Sequence[str],
+    contexts: Mapping[str, Mapping[str, Any]],
+    specs: Sequence[Mapping[str, Any]],
+    anchors: Sequence[int],
+) -> dict[str, Any]:
+    """Does repair_level_shift's parameter binding hold its own contract?
+
+    Zero LLM, zero new Outcome: every number below comes from the public
+    prefix that the Context extractor already reads.  Three checks, each
+    aimed at one documented coupling:
+
+    A. Region purity.  ``estimated_region_start/end_fraction`` are the first
+       and last index of ``missing_region | outlier_region | level_mask``
+       (public_features.py:274), but ``estimated_level_offset`` comes only
+       from the level candidate.  A region inflated by missing or outlier
+       indices is therefore repaired with a level offset it never described.
+
+    B. Representative-to-scope consistency.  The Runtime picks one
+       representative series (public_context.py) and the compiler reads only
+       its features, yet the compiled Program runs over every scoped series.
+
+    C. Coordinate consistency.  The fractions are measured on a public prefix
+       of length ``cutoff``, but the operator receives 240-point training
+       windows and re-localises the same fraction inside each one
+       (s1_structural.py: start = floor(fraction * n) with n = window length).
+
+    This is a precondition check for a Program Binding repair, not an
+    experiment line.
+    """
+    import numpy as np
+    from SelfEvolvingHarnessTS.runtime.public_features import (
+        extract_public_features,
+    )
+    import run_e2_autonomous_natural_workflow_generation as v6
+
+    context_length, horizon = int(v6.CONTEXT_LENGTH), int(v6.HORIZON)
+    window_span = context_length + horizon
+    rows: list[dict[str, Any]] = []
+    for spec in specs:
+        task_id = str(spec["task_episode_id"])
+        context = contexts.get(task_id)
+        if context is None:
+            continue
+        representative = context.get("representative_uid")
+        if representative is None:
+            continue
+        cutoff = int(context["observation_cutoff"])
+        per_series = context.get("per_series_features") or {}
+        scope = [str(uid) for uid in context.get("scope_series_uids") or []]
+
+        # ---- A. region purity, representative series only ----
+        prefix = np.asarray(values[str(representative)], dtype=np.float64)[:cutoff]
+        extraction = extract_public_features(prefix, task_kind="forecast")
+        union = np.asarray(extraction.region_mask, dtype=bool)
+        level = np.asarray(extraction.level_mask, dtype=bool)
+        union_n, level_n = int(union.sum()), int(level.sum())
+        contaminating = int((union & ~level).sum())
+        offset = float(extraction.estimated_excursion_offset)
+
+        # ---- C. coordinates ----
+        start_fraction = float(
+            per_series[str(representative)]["estimated_region_start_fraction"]
+        )
+        end_fraction = float(
+            per_series[str(representative)]["estimated_region_end_fraction"]
+        )
+        absolute = (
+            int(np.floor(start_fraction * cutoff)),
+            int(np.ceil(end_fraction * cutoff)),
+        )
+        windows = [
+            (int(a) - context_length, int(a) + horizon) for a in anchors
+        ]
+        overlapping = [
+            w for w in windows
+            if min(absolute[1], w[1]) > max(absolute[0], w[0])
+        ]
+        # what the operator will actually edit inside one 240-point window
+        edited_lo = min(window_span - 1, max(0, int(np.floor(start_fraction * window_span))))
+        edited_hi = min(window_span, max(edited_lo + 1, int(np.ceil(end_fraction * window_span))))
+
+        # ---- B. representative vs scope ----
+        members = []
+        for uid in scope:
+            features = per_series.get(uid) or {}
+            member_start = float(features.get("estimated_region_start_fraction", 0.0))
+            member_end = float(features.get("estimated_region_end_fraction", 0.0))
+            member_offset = float(features.get("estimated_level_offset", 0.0))
+            inter = max(0.0, min(end_fraction, member_end) - max(start_fraction, member_start))
+            merge = max(end_fraction, member_end) - min(start_fraction, member_start)
+            members.append({
+                "series_uid": uid,
+                "region_iou": (inter / merge) if merge > 0 else 0.0,
+                "offset": member_offset,
+                "offset_sign_matches_representative": (
+                    (member_offset > 0) == (offset > 0)
+                    if offset != 0.0 and member_offset != 0.0 else None
+                ),
+            })
+        ious = [m["region_iou"] for m in members]
+        sign_flags = [
+            m["offset_sign_matches_representative"] for m in members
+            if m["offset_sign_matches_representative"] is not None
+        ]
+
+        rows.append({
+            "task_episode_id": task_id,
+            "representative_uid": str(representative),
+            "observation_cutoff": cutoff,
+            "A_region_purity": {
+                "union_point_count": union_n,
+                "level_point_count": level_n,
+                "non_level_point_count": contaminating,
+                "contamination_fraction": (
+                    contaminating / union_n if union_n else 0.0
+                ),
+                "level_offset": offset,
+                "offset_applied_to_non_level_region": bool(
+                    contaminating and offset != 0.0
+                ),
+            },
+            "B_representative_vs_scope": {
+                "scope_size": len(scope),
+                "median_region_iou": float(np.median(ious)) if ious else None,
+                "min_region_iou": float(min(ious)) if ious else None,
+                "members_with_iou_below_half": sum(1 for v in ious if v < 0.5),
+                "offset_sign_agreement": (
+                    float(np.mean(sign_flags)) if sign_flags else None
+                ),
+                "members": members,
+            },
+            "C_coordinates": {
+                "region_fraction": [start_fraction, end_fraction],
+                "absolute_region_on_prefix": list(absolute),
+                "training_windows": windows,
+                "overlapping_training_windows": len(overlapping),
+                "operator_edits_inside_a_240_point_window": [edited_lo, edited_hi],
+                "edited_share_of_window": (edited_hi - edited_lo) / window_span,
+            },
+        })
+        print("BINDING_AUDIT %s rep=%s contamination=%.3f median_iou=%s "
+              "overlapping_windows=%d edits=%.1f%% of window" % (
+                  task_id, representative,
+                  contaminating / union_n if union_n else 0.0,
+                  ("%.3f" % float(np.median(ious))) if ious else "n/a",
+                  len(overlapping),
+                  100.0 * (edited_hi - edited_lo) / window_span), flush=True)
+
+    import numpy as np
+
+    def mean(key_path):
+        vals = []
+        for row in rows:
+            cur = row
+            for key in key_path:
+                cur = cur[key]
+            if isinstance(cur, (int, float)):
+                vals.append(float(cur))
+        return float(np.mean(vals)) if vals else None
+
+    return {
+        "check": "program_binding_contract_audit",
+        "zero_llm": True, "zero_new_outcome": True,
+        "task_count": len(rows),
+        "summary": {
+            "A_mean_contamination_fraction": mean(
+                ["A_region_purity", "contamination_fraction"]),
+            "A_tasks_applying_offset_to_non_level_region": sum(
+                1 for r in rows
+                if r["A_region_purity"]["offset_applied_to_non_level_region"]),
+            "B_mean_median_region_iou": mean(
+                ["B_representative_vs_scope", "median_region_iou"]),
+            "B_tasks_with_any_member_below_half_iou": sum(
+                1 for r in rows
+                if r["B_representative_vs_scope"]["members_with_iou_below_half"]),
+            "C_tasks_with_zero_overlapping_training_window": sum(
+                1 for r in rows
+                if r["C_coordinates"]["overlapping_training_windows"] == 0),
+            "C_mean_edited_share_of_window": mean(
+                ["C_coordinates", "edited_share_of_window"]),
+        },
+        "rows": rows,
+        "role": (
+            "precondition check for a Program Binding repair; not an "
+            "experiment line and not a Gate"
+        ),
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -4018,6 +4212,7 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "program_binding_contract_audit",
     "run_weather_a5a3",
     "freeze_weather_cohort",
     "run_weather_feasibility",
