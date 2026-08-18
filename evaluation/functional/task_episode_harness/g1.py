@@ -590,8 +590,15 @@ def run_g1_guidance_patch(
     repo_root: Path,
     attribution: Mapping[str, Any],
     llm_counter: list[int],
+    store_root: Path | None = None,
 ) -> dict[str, Any]:
-    """At most one Slow call, at most one authorized Surface, no retry."""
+    """At most one Slow call, at most one authorized Surface, no retry.
+
+    ``store_root`` lets a caller keep its patched snapshots in its own state
+    directory.  It defaults to the original G1 path so the frozen G1 run is
+    byte-identical; a new Runner passes its own root rather than writing into
+    an earlier stage's store.
+    """
     h0 = compile_snapshot(
         repo_root / "methods/ttha/harness/h0", verify_lock=False
     )
@@ -626,7 +633,11 @@ def run_g1_guidance_patch(
             "no_retry_attempted": True,
         }
 
-    store = SnapshotStore(repo_root / G1_STATE_REL / PATCHED_ARM / "snapshots")
+    store = SnapshotStore(
+        store_root
+        if store_root is not None
+        else repo_root / G1_STATE_REL / PATCHED_ARM / "snapshots"
+    )
     controller = EditController(
         store, surfaces=SurfaceRegistry(), router=FaultRouter()
     )
