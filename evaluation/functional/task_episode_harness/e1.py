@@ -1244,6 +1244,7 @@ def _run_arm(
     probes = []
     winner = None
     winner_compiled = None
+    instrument_unreadable = False
     stop_reason = "NO_DRAFT_IN_BUDGET"
     if initial["decision"] == "ABSTAIN":
         stop_reason = "AGENT_ABSTAIN"
@@ -1285,13 +1286,21 @@ def _run_arm(
                 scope,
             )
         except Exception as exc:  # noqa: BLE001
+            # Validity repair 2026-08-18 (Planner ruling): an evaluator that
+            # cannot measure the candidate is NOT the Agent declining to
+            # propose one.  Absorbing it and continuing produced Tasks whose
+            # NO_DRAFT_IN_BUDGET was manufactured by the instrument
+            # (E1-v2 task_01/02/06, W3 task_06/07).  Fail fast and stop the
+            # whole Task instead.
             record = {
                 "attempt_index": attempt_index,
                 "status": "INSTRUMENT_FAILED",
                 "error": f"{type(exc).__name__}: {exc}",
             }
             probes.append(record)
-            continue
+            instrument_unreadable = True
+            stop_reason = "INSTRUMENT_UNREADABLE"
+            break
         episode = _make_episode(
             arm=arm,
             task_episode_id=task_spec["task_episode_id"],
@@ -1381,6 +1390,7 @@ def _run_arm(
     delayed_probe = None
     active_local_skill_ids_after = list(active_local_skill_ids_before)
     if winner is not None and winner_compiled is not None:
+      try:
         (
             method_event,
             delayed_event,
@@ -1426,6 +1436,20 @@ def _run_arm(
             arm_state.episodes.append(winner)
         _sync_memory(arm_state.memories, winner)
         arm_state.active_skill_ids = active_local_skill_ids_after
+      except Exception as exc:  # noqa: BLE001
+        # The delayed evaluator hits the same instrument wall.  It is stopped
+        # explicitly and visibly -- never swallowed and never allowed to abort
+        # the whole run as if the protocol had broken.
+        instrument_unreadable = True
+        stop_reason = "INSTRUMENT_UNREADABLE"
+        lifecycle = {
+            "method_event": {
+                "stage": "instrument_unreadable",
+                "error": f"{type(exc).__name__}: {exc}",
+            },
+            "delayed_event": {"stage": "instrument_unreadable"},
+        }
+        winner = None
 
     valid_probes = [
         probe for probe in probes
@@ -1484,7 +1508,12 @@ def _run_arm(
                 if winner is not None and winner.delayed_response.get("evaluated")
                 else None
             ),
-            "abstention": int(stop_reason in {"AGENT_ABSTAIN", "REQUEST_OBSERVATION"}),
+            "abstention": int(
+                stop_reason in {"AGENT_ABSTAIN", "REQUEST_OBSERVATION"}
+            ),
+            # An unreadable Task is not behaviour and must be excluded from
+            # any behavioural readout rather than counted as a tie.
+            "instrument_unreadable": int(instrument_unreadable),
         },
     }
 

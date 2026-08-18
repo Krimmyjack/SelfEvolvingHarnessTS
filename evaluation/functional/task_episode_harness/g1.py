@@ -1575,6 +1575,260 @@ def run_w3(
     return result
 
 
+# ------------------------------------------- validity repairs (2026-08-18)
+
+
+# The h0 default proposal policy.  Evidence produced while consuming exactly
+# this text carries no evolved General clause, so it is UNGUIDED for the
+# purpose of authorizing a new active clause.
+PROVENANCE_UNGUIDED = "UNGUIDED"
+PROVENANCE_CONDITIONED = "GUIDANCE_CONDITIONED"
+
+
+def eval_substrate_preflight(
+    values: Mapping[str, Any],
+    eval_uids: Sequence[str],
+    specs: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Fix 1: can the Judge even run on this roster?  Zero Outcome.
+
+    W0 asked whether a Task's public Context is expressible, which is a
+    property of the TRAIN series.  It never asked whether the Task is
+    measurable, which is a property of the EVAL series: ``_evaluate`` refuses
+    an evaluation context whose 192-point window collapses to the scale floor.
+    Every stage of this project ran without that check, so E1-v2 task_01/02/06
+    and W3 task_06/07 recorded instrument failure as Agent behaviour.
+
+    This reads only the public prefix window ``raw[origin - 192:origin]``; the
+    truth window is never touched, so it opens no Outcome.
+    """
+    import numpy as np
+    import run_e2_autonomous_natural_workflow_generation as v6
+
+    context_length = int(v6.CONTEXT_LENGTH)
+    origins = sorted({
+        int(origin)
+        for spec in specs
+        for role in ("support", "delayed")
+        for origin in spec[f"{role}_origins"]
+    })
+    per_series: dict[str, Any] = {}
+    for uid in eval_uids:
+        raw = np.asarray(values[str(uid)], dtype=np.float64)
+        hits: list[int] = []
+        for origin in origins:
+            if origin - context_length < 0 or origin > raw.size:
+                continue
+            prepared = v6._linear_integrity(raw[origin - context_length:origin])
+            _center, _scale, method = v6._center_scale(np, prepared)
+            if method == "scale_floor_fallback":
+                hits.append(origin)
+        per_series[str(uid)] = {
+            "floor_hit_origin_count": len(hits),
+            "floor_hit_origins": hits[:12],
+            "clean": not hits,
+        }
+    dirty = sorted(uid for uid, row in per_series.items() if not row["clean"])
+    return {
+        "check": "eval_substrate_scale_floor",
+        "zero_new_outcome": True,
+        "context_length": context_length,
+        "origin_count": len(origins),
+        "eval_series": [str(uid) for uid in eval_uids],
+        "per_series": per_series,
+        "floor_hitting_series": dirty,
+        "pass": not dirty,
+        "note": (
+            "a floor-hitting eval series must be rejected before any Outcome "
+            "is opened; this confirms the Judge can execute, it does not "
+            "change the Judge"
+        ),
+    }
+
+
+def _guidance_provenance(consumed: Any, base_guidance: str) -> str:
+    """Fix 3: was this attempt's proposal conditioned on an evolved clause?"""
+    if consumed is None:
+        return PROVENANCE_UNGUIDED
+    text = str(consumed).strip()
+    if not text or text == str(base_guidance).strip():
+        return PROVENANCE_UNGUIDED
+    return PROVENANCE_CONDITIONED
+
+
+def _provenance_attempt_rows(
+    report: Mapping[str, Any],
+    base_guidance: str,
+) -> list[dict[str, Any]]:
+    """Exposed KDD attempts, each tagged UNGUIDED or GUIDANCE_CONDITIONED."""
+    rows = _exposed_attempt_rows(report)
+    by_arm: dict[tuple[str, str], str] = {}
+    g1 = report.get("g1_general_proposal_guidance") or {}
+    for key in ("exposed_replay", "fresh_paired_development"):
+        for task_row in (g1.get(key) or {}).get("rows") or []:
+            for arm in (BASE_ARM, PATCHED_ARM):
+                arm_row = task_row.get(arm) or {}
+                by_arm[("g1_" + key + "_" + str(task_row["task_episode_id"]), arm)] = (
+                    _guidance_provenance(
+                        arm_row.get("proposal_guidance_consumed"), base_guidance
+                    )
+                )
+    for row in rows:
+        if row["evidence_source"] == "e1_v2":
+            # E1-v2 predates consume_proposal_guidance entirely.
+            row["guidance_provenance"] = PROVENANCE_UNGUIDED
+        else:
+            row["guidance_provenance"] = by_arm.get(
+                (row["task_episode_id"], row["arm"]), PROVENANCE_CONDITIONED
+            )
+    return rows
+
+
+def reaudit_frozen_guidance(
+    report: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Mechanical provenance re-audit of the frozen W2 text.  No Slow call.
+
+    Every *active* clause must hold at least
+    ``GENERAL_EVIDENCE_MIN_DISTINCT_TASKS`` distinct UNGUIDED Tasks.
+    GUIDANCE_CONDITIONED evidence may confirm, contradict or withdraw an
+    existing clause but can never authorize one, otherwise a clause proves
+    itself through the proposals it caused.
+
+    The frozen text names exactly one operator and one Context feature, so the
+    clause set is enumerated lexically -- no semantic parser and no new Gate.
+    """
+    w2 = report.get("w2_guidance_freeze") or {}
+    guidance = str(w2.get("frozen_guidance") or "")
+    base_guidance = str(w2.get("base_guidance") or "")
+    rows = _provenance_attempt_rows(report, base_guidance)
+    unguided = [
+        row for row in rows
+        if row["guidance_provenance"] == PROVENANCE_UNGUIDED
+    ]
+    conditioned = [
+        row for row in rows
+        if row["guidance_provenance"] == PROVENANCE_CONDITIONED
+    ]
+    unguided_census = _program_evidence_census(unguided)
+    full_census = _program_evidence_census(rows)
+
+    def support(program: Sequence[str], condition: bool, relation: str,
+                census: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+        for cell in census:
+            if (
+                list(cell["canonical_program"]) == list(program)
+                and bool(cell[G1_CONDITION_FEATURE]) is condition
+                and cell["support_relation"] == relation
+            ):
+                return {
+                    "distinct_task_count": cell["distinct_task_count"],
+                    "distinct_task_episode_ids": cell["distinct_task_episode_ids"],
+                }
+        return {"distinct_task_count": 0, "distinct_task_episode_ids": []}
+
+    lowered = guidance.lower()
+    mechanism = G1_MECHANISM_PROGRAM[0]
+    clauses = []
+    if mechanism in lowered and "true" in lowered:
+        cell = support([mechanism], True, "POSITIVE", unguided_census)
+        clauses.append({
+            "clause": (
+                "when %s is true, prioritize %s"
+                % (G1_CONDITION_FEATURE, mechanism)
+            ),
+            "clause_kind": "ACTIVE_RECOMMENDATION",
+            "required_unguided_distinct_tasks": (
+                GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            ),
+            "unguided_support": cell,
+            "satisfied": (
+                cell["distinct_task_count"]
+                >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            ),
+        })
+    if mechanism in lowered and "false" in lowered:
+        cell = support([mechanism], False, "NEGATIVE", unguided_census)
+        clauses.append({
+            "clause": (
+                "when %s is false, do not make %s the default"
+                % (G1_CONDITION_FEATURE, mechanism)
+            ),
+            "clause_kind": "ACTIVE_DEPRIORITIZATION",
+            "required_unguided_distinct_tasks": (
+                GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            ),
+            "unguided_support": cell,
+            "satisfied": (
+                cell["distinct_task_count"]
+                >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            ),
+        })
+    if "prohibition" in lowered or "blanket" in lowered:
+        cell = support([mechanism], True, "POSITIVE", unguided_census)
+        clauses.append({
+            "clause": "this is not a blanket prohibition",
+            "clause_kind": "NON_BAN_RESERVATION",
+            "required_unguided_distinct_tasks": 1,
+            "unguided_support": cell,
+            "satisfied": cell["distinct_task_count"] >= 1,
+            "note": (
+                "a single opposite-relation cell may block a global ban; this "
+                "clause authorizes nothing, so it needs one Task, not two"
+            ),
+        })
+    # Any pairing or exception clause naming a second operator must clear the
+    # same bar on UNGUIDED evidence alone.
+    for cell in full_census:
+        program = [str(op) for op in cell["canonical_program"]]
+        if len(program) < 2 or not cell["contains_mechanism_operator"]:
+            continue
+        if cell["support_relation"] != "POSITIVE" or cell[G1_CONDITION_FEATURE]:
+            continue
+        if not all(op.lower() in lowered for op in program):
+            continue
+        unguided_cell = support(program, False, "POSITIVE", unguided_census)
+        clauses.append({
+            "clause": "exception combination " + "+".join(program),
+            "clause_kind": "ACTIVE_EXCEPTION_COMBINATION",
+            "required_unguided_distinct_tasks": (
+                GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            ),
+            "pooled_support": cell["distinct_task_count"],
+            "unguided_support": unguided_cell,
+            "satisfied": (
+                unguided_cell["distinct_task_count"]
+                >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            ),
+        })
+
+    all_satisfied = bool(clauses) and all(row["satisfied"] for row in clauses)
+    return {
+        "check": "general_evidence_provenance_reaudit",
+        "zero_llm": True,
+        "zero_new_outcome": True,
+        "no_slow_call": True,
+        "frozen_guidance": guidance,
+        "base_guidance": base_guidance,
+        "provenance_split": {
+            PROVENANCE_UNGUIDED: len(unguided),
+            PROVENANCE_CONDITIONED: len(conditioned),
+        },
+        "unguided_census": unguided_census,
+        "pooled_census": full_census,
+        "clauses": clauses,
+        "verdict": (
+            "W2_GUIDANCE_PROVENANCE_CONFIRMED" if all_satisfied
+            else "W2_GUIDANCE_PROVENANCE_UNSUPPORTED"
+        ),
+        "authorization_rule": (
+            "a new active clause may only be authorized by UNGUIDED distinct "
+            "Tasks; GUIDANCE_CONDITIONED evidence may confirm, contradict or "
+            "withdraw a clause but never authorize one"
+        ),
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -1798,6 +2052,8 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "eval_substrate_preflight",
+    "reaudit_frozen_guidance",
     "run_w3",
     "run_w2_guidance_freeze",
     "derive_stage_decomposition",
