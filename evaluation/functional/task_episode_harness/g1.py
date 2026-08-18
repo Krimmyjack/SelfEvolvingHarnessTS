@@ -1312,6 +1312,40 @@ def _load_w3_cohort(repo_root: Path) -> tuple[list[dict[str, Any]], dict[str, An
     return roster, values
 
 
+def _w3_context_for(
+    repo_root: Path,
+    state_rel: str,
+    task_id: str,
+    cutoff: int,
+    values: Mapping[str, Any],
+    train_uids: Sequence[str],
+) -> dict[str, Any]:
+    """Public Context for one Task of an explicit cohort, cached on disk."""
+    from evaluation.functional.task_episode_harness.public_context import (
+        build_task_public_context,
+    )
+
+    cache_root = repo_root / state_rel / "contexts"
+    cache_root.mkdir(parents=True, exist_ok=True)
+    path = cache_root / (task_id + ".json")
+    if path.is_file():
+        try:
+            row = json.loads(path.read_text(encoding="utf-8"))
+            if int(row.get("observation_cutoff") or -1) == cutoff:
+                return row
+        except (OSError, json.JSONDecodeError):
+            pass
+    context = _augment_context_with_c1_feature(
+        build_task_public_context(
+            values, list(train_uids), observation_cutoff=cutoff
+        )
+    )
+    path.write_text(
+        json.dumps(context, ensure_ascii=False, default=str), encoding="utf-8"
+    )
+    return context
+
+
 def _w3_context(
     repo_root: Path,
     task_id: str,
@@ -1829,6 +1863,283 @@ def reaudit_frozen_guidance(
     }
 
 
+# ------------------------------------- A5 vs A3 on a fresh natural cohort
+
+
+A5A3_STATE_REL = ".a5a3_natural_state"
+A5A3_COHORT_TRAIN = (
+    "T233", "T234", "T235", "T236", "T239", "T240",
+    "T241", "T244", "T246", "T247", "T254", "T256",
+)
+A5A3_COHORT_EVAL = (
+    "T257", "T259", "T260", "T261", "T262", "T264", "T265", "T266",
+)
+A5A3_N0 = 12
+A5A3_MAX_N = 19
+
+
+def _a5a3_cohort(repo_root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    import numpy as np
+
+    cache = np.load(
+        repo_root / "data/kdd2018/series_cache.npz", allow_pickle=True
+    )
+    names = [str(name) for name in cache["names"]]
+    cohort = list(A5A3_COHORT_TRAIN) + list(A5A3_COHORT_EVAL)
+    values = {
+        uid: np.asarray(cache["values"][names.index(uid)], dtype=np.float64)
+        for uid in cohort
+    }
+    roster = (
+        [{"series_uid": uid, "role": "train"} for uid in A5A3_COHORT_TRAIN]
+        + [{"series_uid": uid, "role": "eval"} for uid in A5A3_COHORT_EVAL]
+    )
+    return roster, values
+
+
+def run_a5a3_natural(report_path: Path = REPORT_REL) -> dict[str, Any]:
+    """A5 vs A3 paired development on the remaining natural KDD cohort.
+
+    Estimand (corrected before any Outcome was opened): under the natural
+    Target Task distribution, is the accumulated A5 package faster and safer
+    than a cold A3 start?  The two-sided G1 gate is deliberately dropped -- it
+    was a sub-experiment condition, not a requirement of this question.
+
+    A5 is offered the whole warm-start package (Source Card + Source evidence,
+    and the provenance-confirmed General guidance).  The Runtime Scope matcher
+    decides whether it may enter; the run records that decision per Task rather
+    than assuming it.  A3 starts cold with the h0 base guidance.
+
+    Non-negotiables kept: eval substrate preflight before any Outcome, fully
+    isolated per-arm Experience and Skill stores, identical probe budget,
+    inventory, Consumer, Metric and LLM settings, unexposed Outcomes, and
+    instrument failure that stops rather than masquerading as behaviour.
+    """
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    w2 = report.get("w2_guidance_freeze") or {}
+    repairs = report.get("v1_validity_repairs") or {}
+    provenance = (repairs.get("fix_3_evidence_provenance") or {}).get("reaudit") or {}
+    guidance = str(w2.get("frozen_guidance") or "")
+    if provenance.get("verdict") != "W2_GUIDANCE_PROVENANCE_CONFIRMED" or not guidance:
+        return {"verdict": "A5A3_GUIDANCE_NOT_CONFIRMED",
+                "provenance_verdict": provenance.get("verdict"),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    state_root = repo_root / A5A3_STATE_REL
+    if (state_root / BASE_ARM).exists() or (state_root / PATCHED_ARM).exists():
+        return {"verdict": "A5A3_STATE_CONTAMINATED",
+                "state_root": str(state_root),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    from evaluation.functional.task_episode_harness.e1 import (
+        _inventory_rows, _source_bundle_from_report, _source_card_from_report,
+        _runtime_source_applicability, _source_prior_for_task,
+        _paired_summary, _sample_plan,
+    )
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    roster, values = _a5a3_cohort(repo_root)
+    mapped_roster = _mapped_roster(roster)
+    eval_uids = [r["series_uid"] for r in mapped_roster if r["role"] == "eval"]
+    config = dict(_config())
+    specs_all = _frozen_task_roster(AVAILABLE_TASK_COUNT)[:A5A3_MAX_N]
+    specs = {str(spec["task_episode_id"]): spec for spec in specs_all}
+
+    # Non-negotiable 1: the Judge must be able to run before any Outcome opens.
+    preflight = eval_substrate_preflight(values, eval_uids, specs_all)
+    if not preflight["pass"]:
+        return {"verdict": "A5A3_EVAL_SUBSTRATE_INVALID",
+                "eval_substrate_preflight": preflight,
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    source_card = _source_card_from_report(report)
+    source_bundle = _source_bundle_from_report(report)
+    a5_source_prior = {
+        "source_card": source_card, "source_evidence": source_bundle,
+    }
+
+    base_snapshot = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    patched_store = SnapshotStore(repo_root / W2_STATE_REL / "snapshots")
+    patched_snapshot = compile_snapshot(
+        patched_store.root / str(w2["frozen_runtime_bundle_sha"]),
+        verify_lock=False,
+    )
+    arm_states: dict[str, _ArmState] = {}
+    for arm, snapshot in ((BASE_ARM, base_snapshot),
+                          (PATCHED_ARM, patched_snapshot)):
+        store = SnapshotStore(state_root / arm / "snapshots")
+        store.materialize(snapshot)
+        store.set_active(snapshot.runtime_bundle_sha)
+        arm_states[arm] = _ArmState(
+            arm=arm, memories=[], episodes=[], store=store,
+            active_snapshot=snapshot,
+            active_skill_ids=_skill_ids(snapshot, local_only=True),
+        )
+
+    preregistration = {
+        "protocol_version": "a5a3_natural_cohort_development_v1",
+        "estimand": (
+            "under the natural Target Task distribution, is the accumulated A5 "
+            "package faster and safer than a cold A3 start"
+        ),
+        "dropped_claim": (
+            "true-side preservation cannot be separately confirmed on this "
+            "cohort; the two-sided G1 gate was a sub-experiment condition and "
+            "is deliberately not applied here"
+        ),
+        "retained_claims": [
+            "overall paired adaptation speed", "Support harm safety",
+            "delayed utility",
+        ],
+        "cohort_train": list(A5A3_COHORT_TRAIN),
+        "cohort_eval": list(A5A3_COHORT_EVAL),
+        "eval_substrate_preflight": preflight,
+        "arms": {
+            BASE_ARM: "cold start: no Source prior, h0 base proposal guidance",
+            PATCHED_ARM: (
+                "warm start: Source Card + Source evidence offered through the "
+                "Runtime Scope matcher, plus the provenance-confirmed General "
+                "guidance"
+            ),
+        },
+        "source_card_applicability": _runtime_source_applicability(source_card),
+        "N0": A5A3_N0, "max_N": A5A3_MAX_N,
+        "horizon": HORIZON, "B": B,
+        "material_threshold": MATERIAL_THRESHOLD,
+        "llm_settings": {"model": NF_MODEL, "base_url": NF_BASE_URL},
+        "base_guidance": str(w2.get("base_guidance") or ""),
+        "frozen_guidance": guidance,
+        "primary_readouts": [
+            "real_support_probe_count", "harmful_probe_count",
+            "cumulative_support_harm", "task_local_active",
+            "delayed utility",
+        ],
+        "auxiliary_readouts": ["charged_probe_cost",
+                               "post_shift_support_sufficient stratification"],
+    }
+
+    llm_counter = [0]
+    rows: list[dict[str, Any]] = []
+
+    def run_block(task_ids: Sequence[str], label: str) -> None:
+        for task_id in task_ids:
+            spec = specs[task_id]
+            context = _w3_context_for(
+                repo_root, A5A3_STATE_REL, task_id,
+                int(spec["support_origins"][0]), values, A5A3_COHORT_TRAIN
+            )
+            inventory = _inventory_rows(context)
+            condition = bool(
+                (context.get("task_fast_features") or {}).get(
+                    G1_CONDITION_FEATURE, False
+                )
+            )
+            matched_prior = _source_prior_for_task(a5_source_prior, context)
+            order = [(BASE_ARM, None), (PATCHED_ARM, matched_prior)]
+            if spec["arm_order"] == "A5_A3":
+                order = list(reversed(order))
+            print("A5A3_%s_START %s %s=%s source_matched=%s" % (
+                label, task_id, G1_CONDITION_FEATURE, condition,
+                matched_prior is not None), flush=True)
+            arm_rows: dict[str, Any] = {}
+            for arm, prior in order:
+                arm_rows[arm] = _run_arm(
+                    repo_root=repo_root, arm_state=arm_states[arm],
+                    task_spec=spec, public_context=context,
+                    source_prior=prior, inventory=inventory, values=values,
+                    mapped_roster=mapped_roster, config=config,
+                    eval_uids=eval_uids, llm_counter=llm_counter,
+                    consume_proposal_guidance=True,
+                )
+            row: dict[str, Any] = {
+                "task_episode_id": task_id,
+                "support_origins": list(spec["support_origins"]),
+                "delayed_origins": list(spec["delayed_origins"]),
+                "arm_order": spec["arm_order"],
+                G1_CONDITION_FEATURE: condition,
+                "task_signature": dict(context["task_signature"]),
+                "source_prior_retrieval": {
+                    "runtime_matcher": "evaluate_applicability",
+                    "matched": matched_prior is not None,
+                },
+            }
+            for arm in (BASE_ARM, PATCHED_ARM):
+                arm_row = arm_rows[arm]
+                row[arm] = {
+                    "stop_reason": arm_row["stop_reason"],
+                    "initial_decision": arm_row["initial"]["decision"],
+                    "initial_protocol_error": arm_row["initial"].get("error"),
+                    "proposal_guidance_consumed": (
+                        arm_row["proposal_guidance_consumed"]
+                    ),
+                    "first_proposal": _mechanism_first_probe(arm_row),
+                    "mechanism_stats": _arm_mechanism_stats(arm_row),
+                    "metrics": arm_row["metrics"],
+                    "probes": arm_row["probes"],
+                    "winner": arm_row["winner"],
+                    "lifecycle": arm_row["lifecycle"],
+                    "target_memories_after": arm_row["target_memories_after"],
+                    "active_local_skill_ids_after": (
+                        arm_row["active_local_skill_ids_after"]
+                    ),
+                }
+            rows.append(row)
+            print("A5A3_%s_DONE %s A3=%s A5=%s" % (
+                label, task_id, row[BASE_ARM]["stop_reason"],
+                row[PATCHED_ARM]["stop_reason"]), flush=True)
+
+    run_block(["e1v2_task_%02d" % i for i in range(1, A5A3_N0 + 1)], "N0")
+    summary = _paired_summary(rows)
+    plan = _sample_plan(summary, available_task_count=A5A3_MAX_N)
+    n_final = min(int(plan["N_final"]), A5A3_MAX_N)
+    extension = 0
+    if n_final > len(rows):
+        extension_ids = [
+            "e1v2_task_%02d" % i for i in range(len(rows) + 1, n_final + 1)
+        ]
+        extension = len(extension_ids)
+        run_block(extension_ids, "EXT")
+        summary = _paired_summary(rows)
+
+    unreadable = [
+        row["task_episode_id"] for row in rows
+        if any(int(row[arm]["metrics"].get("instrument_unreadable", 0))
+               for arm in (BASE_ARM, PATCHED_ARM))
+    ]
+    return {
+        "protocol_version": "a5a3_natural_cohort_development_v1",
+        "verdict": "A5A3_NATURAL_DEVELOPMENT_COMPLETE",
+        "preregistration": preregistration,
+        "sample_plan": {**plan, "capped_N_final": n_final,
+                        "extension_tasks_run": extension},
+        "paired_summary": summary,
+        "false_context_side": _side_summary(rows, condition=False),
+        "true_context_side": _side_summary(rows, condition=True),
+        "stage_decomposition": derive_stage_decomposition(rows),
+        "source_prior_matched_task_count": sum(
+            1 for row in rows if row["source_prior_retrieval"]["matched"]
+        ),
+        "instrument_unreadable_task_ids": unreadable,
+        "rows": rows,
+        "llm_api_call_count": llm_counter[0],
+        "boundary": {
+            "sealed_confirmation_opened": False, "e2_not_started": True,
+            "weather_not_started": True,
+            "cutoff_geometry_unchanged": True,
+            "cohort_not_enumerated_for_balance": True,
+        },
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -2052,6 +2363,7 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "run_a5a3_natural",
     "eval_substrate_preflight",
     "reaudit_frozen_guidance",
     "run_w3",
