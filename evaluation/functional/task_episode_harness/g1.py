@@ -3352,6 +3352,449 @@ def run_autonomous_guidance_replay(
     }
 
 
+# ----------------------------------------------- Weather fresh A5 vs A3
+
+
+# Explicit path, resolved from the repo root: data/tsquality in this clone is a
+# Git-Bash file symlink that Python cannot traverse, and no registry or symlink
+# platform is built for this.
+WEATHER_REL = "shared_tsq_datasets/weather/weather.csv"
+WEATHER_STRIDE = 6      # 10-minute source -> hourly, top-of-hour sample.
+                        # Block-mean was rejected: it smooths away the spikes
+                        # the outlier and level operators exist to detect.
+WEATHER_STATE_REL = ".weather_state"
+WEATHER_N_TRAIN = 11
+WEATHER_N_EVAL = 8
+WEATHER_N0 = 12
+WEATHER_MAX_N = 19
+
+
+def _weather_source(repo_root: Path) -> Path:
+    return repo_root.parent / WEATHER_REL
+
+
+def _weather_columns(repo_root: Path) -> tuple[list[str], dict[str, Any]]:
+    """Every numeric, fully finite column, hourly, in file order."""
+    import csv
+
+    import numpy as np
+
+    rows: list[list[str]] = []
+    with _weather_source(repo_root).open(
+        newline="", encoding="utf-8", errors="replace"
+    ) as handle:
+        reader = csv.reader(handle)
+        header = next(reader)
+        for row in reader:
+            rows.append(row)
+    names: list[str] = []
+    values: dict[str, Any] = {}
+    for index, name in enumerate(header[1:]):
+        try:
+            column = np.asarray(
+                [float(row[index + 1]) for row in rows], dtype=np.float64
+            )
+        except (ValueError, IndexError):
+            continue
+        hourly = column[::WEATHER_STRIDE]
+        if not np.isfinite(hourly).all():
+            continue
+        names.append(name)
+        values[name] = hourly
+    return names, values
+
+
+def train_substrate_preflight(
+    values: Mapping[str, Any],
+    train_uids: Sequence[str],
+    anchors: Sequence[int],
+) -> dict[str, Any]:
+    """The train-side twin of eval_substrate_preflight.  Zero Outcome.
+
+    ``_evaluate`` guards the training context too, at the frozen config anchors
+    over ``raw[anchor-192:anchor+48]``, and it iterates every train row rather
+    than only the scoped ones.  A flat train series therefore aborts a Task
+    exactly like a flat eval series, which is why a dirty series cannot simply
+    be parked in train.
+    """
+    import numpy as np
+    import run_e2_autonomous_natural_workflow_generation as v6
+
+    context_length, horizon = int(v6.CONTEXT_LENGTH), int(v6.HORIZON)
+    per_series: dict[str, Any] = {}
+    for uid in train_uids:
+        raw = np.asarray(values[str(uid)], dtype=np.float64)
+        hits: list[int] = []
+        for anchor in anchors:
+            lo, hi = int(anchor) - context_length, int(anchor) + horizon
+            if lo < 0 or hi > raw.size:
+                continue
+            window = v6._linear_integrity(raw[lo:hi])[:context_length]
+            if v6._center_scale(np, window)[2] == "scale_floor_fallback":
+                hits.append(int(anchor))
+        per_series[str(uid)] = {
+            "floor_hit_anchor_count": len(hits), "clean": not hits,
+        }
+    dirty = sorted(uid for uid, row in per_series.items() if not row["clean"])
+    return {
+        "check": "train_substrate_scale_floor",
+        "zero_new_outcome": True,
+        "anchors": [int(a) for a in anchors],
+        "per_series": per_series,
+        "floor_hitting_series": dirty,
+        "pass": not dirty,
+    }
+
+
+def freeze_weather_cohort(repo_root: Path) -> dict[str, Any]:
+    """Frozen, deterministic, outcome-blind cohort rule.
+
+    Keep every column that is clean under BOTH substrate guards, in file order;
+    the first 11 become train and the next 8 eval.  The shape is 11/8 rather
+    than 12/8 because only 19 columns survive both guards, and both arms sit on
+    identical data so the estimand is unchanged.
+    """
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    names, values = _weather_columns(repo_root)
+    specs = _frozen_task_roster(AVAILABLE_TASK_COUNT)[:WEATHER_MAX_N]
+    anchors = [int(a) for a in dict(_config())["anchors"]]
+    train_pf = train_substrate_preflight(values, names, anchors)
+    eval_pf = eval_substrate_preflight(values, names, specs)
+    clean = [
+        name for name in names
+        if train_pf["per_series"][name]["clean"]
+        and eval_pf["per_series"][name]["clean"]
+    ]
+    train = clean[:WEATHER_N_TRAIN]
+    ev = clean[WEATHER_N_TRAIN:WEATHER_N_TRAIN + WEATHER_N_EVAL]
+    roster = (
+        [{"series_uid": uid, "role": "train"} for uid in train]
+        + [{"series_uid": uid, "role": "eval"} for uid in ev]
+    )
+    return {
+        "roster": roster, "values": values, "train": train, "eval": ev,
+        "all_numeric_finite_columns": names,
+        "clean_under_both_guards": clean,
+        "rejected": sorted(set(names) - set(clean)),
+        "train_preflight": train_pf, "eval_preflight": eval_pf,
+        "sufficient": len(train) == WEATHER_N_TRAIN and len(ev) == WEATHER_N_EVAL,
+    }
+
+
+def run_weather_feasibility(report_path: Path = REPORT_REL) -> dict[str, Any]:
+    """Zero-Outcome Weather feasibility: both substrate guards + Context census."""
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    frozen = freeze_weather_cohort(repo_root)
+    values = frozen["values"]
+    specs = _frozen_task_roster(AVAILABLE_TASK_COUNT)[:WEATHER_MAX_N]
+    hourly_length = int(len(values[frozen["all_numeric_finite_columns"][0]]))
+    max_index = max(
+        int(o) for spec in specs for role in ("support", "delayed")
+        for o in spec[f"{role}_origins"]
+    ) + int(HORIZON)
+    result: dict[str, Any] = {
+        "protocol_version": "weather_feasibility_v2",
+        "zero_llm": True, "zero_new_outcome": True,
+        "source": str(_weather_source(repo_root)),
+        "frozen_hourly_rule": (
+            "top-of-hour sample, stride %d over the 10-minute source; "
+            "block-mean rejected because it smooths away the spikes the "
+            "outlier and level operators exist to detect" % WEATHER_STRIDE
+        ),
+        "frozen_cohort_rule": (
+            "columns clean under BOTH substrate guards, file order, "
+            "first %d train / next %d eval" % (WEATHER_N_TRAIN, WEATHER_N_EVAL)
+        ),
+        "cohort_shape": "%d train / %d eval" % (WEATHER_N_TRAIN, WEATHER_N_EVAL),
+        "train_series": frozen["train"], "eval_series": frozen["eval"],
+        "rejected_series": frozen["rejected"],
+        "hourly_length": hourly_length,
+        "max_index_required": max_index,
+        "length_sufficient": hourly_length >= max_index,
+        # The two preflights above are run over EVERY numeric column so the
+        # cohort rule can filter on them; reporting their global pass flag
+        # would say 'False' merely because a rejected column exists. What
+        # matters is that the SELECTED cohort is clean on both guards.
+        "selected_cohort_train_clean": all(
+            frozen["train_preflight"]["per_series"][uid]["clean"]
+            for uid in frozen["train"]
+        ),
+        "selected_cohort_eval_clean": all(
+            frozen["eval_preflight"]["per_series"][uid]["clean"]
+            for uid in frozen["eval"]
+        ),
+        "all_column_preflight": {
+            "train_pass": frozen["train_preflight"]["pass"],
+            "eval_pass": frozen["eval_preflight"]["pass"],
+            "note": "False here just means some column was rejected",
+        },
+        "cohort_sufficient": frozen["sufficient"],
+    }
+    if not (frozen["sufficient"] and result["length_sufficient"]):
+        return {**result, "verdict": "WEATHER_SUBSTRATE_INVALID",
+                "wall_seconds": time.perf_counter() - started}
+
+    rows = []
+    for spec in specs:
+        task_id = str(spec["task_episode_id"])
+        context = _w3_context_for(
+            repo_root, WEATHER_STATE_REL, task_id,
+            int(spec["support_origins"][0]), values, frozen["train"]
+        )
+        valid = context["representative_uid"] is not None
+        condition = (
+            bool(context["task_fast_features"][G1_CONDITION_FEATURE])
+            if valid else None
+        )
+        rows.append({
+            "task_episode_id": task_id, "valid": valid,
+            G1_CONDITION_FEATURE: condition,
+            "task_signature": dict(context["task_signature"]),
+            "representative_uid": context["representative_uid"],
+            "scope_size": len(context["scope_series_uids"]),
+        })
+        print("WEATHER_CTX %s valid=%s %s=%s sig=%s" % (
+            task_id, valid, G1_CONDITION_FEATURE, condition,
+            dict(context["task_signature"])), flush=True)
+
+    def tally(sub):
+        valid = [r for r in sub if r["valid"]]
+        return {
+            "valid": len(valid),
+            "true": sum(1 for r in valid if r[G1_CONDITION_FEATURE]),
+            "false": sum(1 for r in valid if r[G1_CONDITION_FEATURE] is False),
+        }
+
+    n0, nmax = tally(rows[:WEATHER_N0]), tally(rows)
+    ok = n0["valid"] >= WEATHER_N0
+    return {
+        **result,
+        "verdict": ("WEATHER_FEASIBILITY_OK" if ok
+                    else "WEATHER_CONTEXT_CAPACITY_INSUFFICIENT"),
+        "context_census": {"rows": rows, "N0": n0, "max_N": nmax},
+        "two_sided_gate_not_applied": (
+            "the two-sided requirement was a G1 sub-experiment condition and "
+            "is deliberately not a gate for the A5 vs A3 estimand; the split "
+            "is reported so the stratified reading stays honest"
+        ),
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
+def run_weather_a5a3(report_path: Path = REPORT_REL) -> dict[str, Any]:
+    """Fresh A5 vs A3 on Weather.  A5 carries the autonomously derived guidance.
+
+    A3 is a cold start on the h0 base text.  A5 additionally consumes the
+    General guidance the Slow Agent derived by itself from Runtime-aligned
+    clause evidence.  The full warm-start package is still offered to A5 and
+    the Runtime Scope matcher decides per Task whether it may enter; that
+    decision is recorded, not assumed.
+    """
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    frozen_guidance = report.get("a5_general_guidance_frozen") or {}
+    feasibility = report.get("weather_feasibility") or {}
+    if feasibility.get("verdict") != "WEATHER_FEASIBILITY_OK":
+        return {"verdict": "WEATHER_A5A3_FEASIBILITY_NOT_PASSED",
+                "feasibility_verdict": feasibility.get("verdict"),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+    sha = str(frozen_guidance.get("runtime_bundle_sha") or "")
+    if not sha:
+        return {"verdict": "WEATHER_A5A3_NO_FROZEN_GUIDANCE",
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    state_root = repo_root / WEATHER_STATE_REL
+    if (state_root / BASE_ARM).exists() or (state_root / PATCHED_ARM).exists():
+        return {"verdict": "WEATHER_A5A3_STATE_CONTAMINATED",
+                "state_root": str(state_root), "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    from evaluation.functional.task_episode_harness.e1 import (
+        _inventory_rows, _paired_summary, _sample_plan,
+        _source_bundle_from_report, _source_card_from_report,
+        _source_prior_for_task,
+    )
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    cohort = freeze_weather_cohort(repo_root)
+    values = cohort["values"]
+    mapped_roster = _mapped_roster(cohort["roster"])
+    eval_uids = [r["series_uid"] for r in mapped_roster if r["role"] == "eval"]
+    config = dict(_config())
+    specs = {
+        str(spec["task_episode_id"]): spec
+        for spec in _frozen_task_roster(AVAILABLE_TASK_COUNT)[:WEATHER_MAX_N]
+    }
+    a5_prior = {
+        "source_card": _source_card_from_report(report),
+        "source_evidence": _source_bundle_from_report(report),
+    }
+
+    base_snapshot = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    auto_store = SnapshotStore(repo_root / CLAUSE_STATE_REL / "snapshots")
+    auto_snapshot = compile_snapshot(auto_store.root / sha, verify_lock=False)
+    arm_states: dict[str, _ArmState] = {}
+    for arm, snapshot in ((BASE_ARM, base_snapshot), (PATCHED_ARM, auto_snapshot)):
+        store = SnapshotStore(state_root / arm / "snapshots")
+        store.materialize(snapshot)
+        store.set_active(snapshot.runtime_bundle_sha)
+        arm_states[arm] = _ArmState(
+            arm=arm, memories=[], episodes=[], store=store,
+            active_snapshot=snapshot,
+            active_skill_ids=_skill_ids(snapshot, local_only=True),
+        )
+
+    preregistration = {
+        "protocol_version": "weather_a5a3_autonomous_guidance_v1",
+        "estimand": (
+            "on a fresh dataset, does the autonomously derived General "
+            "guidance reduce trial and error and Support harm and raise Local "
+            "Skill formation, against a cold start?"
+        ),
+        "arms": {
+            BASE_ARM: "cold start: h0 base proposal guidance, no Source prior",
+            PATCHED_ARM: (
+                "autonomously derived General guidance; the warm-start package "
+                "is offered and Scope-routed per Task"
+            ),
+        },
+        "frozen_guidance_text": frozen_guidance.get("text"),
+        "guidance_provenance": frozen_guidance.get("provenance"),
+        "cohort_shape": feasibility.get("cohort_shape"),
+        "train_series": cohort["train"], "eval_series": cohort["eval"],
+        "N0": WEATHER_N0, "max_N": WEATHER_MAX_N,
+        "horizon": HORIZON, "B": B,
+        "material_threshold": MATERIAL_THRESHOLD,
+        "llm_settings": {"model": NF_MODEL, "base_url": NF_BASE_URL},
+        "primary_readouts": [
+            "real_support_probe_count", "harmful_probe_count",
+            "cumulative_support_harm", "task_local_active",
+        ],
+        "expected_structure": (
+            "the surviving autonomous clause is the false-Context "
+            "deprioritization, and N0 is entirely false-Context, so the clause "
+            "is active throughout N0 while the cold arm has no conditional "
+            "clause at all. The four true-Context Tasks reachable only by "
+            "extension are a natural null control, because the autonomous text "
+            "says nothing about the true case."
+        ),
+    }
+
+    llm_counter = [0]
+    rows: list[dict[str, Any]] = []
+
+    def run_block(task_ids: Sequence[str], label: str) -> None:
+        for task_id in task_ids:
+            spec = specs[task_id]
+            context = _w3_context_for(
+                repo_root, WEATHER_STATE_REL, task_id,
+                int(spec["support_origins"][0]), values, cohort["train"]
+            )
+            inventory = _inventory_rows(context)
+            condition = bool(
+                (context.get("task_fast_features") or {}).get(
+                    G1_CONDITION_FEATURE, False
+                )
+            )
+            matched = _source_prior_for_task(a5_prior, context)
+            order = [(BASE_ARM, None), (PATCHED_ARM, matched)]
+            if spec["arm_order"] == "A5_A3":
+                order = list(reversed(order))
+            print("WA5A3_%s_START %s %s=%s source=%s" % (
+                label, task_id, G1_CONDITION_FEATURE, condition,
+                matched is not None), flush=True)
+            arm_rows = {}
+            for arm, prior in order:
+                arm_rows[arm] = _run_arm(
+                    repo_root=repo_root, arm_state=arm_states[arm],
+                    task_spec=spec, public_context=context, source_prior=prior,
+                    inventory=inventory, values=values,
+                    mapped_roster=mapped_roster, config=config,
+                    eval_uids=eval_uids, llm_counter=llm_counter,
+                    consume_proposal_guidance=True,
+                )
+            row: dict[str, Any] = {
+                "task_episode_id": task_id,
+                "support_origins": list(spec["support_origins"]),
+                "delayed_origins": list(spec["delayed_origins"]),
+                "arm_order": spec["arm_order"],
+                G1_CONDITION_FEATURE: condition,
+                "task_signature": dict(context["task_signature"]),
+                "source_prior_matched": matched is not None,
+            }
+            for arm in (BASE_ARM, PATCHED_ARM):
+                arm_row = arm_rows[arm]
+                row[arm] = {
+                    "stop_reason": arm_row["stop_reason"],
+                    "initial_decision": arm_row["initial"]["decision"],
+                    "initial_protocol_error": arm_row["initial"].get("error"),
+                    "proposal_guidance_consumed": (
+                        arm_row["proposal_guidance_consumed"]
+                    ),
+                    "first_proposal": _mechanism_first_probe(arm_row),
+                    "mechanism_stats": _arm_mechanism_stats(arm_row),
+                    "metrics": arm_row["metrics"],
+                    "probes": arm_row["probes"],
+                    "winner": arm_row["winner"],
+                    "lifecycle": arm_row["lifecycle"],
+                    "target_memories_after": arm_row["target_memories_after"],
+                    "active_local_skill_ids_after": (
+                        arm_row["active_local_skill_ids_after"]
+                    ),
+                }
+            rows.append(row)
+            print("WA5A3_%s_DONE %s A3=%s A5=%s" % (
+                label, task_id, row[BASE_ARM]["stop_reason"],
+                row[PATCHED_ARM]["stop_reason"]), flush=True)
+
+    run_block(["e1v2_task_%02d" % i for i in range(1, WEATHER_N0 + 1)], "N0")
+    summary = _paired_summary(rows)
+    plan = _sample_plan(summary, available_task_count=WEATHER_MAX_N)
+    n_final = min(int(plan["N_final"]), WEATHER_MAX_N)
+    extension = 0
+    if n_final > len(rows):
+        ids = ["e1v2_task_%02d" % i for i in range(len(rows) + 1, n_final + 1)]
+        extension = len(ids)
+        run_block(ids, "EXT")
+        summary = _paired_summary(rows)
+
+    unreadable = [
+        r["task_episode_id"] for r in rows
+        if any(int(r[a]["metrics"].get("instrument_unreadable", 0))
+               for a in (BASE_ARM, PATCHED_ARM))
+    ]
+    return {
+        "protocol_version": "weather_a5a3_autonomous_guidance_v1",
+        "verdict": ("WEATHER_A5A3_INSTRUMENT_BROKEN" if unreadable
+                    else "WEATHER_A5A3_DEVELOPMENT_COMPLETE"),
+        "preregistration": preregistration,
+        "sample_plan": {**plan, "capped_N_final": n_final,
+                        "extension_tasks_run": extension},
+        "paired_summary": summary,
+        "false_context_side": _side_summary(rows, condition=False),
+        "true_context_side": _side_summary(rows, condition=True),
+        "stage_decomposition": derive_stage_decomposition(rows),
+        "source_prior_matched_task_count": sum(
+            1 for r in rows if r["source_prior_matched"]
+        ),
+        "instrument_unreadable_task_ids": unreadable,
+        "rows": rows,
+        "llm_api_call_count": llm_counter[0],
+        "boundary": {"sealed_confirmation_opened": False,
+                     "e2_not_started": True,
+                     "specific_card_untouched": True,
+                     "kdd_untouched_this_run": True},
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -3575,6 +4018,10 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "run_weather_a5a3",
+    "freeze_weather_cohort",
+    "run_weather_feasibility",
+    "train_substrate_preflight",
     "run_autonomous_guidance_replay",
     "build_clause_evidence_view",
     "run_clause_grounded_autonomy_test",
