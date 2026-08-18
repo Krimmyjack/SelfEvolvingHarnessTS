@@ -1109,6 +1109,23 @@ def run_g1_pipeline(
                 flush=True,
             )
         rows.append(row)
+        # Checkpoint after every Task.  The first live nine-Task run died at
+        # Task six and took every completed Task with it, because the report
+        # was only written at the end.  Support probes are the one
+        # non-renewable cost in this Pipeline; losing their record to an
+        # unrelated crash is not acceptable.
+        if write_report:
+            _write_partial(report_path, {
+                "protocol_version": PROTOCOL_VERSION,
+                "verdict": "G1_PIPELINE_IN_PROGRESS",
+                "cohort": cohort_name,
+                "development_replay": True,
+                "tasks_completed": len(rows),
+                "tasks_planned": len(specs),
+                "eval_substrate_preflight": eval_pre,
+                "train_substrate_preflight": train_pre,
+                "rows": rows,
+            })
 
     scored = [row for row in rows if COLD_ARM in row or WARM_ARM in row]
     executable_names = tuple(
@@ -1218,6 +1235,14 @@ def run_g1_pipeline(
             encoding="utf-8",
         )
     return result
+
+
+def _write_partial(report_path: Path, payload: Mapping[str, Any]) -> None:
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False, default=str) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _closure_criteria(
