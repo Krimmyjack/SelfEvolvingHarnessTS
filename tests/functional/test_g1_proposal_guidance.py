@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -48,6 +49,9 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
     SurfaceRegistry,
 )
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
+from SelfEvolvingHarnessTS.contracts.candidate import Candidate
+from SelfEvolvingHarnessTS.contracts.program import Program
+from SelfEvolvingHarnessTS.methods.ttha.generative_workflow import CompiledWorkflow
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
 
 PATCHED_GUIDANCE = (
@@ -511,3 +515,156 @@ def test_runtime_owns_the_cause_and_the_llm_never_reports_one():
     assert "support_gain" not in serialized
     assert "macro_gain" not in serialized
     assert "probes" not in serialized
+
+
+# ------------------------------------------------- W1 parameterized Skill reuse
+
+
+def _skill(skill_id: str, steps: list[dict]):
+    """A minimal stand-in for a machine-added Target-local capability Skill."""
+    from types import SimpleNamespace
+
+    body = "Frozen program steps: " + json.dumps(steps)
+    return SimpleNamespace(skill_id=skill_id, body=body)
+
+
+def test_same_structure_and_binding_source_reuses_across_tasks():
+    """W1: only the declared bound values differ, so it is the same Skill.
+
+    These are the exact compiled steps of the three G1 fresh Tasks that raised
+    AddTargetExistsError (22 / 23 / 25): identical operator structure, and the
+    only differences are repair_level_shift's three declared public bindings.
+    """
+    task22 = [
+        {"op": "outlier_mad", "params": {}},
+        {"op": "repair_level_shift", "params": {
+            "estimated_offset": 55.5,
+            "region_end_fraction": 0.9972587719298246,
+            "region_start_fraction": 0.0014254385964912282}},
+    ]
+    task23 = [
+        {"op": "outlier_mad", "params": {}},
+        {"op": "repair_level_shift", "params": {
+            "estimated_offset": 55.5,
+            "region_end_fraction": 0.9979804421768708,
+            "region_start_fraction": 0.0013818027210884354}},
+    ]
+    snapshot = SimpleNamespace(
+        skills=(_skill("fast_winner_e1v2_outlier_mad_repair_level_shift", task22),)
+    )
+    current = [(s["op"], s["params"]) for s in task23]
+    assert e1._existing_local_skill(snapshot, current) is not None
+
+    # Identity ignores only the declared bindings, never the whole parameter set.
+    assert e1._binding_free_signature(
+        [(s["op"], s["params"]) for s in task22]
+    ) == e1._binding_free_signature(current)
+
+
+def test_different_structure_or_constant_is_never_merged():
+    """W1: a different operator structure or a non-bound constant stays distinct."""
+    stored = [
+        {"op": "outlier_mad", "params": {}},
+        {"op": "repair_level_shift", "params": {
+            "estimated_offset": 55.5, "region_end_fraction": 0.99,
+            "region_start_fraction": 0.001}},
+    ]
+    snapshot = SimpleNamespace(
+        skills=(_skill("fast_winner_e1v2_outlier_mad_repair_level_shift", stored),)
+    )
+    # different operator structure
+    assert e1._existing_local_skill(
+        snapshot, [("repair_level_shift", {
+            "estimated_offset": 55.5, "region_end_fraction": 0.99,
+            "region_start_fraction": 0.001})]
+    ) is None
+    # different order is a different structure
+    assert e1._existing_local_skill(
+        snapshot, [
+            ("repair_level_shift", {
+                "estimated_offset": 55.5, "region_end_fraction": 0.99,
+                "region_start_fraction": 0.001}),
+            ("outlier_mad", {}),
+        ]
+    ) is None
+    # same structure but a different NON-bound constant is still distinct
+    assert e1._existing_local_skill(
+        snapshot, [
+            ("outlier_mad", {"k": 4.0}),
+            ("repair_level_shift", {
+                "estimated_offset": 55.5, "region_end_fraction": 0.99,
+                "region_start_fraction": 0.001}),
+        ]
+    ) is None
+
+
+def test_next_task_reuses_instead_of_colliding(monkeypatch, tmp_path):
+    """W1 end to end: the second Task deploys the existing Skill, no ADD collision.
+
+    Before the repair this second Task produced
+    method_event.stage == 'apply_failed' with AddTargetExistsError, the delayed
+    window never opened, and the winner stayed LOCAL_DRAFT.
+    """
+    calls = {"n": 0}
+
+    def _slow(messages):
+        if messages[0]["content"] == e1._DECISION_SYSTEM:
+            return {"decision": "TRUST_DRAFT", "reason": "stub"}
+        calls["n"] += 1
+        return {
+            "decision": "PROPOSE", "reason": "stub",
+            "proposals": [{"steps": [{"op": "repair_level_shift", "params": {},
+                                      "bindings": {}}],
+                           "requested_observations": [], "fallback": "IDENTITY",
+                           "experience_use": []}],
+        }
+
+    def _compile_with_context(proposal, inventory, public_context, *, generation):
+        # Mimic the real compiler: bound parameters come from the current
+        # public Context, so they differ per Task.
+        features = public_context["representative_features"]
+        params = {
+            "region_start_fraction": features["estimated_region_start_fraction"],
+            "region_end_fraction": features["estimated_region_end_fraction"],
+            "estimated_offset": features["estimated_level_offset"],
+        }
+        program = Program.from_steps(
+            [("repair_level_shift", params)], source="w1-test"
+        )
+        candidate = Candidate.program_candidate("w1-test", program, source="w1-test")
+        return CompiledWorkflow(candidate, (), ()), {"decision": "PROPOSE"}
+
+    monkeypatch.setattr(e1, "_e1_slow_call", _slow)
+    monkeypatch.setattr(e1, "_probe_compiled", _probe_metrics)
+    monkeypatch.setattr(e1, "_compile_proposal", _compile_with_context)
+
+    state = _arm_state(tmp_path, "A3", _h0())
+    ctx1 = _public_context(100, sufficient=False)
+    row1 = e1._run_arm(
+        repo_root=PROJECT_ROOT, arm_state=state,
+        task_spec=_task_spec("w1_task_01", 100), public_context=ctx1,
+        source_prior=None, inventory=[], values={}, mapped_roster=[],
+        config={}, eval_uids=[], llm_counter=[0],
+    )
+    assert row1["winner"]["local_status"] == "LOCAL_ACTIVE"
+    assert row1["lifecycle"]["method_event"].get("stage") != "apply_failed"
+
+    # Second Task: same structure, different Context -> different bound values.
+    ctx2 = _public_context(700, sufficient=False)
+    ctx2["representative_features"]["estimated_region_end_fraction"] = 0.9881
+    ctx2["task_fast_features"]["estimated_region_end_fraction"] = 0.9881
+    row2 = e1._run_arm(
+        repo_root=PROJECT_ROOT, arm_state=state,
+        task_spec=_task_spec("w1_task_02", 700), public_context=ctx2,
+        source_prior=None, inventory=[], values={}, mapped_roster=[],
+        config={}, eval_uids=[], llm_counter=[0],
+    )
+    event = row2["lifecycle"]["method_event"]
+    assert event.get("stage") == "deployed_existing_skill", event
+    assert row2["lifecycle"]["reused_existing_skill"] is True
+    assert row2["winner"]["local_status"] == "LOCAL_ACTIVE"
+    assert row2["winner"]["delayed_gain"] is not None
+    # no duplicate Skill entry was created
+    local = [s.skill_id for s in state.active_snapshot.skills
+             if s.skill_id.startswith(e1._LOCAL_SKILL_PREFIX)]
+    assert local == ["fast_winner_e1v2_repair_level_shift"], local

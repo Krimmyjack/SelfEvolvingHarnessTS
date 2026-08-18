@@ -550,16 +550,63 @@ def _retrieve_target_local_skills(
     return rows
 
 
+def _binding_free_signature(
+    steps: Sequence[tuple[str, Mapping[str, object]]],
+) -> tuple[tuple[str, tuple[tuple[str, Any], ...]], ...]:
+    """Skill identity = operator structure + parameter binding source.
+
+    W1 minimal repair.  An operator's declared ``public_parameter_bindings``
+    are mechanically instantiated from the *current* public Context, so two
+    Task Episodes that run the same operator structure differ in exactly those
+    values and in nothing else.  Treating that difference as a different Skill
+    made the machine re-ADD an id that already existed, which raised
+    ``AddTargetExistsError``; the delayed window then never opened and the Task
+    was charged ``B + 1`` for nothing (13 times in the frozen E1-v2 rows, twice
+    more in G1).
+
+    The binding *source* is not free: ``compile_workflow_proposal`` rejects any
+    proposal whose bindings differ from the operator's declared bindings
+    (``REQUIRED_BINDING_MISSING``), so for one operator the source is fixed.
+    Dropping exactly the declared-bound parameter names therefore compares
+    structure and source while ignoring only Task-local numeric instantiation.
+    Every non-bound constant is still compared, so a different operator
+    structure or a different constant is never merged.
+
+    This changes identity only.  Execution is unaffected: the reuse path in
+    :func:`_lifecycle` probes the freshly compiled program, never the stored
+    Card's frozen numbers.
+    """
+    from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA
+
+    signature: list[tuple[str, tuple[tuple[str, Any], ...]]] = []
+    for op, params in steps:
+        name = str(op)
+        metadata = OPERATOR_METADATA.get(name) or {}
+        bound = set(dict(metadata.get("public_parameter_bindings", {}) or {}))
+        constants = tuple(
+            sorted(
+                (str(key), value)
+                for key, value in dict(params).items()
+                if str(key) not in bound
+            )
+        )
+        signature.append((name, constants))
+    return tuple(signature)
+
+
 def _existing_local_skill(
     snapshot: Any,
     steps: Sequence[tuple[str, Mapping[str, object]]],
 ) -> Any | None:
+    target = _binding_free_signature(steps)
     for skill in getattr(snapshot, "skills", ()) or ():
         skill_id = str(getattr(skill, "skill_id", "") or "")
         if not skill_id.startswith(_LOCAL_SKILL_PREFIX):
             continue
         frozen = _parse_frozen_steps(str(getattr(skill, "body", "") or ""))
-        if frozen is not None and _steps_equal(frozen, steps):
+        if frozen is None:
+            continue
+        if _steps_equal(frozen, steps) or _binding_free_signature(frozen) == target:
             return skill
     return None
 

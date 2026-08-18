@@ -1053,6 +1053,528 @@ def derive_stage_decomposition(
     return out
 
 
+# --------------------------------------------------------------- W2 / W3
+
+
+W2_STATE_REL = ".w2_state"
+W3_STATE_REL = ".w3_state"
+# Fresh KDD cohort: 20 of the 59 series never touched by any experiment,
+# taken numerically ascending -- deterministic and outcome-blind.
+W3_COHORT_TRAIN = tuple(f"T{index}" for index in range(211, 223))
+W3_COHORT_EVAL = tuple(f"T{index}" for index in range(223, 231))
+W3_N0 = 12
+W3_MAX_N = 19
+
+
+def _exposed_attempt_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Every already-exposed KDD development Support attempt, both stages.
+
+    Pools the frozen E1-v2 rows with the G1 replay and fresh rows.  All are
+    exposed KDD development Episodes, and the relation of a probe is a measured
+    Outcome that does not depend on which guidance caused the program to be
+    proposed.  The source split is reported so selection bias in *coverage*
+    stays visible.
+    """
+    rows = _attempt_rows(report)
+    for row in rows:
+        row["evidence_source"] = "e1_v2"
+    g1 = report.get("g1_general_proposal_guidance") or {}
+    for key in ("exposed_replay", "fresh_paired_development"):
+        stage = g1.get(key) or {}
+        for task_row in stage.get("rows") or []:
+            condition = bool(task_row.get(G1_CONDITION_FEATURE))
+            for arm in (BASE_ARM, PATCHED_ARM):
+                arm_row = task_row.get(arm) or {}
+                for probe in arm_row.get("probes") or []:
+                    gain = probe.get("support_gain")
+                    program = tuple(
+                        str(step["op"])
+                        for step in (probe.get("compiled_steps") or [])
+                    )
+                    rows.append({
+                        "task_episode_id": (
+                            "g1_" + key + "_" + str(task_row["task_episode_id"])
+                        ),
+                        "arm": arm,
+                        "attempt_index": probe.get("attempt_index"),
+                        "program": list(program),
+                        "is_mechanism": program == G1_MECHANISM_PROGRAM,
+                        "contains_mechanism_operator": (
+                            G1_MECHANISM_PROGRAM[0] in program
+                        ),
+                        "support_gain": gain,
+                        "gain_readable": isinstance(gain, (int, float)),
+                        "task_signature": dict(
+                            task_row.get("task_signature") or {}
+                        ),
+                        G1_CONDITION_FEATURE: condition,
+                        "support_origins": list(
+                            task_row.get("support_origins") or []
+                        ),
+                        "arm_stop_reason": str(arm_row.get("stop_reason") or ""),
+                        "evidence_source": "g1_" + key,
+                    })
+    return rows
+
+
+def _unsupported_exception_flags(
+    guidance: str,
+    census: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Detect the one known failure mode without building a semantic parser.
+
+    A census cell that is POSITIVE in the false Context, carries the mechanism
+    operator, and rests on fewer than
+    ``GENERAL_EVIDENCE_MIN_DISTINCT_TASKS`` distinct Tasks is a single-Task
+    exception.  If the deployed text names every operator of such a cell
+    together, the guidance is very likely authorizing that exception, which the
+    per-clause evidence rule forbids.  This is a lexical flag that stops the
+    run for a human ruling; it is not a Gate and not a parser.
+    """
+    lowered = guidance.lower()
+    flags: list[dict[str, Any]] = []
+    for cell in census:
+        if cell["support_relation"] != "POSITIVE":
+            continue
+        if cell[G1_CONDITION_FEATURE]:
+            continue
+        if not cell["contains_mechanism_operator"]:
+            continue
+        if cell["distinct_task_count"] >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS:
+            continue
+        program = [str(op) for op in cell["canonical_program"]]
+        if len(program) > 1 and all(op.lower() in lowered for op in program):
+            flags.append({
+                "canonical_program": program,
+                "distinct_task_count": cell["distinct_task_count"],
+                "required_minimum": GENERAL_EVIDENCE_MIN_DISTINCT_TASKS,
+                "reason": (
+                    "the deployed guidance names every operator of a "
+                    "single-Task false-Context POSITIVE cell together"
+                ),
+            })
+    return flags
+
+
+def run_w2_guidance_freeze(report_path: Path = REPORT_REL) -> dict[str, Any]:
+    """W2: rebuild the complete census and re-freeze the General guidance.
+
+    Exactly one Slow call, exactly one authorized Surface, no retry, no manual
+    rewriting.
+    """
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    rows = _exposed_attempt_rows(report)
+    census = _program_evidence_census(rows)
+    from collections import Counter
+
+    source_split = Counter(row["evidence_source"] for row in rows)
+    attribution = {
+        "evidence_census": census,
+        "evidence_census_contract": {
+            "unit_of_evidence": "distinct_task_count",
+            "attempt_count_role": "diagnostic_only",
+            "no_relation_filter": True,
+            "no_program_filter": True,
+        },
+    }
+    base_result: dict[str, Any] = {
+        "protocol_version": "w2_guidance_freeze_v1",
+        "evidence_scope": "already-exposed KDD development Episodes only",
+        "evidence_source_split": dict(source_split),
+        "evidence_census": census,
+        "general_evidence_min_distinct_tasks": (
+            GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+        ),
+        "zero_new_outcome": True,
+    }
+
+    h0 = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    base_guidance = str(dict(h0.candidate_policy).get("proposal_guidance") or "")
+    payload = _slow_guidance_payload(attribution, base_guidance)
+    llm_calls = 0
+    try:
+        response = _e1_slow_call([
+            {"role": "system", "content": _G1_SLOW_SYSTEM},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ])
+        llm_calls = 1
+    except (RuntimeError, ValueError) as exc:
+        return {**base_result, "verdict": "W2_GUIDANCE_SUPPLY_FAILED",
+                "stage": "slow_call",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "llm_api_call_count": 0, "no_retry_attempted": True,
+                "wall_seconds": time.perf_counter() - started}
+
+    decision = str(response.get("decision") or "")
+    new_guidance = str(response.get("new_guidance") or "").strip()
+    if decision != "PATCH" or not new_guidance:
+        return {**base_result, "verdict": "W2_GUIDANCE_SUPPLY_FAILED",
+                "stage": "slow_decision", "slow_response": response,
+                "llm_api_call_count": llm_calls, "no_retry_attempted": True,
+                "wall_seconds": time.perf_counter() - started}
+
+    flags = _unsupported_exception_flags(new_guidance, census)
+    if flags:
+        return {**base_result, "verdict": "W2_UNSUPPORTED_EXCEPTION_CLAUSE",
+                "stage": "per_clause_evidence_check",
+                "slow_response": response, "proposed_guidance": new_guidance,
+                "unsupported_exception_flags": flags,
+                "llm_api_call_count": llm_calls,
+                "no_retry_attempted": True, "no_manual_rewrite": True,
+                "wall_seconds": time.perf_counter() - started}
+
+    store = SnapshotStore(repo_root / W2_STATE_REL / "snapshots")
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter()
+    )
+    store.materialize(h0)
+    try:
+        receipt = _apply_guidance_patch(controller, store, h0, new_guidance)
+    except (EditControllerError, ValueError, TypeError) as exc:
+        return {**base_result, "verdict": "W2_GUIDANCE_SUPPLY_FAILED",
+                "stage": "edit_controller",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "slow_response": response, "proposed_guidance": new_guidance,
+                "llm_api_call_count": llm_calls, "no_retry_attempted": True,
+                "wall_seconds": time.perf_counter() - started}
+
+    patched = receipt.candidate_snapshot
+    store.set_active(patched.runtime_bundle_sha)
+    before = dict(h0.candidate_policy)
+    after = dict(patched.snapshot.candidate_policy)
+    changed = sorted(
+        key for key in set(before) | set(after)
+        if before.get(key) != after.get(key)
+    )
+    single_surface = bool(
+        changed == ["proposal_guidance"]
+        and list(receipt.source_surfaces_changed) == [G1_SURFACE]
+        and _skill_ids(h0) == _skill_ids(patched.snapshot)
+        and dict(h0.retrieval) == dict(patched.snapshot.retrieval)
+        and dict(h0.verification) == dict(patched.snapshot.verification)
+        and h0.instruction == patched.snapshot.instruction
+    )
+    return {
+        **base_result,
+        "verdict": ("W2_GUIDANCE_FROZEN" if single_surface
+                    else "W2_MULTI_SURFACE_MODIFICATION"),
+        "stage": "applied",
+        "slow_payload": payload,
+        "slow_response": response,
+        "base_guidance": base_guidance,
+        "frozen_guidance": str(after.get("proposal_guidance") or ""),
+        "changed_candidate_policy_keys": changed,
+        "single_surface_diff": single_surface,
+        "receipt": {
+            "edit_id": receipt.edit_id,
+            "target_surface_id": receipt.target_surface_id,
+            "confirmed_cause": receipt.confirmed_cause,
+            "source_surfaces_changed": list(receipt.source_surfaces_changed),
+        },
+        "frozen_runtime_bundle_sha": patched.runtime_bundle_sha,
+        "unsupported_exception_flags": [],
+        "llm_api_call_count": llm_calls,
+        "no_retry_attempted": True,
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
+def _load_w3_cohort(repo_root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Build the fresh-cohort roster straight from the KDD series cache.
+
+    No manifest file and no registry: the cohort rule is frozen in
+    ``W3_COHORT_TRAIN`` / ``W3_COHORT_EVAL`` -- 20 of the 59 KDD series that no
+    experiment has ever referenced, taken numerically ascending.
+    """
+    import numpy as np
+
+    cache = np.load(
+        repo_root / "data/kdd2018/series_cache.npz", allow_pickle=True
+    )
+    names = [str(name) for name in cache["names"]]
+    cohort = list(W3_COHORT_TRAIN) + list(W3_COHORT_EVAL)
+    missing = [uid for uid in cohort if uid not in names]
+    if missing:
+        raise ValueError("fresh cohort series absent from cache: %r" % missing)
+    values = {
+        uid: np.asarray(cache["values"][names.index(uid)], dtype=np.float64)
+        for uid in cohort
+    }
+    roster = (
+        [{"series_uid": uid, "role": "train"} for uid in W3_COHORT_TRAIN]
+        + [{"series_uid": uid, "role": "eval"} for uid in W3_COHORT_EVAL]
+    )
+    return roster, values
+
+
+def _w3_context(
+    repo_root: Path,
+    task_id: str,
+    cutoff: int,
+    values: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Public Context for one fresh-cohort Task, cached on disk.
+
+    Outcome-blind by construction: ``build_task_public_context`` only slices
+    ``values[uid][:cutoff]``.
+    """
+    from evaluation.functional.task_episode_harness.public_context import (
+        build_task_public_context,
+    )
+
+    cache_root = repo_root / W3_STATE_REL / "contexts"
+    cache_root.mkdir(parents=True, exist_ok=True)
+    path = cache_root / (task_id + ".json")
+    if path.is_file():
+        try:
+            row = json.loads(path.read_text(encoding="utf-8"))
+            if int(row.get("observation_cutoff") or -1) == cutoff:
+                return row
+        except (OSError, json.JSONDecodeError):
+            pass
+    context = build_task_public_context(
+        values, list(W3_COHORT_TRAIN), observation_cutoff=cutoff
+    )
+    context = _augment_context_with_c1_feature(context)
+    path.write_text(
+        json.dumps(context, ensure_ascii=False, default=str), encoding="utf-8"
+    )
+    return context
+
+
+def run_w3(
+    report_path: Path = REPORT_REL,
+    *,
+    frozen_guidance: str | None = None,
+) -> dict[str, Any]:
+    """W3: paired development on the fresh KDD cohort.
+
+    Single variable: ``candidate_policy.proposal_guidance``.  Base reads the h0
+    text, Patched reads the W2-frozen text; both arms read it from their own
+    active Harness snapshot, both run with ``source_prior=None``, identical
+    probe budget, inventory, Consumer, Metric and LLM settings, and fully
+    isolated Experience / Skill stores.
+    """
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    w2 = report.get("w2_guidance_freeze") or {}
+    guidance = frozen_guidance or str(w2.get("frozen_guidance") or "")
+    if w2.get("verdict") != "W2_GUIDANCE_FROZEN" or not guidance:
+        return {"verdict": "W3_GUIDANCE_NOT_FROZEN",
+                "w2_verdict": w2.get("verdict"),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    state_root = repo_root / W3_STATE_REL
+    if (state_root / BASE_ARM).exists() or (state_root / PATCHED_ARM).exists():
+        return {"verdict": "W3_STATE_CONTAMINATED",
+                "state_root": str(state_root),
+                "note": ("Outcomes on this cohort may already be open; a "
+                         "re-run after a guidance change is forbidden"),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    from evaluation.functional.task_episode_harness.e1 import _inventory_rows
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    roster, values = _load_w3_cohort(repo_root)
+    mapped_roster = _mapped_roster(roster)
+    eval_uids = [
+        row["series_uid"] for row in mapped_roster if row["role"] == "eval"
+    ]
+    config = dict(_config())
+    specs = {
+        str(spec["task_episode_id"]): spec
+        for spec in _frozen_task_roster(AVAILABLE_TASK_COUNT)
+    }
+
+    base_snapshot = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    patched_store = SnapshotStore(repo_root / W2_STATE_REL / "snapshots")
+    patched_snapshot = compile_snapshot(
+        patched_store.root / str(w2["frozen_runtime_bundle_sha"]),
+        verify_lock=False,
+    )
+    arm_states = {
+        BASE_ARM: _g1_arm_state(repo_root, BASE_ARM, base_snapshot),
+        PATCHED_ARM: _g1_arm_state(repo_root, PATCHED_ARM, patched_snapshot),
+    }
+    # The stores live under .g1_state by default; W3 owns its own root.
+    for arm, snapshot in ((BASE_ARM, base_snapshot),
+                          (PATCHED_ARM, patched_snapshot)):
+        store = SnapshotStore(repo_root / W3_STATE_REL / arm / "snapshots")
+        store.materialize(snapshot)
+        store.set_active(snapshot.runtime_bundle_sha)
+        arm_states[arm] = _ArmState(
+            arm=arm, memories=[], episodes=[], store=store,
+            active_snapshot=snapshot,
+            active_skill_ids=_skill_ids(snapshot, local_only=True),
+        )
+
+    preregistration = {
+        "protocol_version": "w3_fresh_cohort_paired_development_v1",
+        "single_variable": G1_SURFACE,
+        "cohort_rule": (
+            "20 KDD series never referenced by any experiment, numerically "
+            "ascending, first 12 train / next 8 eval"
+        ),
+        "train_series": list(W3_COHORT_TRAIN),
+        "eval_series": list(W3_COHORT_EVAL),
+        "N0": W3_N0,
+        "max_N": W3_MAX_N,
+        "horizon": HORIZON,
+        "B": B,
+        "material_threshold": MATERIAL_THRESHOLD,
+        "llm_settings": {"model": NF_MODEL, "base_url": NF_BASE_URL},
+        "arms": {
+            BASE_ARM: "h0 base candidate_policy.proposal_guidance",
+            PATCHED_ARM: "W2-frozen candidate_policy.proposal_guidance",
+        },
+        "source_prior_in_both_arms": None,
+        "base_guidance": str(w2.get("base_guidance") or ""),
+        "frozen_guidance": guidance,
+        "primary_readouts": [
+            "real_support_probe_count", "harmful_probe_count",
+            "cumulative_support_harm", "true/false Context stratification",
+            "missed other effective Workflow",
+        ],
+        "auxiliary_readouts": ["charged_probe_cost"],
+        "one_extension_only": True,
+        "tasks_20_to_27_outcome_unopened": True,
+    }
+
+    llm_counter = [0]
+    rows: list[dict[str, Any]] = []
+
+    def run_block(task_ids: Sequence[str], label: str) -> None:
+        for task_id in task_ids:
+            spec = specs[task_id]
+            context = _w3_context(
+                repo_root, task_id, int(spec["support_origins"][0]), values
+            )
+            inventory = _inventory_rows(context)
+            condition = bool(
+                (context.get("task_fast_features") or {}).get(
+                    G1_CONDITION_FEATURE, False
+                )
+            )
+            order = [BASE_ARM, PATCHED_ARM]
+            if spec["arm_order"] == "A5_A3":
+                order = list(reversed(order))
+            print("W3_%s_START %s %s=%s" % (
+                label, task_id, G1_CONDITION_FEATURE, condition), flush=True)
+            arm_rows: dict[str, Any] = {}
+            for arm in order:
+                arm_rows[arm] = _run_arm(
+                    repo_root=repo_root,
+                    arm_state=arm_states[arm],
+                    task_spec=spec,
+                    public_context=context,
+                    source_prior=None,
+                    inventory=inventory,
+                    values=values,
+                    mapped_roster=mapped_roster,
+                    config=config,
+                    eval_uids=eval_uids,
+                    llm_counter=llm_counter,
+                    consume_proposal_guidance=True,
+                )
+            row: dict[str, Any] = {
+                "task_episode_id": task_id,
+                "support_origins": list(spec["support_origins"]),
+                "delayed_origins": list(spec["delayed_origins"]),
+                "arm_order": spec["arm_order"],
+                G1_CONDITION_FEATURE: condition,
+                "task_signature": dict(context["task_signature"]),
+            }
+            for arm in (BASE_ARM, PATCHED_ARM):
+                arm_row = arm_rows[arm]
+                row[arm] = {
+                    "stop_reason": arm_row["stop_reason"],
+                    "initial_decision": arm_row["initial"]["decision"],
+                    "initial_protocol_error": arm_row["initial"].get("error"),
+                    "proposal_guidance_consumed": (
+                        arm_row["proposal_guidance_consumed"]
+                    ),
+                    "first_proposal": _mechanism_first_probe(arm_row),
+                    "mechanism_stats": _arm_mechanism_stats(arm_row),
+                    "metrics": arm_row["metrics"],
+                    "probes": arm_row["probes"],
+                    "winner": arm_row["winner"],
+                    "lifecycle": arm_row["lifecycle"],
+                    "target_memories_after": arm_row["target_memories_after"],
+                    "active_local_skill_ids_after": (
+                        arm_row["active_local_skill_ids_after"]
+                    ),
+                }
+            rows.append(row)
+            print("W3_%s_DONE %s %s=%s/lead_mech=%s %s=%s/lead_mech=%s" % (
+                label, task_id,
+                BASE_ARM, row[BASE_ARM]["stop_reason"],
+                row[BASE_ARM]["first_proposal"]["is_mechanism"],
+                PATCHED_ARM, row[PATCHED_ARM]["stop_reason"],
+                row[PATCHED_ARM]["first_proposal"]["is_mechanism"]), flush=True)
+
+    n0_ids = ["e1v2_task_%02d" % index for index in range(1, W3_N0 + 1)]
+    run_block(n0_ids, "N0")
+
+    from evaluation.functional.task_episode_harness.e1 import (
+        _paired_summary, _sample_plan,
+    )
+
+    summary = _paired_summary(rows)
+    plan = _sample_plan(summary, available_task_count=W3_MAX_N)
+    extension_used = 0
+    n_final = min(int(plan["N_final"]), W3_MAX_N)
+    if n_final > len(rows):
+        extension_ids = [
+            "e1v2_task_%02d" % index for index in range(len(rows) + 1, n_final + 1)
+        ]
+        extension_used = len(extension_ids)
+        run_block(extension_ids, "EXT")
+        summary = _paired_summary(rows)
+
+    false_side = _side_summary(rows, condition=False)
+    true_side = _side_summary(rows, condition=True)
+    decomposition = derive_stage_decomposition(rows)
+    missed = (
+        false_side[PATCHED_ARM]["other_effective_workflow_count"]
+        < false_side[BASE_ARM]["other_effective_workflow_count"]
+    )
+    result = {
+        "protocol_version": "w3_fresh_cohort_paired_development_v1",
+        "verdict": "W3_PAIRED_DEVELOPMENT_COMPLETE",
+        "preregistration": preregistration,
+        "sample_plan": {**plan, "capped_N_final": n_final,
+                        "extension_tasks_run": extension_used,
+                        "one_extension_only": True},
+        "paired_summary": summary,
+        "false_context_side": false_side,
+        "true_context_side": true_side,
+        "stage_decomposition": decomposition,
+        "missed_other_effective_workflow": missed,
+        "rows": rows,
+        "llm_api_call_count": llm_counter[0],
+        "boundary": {
+            "tasks_20_to_27_outcome_unopened": len(rows) < 20,
+            "guidance_frozen_before_outcome": True,
+            "no_rerun_after_guidance_change": True,
+            "e2_not_started": True,
+            "sealed_confirmation_opened": False,
+            "weather_not_started": True,
+        },
+        "wall_seconds": time.perf_counter() - started,
+    }
+    return result
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -1276,6 +1798,8 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "run_w3",
+    "run_w2_guidance_freeze",
     "derive_stage_decomposition",
     "REPLAY_TASK_IDS",
     "FRESH_TASK_IDS",
