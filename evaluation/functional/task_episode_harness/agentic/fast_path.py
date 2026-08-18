@@ -44,6 +44,10 @@ from SelfEvolvingHarnessTS.methods.ttha.generative_workflow import (
     CandidateCompilationError,
     compile_workflow_proposal,
 )
+from SelfEvolvingHarnessTS.runtime.agent_backend import (
+    AgentCallBudgetExceeded,
+    AgentTransportError,
+)
 
 from .dispatch import (
     ParameterOwnershipViolation,
@@ -52,13 +56,24 @@ from .dispatch import (
 
 IDENTITY_CHOICE = "identity"
 
-# A stage can fail for reasons that are the Agent's, not the instrument's: a
-# response that never becomes a valid envelope, a payload that fails its own
-# schema or post-validator, a tool protocol violation, or simply running the
-# tool-round limit out.  All of them end this Task Episode with
-# AGENT_PROTOCOL_ERROR -- a deterministic mechanical exit that is reported and
-# never routed to Slow -- instead of ending the whole run.
-_STAGE_FAULTS = (AgentProtocolError, StagePostValidationError, PermissionError)
+# Three kinds of stage fault, three doors.  Only the first is behaviour, and
+# none of them may end the run -- a Task Episode is the unit that fails.
+#
+# _AGENT_FAULTS      the Agent's own doing: a response that never becomes a
+#                    valid envelope, a payload that fails its schema or
+#                    post-validator, a tool protocol violation, the tool-round
+#                    limit.  Exits as AGENT_PROTOCOL_ERROR, reported, never
+#                    routed to Slow.
+# _INFRASTRUCTURE    the relay, not the Agent and not the Judge: a transport
+#                    failure that survived its retries, or this arm-Task's LLM
+#                    call ceiling.  Exits as TRANSPORT_FAILED or
+#                    LLM_CALL_BUDGET_EXHAUSTED and is excluded from every
+#                    behavioural readout, exactly like an unreadable
+#                    instrument -- it is not an abstention and not a decision.
+# instrument         the Support or delayed evaluator; handled at its own call
+#                    site as INSTRUMENT_UNREADABLE.
+_AGENT_FAULTS = (AgentProtocolError, StagePostValidationError, PermissionError)
+_INFRASTRUCTURE_FAULTS = (AgentTransportError, AgentCallBudgetExceeded)
 
 
 # Stage-local decision vocabulary reused unchanged from the E1 Task loop, so
@@ -69,6 +84,8 @@ STOP_ABSTAIN = "AGENT_ABSTAIN"
 STOP_REQUEST_OBSERVATION = "REQUEST_OBSERVATION"
 STOP_INSTRUMENT = "INSTRUMENT_UNREADABLE"
 STOP_PROTOCOL = "AGENT_PROTOCOL_ERROR"
+STOP_TRANSPORT = "TRANSPORT_FAILED"
+STOP_LLM_BUDGET = "LLM_CALL_BUDGET_EXHAUSTED"
 
 
 @dataclasses.dataclass
@@ -86,7 +103,9 @@ class FastPathTrace:
     chosen_candidate_id: str = IDENTITY_CHOICE
     stop_reason: str = STOP_NO_DRAFT
     instrument_unreadable: bool = False
+    infrastructure_failed: bool = False
     protocol_error: str | None = None
+    infrastructure_error: str | None = None
     ownership_audits: list[dict[str, Any]] = dataclasses.field(
         default_factory=list
     )
@@ -274,9 +293,20 @@ def run_agentic_fast_path(
                 payload, {key: True for key in _observed_keys(core, trace)}
             ),
         )
-    except _STAGE_FAULTS as exc:
+    except _AGENT_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL
         trace.protocol_error = f"inspect: {type(exc).__name__}: {exc}"
+        return trace
+    except _INFRASTRUCTURE_FAULTS as exc:
+        trace.infrastructure_failed = True
+        trace.stop_reason = (
+            STOP_LLM_BUDGET
+            if isinstance(exc, AgentCallBudgetExceeded)
+            else STOP_TRANSPORT
+        )
+        trace.infrastructure_error = (
+            f"inspect: {type(exc).__name__}: {exc}"
+        )
         return trace
 
     # ---- PROPOSE ---------------------------------------------------------
@@ -305,9 +335,20 @@ def run_agentic_fast_path(
                 payload, inspect_payload
             ),
         )
-    except _STAGE_FAULTS as exc:
+    except _AGENT_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL
         trace.protocol_error = f"propose: {type(exc).__name__}: {exc}"
+        return trace
+    except _INFRASTRUCTURE_FAULTS as exc:
+        trace.infrastructure_failed = True
+        trace.stop_reason = (
+            STOP_LLM_BUDGET
+            if isinstance(exc, AgentCallBudgetExceeded)
+            else STOP_TRANSPORT
+        )
+        trace.infrastructure_error = (
+            f"propose: {type(exc).__name__}: {exc}"
+        )
         return trace
 
     candidates = list((propose_payload or {}).get("candidates") or ())
@@ -437,9 +478,20 @@ def run_agentic_fast_path(
                 harness_view=harness_view,
                 schema_name="fast_select_v1",
             )
-        except _STAGE_FAULTS as exc:
+        except _AGENT_FAULTS as exc:
             trace.stop_reason = STOP_PROTOCOL
             trace.protocol_error = f"select: {type(exc).__name__}: {exc}"
+            return trace
+        except _INFRASTRUCTURE_FAULTS as exc:
+            trace.infrastructure_failed = True
+            trace.stop_reason = (
+                STOP_LLM_BUDGET
+                if isinstance(exc, AgentCallBudgetExceeded)
+                else STOP_TRANSPORT
+            )
+            trace.infrastructure_error = (
+                f"select: {type(exc).__name__}: {exc}"
+            )
             return trace
         chosen = str((select_payload or {}).get("chosen_candidate_id") or "")
         actions = [
@@ -498,8 +550,10 @@ __all__ = [
     "STOP_ABSTAIN",
     "STOP_INSTRUMENT",
     "STOP_NO_DRAFT",
+    "STOP_LLM_BUDGET",
     "STOP_PROTOCOL",
     "STOP_REQUEST_OBSERVATION",
+    "STOP_TRANSPORT",
     "STOP_TRUST",
     "run_agentic_fast_path",
 ]

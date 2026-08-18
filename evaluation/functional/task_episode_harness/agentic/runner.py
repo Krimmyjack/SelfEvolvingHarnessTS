@@ -54,6 +54,7 @@ from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import resolve_harness_view
 from SelfEvolvingHarnessTS.runtime.agent_backend import (
+    AgentTransportError,
     AgictoChatCompletionsBackend,
     BudgetedAgentBackend,
 )
@@ -148,6 +149,36 @@ def load_cohort(repo_root: Path, name: str) -> dict[str, Any]:
     }
 
 
+class _RetryingTransport:
+    """Bounded retry around a flaky relay, and nothing else.
+
+    The second live nine-Task run died at Task three on an APIConnectionError.
+    The backend already classifies transient relay errors and raises
+    AgentTransportError for them; nobody was retrying.  Retries are counted
+    separately from stage requests so LLM cost stays honest -- a retried
+    request is one stage decision and more than one API call.
+    """
+
+    def __init__(self, delegate: Any, *, attempts: int = 3,
+                 backoff_seconds: float = 2.0) -> None:
+        self.delegate = delegate
+        self.attempts = int(attempts)
+        self.backoff_seconds = float(backoff_seconds)
+        self.transport_retries = 0
+
+    def complete(self, request: Any) -> Any:
+        last: Exception | None = None
+        for attempt in range(self.attempts):
+            try:
+                return self.delegate.complete(request)
+            except AgentTransportError as exc:
+                last = exc
+                self.transport_retries += 1
+                if attempt + 1 < self.attempts:
+                    time.sleep(self.backoff_seconds * (attempt + 1))
+        raise last  # type: ignore[misc]
+
+
 def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
     import os
 
@@ -162,8 +193,10 @@ def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY or AGICTO_API_KEY is required")
     return BudgetedAgentBackend(
-        AgictoChatCompletionsBackend(
-            api_key=api_key, base_url=NF_BASE_URL, timeout_seconds=240
+        _RetryingTransport(
+            AgictoChatCompletionsBackend(
+                api_key=api_key, base_url=NF_BASE_URL, timeout_seconds=240
+            )
         ),
         maximum_calls=maximum_calls,
     )
@@ -445,6 +478,7 @@ def _run_arm(
         "stop_reason": stop_reason,
         "chosen_candidate_id": trace.chosen_candidate_id,
         "protocol_error": trace.protocol_error,
+        "infrastructure_error": trace.infrastructure_error,
         "stages": trace.stages,
         "tool_observations": trace.tool_observations,
         "proposals": trace.proposals,
@@ -495,6 +529,10 @@ def _run_arm(
                 "prompt_tokens": int(getattr(backend, "prompt_tokens", 0)),
                 "completion_tokens": int(getattr(backend, "completion_tokens", 0)),
                 "returned_models": sorted(getattr(backend, "returned_models", ())),
+            "transport_retries": int(
+                getattr(getattr(backend, "delegate", None),
+                        "transport_retries", 0)
+            ),
             },
             "target_support": {
                 "real_support_probe_count": real_probe_count,
@@ -528,6 +566,10 @@ def _run_arm(
                 stop_reason in {STOP_ABSTAIN, STOP_REQUEST_OBSERVATION}
             ),
             "instrument_unreadable": int(instrument_unreadable),
+            # Infrastructure, not the Agent and not the Judge.  Excluded from
+            # every behavioural readout: it is not an abstention, not a
+            # decision, and never evidence for a Harness edit.
+            "infrastructure_failed": int(trace.infrastructure_failed),
             "distinct_series_observed": gateway.accounting()[
                 "distinct_series_observed"
             ],
@@ -577,6 +619,30 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             ),
             "workspace_tool_calls": tool_calls,
         }
+    infrastructure = [
+        {"task_episode_id": row["task_episode_id"], "arm": arm_row["arm"],
+         "stop_reason": arm_row["stop_reason"],
+         "error": arm_row.get("infrastructure_error")}
+        for row in rows for arm_row in arms(row)
+        if int(arm_row["metrics"].get("infrastructure_failed", 0))
+    ]
+    usable = [
+        arm_row for row in rows for arm_row in arms(row)
+        if not int(arm_row["metrics"].get("infrastructure_failed", 0))
+    ]
+    if infrastructure and not usable:
+        return {
+            "first_fault": "INFRASTRUCTURE_FAILED",
+            "cause": "MECHANICAL_EXIT",
+            "layer": "INFRASTRUCTURE",
+            "editable": False,
+            "occurrences": infrastructure,
+            "note": (
+                "Every arm-Task ended on the relay, not on a decision. There "
+                "is no behaviour in this run to attribute."
+            ),
+            "workspace_tool_calls": tool_calls,
+        }
     protocol = [
         {"task_episode_id": row["task_episode_id"], "arm": arm_row["arm"],
          "error": arm_row["protocol_error"]}
@@ -611,6 +677,7 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
          "charged_probe_cost": arm_row["metrics"]["charged_probe_cost"]}
         for row in rows for arm_row in arms(row)
         if not int(arm_row["metrics"]["task_local_active"])
+        and not int(arm_row["metrics"].get("infrastructure_failed", 0))
     ]
     requested_observation = [
         {"task_episode_id": row["task_episode_id"], "arm": arm_row["arm"]}
@@ -643,6 +710,12 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         row["real_support_probe_count"] for row in barren_arms
     )
 
+    requested_observation = [
+        entry for entry in requested_observation
+        if (entry["task_episode_id"], entry["arm"]) not in {
+            (row["task_episode_id"], row["arm"]) for row in infrastructure
+        }
+    ]
     if not (negative_probes or barren_arms or requested_observation):
         return {
             "first_fault": "NONE_BLOCKING",
@@ -689,6 +762,7 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "arm_tasks_requesting_an_absent_observation": requested_observation,
         "arm_tasks_with_no_proposal": no_candidate,
         "arm_tasks_excluded_as_protocol_degradation": sorted(degraded),
+        "arm_tasks_excluded_as_infrastructure_failure": infrastructure,
         "workspace_tool_calls": tool_calls,
         "note": (
             "One bad result is enough to open the diagnosis and is not enough "
@@ -1174,6 +1248,12 @@ def run_g1_pipeline(
             "instrument_unreadable_count": sum(
                 r["metrics"]["instrument_unreadable"] for r in arm_rows
             ),
+            "infrastructure_failed_count": sum(
+                r["metrics"].get("infrastructure_failed", 0) for r in arm_rows
+            ),
+            "transport_retries": sum(
+                r["cost"]["llm"].get("transport_retries", 0) for r in arm_rows
+            ),
         }
 
     attribution = attribute_first_fault(scored)
@@ -1347,11 +1427,21 @@ def _closure_criteria(
                 "proposed_operator_structures_by_arm": proposed,
             })
 
+    excluded = [
+        {"arm": r["arm"], "stop_reason": r["stop_reason"]}
+        for r in all_arms
+        if int(r["metrics"].get("instrument_unreadable", 0))
+        or int(r["metrics"].get("infrastructure_failed", 0))
+    ]
+    # An excluded arm-Task is not behaviour, so it cannot be the negative
+    # Experience that satisfies the criterion below.
     negative_arms = [
         {"arm": r["arm"], "stop_reason": r["stop_reason"]}
         for r in all_arms
         if r["stop_reason"] in {STOP_ABSTAIN, STOP_NO_DRAFT,
                                 STOP_REQUEST_OBSERVATION}
+        and not int(r["metrics"].get("instrument_unreadable", 0))
+        and not int(r["metrics"].get("infrastructure_failed", 0))
     ]
     criteria = {
         "one_command_runs_the_whole_loop": True,
@@ -1389,10 +1479,14 @@ def _closure_criteria(
             else slow.get("verdict")
             == "G1_SLOW_PATCH_CHANGES_NEXT_ROUND_BEHAVIOUR"
         ),
-        # Every arm-Task carries the flag, and a flagged Task is excluded from
-        # the behavioural readouts rather than counted as a tie.
+        # Every arm-Task carries both flags, and a flagged Task is excluded
+        # from the behavioural readouts rather than counted as a tie.  An
+        # unreadable Judge and a failed relay are different exits and are
+        # recorded as different exits.
         "instrument_failures_excluded_not_tied": all(
-            "instrument_unreadable" in r["metrics"] for r in all_arms
+            "instrument_unreadable" in r["metrics"]
+            and "infrastructure_failed" in r["metrics"]
+            for r in all_arms
         ),
         "real_and_charged_cost_reported_separately": all(
             "real_support_probe_count" in r["metrics"]
@@ -1407,6 +1501,7 @@ def _closure_criteria(
             name for name, value in criteria.items() if value == "NOT_EXERCISED"
         ),
         "negative_arm_tasks": negative_arms,
+        "excluded_arm_tasks": excluded,
         "deterministic_reference_chains": reference_chains,
         "contemporaneous_contrast": tool_effect,
         "workspace_tool_call_total": tool_calls,
