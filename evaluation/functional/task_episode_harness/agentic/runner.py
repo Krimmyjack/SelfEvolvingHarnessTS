@@ -964,8 +964,23 @@ def run_slow_and_replay(
         if not (context.get("scope_series_uids") or ()):
             continue
         inventory = _inventory_rows(context)
-        entry: dict[str, Any] = {"task_episode_id": task_id}
-        for label in ("BASE", "PATCHED"):
+        # AB/BA, not AB always.  The first replay ran BASE then PATCHED on
+        # every Task, so anything that depends on being second in the pair --
+        # a relay that degrades within a pair, a model that formats worse on
+        # the later call -- lands entirely on PATCHED.  It did: across two
+        # cohorts the PATCHED arm hit AGENT_PROTOCOL_ERROR five times out of
+        # eighteen and the BASE arm zero.  Order is alternated by the Task's
+        # own frozen arm_order so a systematic second-position effect cannot
+        # be read as a patch effect.
+        labels = (
+            ("BASE", "PATCHED") if spec["arm_order"] == "A3_A5"
+            else ("PATCHED", "BASE")
+        )
+        entry: dict[str, Any] = {
+            "task_episode_id": task_id,
+            "replay_arm_order": list(labels),
+        }
+        for label in labels:
             arm_row = _run_arm(
                 repo_root=repo_root,
                 arm_state=replay_states[label],
