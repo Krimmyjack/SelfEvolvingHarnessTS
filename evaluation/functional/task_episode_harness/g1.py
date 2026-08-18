@@ -2140,6 +2140,432 @@ def run_a5a3_natural(report_path: Path = REPORT_REL) -> dict[str, Any]:
     }
 
 
+# --------------------------------------------- guidance v2: cross-cohort conflict
+
+
+V2_STATE_REL = ".v2_state"
+COHORT_E31 = "e31"
+COHORT_T233 = "T233"
+
+
+def _cohort_attempt_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Exposed attempts tagged with the cohort that produced them.
+
+    The cohort tag is an evidence-provenance label, exactly like the UNGUIDED /
+    GUIDANCE_CONDITIONED split.  It is never a matching feature and never
+    enters an applicability predicate.
+    """
+    base_guidance = str(
+        ((report.get("w2_guidance_freeze") or {}).get("base_guidance")) or ""
+    )
+    rows = _provenance_attempt_rows(report, base_guidance)
+    for row in rows:
+        row["cohort"] = COHORT_E31
+    a5a3 = report.get("a5a3_natural_development") or {}
+    for task_row in a5a3.get("rows") or []:
+        condition = bool(task_row.get(G1_CONDITION_FEATURE))
+        for arm in (BASE_ARM, PATCHED_ARM):
+            arm_row = task_row.get(arm) or {}
+            provenance = _guidance_provenance(
+                arm_row.get("proposal_guidance_consumed"), base_guidance
+            )
+            for probe in arm_row.get("probes") or []:
+                gain = probe.get("support_gain")
+                program = tuple(
+                    str(step["op"])
+                    for step in (probe.get("compiled_steps") or [])
+                )
+                rows.append({
+                    "task_episode_id": (
+                        "a5a3_" + str(task_row["task_episode_id"])
+                    ),
+                    "arm": arm,
+                    "attempt_index": probe.get("attempt_index"),
+                    "program": list(program),
+                    "is_mechanism": program == G1_MECHANISM_PROGRAM,
+                    "contains_mechanism_operator": (
+                        G1_MECHANISM_PROGRAM[0] in program
+                    ),
+                    "support_gain": gain,
+                    "gain_readable": isinstance(gain, (int, float)),
+                    "task_signature": dict(task_row.get("task_signature") or {}),
+                    G1_CONDITION_FEATURE: condition,
+                    "support_origins": list(task_row.get("support_origins") or []),
+                    "arm_stop_reason": str(arm_row.get("stop_reason") or ""),
+                    "evidence_source": "a5a3_natural",
+                    "guidance_provenance": provenance,
+                    "cohort": COHORT_T233,
+                })
+    return rows
+
+
+def _cross_cohort_census(
+    rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Complete census with one extra grouping key: the producing cohort."""
+    cells: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for row in rows:
+        if not row["gain_readable"] or not row["program"]:
+            continue
+        key = (
+            tuple(row["program"]),
+            bool(row[G1_CONDITION_FEATURE]),
+            str(row["cohort"]),
+            _relation(row["support_gain"]),
+        )
+        cell = cells.setdefault(key, {"task_ids": set(), "attempt_count": 0})
+        cell["task_ids"].add(row["task_episode_id"])
+        cell["attempt_count"] += 1
+    census = []
+    for key in sorted(
+        cells,
+        key=lambda item: (
+            G1_MECHANISM_PROGRAM[0] not in item[0],
+            len(item[0]), item[0], not item[1], item[2], item[3],
+        ),
+    ):
+        program, condition, cohort, relation = key
+        cell = cells[key]
+        census.append({
+            "canonical_program": list(program),
+            G1_CONDITION_FEATURE: condition,
+            "cohort": cohort,
+            "support_relation": relation,
+            "distinct_task_count": len(cell["task_ids"]),
+            "attempt_count": cell["attempt_count"],
+        })
+    return census
+
+
+def attribute_cross_cohort_conflict(
+    report: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Deterministic Runtime attribution of the cross-cohort Utility flip.
+
+    Zero LLM, zero new Outcome.  The bounded first-fault ladder is applied with
+    one reading stated explicitly rather than assumed:
+
+    Step 1 asks whether the fault requires a *new* Context condition before it
+    can be repaired.  It does not.  The observed fault is that guidance v1
+    makes an unconditional active recommendation on single-cohort evidence; the
+    correct behaviour -- not mandating, and deferring to other public evidence
+    or Target Support -- is already available to the proposal layer and needs
+    no new feature.  So this is not CONTEXT_GAP.  A CONTEXT_GAP reading would
+    require inventing a discriminator between the two cohorts, which is exactly
+    what the ruling forbids.
+    """
+    rows = _cohort_attempt_rows(report)
+    census = _cross_cohort_census(rows)
+    mechanism = [
+        row for row in rows
+        if row["is_mechanism"] and row["gain_readable"]
+        and bool(row[G1_CONDITION_FEATURE]) is True
+    ]
+
+    def side(cohort: str, relation: str) -> dict[str, Any]:
+        ids = sorted({
+            row["task_episode_id"] for row in mechanism
+            if row["cohort"] == cohort
+            and _relation(row["support_gain"]) == relation
+        })
+        return {"distinct_task_count": len(ids), "task_episode_ids": ids}
+
+    e31_pos = side(COHORT_E31, "POSITIVE")
+    e31_neg = side(COHORT_E31, "NEGATIVE")
+    t233_pos = side(COHORT_T233, "POSITIVE")
+    t233_neg = side(COHORT_T233, "NEGATIVE")
+
+    conflict_confirmed = bool(
+        e31_pos["distinct_task_count"] >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+        and t233_neg["distinct_task_count"] >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+        and e31_neg["distinct_task_count"] == 0
+        and t233_pos["distinct_task_count"] == 0
+    )
+    instrument_valid = all(row["gain_readable"] for row in mechanism)
+    unreadable = (
+        report.get("a5a3_natural_development") or {}
+    ).get("instrument_unreadable_task_ids") or []
+    correct_behaviour_available = True  # abstaining from an active mandate
+
+    if not (instrument_valid and not unreadable):
+        cause, stop = "NO_ACTIONABLE_EVIDENCE", "instrument_unreadable"
+    elif not conflict_confirmed:
+        cause, stop = "NO_ACTIONABLE_EVIDENCE", "conflict_not_repeated"
+    elif correct_behaviour_available:
+        cause, stop = "DECISION_GAP", (
+            "repeated avoidable harm from an unconditional active clause whose "
+            "supporting evidence exists in one cohort only"
+        )
+    else:
+        cause, stop = "WORKFLOW_GAP", "correct_behaviour_unavailable"
+
+    route_facts = {
+        "expressibility_status": "PROVEN_EXPRESSIBLE",
+        "expressibility_cause": None,
+        "capability_skill_exists": True,
+        "skill_retrieved": False,
+        "constrained_proposal_succeeds": None,
+    }
+    route = route_program_supply_fault(
+        **route_facts,
+        context_resolved_decision_fault=(cause == "DECISION_GAP"),
+    )
+    return {
+        "check": "cross_cohort_conflict_attribution",
+        "zero_llm": True, "zero_new_outcome": True,
+        "cause": cause,
+        "repair_scope": G1_REPAIR_SCOPE if cause == "DECISION_GAP" else "NONE",
+        "ladder_stop": stop,
+        "conflict": {
+            "canonical_program": list(G1_MECHANISM_PROGRAM),
+            "condition": G1_CONDITION_FEATURE + " == true",
+            COHORT_E31: {"positive": e31_pos, "negative": e31_neg},
+            COHORT_T233: {"positive": t233_pos, "negative": t233_neg},
+            "confirmed": conflict_confirmed,
+        },
+        "instrument_unreadable_task_ids": list(unreadable),
+        "cross_cohort_census": census,
+        "route": {"fields": route_facts, "result": list(route)},
+        "authorized_surface": G1_SURFACE,
+        "verdict": (
+            "CROSS_COHORT_CONFLICT_CONFIRMED" if cause == "DECISION_GAP"
+            else "CROSS_COHORT_CONFLICT_NOT_ACTIONABLE"
+        ),
+    }
+
+
+_V2_SLOW_SYSTEM = (
+    "You are the Slow Harness update stage. The Runtime has attributed the "
+    "first fault and authorized exactly one Harness surface, "
+    "candidate_policy.proposal_guidance. You may not change the Cause, widen "
+    "the scope, or approve your own edit. "
+    "A previously deployed version of this guidance is now in conflict with "
+    "new evidence. You receive that deployed text, a complete de-duplicated "
+    "evidence census grouped by canonical program, public Context condition "
+    "and producing cohort, and no trajectories or utility numbers -- so do not "
+    "invent thresholds. Evidence is counted in distinct_task_count. "
+    "Exactly one kind of revision is authorized: keep the clauses whose "
+    "supporting evidence is consistent across every cohort, and revoke or "
+    "downgrade any active recommendation whose support exists in one cohort "
+    "only. A downgraded clause must say that the condition is not sufficient "
+    "on its own to prioritize a Workflow and that other public evidence or "
+    "Target Support is required; it must not become a prohibition. "
+    "You may not introduce a new observable feature, a new numeric threshold, "
+    "a new operator, or any statement about Programs, Risk or the Judge. "
+    "Write the full replacement text. Return JSON only: "
+    "{'decision':'PATCH','new_guidance':'...'} or "
+    "{'decision':'ABSTAIN','reason':'...'}."
+)
+
+
+def _v2_clause_audit(
+    guidance: str,
+    census: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Mechanical check that v2 kept the consistent clause and dropped the other.
+
+    No parser: the frozen vocabulary of this slice is one operator and one
+    Context feature, so the two directional clauses are enumerated lexically.
+    A clause is authorized only if its supporting cell is consistent in EVERY
+    cohort that observed it.
+    """
+    lowered = guidance.lower()
+    mechanism = G1_MECHANISM_PROGRAM[0]
+
+    def cells(condition: bool) -> dict[str, dict[str, int]]:
+        out: dict[str, dict[str, int]] = {}
+        for cell in census:
+            if (
+                list(cell["canonical_program"]) != [mechanism]
+                or bool(cell[G1_CONDITION_FEATURE]) is not condition
+            ):
+                continue
+            out.setdefault(str(cell["cohort"]), {})[
+                str(cell["support_relation"])
+            ] = int(cell["distinct_task_count"])
+        return out
+
+    true_cells, false_cells = cells(True), cells(False)
+
+    # Clause kinds do not share an evidence bar.  The frozen principle is
+    # already asymmetric -- "a single opposite cell may block a global ban but
+    # never authorizes a new active recommendation" -- because authorizing an
+    # act removes optionality while weakening one preserves it.  Applied here:
+    #
+    #   ACTIVE_RECOMMENDATION ("prioritize X when C") must be positive in every
+    #   cohort that observed C, with no negatives anywhere;
+    #   DEPRIORITIZATION ("do not default to X when C") needs repeated harm in
+    #   at least one cohort and must not be contradicted by a cohort where the
+    #   same cell is uniformly positive.
+    def mandate_supported(group: Mapping[str, Mapping[str, int]]) -> bool:
+        seen = [c for c in group.values() if sum(c.values())]
+        return bool(seen) and all(
+            c.get("POSITIVE", 0) > 0 and c.get("NEGATIVE", 0) == 0
+            for c in seen
+        )
+
+    def deprioritization_supported(
+        group: Mapping[str, Mapping[str, int]],
+    ) -> bool:
+        harm = any(
+            c.get("NEGATIVE", 0) >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            for c in group.values()
+        )
+        contradicted = any(
+            c.get("POSITIVE", 0) >= GENERAL_EVIDENCE_MIN_DISTINCT_TASKS
+            and c.get("NEGATIVE", 0) == 0
+            for c in group.values()
+        )
+        return bool(harm and not contradicted)
+
+    true_consistent = mandate_supported(true_cells)
+    false_consistent = deprioritization_supported(false_cells)
+
+    mentions_true_priority = (
+        mechanism in lowered
+        and any(word in lowered for word in ("prioritize", "prioritise",
+                                             "prefer", "first choice"))
+    )
+    downgraded = any(
+        phrase in lowered for phrase in (
+            "not sufficient", "not enough", "on its own", "alone",
+            "additional public evidence", "other public evidence",
+            "target support", "does not by itself", "not by itself",
+        )
+    )
+    keeps_false_clause = mechanism in lowered and (
+        "false" in lowered or "not sufficient" in lowered
+    )
+    return {
+        "true_side_evidence_consistent_across_cohorts": true_consistent,
+        "false_side_evidence_consistent_across_cohorts": false_consistent,
+        "true_side_cells": true_cells,
+        "false_side_cells": false_cells,
+        "text_still_asserts_true_side_priority": mentions_true_priority,
+        "text_downgrades_true_side": downgraded,
+        "text_keeps_false_side_clause": keeps_false_clause,
+        "pass": bool(
+            keeps_false_clause
+            and false_consistent
+            and (not true_consistent)
+            and (downgraded or not mentions_true_priority)
+        ),
+    }
+
+
+def run_guidance_v2(report_path: Path = REPORT_REL) -> dict[str, Any]:
+    """One Slow PATCH producing guidance v2.  v1 is preserved, never edited."""
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    w2 = report.get("w2_guidance_freeze") or {}
+    v1 = str(w2.get("frozen_guidance") or "")
+    base_guidance = str(w2.get("base_guidance") or "")
+
+    attribution = attribute_cross_cohort_conflict(report)
+    result: dict[str, Any] = {
+        "protocol_version": "guidance_v2_cross_cohort_repair_v1",
+        "attribution": attribution,
+        "guidance_v1_preserved": v1,
+        "base_guidance": base_guidance,
+        "no_retry_attempted": True,
+        "no_kdd_validation_of_v2": True,
+    }
+    if attribution["verdict"] != "CROSS_COHORT_CONFLICT_CONFIRMED":
+        return {**result, "verdict": "V2_CAUSE_NOT_ACTIONABLE",
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    payload = {
+        "attributed_cause": attribution["cause"],
+        "repair_scope": attribution["repair_scope"],
+        "surface_catalog": [{
+            "surface_id": G1_SURFACE, "target_class": "proposal_control",
+            "surface_type": "text", "allowed_operations": ["PATCH"],
+        }],
+        "deployed_guidance": v1,
+        "conflict": attribution["conflict"],
+        "evidence_census": attribution["cross_cohort_census"],
+        "evidence_census_contract": {
+            "unit_of_evidence": "distinct_task_count",
+            "attempt_count_role": "diagnostic_only",
+            "cohort_is_provenance_only": (
+                "the cohort label groups evidence; it is never a matching "
+                "feature and must not appear in the guidance text"
+            ),
+        },
+        "authorized_revision": (
+            "keep clauses consistent across every cohort; revoke or downgrade "
+            "any active recommendation supported by a single cohort"
+        ),
+    }
+    try:
+        response = _e1_slow_call([
+            {"role": "system", "content": _V2_SLOW_SYSTEM},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ])
+    except (RuntimeError, ValueError) as exc:
+        return {**result, "verdict": "V2_GUIDANCE_SUPPLY_FAILED",
+                "stage": "slow_call",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+    result["slow_payload"] = payload
+    result["slow_response"] = response
+    v2 = str(response.get("new_guidance") or "").strip()
+    if str(response.get("decision") or "") != "PATCH" or not v2:
+        return {**result, "verdict": "V2_GUIDANCE_SUPPLY_FAILED",
+                "stage": "slow_decision", "llm_api_call_count": 1,
+                "wall_seconds": time.perf_counter() - started}
+
+    clause_audit = _v2_clause_audit(v2, attribution["cross_cohort_census"])
+    result["clause_audit"] = clause_audit
+    result["proposed_guidance_v2"] = v2
+    if not clause_audit["pass"]:
+        return {**result, "verdict": "V2_CLAUSE_AUDIT_FAILED",
+                "llm_api_call_count": 1,
+                "wall_seconds": time.perf_counter() - started}
+
+    h0 = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    store = SnapshotStore(repo_root / V2_STATE_REL / "snapshots")
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter()
+    )
+    store.materialize(h0)
+    try:
+        receipt = _apply_guidance_patch(controller, store, h0, v2)
+    except (EditControllerError, ValueError, TypeError) as exc:
+        return {**result, "verdict": "V2_GUIDANCE_SUPPLY_FAILED",
+                "stage": "edit_controller",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "llm_api_call_count": 1,
+                "wall_seconds": time.perf_counter() - started}
+    patched = receipt.candidate_snapshot
+    store.set_active(patched.runtime_bundle_sha)
+    before, after = dict(h0.candidate_policy), dict(patched.snapshot.candidate_policy)
+    changed = sorted(
+        k for k in set(before) | set(after) if before.get(k) != after.get(k)
+    )
+    single = bool(
+        changed == ["proposal_guidance"]
+        and list(receipt.source_surfaces_changed) == [G1_SURFACE]
+        and _skill_ids(h0) == _skill_ids(patched.snapshot)
+        and h0.instruction == patched.snapshot.instruction
+    )
+    return {
+        **result,
+        "verdict": "V2_GUIDANCE_FROZEN" if single else "V2_MULTI_SURFACE_MODIFICATION",
+        "guidance_v2": str(after.get("proposal_guidance") or ""),
+        "changed_candidate_policy_keys": changed,
+        "single_surface_diff": single,
+        "v2_runtime_bundle_sha": patched.runtime_bundle_sha,
+        "llm_api_call_count": 1,
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -2363,6 +2789,8 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "attribute_cross_cohort_conflict",
+    "run_guidance_v2",
     "run_a5a3_natural",
     "eval_substrate_preflight",
     "reaudit_frozen_guidance",
