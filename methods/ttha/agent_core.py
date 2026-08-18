@@ -209,7 +209,12 @@ class TTHAAgentCore:
                     "tool_request_rule": (
                         "Request exactly one allowed tool, then stop the response "
                         "immediately and wait for its tool-result/1 message. Do not "
-                        "append another tool request or a stage result."
+                        "append another tool request or a stage result. "
+                        "A tool_request envelope carries exactly these four "
+                        "fields: schema_version, kind, call_id, tool_name, "
+                        "arguments. It must NOT carry a stage field -- only a "
+                        "stage_result does. Any extra field makes the envelope "
+                        "invalid."
                     ),
                     "tool_request_template": {
                         "schema_version": "agent-envelope/1",
@@ -314,6 +319,17 @@ class TTHAAgentCore:
                 '"kind":"stage_result",'
                 f'"stage":"{stage}","payload":{{...}}}}'
             )
+            # 重试反馈必须保留工具这条路（2026-08-19）：此前只回显
+            # stage_result 模板，于是一次无效的 tool_request 之后，模型被
+            # 推去放弃工具调用直接交结果——实测表现为 tools=0、提案为空、
+            # 以 ABSTAIN 收尾。工具可用时把 tool_request 模板一并回显。
+            if tool_schemas:
+                outer_hint += (
+                    ' OR {"schema_version":"agent-envelope/1",'
+                    '"kind":"tool_request","call_id":"...",'
+                    '"tool_name":"...","arguments":{...}}'
+                    ' (a tool_request carries no stage field)'
+                )
             if role is AgentRole.SLOW and stage == "edit":
                 outer_hint += (
                     ' OR {"schema_version":"agent-envelope/1",'
