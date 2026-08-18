@@ -465,11 +465,21 @@ def _validate_hypothesis_references(
         if not isinstance(hypothesis_id, str) or not hypothesis_id:
             continue
         if not valid_ids or hypothesis_id not in valid_ids:
+            # 反馈必须带上合法 id 集合（2026-08-19）：旧文案只说"引用一个
+            # 已发出的 hypothesis"，却不告诉模型有哪些——重试因此无法收敛。
+            # G2 回放实测：propose 阶段用 'extreme-deviation' 引用了 inspect
+            # 未发出的 id，重试后仍失败，整个 Task 以 AGENT_PROTOCOL_ERROR
+            # 结束。合法集合来自本轮 inspect 载荷，不是新信息。
+            emitted = (
+                ", ".join(f"'{value}'" for value in sorted(valid_ids))
+                if valid_ids else "none"
+            )
             raise StagePostValidationError(
                 "HYPOTHESIS_REFERENCE_INVALID",
                 f"addresses_hypothesis_id '{hypothesis_id}' does not reference "
-                "a hypothesis_id emitted by the inspect stage. Cite an emitted "
-                "hypothesis or omit the field.",
+                "a hypothesis_id emitted by the inspect stage. The ids emitted "
+                f"this round are: {emitted}. Cite one of them exactly, or omit "
+                "the field.",
                 retryable=True)
 
 
