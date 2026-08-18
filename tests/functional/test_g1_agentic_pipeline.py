@@ -351,21 +351,43 @@ def test_workspace_gateway_refuses_out_of_scope_and_over_budget_calls():
         assert schema["input_schema"]["properties"]["series_uid"]["enum"] == [
             "S1", "S2"
         ]
-    with pytest.raises(PermissionError):
-        gateway.call("summarize_series", {"series_uid": "S3"})
-    with pytest.raises(PermissionError):
-        gateway.call("summarize_series", {})
+    # A malformed or out-of-scope call is Agent behaviour: refuse it, serve
+    # nothing, and let the Agent read the refusal.  Raising from inside the
+    # stage loop ends the whole run instead -- the first live fault this
+    # Pipeline hit, on a call that carried an extra argument.
+    for bad in (
+        {"series_uid": "S1", "window": [0, 10]},
+        {},
+        {"uid": "S1"},
+    ):
+        receipt = gateway.call("summarize_series", bad)
+        assert not receipt.ok
+        assert receipt.public_result["refused"] == "INVALID_TOOL_ARGUMENTS"
+        # Receipts are frozen on creation, so sequences come back as tuples.
+        assert list(receipt.public_result["allowed_series_uids"]) == ["S1", "S2"]
+    out_of_scope = gateway.call("summarize_series", {"series_uid": "S3"})
+    assert not out_of_scope.ok
+    assert out_of_scope.public_result["refused"] == "SERIES_OUTSIDE_TASK_SCOPE"
+    assert "features" not in out_of_scope.public_result
+    # An undeclared tool never reaches here through the stage loop, which
+    # rejects it first; direct misuse still fails hard.
     with pytest.raises(PermissionError):
         gateway.call("read_raw_values", {"series_uid": "S1"})
+
     assert gateway.call("summarize_series", {"series_uid": "S1"}).ok
     assert gateway.call("localize_regions", {"series_uid": "S2"}).ok
-    refused = gateway.call("summarize_series", {"series_uid": "S1"})
-    assert not refused.ok
-    assert refused.public_result["refused"] == "WORKSPACE_TOOL_BUDGET_EXHAUSTED"
+    over_budget = gateway.call("summarize_series", {"series_uid": "S1"})
+    assert not over_budget.ok
+    assert over_budget.public_result["refused"] == "WORKSPACE_TOOL_BUDGET_EXHAUSTED"
     accounting = gateway.accounting()
+    # Refusals serve no data, so they never spend the observation budget.
     assert accounting["workspace_tool_calls"] == 2
-    assert accounting["workspace_tool_calls_refused"] == 1
+    assert accounting["workspace_tool_calls_refused"] == 5
     assert accounting["distinct_series_observed"] == 2
+    assert accounting["refusal_reasons"] == [
+        "INVALID_TOOL_ARGUMENTS", "SERIES_OUTSIDE_TASK_SCOPE",
+        "WORKSPACE_TOOL_BUDGET_EXHAUSTED",
+    ]
 
 
 def test_slow_is_not_entered_when_attribution_names_no_editable_surface(

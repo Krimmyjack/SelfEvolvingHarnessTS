@@ -52,6 +52,15 @@ from .dispatch import (
 
 IDENTITY_CHOICE = "identity"
 
+# A stage can fail for reasons that are the Agent's, not the instrument's: a
+# response that never becomes a valid envelope, a payload that fails its own
+# schema or post-validator, a tool protocol violation, or simply running the
+# tool-round limit out.  All of them end this Task Episode with
+# AGENT_PROTOCOL_ERROR -- a deterministic mechanical exit that is reported and
+# never routed to Slow -- instead of ending the whole run.
+_STAGE_FAULTS = (AgentProtocolError, StagePostValidationError, PermissionError)
+
+
 # Stage-local decision vocabulary reused unchanged from the E1 Task loop, so
 # the paired summaries and the attribution router keep reading one vocabulary.
 STOP_TRUST = "TRUST_DRAFT_GATE_PASS"
@@ -265,7 +274,7 @@ def run_agentic_fast_path(
                 payload, {key: True for key in _observed_keys(core, trace)}
             ),
         )
-    except (AgentProtocolError, StagePostValidationError) as exc:
+    except _STAGE_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL
         trace.protocol_error = f"inspect: {type(exc).__name__}: {exc}"
         return trace
@@ -296,7 +305,7 @@ def run_agentic_fast_path(
                 payload, inspect_payload
             ),
         )
-    except (AgentProtocolError, StagePostValidationError) as exc:
+    except _STAGE_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL
         trace.protocol_error = f"propose: {type(exc).__name__}: {exc}"
         return trace
@@ -428,7 +437,7 @@ def run_agentic_fast_path(
                 harness_view=harness_view,
                 schema_name="fast_select_v1",
             )
-        except (AgentProtocolError, StagePostValidationError) as exc:
+        except _STAGE_FAULTS as exc:
             trace.stop_reason = STOP_PROTOCOL
             trace.protocol_error = f"select: {type(exc).__name__}: {exc}"
             return trace

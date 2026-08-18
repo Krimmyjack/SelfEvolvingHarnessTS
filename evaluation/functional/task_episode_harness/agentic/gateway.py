@@ -143,36 +143,62 @@ class CohortScopePublicToolGateway:
             },
         )
 
+    def _refuse(
+        self,
+        name: str,
+        arguments: Mapping[str, Any],
+        reason: str,
+        detail: Mapping[str, Any],
+    ) -> PublicToolReceipt:
+        """Tell the Agent no, and let it decide what to do next.
+
+        A refusal is behaviour, not an instrument failure.  Raising here ends
+        the whole run from inside the stage loop, which is how one malformed
+        argument destroyed a nine-Task run; the Agent never even learns it got
+        the call wrong.  Returning an ``ok=False`` receipt keeps the
+        information wall exactly where it was -- no data is served -- while
+        putting the refusal in the conversation where it belongs.
+        """
+        self.refused_calls += 1
+        self.call_log.append(
+            {"tool_name": name, "ok": False, "reason": reason,
+             "arguments": _plain(arguments)}
+        )
+        return PublicToolReceipt.create(
+            tool_name=name,
+            arguments=arguments if isinstance(arguments, Mapping) else {},
+            public_result={"refused": reason, **dict(detail)},
+            context_sha=self.context_sha,
+            ok=False,
+        )
+
     def call(self, name: str, arguments: Mapping[str, Any]) -> PublicToolReceipt:
         if name not in _TOOL_NAMES:
+            # Unreachable through the stage loop, which rejects an undeclared
+            # tool before calling.  Kept as a hard error for direct misuse.
             raise PermissionError(f"undeclared public tool: {name}")
         if not isinstance(arguments, Mapping) or set(arguments) != {"series_uid"}:
-            raise PermissionError(
-                "public Workspace tools accept exactly one series_uid argument"
+            return self._refuse(
+                name, arguments, "INVALID_TOOL_ARGUMENTS",
+                {
+                    "required_arguments": ["series_uid"],
+                    "received_argument_names": sorted(
+                        str(key) for key in arguments
+                    ) if isinstance(arguments, Mapping) else [],
+                    "allowed_series_uids": list(self.scope_series_uids),
+                },
             )
         uid = str(arguments["series_uid"])
         if uid not in self._series:
-            raise PermissionError(
-                "series_uid is outside this Task's Scope"
+            return self._refuse(
+                name, arguments, "SERIES_OUTSIDE_TASK_SCOPE",
+                {"allowed_series_uids": list(self.scope_series_uids)},
             )
         if self.calls >= self.maximum_calls:
-            # A refusal is behaviour, not an instrument failure: the Agent is
-            # told the observation budget is spent and decides what to do.
-            self.refused_calls += 1
-            self.call_log.append(
-                {"tool_name": name, "series_uid": uid, "ok": False,
-                 "reason": "WORKSPACE_TOOL_BUDGET_EXHAUSTED"}
-            )
-            return PublicToolReceipt.create(
-                tool_name=name,
-                arguments=arguments,
-                public_result={
-                    "refused": "WORKSPACE_TOOL_BUDGET_EXHAUSTED",
-                    "calls_used": self.calls,
-                    "maximum_calls": self.maximum_calls,
-                },
-                context_sha=self.context_sha,
-                ok=False,
+            return self._refuse(
+                name, arguments, "WORKSPACE_TOOL_BUDGET_EXHAUSTED",
+                {"calls_used": self.calls,
+                 "maximum_calls": self.maximum_calls},
             )
         features = self._features.get(uid)
         if features is None:
@@ -232,6 +258,9 @@ class CohortScopePublicToolGateway:
             "workspace_tool_call_budget": self.maximum_calls,
             "distinct_series_observed": len(
                 {row["series_uid"] for row in self.call_log if row["ok"]}
+            ),
+            "refusal_reasons": sorted(
+                {str(row["reason"]) for row in self.call_log if not row["ok"]}
             ),
             "scope_series_count": len(self.scope_series_uids),
             "call_log": [dict(row) for row in self.call_log],
