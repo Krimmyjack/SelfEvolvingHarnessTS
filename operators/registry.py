@@ -156,15 +156,26 @@ OPERATOR_SPECS = [
          },
      )),                                                     # 纯 numpy
     # —— E-3.3 R1：结构断层修复（填 benchmark 预先声明的 structural_break 能力缺口）——
+    # 参数所有权修复（AGENTIC_SKILL_HARNESS_GLOBAL_DESIGN_2026-08-19 §7.3/§17.4
+    # 冻结决定）。旧契约声明 external_region 并强制绑定代表序列的
+    # full-prefix region/offset，但 repair_level_shift 本身就带 intrinsic 路径
+    # （s1_structural.py：三个参数为 None 时自行估周期、定断点、算 offset）。
+    # 契约与实现不一致的后果已在已曝光数据上量化：24/24 个 Task 把仅由 level
+    # candidate 得到的 offset 用到平均 89% 为 non-level 的区间上；Weather 12/12
+    # 的 full-prefix 绝对区间与实际 240 点训练窗口零重叠。因此 legacy external
+    # binding 停用，契约改为与实现一致的 OPERATOR_INTRINSIC。
+    # 公开参数形状收敛为空对象：Runtime 只把 action unit 交给算子，算子在单元
+    # 内部定位；同时机械地阻止继续为该 family 调阈值（§17.4）。旧的显式参数
+    # 调用路径未删除——直接构造 Program 的历史回放仍可复算。
     ("repair_level_shift", "structural", "s1", ["destructive"], s1_structural.repair_level_shift, False,
      _c(
          allowed_tasks=_NON_ANOMALY,
          destructive=True,
-         targeting_mode="external_region",
-         public_parameter_bindings={
-             "region_start_fraction": "estimated_region_start_fraction",
-             "region_end_fraction": "estimated_region_end_fraction",
-             "estimated_offset": "estimated_level_offset",
+         targeting_mode="intrinsic",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {},
          },
      )),      # 纯 numpy（无 ruptures 依赖）
     ("stl_decompose", "decompose", "s1", [], s1_decompose.stl_decompose, False,

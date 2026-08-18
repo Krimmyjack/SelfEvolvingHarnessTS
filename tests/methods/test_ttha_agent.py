@@ -739,45 +739,41 @@ def test_fast_propose_schema_forbids_identity_program_and_nonregistry_ops():
         validate_local_schema(identity_operator, schema)
 
 
-def test_fast_propose_schema_exposes_canonical_public_parameter_bindings():
+def test_fast_propose_schema_enforces_operator_parameter_ownership():
+    """propose 面的参数形状由 registry 机械派生，因此所有权在 schema 层生效。
+
+    参数所有权修复（AGENTIC_SKILL_HARNESS_GLOBAL_DESIGN_2026-08-19 §7.3/§17.4）：repair_level_shift 是 OPERATOR_INTRINSIC，
+    没有任何公开参数。Agent 只能选 Program family，连"顺手把区间塞进去"
+    这条路都不存在——不靠 prompt 约束。
+    """
     schema = TTHAAgentCore.load_stage_schema("fast_propose_v1")
-    canonical = {
-        "candidates": [
-            {
-                "candidate_id": "repair-level",
-                "steps": [
-                    {
-                        "op": "repair_level_shift",
-                        "params": {
-                            "region_start_fraction": 0.5,
-                            "region_end_fraction": 0.75,
-                            "estimated_offset": 1.0,
-                        },
-                    }
-                ],
-            }
-        ]
-    }
-    validate_local_schema(canonical, schema)
-    wrong_feature_names = {
-        "candidates": [
-            {
-                "candidate_id": "repair-level",
-                "steps": [
-                    {
-                        "op": "repair_level_shift",
-                        "params": {
-                            "estimated_region_start_fraction": 0.5,
-                            "estimated_region_end_fraction": 0.75,
-                            "estimated_level_offset": 1.0,
-                        },
-                    }
-                ],
-            }
-        ]
-    }
-    with pytest.raises(AgentProtocolError):
-        validate_local_schema(wrong_feature_names, schema)
+
+    def _payload(params):
+        return {
+            "candidates": [
+                {
+                    "candidate_id": "repair-level",
+                    "steps": [{"op": "repair_level_shift", "params": params}],
+                }
+            ]
+        }
+
+    validate_local_schema(_payload({}), schema)
+    for rejected in (
+        {
+            "region_start_fraction": 0.5,
+            "region_end_fraction": 0.75,
+            "estimated_offset": 1.0,
+        },
+        {
+            "estimated_region_start_fraction": 0.5,
+            "estimated_region_end_fraction": 0.75,
+            "estimated_level_offset": 1.0,
+        },
+        {"t_threshold": 2.0},
+    ):
+        with pytest.raises(AgentProtocolError):
+            validate_local_schema(_payload(rejected), schema)
 
 
 def test_fast_propose_schema_exposes_closed_probe_operator_parameters():

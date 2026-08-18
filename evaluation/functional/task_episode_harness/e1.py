@@ -550,6 +550,20 @@ def _retrieve_target_local_skills(
     return rows
 
 
+# Binding parameter names an operator declared *before* the 2026-08-19
+# parameter-ownership fix moved it to OPERATOR_INTRINSIC.  Read only by
+# :func:`_binding_free_signature`, so that Cards written under the legacy
+# contract keep recognizing each other.  It never re-authorizes the legacy
+# binding: nothing compiles those parameters any more.
+LEGACY_PUBLIC_PARAMETER_BINDINGS: dict[str, tuple[str, ...]] = {
+    "repair_level_shift": (
+        "region_start_fraction",
+        "region_end_fraction",
+        "estimated_offset",
+    ),
+}
+
+
 def _binding_free_signature(
     steps: Sequence[tuple[str, Mapping[str, object]]],
 ) -> tuple[tuple[str, tuple[tuple[str, Any], ...]], ...]:
@@ -575,6 +589,21 @@ def _binding_free_signature(
     This changes identity only.  Execution is unaffected: the reuse path in
     :func:`_lifecycle` probes the freshly compiled program, never the stored
     Card's frozen numbers.
+
+    Parameter-ownership follow-up (2026-08-19).  ``repair_level_shift`` moved
+    from ``external_region`` to ``OPERATOR_INTRINSIC``, so the live registry no
+    longer names its three former bindings.  Two consequences are handled here:
+
+    * stored *legacy* Cards still carry those three parameters, so the names
+      are read from the union of the live registry and
+      :data:`LEGACY_PUBLIC_PARAMETER_BINDINGS`; without it the Cards written
+      before the contract fix would stop recognizing each other and re-raise
+      the ``AddTargetExistsError`` this repair removed;
+    * a legacy Program and an intrinsic Program are *different Program
+      semantics* (frozen design §17.4) and must never merge.  Dropping the
+      bound names alone would collapse them onto the same signature, so each
+      step also carries its binding source: ``external_bound`` when the step
+      actually supplies those parameters, ``intrinsic`` when it does not.
     """
     from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA
 
@@ -583,6 +612,9 @@ def _binding_free_signature(
         name = str(op)
         metadata = OPERATOR_METADATA.get(name) or {}
         bound = set(dict(metadata.get("public_parameter_bindings", {}) or {}))
+        bound |= set(LEGACY_PUBLIC_PARAMETER_BINDINGS.get(name, ()))
+        supplied = {str(key) for key in dict(params)}
+        source = "external_bound" if supplied & bound else "intrinsic"
         constants = tuple(
             sorted(
                 (str(key), value)
@@ -590,7 +622,7 @@ def _binding_free_signature(
                 if str(key) not in bound
             )
         )
-        signature.append((name, constants))
+        signature.append(((name, source), constants))
     return tuple(signature)
 
 
