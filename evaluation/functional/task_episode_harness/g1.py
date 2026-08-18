@@ -2775,6 +2775,373 @@ def run_slow_autonomy_test(report_path: Path = REPORT_REL) -> dict[str, Any]:
     }
 
 
+# ------------------------------- Runtime-grounded clause view + autonomy retest
+
+
+CLAUSE_STATE_REL = ".clause_autonomy_state"
+
+# Action-type lexicon.  This is the one authored artifact in the clause view and
+# it is reported as such.  It is a general verb vocabulary: it never names a
+# clause of any particular guidance, never encodes a verdict, and the evidence
+# bar attached to each action type comes from the already-frozen asymmetry
+# (an authorizing act removes optionality and carries the higher bar; a
+# weakening act preserves it and carries the lower one).
+_ACTION_LEXICON = (
+    ("PROHIBITION", ("never propose", "must not propose", "forbidden",
+                     "never use", "always exclude")),
+    ("RESERVATION", ("not a prohibition", "not a blanket", "does not forbid",
+                     "remains legal", "remains available")),
+    ("DEPRIORITIZATION", ("do not make", "not the default", "avoid leading",
+                          "do not lead", "deprioritize", "deprioritise",
+                          "should not be the first")),
+    ("ACTIVE_RECOMMENDATION", ("prioritize", "prioritise", "prefer",
+                               "lead with", "first choice", "should propose",
+                               "favour", "favor")),
+    ("GENERIC_POLICY", ("supply only", "justified by public evidence",
+                        "minimal effect-distinct")),
+)
+# Bars come from the frozen rules, not from this case.
+_ACTION_EVIDENCE_BAR = {
+    "ACTIVE_RECOMMENDATION": {
+        "unit": "distinct_task_count",
+        "rule": ("requires UNGUIDED support at or above the General threshold "
+                 "in every cohort that observed the condition, with no "
+                 "contradicting cohort"),
+        "minimum": GENERAL_EVIDENCE_MIN_DISTINCT_TASKS,
+        "provenance_that_may_authorize": [PROVENANCE_UNGUIDED],
+    },
+    "DEPRIORITIZATION": {
+        "unit": "distinct_task_count",
+        "rule": ("requires repeated observed harm at or above the General "
+                 "threshold in at least one cohort and no cohort where the "
+                 "same cell is uniformly positive"),
+        "minimum": GENERAL_EVIDENCE_MIN_DISTINCT_TASKS,
+        "provenance_that_may_authorize": [PROVENANCE_UNGUIDED],
+    },
+    "PROHIBITION": {
+        "unit": "distinct_task_count",
+        "rule": "requires no opposite-relation cell in any cohort",
+        "minimum": GENERAL_EVIDENCE_MIN_DISTINCT_TASKS,
+        "provenance_that_may_authorize": [PROVENANCE_UNGUIDED],
+    },
+    "RESERVATION": {
+        "unit": "distinct_task_count",
+        "rule": "a single opposite-relation cell suffices; authorizes nothing",
+        "minimum": 1,
+        "provenance_that_may_authorize": [
+            PROVENANCE_UNGUIDED, PROVENANCE_CONDITIONED],
+    },
+    "GENERIC_POLICY": {
+        "unit": None, "rule": "names no Workflow and no condition",
+        "minimum": 0, "provenance_that_may_authorize": [],
+    },
+}
+
+
+def _split_clauses(text: str) -> list[str]:
+    """Deterministic sentence split; semicolons end a clause too."""
+    import re
+
+    parts = [
+        part.strip()
+        for part in re.split(r"(?<=[.;])\s+", str(text).strip())
+        if part.strip()
+    ]
+    return parts
+
+
+def _clause_action_type(clause: str) -> str:
+    lowered = clause.lower()
+    for action, markers in _ACTION_LEXICON:
+        if any(marker in lowered for marker in markers):
+            return action
+    return "UNCLASSIFIED"
+
+
+def _clause_condition(clause: str) -> dict[str, Any] | None:
+    """Which closed-vocabulary boolean condition does this clause assert?"""
+    from SelfEvolvingHarnessTS.contracts.observables import OBSERVABLE_FEATURES
+
+    lowered = clause.lower()
+    for feature, kind in OBSERVABLE_FEATURES.items():
+        if feature.lower() not in lowered:
+            continue
+        if kind != "boolean":
+            return {"feature": feature, "value": None,
+                    "note": "non-boolean feature named without a resolvable value"}
+        head = lowered.split(feature.lower(), 1)[1][:60]
+        if " true" in head or " is true" in head:
+            return {"feature": feature, "value": True}
+        if " false" in head or " is false" in head:
+            return {"feature": feature, "value": False}
+        return {"feature": feature, "value": None}
+    return None
+
+
+def _provenance_census(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Census keyed by program x condition x cohort x provenance x relation."""
+    cells: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for row in rows:
+        if not row["gain_readable"] or not row["program"]:
+            continue
+        key = (tuple(row["program"]), bool(row[G1_CONDITION_FEATURE]),
+               str(row["cohort"]), str(row["guidance_provenance"]),
+               _relation(row["support_gain"]))
+        cell = cells.setdefault(key, {"tasks": set(), "attempts": 0})
+        cell["tasks"].add(row["task_episode_id"])
+        cell["attempts"] += 1
+    out = []
+    for key in sorted(cells, key=lambda k: (len(k[0]), k[0], not k[1], k[2], k[3], k[4])):
+        program, condition, cohort, provenance, relation = key
+        out.append({
+            "canonical_program": list(program),
+            G1_CONDITION_FEATURE: condition,
+            "cohort": cohort,
+            "guidance_provenance": provenance,
+            "support_relation": relation,
+            "distinct_task_count": len(cells[key]["tasks"]),
+            "attempt_count": cells[key]["attempts"],
+        })
+    return out
+
+
+def build_clause_evidence_view(
+    report: Mapping[str, Any],
+    guidance: str,
+) -> dict[str, Any]:
+    """Runtime aligns existing evidence to the editable clauses of a guidance.
+
+    Zero LLM, zero new Outcome, and no verdict: the view says what each clause
+    asserts and what the evidence says, never what should happen to it.
+    """
+    from SelfEvolvingHarnessTS.operators.registry import OPERATOR_NAMES
+
+    rows = _cohort_attempt_rows(report)
+    census = _provenance_census(rows)
+    clauses = []
+    for index, text in enumerate(_split_clauses(guidance), start=1):
+        lowered = text.lower()
+        operators = sorted(
+            name for name in OPERATOR_NAMES if name.lower() in lowered
+        )
+        action = _clause_action_type(text)
+        condition = _clause_condition(text)
+        evidence: list[dict[str, Any]] = []
+        if operators and condition and condition.get("value") is not None:
+            for cell in census:
+                if bool(cell[G1_CONDITION_FEATURE]) is not bool(condition["value"]):
+                    continue
+                program = [str(op) for op in cell["canonical_program"]]
+                if not any(op in program for op in operators):
+                    continue
+                evidence.append({
+                    **cell,
+                    "exact_named_program": program == list(operators),
+                })
+        clauses.append({
+            "clause_id": "c%d" % index,
+            "current_clause_text": text,
+            "action_type": action,
+            "target_operators": operators,
+            "observable_condition": condition,
+            "evidence_cells": evidence,
+            "frozen_evidence_bar": _ACTION_EVIDENCE_BAR.get(action, {}),
+        })
+    resolvable = [
+        c for c in clauses
+        if c["action_type"] not in ("UNCLASSIFIED", "GENERIC_POLICY")
+        and c["target_operators"] and c["observable_condition"]
+        and c["observable_condition"].get("value") is not None
+    ]
+    return {
+        "check": "runtime_clause_evidence_reconstructibility",
+        "zero_llm": True, "zero_new_outcome": True,
+        "source_guidance": guidance,
+        "clauses": clauses,
+        "resolvable_clause_count": len(resolvable),
+        "every_resolvable_clause_has_evidence": all(
+            c["evidence_cells"] for c in resolvable
+        ),
+        "authored_component": {
+            "what": "the action-type verb lexicon and the action->bar table",
+            "why_it_is_not_a_per_case_label": (
+                "it is a general verb vocabulary; it names no clause of any "
+                "particular guidance and encodes no verdict. The bars restate "
+                "the already-frozen asymmetry between authorizing and "
+                "weakening acts."
+            ),
+            "honest_caveat": (
+                "the lexicon was authored by an executor who had already seen "
+                "guidance v1, so it is not blind to this case even though it "
+                "is not specific to it"
+            ),
+        },
+        "no_verdict_in_view": (
+            "the view contains no keep / revoke / downgrade field for any "
+            "clause; only the assertion, the matched evidence and the frozen "
+            "bar"
+        ),
+        "verdict": (
+            "SLOW_CONTEXT_RUNTIME_RECONSTRUCTIBLE"
+            if resolvable and all(c["evidence_cells"] for c in resolvable)
+            else "SLOW_CONTEXT_NOT_RUNTIME_RECONSTRUCTIBLE"
+        ),
+    }
+
+
+_CLAUSE_SLOW_SYSTEM = (
+    "You are the Slow Harness update stage. Exactly one Harness surface is "
+    "authorized this call: candidate_policy.proposal_guidance. You do not "
+    "approve your own edit; a deterministic compiler validates it and paired "
+    "replay decides whether it survives. "
+    "You receive the currently deployed guidance, and a Runtime-built view "
+    "that splits it into its clauses and attaches, to each clause, the "
+    "evidence observed so far and the frozen evidence bar for that kind of "
+    "clause. No trajectories and no utility numbers are given, so do not "
+    "invent thresholds. "
+    "Apply the frozen evidence rules to each current clause. Evidence is "
+    "counted in distinct_task_count, never in attempt_count. Evidence marked "
+    "GUIDANCE_CONDITIONED was produced while an earlier version of this "
+    "guidance was already deployed; it may refute or withdraw an existing "
+    "clause but may never on its own authorize a new active clause. "
+    "You may not introduce a new observable feature, a new numeric threshold, "
+    "a new operator, a new Program, or any statement about Risk or the Judge, "
+    "and you may not invent evidence. "
+    "Decide for yourself whether to PATCH or ABSTAIN. Both are legitimate. "
+    "If you PATCH, output the complete replacement guidance text. "
+    "Return JSON only: "
+    "{'decision':'PATCH','new_guidance':'...','reason':'...'} or "
+    "{'decision':'ABSTAIN','reason':'...'}."
+)
+
+
+def run_clause_grounded_autonomy_test(
+    report_path: Path = REPORT_REL,
+) -> dict[str, Any]:
+    """One Slow call over a Runtime-grounded clause view.  No repair hints."""
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    v1 = str((report.get("w2_guidance_freeze") or {}).get("frozen_guidance") or "")
+
+    view = build_clause_evidence_view(report, v1)
+    result: dict[str, Any] = {
+        "protocol_version": "runtime_grounded_slow_autonomy_v1",
+        "question": (
+            "with existing evidence deterministically aligned to the editable "
+            "clauses, and no target repair hinted, does Slow choose PATCH or "
+            "ABSTAIN on its own?"
+        ),
+        "reconstructibility_audit": view,
+        "baseline_guidance_v1": v1,
+        "planner_specified_v2_excluded_from_slow_input": True,
+        "no_retry_attempted": True,
+    }
+    if view["verdict"] != "SLOW_CONTEXT_RUNTIME_RECONSTRUCTIBLE":
+        return {**result, "verdict": "SLOW_CONTEXT_NOT_RUNTIME_RECONSTRUCTIBLE",
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    payload = {
+        "authorized_surface": {
+            "surface_id": G1_SURFACE, "target_class": "proposal_control",
+            "surface_type": "text", "allowed_operations": ["PATCH"],
+        },
+        "deployed_guidance": v1,
+        "clause_view": view["clauses"],
+        "evidence_contract": {
+            "unit_of_evidence": "distinct_task_count",
+            "attempt_count_role": "diagnostic_only",
+            "cohort_is_provenance_only": (
+                "the cohort label groups evidence and must not appear in the "
+                "guidance text"
+            ),
+            "guidance_conditioned_evidence": (
+                "may refute or withdraw an existing clause; may never on its "
+                "own authorize a new active clause"
+            ),
+        },
+    }
+    result["slow_payload"] = payload
+    try:
+        response = _e1_slow_call([
+            {"role": "system", "content": _CLAUSE_SLOW_SYSTEM},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ])
+    except (RuntimeError, ValueError) as exc:
+        return {**result, "verdict": "CLAUSE_AUTONOMY_SUPPLY_FAILED",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+    result["slow_response"] = response
+    result["llm_api_call_count"] = 1
+    decision = str(response.get("decision") or "")
+    if decision == "ABSTAIN":
+        return {**result, "verdict": "AUTONOMOUS_CLAUSE_REPAIR_ABSTAIN_DEV",
+                "abstain_reason": response.get("reason"),
+                "wall_seconds": time.perf_counter() - started}
+    proposed = str(response.get("new_guidance") or "").strip()
+    if decision != "PATCH" or not proposed:
+        return {**result, "verdict": "CLAUSE_AUTONOMY_PROTOCOL_VIOLATION",
+                "wall_seconds": time.perf_counter() - started}
+
+    h0 = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    store = SnapshotStore(repo_root / CLAUSE_STATE_REL / "snapshots")
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter()
+    )
+    store.materialize(h0)
+    try:
+        receipt = _apply_guidance_patch(controller, store, h0, proposed)
+    except (EditControllerError, ValueError, TypeError) as exc:
+        return {**result, "verdict": "CLAUSE_AUTONOMY_EDIT_REJECTED",
+                "proposed_guidance": proposed,
+                "error": type(exc).__name__ + ": " + str(exc),
+                "wall_seconds": time.perf_counter() - started}
+    patched = receipt.candidate_snapshot
+    store.set_active(patched.runtime_bundle_sha)
+    before, after = dict(h0.candidate_policy), dict(patched.snapshot.candidate_policy)
+    changed = sorted(
+        k for k in set(before) | set(after) if before.get(k) != after.get(k)
+    )
+    single = bool(
+        changed == ["proposal_guidance"]
+        and list(receipt.source_surfaces_changed) == [G1_SURFACE]
+        and _skill_ids(h0) == _skill_ids(patched.snapshot)
+        and h0.instruction == patched.snapshot.instruction
+    )
+    planner_v2 = str(
+        (report.get("guidance_v2_cross_cohort_repair") or {}).get("guidance_v2") or ""
+    )
+    import difflib
+
+    return {
+        **result,
+        "verdict": ("AUTONOMOUS_CLAUSE_PATCH_MECHANISM_PASS" if single
+                    else "CLAUSE_AUTONOMY_MULTI_SURFACE_MODIFICATION"),
+        "guidance_autonomous": str(after.get("proposal_guidance") or ""),
+        "changed_candidate_policy_keys": changed,
+        "single_surface_diff": single,
+        "autonomous_runtime_bundle_sha": patched.runtime_bundle_sha,
+        "difference_from_planner_specified_v2": {
+            "identical": proposed.strip() == planner_v2.strip(),
+            "similarity_ratio": difflib.SequenceMatcher(
+                None, proposed.strip(), planner_v2.strip()
+            ).ratio(),
+            "planner_v2_text": planner_v2,
+        },
+        "claim_ceiling": (
+            "a mechanism result only. It shows the Slow stage can select and "
+            "commit a clause revision when the Runtime aligns evidence to "
+            "clauses. It does not show the revision improves behaviour; that "
+            "needs replay and a fresh cohort, neither of which is opened here."
+        ),
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -2998,6 +3365,8 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "build_clause_evidence_view",
+    "run_clause_grounded_autonomy_test",
     "run_slow_autonomy_test",
     "attribute_cross_cohort_conflict",
     "run_guidance_v2",

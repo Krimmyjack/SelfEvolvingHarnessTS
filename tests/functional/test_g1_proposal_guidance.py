@@ -668,3 +668,59 @@ def test_next_task_reuses_instead_of_colliding(monkeypatch, tmp_path):
     local = [s.skill_id for s in state.active_snapshot.skills
              if s.skill_id.startswith(e1._LOCAL_SKILL_PREFIX)]
     assert local == ["fast_winner_e1v2_repair_level_shift"], local
+
+
+# ------------------------------- Runtime-grounded clause view (autonomy test)
+
+
+def test_clause_view_carries_evidence_but_never_a_verdict():
+    """The property the autonomy experiment rests on.
+
+    If the Runtime clause view ever gained a keep / revoke / downgrade field,
+    or if the Slow system prompt named the target repair, the experiment would
+    stop testing autonomy and start testing compliance.  This guards both.
+    """
+    view = g1.build_clause_evidence_view(
+        {"e1_v2": {"rows": []}},
+        "When post_shift_support_sufficient is false, do not make "
+        "repair_level_shift the default.",
+    )
+    clause = view["clauses"][0]
+    # the view describes the clause and its bar, and nothing about its fate
+    assert clause["action_type"] == "DEPRIORITIZATION"
+    assert clause["target_operators"] == ["repair_level_shift"]
+    assert clause["observable_condition"] == {
+        "feature": "post_shift_support_sufficient", "value": False
+    }
+    forbidden = {"verdict", "decision", "keep", "revoke", "downgrade",
+                 "recommendation", "should_keep", "action"}
+    assert not (set(clause) & forbidden), set(clause) & forbidden
+    serialized = json.dumps(view).lower()
+    for word in ("should be kept", "should be revoked", "should be downgraded",
+                 "not sufficient on its own", "target support"):
+        assert word not in serialized, word
+
+    # an authorizing clause carries a strictly higher bar than a weakening one
+    bars = g1._ACTION_EVIDENCE_BAR
+    assert bars["ACTIVE_RECOMMENDATION"]["minimum"] >= bars["RESERVATION"]["minimum"]
+    assert bars["ACTIVE_RECOMMENDATION"]["provenance_that_may_authorize"] == [
+        g1.PROVENANCE_UNGUIDED
+    ]
+
+
+def test_autonomy_prompts_contain_no_target_repair():
+    """Neither autonomy prompt may hint at which clause to change or how."""
+    directive = (
+        "not sufficient", "target support", "downgrade", "revoke", "keep the",
+        "prohibition", "prioritize", "one cohort only",
+        "consistent across every cohort", "repair_level_shift",
+        "post_shift_support_sufficient",
+    )
+    for prompt in (g1._AUTONOMY_SLOW_SYSTEM, g1._CLAUSE_SLOW_SYSTEM):
+        lowered = prompt.lower()
+        leaked = [word for word in directive if word in lowered]
+        assert not leaked, leaked
+        # both must still offer ABSTAIN as a legitimate answer
+        assert "abstain" in lowered
+    # the Planner-specified arm is the control and IS allowed to be directive
+    assert "not sufficient on its own" in g1._V2_SLOW_SYSTEM.lower()
