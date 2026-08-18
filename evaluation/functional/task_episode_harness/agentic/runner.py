@@ -1161,24 +1161,79 @@ def _closure_criteria(
     tool_calls = sum(
         int(r["metrics"]["workspace_tool_calls"]) for r in all_arms
     )
-    # Did an observation the Agent chose to make actually change what it did?
-    # Read deterministically from the trace: two arms of the same Task that
-    # observed different series and proposed different Programs, or one arm
-    # whose cited evidence features exist only in a fetched tool result.
+    # §13/G1 accepts either a same-input contemporaneous contrast or a
+    # deterministic reference Trace.  A bare feature citation is neither: it
+    # shows the Agent read something, not that a candidate depended on it.
+    # The chain below is the deterministic one and it is machine-checked end
+    # to end -- a proposed candidate names a hypothesis, that hypothesis cites
+    # public feature names, and those names exist only because a tool call
+    # returned them.  The contemporaneous contrast is kept alongside as the
+    # weaker corroborating readout, never as the criterion by itself.
+    reference_chains: list[dict[str, Any]] = []
+    for row in rows:
+        for arm in (COLD_ARM, WARM_ARM):
+            if arm not in row:
+                continue
+            arm_row = row[arm]
+            served: set[str] = set()
+            for observation in arm_row["tool_observations"]:
+                if not observation.get("ok"):
+                    continue
+                result = observation.get("public_result") or {}
+                features = result.get("features")
+                if isinstance(features, Mapping):
+                    served.update(str(key) for key in features)
+                served.update(
+                    str(key) for key in result if key.startswith("estimated_")
+                )
+            inspect = next(
+                (s for s in arm_row["stages"] if s["stage"] == "inspect"), None
+            )
+            hypotheses = {
+                str(h.get("hypothesis_id")): [
+                    str(f) for f in (h.get("evidence_features") or ())
+                ]
+                for h in ((inspect or {}).get("payload") or {}).get(
+                    "pattern_hypotheses"
+                ) or ()
+                if isinstance(h, Mapping) and h.get("hypothesis_id")
+            }
+            for candidate in arm_row["proposals"]:
+                hypothesis_id = candidate.get("addresses_hypothesis_id")
+                if not hypothesis_id or hypothesis_id not in hypotheses:
+                    continue
+                grounded = [f for f in hypotheses[hypothesis_id] if f in served]
+                if not grounded:
+                    continue
+                reference_chains.append({
+                    "task_episode_id": row["task_episode_id"],
+                    "arm": arm,
+                    "observed_series": sorted({
+                        str(o["arguments"].get("series_uid"))
+                        for o in arm_row["tool_observations"] if o.get("ok")
+                    }),
+                    "hypothesis_id": hypothesis_id,
+                    "features_served_by_a_tool_call": grounded,
+                    "candidate_id": candidate.get("candidate_id"),
+                    "candidate_operators": [
+                        str(step["op"]) for step in candidate.get("steps") or ()
+                    ],
+                })
+
     tool_effect: list[dict[str, Any]] = []
     for row in rows:
         if COLD_ARM not in row or WARM_ARM not in row:
             continue
         observed = {
             arm: sorted({
-                obs["arguments"].get("series_uid")
+                str(obs["arguments"].get("series_uid"))
                 for obs in row[arm]["tool_observations"] if obs.get("ok")
             })
             for arm in (COLD_ARM, WARM_ARM)
         }
         proposed = {
             arm: [
-                [step["op"] for step in entry.get("steps") or ()]
+                [str(step["op"]) for step in entry.get("steps") or ()]
                 for entry in row[arm]["proposals"]
             ]
             for arm in (COLD_ARM, WARM_ARM)
@@ -1191,23 +1246,6 @@ def _closure_criteria(
                 "observed_series_by_arm": observed,
                 "proposed_operator_structures_by_arm": proposed,
             })
-    cited: list[dict[str, Any]] = []
-    for arm_row in all_arms:
-        inspect = next(
-            (s for s in arm_row["stages"] if s["stage"] == "inspect"), None
-        )
-        if inspect is None:
-            continue
-        hypotheses = (inspect.get("payload") or {}).get("pattern_hypotheses") or []
-        for hypothesis in hypotheses:
-            features = list(hypothesis.get("evidence_features") or ())
-            if features:
-                cited.append({
-                    "arm": arm_row["arm"],
-                    "hypothesis_id": hypothesis.get("hypothesis_id"),
-                    "pattern_type": hypothesis.get("pattern_type"),
-                    "evidence_features": features,
-                })
 
     negative_arms = [
         {"arm": r["arm"], "stop_reason": r["stop_reason"]}
@@ -1218,7 +1256,7 @@ def _closure_criteria(
     criteria = {
         "one_command_runs_the_whole_loop": True,
         "agent_called_a_workspace_tool": tool_calls > 0,
-        "tool_result_changed_a_later_decision": bool(tool_effect) or bool(cited),
+        "tool_result_changed_a_later_decision": bool(reference_chains),
         "runtime_generated_and_executed_a_typed_workflow": any(
             entry.get("status") == "PROBED" for r in all_arms
             for entry in r["probes"]
@@ -1269,8 +1307,8 @@ def _closure_criteria(
             name for name, value in criteria.items() if value == "NOT_EXERCISED"
         ),
         "negative_arm_tasks": negative_arms,
-        "tool_effect_evidence": tool_effect,
-        "cited_public_evidence": cited,
+        "deterministic_reference_chains": reference_chains,
+        "contemporaneous_contrast": tool_effect,
         "workspace_tool_call_total": tool_calls,
         "slow_verdict": (slow or {}).get("verdict"),
     }

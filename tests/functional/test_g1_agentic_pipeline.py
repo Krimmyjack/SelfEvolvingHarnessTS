@@ -227,10 +227,15 @@ def test_agent_really_called_a_workspace_tool_and_it_reached_later_stages(
     assert criteria["agent_called_a_workspace_tool"]
     assert criteria["workspace_tool_call_total"] > 0
     assert criteria["tool_result_changed_a_later_decision"]
-    # The grounding is deterministic: the inspect stage cited a feature name
-    # that only exists because a tool returned it.
-    cited = criteria["cited_public_evidence"]
-    assert cited
+    # The chain is machine-checked end to end: a proposed candidate names a
+    # hypothesis, the hypothesis cites public feature names, and those names
+    # exist only because a tool call returned them.
+    chains = criteria["deterministic_reference_chains"]
+    assert chains
+    for chain in chains:
+        assert chain["candidate_operators"]
+        assert chain["features_served_by_a_tool_call"]
+        assert chain["observed_series"]
     for row in _scored_rows(result):
         for arm in ("A3", "A5"):
             observations = row[arm]["tool_observations"]
