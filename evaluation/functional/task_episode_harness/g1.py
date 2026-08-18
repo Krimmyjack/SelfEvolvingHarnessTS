@@ -3142,6 +3142,216 @@ def run_clause_grounded_autonomy_test(
     }
 
 
+# ------------------------- behaviour replay of the autonomous guidance patch
+
+
+AUTO_REPLAY_STATE_REL = ".auto_replay_state"
+# Already-exposed T233 Task Episodes. The two texts differ only in the
+# true-Context clause, so the true Tasks are where a behavioural difference
+# must appear and the false Tasks are the same-session control where it must
+# not.  Re-probing exposed cells is replay; it opens no new Outcome.
+AUTO_REPLAY_TRUE_TASKS = ("e1v2_task_03", "e1v2_task_07", "e1v2_task_09")
+AUTO_REPLAY_FALSE_TASKS = ("e1v2_task_01", "e1v2_task_02", "e1v2_task_05")
+
+
+def run_autonomous_guidance_replay(
+    report_path: Path = REPORT_REL,
+) -> dict[str, Any]:
+    """Does the autonomously derived PATCH actually change the Fast Path?
+
+    Same-session paired AB/BA on already-exposed Task Episodes.  The v1 arm is
+    run now, in this session, rather than compared against the recorded A5 vs
+    A3 numbers -- a historical baseline may not act as the judge.
+
+    This is a behaviour check.  Support cells are re-probed because the runner
+    probes as part of its flow, but no Utility claim is made from them and no
+    unexposed cell is opened.
+    """
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    auto = report.get("runtime_grounded_slow_autonomy") or {}
+    w2 = report.get("w2_guidance_freeze") or {}
+    if auto.get("verdict") != "AUTONOMOUS_CLAUSE_PATCH_MECHANISM_PASS":
+        return {"verdict": "AUTO_REPLAY_NO_AUTONOMOUS_PATCH",
+                "autonomy_verdict": auto.get("verdict"),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    state_root = repo_root / AUTO_REPLAY_STATE_REL
+    if (state_root / BASE_ARM).exists() or (state_root / PATCHED_ARM).exists():
+        return {"verdict": "AUTO_REPLAY_STATE_CONTAMINATED",
+                "state_root": str(state_root), "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+
+    from evaluation.functional.task_episode_harness.e1 import _inventory_rows
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    roster, values = _a5a3_cohort(repo_root)
+    mapped_roster = _mapped_roster(roster)
+    eval_uids = [r["series_uid"] for r in mapped_roster if r["role"] == "eval"]
+    config = dict(_config())
+    specs = {
+        str(spec["task_episode_id"]): spec
+        for spec in _frozen_task_roster(AVAILABLE_TASK_COUNT)
+    }
+
+    v1_store = SnapshotStore(repo_root / W2_STATE_REL / "snapshots")
+    v1_snapshot = compile_snapshot(
+        v1_store.root / str(w2["frozen_runtime_bundle_sha"]), verify_lock=False
+    )
+    auto_store = SnapshotStore(repo_root / CLAUSE_STATE_REL / "snapshots")
+    auto_snapshot = compile_snapshot(
+        auto_store.root / str(auto["autonomous_runtime_bundle_sha"]),
+        verify_lock=False,
+    )
+    arm_states: dict[str, _ArmState] = {}
+    for arm, snapshot in ((BASE_ARM, v1_snapshot), (PATCHED_ARM, auto_snapshot)):
+        store = SnapshotStore(state_root / arm / "snapshots")
+        store.materialize(snapshot)
+        store.set_active(snapshot.runtime_bundle_sha)
+        arm_states[arm] = _ArmState(
+            arm=arm, memories=[], episodes=[], store=store,
+            active_snapshot=snapshot,
+            active_skill_ids=_skill_ids(snapshot, local_only=True),
+        )
+
+    task_ids = sorted(
+        set(AUTO_REPLAY_TRUE_TASKS) | set(AUTO_REPLAY_FALSE_TASKS),
+        key=lambda t: int(t.split("_")[-1]),
+    )
+    preregistration = {
+        "protocol_version": "autonomous_guidance_behaviour_replay_v1",
+        "question": (
+            "does the autonomously derived PATCH change the Fast Path, on the "
+            "Tasks where the two texts actually differ?"
+        ),
+        "arms": {
+            BASE_ARM: "guidance v1, the text the autonomous patch replaces",
+            PATCHED_ARM: "the autonomously derived guidance",
+        },
+        "both_arms_run_in_this_session": True,
+        "historical_a5a3_numbers_are_not_the_judge": True,
+        "task_ids": task_ids,
+        "true_context_tasks": list(AUTO_REPLAY_TRUE_TASKS),
+        "false_context_tasks": list(AUTO_REPLAY_FALSE_TASKS),
+        "outcome_exposure": "REPLAY_OF_ALREADY_EXPOSED_CELLS",
+        "pass_rule": (
+            "on true-Context Tasks the autonomous arm leads with the bare "
+            "mechanism strictly less often than the v1 arm; the false-Context "
+            "Tasks are a same-session control where the two texts agree and "
+            "are reported, not gated"
+        ),
+        "no_utility_claim": (
+            "gains are recomputed because the runner probes as part of its "
+            "flow; they are not read as evidence for or against the patch"
+        ),
+    }
+
+    llm_counter = [0]
+    rows: list[dict[str, Any]] = []
+    for task_id in task_ids:
+        spec = specs[task_id]
+        context = _w3_context_for(
+            repo_root, A5A3_STATE_REL, task_id,
+            int(spec["support_origins"][0]), values, A5A3_COHORT_TRAIN
+        )
+        inventory = _inventory_rows(context)
+        condition = bool(
+            (context.get("task_fast_features") or {}).get(
+                G1_CONDITION_FEATURE, False
+            )
+        )
+        order = [BASE_ARM, PATCHED_ARM]
+        if spec["arm_order"] == "A5_A3":
+            order = list(reversed(order))
+        print("AUTOREPLAY_START %s %s=%s" % (
+            task_id, G1_CONDITION_FEATURE, condition), flush=True)
+        arm_rows = {}
+        for arm in order:
+            arm_rows[arm] = _run_arm(
+                repo_root=repo_root, arm_state=arm_states[arm],
+                task_spec=spec, public_context=context, source_prior=None,
+                inventory=inventory, values=values,
+                mapped_roster=mapped_roster, config=config,
+                eval_uids=eval_uids, llm_counter=llm_counter,
+                consume_proposal_guidance=True,
+            )
+        row: dict[str, Any] = {
+            "task_episode_id": task_id,
+            G1_CONDITION_FEATURE: condition,
+            "arm_order": spec["arm_order"],
+        }
+        for arm in (BASE_ARM, PATCHED_ARM):
+            arm_row = arm_rows[arm]
+            row[arm] = {
+                "stop_reason": arm_row["stop_reason"],
+                "initial_decision": arm_row["initial"]["decision"],
+                "initial_protocol_error": arm_row["initial"].get("error"),
+                "proposal_guidance_consumed": arm_row["proposal_guidance_consumed"],
+                "first_proposal": _mechanism_first_probe(arm_row),
+                "mechanism_stats": _arm_mechanism_stats(arm_row),
+                "instrument_unreadable": int(
+                    arm_row["metrics"].get("instrument_unreadable", 0)
+                ),
+            }
+        rows.append(row)
+        print("AUTOREPLAY_DONE %s v1_lead=%s auto_lead=%s" % (
+            task_id,
+            row[BASE_ARM]["first_proposal"]["program"],
+            row[PATCHED_ARM]["first_proposal"]["program"]), flush=True)
+
+    def leads(sub, arm):
+        return sum(
+            1 for r in sub if r[arm]["first_proposal"]["is_mechanism"]
+        )
+
+    true_rows = [r for r in rows if r[G1_CONDITION_FEATURE]]
+    false_rows = [r for r in rows if not r[G1_CONDITION_FEATURE]]
+    true_v1, true_auto = leads(true_rows, BASE_ARM), leads(true_rows, PATCHED_ARM)
+    false_v1, false_auto = leads(false_rows, BASE_ARM), leads(false_rows, PATCHED_ARM)
+    broken = [
+        r["task_episode_id"] for r in rows
+        for arm in (BASE_ARM, PATCHED_ARM)
+        if r[arm]["instrument_unreadable"] or r[arm]["initial_protocol_error"]
+    ]
+    behaviour_changed = bool(true_rows and true_auto < true_v1)
+    return {
+        "protocol_version": "autonomous_guidance_behaviour_replay_v1",
+        "verdict": (
+            "AUTO_REPLAY_INSTRUMENT_BROKEN" if broken else
+            "AUTONOMOUS_PATCH_CHANGES_FAST_PATH" if behaviour_changed
+            else "AUTONOMOUS_PATCH_BEHAVIOURALLY_INERT"
+        ),
+        "preregistration": preregistration,
+        "true_context": {
+            "task_count": len(true_rows),
+            "bare_mechanism_lead_v1": true_v1,
+            "bare_mechanism_lead_autonomous": true_auto,
+        },
+        "false_context_control": {
+            "task_count": len(false_rows),
+            "bare_mechanism_lead_v1": false_v1,
+            "bare_mechanism_lead_autonomous": false_auto,
+        },
+        "instrument_broken_tasks": broken,
+        "rows": rows,
+        "llm_api_call_count": llm_counter[0],
+        "claim_ceiling": (
+            "behaviour only. This shows the autonomously derived text reaches "
+            "and changes the proposal stage. It is not evidence that the "
+            "change is beneficial: the Support cells replayed here are already "
+            "exposed and no Utility claim is drawn from them."
+        ),
+        "boundary": {
+            "no_new_outcome_opened": True, "weather_not_started": True,
+            "specific_card_untouched": True,
+            "sealed_confirmation_opened": False,
+        },
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -3365,6 +3575,7 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "run_autonomous_guidance_replay",
     "build_clause_evidence_view",
     "run_clause_grounded_autonomy_test",
     "run_slow_autonomy_test",
