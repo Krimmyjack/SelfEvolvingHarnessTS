@@ -478,6 +478,7 @@ def _run_arm(
         "stop_reason": stop_reason,
         "chosen_candidate_id": trace.chosen_candidate_id,
         "protocol_error": trace.protocol_error,
+        "protocol_error_output": trace.protocol_error_output,
         "infrastructure_error": trace.infrastructure_error,
         "stages": trace.stages,
         "tool_observations": trace.tool_observations,
@@ -996,6 +997,7 @@ def run_slow_and_replay(
             entry[label] = {
                 "stop_reason": arm_row["stop_reason"],
                 "protocol_error": arm_row.get("protocol_error"),
+                "protocol_error_output": arm_row.get("protocol_error_output"),
                 "infrastructure_error": arm_row.get("infrastructure_error"),
                 "mechanical_exit": bool(
                     arm_row.get("protocol_error")

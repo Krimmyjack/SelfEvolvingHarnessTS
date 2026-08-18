@@ -105,6 +105,7 @@ class FastPathTrace:
     instrument_unreadable: bool = False
     infrastructure_failed: bool = False
     protocol_error: str | None = None
+    protocol_error_output: str | None = None
     infrastructure_error: str | None = None
     ownership_audits: list[dict[str, Any]] = dataclasses.field(
         default_factory=list
@@ -296,6 +297,9 @@ def run_agentic_fast_path(
     except _AGENT_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL
         trace.protocol_error = f"inspect: {type(exc).__name__}: {exc}"
+        trace.protocol_error_output = getattr(
+            exc, "last_assistant_text", None
+        )
         return trace
     except _INFRASTRUCTURE_FAULTS as exc:
         trace.infrastructure_failed = True
@@ -338,6 +342,9 @@ def run_agentic_fast_path(
     except _AGENT_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL
         trace.protocol_error = f"propose: {type(exc).__name__}: {exc}"
+        trace.protocol_error_output = getattr(
+            exc, "last_assistant_text", None
+        )
         return trace
     except _INFRASTRUCTURE_FAULTS as exc:
         trace.infrastructure_failed = True
@@ -481,6 +488,9 @@ def run_agentic_fast_path(
         except _AGENT_FAULTS as exc:
             trace.stop_reason = STOP_PROTOCOL
             trace.protocol_error = f"select: {type(exc).__name__}: {exc}"
+            trace.protocol_error_output = getattr(
+                exc, "last_assistant_text", None
+            )
             return trace
         except _INFRASTRUCTURE_FAULTS as exc:
             trace.infrastructure_failed = True

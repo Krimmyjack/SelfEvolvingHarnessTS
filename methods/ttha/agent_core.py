@@ -345,9 +345,18 @@ class TTHAAgentCore:
             call_index += 1
             return True
 
-        def raise_with_validation_context(exc: Exception) -> None:
+        def raise_with_validation_context(
+            exc: Exception, response: AgentResponse | None = None
+        ) -> None:
             setattr(exc, "validation_retry_count", validation_failures)
             setattr(exc, "validation_error_codes", tuple(validation_error_codes))
+            # 诊断附件（2026-08-19）：信封失败时把模型最后一次输出的开头
+            # 带出来。此前只知道"invalid agent-envelope/1 response"，看不到
+            # 模型实际写了什么，于是无法把"格式退化"和"语义拒答"分开，只能
+            # 猜。附件不进入任何判据，只进报告。
+            if response is not None:
+                setattr(exc, "last_assistant_text",
+                        str(response.assistant_text or "")[:500])
             raise exc
 
         while True:
@@ -383,7 +392,8 @@ class TTHAAgentCore:
                 ):
                     continue
                 raise_with_validation_context(
-                    AgentProtocolError("invalid agent-envelope/1 response")
+                    AgentProtocolError("invalid agent-envelope/1 response"),
+                    response,
                 )
             envelope = response.parsed_envelope
             if envelope["kind"] == "stage_result":
