@@ -2566,6 +2566,215 @@ def run_guidance_v2(report_path: Path = REPORT_REL) -> dict[str, Any]:
     }
 
 
+# ---------------------------------------- Slow autonomous-repair capability test
+
+
+AUTONOMY_STATE_REL = ".autonomy_state"
+
+# Deliberately generic.  It states the situation, the permitted surface, the
+# evidence contract and the authorization rules, and NOTHING about which clause
+# is wrong, which to keep, or what a revision should say.  Compare
+# ``_V2_SLOW_SYSTEM``, which named the required downgrade almost verbatim; that
+# run tested whether the Slow stage can execute a specified repair.  This one
+# tests whether it can derive the repair from evidence.
+_AUTONOMY_SLOW_SYSTEM = (
+    "You are the Slow Harness update stage. Exactly one Harness surface is "
+    "authorized this call: candidate_policy.proposal_guidance. You do not "
+    "approve your own edit; a deterministic compiler validates it and paired "
+    "replay decides whether it survives. "
+    "You receive the currently deployed guidance text and a complete, "
+    "de-duplicated evidence census over every canonical program, public "
+    "Context condition, producing cohort and outcome relation observed so "
+    "far. No trajectories and no utility numbers are provided, so do not "
+    "invent thresholds. "
+    "Evidence rules: evidence is counted in distinct_task_count, never in "
+    "attempt_count. A clause that actively tells the proposal stage to do "
+    "something must be supported by sufficient independent evidence. Evidence "
+    "produced while an earlier version of this guidance was already deployed "
+    "is marked guidance_conditioned; it may refute or withdraw an existing "
+    "clause but may never authorize a new one. "
+    "You may not introduce a new observable feature, a new numeric threshold, "
+    "a new operator, or any statement about Programs, Risk or the Judge. "
+    "Decide for yourself whether the deployed text is still warranted by the "
+    "census. Either return the full replacement text, or abstain. "
+    "Return JSON only: {'decision':'PATCH','new_guidance':'...','reason':'...'} "
+    "or {'decision':'ABSTAIN','reason':'...'}."
+)
+
+
+def _autonomy_grade(
+    guidance: str,
+    census: Sequence[Mapping[str, Any]],
+    baseline: str,
+) -> dict[str, Any]:
+    """Grade an autonomously produced revision against evidence properties.
+
+    The rubric is the clause-evidence audit that already existed before this
+    test, plus two containment checks.  It never compares the text to the
+    Planner-specified v2; it asks whether the revision is consistent with what
+    the census supports.
+    """
+    from SelfEvolvingHarnessTS.contracts.observables import OBSERVABLE_FEATURES
+    from SelfEvolvingHarnessTS.operators.registry import OPERATOR_NAMES
+    import re
+
+    clause = _v2_clause_audit(guidance, census)
+    lowered = guidance.lower()
+
+    census_operators = {
+        str(op).lower()
+        for cell in census for op in cell["canonical_program"]
+    }
+    invented_operators = sorted(
+        name for name in OPERATOR_NAMES
+        if name.lower() in lowered and name.lower() not in census_operators
+    )
+    census_features = {G1_CONDITION_FEATURE.lower(), "task_kind"}
+    invented_features = sorted(
+        name for name in OBSERVABLE_FEATURES
+        if name.lower() in lowered and name.lower() not in census_features
+    )
+    numbers = [
+        token for token in re.findall(r"(?<![\w.])\d+(?:\.\d+)?", guidance)
+    ]
+    changed_from_baseline = guidance.strip() != baseline.strip()
+    return {
+        "clause_audit": clause,
+        "invented_operators": invented_operators,
+        "invented_observable_features": invented_features,
+        "numeric_literals_introduced": numbers,
+        "changed_from_deployed_v1": changed_from_baseline,
+        "pass": bool(
+            clause["pass"]
+            and not invented_operators
+            and not invented_features
+            and not numbers
+            and changed_from_baseline
+        ),
+    }
+
+
+def run_slow_autonomy_test(report_path: Path = REPORT_REL) -> dict[str, Any]:
+    """Can the Slow stage DERIVE the repair, not just execute a specified one?
+
+    Starts from guidance v1, hands over the full cross-cohort census and only
+    generic authorization rules, and grades whatever comes back against the
+    pre-existing clause-evidence rubric.  ABSTAIN is a legitimate answer and is
+    graded as such rather than as a failure to comply.
+    """
+    started = time.perf_counter()
+    repo_root = Path(__file__).resolve().parents[3]
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    w2 = report.get("w2_guidance_freeze") or {}
+    v1 = str(w2.get("frozen_guidance") or "")
+    attribution = attribute_cross_cohort_conflict(report)
+    census = attribution["cross_cohort_census"]
+
+    payload = {
+        "attributed_cause": attribution["cause"],
+        "repair_scope": attribution["repair_scope"],
+        "surface_catalog": [{
+            "surface_id": G1_SURFACE, "target_class": "proposal_control",
+            "surface_type": "text", "allowed_operations": ["PATCH"],
+        }],
+        "deployed_guidance": v1,
+        "evidence_census": census,
+        "evidence_census_contract": {
+            "unit_of_evidence": "distinct_task_count",
+            "attempt_count_role": "diagnostic_only",
+            "cohort_is_provenance_only": (
+                "the cohort label groups evidence and must not appear in the "
+                "guidance text"
+            ),
+            "guidance_conditioned_evidence": (
+                "attempts produced while an earlier version of this guidance "
+                "was deployed may refute a clause but never authorize one"
+            ),
+        },
+    }
+    result: dict[str, Any] = {
+        "protocol_version": "slow_autonomy_capability_test_v1",
+        "question": (
+            "can the Slow stage derive the correct repair from evidence, "
+            "given only generic authorization rules?"
+        ),
+        "prompt_contains_no_repair_instruction": True,
+        "baseline_guidance_v1": v1,
+        "slow_payload": payload,
+        "no_retry_attempted": True,
+    }
+    try:
+        response = _e1_slow_call([
+            {"role": "system", "content": _AUTONOMY_SLOW_SYSTEM},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ])
+    except (RuntimeError, ValueError) as exc:
+        return {**result, "verdict": "AUTONOMY_TEST_SUPPLY_FAILED",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "llm_api_call_count": 0,
+                "wall_seconds": time.perf_counter() - started}
+    result["slow_response"] = response
+    result["llm_api_call_count"] = 1
+    decision = str(response.get("decision") or "")
+    if decision == "ABSTAIN":
+        return {**result, "verdict": "AUTONOMY_TEST_ABSTAINED",
+                "abstain_reason": response.get("reason"),
+                "wall_seconds": time.perf_counter() - started}
+    proposed = str(response.get("new_guidance") or "").strip()
+    if decision != "PATCH" or not proposed:
+        return {**result, "verdict": "AUTONOMY_TEST_PROTOCOL_VIOLATION",
+                "wall_seconds": time.perf_counter() - started}
+
+    grade = _autonomy_grade(proposed, census, v1)
+    result["proposed_guidance"] = proposed
+    result["grade"] = grade
+    if not grade["pass"]:
+        return {**result, "verdict": "AUTONOMY_TEST_REPAIR_NOT_EVIDENCE_CONSISTENT",
+                "wall_seconds": time.perf_counter() - started}
+
+    h0 = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    store = SnapshotStore(repo_root / AUTONOMY_STATE_REL / "snapshots")
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter()
+    )
+    store.materialize(h0)
+    try:
+        receipt = _apply_guidance_patch(controller, store, h0, proposed)
+    except (EditControllerError, ValueError, TypeError) as exc:
+        return {**result, "verdict": "AUTONOMY_TEST_EDIT_REJECTED",
+                "error": type(exc).__name__ + ": " + str(exc),
+                "wall_seconds": time.perf_counter() - started}
+    patched = receipt.candidate_snapshot
+    store.set_active(patched.runtime_bundle_sha)
+    before, after = dict(h0.candidate_policy), dict(patched.snapshot.candidate_policy)
+    changed = sorted(
+        k for k in set(before) | set(after) if before.get(k) != after.get(k)
+    )
+    single = bool(
+        changed == ["proposal_guidance"]
+        and list(receipt.source_surfaces_changed) == [G1_SURFACE]
+        and _skill_ids(h0) == _skill_ids(patched.snapshot)
+        and h0.instruction == patched.snapshot.instruction
+    )
+    return {
+        **result,
+        "verdict": ("AUTONOMY_TEST_REPAIR_DERIVED" if single
+                    else "AUTONOMY_TEST_MULTI_SURFACE_MODIFICATION"),
+        "guidance_autonomous": str(after.get("proposal_guidance") or ""),
+        "changed_candidate_policy_keys": changed,
+        "single_surface_diff": single,
+        "autonomous_runtime_bundle_sha": patched.runtime_bundle_sha,
+        "still_requires_behavioural_validation": (
+            "deriving an evidence-consistent revision is a capability result. "
+            "Whether it actually improves behaviour is decided by replay and "
+            "the next fresh cohort, not by this test."
+        ),
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
 # ------------------------------------------------------------------ driver
 
 
@@ -2789,6 +2998,7 @@ def run_g1(
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "run_slow_autonomy_test",
     "attribute_cross_cohort_conflict",
     "run_guidance_v2",
     "run_a5a3_natural",
