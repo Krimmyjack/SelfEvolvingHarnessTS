@@ -793,12 +793,10 @@ def protocol_quality(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             if arm not in row:
                 continue
             arm_row = row[arm]
-            retried_here = False
             for stage in arm_row["stages"]:
                 stage_count += 1
                 if int(stage.get("validation_retry_count") or 0) <= 0:
                     continue
-                retried_here = True
                 retried_stages.append({
                     "task_episode_id": row["task_episode_id"],
                     "arm": arm,
@@ -807,8 +805,24 @@ def protocol_quality(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                         stage.get("validation_error_codes") or ()
                     ),
                 })
+            # Precision correction (2026-08-19): the first version flagged an
+            # arm-Task whenever *any* stage had retried and the proposal came
+            # back empty.  That over-counts -- an inspect-stage retry that
+            # recovered says nothing about why propose returned nothing, and
+            # several such arms went on to pass the draft gate.  The
+            # defensible claim is narrower: the propose stage itself failed
+            # validation and then returned an empty candidate list, i.e. the
+            # Agent gave up on a validator rather than on the Task.
+            propose_retry = next(
+                (
+                    stage for stage in arm_row["stages"]
+                    if stage["stage"] == "propose"
+                    and int(stage.get("validation_retry_count") or 0) > 0
+                ),
+                None,
+            )
             if (
-                retried_here
+                propose_retry is not None
                 and not arm_row["proposals"]
                 and arm_row["stop_reason"] == STOP_ABSTAIN
             ):
@@ -816,7 +830,11 @@ def protocol_quality(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                     "task_episode_id": row["task_episode_id"],
                     "arm": arm,
                     "stop_reason": arm_row["stop_reason"],
+                    "propose_validation_error_codes": list(
+                        propose_retry.get("validation_error_codes") or ()
+                    ),
                 })
+
     return {
         "stage_call_count": stage_count,
         "stages_needing_an_envelope_retry": len(retried_stages),
