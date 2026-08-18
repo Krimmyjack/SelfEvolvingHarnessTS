@@ -980,6 +980,13 @@ def run_slow_and_replay(
             )
             entry[label] = {
                 "stop_reason": arm_row["stop_reason"],
+                "protocol_error": arm_row.get("protocol_error"),
+                "infrastructure_error": arm_row.get("infrastructure_error"),
+                "mechanical_exit": bool(
+                    arm_row.get("protocol_error")
+                    or int(arm_row["metrics"].get("infrastructure_failed", 0))
+                    or int(arm_row["metrics"].get("instrument_unreadable", 0))
+                ),
                 "proposed_operator_structures": [
                     [str(step["op"]) for step in candidate.get("steps") or ()]
                     for candidate in arm_row["proposals"]
@@ -1003,23 +1010,44 @@ def run_slow_and_replay(
                    entry[label]["first_probe_program"]),
                 flush=True,
             )
-        entry["proposal_changed"] = (
+        # A pair is comparable only when both sides produced behaviour.  An
+        # arm that left through a mechanical exit -- a protocol fault, the
+        # relay, an unreadable Judge -- did not decide anything, and reading
+        # "it abstained, now it errors" as "the patch changed behaviour" would
+        # let a formatting failure certify a Harness edit.  The first run of
+        # this replay did exactly that on three of nine Tasks.
+        entry["comparable"] = not (
+            entry["BASE"]["mechanical_exit"]
+            or entry["PATCHED"]["mechanical_exit"]
+        )
+        entry["proposal_changed"] = entry["comparable"] and (
             entry["BASE"]["proposed_operator_structures"]
             != entry["PATCHED"]["proposed_operator_structures"]
         )
-        entry["first_probe_changed"] = (
+        entry["first_probe_changed"] = entry["comparable"] and (
             entry["BASE"]["first_probe_program"]
             != entry["PATCHED"]["first_probe_program"]
         )
-        entry["decision_changed"] = (
+        entry["decision_changed"] = entry["comparable"] and (
             entry["BASE"]["stop_reason"] != entry["PATCHED"]["stop_reason"]
         )
         replay_rows.append(entry)
 
+    comparable = [row for row in replay_rows if row["comparable"]]
     changed = [
-        row["task_episode_id"] for row in replay_rows
+        row["task_episode_id"] for row in comparable
         if row["proposal_changed"] or row["first_probe_changed"]
         or row["decision_changed"]
+    ]
+    excluded = [
+        {
+            "task_episode_id": row["task_episode_id"],
+            "arms": [
+                label for label in ("BASE", "PATCHED")
+                if row[label]["mechanical_exit"]
+            ],
+        }
+        for row in replay_rows if not row["comparable"]
     ]
     return {
         "verdict": (
@@ -1038,6 +1066,8 @@ def run_slow_and_replay(
             "candidate_policy.proposal_guidance surface"
         ),
         "replay_rows": replay_rows,
+        "comparable_task_count": len(comparable),
+        "tasks_excluded_from_comparison": excluded,
         "tasks_with_changed_behaviour": changed,
         "llm_api_call_count": llm_counter[0],
     }
