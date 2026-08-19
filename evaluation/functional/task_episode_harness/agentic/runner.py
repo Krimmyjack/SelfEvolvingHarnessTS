@@ -222,6 +222,41 @@ class _RetryingTransport:
         raise last  # type: ignore[misc]
 
 
+def _run_arms_paired(
+    jobs: "Sequence[tuple[str, Any]]",
+    run_one: "Callable[[str, Any], Any]",
+    *,
+    paired: bool,
+) -> dict[str, Any]:
+    """Run a Task's two arms together, and join before the Task returns.
+
+    The readiness audit found nothing shared to guard.  The backend and its
+    HTTP client are built inside the arm; so is the Workspace gateway.  Each
+    arm owns its own _ArmState -- its own memories, episodes and SnapshotStore
+    directory.  The hot path has no module-level mutable state, no lru_cache
+    and no globals.  The two writes that *are* shared, the Context cache and
+    the report checkpoint, already happen in the driver outside this call.  So
+    this needs threads and a join, and no locks.
+
+    The join is the cross-Task barrier: Episodes accumulate in Task order and
+    must keep doing so, and only the two arms of one Task ever overlap.
+
+    This changes execution semantics and is declared, not slipped in.
+    Parallel arms have no first and second position, so the per-Task order
+    alternation stops applying -- which also removes the second-position
+    effect the replay comparison previously had to correct for.
+    """
+    if not paired:
+        return {label: run_one(label, payload) for label, payload in jobs}
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = {
+            label: pool.submit(run_one, label, payload) for label, payload in jobs
+        }
+        return {label: future.result() for label, future in futures.items()}
+
+
 def _config_for_cohort() -> Mapping[str, Any]:
     from run_v1_kdd2018_natural_slow_update import _config
 
@@ -348,6 +383,7 @@ def _run_arm(
     source_prior: Mapping[str, Any] | None,
     workspace_tool_budget: int,
     backend_factory: Callable[[int], Any],
+    source_experiences: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     arm = arm_state.arm
     scope = frozenset(public_context["scope_series_uids"])
@@ -396,6 +432,19 @@ def _run_arm(
         "source_prior": (
             _plain(source_prior) if source_prior is not None else None
         ),
+        # Source Experience, delivered as a separate inlet from the Card
+        # channel.  These are observed Action-Response facts from another
+        # Domain: they carry their own public Context, Program, Support and
+        # delayed relation and provenance, and they confer no execution right.
+        # Nothing here is a Card and nothing here is retrieved by the
+        # applicability matcher -- this round tests the inlet, not retrieval.
+        "source_experiences": [_plain(row) for row in source_experiences],
+        "source_experience_note": (
+            "Observed facts from a different Domain, offered as evidence to "
+            "weigh, not as instructions and not as an executable template. "
+            "A Program that worked there may fail here; a Program that failed "
+            "there may work here. Only a Target Support probe decides."
+        ) if source_experiences else None,
     }
     initial_context = _initial_context(
         task_spec=task_spec,
@@ -570,6 +619,7 @@ def _run_arm(
                 retrieved["experience"]["negative_episodes"]
             ),
             "source_prior_matched": source_prior is not None,
+            "source_experiences_delivered": len(source_experiences),
         },
         "active_local_skill_ids_before": active_before,
         "active_local_skill_ids_after": active_after,
@@ -942,6 +992,7 @@ def run_slow_and_replay(
     workspace_tool_budget: int,
     backend_factory: Callable[[int], Any],
     first_fault: Mapping[str, Any],
+    paired_arms: bool = False,
 ) -> dict[str, Any]:
     """One Slow edit on one authorized Surface, then a same-session replay.
 
@@ -1049,7 +1100,7 @@ def run_slow_and_replay(
             "task_episode_id": task_id,
             "replay_arm_order": list(labels),
         }
-        for label in labels:
+        def _one_replay_arm(label: str, _payload: Any) -> dict[str, Any]:
             arm_row = _run_arm(
                 repo_root=repo_root,
                 arm_state=replay_states[label],
@@ -1062,6 +1113,12 @@ def run_slow_and_replay(
                 workspace_tool_budget=workspace_tool_budget,
                 backend_factory=backend_factory,
             )
+            return arm_row
+
+        for label, arm_row in _run_arms_paired(
+            [(label, None) for label in labels], _one_replay_arm,
+            paired=paired_arms,
+        ).items():
             entry[label] = {
                 "stop_reason": arm_row["stop_reason"],
                 "protocol_error": arm_row.get("protocol_error"),
@@ -1173,6 +1230,8 @@ def run_g1_pipeline(
     backend_factory: Callable[[int], Any] | None = None,
     write_report: bool = True,
     run_slow: bool = True,
+    paired_arms: bool = False,
+    source_experiences: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     started = time.perf_counter()
     repo_root = PROJECT_ROOT
@@ -1275,8 +1334,11 @@ def run_g1_pipeline(
                 "matched": matched_prior is not None,
             },
         }
-        for arm, prior in order:
-            row[arm] = _run_arm(
+        def _one_arm(arm: str, prior: Any) -> dict[str, Any]:
+            result = _run_arm(
+                source_experiences=(
+                    source_experiences if arm == WARM_ARM else ()
+                ),
                 repo_root=repo_root,
                 arm_state=arm_states[arm],
                 task_spec=spec,
@@ -1290,13 +1352,16 @@ def run_g1_pipeline(
             )
             print(
                 "G1_ARM_DONE %s %s stop=%s tools=%d llm=%d probes=%d active=%d"
-                % (task_id, arm, row[arm]["stop_reason"],
-                   row[arm]["metrics"]["workspace_tool_calls"],
-                   row[arm]["metrics"]["llm_calls"],
-                   row[arm]["metrics"]["real_support_probe_count"],
-                   row[arm]["metrics"]["task_local_active"]),
+                % (task_id, arm, result["stop_reason"],
+                   result["metrics"]["workspace_tool_calls"],
+                   result["metrics"]["llm_calls"],
+                   result["metrics"]["real_support_probe_count"],
+                   result["metrics"]["task_local_active"]),
                 flush=True,
             )
+            return result
+
+        row.update(_run_arms_paired(order, _one_arm, paired=paired_arms))
         rows.append(row)
         # Checkpoint after every Task.  The first live nine-Task run died at
         # Task six and took every completed Task with it, because the report
@@ -1384,6 +1449,7 @@ def run_g1_pipeline(
             workspace_tool_budget=workspace_tool_budget,
             backend_factory=backend_factory,
             first_fault=attribution,
+            paired_arms=paired_arms,
         )
     closure = _closure_criteria(scored, slow=slow)
     result = {
@@ -1403,6 +1469,25 @@ def run_g1_pipeline(
                 "the Runtime Scope matcher"
             ),
         },
+        "source_experience_inlet": {
+            "episodes_offered_to_" + WARM_ARM: len(source_experiences),
+            "episodes_offered_to_" + COLD_ARM: 0,
+            "confers_execution_right": False,
+            "retrieved_by_applicability": False,
+            "note": (
+                "this round tests whether a Source Experience inlet changes "
+                "behaviour, not whether Context retrieval selects the right "
+                "Episodes"
+            ),
+        } if source_experiences else None,
+        "arm_execution": "parallel" if paired_arms else "sequential",
+        "arm_execution_note": (
+            "the two arms of a Task run concurrently and join before the next "
+            "Task begins; with no first or second position the per-Task "
+            "arm_order alternation does not apply"
+            if paired_arms else
+            "arms run one after the other in the Task's frozen arm_order"
+        ),
         "shared_between_arms": [
             "Workspace tools", "tool-call bound", "operator inventory",
             "Target Support budget", "Runtime", "Judge", "stage contracts",
@@ -1632,6 +1717,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                         choices=("e31", "T233", "weather", "electricity"))
     parser.add_argument("--tasks", type=int, default=3)
     parser.add_argument("--tool-budget", type=int, default=WORKSPACE_TOOL_BUDGET)
+    parser.add_argument("--paired-arms", action="store_true",
+                        help="run a Task's two arms concurrently")
     parser.add_argument("--no-slow", action="store_true",
                         help="stop after the Fast Path closure")
     args = parser.parse_args(argv)
@@ -1640,6 +1727,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         task_count=args.tasks,
         workspace_tool_budget=args.tool_budget,
         run_slow=not args.no_slow,
+        paired_arms=args.paired_arms,
     )
     print(json.dumps(
         {key: value for key, value in result.items() if key != "rows"},
