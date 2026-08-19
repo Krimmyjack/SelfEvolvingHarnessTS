@@ -374,18 +374,27 @@ def _deprioritized_probe_order(
     if not held_back or len(held_back) == len(rows):
         return rows
     preferred = [row for row in rows if not named_by_a_risk_skill(row)]
+    reordered = [*preferred, *held_back]
+    # Only record a deprioritization that actually moved something.  The
+    # Agent frequently ranks the alternative first on its own, and a receipt
+    # emitted for an order that did not change would inflate every later
+    # count of "times the reorder acted" -- which is exactly the readout the
+    # full run reports.
+    if [row["candidate_id"] for row in reordered] == [
+        row["candidate_id"] for row in rows
+    ]:
+        return rows
     trace.probe_order_deprioritizations.append({
         "retrieved_risk_skill_ids": sorted(deprioritized),
         "proposed_order": [str(row["candidate_id"]) for row in rows],
-        "probe_order": [
-            str(row["candidate_id"]) for row in (*preferred, *held_back)],
+        "probe_order": [str(row["candidate_id"]) for row in reordered],
         "moved_behind": [str(row["candidate_id"]) for row in held_back],
         "note": (
             "order only: every candidate stays selectable and is probed "
             "unchanged if the budget reaches it"
         ),
     })
-    return [*preferred, *held_back]
+    return reordered
 
 
 def run_agentic_fast_path(

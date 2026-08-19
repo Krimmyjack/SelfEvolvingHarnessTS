@@ -398,3 +398,18 @@ def test_a_view_without_a_risk_skill_changes_nothing():
     ordered = _deprioritized_probe_order(rows, _View(capability), trace)
     assert [row["candidate_id"] for row in ordered] == ["c1", "c2"]
     assert trace.probe_order_deprioritizations == []
+
+
+def test_no_receipt_when_the_agent_already_ordered_it_correctly():
+    """A5 on electricity Task 3 proposed the alternative first by itself.
+
+    The reorder had nothing to do, and an earlier version still wrote a
+    receipt claiming it had moved the refuted family -- which would inflate
+    every later count of how often the deprioritization acted.
+    """
+    trace = FastPathTrace()
+    rows = [_row("c1", "hampel_filter"), _row("c2", "repair_level_shift")]
+    ordered = _deprioritized_probe_order(
+        rows, _View(_risk("target_risk_repair_level_shift")), trace)
+    assert [row["candidate_id"] for row in ordered] == ["c1", "c2"]
+    assert trace.probe_order_deprioritizations == []
