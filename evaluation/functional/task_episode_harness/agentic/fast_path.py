@@ -106,6 +106,9 @@ class FastPathTrace:
     infrastructure_failed: bool = False
     protocol_error: str | None = None
     protocol_error_output: str | None = None
+    citation_normalizations: list[dict[str, Any]] = dataclasses.field(
+        default_factory=list
+    )
     infrastructure_error: str | None = None
     ownership_audits: list[dict[str, Any]] = dataclasses.field(
         default_factory=list
@@ -183,6 +186,20 @@ def _operator_menu(
     return menu
 
 
+def _ground_inspect(
+    core: TTHAAgentCore, trace: FastPathTrace, payload: Mapping[str, Any]
+) -> None:
+    """Normalize the citation spelling, then apply the grounding rule."""
+    served = getattr(core.tools, "observed_feature_values", None)
+    if callable(served):
+        trace.citation_normalizations.extend(
+            _normalize_evidence_citations(payload, served())
+        )
+    _validate_inspect_hypotheses(
+        payload, {key: True for key in _observed_keys(core, trace)}
+    )
+
+
 def _observed_keys(core: TTHAAgentCore, trace: FastPathTrace) -> set[str]:
     """Feature names the Agent has been shown, read while the stage still runs.
 
@@ -196,6 +213,56 @@ def _observed_keys(core: TTHAAgentCore, trace: FastPathTrace) -> set[str]:
     if callable(live):
         keys |= set(live())
     return keys
+
+
+def _normalize_evidence_citations(
+    payload: Mapping[str, Any],
+    served: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Accept a bare feature name, or ``key=value`` that is exactly right.
+
+    Observed twice in live runs: the Agent cites ``missing_fraction=0.0`` or
+    ``period_evidence_status=OK`` instead of the bare name.  The grounding rule
+    is not the problem -- a citation must name a feature the Agent was really
+    shown -- but nothing in the contract states the citation format, so a
+    correct observation was being thrown away on punctuation.
+
+    ``key=value`` is normalized to ``key`` only when the key was served and the
+    value matches a served value exactly.  A wrong value is still a wrong
+    citation and is left alone for the validator to reject: this widens the
+    accepted spelling, never the accepted evidence.
+
+    The payload is rewritten in place, before the validator runs, so what is
+    recorded downstream is the canonical bare-key form.
+    """
+    hypotheses = payload.get("pattern_hypotheses") or ()
+    if not isinstance(hypotheses, Sequence) or isinstance(
+        hypotheses, (str, bytes, bytearray)
+    ):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for hypothesis in hypotheses:
+        if not isinstance(hypothesis, dict):
+            continue
+        features = hypothesis.get("evidence_features")
+        if not isinstance(features, list):
+            continue
+        for index, cited in enumerate(features):
+            if not isinstance(cited, str) or "=" not in cited:
+                continue
+            key, _, value = cited.partition("=")
+            key, value = key.strip(), value.strip()
+            allowed = served.get(key)
+            if not isinstance(allowed, (set, frozenset)) or value not in allowed:
+                continue
+            features[index] = key
+            normalized.append({
+                "hypothesis_id": hypothesis.get("hypothesis_id"),
+                "cited_as": cited,
+                "normalized_to": key,
+                "value_matched_a_served_value": True,
+            })
+    return normalized
 
 
 def _run_stage(
@@ -290,9 +357,7 @@ def run_agentic_fast_path(
             public_input=inspect_input,
             harness_view=harness_view,
             schema_name="fast_inspect_v1",
-            post_validator=lambda payload: _validate_inspect_hypotheses(
-                payload, {key: True for key in _observed_keys(core, trace)}
-            ),
+            post_validator=lambda payload: _ground_inspect(core, trace, payload),
         )
     except _AGENT_FAULTS as exc:
         trace.stop_reason = STOP_PROTOCOL

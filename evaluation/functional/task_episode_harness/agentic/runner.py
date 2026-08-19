@@ -488,6 +488,7 @@ def _run_arm(
             for row in trace.compiled
         ],
         "parameter_ownership_audits": trace.ownership_audits,
+        "citation_normalizations": trace.citation_normalizations,
         "probes": [
             {key: value for key, value in row.items() if key != "support"}
             for row in trace.probes

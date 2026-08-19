@@ -293,6 +293,42 @@ def _whitespace_only(text: str) -> bool:
     return not text.strip()
 
 
+def rescue_prose_wrapped_envelope(
+    assistant_text: str,
+) -> tuple[str | None, str]:
+    """恢复"被普通说明文字包住的、恰好一个"合法 envelope。
+
+    实测（G2 收口）：模型写了一句自然语言理由，后面跟一个语法完全合法的
+    tool_request。严格解析拒绝，重试也拒绝，整个 Task 以
+    AGENT_PROTOCOL_ERROR 结束——这不是模型给错了动作，是它多说了一句话。
+
+    有界得很死，只补这一类：
+
+      顶层 JSON 文档**恰好一个**，且该文档能通过现有 envelope schema。
+      文档前后可以是普通文字。
+
+    仍然拒绝：零个或两个以上 JSON 文档（多文档歧义由
+    rescue_trailing_envelope 单独处理其已观察到的那一类）、文档本身不合
+    schema。不放宽 schema，不放宽执行权限，不猜测模型意图——只是把它已经
+    写对的那一个信封取出来。
+    """
+    if not isinstance(assistant_text, str) or not assistant_text.strip():
+        return None, "NOT_RESCUED"
+    spans = _json_document_spans(assistant_text)
+    if len(spans) != 1:
+        return None, "NOT_RESCUED"
+    start, end = spans[0]
+    try:
+        document = parse_json_document(assistant_text[start:end].encode("utf-8"))
+        envelope = _validate_envelope(document)
+    except (ValueError, TypeError):
+        return None, "NOT_RESCUED"
+    return (
+        canonical_json_bytes(envelope).decode("utf-8"),
+        "RECOVERED_PROSE_WRAPPED_ENVELOPE",
+    )
+
+
 def rescue_trailing_envelope(
     assistant_text: str,
 ) -> tuple[str | None, str]:
@@ -498,20 +534,29 @@ class AgictoChatCompletionsBackend:
             assistant_text = ""
         envelope, parse_status = parse_agent_envelope(assistant_text)
         parse_recovery = ""
+        recovered_original = ""
         if parse_status != "VALID_AGENT_ENVELOPE":
             # P0 窄信封救援（用户裁决 2026-08-14）：双 JSON 拼接 → 首
             # tool_request 信封按正常循环处理；assistant_text 规范化为
             # 首信封（原始双 JSON 不得写回对话）。
             rescued_text, recovery = rescue_trailing_envelope(assistant_text)
+            if rescued_text is None:
+                rescued_text, recovery = rescue_prose_wrapped_envelope(
+                    assistant_text
+                )
             if rescued_text is not None:
                 rescued_envelope, rescued_status = parse_agent_envelope(
                     rescued_text
                 )
                 if rescued_status == "VALID_AGENT_ENVELOPE":
+                    # 原始输出保留在 raw_response 里；对话里换成规范化信封，
+                    # 并记录恢复类型，避免"恢复"在读数里变成隐形。
+                    original_text = assistant_text
                     assistant_text = rescued_text
                     envelope = rescued_envelope
                     parse_status = rescued_status
                     parse_recovery = recovery
+                    recovered_original = original_text
         try:
             raw_response = completion.model_dump(mode="json")
         except (AttributeError, TypeError):
@@ -521,6 +566,7 @@ class AgictoChatCompletionsBackend:
             }
         usage = getattr(completion, "usage", None)
         provider_metadata = {
+            "recovered_original_text": recovered_original[:500],
             "response_id": getattr(completion, "id", ""),
             "returned_model": getattr(completion, "model", ""),
             "finish_reason": getattr(choice, "finish_reason", "") if choice else "",

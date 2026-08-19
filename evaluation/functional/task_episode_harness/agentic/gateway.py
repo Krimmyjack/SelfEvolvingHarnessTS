@@ -249,6 +249,20 @@ class CohortScopePublicToolGateway:
             keys.update(str(key) for key in features)
         return keys
 
+    def observed_feature_values(self) -> dict[str, set[str]]:
+        """Feature name -> the exact value strings this gateway has served.
+
+        A hypothesis may cite ``key=value``; that is only accepted when the
+        value it names is one this Task actually saw.  A set rather than a
+        single value because the same feature is served once per inspected
+        series.
+        """
+        served: dict[str, set[str]] = {}
+        for features in self._features.values():
+            for key, value in features.items():
+                served.setdefault(str(key), set()).add(str(value))
+        return served
+
     # -- accounting --------------------------------------------------------
     def accounting(self) -> dict[str, Any]:
         """Workspace tool cost only.  Never merged with LLM or Support cost."""
