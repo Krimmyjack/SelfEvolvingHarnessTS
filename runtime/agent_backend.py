@@ -25,6 +25,14 @@ DEFAULT_AGENT_BASE_URL = "https://api.agicto.cn/v1"
 OPENAI_SDK_VERSION = "2.45.0"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _CANONICAL_NAME = re.compile(r"^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$")
+# call_id 是纯关联标识：只用于同一轮内的重复检测（精确相等）和回显进
+# tool-result/1（该 schema 对 call_id 无 pattern）。下游没有任何按小写
+# 归一的查表、路径或名字解析，因此大小写不携带语义。实测（G2 T233 rerun）
+# 模型会把序列 uid 直接拼进 call_id（inspect_T234_summary），uid 本身是
+# 大写，于是四个 Task 以 AGENT_PROTOCOL_ERROR 结束。这里只放宽字母大小写，
+# 不放宽首字符必须是字母、也不放宽字符集；tool_name 仍走 _CANONICAL_NAME
+# ——它要去 declared_tools 里查表，是有语义的。
+_CORRELATION_ID = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)*$")
 _CAPABILITY_FLAGS = MappingProxyType(
     {
         "native_tools": False,
@@ -203,9 +211,14 @@ def _validate_envelope(value: object) -> dict[str, Any]:
         expected = {"schema_version", "kind", "call_id", "tool_name", "arguments"}
         if set(value) != expected:
             raise ValueError("tool_request envelope has unexpected fields")
-        for field_name in ("call_id", "tool_name"):
-            if not isinstance(value[field_name], str) or not _CANONICAL_NAME.fullmatch(value[field_name]):
-                raise ValueError(f"{field_name} must be canonical")
+        if not isinstance(value["call_id"], str) or not _CORRELATION_ID.fullmatch(
+            value["call_id"]
+        ):
+            raise ValueError("call_id must be canonical")
+        if not isinstance(value["tool_name"], str) or not _CANONICAL_NAME.fullmatch(
+            value["tool_name"]
+        ):
+            raise ValueError("tool_name must be canonical")
         if not isinstance(value["arguments"], dict):
             raise ValueError("tool arguments must be an object")
     elif kind == "no_proposal":
