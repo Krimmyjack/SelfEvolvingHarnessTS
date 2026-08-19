@@ -83,6 +83,7 @@ from SelfEvolvingHarnessTS.methods.ttha.generative_workflow import (
     build_public_operator_inventory,
     compile_workflow_proposal,
 )
+from SelfEvolvingHarnessTS.contracts.harness import EditManifest, EditOperation
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
 from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod
@@ -526,6 +527,14 @@ def _retrieve_target_local_skills(
         skill_id = str(getattr(skill, "skill_id", "") or "")
         if not skill_id.startswith(_LOCAL_SKILL_PREFIX):
             continue
+        # ``resolve_harness_view`` already drops a disconfirmed Skill, but
+        # this is a second, independent read of the same snapshot, and the
+        # full run proved it mattered: Tasks 8 and 9 still reported
+        # target_local_skill_count=1 in both arms for a Skill restricted on
+        # Task 7, frozen Program and all.  A restriction that holds on one
+        # channel and not the other is not a restriction.
+        if _is_restricted(skill):
+            continue
         steps = _parse_frozen_steps(str(getattr(skill, "body", "") or ""))
         if steps is None:
             continue
@@ -627,14 +636,38 @@ def _binding_free_signature(
     return tuple(signature)
 
 
+# Written onto a Skill's own risk_guards when its delayed window disconfirms
+# it.  Kept as a literal here and in the retrieval layer rather than shared
+# through an import, because the two live on opposite sides of the method /
+# evaluation boundary.
+RESTRICTED_GUARD = "restricted_by_target_feedback"
+
+
+def _is_restricted(skill: Any) -> bool:
+    return bool((getattr(skill, "risk_guards", None) or {}).get(RESTRICTED_GUARD))
+
+
 def _existing_local_skill(
     snapshot: Any,
     steps: Sequence[tuple[str, Mapping[str, object]]],
 ) -> Any | None:
+    """An *active* Target-local Skill with this frozen Program, or None.
+
+    A Skill its own delayed window disconfirmed is not one.  The full run
+    showed why this has to be checked here and not only at retrieval: on
+    Task 7 both arms had their capability Skill re-validated and RESTRICTED,
+    and on Tasks 8 and 9 this lookup still matched it -- so the Agent
+    re-proposing the same family was recorded as ``deployed_existing_skill``,
+    a reuse of an Active Skill that no longer existed.  The Program may
+    absolutely be probed again; what it may not do is arrive wearing the
+    authority of a Skill the Domain already refuted.
+    """
     target = _binding_free_signature(steps)
     for skill in getattr(snapshot, "skills", ()) or ():
         skill_id = str(getattr(skill, "skill_id", "") or "")
         if not skill_id.startswith(_LOCAL_SKILL_PREFIX):
+            continue
+        if _is_restricted(skill):
             continue
         frozen = _parse_frozen_steps(str(getattr(skill, "body", "") or ""))
         if frozen is None:
@@ -1064,6 +1097,143 @@ def _agent_decision(
     }
 
 
+def _restricted_local_skill(
+    snapshot: Any,
+    steps: Sequence[tuple[str, Mapping[str, object]]],
+) -> Any | None:
+    """The retired Skill carrying this frozen Program, if there is one."""
+    target = _binding_free_signature(steps)
+    for skill in getattr(snapshot, "skills", ()) or ():
+        skill_id = str(getattr(skill, "skill_id", "") or "")
+        if not skill_id.startswith(_LOCAL_SKILL_PREFIX) or not _is_restricted(skill):
+            continue
+        frozen = _parse_frozen_steps(str(getattr(skill, "body", "") or ""))
+        if frozen is None:
+            continue
+        if _steps_equal(frozen, steps) or _binding_free_signature(frozen) == target:
+            return skill
+    return None
+
+
+def _lift_restriction(
+    controller: Any, arm_state: _ArmState, skill: Any,
+) -> tuple[Any, dict[str, Any]]:
+    """PATCH the entry that retired this Skill, on new evidence.
+
+    The same surface that retired it lifts it, so the snapshot keeps both
+    moves and a reader can see the Skill was refuted and then re-earned.
+    """
+    guards = {
+        key: value for key, value in dict(skill.risk_guards or {}).items()
+        if key not in {RESTRICTED_GUARD, "restriction_reason"}
+    }
+    guards["restored_after_restriction"] = True
+    surface = f"skill_library.entries/{skill.skill_id}.risk_guards"
+    parent = arm_state.store.materialize(arm_state.active_snapshot)
+    manifest = EditManifest(
+        edit_id=f"restore_{skill.skill_id}",
+        base_harness_sha=arm_state.active_snapshot.harness_content_sha,
+        target_pattern_id="e1v2-target-local-risk",
+        target_surface_id=surface,
+        operation=EditOperation.PATCH,
+        surface_precondition={
+            "kind": "SHA",
+            "sha": controller.surface_precondition_sha(parent, surface),
+        },
+        dependency_precondition_shas={},
+        minimal_patch={"value": guards},
+        new_value=None,
+        observable_applicability=None,
+        predicted_agent_behavior_change=(f"retrieve_skill:{skill.skill_id}",),
+        predicted_data_effect=("restored_skill_recalled",),
+        automatically_selected_risk_cases=(),
+        falsification_condition=("skill_still_absent",),
+        patch_id=None,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.slow_agent import (  # noqa: PLC0415
+        _resolve_apply_manifest,
+    )
+    receipt = controller.apply_to_fork(
+        parent, _resolve_apply_manifest(manifest, arm_state.active_snapshot),
+        confirmed_cause="RISK_GAP",
+    )
+    restored = compile_snapshot(receipt.candidate_root, verify_lock=False)
+    arm_state.store.set_active(restored.runtime_bundle_sha)
+    return restored, {"stage": "restriction_lifted", "skill_id": str(skill.skill_id)}
+
+
+def _reprobe_restricted_skill(
+    *,
+    controller: Any,
+    arm_state: _ArmState,
+    skill: Any,
+    winner: Any,
+    compiled: CompiledWorkflow,
+    scope: frozenset[str],
+    values: Mapping[str, Any],
+    mapped_roster: list[dict[str, Any]],
+    config: Mapping[str, Any],
+    eval_uids: list[str],
+    delayed_origins: tuple[int, ...],
+    before_local_ids: list[str],
+) -> tuple[dict[str, Any], dict[str, Any], Any, dict[str, Any] | None, Any]:
+    """Re-probe a disconfirmed Program without restoring its authority.
+
+    The Support probe for this Task already happened -- that is what made this
+    Episode the winner -- so only the delayed window is evaluated here.  Both
+    windows positive lifts the restriction; anything less leaves it retired
+    and the Episode is graded exactly like any other.
+    """
+    delayed_probe = _probe_compiled(
+        mapped_roster, values, config, delayed_origins, eval_uids, compiled, scope,
+    )
+    updated = _update_delayed(winner, delayed_probe, delayed_origins)
+    support_gain = float(winner.support_response.get("gain") or 0.0)
+    delayed_gain = float(delayed_probe["macro_gain"])
+    earned_back = (
+        support_gain >= MATERIAL_THRESHOLD and delayed_gain >= MATERIAL_THRESHOLD
+    )
+    method_event = {
+        "stage": "restricted_program_reprobed",
+        "skill_id": str(skill.skill_id),
+        "skill_reused": False,
+        "support_gain": support_gain,
+        "note": (
+            "the Program was probed again on this Task's own evidence; the "
+            "retired Skill supplied no candidate and carried no authority"
+        ),
+    }
+    snapshot = arm_state.active_snapshot
+    if earned_back:
+        try:
+            snapshot, restore_event = _lift_restriction(controller, arm_state, skill)
+            arm_state.active_snapshot = snapshot
+        except Exception as exc:  # noqa: BLE001
+            restore_event = {"stage": "restore_failed",
+                             "error": f"{type(exc).__name__}: {exc}"}
+    else:
+        restore_event = {"stage": "restriction_kept"}
+    delayed_event = {
+        **restore_event,
+        "skill_id": str(skill.skill_id),
+        "delayed_gain": delayed_gain,
+        "both_windows_positive": earned_back,
+    }
+    return (
+        method_event,
+        delayed_event,
+        updated,
+        delayed_probe,
+        {
+            "snapshot": snapshot,
+            "local_skill_ids_before": before_local_ids,
+            "local_skill_ids_after": _skill_ids(snapshot, local_only=True),
+            "active_pointer_written": bool(earned_back),
+            "reused_existing_skill": False,
+        },
+    )
+
+
 def _lifecycle(
     *,
     repo_root: Path,
@@ -1096,6 +1266,21 @@ def _lifecycle(
     # Skill.  Re-adding it would violate the ABSENT precondition, so the
     # instrument records a machine reuse and validates the current delayed
     # window against the same Program.
+    # A Program whose Skill this Domain disconfirmed.  It is not a reuse --
+    # the Skill carries no authority any more -- but it is not a fresh ADD
+    # either, because the entry still occupies its surface.  It is re-probed
+    # on this Task's own evidence, and only both windows coming back positive
+    # restore it, through an explicit revision of the entry that retired it.
+    restricted_skill = _restricted_local_skill(arm_state.active_snapshot, steps)
+    if restricted_skill is not None:
+        return _reprobe_restricted_skill(
+            controller=controller, arm_state=arm_state, skill=restricted_skill,
+            winner=winner, compiled=compiled, scope=scope, values=values,
+            mapped_roster=mapped_roster, config=config, eval_uids=eval_uids,
+            delayed_origins=delayed_origins,
+            before_local_ids=before_local_ids,
+        )
+
     existing_skill = _existing_local_skill(arm_state.active_snapshot, steps)
     if existing_skill is not None:
         holder: dict[str, Any] = {}

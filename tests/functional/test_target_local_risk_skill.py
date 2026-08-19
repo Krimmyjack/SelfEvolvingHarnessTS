@@ -15,6 +15,7 @@ never survive its own Domain contradicting it.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import shutil
 import sys
@@ -56,6 +57,11 @@ from evaluation.functional.task_episode_harness.agentic.fast_path import (  # no
 )
 from evaluation.functional.task_episode_harness.agentic import runner as g1r  # noqa: E402
 from evaluation.functional.task_episode_harness.e1 import (  # noqa: E402
+    _existing_local_skill,
+    _is_restricted,
+    _lift_restriction,
+    _restricted_local_skill,
+    _retrieve_target_local_skills,
     E1_DOMAIN,
     MATERIAL_THRESHOLD,
     _ArmState,
@@ -413,3 +419,85 @@ def test_no_receipt_when_the_agent_already_ordered_it_correctly():
         rows, _View(_risk("target_risk_repair_level_shift")), trace)
     assert [row["candidate_id"] for row in ordered] == ["c1", "c2"]
     assert trace.probe_order_deprioritizations == []
+
+
+# ------------------------------------- a disconfirmed Skill leaves every door
+def _capability_arm(tmp_path, restricted: bool):
+    """An arm whose snapshot holds one Target-local capability Skill."""
+    from SelfEvolvingHarnessTS.contracts.harness import SkillEntry, SkillKind
+
+    store = SnapshotStore(tmp_path / "snapshots")
+    base = compile_snapshot(H0, verify_lock=False)
+    guards = {"explicit_choice_required": True}
+    if restricted:
+        guards[risk_skill.RESTRICTED_GUARD] = True
+        guards["restriction_reason"] = "delayed_window_disconfirmed_this_skill"
+    entry = SkillEntry(
+        schema_version="skill-entry/1",
+        skill_id="fast_winner_e1v2_outlier_mad",
+        skill_kind=SkillKind.CAPABILITY,
+        revision=1,
+        body='Frozen program steps: [{"op": "outlier_mad", "params": {}}]',
+        observable_applicability={"const": True},
+        allowed_tools=("outlier_mad",),
+        risk_guards=guards,
+    )
+    snapshot = dataclasses.replace(base, skills=(*base.skills, entry))
+    return snapshot, entry
+
+
+def _context():
+    return {
+        "task_fast_features": {
+            "task_kind": "forecast", "estimated_region_start_fraction": 0.0,
+        },
+    }
+
+
+def test_a_restricted_capability_leaves_the_specific_target_local_channel(tmp_path):
+    """The second Fast channel, which resolve_harness_view does not cover.
+
+    The full run proved this was not hypothetical: Tasks 8 and 9 reported
+    target_local_skill_count=1 in both arms for a Skill restricted on Task 7,
+    frozen Program and all.
+    """
+    active, _ = _capability_arm(tmp_path, restricted=False)
+    assert _retrieve_target_local_skills(active, _context(), arm="A3")
+
+    retired, _ = _capability_arm(tmp_path / "b", restricted=True)
+    assert _retrieve_target_local_skills(retired, _context(), arm="A3") == []
+
+
+def test_the_reuse_lookup_stops_claiming_a_disconfirmed_skill(tmp_path):
+    """Re-proposing the Program is fine; calling it a reuse of an Active Skill is not."""
+    steps = [("outlier_mad", {})]
+    active, _ = _capability_arm(tmp_path, restricted=False)
+    assert _existing_local_skill(active, steps) is not None
+    assert _restricted_local_skill(active, steps) is None
+
+    retired, _ = _capability_arm(tmp_path / "b", restricted=True)
+    assert _existing_local_skill(retired, steps) is None
+    # Still findable as retired, which is how the re-probe path recognizes it.
+    assert _restricted_local_skill(retired, steps) is not None
+
+
+def test_lifting_a_restriction_makes_the_skill_recallable_again(tmp_path):
+    from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
+        EditController, FaultRouter, SurfaceRegistry,
+    )
+
+    snapshot, entry = _capability_arm(tmp_path, restricted=True)
+    store = SnapshotStore(tmp_path / "live")
+    store.materialize(snapshot)
+    store.set_active(snapshot.runtime_bundle_sha)
+    arm = _ArmState(arm="A3", memories=[], episodes=[], store=store,
+                    active_snapshot=snapshot, active_skill_ids=[])
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter())
+
+    restored, event = _lift_restriction(controller, arm, entry)
+    assert event["stage"] == "restriction_lifted"
+    lifted = next(s for s in restored.skills if s.skill_id == entry.skill_id)
+    assert not _is_restricted(lifted)
+    assert lifted.risk_guards["restored_after_restriction"] is True
+    assert _retrieve_target_local_skills(restored, _context(), arm="A3")
