@@ -294,8 +294,10 @@ def _experience_contrast(
 ) -> dict[str, Any]:
     """Positive / negative / conflict Episode contrast, arm-local only.
 
-    §11: an Episode is a fact about one Action--Response pair.  It is returned
-    as evidence, never as an instruction, and A3 never sees A5's.
+    Runtime and Slow side only.  This no longer feeds the Fast payload: the
+    architecture override routes Experience through Skill formation, so an
+    Episode reaches the Fast Agent only after it has become a Skill.  Kept
+    because attribution and the Slow census read the same contrast.
     """
     positive = [row for row in arm_state.memories if row.get("relation") == "POSITIVE"]
     negative = [row for row in arm_state.memories if row.get("relation") == "NEGATIVE"]
@@ -383,7 +385,6 @@ def _run_arm(
     source_prior: Mapping[str, Any] | None,
     workspace_tool_budget: int,
     backend_factory: Callable[[int], Any],
-    source_experiences: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     arm = arm_state.arm
     scope = frozenset(public_context["scope_series_uids"])
@@ -412,6 +413,21 @@ def _run_arm(
     local_skills = _retrieve_target_local_skills(
         arm_state.active_snapshot, public_context, arm=arm
     )
+    # Fast Agent context, per the repository architecture override.
+    #
+    # Allowed: active General Skills and guidance; a Specific or Target-local
+    # Skill legally applicable in this Domain; deployment-visible Workspace
+    # observations; Target Support already occurred in this adaptation
+    # trajectory; and concise scope / risk / evidence-strength annotations
+    # attached to a Skill.
+    #
+    # Not allowed, and removed here: a raw or row-wise Source or Target
+    # Episode bank, a source_experiences field, a deterministic Episode
+    # aggregate acting as an independent candidate menu, and an unmatched
+    # Source Target-local Card offered as an evidence template.  Episodes stay
+    # available to deterministic Runtime and to the Slow Agent for retrieval,
+    # contrast, attribution and Skill formation -- they reach the Fast Agent
+    # only after they have become a Skill.
     retrieved = {
         "general": {
             "carrier": "resolved Harness view (instruction, Skills, controls)",
@@ -420,32 +436,22 @@ def _run_arm(
             ),
             "retrieved_skill_ids": list(harness_view.skill_ids),
         },
-        "specific_target_local_cards": [
-            dict(row) for row in local_skills
+        "specific_target_local_skills": [
+            {
+                "skill_id": row.get("skill_id"),
+                "frozen_program_steps": row.get("frozen_program_steps"),
+                "risk_guards": row.get("risk_guards"),
+                "applies_in_current_context": True,
+            }
+            for row in local_skills
             if row.get("retrieved_in_current_context")
         ],
-        "specific_non_matching_cards_as_evidence_template": [
-            dict(row) for row in local_skills
-            if not row.get("retrieved_in_current_context")
-        ],
-        "experience": _experience_contrast(arm_state),
-        "source_prior": (
-            _plain(source_prior) if source_prior is not None else None
+        "target_support_this_trajectory": (
+            "Support probes occurring in this Task are reported to the select "
+            "stage as they happen; no earlier Task's Outcome is carried here."
         ),
-        # Source Experience, delivered as a separate inlet from the Card
-        # channel.  These are observed Action-Response facts from another
-        # Domain: they carry their own public Context, Program, Support and
-        # delayed relation and provenance, and they confer no execution right.
-        # Nothing here is a Card and nothing here is retrieved by the
-        # applicability matcher -- this round tests the inlet, not retrieval.
-        "source_experiences": [_plain(row) for row in source_experiences],
-        "source_experience_note": (
-            "Observed facts from a different Domain, offered as evidence to "
-            "weigh, not as instructions and not as an executable template. "
-            "A Program that worked there may fail here; a Program that failed "
-            "there may work here. Only a Target Support probe decides."
-        ) if source_experiences else None,
     }
+
     initial_context = _initial_context(
         task_spec=task_spec,
         public_context=public_context,
@@ -609,17 +615,11 @@ def _run_arm(
         "retrieved_knowledge_summary": {
             "retrieved_skill_ids": list(harness_view.skill_ids),
             "retrieved_memory_ids": list(harness_view.memory_ids),
-            "target_local_card_count": len(
-                retrieved["specific_target_local_cards"]
-            ),
-            "positive_episode_count": len(
-                retrieved["experience"]["positive_episodes"]
-            ),
-            "negative_episode_count": len(
-                retrieved["experience"]["negative_episodes"]
+            "target_local_skill_count": len(
+                retrieved["specific_target_local_skills"]
             ),
             "source_prior_matched": source_prior is not None,
-            "source_experiences_delivered": len(source_experiences),
+            "raw_episodes_in_fast_payload": 0,
         },
         "active_local_skill_ids_before": active_before,
         "active_local_skill_ids_after": active_after,
@@ -1231,7 +1231,7 @@ def run_g1_pipeline(
     write_report: bool = True,
     run_slow: bool = True,
     paired_arms: bool = False,
-    source_experiences: Sequence[Mapping[str, Any]] = (),
+    warm_arm_snapshot: Any = None,
 ) -> dict[str, Any]:
     started = time.perf_counter()
     repo_root = PROJECT_ROOT
@@ -1264,15 +1264,22 @@ def run_g1_pipeline(
     base_snapshot = compile_snapshot(
         repo_root / "methods/ttha/harness/h0", verify_lock=False
     )
+    # A5 may begin from a Source-derived Skill frozen before any Target
+    # Outcome was read.  That Skill is the entire A3/A5 difference: everything
+    # else -- tools, Operator supply, Support budget, Runtime, Judge and the
+    # baseline Harness -- is identical.
+    arm_snapshots = {COLD_ARM: base_snapshot,
+                     WARM_ARM: warm_arm_snapshot or base_snapshot}
     arm_states: dict[str, _ArmState] = {}
     for arm in (COLD_ARM, WARM_ARM):
+        snapshot = arm_snapshots[arm]
         store = SnapshotStore(state_root / arm / "snapshots")
-        store.materialize(base_snapshot)
-        store.set_active(base_snapshot.runtime_bundle_sha)
+        store.materialize(snapshot)
+        store.set_active(snapshot.runtime_bundle_sha)
         arm_states[arm] = _ArmState(
             arm=arm, memories=[], episodes=[], store=store,
-            active_snapshot=base_snapshot,
-            active_skill_ids=_skill_ids(base_snapshot, local_only=True),
+            active_snapshot=snapshot,
+            active_skill_ids=_skill_ids(snapshot, local_only=True),
         )
 
     # A5's warm start: the frozen Source Card and Source evidence, offered
@@ -1336,9 +1343,6 @@ def run_g1_pipeline(
         }
         def _one_arm(arm: str, prior: Any) -> dict[str, Any]:
             result = _run_arm(
-                source_experiences=(
-                    source_experiences if arm == WARM_ARM else ()
-                ),
                 repo_root=repo_root,
                 arm_state=arm_states[arm],
                 task_spec=spec,
@@ -1469,17 +1473,14 @@ def run_g1_pipeline(
                 "the Runtime Scope matcher"
             ),
         },
-        "source_experience_inlet": {
-            "episodes_offered_to_" + WARM_ARM: len(source_experiences),
-            "episodes_offered_to_" + COLD_ARM: 0,
-            "confers_execution_right": False,
-            "retrieved_by_applicability": False,
-            "note": (
-                "this round tests whether a Source Experience inlet changes "
-                "behaviour, not whether Context retrieval selects the right "
-                "Episodes"
-            ),
-        } if source_experiences else None,
+        "source_derived_skill": {
+            "arm": WARM_ARM,
+            "runtime_bundle_sha": getattr(
+                warm_arm_snapshot, "runtime_bundle_sha", None),
+            "frozen_before_target_outcome": True,
+            "is_the_only_arm_difference": True,
+        } if warm_arm_snapshot is not None else None,
+        "raw_episodes_in_fast_payload": 0,
         "arm_execution": "parallel" if paired_arms else "sequential",
         "arm_execution_note": (
             "the two arms of a Task run concurrently and join before the next "
