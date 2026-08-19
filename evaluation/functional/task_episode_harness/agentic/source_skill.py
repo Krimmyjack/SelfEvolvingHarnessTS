@@ -58,7 +58,12 @@ SOURCE_APPLICABILITY: dict[str, Any] = {
     "feature": "task_kind", "op": "==", "value": "forecast",
 }
 
-SLOW_SYSTEM = (
+# The literal a Slow stage must use when no active recommendation is
+# authorized.  An explicit abstention is a section; silence is not.
+TRY_ABSTAIN = "NO_AUTHORIZED_ACTIVE_RECOMMENDATION"
+
+
+_SLOW_SYSTEM_TEMPLATE = (
     "You are the Slow Harness update stage. Exactly one Harness surface is "
     "authorized this call: an ADD of the skill library entry "
     f"'{SOURCE_SKILL_ID}'. You do not approve your own edit; a deterministic "
@@ -68,12 +73,18 @@ SLOW_SYSTEM = (
     "observed in a Source domain. No trajectories and no utility numbers are "
     "provided, so do not invent thresholds.\n"
     "Evidence rules. Evidence is counted in distinct_task_count, never in "
-    "attempt_count. A statement that actively tells the proposal stage to try "
-    "something needs a cohort that is positive with no opposing cell in the "
-    "same Context; one opposing cell is enough to withhold it. A statement "
-    "that warns against something needs repeated harm somewhere and does not "
-    "need a uniformly positive cohort. A program the census is genuinely "
-    "split on supports neither.\n"
+    "attempt_count. A statement that warns against something needs repeated "
+    "harm somewhere and does not need a uniformly positive cohort. A program "
+    "the census is genuinely split on supports neither.\n"
+    "Active recommendations are pre-authorized for you, deterministically, "
+    "and the list is in the payload as authorized_try_operators. Evidence "
+    "produced while a Skill was already naming a family is not independent "
+    "of the Harness: it may confirm, refute or withdraw a clause and can "
+    "never authorize a new active recommendation, so it has already been "
+    "excluded. TRY may name only operators on that list. If the list is "
+    "empty, TRY must be exactly the string "
+    f"'{TRY_ABSTAIN}' and must name no operator at all -- that is a result, "
+    "not a failure, and the other sections still stand on their own rules.\n"
     "You may not introduce a new observable feature, a new operator, a new "
     "numeric threshold, or any statement about the Judge or the Consumer. "
     "Name only operators and features that appear in the census. Write for a "
@@ -91,6 +102,178 @@ SLOW_SYSTEM = (
     "Support must show before the result is believed. FALLBACK is what to do "
     "when OBSERVE does not support TRY."
 )
+
+
+def slow_system(authorized: Sequence[str]) -> str:
+    """The Slow system prompt with this call's authorization stated in it."""
+    listed = ", ".join(sorted(authorized)) if authorized else "(empty)"
+    return (
+        _SLOW_SYSTEM_TEMPLATE
+        + "\nauthorized_try_operators for this call: " + listed + "."
+    )
+
+
+# --------------------------------------------------------- provenance rules
+LOCAL_SKILL_PREFIX = "fast_winner_e1v2_"
+BOOTSTRAP_SKILL_IDS = frozenset({
+    "build_contrastive_candidates", "inspect_and_localize",
+    "select_or_identity_and_verify",
+})
+
+def _families_named_by(skill_ids: Sequence[str]) -> set[str]:
+    return {
+        str(sid)[len(LOCAL_SKILL_PREFIX):]
+        for sid in skill_ids or ()
+        if str(sid).startswith(LOCAL_SKILL_PREFIX)
+    }
+
+
+def _relation(gain: float, threshold: float) -> str:
+    if gain >= threshold:
+        return "POSITIVE"
+    if gain <= -threshold:
+        return "NEGATIVE"
+    return "IMMATERIAL"
+
+
+def provenance_labelled_probes(
+    report: Mapping[str, Any],
+    *,
+    threshold: float,
+) -> list[dict[str, Any]]:
+    """Every Source probe, labelled by what the Fast payload held before it.
+
+    Evidence produced while a Skill was already naming that Program family is
+    not independent of the Harness.  The T233 census made the difference
+    decisive rather than academic: ``outlier_iqr`` looks like six positive
+    Tasks against nothing, and five of those six happened after
+    ``fast_winner_e1v2_outlier_iqr`` was already in the arm's snapshot.  One
+    Skill formed, then re-confirmed itself five times.
+
+    Two readings are produced.  ``conditioned_snapshot`` counts every Skill in
+    the arm's snapshot when the Task began; ``conditioned_served`` counts only
+    the ones the resolved view actually served.  The first is the conservative
+    one -- withholding an authorization on a doubt is the safe direction --
+    and it is what :func:`authorization_audit` uses by default.
+    """
+    probes: list[dict[str, Any]] = []
+    for row in report.get("rows") or ():
+        task_id = str(row["task_episode_id"])
+        condition = bool(row.get("post_shift_support_sufficient"))
+        for arm in ("A3", "A5"):
+            entry = row.get(arm)
+            if not entry:
+                continue
+            summary = entry.get("retrieved_knowledge_summary") or {}
+            in_snapshot = _families_named_by(
+                entry.get("active_local_skill_ids_before") or ())
+            served = _families_named_by([
+                sid for sid in (summary.get("retrieved_skill_ids") or ())
+                if sid not in BOOTSTRAP_SKILL_IDS
+            ])
+            prior = bool(summary.get("source_prior_matched"))
+            for probe in entry.get("probes") or ():
+                if probe.get("status") != "PROBED":
+                    continue
+                operators = [str(step["op"]) for step in probe["steps"]]
+                gain = float(probe["support_gain"])
+                probes.append({
+                    "task_episode_id": task_id,
+                    "arm": arm,
+                    "program": "+".join(operators),
+                    "context_condition": condition,
+                    "support_gain": gain,
+                    "relation": _relation(gain, threshold),
+                    # A Skill naming one operator conditions any Program that
+                    # contains it, so a compound stays conditioned too.
+                    "conditioned_snapshot": bool(in_snapshot & set(operators)) or prior,
+                    "conditioned_served": bool(served & set(operators)) or prior,
+                })
+    return probes
+
+
+def authorization_audit(
+    probes: Sequence[Mapping[str, Any]],
+    *,
+    min_distinct_tasks: int,
+    conditioning_key: str = "conditioned_snapshot",
+) -> list[dict[str, Any]]:
+    """Per program x Context: what the evidence may and may not authorize.
+
+    Three rules, applied in this order and none of them tunable here:
+
+    * an active recommendation may be authorized only by UNGUIDED distinct
+      Tasks -- conditioned evidence may confirm, refute or withdraw a clause
+      and may never authorize a new one;
+    * after removing any one Source Task the UNGUIDED positive count must
+      still reach ``min_distinct_tasks``, so no recommendation rests on a
+      single Task;
+    * opposing evidence blocks from either provenance, precisely because
+      conditioned evidence is allowed to refute.
+
+    A deprioritization is graded on the other side of the frozen clause-kind
+    asymmetry: repeated harm somewhere is enough, and it does not need a
+    uniformly positive cohort, so provenance does not gate it.
+    """
+    cells: dict[tuple[str, Any], dict[str, dict[str, set[str]]]] = {}
+    for probe in probes:
+        key = (probe["program"], probe["context_condition"])
+        cell = cells.setdefault(key, {
+            "pooled": {}, "unguided": {}, "conditioned": {},
+        })
+        bucket = "conditioned" if probe[conditioning_key] else "unguided"
+        for name in ("pooled", bucket):
+            cell[name].setdefault(probe["relation"], set()).add(
+                probe["task_episode_id"])
+
+    out: list[dict[str, Any]] = []
+    for (program, condition), cell in sorted(cells.items(),
+                                             key=lambda kv: (kv[0][0], str(kv[0][1]))):
+        unguided_positive = cell["unguided"].get("POSITIVE", set())
+        pooled_negative = cell["pooled"].get("NEGATIVE", set())
+        pooled_positive = cell["pooled"].get("POSITIVE", set())
+        loo_minimum = (
+            min(len(unguided_positive - {task}) for task in unguided_positive)
+            if unguided_positive else 0
+        )
+        try_authorized = bool(
+            unguided_positive
+            and loo_minimum >= min_distinct_tasks
+            and not pooled_negative
+        )
+        risk_authorized = bool(
+            len(pooled_negative) >= min_distinct_tasks and not pooled_positive
+        )
+        out.append({
+            "program": program,
+            "context_condition": condition,
+            "pooled_positive": len(pooled_positive),
+            "pooled_negative": len(pooled_negative),
+            "pooled_immaterial": len(cell["pooled"].get("IMMATERIAL", set())),
+            "unguided_positive": len(unguided_positive),
+            "unguided_negative": len(cell["unguided"].get("NEGATIVE", set())),
+            "conditioned_positive": len(cell["conditioned"].get("POSITIVE", set())),
+            "conditioned_negative": len(cell["conditioned"].get("NEGATIVE", set())),
+            "leave_one_out_minimum_positive": loo_minimum,
+            "active_try_authorized": try_authorized,
+            "deprioritization_authorized": risk_authorized,
+            "withheld_because": (
+                None if try_authorized
+                else "no_unguided_positive" if not unguided_positive
+                else "opposing_evidence_in_this_context" if pooled_negative
+                else "does_not_survive_leave_one_out"
+            ),
+        })
+    return out
+
+
+def authorized_try_operators(audit: Sequence[Mapping[str, Any]]) -> set[str]:
+    """Operators a TRY clause may name.  Empty means TRY must abstain."""
+    operators: set[str] = set()
+    for cell in audit:
+        if cell["active_try_authorized"]:
+            operators.update(str(cell["program"]).split("+"))
+    return operators
 
 
 def census_vocabulary(census: Sequence[Mapping[str, Any]]) -> dict[str, set[str]]:
@@ -169,6 +352,7 @@ def audit_sections(
     operator_names: Sequence[str],
     observable_features: Sequence[str],
     source_cohort_tokens: Sequence[str] = (),
+    authorized_try: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Deterministic containment audit.  No rubric about what it should say.
 
@@ -180,7 +364,11 @@ def audit_sections(
     missing = [name for name in SECTIONS
                if not str(sections.get(name) or "").strip()]
     extra = sorted(set(sections) - set(SECTIONS))
-    text = " ".join(str(sections.get(name) or "") for name in SECTIONS)
+    text = " ".join(
+        "" if str(sections.get(name) or "").strip() == TRY_ABSTAIN
+        else str(sections.get(name) or "")
+        for name in SECTIONS
+    )
     lowered = text.lower()
 
     vocabulary = census_vocabulary(census)
@@ -196,6 +384,22 @@ def audit_sections(
     leaked_cohort = sorted(
         token for token in source_cohort_tokens if token.lower() in lowered
     )
+    # The TRY clause is checked against what the provenance audit authorized,
+    # not against what the pooled census appears to support.  Passing None
+    # keeps the pre-authorization behaviour for callers that have no audit.
+    try_text = str(sections.get("TRY") or "")
+    named_in_try = sorted(
+        name for name in operator_names if name.lower() in try_text.lower()
+    )
+    if authorized_try is None:
+        try_ok, unauthorized = True, []
+    elif not authorized_try:
+        try_ok = try_text.strip() == TRY_ABSTAIN
+        unauthorized = named_in_try
+    else:
+        unauthorized = [n for n in named_in_try if n not in set(authorized_try)]
+        try_ok = not unauthorized and bool(named_in_try)
+
     checks = {
         "all_six_sections_present": not missing,
         "no_extra_sections": not extra,
@@ -203,6 +407,7 @@ def audit_sections(
         "no_invented_observable_feature": not invented_features,
         "no_numeric_threshold": not numbers,
         "no_source_cohort_identity_leaked": not leaked_cohort,
+        "try_clause_within_authorization": try_ok,
     }
     return {
         "pass": all(checks.values()),
@@ -213,6 +418,10 @@ def audit_sections(
         "invented_observable_features": invented_features,
         "numeric_literals": numbers,
         "leaked_cohort_tokens": leaked_cohort,
+        "operators_named_in_try": named_in_try,
+        "unauthorized_operators_in_try": unauthorized,
+        "authorized_try_operators": sorted(authorized_try or ()),
+        "try_abstained": try_text.strip() == TRY_ABSTAIN,
     }
 
 

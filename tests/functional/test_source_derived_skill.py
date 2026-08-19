@@ -46,6 +46,12 @@ from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: E402
     resolve_harness_view,
 )
 from SelfEvolvingHarnessTS.operators.registry import OPERATOR_NAMES  # noqa: E402
+from evaluation.functional.task_episode_harness.e1 import (  # noqa: E402
+    MATERIAL_THRESHOLD,
+)
+from evaluation.functional.task_episode_harness.g1 import (  # noqa: E402
+    GENERAL_EVIDENCE_MIN_DISTINCT_TASKS,
+)
 from evaluation.functional.task_episode_harness.agentic import (  # noqa: E402
     runner as g1r,
     source_skill,
@@ -166,7 +172,7 @@ def _slow_returning(payload):
 
 def test_abstain_writes_nothing_and_is_reported_as_a_result(census, tmp_path):
     out = g1r.run_source_skill_slow(
-        repo_root=PROJECT_ROOT, census=census, census_provenance="T233 19 Tasks",
+        repo_root=PROJECT_ROOT, census=census, census_provenance="T233 19 Tasks", authorization=[],
         store_root=tmp_path / "snapshots",
         slow_call=_slow_returning({"decision": "ABSTAIN", "reason": "split"}),
     )
@@ -178,7 +184,7 @@ def test_abstain_writes_nothing_and_is_reported_as_a_result(census, tmp_path):
 def test_a_skill_that_fails_the_audit_is_rejected_whole(census, tmp_path):
     bad = {**SECTIONS_OK, "TRY": "Lead with winsorize."}
     out = g1r.run_source_skill_slow(
-        repo_root=PROJECT_ROOT, census=census, census_provenance="T233 19 Tasks",
+        repo_root=PROJECT_ROOT, census=census, census_provenance="T233 19 Tasks", authorization=[],
         store_root=tmp_path / "snapshots",
         slow_call=_slow_returning({"decision": "ADD", "sections": bad}),
     )
@@ -187,10 +193,20 @@ def test_a_skill_that_fails_the_audit_is_rejected_whole(census, tmp_path):
     assert "frozen_runtime_bundle_sha" not in out
 
 
+# These fixtures exercise the compile-and-serve path, so they supply an
+# authorization that permits the TRY.  Whether the real T233 evidence earns
+# one is what the provenance tests below decide.
+AUTHORIZES_OUTLIER_IQR = [{
+    "program": "outlier_iqr", "context_condition": False,
+    "active_try_authorized": True, "deprioritization_authorized": False,
+}]
+
+
 @pytest.fixture()
 def frozen(census, tmp_path):
     out = g1r.run_source_skill_slow(
         repo_root=PROJECT_ROOT, census=census, census_provenance="T233 19 Tasks",
+        authorization=AUTHORIZES_OUTLIER_IQR,
         store_root=tmp_path / "snapshots",
         slow_call=_slow_returning({"decision": "ADD", "sections": SECTIONS_OK}),
     )
@@ -251,3 +267,109 @@ def test_the_skill_is_frozen_before_any_target_outcome_is_read(frozen):
     assert frozen["target_outcome_read"] is False
     assert frozen["llm_api_call_count"] == 1
     assert frozen["census_provenance"] == "T233 19 Tasks"
+
+
+# ---------------------------------------------- provenance authorization
+SOURCE_RUN = (
+    PROJECT_ROOT / "artifacts/functional/e2/g3d1_t233_source_extension.json"
+)
+
+
+@pytest.fixture(scope="module")
+def audit():
+    if not SOURCE_RUN.is_file():
+        pytest.skip("the T233 Source run is not present")
+    report = json.loads(SOURCE_RUN.read_text(encoding="utf-8"))
+    probes = source_skill.provenance_labelled_probes(
+        report, threshold=MATERIAL_THRESHOLD)
+    return source_skill.authorization_audit(
+        probes, min_distinct_tasks=GENERAL_EVIDENCE_MIN_DISTINCT_TASKS)
+
+
+def test_pooled_counts_reproduce_the_frozen_census(audit, census):
+    """The provenance split must act on the evidence Slow actually saw."""
+    frozen = {}
+    for cell in census:
+        program = "+".join(cell["canonical_program"])
+        condition = cell["post_shift_support_sufficient"]
+        frozen[(program, condition, cell["support_relation"])] = (
+            cell["distinct_task_count"])
+    for cell in audit:
+        key = (cell["program"], cell["context_condition"])
+        for relation, field in (("POSITIVE", "pooled_positive"),
+                                ("NEGATIVE", "pooled_negative"),
+                                ("IMMATERIAL", "pooled_immaterial")):
+            assert cell[field] == frozen.get((*key, relation), 0), (key, relation)
+
+
+def test_outlier_iqr_is_mostly_self_confirmation(audit):
+    """Six positives against nothing, five of them after its own Skill existed."""
+    cell = next(c for c in audit
+                if c["program"] == "outlier_iqr" and not c["context_condition"])
+    assert cell["pooled_positive"] == 6 and cell["pooled_negative"] == 0
+    assert cell["unguided_positive"] == 1
+    assert cell["conditioned_positive"] == 5
+
+
+def test_neither_family_may_carry_an_active_try(audit):
+    """The two candidates a pooled reading would have picked."""
+    for program in ("repair_level_shift", "outlier_iqr"):
+        for cell in [c for c in audit if c["program"] == program]:
+            assert not cell["active_try_authorized"], cell
+    assert source_skill.authorized_try_operators(audit) == set()
+
+
+def test_the_withholding_reason_is_recorded_per_cell(audit):
+    reasons = {
+        (c["program"], c["context_condition"]): c["withheld_because"]
+        for c in audit
+    }
+    assert reasons[("outlier_iqr", False)] == "does_not_survive_leave_one_out"
+    assert reasons[("repair_level_shift", False)] == (
+        "opposing_evidence_in_this_context")
+
+
+def test_conditioned_evidence_may_still_refute(audit):
+    """Provenance gates authorization, never refutation."""
+    cell = next(c for c in audit
+                if c["program"] == "hampel_filter" and not c["context_condition"])
+    assert cell["conditioned_positive"] == 3
+    assert not cell["active_try_authorized"]
+    assert cell["withheld_because"] == "opposing_evidence_in_this_context"
+
+
+def test_with_no_authorization_try_must_be_the_abstention_literal(audit, census):
+    ok = {**SECTIONS_OK, "TRY": source_skill.TRY_ABSTAIN}
+    result = source_skill.audit_sections(
+        ok, census, operator_names=list(OPERATOR_NAMES),
+        observable_features=list(OBSERVABLE_FEATURES),
+        authorized_try=[],
+    )
+    assert result["pass"] and result["try_abstained"]
+
+    named = source_skill.audit_sections(
+        SECTIONS_OK, census, operator_names=list(OPERATOR_NAMES),
+        observable_features=list(OBSERVABLE_FEATURES),
+        authorized_try=[],
+    )
+    assert not named["pass"]
+    assert named["checks"]["try_clause_within_authorization"] is False
+    assert "outlier_iqr" in named["unauthorized_operators_in_try"]
+
+
+def test_an_authorized_operator_is_accepted_and_others_are_not(census):
+    allowed = source_skill.audit_sections(
+        SECTIONS_OK, census, operator_names=list(OPERATOR_NAMES),
+        observable_features=list(OBSERVABLE_FEATURES),
+        authorized_try=["outlier_iqr"],
+    )
+    assert allowed["pass"]
+
+    wrong = source_skill.audit_sections(
+        {**SECTIONS_OK, "TRY": "Lead with hampel_filter when extremes appear."},
+        census, operator_names=list(OPERATOR_NAMES),
+        observable_features=list(OBSERVABLE_FEATURES),
+        authorized_try=["outlier_iqr"],
+    )
+    assert not wrong["pass"]
+    assert wrong["unauthorized_operators_in_try"] == ["hampel_filter"]

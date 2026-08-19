@@ -392,6 +392,7 @@ def run_source_skill_slow(
     census: Sequence[Mapping[str, Any]],
     census_provenance: str,
     store_root: Path,
+    authorization: Sequence[Mapping[str, Any]],
     slow_call: Callable[[list[dict[str, str]]], Mapping[str, Any]] | None = None,
     source_cohort_tokens: Sequence[str] = ("T233", "kdd", "kdd2018"),
 ) -> dict[str, Any]:
@@ -413,7 +414,10 @@ def run_source_skill_slow(
 
     call = slow_call or _e1_slow_call
     summary = source_skill.signed_summary(census)
+    authorized = sorted(source_skill.authorized_try_operators(authorization))
     payload = {
+        "authorized_try_operators": authorized,
+        "authorization_audit": [_plain(cell) for cell in authorization],
         "authorized_surface": {
             "surface_id": "skill_library.entries/" + source_skill.SOURCE_SKILL_ID,
             "target_class": "capability",
@@ -436,13 +440,16 @@ def run_source_skill_slow(
             ),
         },
         "required_sections": list(source_skill.SECTIONS),
+        "try_abstain_literal": source_skill.TRY_ABSTAIN,
         "target_domain": (
             "a different domain from the census; write what to observe and "
             "what would have to hold, not what happened in a named cohort"
         ),
     }
     result: dict[str, Any] = {
-        "protocol_version": "r2_source_skill_v1",
+        "protocol_version": "r2_source_skill_v2_provenance_authorized",
+        "authorized_try_operators": authorized,
+        "authorization_audit": [_plain(cell) for cell in authorization],
         "census_provenance": str(census_provenance),
         "census_cell_count": len(census),
         "signed_summary": summary,
@@ -452,7 +459,7 @@ def run_source_skill_slow(
     }
     try:
         response = call([
-            {"role": "system", "content": source_skill.SLOW_SYSTEM},
+            {"role": "system", "content": source_skill.slow_system(authorized)},
             {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
         ])
         result["llm_api_call_count"] = 1
@@ -484,6 +491,7 @@ def run_source_skill_slow(
         operator_names=list(OPERATOR_NAMES),
         observable_features=list(OBSERVABLE_FEATURES),
         source_cohort_tokens=list(source_cohort_tokens),
+        authorized_try=authorized,
     )
     result["audit"] = audit
     if not audit["pass"]:
