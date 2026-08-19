@@ -204,6 +204,49 @@ def development_judge_readability(
     }
 
 
+# Source-family provenance.  Three ordinary fields, filled in by hand from
+# what is known about where a file came from -- not a registry, not a hash, not
+# a platform.  They exist because the first screening pass asked "is this file
+# referenced by our code" and reported the answer as freshness.  It is not:
+# the local electricity.csv ships with the Time-Series-Library data pack, whose
+# 321-channel Electricity benchmark overlaps the UCI Electricity Load Diagrams
+# family, and this project has already opened Outcomes in that family.  A
+# candidate whose family has prior exposure can still be a sound development
+# cohort; it cannot carry a cross-domain fresh claim.
+SOURCE_PROVENANCE: dict[str, dict[str, Any]] = {
+    "electricity": {
+        "source_path": "shared_tsq_datasets/electricity/electricity.csv",
+        "original_source_family": (
+            "UCI ElectricityLoadDiagrams / LSTF Electricity (321 hourly "
+            "clients), redistributed via Time-Series-Library"
+        ),
+        "prior_outcome_exposure_in_family": True,
+    },
+    "traffic": {
+        "source_path": "shared_tsq_datasets/traffic/traffic.csv",
+        "original_source_family": (
+            "PeMS San Francisco Bay Area freeway occupancy / LSTF Traffic "
+            "(862 hourly sensors), redistributed via Time-Series-Library"
+        ),
+        "prior_outcome_exposure_in_family": False,
+    },
+    "illness": {
+        "source_path": "shared_tsq_datasets/illness/national_illness.csv",
+        "original_source_family": (
+            "US CDC influenza-like illness weekly surveillance / LSTF ILI"
+        ),
+        "prior_outcome_exposure_in_family": False,
+    },
+    "exchange_rate": {
+        "source_path": "shared_tsq_datasets/exchange_rate/exchange_rate.csv",
+        "original_source_family": (
+            "daily exchange rates of eight countries / LSTF Exchange"
+        ),
+        "prior_outcome_exposure_in_family": False,
+    },
+}
+
+
 def screen_candidate(
     name: str,
     values: Mapping[str, np.ndarray],
@@ -220,7 +263,19 @@ def screen_candidate(
     config = dict(_config())
     anchors = [int(a) for a in config["anchors"]]
     specs = list(_frozen_task_roster()[:9])
-    result: dict[str, Any] = {"candidate": name, "criteria": CRITERIA}
+    provenance = dict(SOURCE_PROVENANCE.get(name) or {
+        "source_path": "UNKNOWN",
+        "original_source_family": "UNKNOWN",
+        "prior_outcome_exposure_in_family": None,
+    })
+    result: dict[str, Any] = {
+        "candidate": name, "criteria": CRITERIA, "provenance": provenance,
+    }
+    exposure = provenance.get("prior_outcome_exposure_in_family")
+    result["fresh_identity"] = (
+        "FRESH_SOURCE_FAMILY" if exposure is False
+        else "SOURCE_FAMILY_EXPOSURE_UNRESOLVED"
+    )
 
     long_enough = [
         uid for uid in names
@@ -276,12 +331,16 @@ def screen_candidate(
         result["verdict"] = "REJECTED_JUDGE_UNREADABLE"
         return result
 
-    result["verdict"] = "ACCEPTED"
+    result["verdict"] = (
+        "ACCEPTED_FRESH" if result["fresh_identity"] == "FRESH_SOURCE_FAMILY"
+        else "STRUCTURALLY_ACCEPTED_BUT_SOURCE_FAMILY_EXPOSURE_UNRESOLVED"
+    )
     return result
 
 
 __all__ = [
     "CRITERIA",
+    "SOURCE_PROVENANCE",
     "development_judge_readability",
     "load_csv_columns",
     "public_phenomenon_census",
