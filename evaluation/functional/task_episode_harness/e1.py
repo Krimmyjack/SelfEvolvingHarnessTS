@@ -66,6 +66,7 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
 from SelfEvolvingHarnessTS.methods.ttha.experience_memory import (
     EVIDENCE_DELAYED,
     EVIDENCE_SUPPORT,
+    RELATION_ABSTAIN,
     RELATION_CONFLICT,
     RELATION_NEGATIVE,
     RELATION_POSITIVE,
@@ -927,14 +928,24 @@ def _update_delayed(
 ) -> Any:
     support_gain = float(episode.support_response.get("gain") or 0.0)
     delayed_gain = float(delayed_probe["macro_gain"])
+    # Three bands, not two.  The old rule asked only that delayed be no worse
+    # than -tau, so a Skill whose delayed window came back at -0.004 was
+    # graded LOCAL_ACTIVE -- "active" then meant "not yet shown to be
+    # harmful", while every report read it as "delayed confirmed the gain".
+    # Requiring +tau on both windows makes LOCAL_ACTIVE mean what it is read
+    # to mean, and gives the neutral middle its own honest name: the Support
+    # gain held up enough to keep the Draft, and delayed has not confirmed it.
+    # Historical runs keep their recorded values under the old semantics and
+    # are not recomputed.
     support_positive = support_gain >= MATERIAL_THRESHOLD
-    delayed_ok = delayed_gain >= -MATERIAL_THRESHOLD
-    if support_positive and delayed_ok:
+    if not support_positive:
+        status, relation = STATUS_EPISODE_ONLY, RELATION_NEGATIVE
+    elif delayed_gain >= MATERIAL_THRESHOLD:
         status, relation = STATUS_LOCAL_ACTIVE, RELATION_POSITIVE
-    elif support_positive and not delayed_ok:
+    elif delayed_gain <= -MATERIAL_THRESHOLD:
         status, relation = STATUS_RESTRICTED, RELATION_CONFLICT
     else:
-        status, relation = STATUS_EPISODE_ONLY, RELATION_NEGATIVE
+        status, relation = STATUS_LOCAL_DRAFT, RELATION_ABSTAIN
     return dataclasses.replace(
         episode,
         delayed_response={

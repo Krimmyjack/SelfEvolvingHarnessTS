@@ -322,10 +322,32 @@ def load_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
     )
 
 
+_LEARNED_SKILL_KINDS = frozenset({SkillKind.CAPABILITY, SkillKind.SAFETY})
+
+
 def load_learned_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
+    """Load a machine-added Skill.
+
+    Two kinds live here, and the difference is what they are allowed to do.
+    A ``capability`` carries a frozen program and is supplied to the Fast pool
+    as an executable candidate.  A ``safety`` carries no program at all: it
+    reaches the Agent as retrieved knowledge and is skipped by
+    ``_skill_frozen_candidates``, so it can lower a family's priority but can
+    never put one on the table.  That asymmetry is the whole point of letting
+    SAFETY into this directory -- negative Target evidence needs a carrier,
+    and it must be one that cannot propose.
+    """
     skill = load_skill_entry(payload)
-    if skill.skill_kind is not SkillKind.CAPABILITY:
-        raise ValueError("learned SkillEntry must have skill_kind=capability")
+    if skill.skill_kind not in _LEARNED_SKILL_KINDS:
+        raise ValueError(
+            "learned SkillEntry must have skill_kind=capability or safety")
+    if skill.skill_kind is SkillKind.SAFETY and "Frozen program steps:" in (
+        skill.body or ""
+    ):
+        raise ValueError(
+            "safety SkillEntry must not carry a frozen program "
+            "(body contains 'Frozen program steps:'): a risk Skill "
+            "deprioritizes and must never supply a candidate")
     _reject_mixed_card_authority(skill)
     return skill
 

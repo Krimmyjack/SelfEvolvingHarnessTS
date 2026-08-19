@@ -154,7 +154,13 @@ def load_stage_schema(name: str) -> dict[str, Any]:
         memory_properties = memory_entry.get("properties")
         if not isinstance(learned_properties, dict) or not isinstance(memory_properties, dict):
             raise ValueError("deployable entry schema properties drifted")
-        learned_properties["skill_kind"] = {"const": "capability"}
+        # Two kinds are deployable into skills/learned/.  The narrowing to a
+        # bare const predated SkillKind.SAFETY having any writer, and it is
+        # what made the declared safety kind unreachable end to end.  The
+        # route table still decides authorization -- only RISK_GAP pairs
+        # target_class=safety with skill_kind=safety -- so widening the shape
+        # here does not widen what any cause may do.
+        learned_properties["skill_kind"] = {"enum": ["capability", "safety"]}
         learned_properties["observable_applicability"] = {
             "$ref": "#/$defs/applicability"
         }

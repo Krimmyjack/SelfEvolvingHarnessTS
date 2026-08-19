@@ -49,6 +49,13 @@ import numpy as np
 from SelfEvolvingHarnessTS.contracts.program_supply import (
     route_program_supply_fault,
 )
+from SelfEvolvingHarnessTS.contracts.harness import EditManifest, EditOperation
+from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
+    EditController,
+    FaultRouter,
+    SurfaceRegistry,
+)
+from SelfEvolvingHarnessTS.methods.ttha.slow_agent import _resolve_apply_manifest
 from SelfEvolvingHarnessTS.methods.ttha.agent_core import TTHAAgentCore
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
@@ -60,6 +67,7 @@ from SelfEvolvingHarnessTS.runtime.agent_backend import (
 )
 
 from evaluation.functional.task_episode_harness import g1
+from evaluation.functional.task_episode_harness.agentic import risk_skill
 from evaluation.functional.task_episode_harness.e1 import (
     B,
     HORIZON,
@@ -373,6 +381,187 @@ def _initial_context(
 
 
 # ------------------------------------------------------------- one arm, one Task
+# ---------------------------------------------- Target-local risk lifecycle
+RISK_CAUSE = "RISK_GAP"
+
+
+def _skill_by_id(snapshot: Any, skill_id: str) -> Any | None:
+    for skill in getattr(snapshot, "skills", ()) or ():
+        if str(getattr(skill, "skill_id", "")) == skill_id:
+            return skill
+    return None
+
+
+def _apply_manifest(controller: Any, arm_state: _ArmState, manifest: Any) -> Any:
+    parent = arm_state.store.materialize(arm_state.active_snapshot)
+    receipt = controller.apply_to_fork(
+        parent,
+        _resolve_apply_manifest(manifest, arm_state.active_snapshot),
+        confirmed_cause=RISK_CAUSE,
+    )
+    updated = compile_snapshot(receipt.candidate_root, verify_lock=False)
+    arm_state.store.set_active(updated.runtime_bundle_sha)
+    return updated
+
+
+def _mint_risk_skill(
+    controller: Any, arm_state: _ArmState, candidate: Mapping[str, Any]
+) -> dict[str, Any]:
+    """ADD one deprioritization Skill, or say why nothing was written.
+
+    Idempotent by the surface's own ABSENT precondition: the census is
+    recomputed every Task, so a family that keeps failing keeps appearing
+    here, and re-ADDing it is a no-op rather than a second entry.
+    """
+    payload = risk_skill.risk_skill_payload(candidate)
+    skill_id = str(payload["skill_id"])
+    if _skill_by_id(arm_state.active_snapshot, skill_id) is not None:
+        return {"stage": "already_present", "skill_id": skill_id}
+    manifest = EditManifest(
+        edit_id=skill_id,
+        base_harness_sha=arm_state.active_snapshot.harness_content_sha,
+        target_pattern_id="e1v2-target-local-risk",
+        target_surface_id="skill_library.entries/" + skill_id,
+        operation=EditOperation.ADD,
+        surface_precondition={"kind": "ABSENT"},
+        dependency_precondition_shas={},
+        new_value=payload,
+        observable_applicability=dict(candidate["observable_applicability"]),
+        # Closed M0 predicate vocabulary: what is actually claimed is that
+        # the Agent retrieves this Skill and then supplies something
+        # effect-distinct from the family it names.  "deprioritize" is the
+        # intent; these two are the observable form of it.
+        predicted_agent_behavior_change=(
+            "retrieve_skill:" + skill_id, "supply_effect_distinct"),
+        predicted_data_effect=("fewer_repeat_negative_probes",),
+        automatically_selected_risk_cases=(),
+        falsification_condition=("family_earns_a_material_positive",),
+        patch_id=None,
+    )
+    try:
+        arm_state.active_snapshot = _apply_manifest(
+            controller, arm_state, manifest)
+    except Exception as exc:  # noqa: BLE001
+        return {"stage": "add_failed", "skill_id": skill_id,
+                "error": "%s: %s" % (type(exc).__name__, exc)}
+    return {
+        "stage": "added",
+        "skill_id": skill_id,
+        "family": candidate["family"],
+        "distinct_negative_task_count": candidate["distinct_negative_task_count"],
+        "negative_task_ids": list(candidate["negative_task_ids"]),
+        "observable_applicability": dict(candidate["observable_applicability"]),
+        "runtime_bundle_sha": arm_state.active_snapshot.runtime_bundle_sha,
+    }
+
+
+def _restrict_skill(
+    controller: Any, arm_state: _ArmState, skill_id: str, reason: str
+) -> dict[str, Any]:
+    """PATCH a Skill's own risk_guards so retrieval stops recalling it.
+
+    The Skill is not deleted.  The snapshot keeps the entry and the guard that
+    retired it, so a later reader can still see the claim was made, on what
+    evidence, and what refuted it.
+    """
+    skill = _skill_by_id(arm_state.active_snapshot, skill_id)
+    if skill is None:
+        return {"stage": "absent", "skill_id": skill_id}
+    guards = dict(skill.risk_guards or {})
+    if guards.get(risk_skill.RESTRICTED_GUARD):
+        return {"stage": "already_restricted", "skill_id": skill_id}
+    guards[risk_skill.RESTRICTED_GUARD] = True
+    guards["restriction_reason"] = reason
+    surface = "skill_library.entries/" + skill_id + ".risk_guards"
+    parent = arm_state.store.materialize(arm_state.active_snapshot)
+    manifest = EditManifest(
+        edit_id="restrict_" + skill_id,
+        base_harness_sha=arm_state.active_snapshot.harness_content_sha,
+        target_pattern_id="e1v2-target-local-risk",
+        target_surface_id=surface,
+        operation=EditOperation.PATCH,
+        surface_precondition={
+            "kind": "SHA",
+            "sha": controller.surface_precondition_sha(parent, surface),
+        },
+        dependency_precondition_shas={},
+        minimal_patch={"value": guards},
+        new_value=None,
+        observable_applicability=None,
+        predicted_agent_behavior_change=(
+            "effective_view_unchanged_out_of_scope",),
+        predicted_data_effect=("disconfirmed_skill_not_recalled",),
+        automatically_selected_risk_cases=(),
+        falsification_condition=("skill_still_retrieved",),
+        patch_id=None,
+    )
+    try:
+        arm_state.active_snapshot = _apply_manifest(
+            controller, arm_state, manifest)
+    except Exception as exc:  # noqa: BLE001
+        return {"stage": "restrict_failed", "skill_id": skill_id,
+                "error": "%s: %s" % (type(exc).__name__, exc)}
+    return {
+        "stage": "restricted",
+        "skill_id": skill_id,
+        "reason": reason,
+        "runtime_bundle_sha": arm_state.active_snapshot.runtime_bundle_sha,
+    }
+
+
+def run_risk_skill_lifecycle(
+    arm_state: _ArmState,
+    *,
+    disconfirmed_skill_ids: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Compile this arm's own negative Target evidence into Skill form.
+
+    Runs after every Task, deterministically, on the arm's own Episodes and
+    nothing else.  Three things happen, in this order, because a retirement
+    must land before a mint the same evidence would otherwise justify:
+
+    1. a Skill whose delayed window disconfirmed it stops being recalled;
+    2. a risk Skill whose family has since earned a material-positive stops
+       being recalled -- the Domain contradicted its own note;
+    3. families with >= 2 distinct negative Tasks and no positive anywhere
+       become a Context-conditioned deprioritization Skill.
+    """
+    controller = EditController(
+        arm_state.store, surfaces=SurfaceRegistry(), router=FaultRouter()
+    )
+    events: list[dict[str, Any]] = []
+    for skill_id in disconfirmed_skill_ids:
+        events.append(_restrict_skill(
+            controller, arm_state, str(skill_id),
+            "delayed_window_disconfirmed_this_skill",
+        ))
+    contradicted = risk_skill.contradicted_risk_families(
+        arm_state.episodes, threshold=MATERIAL_THRESHOLD
+    )
+    for family in sorted(contradicted):
+        skill_id = risk_skill.RISK_SKILL_PREFIX + family.replace("+", "_")
+        if _skill_by_id(arm_state.active_snapshot, skill_id) is None:
+            continue
+        events.append(_restrict_skill(
+            controller, arm_state, skill_id,
+            "family_earned_a_material_positive_in_this_domain",
+        ))
+    candidates = risk_skill.risk_candidates(
+        arm_state.episodes, threshold=MATERIAL_THRESHOLD
+    )
+    for candidate in candidates:
+        events.append(_mint_risk_skill(controller, arm_state, candidate))
+    return {
+        "events": events,
+        "risk_skill_ids": [
+            str(skill.skill_id)
+            for skill in getattr(arm_state.active_snapshot, "skills", ()) or ()
+            if str(skill.skill_id).startswith(risk_skill.RISK_SKILL_PREFIX)
+        ],
+        "candidate_families": [row["family"] for row in candidates],
+    }
+
+
 def _run_arm(
     *,
     repo_root: Path,
@@ -570,6 +759,40 @@ def _run_arm(
             }
             winner = None
 
+    # ---- Target-local risk lifecycle ------------------------------------
+    # Runs on every Task, including the ones that ended without a winner:
+    # a Task that spent a probe and got nothing is exactly the evidence this
+    # is built from, and waiting for a success to run it would reproduce the
+    # gap it exists to close.
+    disconfirmed: list[str] = []
+    delayed_event = lifecycle.get("delayed_event") or {}
+    if (
+        delayed_event.get("stage") == "existing_skill_revalidated"
+        and str(getattr(winner, "local_status", "")) == "RESTRICTED"
+        and delayed_event.get("skill_id")
+    ):
+        disconfirmed.append(str(delayed_event["skill_id"]))
+    if not instrument_unreadable:
+        try:
+            risk_lifecycle = run_risk_skill_lifecycle(
+                arm_state, disconfirmed_skill_ids=disconfirmed
+            )
+        except Exception as exc:  # noqa: BLE001
+            # A failure to write knowledge is not a failure to measure the
+            # Task, so it is reported and the Task still counts.
+            risk_lifecycle = {
+                "events": [{"stage": "lifecycle_failed",
+                            "error": "%s: %s" % (type(exc).__name__, exc)}],
+                "risk_skill_ids": [], "candidate_families": [],
+            }
+        arm_state.active_skill_ids = _skill_ids(
+            arm_state.active_snapshot, local_only=True
+        )
+        active_after = list(arm_state.active_skill_ids)
+    else:
+        risk_lifecycle = {"events": [{"stage": "skipped_instrument_unreadable"}],
+                          "risk_skill_ids": [], "candidate_families": []}
+
     local_active = bool(
         winner is not None
         and str(getattr(winner, "local_status", "")) == "LOCAL_ACTIVE"
@@ -599,6 +822,7 @@ def _run_arm(
         ],
         "select_rounds": trace.select_rounds,
         "lifecycle": lifecycle,
+        "risk_skill_lifecycle": risk_lifecycle,
         "delayed": delayed_probe,
         "winner": (
             {
@@ -620,6 +844,13 @@ def _run_arm(
             ),
             "source_prior_matched": source_prior is not None,
             "raw_episodes_in_fast_payload": 0,
+            # What the Agent was actually shown this Task, separated from
+            # what the snapshot contains: a restricted Skill is still in the
+            # snapshot and must not appear here.
+            "retrieved_risk_skill_ids": [
+                str(skill.skill_id) for skill in harness_view.skills
+                if str(skill.skill_id).startswith(risk_skill.RISK_SKILL_PREFIX)
+            ],
         },
         "active_local_skill_ids_before": active_before,
         "active_local_skill_ids_after": active_after,
@@ -690,8 +921,12 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     result still authorizes nothing on its own; that is the Slow stage's own
     per-clause evidence rule, not this router's job.
 
-    The public cause vocabulary stays the frozen four: CONTEXT_GAP,
-    WORKFLOW_GAP, DECISION_GAP, NO_ACTIONABLE_EVIDENCE.
+    The public cause vocabulary is the frozen four -- CONTEXT_GAP,
+    WORKFLOW_GAP, DECISION_GAP, NO_ACTIONABLE_EVIDENCE -- plus
+    TARGET_LOCAL_RISK_GAP, which separates "this Domain already refuted that
+    family and had no way to say so" from the General decision fault it used
+    to be folded into.  It is checked first because the General surface must
+    not be asked to carry a fact about one Domain.
     """
     def arms(row: Mapping[str, Any]) -> list[Mapping[str, Any]]:
         return [row[arm] for arm in (COLD_ARM, WARM_ARM) if arm in row]
@@ -807,6 +1042,27 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         entry.get("status") == "COMPILED"
         for r in all_arms for entry in r["compiled"]
     )
+    # Per-family signed census over the whole run, counted in distinct Tasks.
+    # Reads the probe rows rather than the arm Episodes so it stays a pure
+    # function of the report and can be recomputed from a saved run.
+    _family_rows: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        for arm_row in arms(row):
+            for probe in arm_row["probes"]:
+                if probe.get("status") != "PROBED":
+                    continue
+                family = "+".join(str(step["op"]) for step in probe["steps"])
+                entry = _family_rows.setdefault(
+                    family, {"family": family, "negative": set(), "positive": set()})
+                key = "positive" if probe.get("meets_material_threshold") else "negative"
+                entry[key].add(row["task_episode_id"])
+    repeated_negative_families = [
+        {"family": entry["family"],
+         "distinct_negative_task_count": len(entry["negative"]),
+         "negative_task_ids": sorted(entry["negative"])}
+        for entry in sorted(_family_rows.values(), key=lambda item: item["family"])
+        if not entry["positive"]
+    ]
     wasted_probes = sum(
         row["real_support_probe_count"] for row in barren_arms
     )
@@ -831,10 +1087,23 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             "workspace_tool_calls": tool_calls,
         }
 
+    # A family this Domain has already refuted, led with again on prior
+    # expectation, is a Target-local fault before it is a General one: the
+    # knowledge needed to avoid it exists inside this arm and simply had no
+    # carrier.  Routing that to candidate_policy.proposal_guidance would ask
+    # the General surface to encode a fact about one Domain, so this branch
+    # is checked first and the General route stays as the fallback for what
+    # is left after the local carrier exists.
+    repeat_families = sorted(
+        row["family"] for row in repeated_negative_families
+        if row["distinct_negative_task_count"] >= risk_skill.RISK_MIN_DISTINCT_TASKS
+    )
     if requested_observation and not compiled_any:
         cause, first_fault = "CONTEXT_GAP", "REQUESTED_OBSERVATION_ABSENT"
     elif no_candidate and not compiled_any:
         cause, first_fault = "WORKFLOW_GAP", "NO_COMPILABLE_PROGRAM"
+    elif repeat_families:
+        cause, first_fault = "TARGET_LOCAL_RISK_GAP", "REPEATED_REFUTED_FAMILY"
     else:
         cause, first_fault = "DECISION_GAP", "SUPPORT_SPENT_WITHOUT_A_DRAFT"
 
@@ -852,7 +1121,12 @@ def attribute_first_fault(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "first_fault": first_fault,
         "cause": cause,
         "layer": "METHOD",
-        "repair_scope": "GENERAL" if cause == "DECISION_GAP" else "SPECIFIC",
+        "repair_scope": (
+            "GENERAL" if cause == "DECISION_GAP"
+            else "TARGET_LOCAL" if cause == "TARGET_LOCAL_RISK_GAP"
+            else "SPECIFIC"
+        ),
+        "repeated_refuted_families": repeated_negative_families,
         "editable": route[1] == "EDITABLE_M0",
         "program_supply_route": {"fault_family": route[0], "actionability": route[1],
                                  "surfaces": list(route[2])},

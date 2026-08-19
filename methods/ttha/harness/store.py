@@ -76,9 +76,14 @@ class SnapshotStore:
             canonical_text_bytes(snapshot.instruction.encode("utf-8"))
         )
         for skill in snapshot.skills:
+            # SAFETY is machine-added like a capability, so it belongs in
+            # learned/ -- which is also where the surface catalog's
+            # skill_library.entries path_template writes it.  The bootstrap
+            # directory is a fixed, authored set (compiler enforces the exact
+            # ID list), so a minted Skill could never be read back from there.
             directory = (
                 "bootstrap"
-                if skill.skill_kind in {SkillKind.BOOTSTRAP_PROCEDURE, SkillKind.SAFETY}
+                if skill.skill_kind is SkillKind.BOOTSTRAP_PROCEDURE
                 else "learned"
             )
             _write_json(

@@ -112,6 +112,15 @@ class SurfaceDefinition:
     derived_outputs: tuple[str, ...]
     required_dependency_keys: tuple[str, ...]
 
+    def owner_class_follows_skill_kind(self) -> bool:
+        """Whether this surface holds a Skill whose kind decides the class.
+
+        True for the whole ``skill_library.entries`` family -- the entry ADD
+        and its per-field PATCHes -- and false everywhere else, so a bootstrap
+        or control surface keeps the class the catalog declares for it.
+        """
+        return self.surface_template_id.startswith("skill_library.entries/")
+
 
 @dataclass(frozen=True)
 class ResolvedSurface:
@@ -549,10 +558,20 @@ class EditController:
                 skill = load_skill_entry(value)
                 skill_kind = skill.skill_kind.value
 
+        # A skill-entry surface is authored once with a single target_class,
+        # but the class of an edit to it is a property of the Skill, not of
+        # the file it lives in: adding or guarding a *safety* Skill is a
+        # "safety" edit, which RISK_GAP authorizes, while the same surface
+        # holding a capability keeps its capability classes.  The route table
+        # already pairs safety/safety; only this hand-off was missing, which
+        # is why no SAFETY Skill could ever be written.
+        target_class = definition.target_class
+        if definition.owner_class_follows_skill_kind() and skill_kind == "safety":
+            target_class = "safety"
         try:
             self.router.authorize(
                 confirmed_cause,
-                target_class=definition.target_class,
+                target_class=target_class,
                 operation=manifest.operation.value,
                 skill_kind=skill_kind,
                 target_surface_id=manifest.target_surface_id,

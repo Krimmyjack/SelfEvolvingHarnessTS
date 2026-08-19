@@ -136,6 +136,12 @@ class EffectiveHarnessView:
         return tuple(memory.memory_id for memory in self.memories)
 
 
+# Set on ``risk_guards`` when Target feedback disconfirms a Skill.  Kept here
+# rather than imported so the retrieval layer has no dependency on the
+# evaluation package that writes it.
+_RESTRICTED_GUARD = "restricted_by_target_feedback"
+
+
 def resolve_harness_view(
     snapshot: HarnessSnapshot,
     public_features: Mapping[str, object],
@@ -157,6 +163,14 @@ def resolve_harness_view(
     safety: list[SkillEntry] = []
     for skill in snapshot.skills:
         if skill.skill_kind is SkillKind.BOOTSTRAP_PROCEDURE:
+            continue
+        # A Skill its own Target later disconfirmed stops being retrieved, in
+        # both roles.  Leaving it in the active snapshot -- which is what used
+        # to happen once delayed re-validation failed -- let a claim the
+        # Domain had already refuted keep arriving alongside fresh evidence.
+        # Restriction is written by a PATCH to this Skill's own risk_guards,
+        # so the snapshot still records that it existed and why it stopped.
+        if bool((skill.risk_guards or {}).get(_RESTRICTED_GUARD)):
             continue
         if skill.skill_kind is SkillKind.CAPABILITY:
             all_capabilities.append(skill)
