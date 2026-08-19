@@ -111,6 +111,27 @@ class AgentStageResult:
     validation_error_codes: tuple[str, ...] = ()
 
 
+def _assistant_turn(assistant_text: str) -> dict[str, object]:
+    """The model's own turn, written back into the conversation.
+
+    A relay can return an empty completion.  Appending that verbatim puts a
+    message with empty content into the history, and the *next* AgentRequest
+    then fails validation with "message content must be a non-empty string" --
+    so an empty response does not fail the stage it happened in, it kills the
+    whole run one call later.  Observed on the electricity development run,
+    which died at Task 7 of 9.
+
+    An empty turn is recorded as an explicit placeholder instead.  The
+    conversation stays well-formed, the retry still sees that the previous
+    answer was unusable, and nothing about the stage contract changes.
+    """
+    text = assistant_text if isinstance(assistant_text, str) else ""
+    return {
+        "role": "assistant",
+        "content": text if text.strip() else "(the previous response was empty)",
+    }
+
+
 def _skill_prompt(skill: object) -> dict[str, object]:
     return {
         "skill_id": skill.skill_id,
@@ -350,7 +371,7 @@ class TTHAAgentCore:
             }
             messages = (
                 *messages,
-                {"role": "assistant", "content": response.assistant_text},
+                _assistant_turn(response.assistant_text),
                 {
                     "role": "user",
                     "content": canonical_json_bytes(correction).decode("utf-8"),
@@ -499,7 +520,7 @@ class TTHAAgentCore:
             validate_local_schema(tool_result, tool_result_schema, path="tool_result")
             messages = (
                 *messages,
-                {"role": "assistant", "content": response.assistant_text},
+                _assistant_turn(response.assistant_text),
                 {
                     "role": "user",
                     "content": canonical_json_bytes(tool_result).decode("utf-8"),
