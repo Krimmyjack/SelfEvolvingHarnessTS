@@ -50,6 +50,10 @@ from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: E402
     resolve_harness_view,
 )
 from evaluation.functional.task_episode_harness.agentic import risk_skill  # noqa: E402
+from evaluation.functional.task_episode_harness.agentic.fast_path import (  # noqa: E402
+    FastPathTrace,
+    _deprioritized_probe_order,
+)
 from evaluation.functional.task_episode_harness.agentic import runner as g1r  # noqa: E402
 from evaluation.functional.task_episode_harness.e1 import (  # noqa: E402
     E1_DOMAIN,
@@ -316,3 +320,81 @@ def test_nothing_is_written_when_the_evidence_does_not_support_it(tmp_path):
     assert out["events"] == []
     assert out["risk_skill_ids"] == []
     assert quiet.active_snapshot.runtime_bundle_sha == snapshot.runtime_bundle_sha
+
+# ------------------------------------------------- the deprioritization acts
+def _row(candidate_id: str, *ops: str) -> dict:
+    return {"candidate_id": candidate_id,
+            "steps": [(op, {}) for op in ops]}
+
+
+class _View:
+    def __init__(self, *skills):
+        self.skills = skills
+
+
+def _risk(skill_id: str):
+    return types.SimpleNamespace(
+        skill_id=skill_id,
+        skill_kind=types.SimpleNamespace(value="safety"),
+    )
+
+
+def test_a_refuted_family_is_probed_last_not_dropped():
+    """The first probe is spent before select runs, so order is the lever.
+
+    The micro replay measured the alternative: the Skill reached the Fast
+    prompt in both arms of Task 3, both still led with ``repair_level_shift``
+    for -0.197, and both then chose identity -- the budget was gone before
+    the Agent was asked anything.
+    """
+    trace = FastPathTrace()
+    rows = [_row("c1", "repair_level_shift"), _row("c2", "hampel_filter")]
+    ordered = _deprioritized_probe_order(
+        rows, _View(_risk("target_risk_repair_level_shift")), trace)
+    assert [row["candidate_id"] for row in ordered] == ["c2", "c1"]
+    # Nothing is removed, and the move is on the record.
+    assert len(ordered) == 2
+    assert trace.probe_order_deprioritizations[0]["moved_behind"] == ["c1"]
+
+
+def test_relative_order_inside_each_group_is_the_agents_own():
+    trace = FastPathTrace()
+    rows = [
+        _row("c1", "repair_level_shift"),
+        _row("c2", "hampel_filter"),
+        _row("c3", "repair_level_shift"),
+        _row("c4", "outlier_mad"),
+    ]
+    ordered = _deprioritized_probe_order(
+        rows, _View(_risk("target_risk_repair_level_shift")), trace)
+    assert [row["candidate_id"] for row in ordered] == ["c2", "c4", "c1", "c3"]
+
+
+def test_nothing_moves_when_every_candidate_is_refuted():
+    """Reshuffling equally-refuted candidates would invent a preference."""
+    trace = FastPathTrace()
+    rows = [_row("c1", "repair_level_shift"), _row("c2", "repair_level_shift")]
+    ordered = _deprioritized_probe_order(
+        rows, _View(_risk("target_risk_repair_level_shift")), trace)
+    assert [row["candidate_id"] for row in ordered] == ["c1", "c2"]
+    assert trace.probe_order_deprioritizations == []
+
+
+def test_a_multi_step_program_only_matches_its_own_structure():
+    trace = FastPathTrace()
+    rows = [_row("c1", "outlier_mad", "repair_level_shift"),
+            _row("c2", "repair_level_shift")]
+    ordered = _deprioritized_probe_order(
+        rows, _View(_risk("target_risk_repair_level_shift")), trace)
+    assert [row["candidate_id"] for row in ordered] == ["c1", "c2"]
+
+
+def test_a_view_without_a_risk_skill_changes_nothing():
+    trace = FastPathTrace()
+    rows = [_row("c1", "repair_level_shift"), _row("c2", "hampel_filter")]
+    capability = types.SimpleNamespace(
+        skill_id="fast_winner_e1v2_outlier_mad",
+        skill_kind=types.SimpleNamespace(value="capability"))
+    ordered = _deprioritized_probe_order(rows, _View(capability), trace)
+    assert [row["candidate_id"] for row in ordered] == ["c1", "c2"]
+    assert trace.probe_order_deprioritizations == []

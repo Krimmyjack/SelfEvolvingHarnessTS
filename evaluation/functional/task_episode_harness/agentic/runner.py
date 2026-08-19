@@ -821,6 +821,7 @@ def _run_arm(
             for row in trace.probes
         ],
         "select_rounds": trace.select_rounds,
+        "probe_order_deprioritizations": trace.probe_order_deprioritizations,
         "lifecycle": lifecycle,
         "risk_skill_lifecycle": risk_lifecycle,
         "delayed": delayed_probe,

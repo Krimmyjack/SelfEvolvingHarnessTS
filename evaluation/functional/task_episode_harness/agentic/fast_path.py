@@ -100,6 +100,9 @@ class FastPathTrace:
     compiled: list[dict[str, Any]] = dataclasses.field(default_factory=list)
     probes: list[dict[str, Any]] = dataclasses.field(default_factory=list)
     select_rounds: list[dict[str, Any]] = dataclasses.field(default_factory=list)
+    probe_order_deprioritizations: list[dict[str, Any]] = dataclasses.field(
+        default_factory=list
+    )
     chosen_candidate_id: str = IDENTITY_CHOICE
     stop_reason: str = STOP_NO_DRAFT
     instrument_unreadable: bool = False
@@ -313,6 +316,78 @@ def _run_stage(
     return result.payload
 
 
+def _risk_deprioritized_skill_ids(harness_view: Any) -> set[str]:
+    """IDs of the Target-local risk Skills this Task actually retrieved.
+
+    Read off the resolved view rather than the snapshot, so a Skill that is
+    out of Context -- or restricted after its own Domain contradicted it --
+    has no effect here either.
+    """
+    return {
+        str(skill.skill_id)
+        for skill in getattr(harness_view, "skills", ()) or ()
+        if str(getattr(getattr(skill, "skill_kind", None), "value", "")) == "safety"
+        and str(skill.skill_id).startswith("target_risk_")
+    }
+
+
+def _deprioritized_probe_order(
+    compiled_rows: Sequence[Mapping[str, Any]],
+    harness_view: Any,
+    trace: FastPathTrace,
+) -> list[dict[str, Any]]:
+    """Probe order after applying the retrieved risk Skills.  Order only.
+
+    The first Support probe is spent on the head of this list before the
+    select stage runs, so ordering is where a deprioritization either has an
+    effect or has none at all.  The micro replay measured the "none" case: the
+    Skill reached the Fast prompt in both arms of Task 3 and both still led
+    with the refuted family, spending -0.197 before the Agent was asked
+    anything -- and then both chose identity, so the Agent had not wanted to
+    execute it either.
+
+    What this does and does not do:
+
+    * a candidate whose operator structure is named by a retrieved risk Skill
+      moves behind the others, and nothing else about it changes;
+    * it is never dropped, never blocked, and stays selectable -- if the
+      budget reaches it, it is probed exactly as before;
+    * relative order within each group is preserved, so the Agent's own
+      ranking still decides everything this does not;
+    * if every candidate is deprioritized there is nothing to prefer, so the
+      order is left exactly as proposed.
+
+    That last case matters: a deprioritization that reshuffles a field of
+    equally-refuted candidates would be inventing a preference the evidence
+    does not support.
+    """
+    rows = list(compiled_rows)
+    deprioritized = _risk_deprioritized_skill_ids(harness_view)
+    if not deprioritized:
+        return rows
+
+    def named_by_a_risk_skill(row: Mapping[str, Any]) -> bool:
+        family = "+".join(str(op) for op, _params in row["steps"])
+        return "target_risk_" + family.replace("+", "_") in deprioritized
+
+    held_back = [row for row in rows if named_by_a_risk_skill(row)]
+    if not held_back or len(held_back) == len(rows):
+        return rows
+    preferred = [row for row in rows if not named_by_a_risk_skill(row)]
+    trace.probe_order_deprioritizations.append({
+        "retrieved_risk_skill_ids": sorted(deprioritized),
+        "proposed_order": [str(row["candidate_id"]) for row in rows],
+        "probe_order": [
+            str(row["candidate_id"]) for row in (*preferred, *held_back)],
+        "moved_behind": [str(row["candidate_id"]) for row in held_back],
+        "note": (
+            "order only: every candidate stays selectable and is probed "
+            "unchanged if the budget reaches it"
+        ),
+    })
+    return [*preferred, *held_back]
+
+
 def run_agentic_fast_path(
     *,
     core: TTHAAgentCore,
@@ -484,7 +559,7 @@ def run_agentic_fast_path(
 
     # ---- SUPPORT + SELECT ------------------------------------------------
     probed: list[dict[str, Any]] = []
-    pending = list(compiled_rows)
+    pending = _deprioritized_probe_order(compiled_rows, harness_view, trace)
     while pending:
         current = pending.pop(0)
         try:
