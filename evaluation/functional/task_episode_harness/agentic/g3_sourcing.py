@@ -291,6 +291,43 @@ EXPOSED_FAMILIES = {
 }
 
 
+def _drop_series_with_unusable_windows(
+    values: Mapping[str, np.ndarray],
+    uids: Sequence[str],
+    specs: Sequence[Mapping[str, Any]],
+    anchors: Sequence[int],
+) -> tuple[list[str], list[str]]:
+    """Split series into those every required window can be read on, and the rest.
+
+    "Readable" here is the weakest possible condition -- two observed values in
+    the window -- because that is what the integrity step needs before the
+    substrate guards can say anything at all.
+    """
+    import run_e2_autonomous_natural_workflow_generation as v6
+
+    context_length, horizon = int(v6.CONTEXT_LENGTH), int(v6.HORIZON)
+    windows: list[tuple[int, int]] = [
+        (int(anchor) - context_length, int(anchor) + horizon) for anchor in anchors
+    ]
+    for spec in specs:
+        for role in ("support", "delayed"):
+            for origin in spec[f"{role}_origins"]:
+                windows.append((int(origin) - context_length, int(origin)))
+    usable: list[str] = []
+    unusable: list[str] = []
+    for uid in uids:
+        raw = np.asarray(values[str(uid)], dtype=np.float64)
+        ok = True
+        for low, high in windows:
+            if low < 0 or high > raw.size:
+                continue
+            if int(np.isfinite(raw[low:high]).sum()) < 2:
+                ok = False
+                break
+        (usable if ok else unusable).append(str(uid))
+    return usable, unusable
+
+
 def screen_candidate(
     name: str,
     values: Mapping[str, np.ndarray],
@@ -337,10 +374,22 @@ def screen_candidate(
         result["verdict"] = "REJECTED_STRUCTURE"
         return result
 
-    train_pf = g1.train_substrate_preflight(values, long_enough, anchors)
-    eval_pf = g1.eval_substrate_preflight(values, long_enough, specs)
+    # The substrate guards assume every window they touch has at least two
+    # observed values; a channel that is entirely missing over one window
+    # makes them raise rather than report.  PSM has such channels.  A
+    # candidate with unusable windows is eliminated, so drop those series
+    # first and let the guards judge the rest.
+    usable, unusable = _drop_series_with_unusable_windows(
+        values, long_enough, specs, anchors
+    )
+    result["window_coverage"] = {
+        "series_with_an_all_missing_window": len(unusable),
+        "examples": unusable[:8],
+    }
+    train_pf = g1.train_substrate_preflight(values, usable, anchors)
+    eval_pf = g1.eval_substrate_preflight(values, usable, specs)
     clean = [
-        uid for uid in long_enough
+        uid for uid in usable
         if train_pf["per_series"][uid]["clean"]
         and eval_pf["per_series"][uid]["clean"]
     ]
