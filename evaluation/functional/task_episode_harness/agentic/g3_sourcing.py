@@ -228,22 +228,66 @@ SOURCE_PROVENANCE: dict[str, dict[str, Any]] = {
             "PeMS San Francisco Bay Area freeway occupancy / LSTF Traffic "
             "(862 hourly sensors), redistributed via Time-Series-Library"
         ),
-        "prior_outcome_exposure_in_family": False,
+        # Corrected after checking the record rather than trusting this table:
+        # artifacts/frozen/benchmark_v02/dataset_manifest.json carries
+        # monash:traffic_hourly, 862 sensors, network_id
+        # bay_area_freeway_2015, claim_tier headline, and the dev reports hold
+        # its losses.  Same network, same sensors.  It is not merely the same
+        # broad domain -- it is the same data.
+        "prior_outcome_exposure_in_family": True,
     },
     "illness": {
         "source_path": "shared_tsq_datasets/illness/national_illness.csv",
         "original_source_family": (
             "US CDC influenza-like illness weekly surveillance / LSTF ILI"
         ),
-        "prior_outcome_exposure_in_family": False,
+        # Different source and disease from monash:covid_deaths, but the same
+        # exposed broad domain (epidemiology).  Unresolved, not clean.
+        "prior_outcome_exposure_in_family": True,
     },
     "exchange_rate": {
         "source_path": "shared_tsq_datasets/exchange_rate/exchange_rate.csv",
         "original_source_family": (
             "daily exchange rates of eight countries / LSTF Exchange"
         ),
+        # Same exposed broad domain as monash:nn5_daily (finance), and only
+        # eight series -- too few for a roster regardless.
+        "prior_outcome_exposure_in_family": True,
+    },
+    "psm": {
+        "source_path": "shared_tsq_datasets/PSM/train.csv",
+        "original_source_family": (
+            "eBay Pooled Server Metrics: application server telemetry, 25 "
+            "channels, minute resolution"
+        ),
+        # Server/application telemetry appears nowhere in the frozen manifest:
+        # not energy, traffic, weather, epidemiology, finance or legacy_mixed.
         "prior_outcome_exposure_in_family": False,
     },
+    "swat": {
+        "source_path": "shared_tsq_datasets/SWaT/swat2.csv",
+        "original_source_family": (
+            "Secure Water Treatment testbed: industrial control sensors and "
+            "actuators, 51 channels, second resolution"
+        ),
+        "prior_outcome_exposure_in_family": False,
+    },
+}
+
+# The exposure record this table is checked against, read from
+# artifacts/frozen/benchmark_v02/dataset_manifest.json rather than recalled.
+# A candidate is only FRESH when its source family appears nowhere here.
+EXPOSED_FAMILIES = {
+    "energy": ("uci_electricity_load_diagrams", "gefcom2012_load"),
+    "traffic": ("metr_la", "monash:traffic_hourly"),
+    "weather": ("noaa_global_hourly", "tsl_weather_jena"),
+    "epidemiology": ("monash:covid_deaths",),
+    "finance": ("monash:nn5_daily",),
+    "air_quality": ("kdd2018",),
+    "legacy_mixed": (
+        "fred_md", "saugeenday", "sunspot", "tourism_monthly", "us_births",
+        "nn5_daily", "covid_deaths",
+    ),
 }
 
 
@@ -340,6 +384,7 @@ def screen_candidate(
 
 __all__ = [
     "CRITERIA",
+    "EXPOSED_FAMILIES",
     "SOURCE_PROVENANCE",
     "development_judge_readability",
     "load_csv_columns",
