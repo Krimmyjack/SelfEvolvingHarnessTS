@@ -68,6 +68,7 @@ from SelfEvolvingHarnessTS.runtime.agent_backend import (
 
 from evaluation.functional.task_episode_harness import g1
 from evaluation.functional.task_episode_harness.agentic import risk_skill
+from evaluation.functional.task_episode_harness.agentic import source_skill
 from evaluation.functional.task_episode_harness.e1 import (
     B,
     HORIZON,
@@ -381,6 +382,175 @@ def _initial_context(
 
 
 # ------------------------------------------------------------- one arm, one Task
+# ------------------------------------------------- R2: Source-derived Skill
+SOURCE_SKILL_CAUSE = "SKILL_LIBRARY_GAP"
+
+
+def run_source_skill_slow(
+    *,
+    repo_root: Path,
+    census: Sequence[Mapping[str, Any]],
+    census_provenance: str,
+    store_root: Path,
+    slow_call: Callable[[list[dict[str, str]]], Mapping[str, Any]] | None = None,
+    source_cohort_tokens: Sequence[str] = ("T233", "kdd", "kdd2018"),
+) -> dict[str, Any]:
+    """One Slow call: Source census -> operational General Skill, or ABSTAIN.
+
+    The census is the one already frozen from the Source domain.  No Target
+    Outcome is read here and none is reachable from this function -- the
+    Skill has to exist before the Target run starts, or the comparison it is
+    supposed to inform is circular.
+
+    Three ways this ends without a Skill, and all three are results rather
+    than failures to work around: the stage abstains, the returned sections
+    fail the containment audit, or the compiler rejects the entry.  In none
+    of them is the Skill hand-authored.
+    """
+    from SelfEvolvingHarnessTS.contracts.observables import OBSERVABLE_FEATURES
+    from SelfEvolvingHarnessTS.operators.registry import OPERATOR_NAMES
+    from evaluation.functional.task_episode_harness.e1 import _e1_slow_call
+
+    call = slow_call or _e1_slow_call
+    summary = source_skill.signed_summary(census)
+    payload = {
+        "authorized_surface": {
+            "surface_id": "skill_library.entries/" + source_skill.SOURCE_SKILL_ID,
+            "target_class": "capability",
+            "allowed_operations": ["ADD"],
+            "skill_kind": "capability",
+        },
+        "census_provenance": str(census_provenance),
+        "evidence_census": [_plain(cell) for cell in census],
+        "signed_summary": summary,
+        "evidence_census_contract": {
+            "unit_of_evidence": "distinct_task_count",
+            "attempt_count_role": "diagnostic_only",
+            "no_relation_filter": True,
+            "no_program_filter": True,
+            "clause_kind_asymmetry": (
+                "an active recommendation needs a cohort positive with no "
+                "opposing cell; a warning needs repeated harm and does not "
+                "need a uniformly positive cohort; a SPLIT program supports "
+                "neither"
+            ),
+        },
+        "required_sections": list(source_skill.SECTIONS),
+        "target_domain": (
+            "a different domain from the census; write what to observe and "
+            "what would have to hold, not what happened in a named cohort"
+        ),
+    }
+    result: dict[str, Any] = {
+        "protocol_version": "r2_source_skill_v1",
+        "census_provenance": str(census_provenance),
+        "census_cell_count": len(census),
+        "signed_summary": summary,
+        "slow_payload": payload,
+        "llm_api_call_count": 0,
+        "target_outcome_read": False,
+    }
+    try:
+        response = call([
+            {"role": "system", "content": source_skill.SLOW_SYSTEM},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ])
+        result["llm_api_call_count"] = 1
+    except (RuntimeError, ValueError) as exc:
+        result.update({"verdict": "R2_SLOW_CALL_FAILED",
+                       "error": "%s: %s" % (type(exc).__name__, exc),
+                       "no_retry_attempted": True})
+        return result
+    result["slow_response"] = _plain(response)
+
+    decision = str(response.get("decision") or "").upper()
+    if decision == "ABSTAIN":
+        result.update({
+            "verdict": "R2_SLOW_ABSTAINED",
+            "reason": response.get("reason"),
+            "note": (
+                "A legitimate outcome. The Skill is not written by hand to "
+                "make the round produce something."
+            ),
+        })
+        return result
+    sections = response.get("sections")
+    if decision != "ADD" or not isinstance(sections, Mapping):
+        result.update({"verdict": "R2_SLOW_MALFORMED", "no_retry_attempted": True})
+        return result
+
+    audit = source_skill.audit_sections(
+        sections, census,
+        operator_names=list(OPERATOR_NAMES),
+        observable_features=list(OBSERVABLE_FEATURES),
+        source_cohort_tokens=list(source_cohort_tokens),
+    )
+    result["audit"] = audit
+    if not audit["pass"]:
+        result.update({
+            "verdict": "R2_SLOW_SKILL_REJECTED",
+            "note": (
+                "The returned Skill says something the census cannot say. It "
+                "is rejected whole rather than edited into shape."
+            ),
+        })
+        return result
+
+    entry = source_skill.build_skill_payload(sections)
+    store = SnapshotStore(store_root)
+    base = compile_snapshot(
+        repo_root / "methods/ttha/harness/h0", verify_lock=False
+    )
+    store.materialize(base)
+    store.set_active(base.runtime_bundle_sha)
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter()
+    )
+    manifest = EditManifest(
+        edit_id=source_skill.SOURCE_SKILL_ID,
+        base_harness_sha=base.harness_content_sha,
+        target_pattern_id="g3d1-source-derived-general-skill",
+        target_surface_id="skill_library.entries/" + source_skill.SOURCE_SKILL_ID,
+        operation=EditOperation.ADD,
+        surface_precondition={"kind": "ABSENT"},
+        dependency_precondition_shas={},
+        new_value=entry,
+        observable_applicability=dict(source_skill.SOURCE_APPLICABILITY),
+        predicted_agent_behavior_change=(
+            "retrieve_skill:" + source_skill.SOURCE_SKILL_ID,
+            "supply_effect_distinct",
+        ),
+        predicted_data_effect=("earlier_local_skill_formation",),
+        automatically_selected_risk_cases=(),
+        falsification_condition=("no_improvement",),
+        patch_id=None,
+    )
+    try:
+        parent = store.materialize(base)
+        receipt = controller.apply_to_fork(
+            parent,
+            _resolve_apply_manifest(manifest, base),
+            confirmed_cause=SOURCE_SKILL_CAUSE,
+        )
+        frozen = compile_snapshot(receipt.candidate_root, verify_lock=False)
+        store.set_active(frozen.runtime_bundle_sha)
+    except Exception as exc:  # noqa: BLE001
+        result.update({"verdict": "R2_SLOW_SKILL_NOT_APPLIED",
+                       "error": "%s: %s" % (type(exc).__name__, exc),
+                       "skill_entry": entry, "no_retry_attempted": True})
+        return result
+
+    result.update({
+        "verdict": "R2_SOURCE_SKILL_FROZEN",
+        "skill_entry": entry,
+        "skill_id": source_skill.SOURCE_SKILL_ID,
+        "frozen_runtime_bundle_sha": frozen.runtime_bundle_sha,
+        "frozen_harness_content_sha": frozen.harness_content_sha,
+        "store_root": str(store_root),
+    })
+    return result
+
+
 # ---------------------------------------------- Target-local risk lifecycle
 RISK_CAUSE = "RISK_GAP"
 
