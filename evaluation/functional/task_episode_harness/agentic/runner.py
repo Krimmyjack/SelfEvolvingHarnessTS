@@ -131,6 +131,42 @@ def load_cohort(repo_root: Path, name: str) -> dict[str, Any]:
         roster, values = g1._a5a3_cohort(repo_root)
         train = list(g1.A5A3_COHORT_TRAIN)
         evaluation = list(g1.A5A3_COHORT_EVAL)
+    elif name == "electricity":
+        # G3_DEVELOPMENT_SOURCE_FAMILY_OVERLAP.  The local file ships with the
+        # Time-Series-Library pack and its 321-channel benchmark overlaps the
+        # UCI ElectricityLoadDiagrams family, which this project has already
+        # opened Outcomes on.  So this cohort supports claims about the
+        # Pipeline, Episode reuse, tool decisions, Target-local Skills and
+        # Slow Update -- and it does not support a cross-domain fresh claim.
+        # The roster rule is the same deterministic outcome-blind one Weather
+        # uses: columns clean under both substrate guards, in file order.
+        from evaluation.functional.task_episode_harness.agentic import (
+            g3_sourcing,
+        )
+
+        source = Path(
+            r"C:/Users/辉/desktop/agent/shared_tsq_datasets"
+        ) / "electricity/electricity.csv"
+        all_names, values = g3_sourcing.load_csv_columns(source)
+        specs = list(_frozen_task_roster()[:9])
+        anchors = [int(a) for a in dict(_config_for_cohort())["anchors"]]
+        usable, _unusable = g3_sourcing._drop_series_with_unusable_windows(
+            values, all_names, specs, anchors
+        )
+        train_pf = g1.train_substrate_preflight(values, usable, anchors)
+        eval_pf = g1.eval_substrate_preflight(values, usable, specs)
+        clean = [
+            uid for uid in usable
+            if train_pf["per_series"][uid]["clean"]
+            and eval_pf["per_series"][uid]["clean"]
+        ]
+        train = clean[:12]
+        evaluation = clean[12:20]
+        values = {uid: values[uid] for uid in train + evaluation}
+        roster = (
+            [{"series_uid": uid, "role": "train"} for uid in train]
+            + [{"series_uid": uid, "role": "eval"} for uid in evaluation]
+        )
     elif name == "weather":
         cohort = g1.freeze_weather_cohort(repo_root)
         roster, values = cohort["roster"], cohort["values"]
@@ -145,7 +181,14 @@ def load_cohort(repo_root: Path, name: str) -> dict[str, Any]:
         "values": values,
         "train_uids": train,
         "eval_uids": evaluation,
-        "exposure": "already exposed development data; not fresh",
+        "exposure": (
+            "G3_DEVELOPMENT_SOURCE_FAMILY_OVERLAP: the UCI Electricity family "
+            "has prior Outcome exposure in this project, so this run supports "
+            "Pipeline, Episode-reuse, tool-decision, Target-local Skill and "
+            "Slow Update claims, and no cross-domain fresh claim"
+            if name == "electricity"
+            else "already exposed development data; not fresh"
+        ),
     }
 
 
@@ -177,6 +220,12 @@ class _RetryingTransport:
                 if attempt + 1 < self.attempts:
                     time.sleep(self.backoff_seconds * (attempt + 1))
         raise last  # type: ignore[misc]
+
+
+def _config_for_cohort() -> Mapping[str, Any]:
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    return dict(_config())
 
 
 def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
@@ -1580,7 +1629,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cohort", default="T233",
-                        choices=("e31", "T233", "weather"))
+                        choices=("e31", "T233", "weather", "electricity"))
     parser.add_argument("--tasks", type=int, default=3)
     parser.add_argument("--tool-budget", type=int, default=WORKSPACE_TOOL_BUDGET)
     parser.add_argument("--no-slow", action="store_true",
