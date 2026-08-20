@@ -109,6 +109,11 @@ class FastPathTrace:
     infrastructure_failed: bool = False
     protocol_error: str | None = None
     protocol_error_output: str | None = None
+    # The validator error code of the fault that ended the stage.  ``stages``
+    # only gains an entry once a stage returns, so a stage that died leaves no
+    # validation record at all; without this a fatal rejection is
+    # indistinguishable from no rejection to anything counting error codes.
+    terminal_validation_error_code: str | None = None
     citation_normalizations: list[dict[str, Any]] = dataclasses.field(
         default_factory=list
     )
@@ -277,6 +282,7 @@ def _run_stage(
     public_input: Mapping[str, Any],
     harness_view: Any,
     schema_name: str,
+    validation_retries: int = 1,
     post_validator: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> Mapping[str, Any] | None:
     schema = TTHAAgentCore.load_stage_schema(schema_name)
@@ -289,7 +295,7 @@ def _run_stage(
         output_schema_name=schema_name,
         output_schema=schema,
         source_snapshot_sha=harness_view.effective_harness_view_sha,
-        validation_retries=1,
+        validation_retries=int(validation_retries),
         post_validator=post_validator,
     )
     for receipt in result.tool_receipts:
@@ -408,6 +414,7 @@ def run_agentic_fast_path(
     probe_budget: int,
     material_threshold: float,
     support_probe: Callable[[Any], Mapping[str, Any]],
+    validation_retries: int = 1,
 ) -> FastPathTrace:
     """Drive one Task Episode's Fast Path.
 
@@ -416,6 +423,11 @@ def run_agentic_fast_path(
     touches an Outcome and never sees one except through that return value.
     Raising from it means the instrument, not the Agent, failed -- the Task
     stops and is marked unreadable rather than recorded as a tie.
+
+    ``validation_retries`` is the per-stage repair budget handed to
+    ``core.run_stage``.  It defaults to 1, which is what every caller got when
+    the value was hard-coded here, so raising it is opt-in per driver and
+    changes no existing readout.
     """
     trace = FastPathTrace()
     menu = _operator_menu(inventory)
@@ -441,6 +453,7 @@ def run_agentic_fast_path(
             public_input=inspect_input,
             harness_view=harness_view,
             schema_name="fast_inspect_v1",
+            validation_retries=validation_retries,
             post_validator=lambda payload: _ground_inspect(core, trace, payload),
         )
     except _AGENT_FAULTS as exc:
@@ -449,6 +462,7 @@ def run_agentic_fast_path(
         trace.protocol_error_output = getattr(
             exc, "last_assistant_text", None
         )
+        trace.terminal_validation_error_code = getattr(exc, "error_code", None)
         return trace
     except _INFRASTRUCTURE_FAULTS as exc:
         trace.infrastructure_failed = True
@@ -484,6 +498,7 @@ def run_agentic_fast_path(
             public_input=propose_input,
             harness_view=harness_view,
             schema_name="fast_propose_v1",
+            validation_retries=validation_retries,
             post_validator=lambda payload: _validate_hypothesis_references(
                 payload, inspect_payload
             ),
@@ -494,6 +509,7 @@ def run_agentic_fast_path(
         trace.protocol_error_output = getattr(
             exc, "last_assistant_text", None
         )
+        trace.terminal_validation_error_code = getattr(exc, "error_code", None)
         return trace
     except _INFRASTRUCTURE_FAULTS as exc:
         trace.infrastructure_failed = True
@@ -633,12 +649,16 @@ def run_agentic_fast_path(
                 public_input=select_input,
                 harness_view=harness_view,
                 schema_name="fast_select_v1",
+                validation_retries=validation_retries,
             )
         except _AGENT_FAULTS as exc:
             trace.stop_reason = STOP_PROTOCOL
             trace.protocol_error = f"select: {type(exc).__name__}: {exc}"
             trace.protocol_error_output = getattr(
                 exc, "last_assistant_text", None
+            )
+            trace.terminal_validation_error_code = getattr(
+                exc, "error_code", None
             )
             return trace
         except _INFRASTRUCTURE_FAULTS as exc:

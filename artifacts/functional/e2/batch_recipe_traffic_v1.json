@@ -1,0 +1,406 @@
+{
+  "protocol_version": "batch_recipe_v1",
+  "role": "batch recipe: one adopted data-processing plan for one already-exposed batch, produced by menu scan -> mask search -> frozen delayed stability gate",
+  "llm_api_call_count": 0,
+  "deterministic": true,
+  "cohort": "traffic",
+  "exposure": "STRUCTURALLY_ACCEPTED_BUT_SOURCE_FAMILY_EXPOSURE_UNRESOLVED: PeMS SF Bay Area / monash:traffic_hourly family has unresolved prior exposure; this run uses development origins (1104/1368/1800) only and does not open a sealed Outcome",
+  "task_episode_id": "e1v2_task_01",
+  "support_origins": [
+    1104,
+    1368
+  ],
+  "delayed_origins": [
+    1800
+  ],
+  "train_series": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+  ],
+  "eval_series": [
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19"
+  ],
+  "adoption_rule": "Candidates are the masked plans, ordered by Support aggregate gain, highest first.  A masked plan is adopted only if it also clears the delayed stability check: its delayed aggregate gain must be at least the delayed aggregate gain of the best full-batch plan.  The first candidate that clears it is adopted.  If none clears it, fall back to the best full-batch plan.  If the best full-batch plan's delayed aggregate gain is not positive, fall back to identity.",
+  "adoption_rule_is_frozen": "no threshold argument and no tuning knob is exposed for this rule anywhere in this module",
+  "adopted_plan": {
+    "kind": "MASKED_PLAN",
+    "program": "outlier_iqr",
+    "excluded_series": [
+      "6"
+    ],
+    "excluded_series_count": 1,
+    "treated_series_count": 11,
+    "how_to_apply": "apply `outlier_iqr` to every training series except ['6'], then retrain the Consumer once"
+  },
+  "adoption_path": "masked plan cleared the delayed stability check",
+  "adoption_trace": [
+    {
+      "program": "outlier_iqr",
+      "excluded_series": [
+        "6"
+      ],
+      "support_aggregate_gain": 0.6652773536462215,
+      "delayed_aggregate_gain": 1.0470750569907492,
+      "delayed_bar": 1.0197743357219498,
+      "delayed_margin": 0.027300721268799455,
+      "stability_check": "PASS"
+    },
+    {
+      "program": "outlier_mad",
+      "excluded_series": [
+        "5",
+        "6",
+        "7"
+      ],
+      "support_aggregate_gain": 0.6639044700030804,
+      "delayed_aggregate_gain": 0.9653736985035462,
+      "stability_check": "NOT_REACHED"
+    }
+  ],
+  "comparison": {
+    "support": {
+      "adopted": 0.6652773536462215,
+      "best_full_batch": 0.6074409393531839,
+      "identity": 0.0
+    },
+    "delayed": {
+      "adopted": 1.0470750569907492,
+      "best_full_batch": 1.0197743357219498,
+      "identity": 0.0
+    },
+    "best_full_batch_program": "outlier_iqr"
+  },
+  "harm_account": {
+    "adopted": {
+      "harmed_eval_series_count": 0,
+      "harmed_eval_series_total_harm": 0.0,
+      "harmed_eval_series": []
+    },
+    "best_full_batch": {
+      "harmed_eval_series_count": 0,
+      "harmed_eval_series_total_harm": 0.0,
+      "harmed_eval_series": []
+    },
+    "identity": {
+      "harmed_eval_series_count": 0,
+      "harmed_eval_series_total_harm": 0.0,
+      "harmed_eval_series": []
+    }
+  },
+  "excluded_series_geometry": {
+    "reading": "descriptive contrast only; no threshold is fitted, no Observation is wired, and nothing here contributes to the verdict",
+    "provenance": "frozen M0a census artifact artifacts/functional/e2/m0a_mask_geometry_census_v1.json, read verbatim",
+    "excluded": {
+      "series": [
+        "6"
+      ],
+      "series_count": 1,
+      "census_rows_found": 0,
+      "mask_class_counts": {},
+      "post_shift_support_sufficient_true_count": 0,
+      "fields": {
+        "outlier_region_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "level_region_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "outlier_region_end_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "level_region_end_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "union_region_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "union_region_end_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "outlier_point_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "local_robust_z_peak": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "level_excursion_score": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "retained": {
+      "series": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "series_count": 11,
+      "census_rows_found": 0,
+      "mask_class_counts": {},
+      "post_shift_support_sufficient_true_count": 0,
+      "fields": {
+        "outlier_region_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "level_region_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "outlier_region_end_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "level_region_end_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "union_region_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "union_region_end_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "outlier_point_fraction": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "local_robust_z_peak": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "level_excursion_score": {
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "fields_with_non_overlapping_observed_ranges": [],
+    "per_field": []
+  },
+  "stability_rejected_candidate_geometry": null,
+  "menu_scan": {
+    "repair_level_shift": {
+      "aggregate_gain": 0.06088266223877638,
+      "per_origin_gain": [
+        -0.15695820035341415,
+        0.2787235248309669
+      ],
+      "per_eval_series_gain": {
+        "12": -0.38214155777895265,
+        "13": 0.038091464617153625,
+        "14": 0.6433204575913493,
+        "15": 0.1484966306472988,
+        "16": 0.14596379078448873,
+        "17": -0.05014210791516849,
+        "18": 0.22150822783782753,
+        "19": -0.2780356078737859
+      },
+      "harmed_eval_series_count": 3,
+      "harmed_eval_series_total_harm": 0.710319273567907,
+      "harmed_eval_series": [
+        "12",
+        "17",
+        "19"
+      ]
+    },
+    "hampel_filter": {
+      "aggregate_gain": -0.07570365930916216,
+      "per_origin_gain": [
+        -0.21338617584719352,
+        0.0619788572288692
+      ],
+      "per_eval_series_gain": {
+        "12": -0.4562509542253774,
+        "13": -0.06166846935553594,
+        "14": -0.08020545208267171,
+        "15": 0.1479091638064286,
+        "16": 0.027317571636543803,
+        "17": 0.34954929496981246,
+        "18": -0.5828520497669719,
+        "19": 0.05057162054447484
+      },
+      "harmed_eval_series_count": 4,
+      "harmed_eval_series_total_harm": 1.1809769254305569,
+      "harmed_eval_series": [
+        "12",
+        "13",
+        "14",
+        "18"
+      ]
+    },
+    "outlier_iqr": {
+      "aggregate_gain": 0.6074409393531839,
+      "per_origin_gain": [
+        0.21887043597478717,
+        0.9960114427315807
+      ],
+      "per_eval_series_gain": {
+        "12": 0.7162864795735613,
+        "13": 0.45468498128137247,
+        "14": 1.251049122796045,
+        "15": 0.4256013935324999,
+        "16": 0.47644477893935905,
+        "17": 0.6322737460575056,
+        "18": 0.777080715635438,
+        "19": 0.12610629700969
+      },
+      "harmed_eval_series_count": 0,
+      "harmed_eval_series_total_harm": 0.0,
+      "harmed_eval_series": []
+    },
+    "outlier_mad": {
+      "aggregate_gain": 0.550278583934095,
+      "per_origin_gain": [
+        0.17041406533950756,
+        0.9301431025286824
+      ],
+      "per_eval_series_gain": {
+        "12": 0.36077518214438176,
+        "13": 0.415353706564185,
+        "14": 1.1252132890769522,
+        "15": 0.31962115072420605,
+        "16": 0.49687606806938395,
+        "17": 0.7272556413086135,
+        "18": 0.6338071574098372,
+        "19": 0.3233264761752004
+      },
+      "harmed_eval_series_count": 0,
+      "harmed_eval_series_total_harm": 0.0,
+      "harmed_eval_series": []
+    },
+    "winsorize": {
+      "aggregate_gain": 0.4514954300949744,
+      "per_origin_gain": [
+        0.21091181477410942,
+        0.6920790454158394
+      ],
+      "per_eval_series_gain": {
+        "12": 0.0907671534433121,
+        "13": 0.29106103953464574,
+        "14": 0.8478699016682909,
+        "15": 0.4324936594260297,
+        "16": 0.4858486046337876,
+        "17": 0.8536990845563257,
+        "18": 0.49701418493601446,
+        "19": 0.11320981256138951
+      },
+      "harmed_eval_series_count": 0,
+      "harmed_eval_series_total_harm": 0.0,
+      "harmed_eval_series": []
+    },
+    "denoise_median": {
+      "aggregate_gain": -0.6353743618225942,
+      "per_origin_gain": [
+        -0.9502004105063341,
+        -0.32054831313885446
+      ],
+      "per_eval_series_gain": {
+        "12": -1.3290472968123759,
+        "13": -0.23803941952348473,
+        "14": -1.6622874153499048,
+        "15": 0.19391904313842495,
+        "16": -0.11162740433934126,
+        "17": -0.3926638328056129,
+        "18": -1.6107788237231042,
+        "19": 0.06753025483464425
+      },
+      "harmed_eval_series_count": 6,
+      "harmed_eval_series_total_harm": 5.344444192553824,
+      "harmed_eval_series": [
+        "12",
+        "13",
+        "14",
+        "16",
+        "17",
+        "18"
+      ]
+    },
+    "smooth_ma": {
+      "aggregate_gain": -0.25922061661485607,
+      "per_origin_gain": [
+        -0.6234545072617037,
+        0.10501327403199157
+      ],
+      "per_eval_series_gain": {
+        "12": -0.45145713107923346,
+        "13": 0.4008267896887284,
+        "14": 0.13915010446238185,
+        "15": -0.7272969677172872,
+        "16": 0.027257770590218833,
+        "17": 0.244061680807371,
+        "18": -0.10474901458725128,
+        "19": -1.6015581650837762
+      },
+      "harmed_eval_series_count": 4,
+      "harmed_eval_series_total_harm": 2.885061278467548,
+      "harmed_eval_series": [
+        "12",
+        "15",
+        "18",
+        "19"
+      ]
+    }
+  },
+  "programs_searched": [
+    "outlier_iqr",
+    "outlier_mad"
+  ],
+  "caveat": "The delayed window participated in the adoption decision, so for this recipe it is no longer an out-of-selection readout.  Both columns reported here are now in-selection.  Any external claim about this recipe needs a fresh window.",
+  "not_authorization_evidence": "engineering effect measurement only; no Skill is written, no Episode is formed, no Fast or Slow path is entered, and no execution right is granted or implied",
+  "wall_seconds": 30.288133000023663
+}

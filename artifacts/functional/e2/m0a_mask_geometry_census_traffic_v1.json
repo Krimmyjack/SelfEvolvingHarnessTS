@@ -1,0 +1,2034 @@
+{
+  "protocol_version": "m0a_mask_geometry_census_traffic_v1",
+  "role": "descriptive mask-geometry census of the traffic batch; a third batch of samples for the question of whether the geometry of a dropped training series is observable in advance",
+  "not_authorization_evidence": "no Skill is written, no Episode is formed, no Fast or Slow path is entered, no Gate or Schema is proposed, and no execution right is granted or implied",
+  "does_not_modify_frozen_census": {
+    "frozen_artifact": "artifacts/functional/e2/m0a_mask_geometry_census_v1.json",
+    "frozen_protocol_version": "m0a_mask_geometry_census_v1",
+    "opened_for_writing": false,
+    "sha256_after_this_run": "284cad38fb205b42ee49ff9fe029157b5a05773f041c0599b6a5f5d753dd7f10",
+    "note": "the batch-recipe tool reads the frozen census verbatim by provenance; this run writes a separate stem and leaves it byte-identical"
+  },
+  "row_unit": "one traffic series public prefix values[uid][:1104] at the batch recipe's first Support origin, under Task Episode e1v2_task_01",
+  "row_function": "run_e2_m0a_mask_geometry_census.census_row, imported unmodified, so every field is computed exactly as in m0a_mask_geometry_census_v1",
+  "frozen_census_reproduction_check": {
+    "claim": "the current working tree reproduces the frozen census rows field-for-field at exact equality, so a traffic row computed now is comparable with the frozen T233 / electricity / Weather rows",
+    "scope": "e1v2_task_01 train prefixes of both full-report cohorts, ['T233', 'electricity']",
+    "checked_rows": 24,
+    "mismatch_count": 0,
+    "all_exact": true,
+    "mismatches": [],
+    "why_it_is_checked": "runtime/public_features.py carries uncommitted M0b edits; they are additive mapping keys plus a refactor of the pss formula into a helper, and this check is what makes that additivity a measured fact rather than a reading of the diff"
+  },
+  "recipe_provenance": {
+    "recipe_artifact": "artifacts/functional/e2/batch_recipe_traffic_v1.json",
+    "recipe_protocol_version": "batch_recipe_v1",
+    "task_episode_id": "e1v2_task_01",
+    "train_series": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11"
+    ],
+    "eval_series": [
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19"
+    ],
+    "support_origins": [
+      1104,
+      1368
+    ],
+    "delayed_origins": [
+      1800
+    ],
+    "adopted_program": "outlier_iqr",
+    "adopted_kind": "MASKED_PLAN",
+    "excluded_series": [
+      "6"
+    ],
+    "adoption_trace": [
+      {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "stability_check": "PASS"
+      },
+      {
+        "program": "outlier_mad",
+        "excluded_series": [
+          "5",
+          "6",
+          "7"
+        ],
+        "stability_check": "NOT_REACHED"
+      }
+    ],
+    "wiring_checks": {
+      "train_roster_matches": true,
+      "eval_roster_matches": true,
+      "support_origins_match": true,
+      "delayed_origins_match": true,
+      "census_cutoff_is_first_support_origin": true,
+      "recipe_farthest_read_inside_sealed": true
+    },
+    "wiring_check_all_pass": true
+  },
+  "cohort_meta": {
+    "cohort": "traffic",
+    "exposure": "STRUCTURALLY_ACCEPTED_BUT_SOURCE_FAMILY_EXPOSURE_UNRESOLVED: PeMS SF Bay Area / monash:traffic_hourly family has unresolved prior exposure; this census reads the public prefix values[uid][:1104] only and does not open a sealed Outcome",
+    "train_uids": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11"
+    ],
+    "eval_uids": [
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19"
+    ],
+    "censused_uids": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11"
+    ],
+    "task_episode_ids": [
+      "e1v2_task_01"
+    ],
+    "observation_cutoffs": [
+      1104
+    ],
+    "prefix_rule": "values[uid][:support_origins[0]] (public prefix only), with support_origins taken from the batch recipe's traffic development origins [1104, 1368] rather than from the frozen roster spec [3072, 3120, 3168]",
+    "window_provenance": {
+      "development_origins": [
+        1104,
+        1368,
+        1800
+      ],
+      "recipe_support_origins": [
+        1104,
+        1368
+      ],
+      "recipe_delayed_origins": [
+        1800
+      ],
+      "census_cutoff": 1104,
+      "census_farthest_index_read": 1103,
+      "recipe_farthest_index_read": 1848,
+      "sealed_from_index": 3072,
+      "csv_rows_loaded": 1104
+    }
+  },
+  "screening_cross_reference": {
+    "available": true,
+    "artifact": "artifacts/functional/e2/g3_candidate_screening_v2.json",
+    "window": "values[uid][:3072] (frozen roster support_origins[0])",
+    "census_window": "values[uid][:1104] (recipe development origin)",
+    "comparability": "different prefix lengths; the two z-peak columns are reported side by side and are not differenced or thresholded",
+    "local_robust_z_peak": {
+      "0": 12.781086320437206,
+      "1": 15.717203278966242,
+      "2": 4.036137447612538,
+      "3": 11.025586573226327,
+      "4": 13.78717133080653,
+      "5": 12.250520274668354,
+      "6": 6.572978577644467,
+      "7": 8.2058984095167,
+      "8": 3.6982886191602033,
+      "9": 15.314490191484378,
+      "10": 7.995596490478834,
+      "11": 14.58414203398883
+    }
+  },
+  "sanity_check": {
+    "checked_rows": 12,
+    "checks": [
+      "sanity_union_pss_matches_mapping",
+      "sanity_union_mask_reconstructed",
+      "sanity_union_end_matches_mapping",
+      "sanity_all_fields_finite"
+    ],
+    "all_pass": true,
+    "failure_count": 0,
+    "failures": []
+  },
+  "sanity_check_including_eval": {
+    "checked_rows": 20,
+    "checks": [
+      "sanity_union_pss_matches_mapping",
+      "sanity_union_mask_reconstructed",
+      "sanity_union_end_matches_mapping",
+      "sanity_all_fields_finite"
+    ],
+    "all_pass": true,
+    "failure_count": 0,
+    "failures": []
+  },
+  "summary_train": {
+    "decision_point_count": 12,
+    "task_count": 1,
+    "series_count": 12,
+    "field_stats": {
+      "outlier_region_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.19293478260869565,
+        "mean": 0.11352657004830917,
+        "distinct_count": 11,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "level_region_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.06974637681159421,
+        "mean": 0.03932669082125604,
+        "distinct_count": 8,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "outlier_region_end_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.9538043478260869,
+        "mean": 0.8614885265700485,
+        "distinct_count": 8,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "level_region_end_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.9456521739130435,
+        "mean": 0.18410326086956522,
+        "distinct_count": 11,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "outlier_point_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.09329710144927536,
+        "mean": 0.04476147342995169,
+        "distinct_count": 12,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "missing_region_end_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "distinct_count": 1,
+        "all_zero": true,
+        "all_one": false,
+        "non_degenerate": false
+      },
+      "union_region_end_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0769927536231884,
+        "max": 0.9538043478260869,
+        "mean": 0.8689613526570049,
+        "distinct_count": 8,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "union_region_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.036231884057971016,
+        "max": 0.2427536231884058,
+        "mean": 0.14862620772946858,
+        "distinct_count": 12,
+        "all_zero": false,
+        "all_one": false,
+        "non_degenerate": true
+      },
+      "missing_fraction": {
+        "count": 12,
+        "finite_count": 12,
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "distinct_count": 1,
+        "all_zero": true,
+        "all_one": false,
+        "non_degenerate": false
+      }
+    },
+    "mask_class_counts": {
+      "MIXED": 9,
+      "OUTLIER_ONLY": 2,
+      "LEVEL_ONLY": 1
+    },
+    "mask_class_fractions": {
+      "MIXED": 0.75,
+      "OUTLIER_ONLY": 0.16666666666666666,
+      "LEVEL_ONLY": 0.08333333333333333
+    },
+    "mixed_fraction": 0.75,
+    "ambiguous_fraction": 0.0,
+    "pss": {
+      "union_true_count": 1,
+      "level_only_true_count": 11,
+      "divergent_count": 10,
+      "divergent_fraction": 0.8333333333333334,
+      "divergence_source_counts": {
+        "OUTLIER": 10
+      }
+    },
+    "representative_coverage": {
+      "tasks_with_non_empty_scope": 1,
+      "in_scope_decision_points": 10
+    }
+  },
+  "field_stats_train": {
+    "outlier_region_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.19293478260869565,
+      "mean": 0.11352657004830917,
+      "distinct_count": 11,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "level_region_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.06974637681159421,
+      "mean": 0.03932669082125604,
+      "distinct_count": 8,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "outlier_region_end_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.9538043478260869,
+      "mean": 0.8614885265700485,
+      "distinct_count": 8,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "level_region_end_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.9456521739130435,
+      "mean": 0.18410326086956522,
+      "distinct_count": 11,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "outlier_point_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.09329710144927536,
+      "mean": 0.04476147342995169,
+      "distinct_count": 12,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "missing_region_end_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.0,
+      "mean": 0.0,
+      "distinct_count": 1,
+      "all_zero": true,
+      "all_one": false,
+      "non_degenerate": false
+    },
+    "union_region_end_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0769927536231884,
+      "max": 0.9538043478260869,
+      "mean": 0.8689613526570049,
+      "distinct_count": 8,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "union_region_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.036231884057971016,
+      "max": 0.2427536231884058,
+      "mean": 0.14862620772946858,
+      "distinct_count": 12,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "missing_fraction": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 0.0,
+      "mean": 0.0,
+      "distinct_count": 1,
+      "all_zero": true,
+      "all_one": false,
+      "non_degenerate": false
+    },
+    "local_robust_z_peak": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 3.5667566400211874,
+      "max": 18.888661138762313,
+      "mean": 10.009809697224064,
+      "distinct_count": 12,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    },
+    "level_excursion_score": {
+      "count": 12,
+      "finite_count": 12,
+      "min": 0.0,
+      "max": 4.800175427023964,
+      "mean": 2.99956223438868,
+      "distinct_count": 11,
+      "all_zero": false,
+      "all_one": false,
+      "non_degenerate": true
+    }
+  },
+  "degenerate_fields_train": [
+    "missing_fraction",
+    "missing_region_end_fraction"
+  ],
+  "task_representatives_train": {
+    "traffic|e1v2_task_01": {
+      "representative_uid": "9",
+      "scope_size": 10
+    }
+  },
+  "task_representatives_eval": {
+    "traffic|e1v2_task_01": {
+      "representative_uid": "12",
+      "scope_size": 4
+    }
+  },
+  "adopted_plan_contrast": {
+    "label": "adopted plan `outlier_iqr`, reverted 6",
+    "reading": "DESCRIPTIVE ONLY. No threshold is fitted, no Observation is wired, and nothing in this block feeds any adoption rule, Gate or verdict.",
+    "selection_basis": "chosen by the batch recipe's greedy Support-window mask search, every step validated by a real retrain; the geometry below played no part in that decision and is read off afterwards",
+    "excluded": {
+      "series": [
+        "6"
+      ],
+      "series_count": 1,
+      "mask_class_counts": {
+        "OUTLIER_ONLY": 1
+      },
+      "union_pss_true_count": 0,
+      "level_only_pss_true_count": 1,
+      "pss_divergent_count": 1,
+      "fields": {
+        "outlier_region_fraction": {
+          "count": 1,
+          "mean": 0.19293478260869565,
+          "min": 0.19293478260869565,
+          "median": 0.19293478260869565,
+          "max": 0.19293478260869565
+        },
+        "level_region_fraction": {
+          "count": 1,
+          "mean": 0.0,
+          "min": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "outlier_region_end_fraction": {
+          "count": 1,
+          "mean": 0.9538043478260869,
+          "min": 0.9538043478260869,
+          "median": 0.9538043478260869,
+          "max": 0.9538043478260869
+        },
+        "level_region_end_fraction": {
+          "count": 1,
+          "mean": 0.0,
+          "min": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "union_region_fraction": {
+          "count": 1,
+          "mean": 0.19293478260869565,
+          "min": 0.19293478260869565,
+          "median": 0.19293478260869565,
+          "max": 0.19293478260869565
+        },
+        "union_region_end_fraction": {
+          "count": 1,
+          "mean": 0.9538043478260869,
+          "min": 0.9538043478260869,
+          "median": 0.9538043478260869,
+          "max": 0.9538043478260869
+        },
+        "outlier_point_fraction": {
+          "count": 1,
+          "mean": 0.08423913043478261,
+          "min": 0.08423913043478261,
+          "median": 0.08423913043478261,
+          "max": 0.08423913043478261
+        },
+        "local_robust_z_peak": {
+          "count": 1,
+          "mean": 6.569199917927511,
+          "min": 6.569199917927511,
+          "median": 6.569199917927511,
+          "max": 6.569199917927511
+        },
+        "level_excursion_score": {
+          "count": 1,
+          "mean": 0.0,
+          "min": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        }
+      }
+    },
+    "retained": {
+      "series": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "series_count": 11,
+      "mask_class_counts": {
+        "MIXED": 9,
+        "LEVEL_ONLY": 1,
+        "OUTLIER_ONLY": 1
+      },
+      "union_pss_true_count": 1,
+      "level_only_pss_true_count": 10,
+      "pss_divergent_count": 9,
+      "fields": {
+        "outlier_region_fraction": {
+          "count": 11,
+          "mean": 0.1063076416337286,
+          "min": 0.0,
+          "median": 0.11956521739130435,
+          "max": 0.19293478260869565
+        },
+        "level_region_fraction": {
+          "count": 11,
+          "mean": 0.04290184453227932,
+          "min": 0.0,
+          "median": 0.03985507246376811,
+          "max": 0.06974637681159421
+        },
+        "outlier_region_end_fraction": {
+          "count": 11,
+          "mean": 0.8530961791831358,
+          "min": 0.0,
+          "median": 0.9329710144927537,
+          "max": 0.9538043478260869
+        },
+        "level_region_end_fraction": {
+          "count": 11,
+          "mean": 0.2008399209486166,
+          "min": 0.0,
+          "median": 0.13949275362318841,
+          "max": 0.9456521739130435
+        },
+        "union_region_fraction": {
+          "count": 11,
+          "mean": 0.14459815546772067,
+          "min": 0.036231884057971016,
+          "median": 0.1621376811594203,
+          "max": 0.2427536231884058
+        },
+        "union_region_end_fraction": {
+          "count": 11,
+          "mean": 0.8612483530961793,
+          "min": 0.0769927536231884,
+          "median": 0.9447463768115942,
+          "max": 0.9538043478260869
+        },
+        "outlier_point_fraction": {
+          "count": 11,
+          "mean": 0.04117259552042161,
+          "min": 0.0,
+          "median": 0.03894927536231884,
+          "max": 0.09329710144927536
+        },
+        "local_robust_z_peak": {
+          "count": 11,
+          "mean": 10.322592404432841,
+          "min": 3.5667566400211874,
+          "median": 10.32120012289984,
+          "max": 18.888661138762313
+        },
+        "level_excursion_score": {
+          "count": 11,
+          "mean": 3.2722497102421966,
+          "min": 0.0,
+          "median": 3.3415138542877187,
+          "max": 4.800175427023964
+        }
+      }
+    },
+    "fields_with_non_overlapping_observed_ranges": [],
+    "per_field": [
+      {
+        "field": "outlier_region_fraction",
+        "excluded_mean": 0.19293478260869565,
+        "retained_mean": 0.1063076416337286,
+        "excluded_range": [
+          0.19293478260869565,
+          0.19293478260869565
+        ],
+        "retained_range": [
+          0.0,
+          0.19293478260869565
+        ],
+        "retained_median": 0.11956521739130435,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_higher",
+        "excluded_ranks_descending": {
+          "6": 2
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.19293478260869565
+        },
+        "tied_retained_series": {
+          "6": [
+            "4"
+          ]
+        }
+      },
+      {
+        "field": "level_region_fraction",
+        "excluded_mean": 0.0,
+        "retained_mean": 0.04290184453227932,
+        "excluded_range": [
+          0.0,
+          0.0
+        ],
+        "retained_range": [
+          0.0,
+          0.06974637681159421
+        ],
+        "retained_median": 0.03985507246376811,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_lower",
+        "excluded_ranks_descending": {
+          "6": 11
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.0
+        },
+        "tied_retained_series": {
+          "6": [
+            "9"
+          ]
+        }
+      },
+      {
+        "field": "outlier_region_end_fraction",
+        "excluded_mean": 0.9538043478260869,
+        "retained_mean": 0.8530961791831358,
+        "excluded_range": [
+          0.9538043478260869,
+          0.9538043478260869
+        ],
+        "retained_range": [
+          0.0,
+          0.9538043478260869
+        ],
+        "retained_median": 0.9329710144927537,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_higher",
+        "excluded_ranks_descending": {
+          "6": 2
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.9538043478260869
+        },
+        "tied_retained_series": {
+          "6": [
+            "5"
+          ]
+        }
+      },
+      {
+        "field": "level_region_end_fraction",
+        "excluded_mean": 0.0,
+        "retained_mean": 0.2008399209486166,
+        "excluded_range": [
+          0.0,
+          0.0
+        ],
+        "retained_range": [
+          0.0,
+          0.9456521739130435
+        ],
+        "retained_median": 0.13949275362318841,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_lower",
+        "excluded_ranks_descending": {
+          "6": 11
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.0
+        },
+        "tied_retained_series": {
+          "6": [
+            "9"
+          ]
+        }
+      },
+      {
+        "field": "union_region_fraction",
+        "excluded_mean": 0.19293478260869565,
+        "retained_mean": 0.14459815546772067,
+        "excluded_range": [
+          0.19293478260869565,
+          0.19293478260869565
+        ],
+        "retained_range": [
+          0.036231884057971016,
+          0.2427536231884058
+        ],
+        "retained_median": 0.1621376811594203,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_higher",
+        "excluded_ranks_descending": {
+          "6": 3
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.19293478260869565
+        },
+        "tied_retained_series": {
+          "6": []
+        }
+      },
+      {
+        "field": "union_region_end_fraction",
+        "excluded_mean": 0.9538043478260869,
+        "retained_mean": 0.8612483530961793,
+        "excluded_range": [
+          0.9538043478260869,
+          0.9538043478260869
+        ],
+        "retained_range": [
+          0.0769927536231884,
+          0.9538043478260869
+        ],
+        "retained_median": 0.9447463768115942,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_higher",
+        "excluded_ranks_descending": {
+          "6": 2
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.9538043478260869
+        },
+        "tied_retained_series": {
+          "6": [
+            "5"
+          ]
+        }
+      },
+      {
+        "field": "outlier_point_fraction",
+        "excluded_mean": 0.08423913043478261,
+        "retained_mean": 0.04117259552042161,
+        "excluded_range": [
+          0.08423913043478261,
+          0.08423913043478261
+        ],
+        "retained_range": [
+          0.0,
+          0.09329710144927536
+        ],
+        "retained_median": 0.03894927536231884,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_higher",
+        "excluded_ranks_descending": {
+          "6": 3
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.08423913043478261
+        },
+        "tied_retained_series": {
+          "6": []
+        }
+      },
+      {
+        "field": "local_robust_z_peak",
+        "excluded_mean": 6.569199917927511,
+        "retained_mean": 10.322592404432841,
+        "excluded_range": [
+          6.569199917927511,
+          6.569199917927511
+        ],
+        "retained_range": [
+          3.5667566400211874,
+          18.888661138762313
+        ],
+        "retained_median": 10.32120012289984,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_lower",
+        "excluded_ranks_descending": {
+          "6": 10
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 6.569199917927511
+        },
+        "tied_retained_series": {
+          "6": []
+        }
+      },
+      {
+        "field": "level_excursion_score",
+        "excluded_mean": 0.0,
+        "retained_mean": 3.2722497102421966,
+        "excluded_range": [
+          0.0,
+          0.0
+        ],
+        "retained_range": [
+          0.0,
+          4.800175427023964
+        ],
+        "retained_median": 3.3415138542877187,
+        "observed_ranges_overlap": true,
+        "direction": "excluded_lower",
+        "excluded_ranks_descending": {
+          "6": 11
+        },
+        "batch_size_for_rank": 12,
+        "excluded_values": {
+          "6": 0.0
+        },
+        "tied_retained_series": {
+          "6": [
+            "9"
+          ]
+        }
+      }
+    ]
+  },
+  "other_candidate_contrasts": [
+    {
+      "label": "unadopted masked candidate `outlier_mad`, would have reverted 5, 6, 7 (adoption trace: NOT_REACHED)",
+      "reading": "DESCRIPTIVE ONLY. No threshold is fitted, no Observation is wired, and nothing in this block feeds any adoption rule, Gate or verdict.",
+      "selection_basis": "the other masked plan the same search produced; `NOT_REACHED` means the adoption rule stopped at the first candidate that passed the delayed stability check and never judged this one. It is reported so the descriptive reading is not conditioned on the winning mask alone",
+      "excluded": {
+        "series": [
+          "5",
+          "6",
+          "7"
+        ],
+        "series_count": 3,
+        "mask_class_counts": {
+          "MIXED": 2,
+          "OUTLIER_ONLY": 1
+        },
+        "union_pss_true_count": 0,
+        "level_only_pss_true_count": 3,
+        "pss_divergent_count": 3,
+        "fields": {
+          "outlier_region_fraction": {
+            "count": 3,
+            "mean": 0.15458937198067635,
+            "min": 0.09329710144927536,
+            "median": 0.17753623188405798,
+            "max": 0.19293478260869565
+          },
+          "level_region_fraction": {
+            "count": 3,
+            "mean": 0.036533816425120776,
+            "min": 0.0,
+            "median": 0.03985507246376811,
+            "max": 0.06974637681159421
+          },
+          "outlier_region_end_fraction": {
+            "count": 3,
+            "mean": 0.9535024154589372,
+            "min": 0.9528985507246377,
+            "median": 0.9538043478260869,
+            "max": 0.9538043478260869
+          },
+          "level_region_end_fraction": {
+            "count": 3,
+            "mean": 0.10024154589371981,
+            "min": 0.0,
+            "median": 0.13949275362318841,
+            "max": 0.161231884057971
+          },
+          "union_region_fraction": {
+            "count": 3,
+            "mean": 0.18297101449275363,
+            "min": 0.14945652173913043,
+            "median": 0.19293478260869565,
+            "max": 0.20652173913043478
+          },
+          "union_region_end_fraction": {
+            "count": 3,
+            "mean": 0.9535024154589372,
+            "min": 0.9528985507246377,
+            "median": 0.9538043478260869,
+            "max": 0.9538043478260869
+          },
+          "outlier_point_fraction": {
+            "count": 3,
+            "mean": 0.06431159420289854,
+            "min": 0.03170289855072464,
+            "median": 0.0769927536231884,
+            "max": 0.08423913043478261
+          },
+          "local_robust_z_peak": {
+            "count": 3,
+            "mean": 8.412069130004552,
+            "min": 6.569199917927511,
+            "median": 8.345807349186305,
+            "max": 10.32120012289984
+          },
+          "level_excursion_score": {
+            "count": 3,
+            "mean": 1.992703791399993,
+            "min": 0.0,
+            "median": 2.925502089296076,
+            "max": 3.0526092849039026
+          }
+        }
+      },
+      "retained": {
+        "series": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "8",
+          "9",
+          "10",
+          "11"
+        ],
+        "series_count": 9,
+        "mask_class_counts": {
+          "MIXED": 7,
+          "LEVEL_ONLY": 1,
+          "OUTLIER_ONLY": 1
+        },
+        "union_pss_true_count": 1,
+        "level_only_pss_true_count": 8,
+        "pss_divergent_count": 7,
+        "fields": {
+          "outlier_region_fraction": {
+            "count": 9,
+            "mean": 0.0998389694041868,
+            "min": 0.0,
+            "median": 0.11956521739130435,
+            "max": 0.19293478260869565
+          },
+          "level_region_fraction": {
+            "count": 9,
+            "mean": 0.040257648953301126,
+            "min": 0.0,
+            "median": 0.036231884057971016,
+            "max": 0.06159420289855073
+          },
+          "outlier_region_end_fraction": {
+            "count": 9,
+            "mean": 0.8308172302737521,
+            "min": 0.0,
+            "median": 0.9320652173913043,
+            "max": 0.9528985507246377
+          },
+          "level_region_end_fraction": {
+            "count": 9,
+            "mean": 0.21205716586151369,
+            "min": 0.0,
+            "median": 0.08242753623188406,
+            "max": 0.9456521739130435
+          },
+          "union_region_fraction": {
+            "count": 9,
+            "mean": 0.1371779388083736,
+            "min": 0.036231884057971016,
+            "median": 0.1621376811594203,
+            "max": 0.2427536231884058
+          },
+          "union_region_end_fraction": {
+            "count": 9,
+            "mean": 0.840780998389694,
+            "min": 0.0769927536231884,
+            "median": 0.9320652173913043,
+            "max": 0.9528985507246377
+          },
+          "outlier_point_fraction": {
+            "count": 9,
+            "mean": 0.03824476650563607,
+            "min": 0.0,
+            "median": 0.03894927536231884,
+            "max": 0.09329710144927536
+          },
+          "local_robust_z_peak": {
+            "count": 9,
+            "mean": 10.542389886297237,
+            "min": 3.5667566400211874,
+            "median": 10.432429638072236,
+            "max": 18.888661138762313
+          },
+          "level_excursion_score": {
+            "count": 9,
+            "mean": 3.3351817153849095,
+            "min": 0.0,
+            "median": 3.7910348275287458,
+            "max": 4.800175427023964
+          }
+        }
+      },
+      "fields_with_non_overlapping_observed_ranges": [],
+      "per_field": [
+        {
+          "field": "outlier_region_fraction",
+          "excluded_mean": 0.15458937198067635,
+          "retained_mean": 0.0998389694041868,
+          "excluded_range": [
+            0.09329710144927536,
+            0.19293478260869565
+          ],
+          "retained_range": [
+            0.0,
+            0.19293478260869565
+          ],
+          "retained_median": 0.11956521739130435,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_higher",
+          "excluded_ranks_descending": {
+            "5": 4,
+            "6": 2,
+            "7": 9
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.17753623188405798,
+            "6": 0.19293478260869565,
+            "7": 0.09329710144927536
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [
+              "4"
+            ],
+            "7": []
+          }
+        },
+        {
+          "field": "level_region_fraction",
+          "excluded_mean": 0.036533816425120776,
+          "retained_mean": 0.040257648953301126,
+          "excluded_range": [
+            0.0,
+            0.06974637681159421
+          ],
+          "retained_range": [
+            0.0,
+            0.06159420289855073
+          ],
+          "retained_median": 0.036231884057971016,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_lower",
+          "excluded_ranks_descending": {
+            "5": 6,
+            "6": 11,
+            "7": 1
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.03985507246376811,
+            "6": 0.0,
+            "7": 0.06974637681159421
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [
+              "9"
+            ],
+            "7": []
+          }
+        },
+        {
+          "field": "outlier_region_end_fraction",
+          "excluded_mean": 0.9535024154589372,
+          "retained_mean": 0.8308172302737521,
+          "excluded_range": [
+            0.9528985507246377,
+            0.9538043478260869
+          ],
+          "retained_range": [
+            0.0,
+            0.9528985507246377
+          ],
+          "retained_median": 0.9320652173913043,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_higher",
+          "excluded_ranks_descending": {
+            "5": 1,
+            "6": 2,
+            "7": 3
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.9538043478260869,
+            "6": 0.9538043478260869,
+            "7": 0.9528985507246377
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [],
+            "7": [
+              "9"
+            ]
+          }
+        },
+        {
+          "field": "level_region_end_fraction",
+          "excluded_mean": 0.10024154589371981,
+          "retained_mean": 0.21205716586151369,
+          "excluded_range": [
+            0.0,
+            0.161231884057971
+          ],
+          "retained_range": [
+            0.0,
+            0.9456521739130435
+          ],
+          "retained_median": 0.08242753623188406,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_lower",
+          "excluded_ranks_descending": {
+            "5": 6,
+            "6": 11,
+            "7": 3
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.13949275362318841,
+            "6": 0.0,
+            "7": 0.161231884057971
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [
+              "9"
+            ],
+            "7": []
+          }
+        },
+        {
+          "field": "union_region_fraction",
+          "excluded_mean": 0.18297101449275363,
+          "retained_mean": 0.1371779388083736,
+          "excluded_range": [
+            0.14945652173913043,
+            0.20652173913043478
+          ],
+          "retained_range": [
+            0.036231884057971016,
+            0.2427536231884058
+          ],
+          "retained_median": 0.1621376811594203,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_higher",
+          "excluded_ranks_descending": {
+            "5": 2,
+            "6": 3,
+            "7": 8
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.20652173913043478,
+            "6": 0.19293478260869565,
+            "7": 0.14945652173913043
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [],
+            "7": []
+          }
+        },
+        {
+          "field": "union_region_end_fraction",
+          "excluded_mean": 0.9535024154589372,
+          "retained_mean": 0.840780998389694,
+          "excluded_range": [
+            0.9528985507246377,
+            0.9538043478260869
+          ],
+          "retained_range": [
+            0.0769927536231884,
+            0.9528985507246377
+          ],
+          "retained_median": 0.9320652173913043,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_higher",
+          "excluded_ranks_descending": {
+            "5": 1,
+            "6": 2,
+            "7": 3
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.9538043478260869,
+            "6": 0.9538043478260869,
+            "7": 0.9528985507246377
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [],
+            "7": [
+              "9"
+            ]
+          }
+        },
+        {
+          "field": "outlier_point_fraction",
+          "excluded_mean": 0.06431159420289854,
+          "retained_mean": 0.03824476650563607,
+          "excluded_range": [
+            0.03170289855072464,
+            0.08423913043478261
+          ],
+          "retained_range": [
+            0.0,
+            0.09329710144927536
+          ],
+          "retained_median": 0.03894927536231884,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_higher",
+          "excluded_ranks_descending": {
+            "5": 4,
+            "6": 3,
+            "7": 8
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 0.0769927536231884,
+            "6": 0.08423913043478261,
+            "7": 0.03170289855072464
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [],
+            "7": []
+          }
+        },
+        {
+          "field": "local_robust_z_peak",
+          "excluded_mean": 8.412069130004552,
+          "retained_mean": 10.542389886297237,
+          "excluded_range": [
+            6.569199917927511,
+            10.32120012289984
+          ],
+          "retained_range": [
+            3.5667566400211874,
+            18.888661138762313
+          ],
+          "retained_median": 10.432429638072236,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_lower",
+          "excluded_ranks_descending": {
+            "5": 6,
+            "6": 10,
+            "7": 8
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 10.32120012289984,
+            "6": 6.569199917927511,
+            "7": 8.345807349186305
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [],
+            "7": []
+          }
+        },
+        {
+          "field": "level_excursion_score",
+          "excluded_mean": 1.992703791399993,
+          "retained_mean": 3.3351817153849095,
+          "excluded_range": [
+            0.0,
+            3.0526092849039026
+          ],
+          "retained_range": [
+            0.0,
+            4.800175427023964
+          ],
+          "retained_median": 3.7910348275287458,
+          "observed_ranges_overlap": true,
+          "direction": "excluded_lower",
+          "excluded_ranks_descending": {
+            "5": 8,
+            "6": 11,
+            "7": 9
+          },
+          "batch_size_for_rank": 12,
+          "excluded_values": {
+            "5": 3.0526092849039026,
+            "6": 0.0,
+            "7": 2.925502089296076
+          },
+          "tied_retained_series": {
+            "5": [],
+            "6": [
+              "9"
+            ],
+            "7": []
+          }
+        }
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "0",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.11956521739130435,
+      "level_region_fraction": 0.043478260869565216,
+      "outlier_region_end_fraction": 0.9230072463768116,
+      "level_region_end_fraction": 0.08242753623188406,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9230072463768116,
+      "union_region_fraction": 0.16304347826086957,
+      "outlier_point_fraction": 0.03985507246376811,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 10.629918044444295,
+      "level_excursion_score": 3.2823339464299455,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "1",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.12952898550724637,
+      "level_region_fraction": 0.058876811594202896,
+      "outlier_region_end_fraction": 0.9239130434782609,
+      "level_region_end_fraction": 0.14583333333333334,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9239130434782609,
+      "union_region_fraction": 0.17844202898550723,
+      "outlier_point_fraction": 0.049818840579710144,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 14.723736520103792,
+      "level_excursion_score": 3.7910348275287458,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "2",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.009057971014492754,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.9329710144927537,
+      "level_region_end_fraction": 0.9456521739130435,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9456521739130435,
+      "union_region_fraction": 0.04076086956521739,
+      "outlier_point_fraction": 0.0018115942028985507,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 5.128660100779832,
+      "level_excursion_score": 2.671078294855731,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": false,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": false,
+      "pss_divergence_source": "NONE",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "medium",
+      "in_scope": false,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "3",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.03260869565217391,
+      "level_region_fraction": 0.05344202898550725,
+      "outlier_region_end_fraction": 0.9320652173913043,
+      "level_region_end_fraction": 0.1403985507246377,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9320652173913043,
+      "union_region_fraction": 0.08605072463768115,
+      "outlier_point_fraction": 0.007246376811594203,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 9.989594420089487,
+      "level_excursion_score": 4.800175427023964,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "4",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.19293478260869565,
+      "level_region_fraction": 0.06159420289855073,
+      "outlier_region_end_fraction": 0.9447463768115942,
+      "level_region_end_fraction": 0.36594202898550726,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9447463768115942,
+      "union_region_fraction": 0.2427536231884058,
+      "outlier_point_fraction": 0.09148550724637682,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 13.326181336641133,
+      "level_excursion_score": 4.058917765607677,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "5",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.17753623188405798,
+      "level_region_fraction": 0.03985507246376811,
+      "outlier_region_end_fraction": 0.9538043478260869,
+      "level_region_end_fraction": 0.13949275362318841,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9538043478260869,
+      "union_region_fraction": 0.20652173913043478,
+      "outlier_point_fraction": 0.0769927536231884,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 10.32120012289984,
+      "level_excursion_score": 3.0526092849039026,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "6",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.19293478260869565,
+      "level_region_fraction": 0.0,
+      "outlier_region_end_fraction": 0.9538043478260869,
+      "level_region_end_fraction": 0.0,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9538043478260869,
+      "union_region_fraction": 0.19293478260869565,
+      "outlier_point_fraction": 0.08423913043478261,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 6.569199917927511,
+      "level_excursion_score": 0.0,
+      "mask_class": "OUTLIER_ONLY",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "7",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.09329710144927536,
+      "level_region_fraction": 0.06974637681159421,
+      "outlier_region_end_fraction": 0.9528985507246377,
+      "level_region_end_fraction": 0.161231884057971,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9528985507246377,
+      "union_region_fraction": 0.14945652173913043,
+      "outlier_point_fraction": 0.03170289855072464,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 8.345807349186305,
+      "level_excursion_score": 2.925502089296076,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "8",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.0,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.0,
+      "level_region_end_fraction": 0.0769927536231884,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.0769927536231884,
+      "union_region_fraction": 0.036231884057971016,
+      "outlier_point_fraction": 0.0,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 3.5667566400211874,
+      "level_excursion_score": 3.3415138542877187,
+      "mask_class": "LEVEL_ONLY",
+      "union_pss": true,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": true,
+      "pss_divergent": false,
+      "pss_divergence_source": "NONE",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "medium",
+      "in_scope": false,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "9",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.1875,
+      "level_region_fraction": 0.0,
+      "outlier_region_end_fraction": 0.9528985507246377,
+      "level_region_end_fraction": 0.0,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9528985507246377,
+      "union_region_fraction": 0.1875,
+      "outlier_point_fraction": 0.09329710144927536,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 18.888661138762313,
+      "level_excursion_score": 0.0,
+      "mask_class": "OUTLIER_ONLY",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": true,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "10",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.10144927536231885,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.9447463768115942,
+      "level_region_end_fraction": 0.07608695652173914,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9447463768115942,
+      "union_region_fraction": 0.13768115942028986,
+      "outlier_point_fraction": 0.021739130434782608,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 8.19557113776084,
+      "level_excursion_score": 3.818160002765751,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "11",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.12590579710144928,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.9230072463768116,
+      "level_region_end_fraction": 0.07518115942028986,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9230072463768116,
+      "union_region_fraction": 0.1621376811594203,
+      "outlier_point_fraction": 0.03894927536231884,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 10.432429638072236,
+      "level_excursion_score": 4.253421319964652,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "train"
+    }
+  ],
+  "eval_rows": [
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "12",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.09782608695652174,
+      "level_region_fraction": 0.0,
+      "outlier_region_end_fraction": 0.9528985507246377,
+      "level_region_end_fraction": 0.0,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9528985507246377,
+      "union_region_fraction": 0.09782608695652174,
+      "outlier_point_fraction": 0.025362318840579712,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 12.75512960255053,
+      "level_excursion_score": 0.0,
+      "mask_class": "OUTLIER_ONLY",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": true,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "13",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.04076086956521739,
+      "level_region_fraction": 0.044384057971014496,
+      "outlier_region_end_fraction": 0.9311594202898551,
+      "level_region_end_fraction": 0.13858695652173914,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9311594202898551,
+      "union_region_fraction": 0.0806159420289855,
+      "outlier_point_fraction": 0.008152173913043478,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 4.757568749879554,
+      "level_excursion_score": 3.0397250968376017,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "medium",
+      "in_scope": false,
+      "is_representative": false,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "14",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.009057971014492754,
+      "level_region_fraction": 0.042572463768115944,
+      "outlier_region_end_fraction": 0.9519927536231884,
+      "level_region_end_fraction": 0.08333333333333333,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9519927536231884,
+      "union_region_fraction": 0.051630434782608696,
+      "outlier_point_fraction": 0.0018115942028985507,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 4.6265274635682845,
+      "level_excursion_score": 3.7760425305124143,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "medium",
+      "in_scope": false,
+      "is_representative": false,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "15",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.041666666666666664,
+      "level_region_fraction": 0.03894927536231884,
+      "outlier_region_end_fraction": 0.7364130434782609,
+      "level_region_end_fraction": 0.07518115942028986,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.7364130434782609,
+      "union_region_fraction": 0.0806159420289855,
+      "outlier_point_fraction": 0.009057971014492754,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 8.590022912589262,
+      "level_excursion_score": 4.966362128436605,
+      "mask_class": "MIXED",
+      "union_pss": true,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": true,
+      "pss_divergent": false,
+      "pss_divergence_source": "NONE",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "16",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.0,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.0,
+      "level_region_end_fraction": 0.07608695652173914,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.07608695652173914,
+      "union_region_fraction": 0.036231884057971016,
+      "outlier_point_fraction": 0.0,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 2.7226998628260604,
+      "level_excursion_score": 3.9331551622290455,
+      "mask_class": "LEVEL_ONLY",
+      "union_pss": true,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": true,
+      "pss_divergent": false,
+      "pss_divergence_source": "NONE",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "low",
+      "in_scope": false,
+      "is_representative": false,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "17",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.06793478260869565,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.9528985507246377,
+      "level_region_end_fraction": 0.14130434782608695,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9528985507246377,
+      "union_region_fraction": 0.09963768115942029,
+      "outlier_point_fraction": 0.01358695652173913,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 6.02566774991998,
+      "level_excursion_score": 3.3317728106835434,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "18",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.004528985507246377,
+      "level_region_fraction": 0.036231884057971016,
+      "outlier_region_end_fraction": 0.6268115942028986,
+      "level_region_end_fraction": 0.07880434782608696,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.6268115942028986,
+      "union_region_fraction": 0.04076086956521739,
+      "outlier_point_fraction": 0.0009057971014492754,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 4.273936639375734,
+      "level_excursion_score": 3.185996015316129,
+      "mask_class": "MIXED",
+      "union_pss": true,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": true,
+      "pss_divergent": false,
+      "pss_divergence_source": "NONE",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "medium",
+      "in_scope": false,
+      "is_representative": false,
+      "roster_role": "eval"
+    },
+    {
+      "cohort": "traffic",
+      "task_episode_id": "e1v2_task_01",
+      "observation_cutoff": 1104,
+      "series_uid": "19",
+      "prefix_points": 1104,
+      "outlier_region_fraction": 0.1286231884057971,
+      "level_region_fraction": 0.042572463768115944,
+      "outlier_region_end_fraction": 0.9239130434782609,
+      "level_region_end_fraction": 0.14221014492753623,
+      "missing_region_end_fraction": 0.0,
+      "union_region_end_fraction": 0.9239130434782609,
+      "union_region_fraction": 0.15942028985507245,
+      "outlier_point_fraction": 0.05253623188405797,
+      "missing_fraction": 0.0,
+      "local_robust_z_peak": 11.56720134242572,
+      "level_excursion_score": 3.460704924791128,
+      "mask_class": "MIXED",
+      "union_pss": false,
+      "level_only_pss": true,
+      "mapping_post_shift_support_sufficient": false,
+      "pss_divergent": true,
+      "pss_divergence_source": "OUTLIER",
+      "sanity_union_pss_matches_mapping": true,
+      "sanity_union_mask_reconstructed": true,
+      "sanity_union_end_matches_mapping": true,
+      "sanity_all_fields_finite": true,
+      "scope_bin": "high",
+      "in_scope": true,
+      "is_representative": false,
+      "roster_role": "eval"
+    }
+  ],
+  "eval_rows_note": "the eval series are censused with the identical prefix rule and the identical row function, and are excluded from every summary, contrast and rank in this artifact; the recipe's mask search only ever reverts training series",
+  "provenance": {
+    "extractor": "SelfEvolvingHarnessTS.runtime.public_features.extract_public_features (unmodified)",
+    "expansion": "runtime.public_features._expand (radius=2)",
+    "pss_formula": "max(0, (1 - end_fraction) * _DOWNSTREAM_WINDOW_POINTS) >= _POST_SHIFT_SUPPORT_MIN_POINTS, constants imported from the extractor module",
+    "zero_llm": true,
+    "zero_support_probe": true,
+    "zero_outcome_opened": true,
+    "observable_features_unchanged": true,
+    "extract_public_features_unchanged": true,
+    "thresholds_unchanged": true,
+    "no_threshold_fitted": true,
+    "csv_rows_read": 1104,
+    "not_read": [
+      "KDD W3 T211-T230 (INSTANCE_UNSEEN preserved)",
+      "any sealed Outcome (NOAA, g3_final_query_outcome, delayed truth)",
+      "traffic rows at or past index 3072, and in fact any traffic row at or past index 1104"
+    ]
+  }
+}

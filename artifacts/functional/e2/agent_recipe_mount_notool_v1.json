@@ -1,0 +1,1095 @@
+{
+  "protocol_version": "agent_recipe_mount_notool_v1",
+  "arm": "no_tool control",
+  "role": "control arm for agent_recipe_mount_v1: the same three requests with no batch_recipe binding, to price what the mounted recipe contributes to plan quality",
+  "not_authorization_evidence": "no Skill is written, no TRY right is granted, no Episode is promoted, no Fast or Slow update runs, no snapshot pointer moves",
+  "verdict": "TOOL_ARM_DOMINATES",
+  "verdict_reason": "every compared episode favours the tool arm by more than 0.005",
+  "comparison": {
+    "verdict": "TOOL_ARM_DOMINATES",
+    "reason": "every compared episode favours the tool arm by more than 0.005",
+    "outcomes": [
+      "TOOL",
+      "TOOL",
+      "TOOL"
+    ],
+    "rows": [
+      {
+        "episode_id": "E1",
+        "cell_key": "batch:traffic|consumer:pooled",
+        "tool_arm": {
+          "behaviour": "TOOL_CALLED_AND_ADOPTED",
+          "decision": "ADOPT_TOOL_RESULT",
+          "plan": {
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ]
+          },
+          "support_aggregate_gain": 0.6652773536462215,
+          "delayed_aggregate_gain": 1.0470750569907492,
+          "support_harmed_eval_series_count": 0,
+          "delayed_harmed_eval_series_count": 0,
+          "llm_calls": 4,
+          "tool_calls": 2,
+          "tool_calls_refused": 0
+        },
+        "no_tool_arm": {
+          "behaviour": "IDENTITY_NO_TREATMENT",
+          "decision": "IDENTITY_NO_TREATMENT",
+          "plan": {
+            "program": "identity",
+            "excluded_series": []
+          },
+          "support_aggregate_gain": 0.0,
+          "delayed_aggregate_gain": 0.0,
+          "support_harmed_eval_series_count": 0,
+          "delayed_harmed_eval_series_count": 0,
+          "llm_calls": 8,
+          "tool_calls": 6,
+          "tool_calls_refused": 1
+        },
+        "delayed_margin_tool_minus_no_tool": 1.0470750569907492,
+        "outcome": "TOOL"
+      },
+      {
+        "episode_id": "E2",
+        "cell_key": "batch:traffic|consumer:pooled",
+        "tool_arm": {
+          "behaviour": "EXPERIENCE_REUSED_NO_TOOL_CALL",
+          "decision": "REUSE_PRIOR_EXPERIENCE",
+          "plan": {
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ]
+          },
+          "support_aggregate_gain": 0.6652773536462215,
+          "delayed_aggregate_gain": 1.0470750569907492,
+          "support_harmed_eval_series_count": 0,
+          "delayed_harmed_eval_series_count": 0,
+          "llm_calls": 2,
+          "tool_calls": 0,
+          "tool_calls_refused": 0
+        },
+        "no_tool_arm": {
+          "behaviour": "IDENTITY_NO_TREATMENT",
+          "decision": "IDENTITY_NO_TREATMENT",
+          "plan": {
+            "program": "identity",
+            "excluded_series": []
+          },
+          "support_aggregate_gain": 0.0,
+          "delayed_aggregate_gain": 0.0,
+          "support_harmed_eval_series_count": 0,
+          "delayed_harmed_eval_series_count": 0,
+          "llm_calls": 6,
+          "tool_calls": 5,
+          "tool_calls_refused": 0
+        },
+        "delayed_margin_tool_minus_no_tool": 1.0470750569907492,
+        "outcome": "TOOL"
+      },
+      {
+        "episode_id": "E3",
+        "cell_key": "batch:traffic|consumer:per_channel",
+        "tool_arm": {
+          "behaviour": "TOOL_CALLED_AND_ADOPTED",
+          "decision": "ADOPT_TOOL_RESULT",
+          "plan": {
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3",
+              "8"
+            ]
+          },
+          "support_aggregate_gain": 0.3031836970220849,
+          "delayed_aggregate_gain": 0.35547178578423166,
+          "support_harmed_eval_series_count": 0,
+          "delayed_harmed_eval_series_count": 0,
+          "llm_calls": 2,
+          "tool_calls": 1,
+          "tool_calls_refused": 0
+        },
+        "no_tool_arm": {
+          "behaviour": "HAND_ROLLED_PLAN",
+          "decision": "OWN_OBSERVATION",
+          "plan": {
+            "program": "hampel_filter",
+            "excluded_series": []
+          },
+          "support_aggregate_gain": 0.10359081635912801,
+          "delayed_aggregate_gain": 0.130606067351813,
+          "support_harmed_eval_series_count": 1,
+          "delayed_harmed_eval_series_count": 0,
+          "llm_calls": 7,
+          "tool_calls": 6,
+          "tool_calls_refused": 0
+        },
+        "delayed_margin_tool_minus_no_tool": 0.22486571843241868,
+        "outcome": "TOOL"
+      }
+    ],
+    "rule": [
+      "TOOL_ARM_DOMINATES: every compared episode is TOOL",
+      "HAND_ROLLED_COMPETITIVE: no compared episode is TOOL",
+      "MIXED_BY_EPISODE: anything else"
+    ],
+    "material_threshold": 0.005,
+    "column_used": "delayed aggregate gain, recomputed offline for both arms"
+  },
+  "tool_arm_reference": {
+    "artifact": "artifacts/functional/e2/agent_recipe_mount_v1.json",
+    "protocol_version": "agent_recipe_mount_v1",
+    "verdict": "AGENT_ROUTES_AND_REUSES",
+    "llm_call_count": 8,
+    "re_run": false,
+    "note": "read verbatim; the tool arm was not re-run"
+  },
+  "prompt_parity": {
+    "identical_and_imported_from_the_tool_arm": [
+      "request framing of E1/E2/E3 (EPISODE_PLAN)",
+      "batch block, program menu, prior-experience rendering and how_to_read (_public_input)",
+      "workspace tool budget",
+      "stage note, except for the one appended sentence below",
+      "harness view: the same h0 snapshot resolved for role=fast",
+      "offline scoring: the same OfflinePlanEvaluator"
+    ],
+    "deliberate_differences": [
+      "tool supply: no batch_recipe binding, so allowed_local_tools carries the two observation tools only",
+      "decision enum gains OWN_OBSERVATION, and the stage note gains one sentence naming it, because the tool arm's three values leave an Agent with no tool and no prior entry unable to state a treatment plan honestly"
+    ],
+    "not_done": [
+      "no hint that a recipe exists, no suggestion of a program, no suggestion to exclude any series, no threshold and no target"
+    ]
+  },
+  "pre_registered": {
+    "per_episode_outcome": "read off the delayed aggregate gain of the plan each arm actually returned, recomputed offline by the same evaluator: TOOL if the tool arm leads by more than MATERIAL_THRESHOLD=0.005, NOTOOL if the control arm does, TIE otherwise",
+    "verdict_rules": [
+      "TOOL_ARM_DOMINATES: every compared episode is TOOL",
+      "HAND_ROLLED_COMPETITIVE: no compared episode is TOOL",
+      "MIXED_BY_EPISODE: anything else"
+    ],
+    "circuit_breaker": "stop after E1 and report if E1 produced no payload; E2 and E3 are not run",
+    "budget": {
+      "llm_calls_total": 30,
+      "llm_calls_per_episode": 10,
+      "validation_retries_per_stage": 2,
+      "workspace_tool_calls_per_episode": 6
+    },
+    "experience_relation_rule": "POSITIVE if the plan's offline support and delayed gains are both positive; CONFLICT if they disagree in sign; NEGATIVE if both are non-positive and the plan treats something; ABSTAIN if the plan is identity"
+  },
+  "harness_change_surface": {
+    "surface": "none",
+    "note": "no Harness file is edited by this arm. The gateway is used through its frozen binding=None path; the runner subclasses it only to look the batch_plan stage up as inspect, which serves exactly the frozen two-tool supply"
+  },
+  "model": {
+    "model": "gpt-5.6-luna",
+    "base_url": "https://api.agicto.cn/v1"
+  },
+  "declared_tools_this_arm": [
+    "summarize_series",
+    "localize_regions"
+  ],
+  "batch_plan_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "batch-plan/1-own-observation",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "decision",
+      "program",
+      "excluded_series",
+      "reason",
+      "experience_use"
+    ],
+    "properties": {
+      "decision": {
+        "enum": [
+          "ADOPT_TOOL_RESULT",
+          "REUSE_PRIOR_EXPERIENCE",
+          "IDENTITY_NO_TREATMENT",
+          "OWN_OBSERVATION"
+        ]
+      },
+      "program": {
+        "enum": [
+          "identity",
+          "repair_level_shift",
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize",
+          "denoise_median",
+          "smooth_ma"
+        ]
+      },
+      "excluded_series": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true,
+        "maxItems": 24
+      },
+      "reason": {
+        "type": "string"
+      },
+      "experience_use": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 8
+      }
+    }
+  },
+  "stage_note": "Return exactly one batch_plan payload for this batch. `program` and `excluded_series` are the plan itself: apply `program` to every training series except the ones listed, then retrain the Consumer once; `program`:'identity' with an empty list means treat nothing. `decision` records where the plan came from -- ADOPT_TOOL_RESULT if you took it from a batch_recipe result you obtained in this stage, REUSE_PRIOR_EXPERIENCE if you took it from a prior_experience entry (put that entry's episode_id in `experience_use`), IDENTITY_NO_TREATMENT if you leave the batch untreated. `reason` is one or two sentences on why, in public terms. Request one tool at a time and stop after each request; when you have what you need, return the payload. Use OWN_OBSERVATION when you formed the plan yourself from what you observed in this stage.",
+  "llm_call_count": 21,
+  "llm_call_budget_total": 30,
+  "stopped_early": null,
+  "experience_entries": [
+    {
+      "episode_id": "E1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:pooled",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic",
+          "training_series_count": 12,
+          "evaluation_series_count": 8
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "treated_count": 12
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "gain": 0.0,
+        "window": "support",
+        "program": "identity",
+        "excluded_series": [],
+        "plan_source": "IDENTITY_NO_TREATMENT",
+        "harmed_eval_series_count": 0,
+        "provenance": "agent_hand_rolled_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+      },
+      "delayed_response": {
+        "gain": 0.0,
+        "window": "delayed",
+        "window_role": "already-exposed development origins; scored offline after the fact and never shown to the Agent in this arm",
+        "harmed_eval_series_count": 0,
+        "provenance": "agent_hand_rolled_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "agent_hand_rolled_engineering"
+      ]
+    },
+    {
+      "episode_id": "E2",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:pooled",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic",
+          "training_series_count": 12,
+          "evaluation_series_count": 8
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "treated_count": 12
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "gain": 0.0,
+        "window": "support",
+        "program": "identity",
+        "excluded_series": [],
+        "plan_source": "IDENTITY_NO_TREATMENT",
+        "harmed_eval_series_count": 0,
+        "provenance": "agent_hand_rolled_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+      },
+      "delayed_response": {
+        "gain": 0.0,
+        "window": "delayed",
+        "window_role": "already-exposed development origins; scored offline after the fact and never shown to the Agent in this arm",
+        "harmed_eval_series_count": 0,
+        "provenance": "agent_hand_rolled_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "agent_hand_rolled_engineering"
+      ]
+    },
+    {
+      "episode_id": "E3",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:per_channel",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic",
+          "training_series_count": 12,
+          "evaluation_series_count": 8
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "treated_count": 12
+        }
+      },
+      "workflow_signature": "hampel_filter",
+      "support_response": {
+        "gain": 0.10359081635912801,
+        "window": "support",
+        "program": "hampel_filter",
+        "excluded_series": [],
+        "plan_source": "OWN_OBSERVATION",
+        "harmed_eval_series_count": 1,
+        "provenance": "agent_hand_rolled_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+      },
+      "delayed_response": {
+        "gain": 0.130606067351813,
+        "window": "delayed",
+        "window_role": "already-exposed development origins; scored offline after the fact and never shown to the Agent in this arm",
+        "harmed_eval_series_count": 0,
+        "provenance": "agent_hand_rolled_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "agent_hand_rolled_engineering"
+      ]
+    }
+  ],
+  "experience_provenance": "agent_hand_rolled_engineering",
+  "episodes": [
+    {
+      "episode_id": "E1",
+      "arm": "no_tool",
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "cell_key": "batch:traffic|consumer:pooled",
+      "request": "First processing request for this batch. Nothing has been recorded about it before now.",
+      "payload": {
+        "decision": "IDENTITY_NO_TREATMENT",
+        "program": "identity",
+        "excluded_series": [],
+        "reason": "Public observations show localized level and deviation signals in the inspected series, but support is not uniform and six training series could not be inspected within the tool budget. Without batch-wide evidence justifying a common repair, leave the batch untreated.",
+        "experience_use": []
+      },
+      "protocol_error": null,
+      "infrastructure_error": null,
+      "llm_calls": 8,
+      "llm_call_budget_for_this_episode": 10,
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "tool_receipts": [
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "0"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "2acd73ce3f654d5928fda632cc5e5a6ec0395881b4cc8ae830b041d257c7b722"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "1"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "14a55e7325e6e8da328609223a4543c37718edad8470da7205b07ecc9fc6f7b2"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "2"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "4eab76381006c407b83f6b309ba584cb1689ba9dc9e49d3aafec7903971fce65"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "3"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "13d0696035dc9217c3df7245f76f526564a1cbcf8ea8dbd86b3427da3cb6666a"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "4"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "009fc13482049b7a6053d1cb0fc6fe3aa5ab47c5452926da40ddf1caafbef5e0"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "5"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "bc2fb2000f69a45ba5f20af78612e68a76faba97727313c3914d5b5fa8c5a9fa"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "6"
+          },
+          "ok": false,
+          "public_result_keys": [
+            "calls_used",
+            "maximum_calls",
+            "refused"
+          ],
+          "receipt_sha": "bd2143ba6165a44baf9b5eb6e6d3df6187c739c57da82c59e31c0239ec5b6e3e"
+        }
+      ],
+      "observation_tool_calls": 6,
+      "declared_tools": [
+        "summarize_series",
+        "localize_regions"
+      ],
+      "workspace_tool_accounting": {
+        "workspace_tool_calls": 6,
+        "workspace_tool_calls_refused": 1,
+        "workspace_tool_call_budget": 6,
+        "distinct_series_observed": 6,
+        "refusal_reasons": [
+          "WORKSPACE_TOOL_BUDGET_EXHAUSTED"
+        ],
+        "scope_series_count": 12,
+        "call_log": [
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "0",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "1",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "2",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "3",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "4",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "5",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "ok": false,
+            "reason": "WORKSPACE_TOOL_BUDGET_EXHAUSTED",
+            "arguments": {
+              "series_uid": "6"
+            }
+          }
+        ]
+      },
+      "experience_entries_visible": 0,
+      "signed_pack_for_this_cell": {
+        "positive": null,
+        "negative": null,
+        "conflict": null,
+        "evidence_sufficient": false,
+        "retrieval_note": "no valid episodes"
+      },
+      "wall_seconds": 98.47489180008415,
+      "label": {
+        "behaviour": "IDENTITY_NO_TREATMENT",
+        "decision": "IDENTITY_NO_TREATMENT",
+        "reused": false,
+        "reused_across_cell": false,
+        "cited_episode_ids": [],
+        "cited_cells": [],
+        "plan": {
+          "program": "identity",
+          "excluded_series": []
+        }
+      },
+      "adopted_plan_offline_readout": {
+        "program": "identity",
+        "excluded_series": [],
+        "unknown_series_ignored": [],
+        "support_aggregate_gain": 0.0,
+        "delayed_aggregate_gain": 0.0,
+        "support_harmed_eval_series_count": 0,
+        "delayed_harmed_eval_series_count": 0,
+        "mechanism": "run_batch_composition_headroom._evaluate_assignment + _gain_rows on the same Task windows and Consumer variant the recipe used; identity baseline recomputed once per cell"
+      },
+      "experience_written": {
+        "episode_id": "E1",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:pooled",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic",
+            "training_series_count": 12,
+            "evaluation_series_count": 8
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "treated_count": 12
+          }
+        },
+        "workflow_signature": "identity",
+        "support_response": {
+          "gain": 0.0,
+          "window": "support",
+          "program": "identity",
+          "excluded_series": [],
+          "plan_source": "IDENTITY_NO_TREATMENT",
+          "harmed_eval_series_count": 0,
+          "provenance": "agent_hand_rolled_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+        },
+        "delayed_response": {
+          "gain": 0.0,
+          "window": "delayed",
+          "window_role": "already-exposed development origins; scored offline after the fact and never shown to the Agent in this arm",
+          "harmed_eval_series_count": 0,
+          "provenance": "agent_hand_rolled_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+        },
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "agent_hand_rolled_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E2",
+      "arm": "no_tool",
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "cell_key": "batch:traffic|consumer:pooled",
+      "request": "Second processing request. It is the same batch of data as the previous request and the downstream Consumer structure is unchanged.",
+      "payload": {
+        "decision": "IDENTITY_NO_TREATMENT",
+        "program": "identity",
+        "excluded_series": [],
+        "reason": "Public observations show no missingness, while level and deviation signals vary across inspected series and do not establish a single safe batch-wide repair. Leave the batch untreated rather than apply an uncertain transformation.",
+        "experience_use": []
+      },
+      "protocol_error": null,
+      "infrastructure_error": null,
+      "llm_calls": 6,
+      "llm_call_budget_for_this_episode": 10,
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "tool_receipts": [
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "0"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "2acd73ce3f654d5928fda632cc5e5a6ec0395881b4cc8ae830b041d257c7b722"
+        },
+        {
+          "tool_name": "localize_regions",
+          "arguments": {
+            "series_uid": "0"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "estimated_region_end_fraction",
+            "estimated_region_start_fraction",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "2eeb469f319ff676da8f70237e3018abad703de2dc277a774757deb703f219f6"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "1"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "14a55e7325e6e8da328609223a4543c37718edad8470da7205b07ecc9fc6f7b2"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "2"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "4eab76381006c407b83f6b309ba584cb1689ba9dc9e49d3aafec7903971fce65"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "3"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "13d0696035dc9217c3df7245f76f526564a1cbcf8ea8dbd86b3427da3cb6666a"
+        }
+      ],
+      "observation_tool_calls": 5,
+      "declared_tools": [
+        "summarize_series",
+        "localize_regions"
+      ],
+      "workspace_tool_accounting": {
+        "workspace_tool_calls": 5,
+        "workspace_tool_calls_refused": 0,
+        "workspace_tool_call_budget": 6,
+        "distinct_series_observed": 4,
+        "refusal_reasons": [],
+        "scope_series_count": 12,
+        "call_log": [
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "0",
+            "ok": true
+          },
+          {
+            "tool_name": "localize_regions",
+            "series_uid": "0",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "1",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "2",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "3",
+            "ok": true
+          }
+        ]
+      },
+      "experience_entries_visible": 1,
+      "signed_pack_for_this_cell": {
+        "positive": null,
+        "negative": null,
+        "conflict": null,
+        "evidence_sufficient": false,
+        "retrieval_note": "1 valid episodes; same-domain-first; signed pack (pos/neg/conflict)"
+      },
+      "wall_seconds": 86.21110950002912,
+      "label": {
+        "behaviour": "IDENTITY_NO_TREATMENT",
+        "decision": "IDENTITY_NO_TREATMENT",
+        "reused": false,
+        "reused_across_cell": false,
+        "cited_episode_ids": [],
+        "cited_cells": [],
+        "plan": {
+          "program": "identity",
+          "excluded_series": []
+        }
+      },
+      "adopted_plan_offline_readout": {
+        "program": "identity",
+        "excluded_series": [],
+        "unknown_series_ignored": [],
+        "support_aggregate_gain": 0.0,
+        "delayed_aggregate_gain": 0.0,
+        "support_harmed_eval_series_count": 0,
+        "delayed_harmed_eval_series_count": 0,
+        "mechanism": "run_batch_composition_headroom._evaluate_assignment + _gain_rows on the same Task windows and Consumer variant the recipe used; identity baseline recomputed once per cell"
+      },
+      "experience_written": {
+        "episode_id": "E2",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:pooled",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic",
+            "training_series_count": 12,
+            "evaluation_series_count": 8
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "treated_count": 12
+          }
+        },
+        "workflow_signature": "identity",
+        "support_response": {
+          "gain": 0.0,
+          "window": "support",
+          "program": "identity",
+          "excluded_series": [],
+          "plan_source": "IDENTITY_NO_TREATMENT",
+          "harmed_eval_series_count": 0,
+          "provenance": "agent_hand_rolled_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+        },
+        "delayed_response": {
+          "gain": 0.0,
+          "window": "delayed",
+          "window_role": "already-exposed development origins; scored offline after the fact and never shown to the Agent in this arm",
+          "harmed_eval_series_count": 0,
+          "provenance": "agent_hand_rolled_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+        },
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "agent_hand_rolled_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E3",
+      "arm": "no_tool",
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "cell_key": "batch:traffic|consumer:per_channel",
+      "request": "Same batch of data as the previous requests, but the downstream Consumer structure has changed: instead of one model fitted on the stacked windows of all training channels, each training channel now fits its own model and every evaluation channel is predicted by the equal-weight mean of those channel-wise models.",
+      "payload": {
+        "decision": "OWN_OBSERVATION",
+        "program": "hampel_filter",
+        "excluded_series": [],
+        "reason": "Public summaries for all inspected series show substantial local robust deviations, while missingness is absent. A Hampel filter is a localized, conservative treatment for these observed outlier signals without excluding any training series.",
+        "experience_use": []
+      },
+      "protocol_error": null,
+      "infrastructure_error": null,
+      "llm_calls": 7,
+      "llm_call_budget_for_this_episode": 10,
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "tool_receipts": [
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "0"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "2acd73ce3f654d5928fda632cc5e5a6ec0395881b4cc8ae830b041d257c7b722"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "1"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "14a55e7325e6e8da328609223a4543c37718edad8470da7205b07ecc9fc6f7b2"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "2"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "4eab76381006c407b83f6b309ba584cb1689ba9dc9e49d3aafec7903971fce65"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "3"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "13d0696035dc9217c3df7245f76f526564a1cbcf8ea8dbd86b3427da3cb6666a"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "4"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "009fc13482049b7a6053d1cb0fc6fe3aa5ab47c5452926da40ddf1caafbef5e0"
+        },
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "5"
+          },
+          "ok": true,
+          "public_result_keys": [
+            "features",
+            "observation_cutoff",
+            "series_uid"
+          ],
+          "receipt_sha": "bc2fb2000f69a45ba5f20af78612e68a76faba97727313c3914d5b5fa8c5a9fa"
+        }
+      ],
+      "observation_tool_calls": 6,
+      "declared_tools": [
+        "summarize_series",
+        "localize_regions"
+      ],
+      "workspace_tool_accounting": {
+        "workspace_tool_calls": 6,
+        "workspace_tool_calls_refused": 0,
+        "workspace_tool_call_budget": 6,
+        "distinct_series_observed": 6,
+        "refusal_reasons": [],
+        "scope_series_count": 12,
+        "call_log": [
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "0",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "1",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "2",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "3",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "4",
+            "ok": true
+          },
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "5",
+            "ok": true
+          }
+        ]
+      },
+      "experience_entries_visible": 2,
+      "signed_pack_for_this_cell": {
+        "positive": null,
+        "negative": null,
+        "conflict": null,
+        "evidence_sufficient": false,
+        "retrieval_note": "no valid episodes"
+      },
+      "wall_seconds": 114.28672500001267,
+      "label": {
+        "behaviour": "HAND_ROLLED_PLAN",
+        "decision": "OWN_OBSERVATION",
+        "reused": false,
+        "reused_across_cell": false,
+        "cited_episode_ids": [],
+        "cited_cells": [],
+        "plan": {
+          "program": "hampel_filter",
+          "excluded_series": []
+        }
+      },
+      "adopted_plan_offline_readout": {
+        "program": "hampel_filter",
+        "excluded_series": [],
+        "unknown_series_ignored": [],
+        "support_aggregate_gain": 0.10359081635912801,
+        "delayed_aggregate_gain": 0.130606067351813,
+        "support_harmed_eval_series_count": 1,
+        "delayed_harmed_eval_series_count": 0,
+        "mechanism": "run_batch_composition_headroom._evaluate_assignment + _gain_rows on the same Task windows and Consumer variant the recipe used; identity baseline recomputed once per cell"
+      },
+      "experience_written": {
+        "episode_id": "E3",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:per_channel",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic",
+            "training_series_count": 12,
+            "evaluation_series_count": 8
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "treated_count": 12
+          }
+        },
+        "workflow_signature": "hampel_filter",
+        "support_response": {
+          "gain": 0.10359081635912801,
+          "window": "support",
+          "program": "hampel_filter",
+          "excluded_series": [],
+          "plan_source": "OWN_OBSERVATION",
+          "harmed_eval_series_count": 1,
+          "provenance": "agent_hand_rolled_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+        },
+        "delayed_response": {
+          "gain": 0.130606067351813,
+          "window": "delayed",
+          "window_role": "already-exposed development origins; scored offline after the fact and never shown to the Agent in this arm",
+          "harmed_eval_series_count": 0,
+          "provenance": "agent_hand_rolled_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement of a plan the Agent formed from the public prefixes with no recipe tool bound; not authorization evidence and not an unguided probe"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "agent_hand_rolled_engineering"
+        ]
+      }
+    }
+  ],
+  "windows": {
+    "cohort": "traffic",
+    "note": "traffic development origins only: Support 1104/1368, delayed 1800, farthest read 1848, sealed_from_index 3072 never approached"
+  },
+  "wall_seconds": 299.54321209993213
+}

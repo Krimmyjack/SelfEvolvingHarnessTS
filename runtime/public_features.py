@@ -64,6 +64,20 @@ def _longest_observed_segment(values: np.ndarray) -> np.ndarray:
     return np.asarray(values[best], dtype=np.float64)
 
 
+def _end_fraction(mask: np.ndarray) -> float:
+    indices = np.flatnonzero(mask)
+    if indices.size == 0:
+        return 0.0
+    return float((int(indices[-1]) + 1) / int(mask.size))
+
+
+def _post_shift_support_sufficient(end_fraction: float) -> bool:
+    return bool(
+        max(0.0, (1.0 - float(end_fraction)) * _DOWNSTREAM_WINDOW_POINTS)
+        >= _POST_SHIFT_SUPPORT_MIN_POINTS
+    )
+
+
 def _expand(mask: np.ndarray, radius: int = 2) -> np.ndarray:
     expanded = mask.copy()
     for shift in range(1, radius + 1):
@@ -272,6 +286,9 @@ def extract_public_features(
     else:
         level_score, level_mask, offset = _level_candidate(filled, scale)
     union = missing_region | outlier_region | level_mask
+    level_region_fraction = float(np.mean(level_mask))
+    level_region_end_fraction = _end_fraction(level_mask)
+    outlier_region_end_fraction = _end_fraction(outlier_region)
     selected = np.flatnonzero(union)
     if selected.size:
         start_fraction = float(selected[0] / values.size)
@@ -296,10 +313,15 @@ def extract_public_features(
         "local_robust_z_peak": float(np.max(robust_z)),
         "estimated_region_start_fraction": start_fraction,
         "estimated_region_end_fraction": end_fraction,
-        "post_shift_support_sufficient": bool(
-            max(0.0, (1.0 - end_fraction) * _DOWNSTREAM_WINDOW_POINTS)
-            >= _POST_SHIFT_SUPPORT_MIN_POINTS
+        "level_region_fraction": level_region_fraction,
+        "level_region_end_fraction": level_region_end_fraction,
+        "outlier_region_end_fraction": outlier_region_end_fraction,
+        # Same formula and constants as post_shift_support_sufficient, read off
+        # the level mask alone instead of the missing|outlier|level union.
+        "level_only_post_shift_support_sufficient": _post_shift_support_sufficient(
+            level_region_end_fraction
         ),
+        "post_shift_support_sufficient": _post_shift_support_sufficient(end_fraction),
         "level_excursion_score": level_score,
         "estimated_level_offset": offset,
         "period_change_score": period_score,

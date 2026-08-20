@@ -752,6 +752,7 @@ def _run_arm(
     source_prior: Mapping[str, Any] | None,
     workspace_tool_budget: int,
     backend_factory: Callable[[int], Any],
+    validation_retries: int = 1,
 ) -> dict[str, Any]:
     arm = arm_state.arm
     scope = frozenset(public_context["scope_series_uids"])
@@ -842,6 +843,7 @@ def _run_arm(
         probe_budget=B,
         material_threshold=MATERIAL_THRESHOLD,
         support_probe=support_probe,
+        validation_retries=validation_retries,
     )
 
     # ---- Episode + Local Skill lifecycle --------------------------------
@@ -984,6 +986,7 @@ def _run_arm(
         "chosen_candidate_id": trace.chosen_candidate_id,
         "protocol_error": trace.protocol_error,
         "protocol_error_output": trace.protocol_error_output,
+        "terminal_validation_error_code": trace.terminal_validation_error_code,
         "infrastructure_error": trace.infrastructure_error,
         "stages": trace.stages,
         "tool_observations": trace.tool_observations,

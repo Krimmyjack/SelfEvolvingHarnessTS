@@ -37,6 +37,27 @@ from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
 _TOOL_NAMES = ("summarize_series", "localize_regions")
 _FAST_STAGES = frozenset({"inspect", "propose", "select"})
 
+# --------------------------------------------------------------- batch recipe
+#
+# One optional extra Workspace tool.  The gateway does not know what a batch
+# recipe is: a caller that wants the tool passes a *binding* object, and the
+# gateway only registers its name, publishes its description and bounded
+# argument enums, routes one call to it and renders the result back into the
+# Agent's context.  No recipe module is imported here.
+#
+# ``batch_recipe_binding=None`` -- the default -- leaves this class exactly as
+# it was: the same two tools, the same stages, and a ``context_sha`` payload
+# with no extra key, so every existing run is byte-identical.
+#
+# A binding must provide:
+#     identity                  JSON-plain mapping, folded into context_sha
+#     description               str, shown to the Agent
+#     cohort_choices            Sequence[str], the tool's ``cohort`` enum
+#     consumer_variant_choices  Sequence[str], the ``consumer_variant`` enum
+#     run(cohort=..., consumer_variant=...) -> Mapping[str, Any]
+_BATCH_RECIPE_TOOL = "batch_recipe"
+_BATCH_RECIPE_STAGES = _FAST_STAGES | frozenset({"batch_plan"})
+
 
 def _plain(value: Any) -> Any:
     if isinstance(value, Mapping):
@@ -60,6 +81,7 @@ class CohortScopePublicToolGateway:
         task_kind: str,
         observation_cutoff: int,
         maximum_calls: int = 6,
+        batch_recipe_binding: Any | None = None,
     ) -> None:
         if not prefixes:
             raise ValueError("at least one scoped series prefix is required")
@@ -70,6 +92,7 @@ class CohortScopePublicToolGateway:
         self._task_kind = str(task_kind)
         self._cutoff = int(observation_cutoff)
         self.maximum_calls = maximum_calls
+        self._recipe = batch_recipe_binding
         self.calls = 0
         self.refused_calls = 0
         self.call_log: list[dict[str, Any]] = []
@@ -85,20 +108,25 @@ class CohortScopePublicToolGateway:
             self._series[str(uid)] = array
         self.scope_series_uids = tuple(sorted(self._series))
         self._features: dict[str, Mapping[str, Any]] = {}
-        self._context_sha = canonical_sha256(
-            {
-                "schema_version": "cohort-scope-public-tool-context/1",
-                "task_kind": self._task_kind,
-                "observation_cutoff": self._cutoff,
-                "series": {
-                    uid: [
-                        float(value) if math.isfinite(float(value)) else None
-                        for value in self._series[uid]
-                    ]
-                    for uid in self.scope_series_uids
-                },
-            }
-        )
+        context_payload: dict[str, Any] = {
+            "schema_version": "cohort-scope-public-tool-context/1",
+            "task_kind": self._task_kind,
+            "observation_cutoff": self._cutoff,
+            "series": {
+                uid: [
+                    float(value) if math.isfinite(float(value)) else None
+                    for value in self._series[uid]
+                ]
+                for uid in self.scope_series_uids
+            },
+        }
+        # The extra key exists only when the extra tool exists, so a gateway
+        # built without a binding hashes exactly what it hashed before.
+        if self._recipe is not None:
+            context_payload["batch_recipe"] = _plain(
+                getattr(self._recipe, "identity", {})
+            )
+        self._context_sha = canonical_sha256(context_payload)
 
     # -- PublicToolGateway protocol ---------------------------------------
     @property
@@ -111,7 +139,10 @@ class CohortScopePublicToolGateway:
         role: Any,
         stage: str,
     ) -> tuple[Mapping[str, Any], ...]:
-        if str(role) not in {"fast", "AgentRole.FAST"} or stage not in _FAST_STAGES:
+        allowed_stages = (
+            _BATCH_RECIPE_STAGES if self._recipe is not None else _FAST_STAGES
+        )
+        if str(role) not in {"fast", "AgentRole.FAST"} or stage not in allowed_stages:
             return ()
         series_argument = {
             "type": "object",
@@ -121,7 +152,7 @@ class CohortScopePublicToolGateway:
                 "series_uid": {"enum": list(self.scope_series_uids)},
             },
         }
-        return (
+        base: tuple[Mapping[str, Any], ...] = (
             {
                 "name": "summarize_series",
                 "description": (
@@ -140,6 +171,35 @@ class CohortScopePublicToolGateway:
                     "series' own public prefix."
                 ),
                 "input_schema": series_argument,
+            },
+        )
+        if self._recipe is None:
+            return base
+        return base + (
+            {
+                "name": _BATCH_RECIPE_TOOL,
+                "description": str(getattr(self._recipe, "description", "")),
+                "input_schema": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["cohort", "consumer_variant"],
+                    "properties": {
+                        "cohort": {
+                            "enum": [
+                                str(name) for name in
+                                getattr(self._recipe, "cohort_choices", ())
+                            ]
+                        },
+                        "consumer_variant": {
+                            "enum": [
+                                str(name) for name in
+                                getattr(
+                                    self._recipe, "consumer_variant_choices", ()
+                                )
+                            ]
+                        },
+                    },
+                },
             },
         )
 
@@ -172,7 +232,79 @@ class CohortScopePublicToolGateway:
             ok=False,
         )
 
+    def _call_batch_recipe(
+        self, arguments: Mapping[str, Any]
+    ) -> PublicToolReceipt:
+        """Route one bounded call to the binding and render its result back.
+
+        The gateway owns the argument wall and the budget; the binding owns
+        what the recipe is.  Nothing here interprets, scores or rewrites the
+        result -- it is handed to the Agent as the binding returned it.
+        """
+        name = _BATCH_RECIPE_TOOL
+        cohorts = [
+            str(item) for item in getattr(self._recipe, "cohort_choices", ())
+        ]
+        variants = [
+            str(item)
+            for item in getattr(self._recipe, "consumer_variant_choices", ())
+        ]
+        if (
+            not isinstance(arguments, Mapping)
+            or set(arguments) != {"cohort", "consumer_variant"}
+        ):
+            return self._refuse(
+                name, arguments, "INVALID_TOOL_ARGUMENTS",
+                {
+                    "required_arguments": ["cohort", "consumer_variant"],
+                    "received_argument_names": sorted(
+                        str(key) for key in arguments
+                    ) if isinstance(arguments, Mapping) else [],
+                    "allowed_cohorts": cohorts,
+                    "allowed_consumer_variants": variants,
+                },
+            )
+        cohort = str(arguments["cohort"])
+        variant = str(arguments["consumer_variant"])
+        if cohort not in cohorts:
+            return self._refuse(
+                name, arguments, "COHORT_OUTSIDE_TOOL_SCOPE",
+                {"allowed_cohorts": cohorts},
+            )
+        if variant not in variants:
+            return self._refuse(
+                name, arguments, "CONSUMER_VARIANT_OUTSIDE_TOOL_SCOPE",
+                {"allowed_consumer_variants": variants},
+            )
+        if self.calls >= self.maximum_calls:
+            return self._refuse(
+                name, arguments, "WORKSPACE_TOOL_BUDGET_EXHAUSTED",
+                {"calls_used": self.calls, "maximum_calls": self.maximum_calls},
+            )
+        result = _plain(
+            self._recipe.run(cohort=cohort, consumer_variant=variant)
+        )
+        self.calls += 1
+        self.call_log.append(
+            {
+                "tool_name": name,
+                "cohort": cohort,
+                "consumer_variant": variant,
+                "ok": True,
+            }
+        )
+        return PublicToolReceipt.create(
+            tool_name=name,
+            arguments=arguments,
+            public_result=result,
+            context_sha=self.context_sha,
+        )
+
     def call(self, name: str, arguments: Mapping[str, Any]) -> PublicToolReceipt:
+        if name == _BATCH_RECIPE_TOOL:
+            if self._recipe is None:
+                raise PermissionError(f"undeclared public tool: {name}")
+            return self._call_batch_recipe(arguments)
         if name not in _TOOL_NAMES:
             # Unreachable through the stage loop, which rejects an undeclared
             # tool before calling.  Kept as a hard error for direct misuse.
@@ -271,7 +403,10 @@ class CohortScopePublicToolGateway:
             "workspace_tool_calls_refused": self.refused_calls,
             "workspace_tool_call_budget": self.maximum_calls,
             "distinct_series_observed": len(
-                {row["series_uid"] for row in self.call_log if row["ok"]}
+                {
+                    row["series_uid"] for row in self.call_log
+                    if row["ok"] and "series_uid" in row
+                }
             ),
             "refusal_reasons": sorted(
                 {str(row["reason"]) for row in self.call_log if not row["ok"]}
