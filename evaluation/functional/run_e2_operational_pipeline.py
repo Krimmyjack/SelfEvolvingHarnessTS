@@ -22,6 +22,7 @@ import json
 import shutil
 import sys
 import time
+import traceback
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -60,15 +61,21 @@ from SelfEvolvingHarnessTS.methods.ttha.harness import (  # noqa: E402
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (  # noqa: E402
     compile_snapshot,
 )
+from SelfEvolvingHarnessTS.methods.ttha.harness.store import (  # noqa: E402
+    SnapshotStore,
+)
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: E402
     resolve_harness_view,
 )
 
 PROTOCOL_VERSION = "operational_pipeline_v2"
+PROTOCOL_VERSION_MULTI = "operational_pipeline_v3"
 E2 = PROJECT_ROOT / "artifacts" / "functional" / "e2"
-# v1 is the #21 record and is never rewritten.
+# v1 (#21) and v2 (#22) are their runs' records and are never rewritten.
 OUT_JSON = E2 / "operational_pipeline_v2.json"
 OUT_MD = E2 / "operational_pipeline_v2.md"
+OUT_JSON_MULTI = E2 / "operational_pipeline_v3.json"
+OUT_MD_MULTI = E2 / "operational_pipeline_v3.md"
 
 WORK_ROOT = PROJECT_ROOT / "_scratch" / "operational_v1"
 STORE_ROOT = WORK_ROOT / "store"
@@ -97,6 +104,10 @@ WINDOW_TASK_D = FC.WINDOWS["task_D"]
 LLM_CALL_BUDGET_TOTAL = 20
 LLM_CALL_BUDGET_PER_EPISODE = int(FC.LLM_CALL_BUDGET_PER_EPISODE)
 RETRAIN_BUDGET = 300
+# K = 3 trajectories share one budget; a trajectory that cannot start is
+# reported as not started rather than squeezed.
+LLM_CALL_BUDGET_MULTI = 24
+RETRAIN_BUDGET_MULTI = 450
 MAX_TRANSPORT_FAILURES = 3
 
 
@@ -125,7 +136,13 @@ FROZEN_SURFACE_V3: tuple[str, ...] = tuple(SSU.FROZEN_SURFACE_V2) + (
 # ttha:schema_contracts, so every snapshot identity moves; no measurement
 # does.
 SCHEMA_CONTRACTS_FILE = "methods/ttha/schema_contracts.py"
+RUNNER_FILE = "evaluation/functional/run_e2_operational_pipeline.py"
 FROZEN_SURFACE_V4: tuple[str, ...] = FROZEN_SURFACE_V3 + (SCHEMA_CONTRACTS_FILE,)
+# v5 adds this runner, now tracked, so a concurrent edit to the thing
+# driving the protocol is caught like any other frozen member.
+FROZEN_SURFACE_V5: tuple[str, ...] = FROZEN_SURFACE_V4 + (RUNNER_FILE,)
+# v6 == v5: the only file this round touches is the runner, already in.
+FROZEN_SURFACE_V6: tuple[str, ...] = FROZEN_SURFACE_V5
 A1_TOUCHED: tuple[dict[str, str], ...] = (
     {
         "path": SCHEMA_CONTRACTS_FILE,
@@ -183,7 +200,7 @@ class Blocked(RuntimeError):
 
 def _freeze() -> dict[str, str]:
     frozen: dict[str, str] = {}
-    for name in sorted(set(FROZEN_SURFACE_V4)):
+    for name in sorted(set(FROZEN_SURFACE_V6)):
         path = PROJECT_ROOT / name
         if not path.is_file():
             raise SystemExit("frozen surface member is missing: %s" % name)
@@ -238,6 +255,10 @@ class Budget:
     @property
     def left(self) -> int:
         return self.llm_total - self.llm_used
+
+    @property
+    def retrains_left(self) -> int:
+        return self.retrain_total - self.retrains_charged
 
 
 # ----------------------------------------------------- what was fixed first
@@ -398,8 +419,11 @@ P1_POST_SHA = {
     COMPILER_FILE: (
         "61cc3b4538baa17a0b1bbe8458c86a224f884167ded56296f8a87629b0ae5eb5"
     ),
+    # O1 regenerated this deliberately after A1 moved
+    # ttha:schema_contracts; the value was predicted before the write and
+    # matched byte for byte, and h0 now passes verify_lock=True again.
     H0_LOCK_FILE: (
-        "e5a49cd6ae6231bf2ca6daf2ac66e2b064d1f3a3e4b6db6b2d5092820b788d5d"
+        "5be7bddc92a2928701bc11408082d3e0f48f0703843a13c0d49e0491c1f71c4d"
     ),
 }
 
@@ -510,17 +534,22 @@ def stage_p2_gate(budget: Budget) -> dict[str, Any]:
 
 
 # --------------------------------------------------- the one continuous store
-def stage_store() -> tuple[dict[str, Any], dict[str, Any]]:
-    """Bootstrap plus the all-source pooled Guidance card.  0 LLM."""
+def stage_store(label: str = "single") -> tuple[dict[str, Any], dict[str, Any]]:
+    """Bootstrap plus the all-source pooled Guidance card.  0 LLM.
+
+    Each trajectory gets its own directory, so "zero shared state" is
+    checkable on disk afterwards and not merely asserted.
+    """
     started = time.perf_counter()
-    if STORE_ROOT.exists():
-        shutil.rmtree(STORE_ROOT)
+    root = STORE_ROOT / label
+    if root.exists():
+        shutil.rmtree(root)
     target = FC._target(VARIANT)
     card = bridge.compile_skill_card(target)
     card_text = bridge.render_skill_card(card)
     payload = FC._card_payload(target, card, card_text)
     guarantees = ssi._assert_guidance_only(payload)
-    FC.STORE_ROOT = STORE_ROOT
+    FC.STORE_ROOT = root
     slot = FC._build_store(SLOT, payload)
     if slot.get("status") != "REGISTERED":
         raise Blocked(
@@ -561,8 +590,9 @@ def stage_store() -> tuple[dict[str, Any], dict[str, Any]]:
             ),
             "guidance_only_guarantees": wvc._plain(guarantees),
         },
+        "trajectory_label": label,
         "store": {
-            "root": _repo_rel(STORE_ROOT / SLOT / "snapshots"),
+            "root": _repo_rel(root / SLOT / "snapshots"),
             "h0_runtime_bundle_sha": slot["h0_runtime_bundle_sha"],
             "runtime_bundle_sha": slot["runtime_bundle_sha"],
             "harness_content_sha": slot["harness_content_sha"],
@@ -598,6 +628,60 @@ def _search(window: Mapping[str, Any], cohort: Mapping[str, Any]) -> Any:
     )
 
 
+def _clause_programs(clauses: Sequence[Mapping[str, Any]]) -> dict[str, list[str]]:
+    """Which menu programs each Guidance clause actually names.
+
+    Read off the clause text against the frozen program menu.  This is the
+    machine's reading of the card, not the Agent's account of it.
+    """
+    menu = [str(name) for name in FC.TREATMENTS]
+    return {
+        str(clause["clause_id"]): sorted(
+            program for program in menu if program in str(clause["text"])
+        )
+        for clause in clauses
+    }
+
+
+def _clause_overlap(
+    *, cited: Sequence[str], shortlist: Sequence[str],
+    clause_programs: Mapping[str, Sequence[str]],
+) -> dict[str, Any]:
+    """A2: does the shortlist contain what the cited clauses name.
+
+    Recorded only.  Nothing is enforced, no prompt changes, and a zero
+    overlap is not an error -- the Agent may cite a clause for a reason
+    other than its named program.
+    """
+    cited = [str(item) for item in cited]
+    shortlist = [str(item) for item in shortlist]
+    named = sorted({
+        program
+        for clause in cited
+        for program in (clause_programs.get(clause) or ())
+    })
+    overlap = sorted(set(named) & set(shortlist))
+    return {
+        "clauses_cited": cited,
+        "programs_named_by_cited_clauses": named,
+        "shortlist": shortlist,
+        "overlap": overlap,
+        "overlap_count": len(overlap),
+        "cited_clauses_that_name_a_program": sorted(
+            clause for clause in cited if clause_programs.get(clause)
+        ),
+        "shortlist_entries_named_by_no_cited_clause": sorted(
+            set(shortlist) - set(named)
+        ),
+        "how_it_is_computed": (
+            "each clause's text is scanned against the frozen program menu; "
+            "skill_clause_use records what the Agent says it relied on, this "
+            "records what those clauses actually name.  Recorded, never "
+            "enforced."
+        ),
+    }
+
+
 def _gate(
     search: Any, snapshot: Any, record: Mapping[str, Any], *, reused: bool,
 ) -> dict[str, Any]:
@@ -626,8 +710,24 @@ def _gate(
 def _step(
     *, tag: str, window: Mapping[str, Any], cohort: Mapping[str, Any],
     slot: dict[str, Any], local_skill: str | None, budget: Budget,
+    box: dict[str, Any], clause_programs: Mapping[str, Sequence[str]],
 ) -> dict[str, Any]:
-    """One task window: retrieve, decide through the frozen path, then gate."""
+    """One task window: retrieve, decide through the frozen path, then gate.
+
+    ``box`` is mounted on the artifact payload before this call, so a stop
+    anywhere below still leaves the stage on the record.
+    """
+    box.update({
+        "step": tag,
+        "entered": True,
+        "window_id": str(window["window_id"]),
+        "window": {
+            k: v for k, v in window.items()
+            if not str(k).startswith("reference_")
+        },
+        "local_skill_expected": local_skill,
+        "completed": False,
+    })
     search = _search(window, cohort)
     snapshot = slot["_snapshot"]
     view = {"slot": slot["slot"], "_snapshot": snapshot}
@@ -658,6 +758,15 @@ def _step(
                 "%s produced no payload: %s" % (tag, record["stopped"]),
             )
         reused = False
+    box.update({
+        "mode": record.get("mode"),
+        "card_hit": bool((record.get("retrieval") or {}).get("hit")),
+        "local_skill_hit": (record.get("retrieval") or {}).get("local_skill_hit"),
+        "shortlist": list(record.get("shortlist") or ()),
+        "clauses_cited": list(record.get("skill_clause_use") or ()),
+        "llm_calls": int(record.get("llm_calls") or 0),
+        "episode_decided": True,
+    })
     if not (record.get("retrieval") or {}).get("hit"):
         raise Blocked(
             "SOURCE_DELIVERY_BREAK",
@@ -673,6 +782,8 @@ def _step(
     budget.charge_retrains(int(search.retrains))
     row = {
         "step": tag,
+        "entered": True,
+        "completed": True,
         "window_id": str(window["window_id"]),
         "window": {
             k: v for k, v in window.items() if not str(k).startswith("reference_")
@@ -681,6 +792,11 @@ def _step(
         "card_hit": bool((record.get("retrieval") or {}).get("hit")),
         "clauses_cited": list(record.get("skill_clause_use") or ()),
         "clauses_available": list(record.get("skill_clause_ids_available") or ()),
+        "clause_shortlist_overlap": _clause_overlap(
+            cited=record.get("skill_clause_use") or (),
+            shortlist=record.get("shortlist") or (),
+            clause_programs=clause_programs,
+        ),
         "local_skill_expected": local_skill,
         "local_skill_hit": (record.get("retrieval") or {}).get("local_skill_hit"),
         "reuse_adopted": record.get("reuse_adopted"),
@@ -715,6 +831,7 @@ def _step(
         "store_runtime_bundle_sha": slot.get("runtime_bundle_sha"),
         "snapshot_runtime_bundle_sha": snapshot.runtime_bundle_sha,
     }
+    box.update(row)
     print(
         "OP %-8s %-14s %-26s -> %-26s | sup %s del %s | harm %s | gate %s | "
         "retrains %d llm %d"
@@ -732,6 +849,130 @@ def _step(
         flush=True,
     )
     return {"row": row, "record": record, "search": search, "gate": gate}
+
+
+# ------------------------------------------------- the Scope/Risk selector
+SELECTOR_ID = "earliest_eligible_scope_risk_episode"
+SELECTOR_CONTRACT: dict[str, Any] = {
+    "selector": SELECTOR_ID,
+    "what_it_does": (
+        "walks this run's own completed episodes in time order and returns "
+        "the first one whose adopted plan left an evaluation series below the "
+        "%+.3f harm line.  That episode, unchanged, is what the existing "
+        "attribution fold is handed." % HARM_THRESHOLD
+    ),
+    "eligibility": [
+        "the episode completed in this run",
+        "it adopted a non-identity plan",
+        "its delayed window is revealed",
+        "its worst per-evaluation-series delayed gain is below the harm line",
+    ],
+    "what_it_never_reads": [
+        "candidates the episode did not adopt",
+        "task_D or any window later than the one being attributed",
+        "the #17 / #19 / #21 / #22 artifacts",
+        "any sealed outcome",
+    ],
+    "why": (
+        "#23 ran three trajectories that each produced a textbook "
+        "aggregate-masks-per-series harm at task_A and the protocol looked "
+        "past all three, because attribution was wired to task_C alone.  The "
+        "window was the defect, not the fold."
+    ),
+    "what_it_does_not_touch": (
+        "the fold itself, the Risk thresholds, the ladder, the two keys, the "
+        "menu, the prompts and the SELECTION_MISS adapter reading are all "
+        "unchanged; the SELECTION_MISS case stays on file, frozen"
+    ),
+}
+
+
+def _min_per_series(row: Mapping[str, Any]) -> float | None:
+    """The worst per-evaluation-series delayed gain of what was adopted."""
+    per_series = (
+        row.get("per_eval_series_delayed_after_gate")
+        or row.get("per_eval_series_delayed_before_gate")
+        or {}
+    )
+    if not per_series:
+        return None
+    return min(float(value) for value in per_series.values())
+
+
+def select_scope_risk_episode(
+    rows: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Earliest eligible Scope/Risk episode, or nothing.  0 LLM, 0 retrains."""
+    considered: list[dict[str, Any]] = []
+    selected: Mapping[str, Any] | None = None
+    for row in rows:
+        plan = dict(row.get("plan_after_gate") or {})
+        adopted = bool(plan) and str(plan.get("program")) != IDENTITY
+        revealed = row.get("delayed_after_gate") is not None
+        completed = bool(row.get("completed"))
+        worst = _min_per_series(row)
+        crossed = worst is not None and float(worst) < HARM_THRESHOLD
+        eligible = bool(completed and adopted and revealed and crossed)
+        if not completed:
+            why = "the episode did not complete"
+        elif not adopted:
+            why = "the episode adopted identity, so there is nothing to blame"
+        elif not revealed:
+            why = "its delayed window is not revealed"
+        elif worst is None:
+            why = "no per-evaluation-series reading is on the record"
+        elif not crossed:
+            why = (
+                "its worst evaluation series is %+.6f, at or above the %+.3f "
+                "line" % (worst, HARM_THRESHOLD)
+            )
+        else:
+            why = "eligible"
+        considered.append({
+            "step": row.get("step"),
+            "episode_id": row.get("episode_id"),
+            "adopted_plan": plan or None,
+            "delayed_aggregate_gain": row.get("delayed_after_gate"),
+            "min_per_series_delayed_gain": worst,
+            "eligible": eligible,
+            "why": why,
+        })
+        if eligible and selected is None:
+            selected = row
+    if selected is None:
+        return {
+            "selector": SELECTOR_ID,
+            "contract": SELECTOR_CONTRACT,
+            "verdict": "NO_ELIGIBLE_SCOPE_RISK_EPISODE",
+            "selected_step": None,
+            "selected_episode_id": None,
+            "considered": considered,
+            "reason": (
+                "no completed, adopted, revealed episode in this run left an "
+                "evaluation series below %+.3f" % HARM_THRESHOLD
+            ),
+            "not_the_same_as": (
+                "NO_ACTIONABLE_FAULT: that is the fold's own verdict on one "
+                "episode, and the task_C SELECTION_MISS reading is untouched "
+                "and still on file"
+            ),
+        }
+    return {
+        "selector": SELECTOR_ID,
+        "contract": SELECTOR_CONTRACT,
+        "verdict": "SELECTED",
+        "selected_step": str(selected.get("step")),
+        "selected_episode_id": selected.get("episode_id"),
+        "selected_plan": dict(selected.get("plan_after_gate") or {}),
+        "min_per_series_delayed_gain": _min_per_series(selected),
+        "delayed_aggregate_gain": selected.get("delayed_after_gate"),
+        "harmed_eval_series": list(selected.get("harmed_after_gate") or ()),
+        "considered": considered,
+        "earlier_steps_skipped": [
+            row["step"] for row in considered
+            if row["step"] != str(selected.get("step")) and not row["eligible"]
+        ],
+    }
 
 
 # ------------------------------------------------------- attribution and Slow
@@ -782,6 +1023,7 @@ def stage_attribution(record: Mapping[str, Any], snapshot: Any) -> dict[str, Any
 def stage_slow(
     *, slot: dict[str, Any], attribution: Mapping[str, Any],
     task_c: Mapping[str, Any], budget: Budget, sink: dict[str, Any],
+    fault_step: str = "task_C",
 ) -> dict[str, Any]:
     """One proposal, one pinned backend, one surface, one draw.
 
@@ -829,7 +1071,7 @@ def stage_slow(
             "artifact is quoted to the Slow Agent"
         ),
         "the_failing_episode": {
-            "step": "task_C",
+            "step": fault_step,
             "mode": task_c["record"].get("mode"),
             "adopted_plan": dict(task_c["record"]["final_plan"]),
             "support_aggregate_gain": (task_c["record"].get("support") or {}).get(
@@ -860,7 +1102,7 @@ def stage_slow(
                 "delayed": row["delayed_before_gate"],
                 "harmed": row["harmed_before_gate"],
             }
-            for row in task_c["earlier_rows"]
+            for row in (task_c.get("earlier_rows") or ())
         ],
         "what_the_runtime_folded": attribution["with_per_series_risk_reading"][
             "attribution"
@@ -1200,10 +1442,10 @@ def _verdict(payload: Mapping[str, Any]) -> dict[str, Any]:
         ),
         "attribution_cause": payload["attribution"]["cause_code"],
         "surfaces_changed": list(
-            slow["application"].get("source_surfaces_changed") or ()
+            (slow.get("application") or {}).get("source_surfaces_changed") or ()
         ),
         "task_d_snapshot": task_d and task_d["snapshot_runtime_bundle_sha"],
-        "post_patch_snapshot": slow["snapshot_after"],
+        "post_patch_snapshot": slow.get("snapshot_after"),
     }
     if task_d is None:
         return {"verdict": "NO_POST_UPDATE_WINDOW",
@@ -1313,68 +1555,62 @@ def _fmt(value: Any) -> str:
         return str(value)
 
 
-def run(*, gate_only: bool = False) -> int:
+def _mount(container: dict[str, Any], key: str, seed: Any) -> Any:
+    """A1: put a stage's record on the payload before the stage runs.
+
+    The recording family that bit #21 twice and #22 once was always the same
+    shape -- the writer was reached, but the field had never been attached.
+    Every stage below mounts its container first and fills it in place, so a
+    stop anywhere leaves every earlier stage complete and the stopping stage
+    marked entered-but-not-completed.
+    """
+    container[key] = seed
+    return seed
+
+
+def _trajectory(
+    *, label: str, budget: Budget, cohort: Mapping[str, Any],
+    cap: Mapping[str, Any], sink: dict[str, Any],
+) -> dict[str, Any]:
+    """One complete trajectory, from a store of its own to task_D."""
     started = time.perf_counter()
-    before = _freeze()
-    budget = Budget(LLM_CALL_BUDGET_TOTAL, RETRAIN_BUDGET)
-    payload: dict[str, Any] = {
-        "protocol_version": PROTOCOL_VERSION,
-        "role": (
-            "one continuous, un-relayed run of the V1 Harness: Source use, "
-            "target adaptation, lifecycle, attribution, Slow edit, next-task "
-            "behaviour"
-        ),
-        "pre_registered": PRE_REGISTERED,
-        "p1_touched_files": [dict(row) for row in P1_TOUCHED],
-        "a1_touched_files": [dict(row) for row in A1_TOUCHED],
-        "frozen_surface_before": {"files": len(before), "sha256": before},
-        "llm_call_budget": LLM_CALL_BUDGET_TOTAL,
-        "retrain_budget": RETRAIN_BUDGET,
-    }
-    for row in payload["p1_touched_files"]:
-        row["sha256_after_p1"] = before[row["path"]]
-    for row in payload["a1_touched_files"]:
-        row["sha256_after_a1"] = before[row["path"]]
+    sink.update({
+        "label": label, "entered": True, "completed": False,
+        "verdict": None, "verdict_reason": None,
+    })
+    stages = _mount(sink, "stages", {})
+    trajectory: list[dict[str, Any]] = _mount(sink, "trajectory", [])
     try:
-        payload["p2_non_regression_gate"] = stage_p2_precondition()
-        payload["guard_after_p2"] = _guard_frozen(before, "the pipeline")
-        if gate_only:
-            payload.update({
-                "overall_verdict": "P2_ONLY",
-                "overall_verdict_reason": "asked to stop after the gate",
-                "llm_call_count": budget.llm_used,
-                "consumer_retrains_total": budget.retrains_charged,
-                "wall_seconds": time.perf_counter() - started,
-                "frozen_surface_after": _verify(before),
-            })
-            return _write(payload, dry=True)
+        store_box = _mount(stages, "store", {"entered": True, "completed": False})
+        slot, store_record = stage_store(label)
+        store_box.clear()
+        store_box.update(store_record)
+        store_box["completed"] = True
+        clause_programs = _clause_programs(store_record["card"]["clauses"])
+        sink["clause_programs"] = clause_programs
 
-        cohort, cap, roster = _cohort()
-        slot, store_record = stage_store()
-        payload["store"] = store_record
-        payload["cohort"] = {
-            "name": COHORT_NAME, "roster": roster,
-            "eval_uids": list(cohort["eval_uids"]),
-            "rebuilt_from": "what #17 materialized; no csv is parsed again",
-        }
+        def step(tag: str, window: Mapping[str, Any], local_skill: str | None):
+            box: dict[str, Any] = {"step": tag, "entered": False, "completed": False}
+            trajectory.append(box)
+            return _step(
+                tag=tag, window=window, cohort=cohort, slot=slot,
+                local_skill=local_skill, budget=budget, box=box,
+                clause_programs=clause_programs,
+            )
 
-        trajectory: list[dict[str, Any]] = []
-        # --- task_A: full-price adaptation on the Source card ---------------
-        step_a = _step(
-            tag="task_A", window=WINDOW_TASK_A, cohort=cohort, slot=slot,
-            local_skill=None, budget=budget,
-        )
-        trajectory.append(step_a["row"])
+        step_a = step("task_A", WINDOW_TASK_A, None)
 
-        # --- lifecycle: Draft, out-of-selection probe, promotion ------------
+        life = _mount(stages, "lifecycle", {
+            "entered": True, "completed": False,
+            "probe_window": dict(WINDOW_PROBE),
+            "path": dict(FC.UPDATE_PATH),
+        })
         draft = FC._persist_draft(
-            slot=slot, record=step_a["record"], target=FC._target(VARIANT),
-            arm=ARM,
+            slot=slot, record=step_a["record"], target=FC._target(VARIANT), arm=ARM,
         )
+        life["draft"] = _public(draft)
         probe = None
-        promotion: dict[str, Any] = {
-            "promoted": False, "reason": draft.get("reason")
-        }
+        promotion: dict[str, Any] = {"promoted": False, "reason": draft.get("reason")}
         probe_retrains = 0
         if draft.get("written"):
             probe = FC._probe(
@@ -1383,19 +1619,15 @@ def run(*, gate_only: bool = False) -> int:
             )
             probe_retrains = int(probe["consumer_retrains"])
             budget.charge_retrains(probe_retrains)
+            life["probe"] = _public(probe)
+            life["probe_consumer_retrains"] = probe_retrains
             promotion = FC._promote(slot=slot, probe=probe, draft=draft)
-        payload["lifecycle"] = {
-            "draft": _public(draft),
-            "probe": _public(probe),
-            "probe_window": dict(WINDOW_PROBE),
-            "probe_consumer_retrains": probe_retrains,
-            "promotion": _public(promotion),
-            "path": dict(FC.UPDATE_PATH),
-        }
+        life["promotion"] = _public(promotion)
+        life["completed"] = True
         print(
-            "OP lifecycle    draft=%s probe=%s promoted=%s skill=%s"
+            "OP[%s] lifecycle    draft=%s probe=%s promoted=%s skill=%s"
             % (
-                bool(draft.get("written")),
+                label, bool(draft.get("written")),
                 None if probe is None else round(float(probe["macro_gain"]), 6),
                 bool(promotion.get("promoted")),
                 promotion.get("retrievable_skill_id"),
@@ -1404,123 +1636,403 @@ def run(*, gate_only: bool = False) -> int:
         )
         local_skill = promotion.get("retrievable_skill_id")
         if not local_skill:
+            adopted = dict(step_a["record"]["final_plan"])
+            if str(adopted["program"]) == IDENTITY:
+                raise Blocked(
+                    "NO_ADOPTABLE_PLAN_SAMPLE",
+                    "task_A found nothing the frozen v2 ladder would adopt, so "
+                    "there was no Skill to form; the lifecycle was never "
+                    "reached and the adoption above it abstained honestly",
+                )
             raise Blocked(
                 "LOCAL_LIFECYCLE_BREAK",
-                "no Target-local Skill reached ACTIVE: %s"
+                "a plan was adopted but no Target-local Skill reached ACTIVE: %s"
                 % (promotion.get("reason") or draft.get("reason")),
             )
 
-        # --- task_B: recall and reuse ---------------------------------------
-        step_b = _step(
-            tag="task_B", window=WINDOW_TASK_B, cohort=cohort, slot=slot,
-            local_skill=str(local_skill), budget=budget,
-        )
-        trajectory.append(step_b["row"])
-
-        # --- task_C: the already-exposed 2025 window ------------------------
-        step_c = _step(
-            tag="task_C", window=WINDOW_TASK_C, cohort=cohort, slot=slot,
-            local_skill=str(local_skill), budget=budget,
-        )
-        trajectory.append(step_c["row"])
-        step_c["earlier_rows"] = [step_a["row"], step_b["row"]]
-        payload["trajectory"] = trajectory
-        payload["guard_after_task_c"] = _guard_frozen(before, "attribution")
-
-        # --- attribution on this run's own record ---------------------------
-        attribution = stage_attribution(step_c["record"], slot["_snapshot"])
-        payload["attribution"] = _public(attribution)
-
-        # --- Slow: one draw, one surface ------------------------------------
-        # A2: the sink is attached to the payload before the call, so
-        # whatever raises inside stage_slow, the per-draw record and the
-        # proposal text are already where the artifact writer will find them.
-        slow_sink: dict[str, Any] = {"ran": False}
-        payload["slow_edit"] = slow_sink
-        no_fault = bool(
-            str(attribution["cause_code"]) == "NO_ACTIONABLE_FAULT"
-            or not step_c["row"]["harmed_before_gate"]
-        )
-        payload["no_fault_sample"] = {
-            "this_trajectory_produced_no_fault": no_fault,
-            "task_c_harmed_eval_series": list(step_c["row"]["harmed_before_gate"]),
-            "attribution_cause": str(attribution["cause_code"]),
-            "rule": (
-                "with nothing past the harm line the fold has nothing "
-                "actionable to name, so links 6 to 9 go untested in this "
-                "sample.  Nothing is re-thrown and no harm is seeded."
-            ) if no_fault else "not applicable: this trajectory produced a fault",
+        step_b = step("task_B", WINDOW_TASK_B, str(local_skill))
+        step_c = step("task_C", WINDOW_TASK_C, str(local_skill))
+        step_c["earlier_rows"] = list(trajectory[:-1])
+        by_step = {
+            "task_A": step_a, "task_B": step_b, "task_C": step_c,
         }
+
+        sel_box = _mount(stages, "scope_risk_selector", {"entered": True})
+        selection = select_scope_risk_episode(
+            [step_a["row"], step_b["row"], step_c["row"]]
+        )
+        sel_box.clear()
+        sel_box.update(_public(selection))
+        print(
+            "OP[%s] selector     %s -> %s" % (
+                label, selection["verdict"], selection.get("selected_step"),
+            ),
+            flush=True,
+        )
+
+        att_box = _mount(stages, "attribution", {"entered": True, "completed": False})
+        fault_step = selection.get("selected_step")
+        fault = by_step.get(str(fault_step)) if fault_step else None
+        if fault is not None:
+            attribution = stage_attribution(fault["record"], slot["_snapshot"])
+            att_box.clear()
+            att_box.update(_public(attribution))
+            att_box["attributed_episode"] = str(fault_step)
+            att_box["completed"] = True
+        else:
+            attribution = {
+                "ran": False,
+                "cause_code": "NO_ELIGIBLE_SCOPE_RISK_EPISODE",
+                "first_stage": None,
+                "is_scope_risk_face": False,
+                "why": selection["reason"],
+            }
+            att_box.clear()
+            att_box.update(dict(attribution))
+            att_box["completed"] = True
+
+        slow_sink: dict[str, Any] = _mount(
+            stages, "slow_edit", {"entered": True, "ran": False},
+        )
+        no_fault = selection["verdict"] != "SELECTED"
+        _mount(stages, "no_fault_sample", {
+            "this_trajectory_produced_no_fault": no_fault,
+            "decided_by": (
+                "the Scope/Risk selector over every completed episode of this "
+                "run, not by task_C alone"
+            ),
+            "selector_verdict": selection["verdict"],
+            "selected_step": selection.get("selected_step"),
+            "attribution_cause": str(attribution["cause_code"]),
+        })
         if no_fault:
             slow_sink.update({
                 "ran": False,
                 "why_not_run": (
-                    "the trajectory reached task_C with no evaluation series "
-                    "past the harm line, so there is no fault sample to "
-                    "attribute a Scope/Risk edit to"
+                    "task_C left nothing past the harm line, so there is no "
+                    "fault sample to attribute a Scope/Risk edit to"
                 ),
             })
-            print("OP slow_edit    skipped: no fault sample this trajectory",
-                  flush=True)
+            print("OP[%s] slow_edit    skipped: no fault sample" % label, flush=True)
         else:
             slow = stage_slow(
-                slot=slot, attribution=attribution, task_c=step_c,
-                budget=budget, sink=slow_sink,
+                slot=slot, attribution=attribution, task_c=fault,
+                budget=budget, sink=slow_sink, fault_step=str(fault_step),
             )
             print(
-                "OP slow_edit    %s -> %s | snapshot %s -> %s"
+                "OP[%s] slow_edit    %s -> %s | snapshot %s -> %s"
                 % (
-                    slow["guard"]["statistic"], slow["guard"]["action"],
+                    label, slow["guard"]["statistic"], slow["guard"]["action"],
                     slow["snapshot_before"][:12], slow["snapshot_after"][:12],
                 ),
                 flush=True,
             )
-        payload["guard_after_slow"] = _guard_frozen(before, "task_D")
 
-        # --- task_D: the post-update window ---------------------------------
+        gate_box = _mount(stages, "task_d_missing_gate", {"entered": True})
         gate_d = FC._missing_gate(
             cohort["values"], cohort["eval_uids"], WINDOW_TASK_D, cap,
         )
-        payload["task_d_missing_gate"] = _public(gate_d)
+        gate_box.clear()
+        gate_box.update(_public(gate_d))
         if not gate_d["pass"]:
             raise Blocked(
-                "NO_POST_UPDATE_WINDOW",
-                "task_D does not clear the missing gate",
+                "NO_POST_UPDATE_WINDOW", "task_D does not clear the missing gate",
             )
-        step_d = _step(
-            tag="task_D", window=WINDOW_TASK_D, cohort=cohort, slot=slot,
-            local_skill=str(local_skill), budget=budget,
-        )
-        trajectory.append(step_d["row"])
-        payload["trajectory"] = trajectory
+        step_d = step("task_D", WINDOW_TASK_D, str(local_skill))
 
-        # --- criterion (ii) only if the harm did not recur -------------------
-        shadow = None
-        if not step_d["gate"].get("changed"):
-            shadow = stage_shadow(
-                task_c=step_c, snapshot_after=slot["_snapshot"],
-            )
-            payload["shadow_replay"] = _public(shadow)
+        if not no_fault and not step_d["gate"].get("changed"):
+            shadow_box = _mount(stages, "shadow_replay", {"entered": True})
+            shadow = stage_shadow(task_c=fault, snapshot_after=slot["_snapshot"])
+            shadow_box.clear()
+            shadow_box.update(_public(shadow))
+            sink["shadow_replay"] = shadow_box
 
-        payload["experience"] = stage_experience(trajectory)
-        outcome = _verdict(payload)
-        payload.update({
-            "overall_verdict": outcome["verdict"],
-            "overall_verdict_reason": outcome["reason"],
-            "overall_detail": _public(outcome.get("detail") or {}),
+        exp_box = _mount(stages, "experience", {"entered": True})
+        exp_box.clear()
+        exp_box.update(stage_experience(trajectory))
+
+        sink["slow_edit"] = slow_sink
+        sink["lifecycle"] = life
+        sink["attribution"] = att_box
+        sink["no_fault_sample"] = stages["no_fault_sample"]
+        outcome = _verdict(sink)
+        sink.update({
+            "verdict": outcome["verdict"],
+            "verdict_reason": outcome["reason"],
+            "verdict_detail": _public(outcome.get("detail") or {}),
+            "completed": True,
         })
     except Blocked as exc:
-        payload.update({
-            "overall_verdict": exc.verdict,
-            "overall_verdict_reason": exc.reason,
+        if exc.verdict in ("INSTRUMENT_DRIFT", "BUDGET_EXCEEDED"):
+            sink.update({
+                "verdict": exc.verdict, "verdict_reason": exc.reason,
+                "aborts_the_whole_protocol": True,
+            })
+            raise
+        sink.update({
+            "verdict": exc.verdict,
+            "verdict_reason": exc.reason,
             "stopped_at_first_block": True,
         })
-    except ConcurrentWrite as exc:
-        payload.update({
-            "overall_verdict": "CONCURRENT_WRITE_ABORT",
-            "overall_verdict_reason": str(exc),
+        for key in ("lifecycle", "attribution", "slow_edit", "no_fault_sample"):
+            if key in stages and key not in sink:
+                sink[key] = stages[key]
+    except ConcurrentWrite:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        # A trajectory that crashes stops itself, not the protocol; the
+        # traceback goes on the record so the other trajectories still count.
+        sink.update({
+            "verdict": "TRAJECTORY_RUNTIME_ERROR",
+            "verdict_reason": "%s: %s" % (type(exc).__name__, exc),
+            "traceback": traceback.format_exc(),
+            "stopped_at_first_block": True,
         })
+        for key in ("lifecycle", "attribution", "slow_edit", "no_fault_sample"):
+            if key in stages and key not in sink:
+                sink[key] = stages[key]
+    sink["wall_seconds"] = time.perf_counter() - started
+    sink["llm_calls"] = sum(
+        int(row.get("llm_calls") or 0) for row in trajectory
+    ) + int((stages.get("slow_edit") or {}).get("llm_calls") or 0)
+    sink["consumer_retrains"] = sum(
+        int(row.get("consumer_retrains") or 0) for row in trajectory
+    ) + int((stages.get("lifecycle") or {}).get("probe_consumer_retrains") or 0)
+    print(
+        "OP[%s] VERDICT %s | llm %d retrains %d"
+        % (label, sink["verdict"], sink["llm_calls"], sink["consumer_retrains"]),
+        flush=True,
+    )
+    return sink
+
+
+K_TRAJECTORIES = 3
+
+
+def _aggregate(trajectories: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    closed = [
+        str(t["label"]) for t in trajectories
+        if str(t.get("verdict")) == "OPERATIONAL_PIPELINE_CLOSES"
+    ]
+    reached_slow = [
+        str(t["label"]) for t in trajectories
+        if ((t.get("stages") or {}).get("slow_edit") or {}).get("ran")
+    ]
+    by_verdict: dict[str, list[str]] = {}
+    for t in trajectories:
+        by_verdict.setdefault(str(t.get("verdict")), []).append(str(t["label"]))
+    if closed:
+        verdict = "OPERATIONAL_PIPELINE_CLOSES_IN_K"
+        reason = (
+            "%d of %d trajectories closed the nine-link chain end to end: %s"
+            % (len(closed), len(trajectories), closed)
+        )
+    elif not reached_slow:
+        verdict = "PIPELINE_NEVER_EXERCISES_SLOW"
+        reason = (
+            "all %d trajectories stopped before the Slow edit; the chain's "
+            "last four links go untested in this sample" % len(trajectories)
+        )
+    else:
+        verdict = "PIPELINE_REACHES_SLOW_WITHOUT_CLOSING"
+        reason = (
+            "%s reached the Slow edit but no trajectory closed the chain"
+            % reached_slow
+        )
+    return {
+        "verdict": verdict,
+        "reason": reason,
+        "k": len(trajectories),
+        "k_fixed_before_the_run": K_TRAJECTORIES,
+        "closed": closed,
+        "reached_slow": reached_slow,
+        "by_verdict": by_verdict,
+        "every_trajectory_is_on_the_record": (
+            "K was fixed before the first draw; all %d ran to their own stop "
+            "and none was discarded, re-thrown or seeded" % len(trajectories)
+        ),
+    }
+
+
+def _shortlist_stability(
+    trajectories: Sequence[Mapping[str, Any]],
+    priors: Sequence[Mapping[str, Any]] = (),
+) -> dict[str, Any]:
+    """Every task_A draw this line has on record, in one table.
+
+    The overlap column is computed the same way for the historical draws as
+    for this run's: the cited clauses' own texts, scanned against the frozen
+    program menu.
+    """
+    clause_programs: dict[str, Any] = {}
+    for t in trajectories:
+        if t.get("clause_programs"):
+            clause_programs = dict(t["clause_programs"])
+            break
+    rows: list[dict[str, Any]] = []
+    for prior in priors:
+        row = dict(prior)
+        if clause_programs:
+            overlap = _clause_overlap(
+                cited=row.get("clauses_cited") or (),
+                shortlist=row.get("shortlist") or (),
+                clause_programs=clause_programs,
+            )
+            row["clause_shortlist_overlap"] = list(overlap["overlap"])
+            row["overlap_count"] = overlap["overlap_count"]
+        else:
+            row["clause_shortlist_overlap"] = None
+            row["overlap_count"] = None
+        rows.append(row)
+    for t in trajectories:
+        row = next(
+            (r for r in (t.get("trajectory") or ()) if r.get("step") == "task_A"),
+            None,
+        )
+        if row is None:
+            continue
+        overlap = row.get("clause_shortlist_overlap") or {}
+        rows.append({
+            "run": "operational_pipeline_v3/%s" % t["label"],
+            "shortlist": list(row.get("shortlist") or ()),
+            "clauses_cited": list(row.get("clauses_cited") or ()),
+            "clause_shortlist_overlap": list(overlap.get("overlap") or ()),
+            "overlap_count": overlap.get("overlap_count"),
+            "adopted": row.get("plan_after_gate"),
+            "support": row.get("support_before_gate"),
+            "delayed": row.get("delayed_before_gate"),
+            "ladder_path": (row.get("adoption_ladder") or {}).get("path"),
+        })
+    adopted_non_identity = [
+        r for r in rows
+        if r.get("adopted") and str(r["adopted"].get("program")) != IDENTITY
+    ]
+    with_overlap = [r for r in rows if (r.get("overlap_count") or 0) > 0]
+    return {
+        "draws": rows,
+        "n": len(rows),
+        "distinct_shortlists": len({tuple(r["shortlist"]) for r in rows}),
+        "adopted_a_program": len(adopted_non_identity),
+        "cited_clauses_naming_a_shortlisted_program": len(with_overlap),
+        "reading": (
+            "one table, %d draws, same card and same window.  Overlap is "
+            "computed from the clause texts against the frozen menu, not from "
+            "what the Agent said it used.  n is small and nothing here is a "
+            "causal claim." % len(rows)
+        ),
+    }
+
+
+PRIOR_TASK_A_DRAWS: tuple[dict, ...] = (
+    {
+        "run": "fresh_confirmation_v1 (#17) a5_pooled",
+        "shortlist": ["outlier_iqr", "outlier_mad"],
+        "clauses_cited": ["R1-2", "R1-1", "R3-1"],
+        "adopted": {"program": "outlier_mad", "excluded_series": []},
+        "support": 0.07248618783742994,
+        "delayed": 0.30637972777516714,
+        "ladder_path": "GATE_PASS_ADOPT_NAMED",
+    },
+    {
+        "run": "operational_pipeline_v1 (#21)",
+        "shortlist": ["repair_level_shift", "outlier_mad"],
+        "clauses_cited": ["R1-1", "R3-1"],
+        "adopted": {"program": "outlier_mad", "excluded_series": []},
+        "support": 0.07248618783742994,
+        "delayed": 0.30637972777516714,
+        "ladder_path": "GATE_PASS_ADOPT_NAMED",
+    },
+    {
+        "run": "operational_pipeline_v2 (#22)",
+        "shortlist": ["repair_level_shift", "hampel_filter"],
+        "clauses_cited": ["R1-1", "R1-2", "R1-3"],
+        "adopted": {"program": "identity", "excluded_series": []},
+        "support": 0.0,
+        "delayed": 0.0,
+        "ladder_path": "GATE_FAIL_FALLBACK_IDENTITY",
+    },
+)
+
+
+def run_multi(*, k: int = K_TRAJECTORIES) -> int:
+    """K trajectories, fixed before the first draw, all of them on the record."""
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_MULTI, RETRAIN_BUDGET_MULTI)
+    payload: dict[str, Any] = {
+        "protocol_version": PROTOCOL_VERSION_MULTI,
+        "role": (
+            "K pre-registered trajectories of the one-run operational "
+            "pipeline; K is fixed before the first draw and every trajectory "
+            "is reported whatever it does"
+        ),
+        "pre_registered": PRE_REGISTERED,
+        "k": k,
+        "k_rule": (
+            "fixed before the run.  No early exit, no re-throw, no seeded "
+            "harm.  A block stops its own trajectory only; the whole protocol "
+            "aborts only on CONCURRENT_WRITE_ABORT or INSTRUMENT_DRIFT."
+        ),
+        "p1_touched_files": [dict(row) for row in P1_TOUCHED],
+        "a1_touched_files": [dict(row) for row in A1_TOUCHED],
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_MULTI,
+        "retrain_budget": RETRAIN_BUDGET_MULTI,
+    }
+    for row in payload["p1_touched_files"]:
+        row["sha256_after_p1"] = before[row["path"]]
+    for row in payload["a1_touched_files"]:
+        row["sha256_after_a1"] = before[row["path"]]
+    trajectories: list[dict[str, Any]] = []
+    payload["trajectories"] = trajectories
+    global_abort: str | None = None
+    try:
+        payload["p2_non_regression_gate"] = stage_p2_precondition()
+        payload["guard_after_p2"] = _guard_frozen(before, "the first trajectory")
+        cohort, cap, roster = _cohort()
+        payload["cohort"] = {
+            "name": COHORT_NAME, "roster": roster,
+            "eval_uids": list(cohort["eval_uids"]),
+            "rebuilt_from": "what #17 materialized; no csv is parsed again",
+        }
+        for index in range(1, int(k) + 1):
+            label = "T%d" % index
+            sink: dict[str, Any] = {"label": label, "entered": False}
+            trajectories.append(sink)
+            if budget.left <= 0 or budget.retrains_left <= 0:
+                sink.update({
+                    "entered": False,
+                    "verdict": "BUDGET_EXHAUSTED_BEFORE_ENTRY",
+                    "verdict_reason": (
+                        "the budget was spent by the earlier trajectories; "
+                        "this one never started and is reported as such"
+                    ),
+                    "llm_calls": 0, "consumer_retrains": 0,
+                })
+                continue
+            _trajectory(
+                label=label, budget=budget, cohort=cohort, cap=cap, sink=sink,
+            )
+            _guard_frozen(before, "the next trajectory")
+    except ConcurrentWrite as exc:
+        global_abort = "CONCURRENT_WRITE_ABORT"
+        payload["global_abort_reason"] = str(exc)
+    except Blocked as exc:
+        if exc.verdict in ("INSTRUMENT_DRIFT", "BUDGET_EXCEEDED"):
+            global_abort = exc.verdict
+            payload["global_abort_reason"] = exc.reason
+        else:
+            raise
+    aggregate = _aggregate(trajectories)
+    payload["aggregate"] = aggregate
+    payload["shortlist_stability"] = _shortlist_stability(
+        trajectories, PRIOR_TASK_A_DRAWS,
+    )
     payload.update({
+        "overall_verdict": global_abort or aggregate["verdict"],
+        "overall_verdict_reason": (
+            payload.get("global_abort_reason") or aggregate["reason"]
+        ),
         "llm_call_count": budget.llm_used,
         "consumer_retrains_total": budget.retrains_charged,
         "exposure": {
@@ -1532,10 +2044,7 @@ def run(*, gate_only: bool = False) -> int:
             ],
             "beyond_17520": "SEALED, not read",
             "unopened_partition_read": "none",
-            "fresh_claim": (
-                "none: development level throughout, on partitions this line "
-                "has already opened"
-            ),
+            "fresh_claim": "none: development level throughout",
         },
         "wall_seconds": time.perf_counter() - started,
         "frozen_surface_after": _verify(before),
@@ -1545,11 +2054,758 @@ def run(*, gate_only: bool = False) -> int:
         payload["overall_verdict_reason"] = (
             "the frozen surface moved during the run; the reading is void"
         )
+    return _write(payload, out_json=OUT_JSON_MULTI, out_md=OUT_MD_MULTI)
+
+
+def run(*, gate_only: bool = False, force: bool = False) -> int:
+    """The single-trajectory path #22 ran.  Kept for reproducibility."""
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_TOTAL, RETRAIN_BUDGET)
+    payload: dict[str, Any] = {
+        "protocol_version": PROTOCOL_VERSION,
+        "role": "one continuous, un-relayed run of the V1 Harness",
+        "pre_registered": PRE_REGISTERED,
+        "p1_touched_files": [dict(row) for row in P1_TOUCHED],
+        "a1_touched_files": [dict(row) for row in A1_TOUCHED],
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_TOTAL,
+        "retrain_budget": RETRAIN_BUDGET,
+    }
+    for row in payload["p1_touched_files"]:
+        row["sha256_after_p1"] = before[row["path"]]
+    for row in payload["a1_touched_files"]:
+        row["sha256_after_a1"] = before[row["path"]]
+    payload["p2_non_regression_gate"] = stage_p2_precondition()
+    if gate_only:
+        payload.update({
+            "overall_verdict": "P2_ONLY",
+            "overall_verdict_reason": "asked to stop after the precondition",
+            "llm_call_count": 0, "consumer_retrains_total": 0,
+            "wall_seconds": time.perf_counter() - started,
+            "frozen_surface_after": _verify(before),
+        })
+        return _write(payload, dry=True)
+    if OUT_JSON.exists() and not force:
+        raise SystemExit(
+            "%s already holds the #22 record; pass --force to overwrite it"
+            % _repo_rel(OUT_JSON)
+        )
+    cohort, cap, roster = _cohort()
+    payload["cohort"] = {
+        "name": COHORT_NAME, "roster": roster,
+        "eval_uids": list(cohort["eval_uids"]),
+    }
+    sink: dict[str, Any] = {}
+    payload["trajectory_record"] = sink
+    _trajectory(label="single", budget=budget, cohort=cohort, cap=cap, sink=sink)
+    for key in ("store", "lifecycle", "attribution", "slow_edit"):
+        if key in (sink.get("stages") or {}):
+            payload[key] = sink["stages"][key]
+    payload["trajectory"] = sink.get("trajectory") or []
+    payload.update({
+        "overall_verdict": sink.get("verdict"),
+        "overall_verdict_reason": sink.get("verdict_reason"),
+        "overall_detail": sink.get("verdict_detail") or {},
+        "llm_call_count": budget.llm_used,
+        "consumer_retrains_total": budget.retrains_charged,
+        "wall_seconds": time.perf_counter() - started,
+        "frozen_surface_after": _verify(before),
+    })
     return _write(payload)
 
 
-# ---------------------------------------------------------------- the report
+# --------------------------------------------- Part B: the banked completion
+BANKED_SOURCE = E2 / "operational_pipeline_v3.json"
+BANKED_ROOT = WORK_ROOT / "banked"
+BANKED_STEPS = ("task_A", "task_B", "task_C")
+
+
+class _BankedRoster:
+    """Just the two rosters the Slow evidence block quotes.  Measures nothing."""
+
+    def __init__(self, train: Sequence[str], evaluation: Sequence[str]) -> None:
+        self.train_uids = [str(uid) for uid in train]
+        self.eval_uids = [str(uid) for uid in evaluation]
+
+
+def _banked_record(row: Mapping[str, Any], card_id: str) -> dict[str, Any]:
+    """A #23 ledger row in the shape the existing fold already consumes.
+
+    Every field is copied from the row and named with where it came from.
+    The one thing the ledger does not carry is a mask candidate, so for a
+    trajectory that asked for a mask round the reconstructed candidate set
+    is the full-batch plans alone; that is declared, not smoothed over.
+    """
+    pool = dict((row.get("adoption_ladder") or {}).get("full_batch_pool") or {})
+    per_series = dict(
+        row.get("per_eval_series_delayed_after_gate")
+        or row.get("per_eval_series_delayed_before_gate") or {}
+    )
+    harmed = [
+        uid for uid, value in per_series.items()
+        if float(value) < HARM_THRESHOLD
+    ]
+    local = (
+        [str(row["local_skill_expected"])]
+        if row.get("local_skill_hit") and row.get("local_skill_expected") else []
+    )
+    return {
+        "episode_id": row.get("episode_id"),
+        "mode": row.get("mode"),
+        "final_plan": dict(row.get("plan_after_gate") or {}),
+        "support_results": {
+            program: {"aggregate_gain": float(value)}
+            for program, value in pool.items()
+        },
+        "support": {"aggregate_gain": row.get("support_after_gate")},
+        "delayed": {
+            "aggregate_gain": row.get("delayed_after_gate"),
+            "harmed_eval_series": sorted(harmed),
+            "harmed_eval_series_count": len(harmed),
+            "harmed_eval_series_total_harm": float(
+                -sum(per_series[uid] for uid in harmed)
+            ),
+            "per_eval_series_gain": per_series,
+        },
+        "adoption_ladder": dict(row.get("adoption_ladder") or {}),
+        "retrieval": {"resolved_skill_ids": local + [card_id]},
+        "reconstruction": {
+            "support_results": "adoption_ladder.full_batch_pool, full-batch only",
+            "mask_candidate_absent": (
+                "the ledger row does not carry the mask round's plan, so "
+                "CANDIDATE_SELECTION is evaluated over full-batch plans "
+                "alone.  A trajectory that asked for no mask is "
+                "evidence-complete and serves as the control."
+            ),
+            "delayed": "the row's own per-series vector; the harm ledger is recomputed from it",
+            "retrieval": "the skills the row records as hit",
+        },
+    }
+
+
+def _banked_measure(row: Mapping[str, Any]) -> tuple[Any, Any]:
+    """Measurement closures that serve identity only, at zero cost.
+
+    A veto walks to the ladder's fallback.  Identity's readings against
+    identity are all zero and need no Consumer; anything else would need a
+    real retrain, which this stage does not have, so it stops instead of
+    quietly measuring.
+    """
+    uids = list(
+        (row.get("per_eval_series_delayed_after_gate")
+         or row.get("per_eval_series_delayed_before_gate") or {}).keys()
+    )
+    zero = {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": [],
+        "per_eval_series_gain": {uid: 0.0 for uid in uids},
+    }
+
+    def served(program: str, excluded: Sequence[str]) -> Mapping[str, Any]:
+        if str(program) == IDENTITY and not list(excluded):
+            return dict(zero)
+        raise Blocked(
+            "REPLAY_NEEDS_MEASUREMENT",
+            "the re-adjudication would have to measure %r, which this "
+            "zero-retrain replay cannot do" % program,
+        )
+
+    return served, served
+
+
+def _readjudicate(
+    *, snapshot: Any, row: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Re-run the tracked Scope/Risk gate over a banked episode.  0 retrains."""
+    ladder = dict(row.get("adoption_ladder") or {})
+    plan = dict(row.get("plan_after_gate") or {})
+    per_series = dict(
+        row.get("per_eval_series_delayed_after_gate")
+        or row.get("per_eval_series_delayed_before_gate") or {}
+    )
+    harmed = [
+        uid for uid, value in per_series.items()
+        if float(value) < HARM_THRESHOLD
+    ]
+    delayed = {
+        "aggregate_gain": row.get("delayed_after_gate"),
+        "harmed_eval_series_count": len(harmed),
+        "harmed_eval_series_total_harm": float(
+            -sum(per_series[uid] for uid in harmed)
+        ),
+        "harmed_eval_series": sorted(harmed),
+        "per_eval_series_gain": per_series,
+    }
+    support = {
+        "aggregate_gain": row.get("support_after_gate"),
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": [],
+        "per_eval_series_gain": {},
+    }
+    delayed_of, support_of = _banked_measure(row)
+    gate = harness_compiler.enforce_scope_risk_guards(
+        snapshot=snapshot,
+        ladder={
+            "final_plan": plan, "support": support, "delayed": delayed,
+            "support_winner": ladder.get("support_winner"),
+            "support_winner_full_batch_delayed": ladder.get(
+                "support_winner_full_batch_delayed"
+            ),
+        },
+        eval_count=len(per_series),
+        reused=bool(row.get("reuse_adopted")),
+        delayed_of=delayed_of, support_of=support_of,
+    )
+    after_series = dict(
+        (gate.get("delayed_after") or {}).get("per_eval_series_gain") or {}
+    )
+    return {
+        "step": row.get("step"),
+        "plan_before": plan,
+        "plan_after": dict(gate["plan_after"]),
+        "changed": bool(gate.get("changed")),
+        "delayed_before": row.get("delayed_after_gate"),
+        "delayed_after": (gate.get("delayed_after") or {}).get("aggregate_gain"),
+        "per_series_before": per_series,
+        "per_series_after": after_series,
+        "harmed_before": sorted(harmed),
+        "harmed_after": list(
+            (gate.get("delayed_after") or {}).get("harmed_eval_series") or ()
+        ),
+        "gate": gate,
+        "consumer_retrains": 0,
+    }
+
+
+def stage_banked(budget: Budget) -> dict[str, Any]:
+    """B1-B5: finish links 6 to 9 on the #23 banked trajectories.
+
+    The selector, the fold, the Slow edit and the compiler are the real
+    ones.  What is banked is the measurement: every reading below was taken
+    by #23 and is replayed, never re-measured.
+    """
+    started = time.perf_counter()
+    out: dict[str, Any] = {
+        "ran": True,
+        "level": "MECHANISM",
+        "source": _repo_rel(BANKED_SOURCE),
+        "source_sha256": _sha256(BANKED_SOURCE),
+        "what_is_banked": (
+            "every Consumer reading comes from #23; this stage measures "
+            "nothing and charges no retrains"
+        ),
+        "evidence_level": (
+            "development.  These NOAA windows had their outcome opened by "
+            "#17; nothing here is fresh confirmation and no A5-vs-A3 result "
+            "is produced."
+        ),
+    }
+    banked = json.loads(BANKED_SOURCE.read_text(encoding="utf-8"))
+    cohort_block = banked.get("cohort") or {}
+    roster = _BankedRoster(
+        (cohort_block.get("roster") or {}).get("train") or (),
+        cohort_block.get("eval_uids") or (),
+    )
+    if BANKED_ROOT.exists():
+        shutil.rmtree(BANKED_ROOT)
+    BANKED_ROOT.mkdir(parents=True, exist_ok=True)
+
+    # ---- B1: selector and attribution on every banked trajectory ----------
+    b1: dict[str, Any] = {}
+    for t in banked["trajectories"]:
+        label = str(t["label"])
+        rows = [r for r in t["trajectory"] if r["step"] in BANKED_STEPS]
+        selection = select_scope_risk_episode(rows)
+        row = next(
+            (r for r in rows if r["step"] == selection.get("selected_step")), None
+        )
+        attribution = None
+        if row is not None:
+            bootstrap = [
+                item.skill_id for item in compile_snapshot(
+                    FC.H0_ROOT, verify_lock=False).skills
+            ]
+            record = _banked_record(row, CARD_ID)
+            folded = SSU._attribute(
+                record, bootstrap_ids=bootstrap,
+                capability_skills_present=True, transport_per_series=True,
+            )
+            control = SSU._attribute(
+                record, bootstrap_ids=bootstrap,
+                capability_skills_present=True, transport_per_series=False,
+            )
+            # the shape stage_attribution produces, so the same Slow stage
+            # consumes a banked fold and a live one without knowing which
+            attribution = {
+                "ran": True,
+                "evidence": "one banked episode of this trajectory, replayed",
+                "cause_code": folded["attribution"]["cause_code"],
+                "first_stage": folded["attribution"]["first_stage"],
+                "is_scope_risk_face": bool(folded["is_scope_risk_face"]),
+                "with_per_series_risk_reading": folded,
+                "aggregate_only_control": control,
+            }
+        b1[label] = {
+            "role": (
+                "the risk evidence" if label == "T1"
+                else "deterministic consistency replica, not independent "
+                     "risk evidence"
+            ),
+            "selection": _public(selection),
+            "attribution": _public(attribution),
+            "cause_code": attribution and attribution["cause_code"],
+            "aggregate_only_cause": attribution and attribution[
+                "aggregate_only_control"]["attribution"]["cause_code"],
+            "is_scope_risk_face": bool(
+                attribution and attribution["is_scope_risk_face"]
+            ),
+            "mask_round_in_this_trajectory": bool(
+                (row or {}).get("consumer_retrains", 0) > 40
+            ),
+        }
+        print(
+            "B1 %-4s selector=%s -> %s | fold=%s" % (
+                label, selection["verdict"], selection.get("selected_step"),
+                b1[label]["cause_code"],
+            ),
+            flush=True,
+        )
+    out["b1_selector_and_attribution"] = b1
+    lead = b1.get("T1") or {}
+    if not lead.get("is_scope_risk_face"):
+        out.update({
+            "verdict": "ATTRIBUTION_STILL_MISSES",
+            "reason": "T1 did not fold to a Scope/Risk face: %s"
+                      % lead.get("cause_code"),
+            "wall_seconds": time.perf_counter() - started,
+        })
+        return out
+
+    # ---- the frozen T1 store fork -----------------------------------------
+    source_store = STORE_ROOT / "T1" / SLOT
+    if not source_store.is_dir():
+        out.update({
+            "verdict": "ATTRIBUTION_STILL_MISSES",
+            "reason": "the #23 T1 store fork is gone: %s" % _repo_rel(source_store),
+            "wall_seconds": time.perf_counter() - started,
+        })
+        return out
+    fork = BANKED_ROOT / "T1"
+    shutil.copytree(source_store, fork)
+    store = SnapshotStore(fork / "snapshots")
+    active = json.loads(store.active_path.read_text(encoding="utf-8"))
+    snapshot = compile_snapshot(
+        fork / "snapshots" / str(active["runtime_bundle_sha"]), verify_lock=False,
+    )
+    slot = {"slot": SLOT, "_store": store, "_snapshot": snapshot,
+            "runtime_bundle_sha": snapshot.runtime_bundle_sha}
+    out["store_fork"] = {
+        "copied_from": _repo_rel(source_store),
+        "working_copy": _repo_rel(fork),
+        "runtime_bundle_sha": snapshot.runtime_bundle_sha,
+        "guards_at_start": harness_compiler.scope_risk_guards_of(snapshot),
+        "the_v3_fork_is_left_untouched": True,
+    }
+
+    # ---- B2/B3: one Slow draw, then the compiler --------------------------
+    t1 = next(t for t in banked["trajectories"] if str(t["label"]) == "T1")
+    rows = [r for r in t1["trajectory"] if r["step"] in BANKED_STEPS]
+    fault_row = next(
+        r for r in rows
+        if r["step"] == b1["T1"]["selection"]["selected_step"]
+    )
+    fault = {
+        "record": _banked_record(fault_row, CARD_ID),
+        "row": fault_row,
+        "search": roster,
+        "earlier_rows": [],
+    }
+    slow_sink: dict[str, Any] = {"ran": False}
+    out["b2_slow"] = slow_sink
+    try:
+        stage_slow(
+            slot=slot,
+            attribution=b1["T1"]["attribution"],
+            task_c=fault, budget=budget, sink=slow_sink,
+            fault_step=str(fault_row["step"]),
+        )
+    except Blocked as exc:
+        out.update({
+            "verdict": exc.verdict,
+            "reason": exc.reason,
+            "wall_seconds": time.perf_counter() - started,
+        })
+        return out
+    print(
+        "B2 slow %s -> %s | snapshot %s -> %s" % (
+            slow_sink["guard"]["statistic"], slow_sink["guard"]["action"],
+            slow_sink["snapshot_before"][:12], slow_sink["snapshot_after"][:12],
+        ),
+        flush=True,
+    )
+
+    # ---- B4: re-adjudicate the banked episodes, zero retrains -------------
+    patched = slot["_snapshot"]
+    readjudication = {}
+    for row in rows:
+        readjudication[str(row["step"])] = _readjudicate(
+            snapshot=patched, row=row,
+        )
+        r = readjudication[str(row["step"])]
+        print(
+            "B4 %-8s %s -> %s | delayed %s -> %s | harmed %s -> %s" % (
+                r["step"], SSU._plan_label(r["plan_before"]),
+                SSU._plan_label(r["plan_after"]), _fmt(r["delayed_before"]),
+                _fmt(r["delayed_after"]), r["harmed_before"] or "none",
+                r["harmed_after"] or "none",
+            ),
+            flush=True,
+        )
+    out["b4_readjudication"] = readjudication
+    fault_step = str(fault_row["step"])
+    lead_row = readjudication[fault_step]
+    watched = sorted(lead_row["harmed_before"])
+    contained = all(
+        float(lead_row["per_series_after"].get(uid, 0.0)) >= HARM_THRESHOLD
+        for uid in watched
+    )
+    untouched = [
+        step for step, r in readjudication.items()
+        if step != fault_step and not r["changed"]
+        and r["plan_before"] == r["plan_after"]
+    ]
+    collateral = [
+        step for step, r in readjudication.items()
+        if step != fault_step and (
+            r["changed"] or r["plan_before"] != r["plan_after"]
+        )
+    ]
+    out["b4_reading"] = {
+        "fault_step": fault_step,
+        "flipped": bool(lead_row["changed"]),
+        "characterisation": (
+            "containment, not a utility improvement: the %s harm on %s is "
+            "removed and the %s aggregate gain is given up with it.  Keeping "
+            "the gain is a BY_RESCOPE question and is not attempted here."
+            % (
+                _fmt(min(lead_row["per_series_before"].values())
+                     if lead_row["per_series_before"] else None),
+                watched or "no series",
+                _fmt(lead_row["delayed_before"]),
+            )
+        ),
+        "watched_series": watched,
+        "contained": contained,
+        "unrelated_episodes_unchanged": untouched,
+        "unrelated_episodes_that_moved": collateral,
+        "no_collateral_means": (
+            "task_B/C/D were already identity in #23 and must stay identity "
+            "bit for bit; it does not mean the guard is free"
+        ),
+    }
+    if not lead_row["changed"]:
+        verdict, reason = "REPLAY_NO_CHANGE", (
+            "the guard is live in the patched snapshot and the banked "
+            "adoption did not move"
+        )
+    elif not contained:
+        verdict, reason = "REPLAY_NO_CHANGE", (
+            "the adoption moved but %s still crosses the line" % watched
+        )
+    elif collateral:
+        verdict, reason = "REPLAY_NO_CHANGE", (
+            "unrelated banked episodes moved: %s" % collateral
+        )
+    else:
+        verdict, reason = "BANKED_CHAIN_CLOSES", (
+            "selector -> RISK_GAP at %s -> one Slow proposal -> compiler "
+            "accepted -> the banked adoption is contained to identity, %s no "
+            "longer crosses %+.3f, and every unrelated banked episode is "
+            "unchanged" % (fault_step, watched, HARM_THRESHOLD)
+        )
+    out.update({
+        "verdict": verdict, "reason": reason,
+        "llm_calls": int(slow_sink.get("llm_calls") or 0),
+        "consumer_retrains": 0,
+        "wall_seconds": time.perf_counter() - started,
+    })
+    return out
+
+
+LLM_CALL_BUDGET_V4 = 12
+RETRAIN_BUDGET_V4 = 250
+OUT_JSON_V4 = E2 / "operational_pipeline_v4.json"
+OUT_MD_V4 = E2 / "operational_pipeline_v4.md"
+EVIDENCE_LEVEL_NOTE = (
+    "DEVELOPMENT.  Every window this protocol reads had its outcome opened "
+    "by #17, so nothing here is fresh confirmation and nothing here produces "
+    "a new A5-over-A3 result.  What a closed chain shows is that the "
+    "machinery runs end to end, not that the method is better."
+)
+
+
+def run_v4(*, banked: bool = True, post_fix_live: bool = False) -> int:
+    """Part B on the banked ledger, then Part C live only if B closed."""
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_V4, RETRAIN_BUDGET_V4)
+    payload: dict[str, Any] = {
+        "protocol_version": "operational_pipeline_v4",
+        "role": (
+            "finish links 6 to 9 on the #23 banked trajectories after the "
+            "attribution window was rewired, then, only if that closes, one "
+            "post-fix live trajectory"
+        ),
+        "the_only_method_change_this_round": (
+            "which episode attribution is handed.  Observation, Program, "
+            "Guidance, the Slow grammar, the Risk thresholds, the adoption "
+            "ladder, the two keys, the menu, the prompts and the "
+            "SELECTION_MISS adapter reading are all untouched."
+        ),
+        "evidence_level": EVIDENCE_LEVEL_NOTE,
+        "selector_contract": SELECTOR_CONTRACT,
+        "pre_registered": PRE_REGISTERED,
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_V4,
+        "retrain_budget": RETRAIN_BUDGET_V4,
+    }
+    try:
+        payload["p2_non_regression_gate"] = stage_p2_precondition()
+        payload["guard_after_precondition"] = _guard_frozen(before, "part B")
+        if banked:
+            payload["part_b_banked_completion"] = stage_banked(budget)
+            payload["guard_after_part_b"] = _guard_frozen(before, "part C")
+        b = payload.get("part_b_banked_completion") or {}
+        if post_fix_live and b.get("verdict") == "BANKED_CHAIN_CLOSES":
+            cohort, cap, roster = _cohort()
+            payload["cohort"] = {
+                "name": COHORT_NAME, "roster": roster,
+                "eval_uids": list(cohort["eval_uids"]),
+            }
+            sink: dict[str, Any] = {"label": "post_fix_live", "entered": False}
+            payload["part_c_post_fix_live"] = sink
+            _trajectory(
+                label="post_fix_live", budget=budget, cohort=cohort, cap=cap,
+                sink=sink,
+            )
+        elif post_fix_live:
+            payload["part_c_post_fix_live"] = {
+                "ran": False,
+                "why_not": (
+                    "part B did not close (%s), and part C is gated on it"
+                    % b.get("verdict")
+                ),
+            }
+    except ConcurrentWrite as exc:
+        payload.update({
+            "overall_verdict": "CONCURRENT_WRITE_ABORT",
+            "overall_verdict_reason": str(exc),
+        })
+    except Blocked as exc:
+        payload.update({
+            "overall_verdict": exc.verdict,
+            "overall_verdict_reason": exc.reason,
+        })
+    if "overall_verdict" not in payload:
+        b = payload.get("part_b_banked_completion") or {}
+        c = payload.get("part_c_post_fix_live") or {}
+        if c.get("verdict"):
+            payload["overall_verdict"] = (
+                "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX"
+                if c["verdict"] == "OPERATIONAL_PIPELINE_CLOSES"
+                else str(c["verdict"])
+            )
+            payload["overall_verdict_reason"] = (
+                "banked chain: %s; post-fix live trajectory: %s -- %s"
+                % (b.get("verdict"), c.get("verdict"), c.get("verdict_reason"))
+            )
+        else:
+            payload["overall_verdict"] = str(b.get("verdict"))
+            payload["overall_verdict_reason"] = str(b.get("reason"))
+    payload.update({
+        "llm_call_count": budget.llm_used,
+        "consumer_retrains_total": budget.retrains_charged,
+        "exposure": {
+            "windows_read": [
+                "the #23 ledger, replayed",
+                "for part C only: task_A/probe/task_B/task_C/task_D, all "
+                "inside partitions #17 already opened",
+            ],
+            "beyond_17520": "SEALED, not read",
+            "fresh_claim": "none",
+        },
+        "wall_seconds": time.perf_counter() - started,
+        "frozen_surface_after": _verify(before),
+    })
+    if not payload["frozen_surface_after"]["ok"]:
+        payload["overall_verdict"] = "CONCURRENT_WRITE_ABORT"
+        payload["overall_verdict_reason"] = (
+            "the frozen surface moved during the run; the reading is void"
+        )
+    return _write(payload, out_json=OUT_JSON_V4, out_md=OUT_MD_V4)
+
+
+def _markdown_multi(payload: Mapping[str, Any]) -> str:
+    lines = [
+        "# K trajectories of the one-run operational pipeline",
+        "",
+        "**Overall: `%s`** -- %s" % (
+            payload.get("overall_verdict"),
+            payload.get("overall_verdict_reason", ""),
+        ),
+        "",
+        "K = %s, fixed before the first draw. Every trajectory is on the "
+        "record whatever it did: none was discarded, re-thrown or seeded. "
+        "Each ran on a store of its own, %s x %s, arm %s, Slow pinned to "
+        "`%s`." % (
+            payload.get("k"), COHORT_NAME, VARIANT, ARM, SLOW_MODEL,
+        ),
+        "",
+        "## Per trajectory",
+        "",
+        "| trajectory | verdict | reached Slow | LLM | retrains |",
+        "| --- | --- | --- | ---: | ---: |",
+    ]
+    for t in payload.get("trajectories") or ():
+        reached = bool(((t.get("stages") or {}).get("slow_edit") or {}).get("ran"))
+        lines.append(
+            "| `%s` | `%s` | %s | %d | %d |" % (
+                t.get("label"), t.get("verdict"), "yes" if reached else "no",
+                int(t.get("llm_calls") or 0),
+                int(t.get("consumer_retrains") or 0),
+            )
+        )
+    lines.extend(["", "### Reasons", ""])
+    for t in payload.get("trajectories") or ():
+        lines.append("- `%s`: %s" % (t.get("label"), t.get("verdict_reason")))
+    lines.extend(["", "## Trajectory tables", ""])
+    for t in payload.get("trajectories") or ():
+        rows = t.get("trajectory") or []
+        lines.extend([
+            "### `%s` -- `%s`" % (t.get("label"), t.get("verdict")), "",
+        ])
+        if not rows:
+            lines.extend(["No task window completed.", ""])
+            continue
+        lines.extend([
+            "| step | window | mode | card | local Skill | shortlist | "
+            "cited | overlap | plan before | plan after | support | delayed | "
+            "harmed | retrains | LLM |",
+            "| --- | ---: | --- | --- | --- | --- | --- | ---: | --- | --- | "
+            "---: | ---: | --- | ---: | ---: |",
+        ])
+        for row in rows:
+            overlap = row.get("clause_shortlist_overlap") or {}
+            lines.append(
+                "| `%s` | %s | %s | %s | %s | %s | %s | %s | `%s` | `%s` | %s "
+                "| %s | %s | %d | %d |" % (
+                    row.get("step"),
+                    (row.get("window") or {}).get("start", "--"),
+                    row.get("mode") or "--",
+                    "hit" if row.get("card_hit") else (
+                        "--" if row.get("card_hit") is None else "MISS"
+                    ),
+                    "--" if row.get("local_skill_hit") is None else (
+                        "hit" if row.get("local_skill_hit") else "MISS"
+                    ),
+                    ", ".join(row.get("shortlist") or ()) or "--",
+                    ", ".join(row.get("clauses_cited") or ()) or "--",
+                    overlap.get("overlap_count", "--"),
+                    SSU._plan_label(row.get("plan_before_gate")),
+                    SSU._plan_label(row.get("plan_after_gate")),
+                    _fmt(row.get("support_before_gate")),
+                    _fmt(row.get("delayed_before_gate")),
+                    ", ".join(row.get("harmed_before_gate") or ()) or "none",
+                    int(row.get("consumer_retrains") or 0),
+                    int(row.get("llm_calls") or 0),
+                )
+            )
+        lines.append("")
+        slow = (t.get("stages") or {}).get("slow_edit") or {}
+        if slow.get("ran"):
+            lines.extend(["**Slow draws**", ""])
+            for a in slow.get("attempts") or ():
+                lines.append(
+                    "- draw %s on `%s`: %s%s%s" % (
+                        a.get("draw"), a.get("model"), a.get("outcome"),
+                        "" if not a.get("no_proposal_reason")
+                        else " (%s)" % a["no_proposal_reason"],
+                        "" if not a.get("validation_error_codes")
+                        else " retries %s" % a["validation_error_codes"],
+                    )
+                )
+            g = slow.get("guard") or {}
+            if g:
+                lines.extend([
+                    "",
+                    "Guard `%s`: %s `%s` %s -> %s on the %s window, applies to "
+                    "%s." % (
+                        g.get("guard_id"), g.get("statistic"),
+                        g.get("comparator"), _fmt(g.get("threshold")),
+                        g.get("action"), g.get("window"), g.get("applies_to"),
+                    ),
+                    "",
+                    "> %s" % g.get("rationale"),
+                ])
+            lines.append("")
+    stab = payload.get("shortlist_stability") or {}
+    if stab.get("draws"):
+        lines.extend([
+            "## task_A shortlist stability, all draws on record",
+            "",
+            "| run | shortlist | cited | overlap | adopted | support | delayed "
+            "| ladder |",
+            "| --- | --- | --- | ---: | --- | ---: | ---: | --- |",
+        ])
+        for row in stab["draws"]:
+            lines.append(
+                "| %s | %s | %s | %s | `%s` | %s | %s | `%s` |" % (
+                    row.get("run"), ", ".join(row.get("shortlist") or ()),
+                    ", ".join(row.get("clauses_cited") or ()),
+                    row.get("overlap_count"),
+                    SSU._plan_label(row.get("adopted")),
+                    _fmt(row.get("support")), _fmt(row.get("delayed")),
+                    row.get("ladder_path"),
+                )
+            )
+        lines.extend([
+            "",
+            "%d draws, %d distinct shortlists, %d adopted a program, %d cited "
+            "a clause naming something they shortlisted. Overlap is computed "
+            "from the clause texts against the frozen menu, not from what the "
+            "Agent reported. n is small; nothing here is causal." % (
+                stab.get("n", 0), stab.get("distinct_shortlists", 0),
+                stab.get("adopted_a_program", 0),
+                stab.get("cited_clauses_naming_a_shortlisted_program", 0),
+            ),
+            "",
+        ])
+    after = payload.get("frozen_surface_after") or {}
+    lines.extend([
+        "## Cost and integrity",
+        "",
+        "- LLM calls: %s / %s." % (
+            payload.get("llm_call_count"), payload.get("llm_call_budget")
+        ),
+        "- Consumer retrains: %s / %s." % (
+            payload.get("consumer_retrains_total"),
+            payload.get("retrain_budget"),
+        ),
+        "- Frozen surface: %s files, drift %s." % (
+            after.get("files"), after.get("drift")
+        ),
+        "- Wall seconds: %.1f." % float(payload.get("wall_seconds") or 0.0),
+    ])
+    return "\n".join(lines) + "\n"
+
+
 def _markdown(payload: Mapping[str, Any]) -> str:
+    if payload.get("trajectories") is not None:
+        return _markdown_multi(payload)
     lines = [
         "# One continuous operational run",
         "",
@@ -1746,24 +3002,31 @@ def _markdown(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _write(payload: Mapping[str, Any], *, dry: bool = False) -> int:
+def _write(
+    payload: Mapping[str, Any], *, dry: bool = False,
+    out_json: Path | None = None, out_md: Path | None = None,
+) -> int:
     body = _public(payload)
     if dry:
         print(json.dumps(body, indent=2, ensure_ascii=False, default=str)[:4000])
     else:
+        target_json = out_json or OUT_JSON
+        target_md = out_md or OUT_MD
         E2.mkdir(parents=True, exist_ok=True)
-        OUT_JSON.write_text(
+        target_json.write_text(
             json.dumps(body, indent=2, ensure_ascii=False, default=str) + "\n",
             encoding="utf-8", newline="\n",
         )
-        OUT_MD.write_text(_markdown(body), encoding="utf-8", newline="\n")
-        print("wrote", OUT_JSON, flush=True)
-        print("wrote", OUT_MD, flush=True)
+        target_md.write_text(_markdown(body), encoding="utf-8", newline="\n")
+        print("wrote", target_json, flush=True)
+        print("wrote", target_md, flush=True)
     print("overall", body.get("overall_verdict"), flush=True)
     print("llm_calls", body.get("llm_call_count", 0), flush=True)
     print("retrains", body.get("consumer_retrains_total", 0), flush=True)
     return 0 if body.get("overall_verdict") in (
-        "OPERATIONAL_PIPELINE_CLOSES", "P2_ONLY"
+        "OPERATIONAL_PIPELINE_CLOSES", "OPERATIONAL_PIPELINE_CLOSES_IN_K",
+        "BANKED_CHAIN_CLOSES",
+        "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX", "P2_ONLY",
     ) else 1
 
 
@@ -1771,10 +3034,34 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--gate-only", action="store_true",
-        help="run the P2 non-regression gate and stop, writing nothing",
+        help="verify the P2 precondition and stop, writing nothing",
+    )
+    parser.add_argument(
+        "--multi-trajectory", action="store_true",
+        help="run K pre-registered trajectories and write the v3 artifact",
+    )
+    parser.add_argument(
+        "--k", type=int, default=K_TRAJECTORIES,
+        help="how many trajectories; fixed before the run",
+    )
+    parser.add_argument(
+        "--banked-completion", action="store_true",
+        help="finish links 6-9 on the #23 banked ledger and write v4",
+    )
+    parser.add_argument(
+        "--post-fix-live", action="store_true",
+        help="banked completion, then one post-fix live trajectory if it closed",
+    )
+    parser.add_argument(
+        "--force", action="store_true",
+        help="allow the single-trajectory path to overwrite the v2 record",
     )
     args = parser.parse_args(argv)
-    return run(gate_only=bool(args.gate_only))
+    if args.banked_completion or args.post_fix_live:
+        return run_v4(banked=True, post_fix_live=bool(args.post_fix_live))
+    if args.multi_trajectory:
+        return run_multi(k=int(args.k))
+    return run(gate_only=bool(args.gate_only), force=bool(args.force))
 
 
 if __name__ == "__main__":
