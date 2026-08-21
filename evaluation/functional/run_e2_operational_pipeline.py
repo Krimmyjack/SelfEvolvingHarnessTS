@@ -48,8 +48,13 @@ from SelfEvolvingHarnessTS.contracts.canonical import (  # noqa: E402
     canonical_sha256,
 )
 from SelfEvolvingHarnessTS.methods.ttha.agent_core import (  # noqa: E402
+    AgentProtocolError,
     AgentRole,
     TTHAAgentCore,
+)
+from SelfEvolvingHarnessTS.runtime.agent_backend import (  # noqa: E402
+    AgentCallBudgetExceeded,
+    AgentTransportError,
 )
 from SelfEvolvingHarnessTS.methods.ttha.experience_memory import (  # noqa: E402
     EVIDENCE_SUPPORT,
@@ -109,6 +114,41 @@ RETRAIN_BUDGET = 300
 LLM_CALL_BUDGET_MULTI = 24
 RETRAIN_BUDGET_MULTI = 450
 MAX_TRANSPORT_FAILURES = 3
+# The three counters #25 keeps apart.  A draw that never produced a decision
+# the protocol can read is not a decision sample, and a transport failure is
+# neither.  The protocol-failure count is cumulative across runs on this
+# surface: #24 already spent one.
+MAX_VALID_DECISION_SAMPLES = 2
+MAX_PROTOCOL_FAILED_DRAWS = 2
+# Carry-in is per model AND per question.  claude-opus-5 spent two
+# protocol-failed draws (#24, #25) on this exact surface with this exact
+# evidence, so it starts exhausted.  A model that has not been asked this
+# question starts at zero: gpt-5.6-luna's two #19 abstentions were on the
+# same surface but a different public_input (the #17 pooled task_C episodes,
+# not the #23 T1 task_A episode), so they are context, not spent samples.
+PROTOCOL_FAILED_CARRY_IN: dict[str, int] = {"claude-opus-5": 2}
+PRIOR_PROTOCOL_FAILED_DRAWS = PROTOCOL_FAILED_CARRY_IN.get(SLOW_MODEL, 0)
+MODEL_HISTORY_ON_THIS_SURFACE: dict[str, str] = {
+    "claude-opus-5": (
+        "produced a valid proposal in #19 and #21; #24 and #25 both came back "
+        "as protocol failures that the 2026-08-22 probe traced to a relay "
+        "outage, not to the model"
+    ),
+    "gpt-5.6-luna": (
+        "two valid no_proposal draws in #19 on this same surface, reason "
+        "insufficient_public_evidence, but on the #17 pooled task_C evidence "
+        "rather than this question; not counted against this round"
+    ),
+    "gpt-5.6-sol": "never asked this stage before",
+}
+SAMPLING_RULE = (
+    "at most %d valid decision samples, stopping at the first proposal; a "
+    "protocol-failed draw consumes no decision sample but does count against "
+    "a cumulative cap of %d across runs on this surface (#24 spent %d); a "
+    "transport failure consumes neither and three in a row stop the run."
+    % (MAX_VALID_DECISION_SAMPLES, MAX_PROTOCOL_FAILED_DRAWS,
+       PRIOR_PROTOCOL_FAILED_DRAWS)
+)
 
 
 def _repo_rel(path: Path) -> str:
@@ -141,8 +181,76 @@ FROZEN_SURFACE_V4: tuple[str, ...] = FROZEN_SURFACE_V3 + (SCHEMA_CONTRACTS_FILE,
 # v5 adds this runner, now tracked, so a concurrent edit to the thing
 # driving the protocol is caught like any other frozen member.
 FROZEN_SURFACE_V5: tuple[str, ...] = FROZEN_SURFACE_V4 + (RUNNER_FILE,)
-# v6 == v5: the only file this round touches is the runner, already in.
+# v6 == v5: #25's only file was the runner, already in.
 FROZEN_SURFACE_V6: tuple[str, ...] = FROZEN_SURFACE_V5
+# v7 adds the relay backend, which fix (c) touches.
+AGENT_BACKEND_FILE = "runtime/agent_backend.py"
+FROZEN_SURFACE_V7: tuple[str, ...] = FROZEN_SURFACE_V6 + (AGENT_BACKEND_FILE,)
+FIX_C_TOUCHED: tuple[dict[str, str], ...] = (
+    {
+        "path": AGENT_BACKEND_FILE,
+        "role": (
+            "fix (c): a relay HTTP 200 whose body carries an error object and "
+            "no choices is raised as AgentTransportError instead of being "
+            "handed on as a transport-success empty completion"
+        ),
+        "sha256_before_fix_c": (
+            "15bfae49cd13c6ef6526560ea27e2e9dde10600309f012ee1e5a4be8e8b3dda7"
+        ),
+        "line_ending_caliber": (
+            "working-tree bytes; this file is CRLF on disk, so its committed "
+            "LF blob hashes differently "
+            "(f7320368f3ca86f4e9b9366153af88fd0fcf7ecf93e8737d8f820548c9d3f81c "
+            "before the fix)"
+        ),
+        "diff_shape": "+52/-0, purely additive",
+    },
+    {
+        "path": H0_LOCK_FILE,
+        "role": (
+            "regenerated again: runtime/agent_backend.py feeds "
+            "dependency_shas under runtime:agent_backend.  Exactly that one "
+            "key moved and harness_content_sha is unchanged; h0 passes "
+            "verify_lock=True."
+        ),
+        "sha256_before_fix_c": (
+            "5be7bddc92a2928701bc11408082d3e0f48f0703843a13c0d49e0491c1f71c4d"
+        ),
+    },
+)
+RELAY_OUTAGE_ON_RECORD: dict[str, Any] = {
+    "measured": "2026-08-22, three diagnostic calls plus three raw HTTP posts",
+    "what_the_relay_returns": (
+        'HTTP 200 with body {"error":{"code":"api_error","message":"Service '
+        'load is too high, please try again later","type":"api_error"}} and '
+        "no choices"
+    ),
+    "scope": (
+        "the whole Claude family on this relay -- claude-opus-5, "
+        "claude-opus-4-6 and claude-sonnet-5 all returned it, while "
+        "gpt-5.6-luna answered normally in the same minute "
+        "(finish_reason=stop, 4438/5 tokens)"
+    ),
+    "not_request_shape": (
+        "a 44-character prompt and a 60000-character prompt returned the same "
+        "empty result, so it is neither the Slow prompt nor a context ceiling"
+    ),
+    "model_id_is_valid": (
+        "claude-opus-5 is listed by the relay's own /v1/models catalog "
+        "(286 entries)"
+    ),
+    "why_it_masqueraded": (
+        "the SDK parses the 200, the backend read empty choices and built "
+        "AgentResponse(transport_ok=True, assistant_text=''), _RetryingTransport "
+        "saw no exception to retry, and agent_core spent its two static "
+        "feedback retries on empty strings.  #24 and #25 recorded that as "
+        "SLOW_ENVELOPE_PROTOCOL_FAILURE."
+    ),
+    "consequence_for_the_record": (
+        "both protocol-failed draws on this surface were an upstream outage, "
+        "not the Agent.  The cumulative cap of 2 was consumed by it."
+    ),
+}
 A1_TOUCHED: tuple[dict[str, str], ...] = (
     {
         "path": SCHEMA_CONTRACTS_FILE,
@@ -200,7 +308,7 @@ class Blocked(RuntimeError):
 
 def _freeze() -> dict[str, str]:
     frozen: dict[str, str] = {}
-    for name in sorted(set(FROZEN_SURFACE_V6)):
+    for name in sorted(set(FROZEN_SURFACE_V7)):
         path = PROJECT_ROOT / name
         if not path.is_file():
             raise SystemExit("frozen surface member is missing: %s" % name)
@@ -419,11 +527,12 @@ P1_POST_SHA = {
     COMPILER_FILE: (
         "61cc3b4538baa17a0b1bbe8458c86a224f884167ded56296f8a87629b0ae5eb5"
     ),
-    # O1 regenerated this deliberately after A1 moved
-    # ttha:schema_contracts; the value was predicted before the write and
-    # matched byte for byte, and h0 now passes verify_lock=True again.
+    # Regenerated twice on purpose, never drifted: once by O1 after A1 moved
+    # ttha:schema_contracts, and once by fix (c) after runtime:agent_backend
+    # moved.  Each time exactly the expected dependency key changed,
+    # harness_content_sha stayed put, and h0 passes verify_lock=True.
     H0_LOCK_FILE: (
-        "5be7bddc92a2928701bc11408082d3e0f48f0703843a13c0d49e0491c1f71c4d"
+        "327f01186194cb15a91859c4260d0349f77b04dabf5db0689c3c663c9b4c046f"
     ),
 }
 
@@ -462,8 +571,12 @@ def stage_p2_precondition() -> dict[str, Any]:
         },
         "why_it_cannot_be_re_run_anyway": (
             "run_e2_slow_scope_update._open_stores_v2 exits unless the "
-            "dependency drift is exactly [compiler_source, surface_registry]; "
-            "A1 adds ttha:schema_contracts"
+            "dependency drift is exactly [compiler_source, surface_registry].  "
+            "A1 added ttha:schema_contracts and fix (c) adds "
+            "runtime:agent_backend, so the delivered gate is now two keys "
+            "past its own assertion.  That file is committed and is not "
+            "edited to accommodate this; the #21 gate result is carried "
+            "forward on the precondition below instead."
         ),
         "consumer_retrains": 0,
         "llm_calls": 0,
@@ -975,6 +1088,107 @@ def select_scope_risk_episode(
     }
 
 
+# --------------------------------------------- the Slow draw error taxonomy
+# #24 folded every non-transport exception from core.run_stage into
+# COMPILER_REJECTS.  That was right in #21, where the exception really did
+# come from the controller, and wrong in #24, where the EditController was
+# never reached and the label implied that #22's maxLength repair had
+# failed.  Three classes, kept apart.
+SLOW_ERROR_CLASSES: dict[str, dict[str, Any]] = {
+    "ENVELOPE_PROTOCOL": {
+        "label": "SLOW_ENVELOPE_PROTOCOL_FAILURE",
+        "raised_by": "methods/ttha/agent_core.py::TTHAAgentCore.run_stage",
+        "means": (
+            "the model's response was not a valid agent-envelope/1, or its "
+            "stage payload failed the contract, and the core's own static "
+            "feedback retries were exhausted.  No proposal exists and the "
+            "EditController was never called."
+        ),
+        "first_class": True,
+    },
+    "COMPILER_CONTROLLER": {
+        "label": "COMPILER_REJECTS",
+        "raised_by": (
+            "evaluation/minipipe/replay/edit_controller.py::EditController"
+        ),
+        "means": (
+            "a well-formed proposal reached the deterministic controller and "
+            "the controller refused it.  This label is only ever written "
+            "when an edit was actually submitted."
+        ),
+    },
+    "TRANSPORT": {
+        "label": "SLOW_TRANSPORT_FAILURE",
+        "raised_by": "the backend transport or the call budget",
+        "means": (
+            "the request never produced a model decision.  A transport "
+            "failure consumes no decision sample."
+        ),
+    },
+    "RUNTIME": {
+        "label": "SLOW_STAGE_RUNTIME_ERROR",
+        "raised_by": "anything else",
+        "means": "an error this taxonomy does not recognise; reported as it stands",
+    },
+}
+
+
+def _classify_slow_error(exc: BaseException) -> str:
+    if isinstance(exc, (AgentTransportError, AgentCallBudgetExceeded)):
+        return "TRANSPORT"
+    if isinstance(exc, AgentProtocolError):
+        return "ENVELOPE_PROTOCOL"
+    return "RUNTIME"
+
+
+def _slow_diagnostics(
+    exc: BaseException, backend: Any,
+) -> dict[str, Any]:
+    """The fingerprint of a failed draw, from what is already attached.
+
+    Nothing new is plumbed.  ``agent_core`` already hangs the last assistant
+    text, the internal retry count and the error codes on the exception, and
+    the budgeted backend already accumulates calls, tokens and the serving
+    model.  The bounded text keeps the cap agent_core itself applied; the
+    full provider raw of every internal retry is deliberately not stored.
+    """
+    text = getattr(exc, "last_assistant_text", None)
+    bounded = None if text is None else str(text)
+    return {
+        "error_type": type(exc).__name__,
+        "error_message": str(exc),
+        "class": _classify_slow_error(exc),
+        "label": SLOW_ERROR_CLASSES[_classify_slow_error(exc)]["label"],
+        "internal_validation_retries": getattr(exc, "validation_retry_count", None),
+        "validation_error_codes": list(
+            getattr(exc, "validation_error_codes", ()) or ()
+        ),
+        "last_assistant_text": bounded,
+        "last_assistant_text_characters": None if bounded is None else len(bounded),
+        "last_assistant_text_truncated_by_agent_core": (
+            None if bounded is None else len(bounded) >= 500
+        ),
+        "bounded_at": (
+            "500 characters, the cap agent_core already applies; this "
+            "protocol does not widen it"
+        ),
+        "llm_calls_this_draw": int(getattr(backend, "calls", 0) or 0),
+        "prompt_tokens": int(getattr(backend, "prompt_tokens", 0) or 0),
+        "completion_tokens": int(getattr(backend, "completion_tokens", 0) or 0),
+        "returned_models": sorted(getattr(backend, "returned_models", ()) or ()),
+        "finish_reason": None,
+        "finish_reason_note": (
+            "not reachable: agent_core attaches the assistant text to the "
+            "exception but not the response, and this round does not add new "
+            "plumbing to fetch it"
+        ),
+        "provider_raw_not_stored": (
+            "one bounded text per failed draw, not the full raw of every "
+            "internal retry"
+        ),
+    }
+
+
 # ------------------------------------------------------- attribution and Slow
 def stage_attribution(record: Mapping[str, Any], snapshot: Any) -> dict[str, Any]:
     """First fault on this run's own task_C episode.  No prior artifact is fed in."""
@@ -1023,7 +1237,7 @@ def stage_attribution(record: Mapping[str, Any], snapshot: Any) -> dict[str, Any
 def stage_slow(
     *, slot: dict[str, Any], attribution: Mapping[str, Any],
     task_c: Mapping[str, Any], budget: Budget, sink: dict[str, Any],
-    fault_step: str = "task_C",
+    fault_step: str = "task_C", slow_model: str = SLOW_MODEL,
 ) -> dict[str, Any]:
     """One proposal, one pinned backend, one surface, one draw.
 
@@ -1035,8 +1249,11 @@ def stage_slow(
     started = time.perf_counter()
     sink.update({
         "ran": True,
-        "backend": {"model": SLOW_MODEL, "base_url": SLOW_BASE_URL,
-                    "rounds": 1, "cross_backend_sampling": False},
+        "backend": {"model": slow_model, "base_url": SLOW_BASE_URL,
+                    "rounds": 1, "cross_backend_sampling": False,
+                    "history_on_this_surface": MODEL_HISTORY_ON_THIS_SURFACE.get(
+                        slow_model, "no history on record"),
+                    "pinned_for_this_run": True},
         "attributed_from_episode": str(task_c["record"]["episode_id"]),
         "confirmed_cause": str(attribution["cause_code"]),
         "attempts": [],
@@ -1152,21 +1369,32 @@ def stage_slow(
     attempts: list[dict[str, Any]] = sink["attempts"]
     payload: dict[str, Any] = {}
     transport_failures = 0
+    valid_decision_samples = 0
+    protocol_failed_draws = int(PROTOCOL_FAILED_CARRY_IN.get(slow_model, 0))
+    sink["counters"] = {
+        "valid_decision_samples": valid_decision_samples,
+        "protocol_failed_draws": protocol_failed_draws,
+        "protocol_failed_draws_carried_in": int(
+            PROTOCOL_FAILED_CARRY_IN.get(slow_model, 0)
+        ),
+        "llm_calls_spent": 0,
+        "rule": SAMPLING_RULE,
+    }
     sink["authorized_surfaces_offered"] = [
         str(item["surface_id"]) for item in offered
     ]
     sink["public_input_sha256"] = canonical_sha256(wvc._plain(public_input))
     sink["harness_view_sha"] = view.effective_harness_view_sha
     while True:
-        backend = SSU._backend_factory_v2(SLOW_MODEL, budget.take(4))
+        backend = SSU._backend_factory_v2(slow_model, budget.take(4))
         gateway = wvc.NoToolGateway({
             "protocol": PROTOCOL_VERSION, "stage": "edit",
         })
         core = TTHAAgentCore(
-            backend, gateway, model=SLOW_MODEL, base_url=SLOW_BASE_URL,
+            backend, gateway, model=slow_model, base_url=SLOW_BASE_URL,
         )
         row: dict[str, Any] = {
-            "draw": len(attempts) + 1, "model": SLOW_MODEL,
+            "draw": len(attempts) + 1, "model": slow_model,
         }
         try:
             result = core.run_stage(
@@ -1181,15 +1409,29 @@ def stage_slow(
             )
         except Exception as exc:  # noqa: BLE001
             budget.spend(int(backend.calls))
-            message = "%s: %s" % (type(exc).__name__, exc)
-            transport = "Transport" in type(exc).__name__
+            diagnostics = _slow_diagnostics(exc, backend)
+            kind = diagnostics["class"]
             row.update({
-                "outcome": "TRANSPORT_FAILURE" if transport else "STAGE_ERROR",
-                "error": message, "llm_calls": int(backend.calls),
-                "consumes_a_draw": not transport,
+                "outcome": diagnostics["label"],
+                "error_class": kind,
+                "diagnostics": diagnostics,
+                "llm_calls": int(backend.calls),
+                "consumes_a_decision_sample": False,
+                "consumes_a_protocol_failed_draw": kind == "ENVELOPE_PROTOCOL",
             })
             attempts.append(row)
-            if transport:
+            sink["counters"]["llm_calls_spent"] = sum(
+                int(a.get("llm_calls") or 0) for a in attempts
+            )
+            print(
+                "  slow draw %d: %s (%s, internal retries %s, codes %s)" % (
+                    row["draw"], diagnostics["label"], diagnostics["error_type"],
+                    diagnostics["internal_validation_retries"],
+                    diagnostics["validation_error_codes"],
+                ),
+                flush=True,
+            )
+            if kind == "TRANSPORT":
                 transport_failures += 1
                 if transport_failures >= MAX_TRANSPORT_FAILURES:
                     raise Blocked(
@@ -1197,7 +1439,21 @@ def stage_slow(
                         "%d consecutive transport failures" % transport_failures,
                     )
                 continue
-            raise Blocked("COMPILER_REJECTS", message)
+            if kind == "ENVELOPE_PROTOCOL":
+                protocol_failed_draws += 1
+                sink["counters"]["protocol_failed_draws"] = protocol_failed_draws
+                if protocol_failed_draws >= MAX_PROTOCOL_FAILED_DRAWS:
+                    raise Blocked(
+                        "SLOW_ENVELOPE_PROTOCOL_FAILURE_EXHAUSTED",
+                        "%d protocol-failed draws for %s on this surface "
+                        "(%d carried in): no decision this configuration can "
+                        "read" % (
+                            protocol_failed_draws, slow_model,
+                            PROTOCOL_FAILED_CARRY_IN.get(slow_model, 0),
+                        ),
+                    )
+                continue
+            raise Blocked(diagnostics["label"], diagnostics["error_message"])
         budget.spend(int(backend.calls))
         transport_failures = 0
         candidate = dict(result.payload)
@@ -1212,14 +1468,33 @@ def stage_slow(
                 str(m) for m in getattr(result.response, "returned_models", ())
             }) or None,
         })
+        valid_decision_samples += 1
+        row["consumes_a_decision_sample"] = True
+        row["valid_decision_sample_index"] = valid_decision_samples
         attempts.append(row)
-        sink["llm_calls"] = sum(int(a.get("llm_calls") or 0) for a in attempts)
+        transport_failures = 0
+        sink["counters"].update({
+            "valid_decision_samples": valid_decision_samples,
+            "llm_calls_spent": sum(
+                int(a.get("llm_calls") or 0) for a in attempts
+            ),
+        })
+        sink["llm_calls"] = sink["counters"]["llm_calls_spent"]
         if not candidate:
-            raise Blocked(
-                "SLOW_ABSTAINS",
-                "the Slow Agent returned no_proposal (%s); the pinned "
-                "configuration gets one draw" % result.no_proposal_reason,
-            )
+            if valid_decision_samples >= MAX_VALID_DECISION_SAMPLES:
+                raise Blocked(
+                    "SLOW_DECLINES",
+                    "%d valid decision samples, both no_proposal (%s)"
+                    % (
+                        valid_decision_samples,
+                        ", ".join(
+                            str(a.get("no_proposal_reason"))
+                            for a in attempts
+                            if a.get("consumes_a_decision_sample")
+                        ),
+                    ),
+                )
+            continue
         payload = candidate
         sink["proposal"] = wvc._plain(payload)
         sink["guard"] = wvc._plain(payload["guard"])
@@ -1975,6 +2250,8 @@ def run_multi(*, k: int = K_TRAJECTORIES) -> int:
         ),
         "p1_touched_files": [dict(row) for row in P1_TOUCHED],
         "a1_touched_files": [dict(row) for row in A1_TOUCHED],
+        "fix_c_touched_files": [dict(row) for row in FIX_C_TOUCHED],
+        "relay_outage_on_record": RELAY_OUTAGE_ON_RECORD,
         "frozen_surface_before": {"files": len(before), "sha256": before},
         "llm_call_budget": LLM_CALL_BUDGET_MULTI,
         "retrain_budget": RETRAIN_BUDGET_MULTI,
@@ -1983,6 +2260,8 @@ def run_multi(*, k: int = K_TRAJECTORIES) -> int:
         row["sha256_after_p1"] = before[row["path"]]
     for row in payload["a1_touched_files"]:
         row["sha256_after_a1"] = before[row["path"]]
+    for row in payload["fix_c_touched_files"]:
+        row["sha256_after_fix_c"] = before[row["path"]]
     trajectories: list[dict[str, Any]] = []
     payload["trajectories"] = trajectories
     global_abort: str | None = None
@@ -2068,6 +2347,8 @@ def run(*, gate_only: bool = False, force: bool = False) -> int:
         "pre_registered": PRE_REGISTERED,
         "p1_touched_files": [dict(row) for row in P1_TOUCHED],
         "a1_touched_files": [dict(row) for row in A1_TOUCHED],
+        "fix_c_touched_files": [dict(row) for row in FIX_C_TOUCHED],
+        "relay_outage_on_record": RELAY_OUTAGE_ON_RECORD,
         "frozen_surface_before": {"files": len(before), "sha256": before},
         "llm_call_budget": LLM_CALL_BUDGET_TOTAL,
         "retrain_budget": RETRAIN_BUDGET,
@@ -2076,6 +2357,8 @@ def run(*, gate_only: bool = False, force: bool = False) -> int:
         row["sha256_after_p1"] = before[row["path"]]
     for row in payload["a1_touched_files"]:
         row["sha256_after_a1"] = before[row["path"]]
+    for row in payload["fix_c_touched_files"]:
+        row["sha256_after_fix_c"] = before[row["path"]]
     payload["p2_non_regression_gate"] = stage_p2_precondition()
     if gate_only:
         payload.update({
@@ -2281,7 +2564,9 @@ def _readjudicate(
     }
 
 
-def stage_banked(budget: Budget) -> dict[str, Any]:
+def stage_banked(
+    budget: Budget, slow_model: str = SLOW_MODEL,
+) -> dict[str, Any]:
     """B1-B5: finish links 6 to 9 on the #23 banked trajectories.
 
     The selector, the fold, the Slow edit and the compiler are the real
@@ -2310,9 +2595,11 @@ def stage_banked(budget: Budget) -> dict[str, Any]:
         (cohort_block.get("roster") or {}).get("train") or (),
         cohort_block.get("eval_uids") or (),
     )
-    if BANKED_ROOT.exists():
-        shutil.rmtree(BANKED_ROOT)
-    BANKED_ROOT.mkdir(parents=True, exist_ok=True)
+    banked_root = BANKED_ROOT / slow_model
+    if banked_root.exists():
+        shutil.rmtree(banked_root)
+    banked_root.mkdir(parents=True, exist_ok=True)
+    out["slow_model"] = slow_model
 
     # ---- B1: selector and attribution on every banked trajectory ----------
     b1: dict[str, Any] = {}
@@ -2394,7 +2681,7 @@ def stage_banked(budget: Budget) -> dict[str, Any]:
             "wall_seconds": time.perf_counter() - started,
         })
         return out
-    fork = BANKED_ROOT / "T1"
+    fork = banked_root / "T1"
     shutil.copytree(source_store, fork)
     store = SnapshotStore(fork / "snapshots")
     active = json.loads(store.active_path.read_text(encoding="utf-8"))
@@ -2431,7 +2718,7 @@ def stage_banked(budget: Budget) -> dict[str, Any]:
             slot=slot,
             attribution=b1["T1"]["attribution"],
             task_c=fault, budget=budget, sink=slow_sink,
-            fault_step=str(fault_row["step"]),
+            fault_step=str(fault_row["step"]), slow_model=slow_model,
         )
     except Blocked as exc:
         out.update({
@@ -2521,7 +2808,9 @@ def stage_banked(budget: Budget) -> dict[str, Any]:
             "unrelated banked episodes moved: %s" % collateral
         )
     else:
-        verdict, reason = "BANKED_CHAIN_CLOSES", (
+        verdict, reason = "BANKED_CHAIN_CLOSES_ON_%s" % (
+            slow_model.upper().replace("-", "_").replace(".", "_")
+        ), (
             "selector -> RISK_GAP at %s -> one Slow proposal -> compiler "
             "accepted -> the banked adoption is contained to identity, %s no "
             "longer crosses %+.3f, and every unrelated banked episode is "
@@ -2538,8 +2827,11 @@ def stage_banked(budget: Budget) -> dict[str, Any]:
 
 LLM_CALL_BUDGET_V4 = 12
 RETRAIN_BUDGET_V4 = 250
+# v4 is the #24 record and is never rewritten; this round writes v5.
 OUT_JSON_V4 = E2 / "operational_pipeline_v4.json"
 OUT_MD_V4 = E2 / "operational_pipeline_v4.md"
+OUT_JSON_V5 = E2 / "operational_pipeline_v5.json"
+OUT_MD_V5 = E2 / "operational_pipeline_v5.md"
 EVIDENCE_LEVEL_NOTE = (
     "DEVELOPMENT.  Every window this protocol reads had its outcome opened "
     "by #17, so nothing here is fresh confirmation and nothing here produces "
@@ -2554,13 +2846,24 @@ def run_v4(*, banked: bool = True, post_fix_live: bool = False) -> int:
     before = _freeze()
     budget = Budget(LLM_CALL_BUDGET_V4, RETRAIN_BUDGET_V4)
     payload: dict[str, Any] = {
-        "protocol_version": "operational_pipeline_v4",
+        "protocol_version": "operational_pipeline_v5",
         "role": (
             "finish links 6 to 9 on the #23 banked trajectories after the "
             "attribution window was rewired, then, only if that closes, one "
             "post-fix live trajectory"
         ),
-        "the_only_method_change_this_round": (
+        "the_only_change_this_round": (
+            "stage_slow's error classification and its diagnostic record.  "
+            "The decision backend stays on the same Opus configuration: "
+            "rewiring the report and swapping the deciding model are not "
+            "put in the same cut.  The selector, the fold, the thresholds, "
+            "the ladder, the two keys, the menu, the prompts, the "
+            "SELECTION_MISS adapter, the T1 fork, the public input, the "
+            "Harness view and the Slow prompt are all untouched."
+        ),
+        "slow_error_taxonomy": SLOW_ERROR_CLASSES,
+        "sampling_rule": SAMPLING_RULE,
+        "the_only_method_change_last_round": (
             "which episode attribution is handed.  Observation, Program, "
             "Guidance, the Slow grammar, the Risk thresholds, the adoption "
             "ladder, the two keys, the menu, the prompts and the "
@@ -2646,7 +2949,198 @@ def run_v4(*, banked: bool = True, post_fix_live: bool = False) -> int:
         payload["overall_verdict_reason"] = (
             "the frozen surface moved during the run; the reading is void"
         )
-    return _write(payload, out_json=OUT_JSON_V4, out_md=OUT_MD_V4)
+    return _write(payload, out_json=OUT_JSON_V5, out_md=OUT_MD_V5)
+
+
+OUT_JSON_V6 = E2 / "operational_pipeline_v6.json"
+OUT_MD_V6 = E2 / "operational_pipeline_v6.md"
+LLM_CALL_BUDGET_V6 = 12
+
+
+def run_v6(models: Sequence[str]) -> int:
+    """B2 once per pinned backend, each on its own copy of the T1 fork.
+
+    Only the deciding model differs between runs: the banked fork, the
+    public input, the authorized surface, the evidence and the sampling
+    discipline are the same object in every pass.  A verdict that closes
+    carries the model in its name, because what it shows is that the chain
+    runs on that model -- not that the method is better.
+    """
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_V6, RETRAIN_BUDGET_V4)
+    payload: dict[str, Any] = {
+        "protocol_version": "operational_pipeline_v6",
+        "role": (
+            "links 6 to 9 on the #23 banked ledger, run once per pinned Slow "
+            "backend after the relay outage took claude-opus-5 out"
+        ),
+        "why_not_opus": RELAY_OUTAGE_ON_RECORD,
+        "models": list(models),
+        "evidence_level": EVIDENCE_LEVEL_NOTE,
+        "claim_discipline": (
+            "a closing verdict is suffixed with the model that closed it.  "
+            "This is a chain-liveness reading on that backend, not an Opus "
+            "reading, and not a reading about the method."
+        ),
+        "what_is_identical_across_the_runs": [
+            "the #23 T1 banked ledger and its store fork",
+            "the selector, the fold and their outputs",
+            "the authorized surface verification.rules.scope_risk_guards",
+            "the public input handed to the Slow stage",
+            "the sampling discipline and the three counters",
+        ],
+        "what_differs": "the deciding model, and nothing else",
+        "selector_contract": SELECTOR_CONTRACT,
+        "slow_error_taxonomy": SLOW_ERROR_CLASSES,
+        "sampling_rule": SAMPLING_RULE,
+        "model_history_on_this_surface": MODEL_HISTORY_ON_THIS_SURFACE,
+        "fix_c_touched_files": [dict(row) for row in FIX_C_TOUCHED],
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_V6,
+        "retrain_budget": RETRAIN_BUDGET_V4,
+    }
+    for row in payload["fix_c_touched_files"]:
+        row["sha256_after_fix_c"] = before[row["path"]]
+    runs: dict[str, Any] = {}
+    payload["runs"] = runs
+    try:
+        payload["p2_non_regression_gate"] = stage_p2_precondition()
+        payload["guard_after_precondition"] = _guard_frozen(before, "the first model")
+        for model in models:
+            print("\n########## B2 on %s ##########" % model, flush=True)
+            box: dict[str, Any] = {"slow_model": model, "entered": True}
+            runs[model] = box
+            try:
+                box.update(stage_banked(budget, slow_model=model))
+            except Blocked as exc:
+                if exc.verdict in ("INSTRUMENT_DRIFT", "BUDGET_EXCEEDED"):
+                    raise
+                box.update({"verdict": exc.verdict, "reason": exc.reason})
+            print(
+                "B5 %-14s %s" % (model, box.get("verdict")), flush=True
+            )
+            _guard_frozen(before, "the next model")
+    except ConcurrentWrite as exc:
+        payload.update({"overall_verdict": "CONCURRENT_WRITE_ABORT",
+                        "overall_verdict_reason": str(exc)})
+    except Blocked as exc:
+        payload.update({"overall_verdict": exc.verdict,
+                        "overall_verdict_reason": exc.reason})
+    if "overall_verdict" not in payload:
+        closed = [m for m, r in runs.items()
+                  if str(r.get("verdict") or "").startswith("BANKED_CHAIN_CLOSES")]
+        by_verdict = {m: r.get("verdict") for m, r in runs.items()}
+        if closed:
+            payload["overall_verdict"] = "BANKED_CHAIN_CLOSES_IN_K_MODELS"
+            payload["overall_verdict_reason"] = (
+                "%d of %d pinned backends carried links 6 to 9 end to end: %s"
+                % (len(closed), len(runs), closed)
+            )
+        else:
+            payload["overall_verdict"] = "BANKED_CHAIN_NEVER_CLOSES"
+            payload["overall_verdict_reason"] = (
+                "no pinned backend produced a proposal the chain could carry: %s"
+                % by_verdict
+            )
+        payload["by_model"] = by_verdict
+        payload["closed_on"] = closed
+    payload.update({
+        "llm_call_count": budget.llm_used,
+        "consumer_retrains_total": budget.retrains_charged,
+        "exposure": {
+            "windows_read": ["the #23 ledger, replayed"],
+            "beyond_17520": "SEALED, not read",
+            "fresh_claim": "none",
+        },
+        "wall_seconds": time.perf_counter() - started,
+        "frozen_surface_after": _verify(before),
+    })
+    if not payload["frozen_surface_after"]["ok"]:
+        payload["overall_verdict"] = "CONCURRENT_WRITE_ABORT"
+        payload["overall_verdict_reason"] = (
+            "the frozen surface moved during the run; the reading is void"
+        )
+    return _write(payload, out_json=OUT_JSON_V6, out_md=OUT_MD_V6)
+
+
+def _markdown_models(payload: Mapping[str, Any]) -> str:
+    lines = [
+        "# Banked chain, one pinned Slow backend at a time",
+        "",
+        "**Overall: `%s`** -- %s" % (
+            payload.get("overall_verdict"),
+            payload.get("overall_verdict_reason", ""),
+        ),
+        "",
+        payload.get("claim_discipline", ""),
+        "",
+        "## Per model",
+        "",
+        "| model | verdict | valid samples | protocol-failed | LLM |",
+        "| --- | --- | ---: | ---: | ---: |",
+    ]
+    for model, run in (payload.get("runs") or {}).items():
+        counters = ((run.get("b2_slow") or {}).get("counters") or {})
+        lines.append(
+            "| `%s` | `%s` | %s | %s | %s |" % (
+                model, run.get("verdict"),
+                counters.get("valid_decision_samples"),
+                counters.get("protocol_failed_draws"),
+                counters.get("llm_calls_spent"),
+            )
+        )
+    for model, run in (payload.get("runs") or {}).items():
+        lines.extend(["", "### `%s` -- `%s`" % (model, run.get("verdict")), "",
+                      str(run.get("reason") or "")])
+        slow = run.get("b2_slow") or {}
+        for a in slow.get("attempts") or ():
+            bits = [str(a.get("outcome"))]
+            if a.get("no_proposal_reason"):
+                bits.append("reason %s" % a["no_proposal_reason"])
+            if (a.get("diagnostics") or {}).get("validation_error_codes"):
+                bits.append("codes %s" % a["diagnostics"]["validation_error_codes"])
+            lines.append("- draw %s: %s" % (a.get("draw"), "; ".join(bits)))
+        guard = slow.get("guard")
+        if guard:
+            lines.extend([
+                "",
+                "Guard `%s`: %s `%s` %s -> %s on the %s window, applies to %s."
+                % (guard.get("guard_id"), guard.get("statistic"),
+                   guard.get("comparator"), _fmt(guard.get("threshold")),
+                   guard.get("action"), guard.get("window"),
+                   guard.get("applies_to")),
+                "", "> %s" % guard.get("rationale"), "",
+            ])
+        readj = run.get("b4_readjudication") or {}
+        if readj:
+            lines.extend([
+                "| step | plan before | plan after | delayed before | "
+                "delayed after | harmed before | harmed after |",
+                "| --- | --- | --- | ---: | ---: | --- | --- |",
+            ])
+            for step, r in readj.items():
+                lines.append(
+                    "| `%s` | `%s` | `%s` | %s | %s | %s | %s |" % (
+                        step, SSU._plan_label(r["plan_before"]),
+                        SSU._plan_label(r["plan_after"]),
+                        _fmt(r["delayed_before"]), _fmt(r["delayed_after"]),
+                        ", ".join(r["harmed_before"]) or "none",
+                        ", ".join(r["harmed_after"]) or "none",
+                    )
+                )
+            lines.append("")
+    after = payload.get("frozen_surface_after") or {}
+    lines.extend([
+        "", "## Cost and integrity", "",
+        "- LLM calls: %s / %s." % (payload.get("llm_call_count"),
+                                   payload.get("llm_call_budget")),
+        "- Consumer retrains: %s." % payload.get("consumer_retrains_total"),
+        "- Frozen surface: %s files, drift %s." % (after.get("files"),
+                                                   after.get("drift")),
+        "- Wall seconds: %.1f." % float(payload.get("wall_seconds") or 0.0),
+    ])
+    return "\n".join(lines) + "\n"
 
 
 def _markdown_multi(payload: Mapping[str, Any]) -> str:
@@ -2804,6 +3298,8 @@ def _markdown_multi(payload: Mapping[str, Any]) -> str:
 
 
 def _markdown(payload: Mapping[str, Any]) -> str:
+    if payload.get("runs") is not None:
+        return _markdown_models(payload)
     if payload.get("trajectories") is not None:
         return _markdown_multi(payload)
     lines = [
@@ -3025,7 +3521,7 @@ def _write(
     print("retrains", body.get("consumer_retrains_total", 0), flush=True)
     return 0 if body.get("overall_verdict") in (
         "OPERATIONAL_PIPELINE_CLOSES", "OPERATIONAL_PIPELINE_CLOSES_IN_K",
-        "BANKED_CHAIN_CLOSES",
+        "BANKED_CHAIN_CLOSES", "BANKED_CHAIN_CLOSES_IN_K_MODELS",
         "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX", "P2_ONLY",
     ) else 1
 
@@ -3053,10 +3549,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="banked completion, then one post-fix live trajectory if it closed",
     )
     parser.add_argument(
+        "--slow-models", type=str, default="",
+        help="comma-separated pinned Slow backends; runs B2 once per model",
+    )
+    parser.add_argument(
         "--force", action="store_true",
         help="allow the single-trajectory path to overwrite the v2 record",
     )
     args = parser.parse_args(argv)
+    if args.slow_models:
+        return run_v6([m.strip() for m in args.slow_models.split(",") if m.strip()])
     if args.banked_completion or args.post_fix_live:
         return run_v4(banked=True, post_fix_live=bool(args.post_fix_live))
     if args.multi_trajectory:
