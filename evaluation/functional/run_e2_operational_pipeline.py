@@ -1846,6 +1846,7 @@ def _mount(container: dict[str, Any], key: str, seed: Any) -> Any:
 def _trajectory(
     *, label: str, budget: Budget, cohort: Mapping[str, Any],
     cap: Mapping[str, Any], sink: dict[str, Any],
+    slow_model: str = SLOW_MODEL,
 ) -> dict[str, Any]:
     """One complete trajectory, from a store of its own to task_D."""
     started = time.perf_counter()
@@ -1993,6 +1994,7 @@ def _trajectory(
             slow = stage_slow(
                 slot=slot, attribution=attribution, task_c=fault,
                 budget=budget, sink=slow_sink, fault_step=str(fault_step),
+                slow_model=slow_model,
             )
             print(
                 "OP[%s] slow_edit    %s -> %s | snapshot %s -> %s"
@@ -3064,6 +3066,133 @@ def run_v6(models: Sequence[str]) -> int:
     return _write(payload, out_json=OUT_JSON_V6, out_md=OUT_MD_V6)
 
 
+OUT_JSON_V7 = E2 / "operational_pipeline_v7.json"
+OUT_MD_V7 = E2 / "operational_pipeline_v7.md"
+LLM_CALL_BUDGET_V7 = 8
+RETRAIN_BUDGET_V7 = 200
+
+
+def run_v7(slow_model: str = "gpt-5.6-sol") -> int:
+    """One continuous live trajectory after the routing fix.
+
+    Nothing in the instrument moves for this run.  The verdict is renamed
+    at the reporting layer so it carries the model and the evidence level;
+    the trajectory machinery itself is the one #23 and #26 already used.
+    """
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_V7, RETRAIN_BUDGET_V7)
+    banked = json.loads(BANKED_SOURCE.read_text(encoding="utf-8"))
+    payload: dict[str, Any] = {
+        "protocol_version": "operational_pipeline_v7",
+        "role": (
+            "the post-fix live single trajectory: a new continuous store, one "
+            "sampling, and the whole nine-link chain run for real"
+        ),
+        "no_method_or_instrument_change_this_round": (
+            "the selector, the fold, the thresholds, the ladder, the two "
+            "keys, the menu, the prompts, the SELECTION_MISS adapter and the "
+            "Slow grammar are all exactly as #26 left them.  The only edits "
+            "are the pinned model reaching _trajectory and the verdict being "
+            "renamed for the report."
+        ),
+        "slow_backend": {
+            "model": slow_model,
+            "why": (
+                "the backend that closed the banked chain in #26; the relay's "
+                "Claude route is still returning an error payload, and this "
+                "run does not switch models mid-way even if it recovers"
+            ),
+            "history_on_this_surface": MODEL_HISTORY_ON_THIS_SURFACE.get(
+                slow_model, "no history on record"
+            ),
+            "at_most_one_proposal": True,
+            "no_re_throw": "one sampling; a natural stop is recorded as it stands",
+        },
+        "gated_on": {
+            "requirement": "part B had to close before this ran",
+            "closed_in": _repo_rel(BANKED_SOURCE),
+            "banked_verdict": banked.get("overall_verdict"),
+            "closed_on": banked.get("closed_on"),
+        },
+        "evidence_level": (
+            "DEVELOPMENT.  Every window here had its outcome opened by #17, "
+            "so this trajectory produces no fresh confirmation evidence, no "
+            "new A5-over-A3 result, and no claim that the reading is "
+            "backend-independent.  What a closing verdict shows is that the "
+            "chain runs end to end on %s." % slow_model
+        ),
+        "selector_contract": SELECTOR_CONTRACT,
+        "sampling_rule": SAMPLING_RULE,
+        "pre_registered": PRE_REGISTERED,
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_V7,
+        "retrain_budget": RETRAIN_BUDGET_V7,
+    }
+    sink: dict[str, Any] = {"label": "post_fix_live", "entered": False}
+    payload["trajectory_record"] = sink
+    try:
+        payload["p2_non_regression_gate"] = stage_p2_precondition()
+        payload["guard_after_precondition"] = _guard_frozen(before, "the trajectory")
+        cohort, cap, roster = _cohort()
+        payload["cohort"] = {
+            "name": COHORT_NAME, "roster": roster,
+            "eval_uids": list(cohort["eval_uids"]),
+        }
+        _trajectory(
+            label="post_fix_live", budget=budget, cohort=cohort, cap=cap,
+            sink=sink, slow_model=slow_model,
+        )
+    except ConcurrentWrite as exc:
+        payload.update({"overall_verdict": "CONCURRENT_WRITE_ABORT",
+                        "overall_verdict_reason": str(exc)})
+    except Blocked as exc:
+        payload.update({"overall_verdict": exc.verdict,
+                        "overall_verdict_reason": exc.reason})
+    if "overall_verdict" not in payload:
+        suffix = slow_model.upper().replace("-", "_").replace(".", "_")
+        raw = str(sink.get("verdict"))
+        selector = ((sink.get("stages") or {}).get("scope_risk_selector") or {})
+        if raw == "OPERATIONAL_PIPELINE_CLOSES":
+            verdict = "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_%s" % suffix
+        elif raw == "PIPELINE_RUNS_NO_FAULT_SAMPLE":
+            verdict = str(selector.get("verdict") or "NO_ELIGIBLE_SCOPE_RISK_EPISODE")
+        else:
+            verdict = raw
+        payload.update({
+            "overall_verdict": verdict,
+            "overall_verdict_reason": sink.get("verdict_reason"),
+            "trajectory_verdict_before_renaming": raw,
+            "renaming_rule": (
+                "a closing verdict carries the deciding model and the "
+                "development evidence level; a no-fault stop is reported "
+                "under the selector's own verdict rather than a generic one"
+            ),
+        })
+    payload.update({
+        "llm_call_count": budget.llm_used,
+        "consumer_retrains_total": budget.retrains_charged,
+        "exposure": {
+            "windows_read": [
+                "2024 development training anchors (indices 120-900)",
+                "task_A/probe/task_B inside the 2024 development partition",
+                "task_C [9864, 10152] and task_D [10560, 10848], both inside "
+                "the 2025 partition #17 already opened",
+            ],
+            "beyond_17520": "SEALED, not read",
+            "fresh_claim": "none",
+        },
+        "wall_seconds": time.perf_counter() - started,
+        "frozen_surface_after": _verify(before),
+    })
+    if not payload["frozen_surface_after"]["ok"]:
+        payload["overall_verdict"] = "CONCURRENT_WRITE_ABORT"
+        payload["overall_verdict_reason"] = (
+            "the frozen surface moved during the run; the reading is void"
+        )
+    return _write(payload, out_json=OUT_JSON_V7, out_md=OUT_MD_V7)
+
+
 def _markdown_models(payload: Mapping[str, Any]) -> str:
     lines = [
         "# Banked chain, one pinned Slow backend at a time",
@@ -3522,6 +3651,7 @@ def _write(
     return 0 if body.get("overall_verdict") in (
         "OPERATIONAL_PIPELINE_CLOSES", "OPERATIONAL_PIPELINE_CLOSES_IN_K",
         "BANKED_CHAIN_CLOSES", "BANKED_CHAIN_CLOSES_IN_K_MODELS",
+        "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_GPT_5_6_SOL",
         "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX", "P2_ONLY",
     ) else 1
 
@@ -3549,6 +3679,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="banked completion, then one post-fix live trajectory if it closed",
     )
     parser.add_argument(
+        "--slow-model", type=str, default="gpt-5.6-sol",
+        help="the pinned Slow backend for the post-fix live trajectory",
+    )
+    parser.add_argument(
         "--slow-models", type=str, default="",
         help="comma-separated pinned Slow backends; runs B2 once per model",
     )
@@ -3559,8 +3693,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.slow_models:
         return run_v6([m.strip() for m in args.slow_models.split(",") if m.strip()])
-    if args.banked_completion or args.post_fix_live:
-        return run_v4(banked=True, post_fix_live=bool(args.post_fix_live))
+    if args.post_fix_live:
+        return run_v7(slow_model=args.slow_model)
+    if args.banked_completion:
+        return run_v4(banked=True, post_fix_live=False)
     if args.multi_trajectory:
         return run_multi(k=int(args.k))
     return run(gate_only=bool(args.gate_only), force=bool(args.force))
