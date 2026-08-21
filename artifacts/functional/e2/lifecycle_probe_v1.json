@@ -1,0 +1,835 @@
+{
+  "protocol_version": "lifecycle_probe_v1",
+  "role": "close the runtime loop: one out-of-selection delayed probe per surviving LOCAL_DRAFT, driven through the existing update path",
+  "not_authorization_evidence": "a mechanism demonstration with no presumed direction. No Skill is promoted into any Harness snapshot, no TRY right is granted, and every state change lands under _scratch/skill_store",
+  "overall_verdict": "LIFECYCLE_CLOSES",
+  "overall_verdict_reason": "3 of 5 Drafts changed state through the real path: T1_A5 -> LOCAL_ACTIVE, T2_A3 -> LOCAL_ACTIVE, T2_A5 -> LOCAL_ACTIVE; T3_A3, T3_A5 had no legal probe window",
+  "labels": [
+    "LIFECYCLE_CLOSES"
+  ],
+  "outcome_counts": {
+    "TRANSITIONED": 3,
+    "NO_TRANSITION_NEUTRAL_PROBE": 0,
+    "PROBE_WINDOW_UNAVAILABLE": 2,
+    "UPDATE_PATH_BLOCKED": 0
+  },
+  "pre_registered": {
+    "fixed_before_the_run": true,
+    "zero_llm": true,
+    "what_this_slice_does": "supplies each surviving LOCAL_DRAFT with one delayed probe on a window that took part in no selection, and lets the existing update path decide the transition",
+    "direction_is_not_presumed": "a probe that restricts the Draft closes the loop exactly as well as one that promotes it; the run is a mechanism demonstration",
+    "probe_window": {
+      "one_probe_window_per_draft": true,
+      "first_choice": "when the Draft's window is a task of the frozen roster and the next task exists in it, the probe origins are that next task's delayed_origins, quoted verbatim from task_episode_harness.e1._frozen_task_roster().  The delayed role is kept so the window shape is the one the Draft was graded on, and the next task's block sits entirely beyond everything the Draft's own window read",
+      "fallback": "otherwise a declared shift of +480 on the Draft's own delayed origins, same count and same spacing, labelled origin_source=\"chosen\"",
+      "legality": "the probe's farthest read, max(origins) + horizon, must not pass the cohort's frozen sealed boundary.  Over the boundary the Draft is recorded PROBE_WINDOW_UNAVAILABLE: the window is not moved, not shortened and not replaced by a nearer one",
+      "traffic_boundary": "g3_sourcing.SEALED_FROM_INDEX cross-checked against the sealed_from_index recorded in the two screening artifacts; the tightest of them is used",
+      "roster_boundary": "the KDD roster cohorts have no index-sealed ceiling -- e1's sealed confirmation set is a different dataset (noaa_global_hourly) and is not touched here.  What bounds them is the roster itself: the probe task index must be inside AVAILABLE_TASK_COUNT, and the farthest read must be inside the series",
+      "horizon": 48,
+      "declared_shift": 480
+    },
+    "probe_is_never_used_to_choose": "the reading grades an already-adopted plan.  No plan is re-proposed, no shortlist re-run, no mask re-searched and no threshold touched",
+    "update_path": "the probe is built by task_episode_harness.runner._arm_metrics, the same cluster-unit metric the real path uses, and handed to task_episode_harness.e1._update_delayed unchanged.  The status is whatever that function returns; nothing is set by hand",
+    "state_is_scoped": "updated Episodes are written under _scratch/skill_store/lifecycle_probe_v1 and nowhere else",
+    "budget": {
+      "evaluation_calls": 8,
+      "probe_evaluations_per_draft": 1,
+      "note": "one evaluation call is one call into the recipe evaluator for one plan over one window.  A probe needs two -- the identity baseline the gain is measured against, and the adopted plan -- and the baseline is shared by Drafts on the same cohort, Consumer structure and window.  Consumer retrains are counted separately at one per origin per call, the convention the bridge and integration slices used"
+    },
+    "verdicts": [
+      "LIFECYCLE_CLOSES: at least one Draft changed state through the real path, in either direction",
+      "PROBE_WINDOWS_UNAVAILABLE: no Draft has a legal probe window",
+      "UPDATE_PATH_BLOCKED: a legal probe exists but the real path will not accept it; the refusing interface is named",
+      "NO_TRANSITION_NEUTRAL_PROBE: added before the run because the three above are not exhaustive -- the path can accept a probe, record delayed evidence, and still leave the Draft standing when the reading lands inside the neutral band"
+    ],
+    "verdicts_are_reported_side_by_side": true
+  },
+  "update_path": {
+    "callable": "evaluation/functional/task_episode_harness/e1.py::_update_delayed",
+    "signature": "_update_delayed(episode, delayed_probe, delayed_origins)",
+    "reads": "episode.support_response['gain'] and delayed_probe['macro_gain'], 'se_block', 'gain_over_se'",
+    "bands": "Support below the material threshold grades EPISODE_ONLY/NEGATIVE; otherwise delayed at or above +threshold grades LOCAL_ACTIVE/POSITIVE, at or below -threshold grades RESTRICTED/CONFLICT, and anything between grades LOCAL_DRAFT/ABSTAIN with evidence_level raised to DELAYED",
+    "material_threshold": 0.005,
+    "reachable_targets": {
+      "promote": "LOCAL_ACTIVE",
+      "restrict": "RESTRICTED",
+      "stand": "LOCAL_DRAFT",
+      "evidence_level_after": "DELAYED"
+    },
+    "nothing_is_set_by_hand": true
+  },
+  "probe_window_rule": {
+    "one_probe_window_per_draft": true,
+    "first_choice": "when the Draft's window is a task of the frozen roster and the next task exists in it, the probe origins are that next task's delayed_origins, quoted verbatim from task_episode_harness.e1._frozen_task_roster().  The delayed role is kept so the window shape is the one the Draft was graded on, and the next task's block sits entirely beyond everything the Draft's own window read",
+    "fallback": "otherwise a declared shift of +480 on the Draft's own delayed origins, same count and same spacing, labelled origin_source=\"chosen\"",
+    "legality": "the probe's farthest read, max(origins) + horizon, must not pass the cohort's frozen sealed boundary.  Over the boundary the Draft is recorded PROBE_WINDOW_UNAVAILABLE: the window is not moved, not shortened and not replaced by a nearer one",
+    "traffic_boundary": "g3_sourcing.SEALED_FROM_INDEX cross-checked against the sealed_from_index recorded in the two screening artifacts; the tightest of them is used",
+    "roster_boundary": "the KDD roster cohorts have no index-sealed ceiling -- e1's sealed confirmation set is a different dataset (noaa_global_hourly) and is not touched here.  What bounds them is the roster itself: the probe task index must be inside AVAILABLE_TASK_COUNT, and the farthest read must be inside the series",
+    "horizon": 48,
+    "declared_shift": 480
+  },
+  "source_artifact": "artifacts/functional/e2/skill_store_integration_v1.json",
+  "source_artifact_read_only": true,
+  "drafts": [
+    {
+      "draft_id": "T1_A5",
+      "episode_id": "ssi_t1_a5",
+      "target_id": "T1",
+      "arm": "A5",
+      "cohort": "T233",
+      "consumer_variant": "pooled",
+      "graded_window_id": "e1v2_task_04",
+      "adopted_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 0.10713881334229038,
+      "in_selection_delayed_aggregate_gain": 0.2448450610761234,
+      "probe_window": {
+        "probe_window_id": "e1v2_task_05",
+        "probe_origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "task_episode_harness.e1._frozen_task_roster()[4], e1v2_task_05, delayed_origins verbatim; the Draft was graded on e1v2_task_04",
+        "horizon": 48,
+        "farthest_index_read": 4512,
+        "own_delayed_origins": [
+          4080,
+          4128,
+          4176
+        ],
+        "overlaps_own_window": false,
+        "sealed_check": {
+          "kind": "roster_bound",
+          "why_no_index_boundary": "e1's sealed confirmation set is a different dataset (noaa_global_hourly), which this run does not touch; the ceiling on this cohort is the frozen roster itself",
+          "probe_task_index": 4,
+          "available_task_count": 27,
+          "probe_task_inside_roster": true,
+          "shortest_series_length": 10920,
+          "farthest_index_read": 4512,
+          "inside": true,
+          "sealed_confirmation_dataset": "noaa_global_hourly",
+          "sealed_confirmation_dataset_touched": false
+        },
+        "available": true
+      },
+      "probe": {
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "macro_gain": 0.09358275034111724,
+        "se_block": 0.017572347707423764,
+        "gain_over_se": 5.325569007582377,
+        "per_origin_gain": {
+          "4368": 0.02860305390803592,
+          "4416": 0.21593248143000127,
+          "4464": 0.03621271568531455
+        },
+        "per_series_mean_gain": {
+          "T257": 0.04416591151694094,
+          "T259": 0.12625527146875457,
+          "T260": 0.09615020340231428,
+          "T261": 0.062161271185154944,
+          "T262": 0.02716411731848556,
+          "T264": 0.09679030056479761,
+          "T265": 0.11300741926112634,
+          "T266": 0.18296750801136383
+        },
+        "positive_series_count": 8,
+        "negative_series_count": 0,
+        "took_part_in_any_selection": false,
+        "identity_baseline_reused": false,
+        "evaluation_calls_so_far": 2,
+        "consumer_retrains_so_far": 6,
+        "metric_function": "evaluation/functional/task_episode_harness/runner.py::_arm_metrics",
+        "evaluator": "evaluation/functional/run_batch_composition_headroom.py::_evaluate_variant / _evaluate_assignment"
+      },
+      "transition": {
+        "accepted": true,
+        "before": {
+          "local_status": "LOCAL_DRAFT",
+          "relation": "POSITIVE",
+          "evidence_level": "SUPPORT",
+          "response_validity": "VALID",
+          "support_gain": 0.10713881334229038,
+          "delayed_evaluated": true,
+          "delayed_gain": 0.2448450610761234,
+          "delayed_se_block": null,
+          "delayed_gain_over_se": null,
+          "delayed_block_origins": [
+            4080,
+            4128,
+            4176
+          ],
+          "delayed_took_part_in_selection": true
+        },
+        "after": {
+          "local_status": "LOCAL_ACTIVE",
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "support_gain": 0.10713881334229038,
+          "delayed_evaluated": true,
+          "delayed_gain": 0.09358275034111724,
+          "delayed_se_block": 0.017572347707423764,
+          "delayed_gain_over_se": 5.325569007582377,
+          "delayed_block_origins": [
+            4368,
+            4416,
+            4464
+          ],
+          "delayed_took_part_in_selection": null
+        },
+        "status_changed": true,
+        "evidence_level_changed": true,
+        "relation_changed": false,
+        "why": "the probe read +0.093583 against a material threshold of 0.005, so the path moved the Episode from LOCAL_DRAFT to LOCAL_ACTIVE",
+        "updated_episode": {
+          "episode_id": "ssi_t1_a5",
+          "schema_version": "experience-episode/1",
+          "task_consumer_key": "batch:T233|consumer:pooled",
+          "domain_namespace": "T233",
+          "context_summary": {
+            "cohort": {
+              "cohort_name": "T233"
+            },
+            "local_pattern": {
+              "consumer_variant": "pooled",
+              "window_id": "e1v2_task_04",
+              "arm": "A5",
+              "retrieved_skill_ids": [
+                "build_contrastive_candidates",
+                "inspect_and_localize",
+                "select_or_identity_and_verify",
+                "recipe_batch_guidance_t1_v1"
+              ]
+            },
+            "program_geometry": {
+              "program": "outlier_iqr",
+              "excluded_count": 0,
+              "evaluations_used": 2,
+              "consumer_retrains": 60
+            }
+          },
+          "workflow_signature": "outlier_iqr",
+          "support_response": {
+            "gain": 0.10713881334229038,
+            "window": "support",
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "accepted": true,
+            "block_origins": [
+              3936,
+              3984,
+              4032
+            ],
+            "harmed_eval_series_count": 1,
+            "skill_clause_use": [
+              "R1-1",
+              "R1-2",
+              "R3-1"
+            ],
+            "provenance": "skill_store_integration",
+            "counts_as_unguided_exploration": false,
+            "audit_note": "engineering measurement of the Skill-store channel; not authorization evidence and not an unguided probe. The registered card is guidance in a namespace of its own, carries no program and no tool, and grants no TRY right"
+          },
+          "delayed_response": {
+            "evaluated": true,
+            "gain": 0.09358275034111724,
+            "se_block": 0.017572347707423764,
+            "gain_over_se": 5.325569007582377,
+            "block_origins": [
+              4368,
+              4416,
+              4464
+            ]
+          },
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "local_status": "LOCAL_ACTIVE",
+          "pattern_view": "default",
+          "evidence_refs": [
+            "skill_store_integration",
+            "skill_store_integration_v1"
+          ]
+        }
+      },
+      "outcome": "TRANSITIONED"
+    },
+    {
+      "draft_id": "T2_A3",
+      "episode_id": "ssi_t2_a3",
+      "target_id": "T2",
+      "arm": "A3",
+      "cohort": "electricity",
+      "consumer_variant": "per_channel",
+      "graded_window_id": "e1v2_task_04",
+      "adopted_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "0",
+          "1",
+          "10",
+          "11",
+          "3"
+        ]
+      },
+      "support_aggregate_gain": 0.05207340468432272,
+      "in_selection_delayed_aggregate_gain": 0.024745091029775134,
+      "probe_window": {
+        "probe_window_id": "e1v2_task_05",
+        "probe_origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "task_episode_harness.e1._frozen_task_roster()[4], e1v2_task_05, delayed_origins verbatim; the Draft was graded on e1v2_task_04",
+        "horizon": 48,
+        "farthest_index_read": 4512,
+        "own_delayed_origins": [
+          4080,
+          4128,
+          4176
+        ],
+        "overlaps_own_window": false,
+        "sealed_check": {
+          "kind": "roster_bound",
+          "why_no_index_boundary": "e1's sealed confirmation set is a different dataset (noaa_global_hourly), which this run does not touch; the ceiling on this cohort is the frozen roster itself",
+          "probe_task_index": 4,
+          "available_task_count": 27,
+          "probe_task_inside_roster": true,
+          "shortest_series_length": 20000,
+          "farthest_index_read": 4512,
+          "inside": true,
+          "sealed_confirmation_dataset": "noaa_global_hourly",
+          "sealed_confirmation_dataset_touched": false
+        },
+        "available": true
+      },
+      "probe": {
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "macro_gain": 0.056719941465735134,
+        "se_block": 0.014913248535019888,
+        "gain_over_se": 3.8033257028167333,
+        "per_origin_gain": {
+          "4368": 0.0766812776946371,
+          "4416": 0.05584325363342718,
+          "4464": 0.037635293069141096
+        },
+        "per_series_mean_gain": {
+          "12": 0.034870588918508326,
+          "13": 0.06041808077684566,
+          "14": 0.07034151454618447,
+          "15": 0.08712416456043155,
+          "16": 0.009701520621212175,
+          "17": 0.1043806547087515,
+          "18": 0.09832404422262853,
+          "19": -0.011401036628681194
+        },
+        "positive_series_count": 7,
+        "negative_series_count": 1,
+        "took_part_in_any_selection": false,
+        "identity_baseline_reused": false,
+        "evaluation_calls_so_far": 4,
+        "consumer_retrains_so_far": 12,
+        "metric_function": "evaluation/functional/task_episode_harness/runner.py::_arm_metrics",
+        "evaluator": "evaluation/functional/run_batch_composition_headroom.py::_evaluate_variant / _evaluate_assignment"
+      },
+      "transition": {
+        "accepted": true,
+        "before": {
+          "local_status": "LOCAL_DRAFT",
+          "relation": "POSITIVE",
+          "evidence_level": "SUPPORT",
+          "response_validity": "VALID",
+          "support_gain": 0.05207340468432272,
+          "delayed_evaluated": true,
+          "delayed_gain": 0.024745091029775134,
+          "delayed_se_block": null,
+          "delayed_gain_over_se": null,
+          "delayed_block_origins": [
+            4080,
+            4128,
+            4176
+          ],
+          "delayed_took_part_in_selection": true
+        },
+        "after": {
+          "local_status": "LOCAL_ACTIVE",
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "support_gain": 0.05207340468432272,
+          "delayed_evaluated": true,
+          "delayed_gain": 0.056719941465735134,
+          "delayed_se_block": 0.014913248535019888,
+          "delayed_gain_over_se": 3.8033257028167333,
+          "delayed_block_origins": [
+            4368,
+            4416,
+            4464
+          ],
+          "delayed_took_part_in_selection": null
+        },
+        "status_changed": true,
+        "evidence_level_changed": true,
+        "relation_changed": false,
+        "why": "the probe read +0.056720 against a material threshold of 0.005, so the path moved the Episode from LOCAL_DRAFT to LOCAL_ACTIVE",
+        "updated_episode": {
+          "episode_id": "ssi_t2_a3",
+          "schema_version": "experience-episode/1",
+          "task_consumer_key": "batch:electricity|consumer:per_channel",
+          "domain_namespace": "electricity",
+          "context_summary": {
+            "cohort": {
+              "cohort_name": "electricity"
+            },
+            "local_pattern": {
+              "consumer_variant": "per_channel",
+              "window_id": "e1v2_task_04",
+              "arm": "A3",
+              "retrieved_skill_ids": [
+                "build_contrastive_candidates",
+                "inspect_and_localize",
+                "select_or_identity_and_verify"
+              ]
+            },
+            "program_geometry": {
+              "program": "repair_level_shift",
+              "excluded_count": 5,
+              "evaluations_used": 2,
+              "consumer_retrains": 75
+            }
+          },
+          "workflow_signature": "repair_level_shift",
+          "support_response": {
+            "gain": 0.05207340468432272,
+            "window": "support",
+            "program": "repair_level_shift",
+            "excluded_series": [
+              "0",
+              "1",
+              "10",
+              "11",
+              "3"
+            ],
+            "accepted": true,
+            "block_origins": [
+              3936,
+              3984,
+              4032
+            ],
+            "harmed_eval_series_count": 0,
+            "skill_clause_use": [],
+            "provenance": "skill_store_integration",
+            "counts_as_unguided_exploration": false,
+            "audit_note": "engineering measurement of the Skill-store channel; not authorization evidence and not an unguided probe. The registered card is guidance in a namespace of its own, carries no program and no tool, and grants no TRY right"
+          },
+          "delayed_response": {
+            "evaluated": true,
+            "gain": 0.056719941465735134,
+            "se_block": 0.014913248535019888,
+            "gain_over_se": 3.8033257028167333,
+            "block_origins": [
+              4368,
+              4416,
+              4464
+            ]
+          },
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "local_status": "LOCAL_ACTIVE",
+          "pattern_view": "default",
+          "evidence_refs": [
+            "skill_store_integration",
+            "skill_store_integration_v1"
+          ]
+        }
+      },
+      "outcome": "TRANSITIONED"
+    },
+    {
+      "draft_id": "T2_A5",
+      "episode_id": "ssi_t2_a5",
+      "target_id": "T2",
+      "arm": "A5",
+      "cohort": "electricity",
+      "consumer_variant": "per_channel",
+      "graded_window_id": "e1v2_task_04",
+      "adopted_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 0.03736562214690686,
+      "in_selection_delayed_aggregate_gain": 0.03445501666970761,
+      "probe_window": {
+        "probe_window_id": "e1v2_task_05",
+        "probe_origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "task_episode_harness.e1._frozen_task_roster()[4], e1v2_task_05, delayed_origins verbatim; the Draft was graded on e1v2_task_04",
+        "horizon": 48,
+        "farthest_index_read": 4512,
+        "own_delayed_origins": [
+          4080,
+          4128,
+          4176
+        ],
+        "overlaps_own_window": false,
+        "sealed_check": {
+          "kind": "roster_bound",
+          "why_no_index_boundary": "e1's sealed confirmation set is a different dataset (noaa_global_hourly), which this run does not touch; the ceiling on this cohort is the frozen roster itself",
+          "probe_task_index": 4,
+          "available_task_count": 27,
+          "probe_task_inside_roster": true,
+          "shortest_series_length": 20000,
+          "farthest_index_read": 4512,
+          "inside": true,
+          "sealed_confirmation_dataset": "noaa_global_hourly",
+          "sealed_confirmation_dataset_touched": false
+        },
+        "available": true
+      },
+      "probe": {
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "macro_gain": 0.04050113812058425,
+        "se_block": 0.007001876806245694,
+        "gain_over_se": 5.78432600877198,
+        "per_origin_gain": {
+          "4368": 0.047863365843199765,
+          "4416": 0.04424603353793176,
+          "4464": 0.02939401498062122
+        },
+        "per_series_mean_gain": {
+          "12": 0.006840175254407129,
+          "13": 0.048556188565097136,
+          "14": 0.0661427430931291,
+          "15": 0.054689146661388875,
+          "16": 0.017360251152460798,
+          "17": 0.04601210865942259,
+          "18": 0.049854842670441046,
+          "19": 0.034553648908327315
+        },
+        "positive_series_count": 8,
+        "negative_series_count": 0,
+        "took_part_in_any_selection": false,
+        "identity_baseline_reused": true,
+        "evaluation_calls_so_far": 5,
+        "consumer_retrains_so_far": 15,
+        "metric_function": "evaluation/functional/task_episode_harness/runner.py::_arm_metrics",
+        "evaluator": "evaluation/functional/run_batch_composition_headroom.py::_evaluate_variant / _evaluate_assignment"
+      },
+      "transition": {
+        "accepted": true,
+        "before": {
+          "local_status": "LOCAL_DRAFT",
+          "relation": "POSITIVE",
+          "evidence_level": "SUPPORT",
+          "response_validity": "VALID",
+          "support_gain": 0.03736562214690686,
+          "delayed_evaluated": true,
+          "delayed_gain": 0.03445501666970761,
+          "delayed_se_block": null,
+          "delayed_gain_over_se": null,
+          "delayed_block_origins": [
+            4080,
+            4128,
+            4176
+          ],
+          "delayed_took_part_in_selection": true
+        },
+        "after": {
+          "local_status": "LOCAL_ACTIVE",
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "support_gain": 0.03736562214690686,
+          "delayed_evaluated": true,
+          "delayed_gain": 0.04050113812058425,
+          "delayed_se_block": 0.007001876806245694,
+          "delayed_gain_over_se": 5.78432600877198,
+          "delayed_block_origins": [
+            4368,
+            4416,
+            4464
+          ],
+          "delayed_took_part_in_selection": null
+        },
+        "status_changed": true,
+        "evidence_level_changed": true,
+        "relation_changed": false,
+        "why": "the probe read +0.040501 against a material threshold of 0.005, so the path moved the Episode from LOCAL_DRAFT to LOCAL_ACTIVE",
+        "updated_episode": {
+          "episode_id": "ssi_t2_a5",
+          "schema_version": "experience-episode/1",
+          "task_consumer_key": "batch:electricity|consumer:per_channel",
+          "domain_namespace": "electricity",
+          "context_summary": {
+            "cohort": {
+              "cohort_name": "electricity"
+            },
+            "local_pattern": {
+              "consumer_variant": "per_channel",
+              "window_id": "e1v2_task_04",
+              "arm": "A5",
+              "retrieved_skill_ids": [
+                "build_contrastive_candidates",
+                "inspect_and_localize",
+                "select_or_identity_and_verify",
+                "recipe_batch_guidance_t2_v1"
+              ]
+            },
+            "program_geometry": {
+              "program": "outlier_iqr",
+              "excluded_count": 0,
+              "evaluations_used": 2,
+              "consumer_retrains": 69
+            }
+          },
+          "workflow_signature": "outlier_iqr",
+          "support_response": {
+            "gain": 0.03736562214690686,
+            "window": "support",
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "accepted": true,
+            "block_origins": [
+              3936,
+              3984,
+              4032
+            ],
+            "harmed_eval_series_count": 0,
+            "skill_clause_use": [
+              "R1-1",
+              "R3-1"
+            ],
+            "provenance": "skill_store_integration",
+            "counts_as_unguided_exploration": false,
+            "audit_note": "engineering measurement of the Skill-store channel; not authorization evidence and not an unguided probe. The registered card is guidance in a namespace of its own, carries no program and no tool, and grants no TRY right"
+          },
+          "delayed_response": {
+            "evaluated": true,
+            "gain": 0.04050113812058425,
+            "se_block": 0.007001876806245694,
+            "gain_over_se": 5.78432600877198,
+            "block_origins": [
+              4368,
+              4416,
+              4464
+            ]
+          },
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "local_status": "LOCAL_ACTIVE",
+          "pattern_view": "default",
+          "evidence_refs": [
+            "skill_store_integration",
+            "skill_store_integration_v1"
+          ]
+        }
+      },
+      "outcome": "TRANSITIONED"
+    },
+    {
+      "draft_id": "T3_A3",
+      "episode_id": "ssi_t3_a3",
+      "target_id": "T3",
+      "arm": "A3",
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "graded_window_id": "W4_traffic_shift",
+      "adopted_plan": {
+        "program": "hampel_filter",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 0.448739459365602,
+      "in_selection_delayed_aggregate_gain": 0.0482740909422959,
+      "probe_window": {
+        "probe_window_id": "W4_traffic_shift_probe_shift_480",
+        "probe_origins": [
+          3384
+        ],
+        "origin_source": "chosen",
+        "origin_provenance": "no next task exists in the frozen roster for this window, so the rule's fallback applies: the Draft's own delayed origins [2904] shifted by +480, same count and spacing",
+        "horizon": 48,
+        "farthest_index_read": 3432,
+        "own_delayed_origins": [
+          2904
+        ],
+        "overlaps_own_window": false,
+        "sealed_check": {
+          "code_boundary": 3072,
+          "code_boundary_source": "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py::SEALED_FROM_INDEX",
+          "recipe_module_boundary": 3072,
+          "artifact_boundaries": {
+            "g3_candidate_screening_v2": 3072,
+            "g3_candidate_screening_v3": 3072
+          },
+          "tightest_boundary": 3072,
+          "farthest_index_read": 3432,
+          "inside": false,
+          "kind": "index_sealed_boundary"
+        },
+        "available": false,
+        "unavailable_reason": "the probe would read to index 3432, past the tightest frozen sealed boundary 3072 for this cohort; the window is left where the rule put it and not shortened"
+      },
+      "outcome": "PROBE_WINDOW_UNAVAILABLE",
+      "probe": null,
+      "transition": null
+    },
+    {
+      "draft_id": "T3_A5",
+      "episode_id": "ssi_t3_a5",
+      "target_id": "T3",
+      "arm": "A5",
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "graded_window_id": "W4_traffic_shift",
+      "adopted_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 1.335389410061987,
+      "in_selection_delayed_aggregate_gain": 1.1650994522914844,
+      "probe_window": {
+        "probe_window_id": "W4_traffic_shift_probe_shift_480",
+        "probe_origins": [
+          3384
+        ],
+        "origin_source": "chosen",
+        "origin_provenance": "no next task exists in the frozen roster for this window, so the rule's fallback applies: the Draft's own delayed origins [2904] shifted by +480, same count and spacing",
+        "horizon": 48,
+        "farthest_index_read": 3432,
+        "own_delayed_origins": [
+          2904
+        ],
+        "overlaps_own_window": false,
+        "sealed_check": {
+          "code_boundary": 3072,
+          "code_boundary_source": "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py::SEALED_FROM_INDEX",
+          "recipe_module_boundary": 3072,
+          "artifact_boundaries": {
+            "g3_candidate_screening_v2": 3072,
+            "g3_candidate_screening_v3": 3072
+          },
+          "tightest_boundary": 3072,
+          "farthest_index_read": 3432,
+          "inside": false,
+          "kind": "index_sealed_boundary"
+        },
+        "available": false,
+        "unavailable_reason": "the probe would read to index 3432, past the tightest frozen sealed boundary 3072 for this cohort; the window is left where the rule put it and not shortened"
+      },
+      "outcome": "PROBE_WINDOW_UNAVAILABLE",
+      "probe": null,
+      "transition": null
+    }
+  ],
+  "cost": {
+    "llm_calls": 0,
+    "evaluation_calls": 5,
+    "evaluation_call_budget": 8,
+    "consumer_retrains": 15,
+    "retrain_convention": "one retrain per origin per evaluation call, the convention the bridge and integration slices used",
+    "log": [
+      {
+        "role": "identity_baseline",
+        "cohort": "T233",
+        "consumer_variant": "pooled",
+        "program": null,
+        "excluded_series": [],
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "consumer_retrains": 3
+      },
+      {
+        "role": "adopted_plan",
+        "cohort": "T233",
+        "consumer_variant": "pooled",
+        "program": "outlier_iqr",
+        "excluded_series": [],
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "consumer_retrains": 3
+      },
+      {
+        "role": "identity_baseline",
+        "cohort": "electricity",
+        "consumer_variant": "per_channel",
+        "program": null,
+        "excluded_series": [],
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "consumer_retrains": 3
+      },
+      {
+        "role": "adopted_plan",
+        "cohort": "electricity",
+        "consumer_variant": "per_channel",
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "0",
+          "1",
+          "10",
+          "11",
+          "3"
+        ],
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "consumer_retrains": 3
+      },
+      {
+        "role": "adopted_plan",
+        "cohort": "electricity",
+        "consumer_variant": "per_channel",
+        "program": "outlier_iqr",
+        "excluded_series": [],
+        "origins": [
+          4368,
+          4416,
+          4464
+        ],
+        "consumer_retrains": 3
+      }
+    ]
+  },
+  "state_root": "_scratch/skill_store/lifecycle_probe_v1",
+  "wall_seconds": 18.24169559997972,
+  "state_files": [
+    "_scratch/skill_store/lifecycle_probe_v1/episodes_after.jsonl",
+    "_scratch/skill_store/lifecycle_probe_v1/episodes_before.jsonl",
+    "_scratch/skill_store/lifecycle_probe_v1/transitions.json"
+  ]
+}
