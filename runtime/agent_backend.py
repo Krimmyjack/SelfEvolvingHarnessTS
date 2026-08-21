@@ -466,6 +466,39 @@ class BudgetedAgentBackend:
         return response
 
 
+def _relay_error_payload(completion: object) -> str | None:
+    """The relay's error object, when a transport-success carries one.
+
+    Returns a short public description when the payload has an ``error``
+    member and no usable ``choices``; ``None`` otherwise, which is every
+    ordinary response including a legitimately empty one.
+    """
+    choices = getattr(completion, "choices", None)
+    if choices:
+        return None
+    error = getattr(completion, "error", None)
+    if error is None:
+        extra = getattr(completion, "model_extra", None)
+        if isinstance(extra, Mapping):
+            error = extra.get("error")
+    if error is None:
+        dump = getattr(completion, "model_dump", None)
+        if callable(dump):
+            try:
+                payload = dump(mode="json")
+            except (AttributeError, TypeError, ValueError):
+                payload = None
+            if isinstance(payload, Mapping):
+                error = payload.get("error")
+    if error is None:
+        return None
+    if isinstance(error, Mapping):
+        code = error.get("code") or error.get("type") or "api_error"
+        message = error.get("message") or ""
+        return "%s: %s" % (code, str(message)[:200])
+    return str(error)[:200]
+
+
 class AgictoChatCompletionsBackend:
     def __init__(
         self,
@@ -526,6 +559,25 @@ class AgictoChatCompletionsBackend:
                     f"relay transport failed ({type(exc).__name__})"
                 ) from None
             raise
+        # 中转在上游过载时返回 HTTP 200，body 只有一个 error 对象、没有
+        # choices（实测 2026-08-22：{"error":{"code":"api_error","message":
+        # "Service load is too high, please try again later"}}，Claude 全族
+        # 命中、同一时刻 gpt-5.6-luna 正常）。SDK 把 200 当成功解析，下面
+        # 的 choices 取空、content 取空，于是一次服务宕机被构造成
+        # transport_ok=True 的空回答，一路伪装成信封协议失败：
+        # _RetryingTransport 不重试（没有异常），agent_core 对着空串把两次
+        # 静态反馈重试用光，调用方最后读到 "invalid agent-envelope/1"。
+        # #24/#25 两次 SLOW_ENVELOPE_PROTOCOL_FAILURE 都是这么来的。
+        # 这里只认一件事：payload 里带 error 且没有可用 choices —— 那就是
+        # 传输层没拿到答复，按 AgentTransportError 抛，让既有的退避重试和
+        # INCONCLUSIVE_TRANSPORT 口径接手。正常的空回复（有 choices、
+        # content 为空）不受影响，仍走原路。
+        relay_error = _relay_error_payload(completion)
+        if relay_error is not None:
+            raise AgentTransportError(
+                "relay returned an error payload with HTTP success: %s"
+                % relay_error
+            )
         choices = getattr(completion, "choices", ())
         choice = choices[0] if choices else None
         message = getattr(choice, "message", None)
