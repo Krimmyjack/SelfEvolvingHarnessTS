@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import math
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
@@ -277,6 +279,248 @@ def _validate_authoring_controls(
         raise ValueError("explicit candidate choice must be required")
 
 
+# --------------------------------------------------------------------------
+# scope_risk_guards: the Scope/Risk adoption gate (#19 EDIT_SURFACE_DEFECT
+# suture, 2026-08-21).
+#
+# In #18 the ``scope_risk_guards`` key was a placebo: the surface catalog
+# offered it, but no tracked runtime code read it.  This section is the
+# execution side of that surface.  The list lives at ``/scope_risk_guards``
+# in the verification document (surface
+# ``verification.rules.scope_risk_guards``) and holds at most one guard --
+# the minimal edit the surface exists for.  The gate reads the list off the
+# active snapshot after the frozen v2 adoption ladder has produced its final
+# plan and before that plan is recorded as adopted; the ladder itself is
+# neither modified nor re-ranked.  Identity is unfilterable: callers never
+# submit the identity plan to this gate, and the guard vocabulary has no way
+# to remove the abstention option.
+#
+# One statistic, ``min_per_series_gain``, binds the measured
+# per-evaluation-series gain vector.  It exists only because the #19 O1
+# repair stopped the search instrument from projecting that vector away at
+# its interface; the evaluator performs no measurement of its own.
+GUARD_LIST_KEY = "scope_risk_guards"
+GUARD_ID_PATTERN = re.compile(r"^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$")
+GUARD_WINDOWS = ("support", "delayed")
+GUARD_STATISTICS = (
+    "aggregate_gain",
+    "harmed_series_count",
+    "harmed_series_fraction",
+    "total_harm",
+    "gain_to_total_harm_ratio",
+    "min_per_series_gain",
+)
+GUARD_COMPARATORS = ("lt", "le", "gt", "ge")
+GUARD_ACTIONS = ("VETO_AND_FALL_BACK", "RECORD_ONLY")
+GUARD_APPLIES_TO = ("every_adoption", "reused_skill_adoption_only")
+_GUARD_FIELDS = frozenset(
+    {
+        "guard_id",
+        "window",
+        "statistic",
+        "comparator",
+        "threshold",
+        "action",
+        "applies_to",
+        "rationale",
+    }
+)
+
+
+def _validate_scope_risk_guards(verification: object) -> None:
+    """Compile-time validation of the verification document's guard list.
+
+    The key is optional and defaults to the empty list; when present it
+    holds at most one guard -- the single-entry constraint is what keeps the
+    Scope/Risk surface minimal.
+    """
+    if not isinstance(verification, dict):
+        return  # the authoring-controls validation above reports the shape
+    guards = verification.get(GUARD_LIST_KEY)
+    if guards is None:
+        return
+    if not isinstance(guards, list):
+        raise ValueError("scope_risk_guards must be a list")
+    if len(guards) > 1:
+        raise ValueError(
+            "scope_risk_guards holds at most one guard: the minimal legal "
+            "edit on the Scope/Risk surface is exactly one entry"
+        )
+    for guard in guards:
+        if not isinstance(guard, dict):
+            raise ValueError("a scope_risk_guards entry must be an object")
+        unknown = sorted(set(guard) - _GUARD_FIELDS)
+        if unknown:
+            raise ValueError(
+                "scope_risk_guards entry carries unknown keys: " + ", ".join(unknown)
+            )
+        missing = sorted(_GUARD_FIELDS - set(guard))
+        if missing:
+            raise ValueError(
+                "scope_risk_guards entry misses keys: " + ", ".join(missing)
+            )
+        if not isinstance(guard["guard_id"], str) or not GUARD_ID_PATTERN.match(
+            guard["guard_id"]
+        ):
+            raise ValueError("guard_id must be a canonical id")
+        if guard["window"] not in GUARD_WINDOWS:
+            raise ValueError("guard window must be one of %s" % (GUARD_WINDOWS,))
+        if guard["statistic"] not in GUARD_STATISTICS:
+            raise ValueError("guard statistic must be one of %s" % (GUARD_STATISTICS,))
+        if guard["comparator"] not in GUARD_COMPARATORS:
+            raise ValueError(
+                "guard comparator must be one of %s" % (GUARD_COMPARATORS,)
+            )
+        threshold = guard["threshold"]
+        if (
+            isinstance(threshold, bool)
+            or not isinstance(threshold, (int, float))
+            or not math.isfinite(float(threshold))
+        ):
+            raise ValueError("guard threshold must be a finite number")
+        if guard["action"] not in GUARD_ACTIONS:
+            raise ValueError("guard action must be one of %s" % (GUARD_ACTIONS,))
+        if guard["applies_to"] not in GUARD_APPLIES_TO:
+            raise ValueError(
+                "guard applies_to must be one of %s" % (GUARD_APPLIES_TO,)
+            )
+        rationale = guard["rationale"]
+        if not isinstance(rationale, str) or not 1 <= len(rationale) <= 600:
+            raise ValueError("guard rationale must be 1..600 characters")
+
+
+def scope_risk_guards_of(snapshot: HarnessSnapshot) -> list[dict[str, Any]]:
+    """Every Scope/Risk guard the active snapshot declares.
+
+    Only the verification document's list is a registered surface; a
+    skill-side key with the same name is inert and is not read here.
+    """
+    verification = snapshot.verification
+    if not isinstance(verification, Mapping):
+        return []
+    guards = verification.get(GUARD_LIST_KEY)
+    if not isinstance(guards, Sequence) or isinstance(guards, (str, bytes)):
+        return []
+    return [
+        {"where": "verification.rules.scope_risk_guards", "guard": _plain(row)}
+        for row in guards
+        if isinstance(row, Mapping)
+    ]
+
+
+def guard_statistic(name: str, gains: Mapping[str, Any], eval_count: int) -> float:
+    """Reduce one plan's window gains to the named guard statistic.
+
+    Every branch reads a field the search instrument already measured; the
+    evaluator measures nothing itself.  ``min_per_series_gain`` reads the
+    per-series vector the #19 O1 repair passes through the interface.
+    """
+    aggregate = float(gains["aggregate_gain"])
+    harmed = float(gains["harmed_eval_series_count"])
+    total_harm = float(gains["harmed_eval_series_total_harm"])
+    if name == "aggregate_gain":
+        return aggregate
+    if name == "harmed_series_count":
+        return harmed
+    if name == "harmed_series_fraction":
+        return harmed / max(1, int(eval_count))
+    if name == "total_harm":
+        return total_harm
+    if name == "gain_to_total_harm_ratio":
+        return aggregate / total_harm if total_harm > 0.0 else float("inf")
+    if name == "min_per_series_gain":
+        vector = gains.get("per_eval_series_gain")
+        if not isinstance(vector, Mapping) or not vector:
+            raise ValueError(
+                "min_per_series_gain needs the measured per-series gain "
+                "vector under per_eval_series_gain; this gains dict does "
+                "not carry it"
+            )
+        return min(float(value) for value in vector.values())
+    raise ValueError("unknown guard statistic: %s" % name)
+
+
+def guard_fires(guard: Mapping[str, Any], value: float) -> bool:
+    """The guard fires when ``statistic <comparator> threshold`` holds."""
+    threshold = float(guard["threshold"])
+    comparator = str(guard["comparator"])
+    if comparator == "lt":
+        return value < threshold
+    if comparator == "le":
+        return value <= threshold
+    if comparator == "gt":
+        return value > threshold
+    if comparator == "ge":
+        return value >= threshold
+    raise ValueError("unknown guard comparator: %s" % comparator)
+
+
+def evaluate_scope_risk_guards(
+    *,
+    snapshot: HarnessSnapshot,
+    plan: Mapping[str, Any],
+    support: Mapping[str, Any],
+    delayed: Mapping[str, Any],
+    eval_count: int,
+    reused: bool,
+) -> dict[str, Any]:
+    """Run the declared guards over the ladder's final plan.
+
+    Pure evaluation: given the plan and its already-measured Support and
+    delayed windows, report every guard's reading and whether any veto
+    fired.  Walking the fallback on a veto is the caller's runtime duty,
+    not this function's; identity is never submitted here by the caller.
+    """
+    readings: list[dict[str, Any]] = []
+    for row in scope_risk_guards_of(snapshot):
+        guard = dict(row["guard"])
+        if str(guard["applies_to"]) == "reused_skill_adoption_only" and not reused:
+            readings.append(
+                {
+                    "guard_id": guard["guard_id"],
+                    "where": row["where"],
+                    "checked": False,
+                    "fired": False,
+                    "why_not_checked": (
+                        "this adoption did not come from a recalled Skill"
+                    ),
+                }
+            )
+            continue
+        window = str(guard["window"])
+        gains = delayed if window == "delayed" else support
+        value = guard_statistic(str(guard["statistic"]), gains, eval_count)
+        fired = guard_fires(guard, value)
+        readings.append(
+            {
+                "guard_id": guard["guard_id"],
+                "where": row["where"],
+                "checked": True,
+                "plan": _plain(plan),
+                "window": window,
+                "statistic": guard["statistic"],
+                "value": (None if value == float("inf") else float(value)),
+                "value_is_infinite": value == float("inf"),
+                "comparator": guard["comparator"],
+                "threshold": float(guard["threshold"]),
+                "fired": bool(fired),
+                "action": guard["action"],
+            }
+        )
+    vetoed = [
+        row
+        for row in readings
+        if row.get("fired") and row.get("action") == "VETO_AND_FALL_BACK"
+    ]
+    return {
+        "readings": readings,
+        "any_fired": any(row.get("fired") for row in readings),
+        "vetoed": bool(vetoed),
+        "vetoed_by": [str(row["guard_id"]) for row in vetoed],
+    }
+
+
+
 def _compile(root: Path) -> _CompilationReceipt:
     root = Path(root).resolve()
     lock = _load_lock(root)
@@ -296,6 +540,7 @@ def _compile(root: Path) -> _CompilationReceipt:
     candidate_policy = _load_json(root / "candidate_policy.json")
     verification = _load_json(root / "verification.json")
     _validate_authoring_controls(retrieval, candidate_policy, verification)
+    _validate_scope_risk_guards(verification)
     resolved_retrieval = {
         **retrieval,
         "resolved_skill_index": [
@@ -422,10 +667,15 @@ if __name__ == "__main__":
 
 __all__ = [
     "COMPILER_VERSION",
+    "GUARD_LIST_KEY",
     "RETRIEVAL_COMPILER_VERSION",
     "compile_snapshot",
     "compile_compatible_snapshot",
+    "evaluate_scope_risk_guards",
+    "guard_fires",
+    "guard_statistic",
     "memory_entry_to_dict",
+    "scope_risk_guards_of",
     "skill_entry_to_dict",
     "snapshot_to_dict",
     "write_lock",

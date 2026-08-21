@@ -159,6 +159,28 @@
       "required_dependency_keys": ["candidate_contract", "surface_registry"]
     },
     {
+      "surface_template_id": "verification.rules.scope_risk_guards",
+      "owner": "verification.json",
+      "json_pointer": "/scope_risk_guards",
+      "target_class": "deterministic_verification",
+      "surface_type": "structured_rule",
+      "allowed_operations": ["PATCH"],
+      "precondition": "SHA",
+      "atomic": true,
+      "allowed_skill_kinds": [],
+      "mutually_exclusive_with": [],
+      "derived_outputs": [],
+      "required_dependency_keys": ["candidate_contract", "surface_registry"],
+      "semantics": {
+        "registered": "#19 EDIT_SURFACE_DEFECT suture, 2026-08-21",
+        "what": "the Scope/Risk guard list the adoption gate enforces after the frozen v2 ladder has produced its final plan and before that plan is recorded as adopted",
+        "entry_schema": "scope-risk-guard/1: one object with guard_id, window (support|delayed), statistic (aggregate_gain | harmed_series_count | harmed_series_fraction | total_harm | gain_to_total_harm_ratio | min_per_series_gain), comparator (lt|le|gt|ge), threshold (number), action (VETO_AND_FALL_BACK | RECORD_ONLY), applies_to (every_adoption | reused_skill_adoption_only), rationale; the guard fires when statistic <comparator> threshold holds on the named window",
+        "who_reads": "methods/ttha/harness/compiler.py::evaluate_scope_risk_guards -- the tracked adoption-gate evaluator; min_per_series_gain binds the measured per-evaluation-series delayed vector (instrument passthrough, #19 O1)",
+        "minimal_edit": "the list is pre-registered as [] in every snapshot; the minimal legal edit is exactly one entry appended, so the list holds at most one guard",
+        "identity_is_never_vetoed": "identity is unfilterable; a guard can never remove the abstention option"
+      }
+    },
+    {
       "surface_template_id": "memory.entries/{memory_id}",
       "owner": "memories.jsonl",
       "target_class": "memory",

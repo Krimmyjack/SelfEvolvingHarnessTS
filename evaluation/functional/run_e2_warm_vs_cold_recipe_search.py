@@ -450,6 +450,15 @@ class BudgetedSearch:
                 gains["harmed_eval_series_total_harm"]
             ),
             "harmed_eval_series": list(gains["harmed_eval_series"]),
+            # O1 (#19 OBSERVATION_PROJECTION_GAP repair): stop projecting at
+            # this interface.  ``bch._gain_rows`` already measured the
+            # per-evaluation-series gain vector on the same rows; the four
+            # lines above keep returning exactly what they returned before,
+            # and the one line below passes the measured vector through
+            # untouched so the Scope/Risk guard evaluation context can read
+            # it.  Measurement semantics are unchanged: same rows in, same
+            # aggregates out, one passthrough key added.
+            "per_eval_series_gain": dict(gains["per_eval_series_gain"]),
         }
 
     def _scoped(self, program: str, scope: set[str] | None, origins):

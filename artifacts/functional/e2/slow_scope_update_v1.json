@@ -1,0 +1,931 @@
+{
+  "protocol_version": "slow_scope_update_v1",
+  "role": "close the last link of the loop: attribute the #17 Scope gap, let Slow patch one Scope/Risk surface, and replay the same window",
+  "pre_registered": {
+    "background": "pooled task_C in fresh_confirmation_v1: both arms adopted `outlier_mad` full batch, aggregate delayed +0.029688, evaluation series 99999904140 down 0.125557 -- 4.2x the aggregate it was averaged into. Re-ruled first fault: TARGET_LOCAL_SCOPE_RISK_GAP.",
+    "b1_attribution": "the Runtime first-fault fold runs on the recorded pooled task_C episode of each arm, through the old line's own ``assess_case`` and ``FaultRouter``.  0 LLM, 0 retrains: the evidence is the artifact.",
+    "b2_patch": "one Slow proposal, on one surface the router authorizes for the attributed cause, validated by the deterministic EditController.  The LLM never approves its own edit and gets no second attempt: a rejection stops the run at COMPILER_REJECTS.",
+    "b3_replay": "development level, explicitly not fresh: the pooled task_C window was opened by #17.  Both arms' decisions are replayed with the patch active, retraining on the same window where the patch makes the runtime look at a plan it had not measured.  per_channel task_C is replayed as a regression check and is expected not to move.",
+    "b4_cost": "every Consumer retrain and LLM call is charged; new Experience rows carry provenance=slow_scope_update",
+    "verdicts": {
+      "SLOW_CLOSES_SCOPE_GAP": "the attribution lands on a Scope/Risk surface, the single-surface patch compiles, 99999904140 no longer crosses the -0.005 line in the replay (masked, rescoped or vetoed alike), the aggregate delayed reading is still >= 0, and per_channel does not move",
+      "ATTRIBUTION_LANDS_ELSEWHERE": "the fold names another surface; recorded as it stands, not corrected",
+      "PATCH_OVERREACH": "more than one surface, or a frozen surface, was touched",
+      "COMPILER_REJECTS": "the EditController refused the proposal",
+      "REPLAY_NO_CHANGE": "the patch is live and no decision moved",
+      "REPLAY_AGGREGATE_COLLAPSE": "one series was saved at the cost of the aggregate",
+      "SCHEMA_BLOCKED": "the recipe episode does not fit the attribution input and no pure-data-transport adapter reaches it"
+    },
+    "guard_grammar": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "one Scope/Risk guard the runtime can enforce deterministically",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "guard_id",
+        "window",
+        "statistic",
+        "comparator",
+        "threshold",
+        "action",
+        "applies_to",
+        "rationale"
+      ],
+      "properties": {
+        "guard_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"
+        },
+        "window": {
+          "type": "string",
+          "enum": [
+            "support",
+            "delayed"
+          ]
+        },
+        "statistic": {
+          "type": "string",
+          "enum": [
+            "aggregate_gain",
+            "harmed_series_count",
+            "harmed_series_fraction",
+            "total_harm",
+            "gain_to_total_harm_ratio"
+          ]
+        },
+        "comparator": {
+          "type": "string",
+          "enum": [
+            "lt",
+            "le",
+            "gt",
+            "ge"
+          ]
+        },
+        "threshold": {
+          "type": "number"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "VETO_AND_FALL_BACK",
+            "RECORD_ONLY"
+          ]
+        },
+        "applies_to": {
+          "type": "string",
+          "enum": [
+            "every_adoption",
+            "reused_skill_adoption_only"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        }
+      }
+    },
+    "guard_contract": {
+      "where_it_lives": "a list under the key 'scope_risk_guards', either on the verification document (surface `verification.rules`) or inside one Skill's risk_guards object (surface `skill_library.entries/<skill_id>.risk_guards`)",
+      "who_reads_it": "the runtime reads the list off the active snapshot after the frozen v2 adoption ladder has produced its final plan, and before that plan is recorded as adopted.  The ladder itself is not modified and is not re-ranked.",
+      "statistics": {
+        "aggregate_gain": "the plan's aggregate gain on the named window",
+        "harmed_series_count": "how many evaluation series lost more than 0.005",
+        "harmed_series_fraction": "that count divided by the evaluation roster size",
+        "total_harm": "the summed magnitude of those losses, as a positive number",
+        "gain_to_total_harm_ratio": "aggregate_gain divided by total_harm; a very large number when nothing lost anything"
+      },
+      "why_only_these": "these five are exactly what the frozen search instrument returns for a plan on a window.  A guard over anything else would require an edit to that instrument, which is frozen here.",
+      "firing": "the guard fires when `statistic <comparator> threshold` is true",
+      "actions": {
+        "VETO_AND_FALL_BACK": "the plan is rejected.  The runtime then walks the frozen v2 fallback: the Support winner's full-batch plan when one exists, its full-batch delayed reading is positive and it is not the plan just rejected, otherwise identity.  The fallback candidate is re-checked against the same guard and falls to identity if it fires too.",
+        "RECORD_ONLY": "the reading is written to the receipt and nothing changes"
+      },
+      "identity_is_never_vetoed": "identity is unfilterable, so a guard can never remove the abstention option",
+      "applies_to": {
+        "every_adoption": "checked on every episode that adopts a program",
+        "reused_skill_adoption_only": "checked only when the plan came from a recalled Target-local Skill rather than from a fresh search"
+      },
+      "cost": "each fallback candidate the guard forces the runtime to look at costs real Consumer retrains, charged to this run's budget"
+    },
+    "adapter": {
+      "why": "``assess_case`` takes a ``CaseFacts`` built for the controlled minipipe: one synthetic case with a private clean reference, an oracle-affected index set and probe curves.  A recipe-line episode has none of those.  The adapter below moves measured numbers into the slots that have a faithful analogue and leaves every other slot at its documented default, naming each one.",
+      "two_axes": "selection-time utility is the Support window, because Support is what the Agent can see when it adopts; outcome utility is the delayed window, because that is what the ladder confirms on.  So ``candidate_utilities``/``clean_u``/``corrupt_u``/``prepared_u``/``damage_d`` carry Support gains and ``chosen_gain`` carries the delayed aggregate gain.",
+      "transported": {
+        "case_id": "the episode id",
+        "is_target": "True: the batch is what the adoption was aimed at",
+        "chosen_candidate_id": "the adopted plan's label",
+        "candidate_utilities": "identity at 0.0 plus every plan this episode actually measured, at its Support aggregate gain -- including the masked plan when a mask round ran, because the Agent was shown it",
+        "effect_distinct_candidate_ids": "every measured non-identity plan",
+        "clean_u": "the largest measured Support gain",
+        "corrupt_u": "0.0, the identity baseline every gain is measured against",
+        "prepared_u": "the adopted plan's Support gain",
+        "damage_d": "clean_u - corrupt_u: the headroom the search actually found",
+        "chosen_gain": "the adopted plan's delayed aggregate gain",
+        "risk_delta_u": "the smallest per-evaluation-series delayed gain.  This is the only reduction the adapter performs: the slot is a scalar and the episode measured a vector.  The whole vector is recorded beside it, and the run is repeated with this slot set to None so the aggregate-only reading is on the record too.",
+        "capability_skill_exists / skill_retrieved / normal_retrieval / retrieved_capability_skill_ids": "from the episode's retrieval receipt",
+        "compilation_ok / execution_ok / execution_contract_ok": "True: every plan in this line compiles and runs, or the episode would have raised",
+        "proposed_candidate_exists / compiled_candidate_exists": "whether a non-identity plan was measured"
+      },
+      "not_transported_left_at_default": {
+        "scope_stable": "True.  ``cycle.py`` fills this from modified indices over context size against ``max_modified_fraction``; a recipe episode has no index-level modification trace, and a batch program legitimately touches every training series, so mapping series fraction into an index-fraction slot would be wrong.  Left True, which makes the RISK stage harder to trip, not easier.",
+        "over_restoration": "False: there is no clean oracle to over-restore towards",
+        "chosen_probe_directions": "(): the recipe line runs no probe directions",
+        "public_evidence_discriminative": "True: the public per-series table was built",
+        "agent_inspected_evidence": "True.  A direct-recall episode has no Agent turn by protocol design, which is an absence rather than a procedure gap; the field has no NOT_APPLICABLE value, so the passing default is used and declared here.",
+        "localization_required / localization_iou / mechanism_identified / mechanism_contradiction / period_diagnostic_pass": "minipipe diagnostic machinery with no recipe-line analogue",
+        "expressibility_status / witnesses / forced_skill_succeeds / constrained_proposal_succeeds": "program-supply witness machinery with no recipe-line analogue"
+      },
+      "consequence_to_state_plainly": "because the untransportable fields keep passing defaults, the fold can only report a fault at CANDIDATE_SELECTION or OUTCOME_RISK, or report none at all.  The adapter narrows where attribution can land and that narrowing is the adapter's, not the machine's."
+    },
+    "discipline": {
+      "llm_call_budget": 15,
+      "retrain_budget": 200,
+      "reads": "only the already-exposed windows of fresh_confirmation_v1: the 2024 development training anchors and the task_C confirmation window [9864, 10152].  Nothing beyond index 17520, and no window #17 did not open.",
+      "commit": false,
+      "spawn": false,
+      "new_files": [
+        "evaluation/functional/run_e2_slow_scope_update.py",
+        "artifacts/functional/e2/slow_scope_update_v1.json",
+        "artifacts/functional/e2/slow_scope_update_v1.md",
+        "_scratch/slow_scope_v1/"
+      ]
+    }
+  },
+  "frozen_surface_before": {
+    "files": 32,
+    "sha256": {
+      "artifacts/functional/e2/batch_recipe_T233_v1.json": "3d20cf922a9188cec5baed0a2bda1f8874102916831a6786470e249e5edbd2b1",
+      "artifacts/functional/e2/batch_recipe_electricity_v1.json": "7e30f6f45ef353a3f69d1e9ca93416714803fa07f420a96cc6d9a4c7921c68ba",
+      "artifacts/functional/e2/batch_recipe_traffic_v1.json": "74d07e2a57fb58f57a433cc7e36337875f376105e4de2de16c66700968ef3caa",
+      "artifacts/functional/e2/batch_recipe_v2_all_cells_v1.json": "633f320bb944ac98295268ceecc4cec23d639e9faf897f795b57fef761713786",
+      "artifacts/functional/e2/batch_recipe_windows_v1.json": "35ef54b5477b436a2115fb804358fc375f03e80eb22399e798e6bd3ff1b2ccf4",
+      "artifacts/functional/e2/fresh_confirmation_v1.json": "e966b68a5016721ff2133ad3507d6396628d45fc49d636c9067f6b4226856314",
+      "artifacts/functional/e2/fresh_confirmation_v1.md": "943bd933bbeee54e4983e0b4da7493fe6da914fde9ecbdbaf54f092c406d8e37",
+      "artifacts/functional/e2/fresh_confirmation_v1_adjudication.md": "374e93c6935e6e8e1fe7983ad004a9cdcf006bfb2e590405fd3e7bf64be090aa",
+      "artifacts/functional/e2/local_skill_recall_v1.json": "ba3cc55e371931c647f5d9b3057801d18b03a90eccc4f1f9ff2f6e7eea3e8f08",
+      "artifacts/functional/e2/noaa_fresh_cohort_v2.json": "281742e91d8cb684be77d11f824540c1e936921211078232d6056e60042a280e",
+      "artifacts/functional/e2/recipe_skill_cards_v1.json": "4878a0f2986555d2979a83bd8269e3f1c48972d8afa501025ca9e89a3d8ddd03",
+      "data/benchmark_noaa_fresh_v1/manifest.json": "dfe9555fa372f4226dba17fb408538212ed62db48c3a1a9188eb4af9a127abda",
+      "evaluation/functional/run_batch_composition_headroom.py": "4536ef974edd5a26673c66ea09a6927458ecbeccabeeee2f4bc20d217cec91b5",
+      "evaluation/functional/run_e2_autonomous_natural_workflow_generation.py": "5dc797a2c7a825a9bef97d5e0e158d8b3b774ad7d65c77c819cd82d005f4db0c",
+      "evaluation/functional/run_e2_fresh_confirmation.py": "13f0cb09fbdf2bd75f4b59b59c21b92de79d7f2684c4f3799523ce79d3986b14",
+      "evaluation/functional/run_e2_local_skill_recall.py": "85467d28dcd4fbb46dd0e5f74c4281d75a34f9e85c75f11e4d27231806714f68",
+      "evaluation/functional/run_e2_recipe_experience_to_skill.py": "312a2d0f8c9d630da1772d6eb4f44a3b75e160f20712287f24d2b98c724b8ce4",
+      "evaluation/functional/run_e2_skill_store_integration.py": "37d31cb85e9b733067304955ba33c9ca90fa5f5d0b2cc10874d0ae40c039034f",
+      "evaluation/functional/run_e2_warm_vs_cold_recipe_search.py": "bab5feb8e6adc6e66d8983ea481f237b4a553d882f2498c2f14f6aa6078defd3",
+      "evaluation/functional/run_v1_kdd2018_natural_slow_update.py": "7bcb165dd881b8995739f99f87b13ffcb35fa784deb88b35c0513c867e7c35cb",
+      "evaluation/functional/task_episode_harness/e1.py": "389110c5fad6dff4319eeb77475cafb0b3497062bf6313439a6482f76136acee",
+      "evaluation/functional/task_episode_harness/runner.py": "11ec71a1946e9727215626eb87dd13b64d1898e387b255aef818df64b7562586",
+      "evaluation/minipipe/config/m0_rules.json": "5c6fe7b69462ae4cd6be8b862814041f529d53fe108530003b1d4dc87b37ce63",
+      "evaluation/minipipe/feedback/fault_routes.json": "00900bb483f569ca6d40f09d1a624935eaa40781dcee50a46562e82955db74c2",
+      "evaluation/minipipe/feedback/first_fault.py": "09a22100995a0571afb8ddb07d1e743f19f9e8cbc3df1b01b7c8ba360d6a0cdc",
+      "evaluation/minipipe/feedback/router.py": "dcc2c8bdbcc40994c30a014e54d059d755e0d1036ad15e10e7301eb2ef8e84fd",
+      "evaluation/minipipe/replay/edit_controller.py": "14597c758febab68262d644f68ff7fbd11eda46e88b0412f330ebc5dad3c7100",
+      "methods/ttha/harness/h0/snapshot.lock.json": "1e54a67ea0215bcc791f21a8f6f8726edbb06ac81eb8608dc45bd7ed48b65aa2",
+      "methods/ttha/harness/h0/verification.json": "5b3dc62e72d202811a9dd2d553aeadf89b4390d71ffeb0202b37f154df84a875",
+      "methods/ttha/harness/harness_surfaces.json": "e3289f776f91b6b25ad559bb3a45a053c5bfbed691b2396a37e6a826215755d7",
+      "methods/ttha/method.py": "e9c27af3d43db9f9ca08208553ca817211f4af4de96ea2e88d4c8f497f7e0d21",
+      "methods/ttha/retrieval.py": "785d6994e5d05de14653b31f59956404fa519c8fee7d91f132f840d131b25243"
+    }
+  },
+  "source_evidence": {
+    "artifact": "artifacts/functional/e2/fresh_confirmation_v1.json",
+    "artifact_sha256": "e966b68a5016721ff2133ad3507d6396628d45fc49d636c9067f6b4226856314",
+    "read_only": true,
+    "window": {
+      "window_id": "fresh_task_C",
+      "start": 9864,
+      "support_origins": [
+        9864,
+        9912,
+        9960
+      ],
+      "delayed_origins": [
+        10008,
+        10056,
+        10104
+      ],
+      "horizon": 48,
+      "farthest_index": 10152,
+      "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48",
+      "note": "confirmation, 2025"
+    },
+    "locked_roster": {
+      "train": [
+        "72203812897",
+        "72259003927",
+        "72329003935",
+        "72422093820",
+        "72435653866",
+        "72438093819",
+        "72511654737",
+        "72529014768",
+        "72605654791",
+        "72654014936",
+        "72793494248",
+        "74486514719"
+      ],
+      "eval": [
+        "99999903062",
+        "99999904140",
+        "99999923908",
+        "99999963862"
+      ]
+    }
+  },
+  "stores": {
+    "a5_pooled": {
+      "slot": "a5_pooled",
+      "runtime_bundle_sha": "0f85e1a3520fd7e8bcb765e6a09d4fd503f48f0c3a9abd6265790c18e4513967",
+      "harness_content_sha": "3edd71c749e9b02f0f0d4b847d2eefb83fbef1374c6c7fae6e92ff31a5ee3b8b",
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "fast_winner_e1v2_outlier_mad",
+        "fresh_batch_guidance_pooled_v1",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "copied_from": "_scratch/skill_store/fresh_confirmation_v1/a5_pooled"
+    },
+    "a3_pooled": {
+      "slot": "a3_pooled",
+      "runtime_bundle_sha": "c4cb24b84092bf3c7134ed1943b05e635c009fecb7dc40bd09efb2bb0c36b65d",
+      "harness_content_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0",
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "copied_from": "_scratch/skill_store/fresh_confirmation_v1/a3_pooled"
+    },
+    "a5_per_channel": {
+      "slot": "a5_per_channel",
+      "runtime_bundle_sha": "d42456df375b1d8a859e5ec028def5b0f53c5c4f17f82498ac3928fb441f3fd2",
+      "harness_content_sha": "aff1fa8083ffb9779cdb12300cda1176f0a4d8173840d89dc969a75f284f66c9",
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "fast_winner_e1v2_repair_level_shift",
+        "fresh_batch_guidance_per_channel_v1",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "copied_from": "_scratch/skill_store/fresh_confirmation_v1/a5_per_channel"
+    },
+    "a3_per_channel": {
+      "slot": "a3_per_channel",
+      "runtime_bundle_sha": "75dc128a937defd85032aa5d5ad1ed4b5952b57da31a4e5b119fffb9dc142a4e",
+      "harness_content_sha": "736a9863be8f66bbecb8853ab3cdf7b72dfaddc2cbf9e6228eac032a92864741",
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "fast_winner_e1v2_repair_level_shift",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "copied_from": "_scratch/skill_store/fresh_confirmation_v1/a3_per_channel"
+    }
+  },
+  "llm_call_budget": 15,
+  "retrain_budget": 200,
+  "b1_attribution": {
+    "ran": true,
+    "llm_calls": 0,
+    "consumer_retrains": 0,
+    "bootstrap_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ],
+    "cells": {
+      "a5_pooled": {
+        "arm": "A5",
+        "consumer_variant": "pooled",
+        "capability_skills_in_store": [
+          "fast_winner_e1v2_outlier_mad",
+          "fresh_batch_guidance_pooled_v1"
+        ],
+        "with_per_series_risk_reading": {
+          "transport": {
+            "episode_id": "task_C_pooled_A5",
+            "mode": "DIRECT_RECALL",
+            "transport_per_series_risk_scalar": true,
+            "candidate_utilities_support_axis": {
+              "identity": 0.0,
+              "outlier_mad": 0.19120281787876228
+            },
+            "chosen_candidate_id": "outlier_mad",
+            "chosen_gain_delayed_axis": 0.029687731257638534,
+            "risk_delta_u": -0.12555671706543817,
+            "risk_delta_u_note": "exactly one evaluation series (99999904140) crossed the line, so the recorded total harm is that series' delayed delta",
+            "harmed_eval_series": [
+              "99999904140"
+            ],
+            "harmed_eval_series_total_harm": 0.12555671706543817,
+            "retrieved_capability_skill_ids": [
+              "fast_winner_e1v2_outlier_mad",
+              "fresh_batch_guidance_pooled_v1"
+            ],
+            "risk_epsilon_quoted_from_m0_rules": 0.005
+          },
+          "stages": [
+            {
+              "stage": "ELIGIBILITY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "critic_damage_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OBSERVATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "agent_inspected_public_evidence@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "LOCALIZATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "localization_iou_interval@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "MECHANISM",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "fixed_probe_discrimination@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "RETRIEVAL_POLICY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "forced_skill_replay@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SUPPLY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "candidate_gain_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SELECTION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "selection_regret_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "COMPILATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "canonical_compilation@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "EXECUTION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "execution_contract@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OUTCOME_RISK",
+              "status": "FAIL",
+              "fault_code": "RISK_GAP",
+              "cause_code": "RISK_GAP",
+              "decision_rule_id": "risk_epsilon_and_scope@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": [
+                "verification.rules",
+                "skill_library.entries/{skill_id}.risk_guards"
+              ]
+            }
+          ],
+          "attribution": {
+            "first_stage": "OUTCOME_RISK",
+            "fault_code": "RISK_GAP",
+            "cause_code": "RISK_GAP",
+            "actionability": "EDITABLE_M0",
+            "suspect_surface_templates": [
+              "verification.rules",
+              "skill_library.entries/{skill_id}.risk_guards"
+            ]
+          },
+          "route_authorization": {
+            "actionability": "EDITABLE_M0",
+            "target_classes": [
+              "safety",
+              "deterministic_verification",
+              "capability_risk_guard"
+            ],
+            "skill_kinds": [
+              "safety",
+              "capability"
+            ],
+            "operations": [
+              "ADD",
+              "PATCH"
+            ],
+            "surface_ids": []
+          },
+          "is_scope_risk_face": true
+        },
+        "aggregate_only_control": {
+          "transport": {
+            "episode_id": "task_C_pooled_A5",
+            "mode": "DIRECT_RECALL",
+            "transport_per_series_risk_scalar": false,
+            "candidate_utilities_support_axis": {
+              "identity": 0.0,
+              "outlier_mad": 0.19120281787876228
+            },
+            "chosen_candidate_id": "outlier_mad",
+            "chosen_gain_delayed_axis": 0.029687731257638534,
+            "risk_delta_u": null,
+            "risk_delta_u_note": "withheld on purpose: this run reads the episode through the aggregate only, which is what the closing protocol itself did",
+            "harmed_eval_series": [
+              "99999904140"
+            ],
+            "harmed_eval_series_total_harm": 0.12555671706543817,
+            "retrieved_capability_skill_ids": [
+              "fast_winner_e1v2_outlier_mad",
+              "fresh_batch_guidance_pooled_v1"
+            ],
+            "risk_epsilon_quoted_from_m0_rules": 0.005
+          },
+          "stages": [
+            {
+              "stage": "ELIGIBILITY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "critic_damage_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OBSERVATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "agent_inspected_public_evidence@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "LOCALIZATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "localization_iou_interval@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "MECHANISM",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "fixed_probe_discrimination@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "RETRIEVAL_POLICY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "forced_skill_replay@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SUPPLY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "candidate_gain_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SELECTION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "selection_regret_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "COMPILATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "canonical_compilation@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "EXECUTION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "execution_contract@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OUTCOME_RISK",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "risk_epsilon_and_scope@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            }
+          ],
+          "attribution": {
+            "first_stage": null,
+            "fault_code": "NO_ACTIONABLE_FAULT",
+            "cause_code": "NO_ACTIONABLE_FAULT",
+            "actionability": "NONE",
+            "suspect_surface_templates": []
+          },
+          "route_authorization": {
+            "actionability": "EVIDENCE_BACKLOG",
+            "target_classes": [],
+            "skill_kinds": [],
+            "operations": [],
+            "surface_ids": []
+          },
+          "is_scope_risk_face": false
+        }
+      },
+      "a3_pooled": {
+        "arm": "A3",
+        "consumer_variant": "pooled",
+        "capability_skills_in_store": [],
+        "with_per_series_risk_reading": {
+          "transport": {
+            "episode_id": "task_C_pooled_A3",
+            "mode": "FULL_PRICE_SEARCH",
+            "transport_per_series_risk_scalar": true,
+            "candidate_utilities_support_axis": {
+              "identity": 0.0,
+              "hampel_filter": 0.0022524481144869193,
+              "outlier_mad": 0.19120281787876228,
+              "outlier_mad|minus:72259003927,72511654737,72605654791,72654014936": 0.23989367499085126
+            },
+            "chosen_candidate_id": "outlier_mad",
+            "chosen_gain_delayed_axis": 0.029687731257638534,
+            "risk_delta_u": -0.12555671706543817,
+            "risk_delta_u_note": "exactly one evaluation series (99999904140) crossed the line, so the recorded total harm is that series' delayed delta",
+            "harmed_eval_series": [
+              "99999904140"
+            ],
+            "harmed_eval_series_total_harm": 0.12555671706543817,
+            "retrieved_capability_skill_ids": [],
+            "risk_epsilon_quoted_from_m0_rules": 0.005
+          },
+          "stages": [
+            {
+              "stage": "ELIGIBILITY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "critic_damage_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OBSERVATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "agent_inspected_public_evidence@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "LOCALIZATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "localization_iou_interval@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "MECHANISM",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "fixed_probe_discrimination@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "RETRIEVAL_POLICY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "forced_skill_replay@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SUPPLY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "candidate_gain_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SELECTION",
+              "status": "FAIL",
+              "fault_code": "SELECTION_MISS",
+              "cause_code": "SELECTION_MISS",
+              "decision_rule_id": "selection_regret_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": [
+                "candidate_policy.selection_guidance"
+              ]
+            },
+            {
+              "stage": "COMPILATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "canonical_compilation@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "EXECUTION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "execution_contract@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OUTCOME_RISK",
+              "status": "FAIL",
+              "fault_code": "RISK_GAP",
+              "cause_code": "RISK_GAP",
+              "decision_rule_id": "risk_epsilon_and_scope@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": [
+                "verification.rules",
+                "skill_library.entries/{skill_id}.risk_guards"
+              ]
+            }
+          ],
+          "attribution": {
+            "first_stage": "CANDIDATE_SELECTION",
+            "fault_code": "SELECTION_MISS",
+            "cause_code": "SELECTION_MISS",
+            "actionability": "EDITABLE_M0",
+            "suspect_surface_templates": [
+              "candidate_policy.selection_guidance"
+            ]
+          },
+          "route_authorization": {
+            "actionability": "EDITABLE_M0",
+            "target_classes": [
+              "selection_control"
+            ],
+            "skill_kinds": [],
+            "operations": [
+              "PATCH"
+            ],
+            "surface_ids": [
+              "candidate_policy.selection_guidance"
+            ]
+          },
+          "is_scope_risk_face": false
+        },
+        "aggregate_only_control": {
+          "transport": {
+            "episode_id": "task_C_pooled_A3",
+            "mode": "FULL_PRICE_SEARCH",
+            "transport_per_series_risk_scalar": false,
+            "candidate_utilities_support_axis": {
+              "identity": 0.0,
+              "hampel_filter": 0.0022524481144869193,
+              "outlier_mad": 0.19120281787876228,
+              "outlier_mad|minus:72259003927,72511654737,72605654791,72654014936": 0.23989367499085126
+            },
+            "chosen_candidate_id": "outlier_mad",
+            "chosen_gain_delayed_axis": 0.029687731257638534,
+            "risk_delta_u": null,
+            "risk_delta_u_note": "withheld on purpose: this run reads the episode through the aggregate only, which is what the closing protocol itself did",
+            "harmed_eval_series": [
+              "99999904140"
+            ],
+            "harmed_eval_series_total_harm": 0.12555671706543817,
+            "retrieved_capability_skill_ids": [],
+            "risk_epsilon_quoted_from_m0_rules": 0.005
+          },
+          "stages": [
+            {
+              "stage": "ELIGIBILITY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "critic_damage_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OBSERVATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "agent_inspected_public_evidence@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "LOCALIZATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "localization_iou_interval@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "MECHANISM",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "fixed_probe_discrimination@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "RETRIEVAL_POLICY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "forced_skill_replay@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SUPPLY",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "candidate_gain_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "CANDIDATE_SELECTION",
+              "status": "FAIL",
+              "fault_code": "SELECTION_MISS",
+              "cause_code": "SELECTION_MISS",
+              "decision_rule_id": "selection_regret_min@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": [
+                "candidate_policy.selection_guidance"
+              ]
+            },
+            {
+              "stage": "COMPILATION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "canonical_compilation@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "EXECUTION",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "execution_contract@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            },
+            {
+              "stage": "OUTCOME_RISK",
+              "status": "PASS",
+              "fault_code": null,
+              "cause_code": null,
+              "decision_rule_id": "risk_epsilon_and_scope@f16c3ae94a645a6594eda7184f3831c6a7150b6ecc4f3d55dea4fa24f2ebb2be",
+              "suspect_surface_templates": []
+            }
+          ],
+          "attribution": {
+            "first_stage": "CANDIDATE_SELECTION",
+            "fault_code": "SELECTION_MISS",
+            "cause_code": "SELECTION_MISS",
+            "actionability": "EDITABLE_M0",
+            "suspect_surface_templates": [
+              "candidate_policy.selection_guidance"
+            ]
+          },
+          "route_authorization": {
+            "actionability": "EDITABLE_M0",
+            "target_classes": [
+              "selection_control"
+            ],
+            "skill_kinds": [],
+            "operations": [
+              "PATCH"
+            ],
+            "surface_ids": [
+              "candidate_policy.selection_guidance"
+            ]
+          },
+          "is_scope_risk_face": false
+        }
+      }
+    },
+    "primary_cell": "a5_pooled",
+    "primary_cause": "RISK_GAP",
+    "machinery": {
+      "fold": "evaluation/minipipe/feedback/first_fault.py::assess_case",
+      "router": "evaluation/minipipe/feedback/router.py::FaultRouter",
+      "rules": "evaluation/minipipe/config/m0_rules.json",
+      "risk_epsilon": 0.005,
+      "unchanged": true
+    },
+    "adapter": {
+      "why": "``assess_case`` takes a ``CaseFacts`` built for the controlled minipipe: one synthetic case with a private clean reference, an oracle-affected index set and probe curves.  A recipe-line episode has none of those.  The adapter below moves measured numbers into the slots that have a faithful analogue and leaves every other slot at its documented default, naming each one.",
+      "two_axes": "selection-time utility is the Support window, because Support is what the Agent can see when it adopts; outcome utility is the delayed window, because that is what the ladder confirms on.  So ``candidate_utilities``/``clean_u``/``corrupt_u``/``prepared_u``/``damage_d`` carry Support gains and ``chosen_gain`` carries the delayed aggregate gain.",
+      "transported": {
+        "case_id": "the episode id",
+        "is_target": "True: the batch is what the adoption was aimed at",
+        "chosen_candidate_id": "the adopted plan's label",
+        "candidate_utilities": "identity at 0.0 plus every plan this episode actually measured, at its Support aggregate gain -- including the masked plan when a mask round ran, because the Agent was shown it",
+        "effect_distinct_candidate_ids": "every measured non-identity plan",
+        "clean_u": "the largest measured Support gain",
+        "corrupt_u": "0.0, the identity baseline every gain is measured against",
+        "prepared_u": "the adopted plan's Support gain",
+        "damage_d": "clean_u - corrupt_u: the headroom the search actually found",
+        "chosen_gain": "the adopted plan's delayed aggregate gain",
+        "risk_delta_u": "the smallest per-evaluation-series delayed gain.  This is the only reduction the adapter performs: the slot is a scalar and the episode measured a vector.  The whole vector is recorded beside it, and the run is repeated with this slot set to None so the aggregate-only reading is on the record too.",
+        "capability_skill_exists / skill_retrieved / normal_retrieval / retrieved_capability_skill_ids": "from the episode's retrieval receipt",
+        "compilation_ok / execution_ok / execution_contract_ok": "True: every plan in this line compiles and runs, or the episode would have raised",
+        "proposed_candidate_exists / compiled_candidate_exists": "whether a non-identity plan was measured"
+      },
+      "not_transported_left_at_default": {
+        "scope_stable": "True.  ``cycle.py`` fills this from modified indices over context size against ``max_modified_fraction``; a recipe episode has no index-level modification trace, and a batch program legitimately touches every training series, so mapping series fraction into an index-fraction slot would be wrong.  Left True, which makes the RISK stage harder to trip, not easier.",
+        "over_restoration": "False: there is no clean oracle to over-restore towards",
+        "chosen_probe_directions": "(): the recipe line runs no probe directions",
+        "public_evidence_discriminative": "True: the public per-series table was built",
+        "agent_inspected_evidence": "True.  A direct-recall episode has no Agent turn by protocol design, which is an absence rather than a procedure gap; the field has no NOT_APPLICABLE value, so the passing default is used and declared here.",
+        "localization_required / localization_iou / mechanism_identified / mechanism_contradiction / period_diagnostic_pass": "minipipe diagnostic machinery with no recipe-line analogue",
+        "expressibility_status / witnesses / forced_skill_succeeds / constrained_proposal_succeeds": "program-supply witness machinery with no recipe-line analogue"
+      },
+      "consequence_to_state_plainly": "because the untransportable fields keep passing defaults, the fold can only report a fault at CANDIDATE_SELECTION or OUTCOME_RISK, or report none at all.  The adapter narrows where attribution can land and that narrowing is the adapter's, not the machine's."
+    }
+  },
+  "guard_after_b1": true,
+  "b2_patch": {
+    "ran": true,
+    "attributed_from_episode": "a5_pooled",
+    "confirmed_cause": "RISK_GAP",
+    "authorized_surfaces_offered": [
+      "skill_library.entries/fast_winner_e1v2_outlier_mad.risk_guards",
+      "skill_library.entries/fresh_batch_guidance_pooled_v1.risk_guards",
+      "verification.rules"
+    ],
+    "public_input_sha256": "b072825c78acb0c274a96f342ad1fff2051fc268fefde6ed05113d0b0597d299",
+    "harness_view_sha": "36955e28568effccace285fa8782145a49334dbf0d61f1b5b644b30761e42db1",
+    "role": "slow",
+    "stage": "edit",
+    "no_second_attempt": "envelope-shape retries are the agent core's own teaching loop; the EditController is called once and a rejection stops the run",
+    "abstention_sampling": "The pre-registration covers a compiler rejection -- which stops the run immediately and gets no second attempt -- but says nothing about the Slow Agent declining to propose at all.  The no_proposal envelope is a legitimate option rather than a failed attempt, so this protocol asks at most 2 times with a byte-identical prompt, stops at the first proposal, and records every attempt including the ones that abstained.  A compiler rejection still ends the run on the spot.  Any proposal obtained after an abstention is a second draw from a stochastic process and is labelled as such wherever it is reported.",
+    "max_proposal_attempts": 2,
+    "attempts": [
+      {
+        "attempt": 1,
+        "llm_calls": 1,
+        "validation_retry_count": 0,
+        "validation_error_codes": [],
+        "no_proposal_reason": "no_authorized_minimal_edit",
+        "outcome": "NO_PROPOSAL"
+      },
+      {
+        "attempt": 2,
+        "llm_calls": 1,
+        "validation_retry_count": 0,
+        "validation_error_codes": [],
+        "no_proposal_reason": "insufficient_public_evidence",
+        "outcome": "NO_PROPOSAL"
+      }
+    ],
+    "llm_calls": 2,
+    "proposal_attempt": 2,
+    "validation_retry_count": 0,
+    "validation_error_codes": [],
+    "verdict": "SLOW_ABSTAINS",
+    "proposal": null,
+    "reason": "the Slow Agent returned the no_proposal envelope on all 2 attempts (no_authorized_minimal_edit, insufficient_public_evidence); this outcome is not in the pre-registered set and is reported as it stands",
+    "wall_seconds": 58.9333117999995
+  },
+  "guard_after_b2": true,
+  "llm_call_count": 2,
+  "consumer_retrains_total": 0,
+  "overall_verdict": "SLOW_ABSTAINS",
+  "overall_verdict_reason": "the Slow Agent returned the no_proposal envelope on all 2 attempts (no_authorized_minimal_edit, insufficient_public_evidence); this outcome is not in the pre-registered set and is reported as it stands",
+  "wall_seconds": 59.3708987,
+  "frozen_surface_after": {
+    "files": 32,
+    "drift": [],
+    "ok": true
+  }
+}
