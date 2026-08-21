@@ -4,7 +4,7 @@ import argparse
 import hashlib
 import math
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -300,6 +300,9 @@ def _validate_authoring_controls(
 # repair stopped the search instrument from projecting that vector away at
 # its interface; the evaluator performs no measurement of its own.
 GUARD_LIST_KEY = "scope_risk_guards"
+# The abstention option the gate may never remove.  Named here rather
+# than imported so the Harness does not depend on an experiment module.
+IDENTITY_PROGRAM = "identity"
 GUARD_ID_PATTERN = re.compile(r"^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$")
 GUARD_WINDOWS = ("support", "delayed")
 GUARD_STATISTICS = (
@@ -520,6 +523,128 @@ def evaluate_scope_risk_guards(
     }
 
 
+def enforce_scope_risk_guards(
+    *,
+    snapshot: HarnessSnapshot,
+    ladder: Mapping[str, Any],
+    eval_count: int,
+    reused: bool,
+    delayed_of: Callable[[str, Sequence[str]], Mapping[str, Any]],
+    support_of: Callable[[str, Sequence[str]], Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Evaluate the declared guards and walk the fallback on a veto.
+
+    #19 left the reading here and the acting in the experiment runner, so a
+    guard could be read but never obeyed outside that one script.  This is
+    the other half: the whole decision -- discovery, evaluation, which
+    fallback the veto walks to, re-checking that fallback, and the identity
+    floor -- now lives in tracked machinery, next to the verification
+    document it is a rule of.
+
+    Measurement stays outside on purpose.  ``delayed_of`` and ``support_of``
+    are the caller's own instrument, injected as callables taking
+    ``(program, excluded_series)`` and returning that plan's window gains;
+    the Harness must not own a Consumer.  Everything this function decides,
+    it decides from the ladder receipt and those two readings.
+
+    ``ladder`` is the frozen v2 adoption ladder's own receipt, read and not
+    rewritten: ``final_plan``, ``support``, ``delayed``, ``support_winner``
+    and ``support_winner_full_batch_delayed``.  The ladder is never
+    re-ranked, and identity is never submitted to a guard: it is
+    unfilterable, so abstention cannot be taken away.
+    """
+    guards = scope_risk_guards_of(snapshot)
+    plan = _plain(ladder["final_plan"])
+    support = _plain(ladder.get("support") or {})
+    delayed = _plain(ladder.get("delayed") or {})
+    out: dict[str, Any] = {
+        "guards_declared": guards,
+        "guard_count": len(guards),
+        "gate": "methods/ttha/harness/compiler.py::enforce_scope_risk_guards",
+        "evaluator": (
+            "methods/ttha/harness/compiler.py::evaluate_scope_risk_guards"
+        ),
+        "measurement_is_the_callers": True,
+        "plan_before": dict(plan),
+        "identity_never_vetoed": True,
+        "checked": False,
+        "changed": False,
+        "plan_after": dict(plan),
+        "support_after": support,
+        "delayed_after": delayed,
+    }
+    if not guards:
+        out["why"] = "the active snapshot declares no Scope/Risk guard"
+        return out
+    if str(plan["program"]) == IDENTITY_PROGRAM:
+        out["why"] = "identity is unfilterable and is never submitted to a guard"
+        return out
+
+    first = evaluate_scope_risk_guards(
+        snapshot=snapshot,
+        plan=plan,
+        support=support,
+        delayed=delayed,
+        eval_count=int(eval_count),
+        reused=bool(reused),
+    )
+    out["checked"] = True
+    out["check_on_adopted_plan"] = first
+    if not first["vetoed"]:
+        out["why"] = (
+            "a guard fired but only asked for a record"
+            if first["any_fired"] else "no guard fired"
+        )
+        return out
+
+    winner = ladder.get("support_winner")
+    winner_delayed = ladder.get("support_winner_full_batch_delayed")
+    excluded = list(plan.get("excluded_series") or ())
+    fallback = {"program": IDENTITY_PROGRAM, "excluded_series": []}
+    fallback_source = "identity"
+    if (
+        winner is not None
+        and winner_delayed is not None
+        and float(winner_delayed) > 0.0
+        and not (str(winner) == str(plan["program"]) and not excluded)
+    ):
+        fallback = {"program": str(winner), "excluded_series": []}
+        fallback_source = "the ladder's Support winner, full batch"
+
+    fallback_delayed = _plain(
+        delayed_of(str(fallback["program"]), list(fallback["excluded_series"]))
+    )
+    fallback_support = _plain(
+        support_of(str(fallback["program"]), list(fallback["excluded_series"]))
+    )
+    second = None
+    if str(fallback["program"]) != IDENTITY_PROGRAM:
+        second = evaluate_scope_risk_guards(
+            snapshot=snapshot,
+            plan=fallback,
+            support=fallback_support,
+            delayed=fallback_delayed,
+            eval_count=int(eval_count),
+            reused=bool(reused),
+        )
+        if second["vetoed"]:
+            fallback = {"program": IDENTITY_PROGRAM, "excluded_series": []}
+            fallback_source = "identity: the fallback candidate fired the same guard"
+            fallback_delayed = _plain(delayed_of(IDENTITY_PROGRAM, []))
+            fallback_support = _plain(support_of(IDENTITY_PROGRAM, []))
+    out.update(
+        {
+            "check_on_fallback": second,
+            "fallback_source": fallback_source,
+            "plan_after": dict(fallback),
+            "support_after": fallback_support,
+            "delayed_after": fallback_delayed,
+            "changed": True,
+            "why": "a veto fired, so the frozen v2 fallback was walked",
+        }
+    )
+    return out
+
 
 def _compile(root: Path) -> _CompilationReceipt:
     root = Path(root).resolve()
@@ -668,9 +793,11 @@ if __name__ == "__main__":
 __all__ = [
     "COMPILER_VERSION",
     "GUARD_LIST_KEY",
+    "IDENTITY_PROGRAM",
     "RETRIEVAL_COMPILER_VERSION",
     "compile_snapshot",
     "compile_compatible_snapshot",
+    "enforce_scope_risk_guards",
     "evaluate_scope_risk_guards",
     "guard_fires",
     "guard_statistic",

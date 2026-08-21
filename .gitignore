@@ -15,9 +15,12 @@ _pytest_*/
 Ts_harness.zip
 *.zip
 
-# NOAA fresh cohort local data (raw 2025 csv ~165MB + materialized arrays);
-# roster/manifest/exposure ledgers are tracked in artifacts/functional/e2/.
-data/benchmark_noaa_fresh_v1/
+# NOAA fresh cohort local data (raw 2025 csv ~165MB + materialized arrays).
+# The children are excluded rather than the directory itself, so the cohort
+# manifest can be re-included: it is a frozen-surface member and needs a
+# tracked baseline, unlike the arrays it describes.
+data/benchmark_noaa_fresh_v1/*
+!data/benchmark_noaa_fresh_v1/manifest.json
 
 # Scratch skill-store forks and runtime caches from functional runs.
 _scratch/

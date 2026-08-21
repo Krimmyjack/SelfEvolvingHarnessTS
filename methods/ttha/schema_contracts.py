@@ -330,6 +330,14 @@ def _validate_local_schema(
         minimum_length = schema.get("minLength")
         if isinstance(minimum_length, int) and len(value) < minimum_length:
             raise LocalSchemaError(f"{path} is too short")
+        # #21 CONTRACT_ENFORCEMENT_CHAIN_GAP: maxLength was advertised in
+        # stage schemas and enforced at the compiler, but never here, so a
+        # violation passed the retry loop that exists to teach the contract
+        # and died at a gate with no second attempt.  Implemented exactly as
+        # its minLength counterpart; no new kind of constraint is added.
+        maximum_length = schema.get("maxLength")
+        if isinstance(maximum_length, int) and len(value) > maximum_length:
+            raise LocalSchemaError(f"{path} is too long")
         pattern = schema.get("pattern")
         if isinstance(pattern, str) and re.fullmatch(pattern, value) is None:
             raise LocalSchemaError(f"{path} does not match pattern")
