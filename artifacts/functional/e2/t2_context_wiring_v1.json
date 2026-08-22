@@ -1,0 +1,217 @@
+{
+  "a5_summary": [
+    {
+      "face": "A1 public view task/consumer/eval semantics",
+      "status": "gap - patched this round"
+    },
+    {
+      "face": "A2 card applicability task dimension",
+      "status": "wired (task_kind gate)"
+    },
+    {
+      "face": "A2 card applicability consumer dimension",
+      "status": "gap - left to T4 (vocabulary, not this round's surface)"
+    },
+    {
+      "face": "A3 episode task_consumer_key",
+      "status": "wired; key lacks task component - left to T4 per book"
+    },
+    {
+      "face": "A4 retrieval task filter",
+      "status": "wired (skill: task_kind AST; episode: exact key match)"
+    }
+  ],
+  "ambiguities": [
+    "quality_semantics wording is English while the book states it in Chinese; content is the three authorized items only, no outcome",
+    "consumer_id names for the recipe line (pooled_ridge_a1 / per_channel_ridge_a1) are registered by this patch; the book named pooled_ridge_a1 and ad_v1_49_35 as examples -- per_channel had no book-level name",
+    "the schema_version of the base body stays 'skill-store-integration-input/1' although a key was added: bumping it would have made the B3 byte-diff check ('exactly the new field') fail; the addition is backward-compatible (no consumer of the body rejects unknown keys)",
+    "the anomaly_detection variant is materialized with task_spec_override because no live caller serves that task yet; whether T3 wires a real AD caller through this field is T3's decision",
+    "skill_store_integration_v1.json arm_targets[0] (T233, exposure: already exposed development data) supplied the real input frame for the byte-equivalence proof; it is a delivered frozen artifact, read-only"
+  ],
+  "b3_materialization": {
+    "backward_compat_proof": {
+      "method": "patched _base_input on inputs reconstructed from a real recorded episode, task_spec key stripped, canonical sha compared against the episode's recorded pre-patch public_input_sha256",
+      "result": {
+        "added_keys": [
+          "task_spec"
+        ],
+        "changed_values": [],
+        "matches_recorded_pre_patch_bytes": true,
+        "recorded_public_input_sha256": "eb552e3a31e61ed32d144f070bc9245365ed7a5164d5f948a3b0a8172418c5f0",
+        "removed_keys": [],
+        "stripped_sha256": "eb552e3a31e61ed32d144f070bc9245365ed7a5164d5f948a3b0a8172418c5f0"
+      }
+    },
+    "byte_sample": {
+      "task_spec_field_canonical": "{\"task_spec\":{\"consumer_id\":\"pooled_ridge_a1\",\"quality_semantics\":\"good preparation lowers the sMASE of the evaluation-series forecasts\",\"task_id\":\"forecasting\"}}",
+      "v_forecasting_user_excerpt": "{\"allowed_local_tools\":[],\"public_input\":{\"consumer_structure\":{\"per_channel\":\"each training channel fits its own model; every evaluation channel is predicted by the equal-weight mean of those channel-wise models\",\"pooled\":\"one model fitted on the stacked windows of all training channels\"},\"evaluation_budget\":{\"adoption_ladder\":\"the Support winner is the highest-Support full-batch plan measured he"
+    },
+    "conclusion": "diff(pre-patch, patched) is exactly the added task_spec field bytes; diff(forecasting, anomaly_detection) is exactly the task_spec field values; the system message is byte-identical across all three",
+    "diff_forecasting_to_ad": {
+      "a_len": 9409,
+      "a_middle": "pooled_ridge_a1\",\"quality_semantics\":\"good preparation lowers the sMASE of the evaluation-series forecasts\",\"task_id\":\"forecasting",
+      "b_len": 9441,
+      "b_middle": "ad_v1_49_35\",\"quality_semantics\":\"good preparation keeps the detectable events detectable: it reduces missed events and false alarms\",\"task_id\":\"anomaly_detection",
+      "common_prefix_bytes": 8105,
+      "common_suffix_bytes": 1174
+    },
+    "diff_old_to_forecasting": {
+      "a_len": 9248,
+      "a_middle": "",
+      "b_len": 9409,
+      "b_middle": ",\"task_spec\":{\"consumer_id\":\"pooled_ridge_a1\",\"quality_semantics\":\"good preparation lowers the sMASE of the evaluation-series forecasts\",\"task_id\":\"forecasting\"}",
+      "common_prefix_bytes": 8076,
+      "common_suffix_bytes": 1172
+    },
+    "path": "PublicAgentInput.create -> TTHAAgentCore._messages, real h0 snapshot resolved with the episode's recorded context features; no backend called",
+    "source_episode": {
+      "artifact": "artifacts/functional/e2/skill_store_integration_v1.json",
+      "episode_id": "T1_A3",
+      "exposure": "already exposed development data; not fresh"
+    },
+    "system_message_identical_across_variants": true,
+    "v_anomaly_detection": {
+      "system_sha256": "0a657752cb97f7b13e4faf2a6038d11307db9c5c645e997a63100ca4b4a680d9",
+      "user_bytes": 9441,
+      "user_sha256": "8b4c5eef967827eb75c873792189c568bf437826d2e370e4c2199a9515fb0fad"
+    },
+    "v_forecasting": {
+      "system_sha256": "0a657752cb97f7b13e4faf2a6038d11307db9c5c645e997a63100ca4b4a680d9",
+      "user_bytes": 9409,
+      "user_sha256": "4931dff846740c315d91be48ac27c5adf268ee6fa8ca72ae0c85f8c541d42943"
+    },
+    "v_old_no_field": {
+      "system_sha256": "0a657752cb97f7b13e4faf2a6038d11307db9c5c645e997a63100ca4b4a680d9",
+      "user_bytes": 9248,
+      "user_sha256": "1992c19621857176b048a6a9f2bb0447f397772bbe1ea6de6944666e5eaa70ab"
+    }
+  },
+  "budget": {
+    "ad_budget": 0,
+    "ad_evaluations": 0,
+    "forecasting_retrains": 0,
+    "llm_budget": 0,
+    "llm_calls": 0,
+    "note": "pure static audit + deterministic prompt materialization; no backend was called",
+    "retrain_budget": 0
+  },
+  "commit_discipline": "deliverables not committed (Part 0 excepted); no spawn; other line untouched",
+  "date": "2026-08-22",
+  "evidence_grade": "DEVELOPMENT_STATIC_AUDIT",
+  "frozen_surface": {
+    "all_other_members": "zero drift (git diff --name-only shows only the patched file)",
+    "drift": [
+      {
+        "file": "evaluation/functional/run_e2_skill_store_integration.py",
+        "sha256_after": "f39c13f3b29ae534ee7c7b3b682ad60179316243742925022504d16974b3183e",
+        "sha256_before": "37d31cb85e9b733067304955ba33c9ca90fa5f5d0b2cc10874d0ae40c039034f",
+        "status": "authorized observation patch (Part B)"
+      }
+    ],
+    "git_diff_tracked": [
+      "evaluation/functional/run_e2_skill_store_integration.py"
+    ],
+    "name": "FROZEN_SURFACE_V9",
+    "raw_entries": 40,
+    "unique_files": 39
+  },
+  "part0_checkpoint": {
+    "commit": "be02ab2",
+    "contents": [
+      "evaluation/functional/run_e2_t1_flip_control.py",
+      "artifacts/functional/e2/t1_flip_control_v1.json",
+      "artifacts/functional/e2/t1_flip_control_v1.md",
+      "docs/ROADMAP_POST_V1_2026-08-22.md",
+      "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md"
+    ],
+    "files": 5
+  },
+  "part_a_audit": [
+    {
+      "evidence": [
+        "evaluation/functional/run_e2_skill_store_integration.py:_base_input -- the prompt body carries schema_version/target/consumer_structure/program_menu/retrieved_guidance/evaluation_budget/public_observation; no task field, no metric, no quality semantics",
+        "run_e2_skill_store_integration.py:632 and run_e2_warm_vs_cold_recipe_search.py:614 -- task_kind='forecast' is hardcoded at feature extraction; task is implicitly forecasting",
+        "run_e2_warm_vs_cold_recipe_search.py:183-195 OBSERVATION_FIELDS -- the rendered observation rows are pattern/geometry/statistics only; task_kind is dropped before rendering",
+        "consumer identity half-wired: target.consumer_variant ('pooled'/'per_channel') + consumer_structure text (ssi:861-884) describe model structure, not a consumer_id and not what the metric measures",
+        "methods/ttha/agent_core.py:167-274 _messages -- the Fast Agent sees exactly public_input + resolved harness; nothing adds task semantics downstream"
+      ],
+      "face": "A1 public view / prompt assembly",
+      "minimal_fix_if_gap": "one deterministic task_spec field in _base_input (task_id, consumer_id, one-line quality semantics) -- implemented in Part B",
+      "question": "task identity, Consumer identity, evaluation semantics visible to the Fast Agent?",
+      "verdict": "gap (patched this round)"
+    },
+    {
+      "evidence": [
+        "contracts/observables.py:19-46 OBSERVABLE_FEATURES -- closed vocabulary includes task_kind (string, domain {forecast, classification, anomaly_detection}, observables.py:67-71); no consumer/metric feature exists",
+        "evaluation/functional/run_e2_skill_store_integration.py:354-356 -- both shipped Guidance cards gate on {feature: task_kind, op: ==, value: forecast}",
+        "ssi:350-353 comment: 'The observable vocabulary has no cohort and no Consumer-structure feature, so a finer gate cannot be written without inventing one' -- consumer conditioning lives only as free text in the card's WHEN section"
+      ],
+      "face": "A2 Guidance/Skill card schema",
+      "minimal_fix_if_gap": "a consumer feature in the observable vocabulary; NOT authorized this round (Observation patch is limited to the Fast Agent public view)",
+      "question": "do applicability conditions carry a task/consumer dimension?",
+      "verdict": "task wired, consumer gap (left to T4, audit only)"
+    },
+    {
+      "evidence": [
+        "methods/ttha/experience_memory.py:54-69 ExperienceEpisode -- task_consumer_key is a required frozen field",
+        "evaluation/functional/run_e2_fresh_confirmation.py:1765-1766 -- the recipe line writes task_consumer_key='batch:<cohort>|consumer:<variant>'; the key carries cohort and consumer variant but no task_type component",
+        "methods/ttha/experience_memory.py:212-214 -- retrieval exact-matches task_consumer_key, so whatever the key encodes is what separation can key on"
+      ],
+      "face": "A3 Experience episode record schema",
+      "minimal_fix_if_gap": "include task identity in the key grammar (e.g. 'task:<id>|batch:<cohort>|consumer:<variant>'); repair right reserved to T4",
+      "question": "does the episode carry a task/consumer key (T4 retrieval-separation premise)?",
+      "verdict": "key wired, task component gap (left to T4 per the book)"
+    },
+    {
+      "evidence": [
+        "methods/ttha/retrieval.py:177-181 resolve_harness_view -- skills/memories filtered by observable_applicability AST over public features; task_kind is expressible, consumer is not (no feature)",
+        "retrieval.py:173 -- restricted_by_target_feedback guard removes Target-disconfirmed skills in both roles",
+        "methods/ttha/fast_agent.py:836-845 -- episode-side resolve_order takes task_consumer_key + allowed_operators: task/consumer mismatch, invalid instrument and illegal-operator episodes never enter the history pool"
+      ],
+      "face": "A4 retrieval legality filter",
+      "minimal_fix_if_gap": "none needed for task; consumer-dimension filtering would need the A2 vocabulary feature first",
+      "question": "can retrieval filter by task?",
+      "verdict": "wired for task (skill layer via task_kind feature; episode layer via key), consumer not expressible"
+    }
+  ],
+  "part_b_patch": {
+    "diff_shape": "+49/-0, purely additive",
+    "field": {
+      "consumer_id_map": {
+        "per_channel": "per_channel_ridge_a1",
+        "pooled": "pooled_ridge_a1"
+      },
+      "content": [
+        "task_id",
+        "consumer_id",
+        "quality_semantics"
+      ],
+      "injected_by": "runner, deterministically (_task_spec_observation); never LLM-generated; carries no outcome",
+      "key": "task_spec",
+      "override_note": "task_spec_override exists only for the deterministic T2 materialization; no live caller passes it",
+      "values": {
+        "anomaly_detection (materialization override)": {
+          "consumer_id": "ad_v1_49_35",
+          "quality_semantics": "good preparation keeps the detectable events detectable: it reduces missed events and false alarms",
+          "task_id": "anomaly_detection"
+        },
+        "forecasting/pooled": {
+          "consumer_id": "pooled_ridge_a1",
+          "quality_semantics": "good preparation lowers the sMASE of the evaluation-series forecasts",
+          "task_id": "forecasting"
+        }
+      }
+    },
+    "file": "evaluation/functional/run_e2_skill_store_integration.py",
+    "file_budget": 2,
+    "files_touched": 1,
+    "frozen_surface_note": "run_e2_skill_store_integration.py is a FROZEN_SURFACE_V9 member; this is the book's single authorized Observation-surface patch (B2 gate: construction point + at most one passing point -- one file sufficed). Hash registry update left to the next checkpoint, following the #18/#19 'freeze after repair' precedent.",
+    "mechanism": "one deterministic task_spec field enters the Fast Agent public view at its single construction point",
+    "sha256_after": "f39c13f3b29ae534ee7c7b3b682ad60179316243742925022504d16974b3183e",
+    "sha256_before": "37d31cb85e9b733067304955ba33c9ca90fa5f5d0b2cc10874d0ae40c039034f"
+  },
+  "protocol_version": "t2_context_wiring_v1",
+  "sealed_discipline": "NOAA 2025 / beyond_17520 / SMD test+labels: zero reads; AD consumer params (49/3.5) and injection artifacts untouched",
+  "task_book": "T2 (observation wiring audit + at most one observation patch)",
+  "verdict": "TASK_CONTEXT_GAP_PATCHED"
+}

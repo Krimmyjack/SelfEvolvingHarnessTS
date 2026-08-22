@@ -152,14 +152,20 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
 **阶段图**:
 - **Phase T — Task-conditioned quality**(当前主线):同一单变量 Pattern 下
   forecasting 与 anomaly detection 双 Consumer 的方向翻转与条件化适配。
-  T0 仪器定义+底物普查(#35)→ T1 注入正控(#36,POSITIVE_CONTROL 等级)
-  → T2 TaskSpec/Consumer 观察接线审计 → T3 任务条件化决策(Agent 平权
-  双任务,禁 Router 硬编码)→ T4 冲突 Experience 写入与按任务检索 →
-  T5 生命周期闭环(反馈改变下一任务行为)→ T6 fresh 跨域确认(需新域,
-  见 O9)。机制阶段 T0–T5 全部用注入正控 + 自有 dev 数据,不需新数据。
+  T0 仪器定义+底物普查(#35)→ T1 注入正控(#36,改判输入侧)→
+  T2 TaskSpec/Consumer 观察接线审计(#37)→ **T1b 训练侧翻转正控(#38,
+  双 Consumer 同训练字节、独立未处理 Query 计分)** → T3 任务条件化决策
+  (#39,门控在训练侧翻转上;C1 用方差参照判据)→ T4 冲突 Experience
+  写入与按任务检索(#40)→ T5 生命周期闭环(#41)→ T6 fresh 跨域确认
+  (#42,需新域,见 O9)。机制阶段全部用注入正控 + 自有 dev 数据,
+  不需新数据。
   进度(2026-08-22):T0 = `T0_READY`(#35,AD Consumer 冻结于 49/3.5,
   回退已用尽);T1 = `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(#36,C12,
-  4/4 程序同向,guard 语法对 AD 向量直读通过);当前 = T2(#37)。
+  4/4 程序同向,guard 语法对 AD 向量直读通过);T2 =
+  `TASK_CONTEXT_GAP_PATCHED`(#37,task_spec 三项入公开视图,三重
+  物化验收;卡层 task 维已在;T4 范围钉死 = episode 键 task 分量 +
+  卡词汇 consumer 特征);T3 v1 零消耗撤回(estimand 不对称,sol 审核
+  采纳,C12 改判输入侧);当前 = T1b(#38)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
 - **Phase X — 跨域 fresh 确认**:各 family 内 A5 vs A3(forecasting 线的
@@ -180,7 +186,9 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
 **同字节契约(T1 estimand 承重面)**:同一注入块 B、同一 Program P、
 同一作用几何产出唯一 P(B),两 Consumer 读同一字节,处理侧零分叉;
 预测读未来/检测读块内的不对称属任务语义,非几何混杂。
-**编号口径**:#34 不存在,主任务书 = #35–#45 共 11 张;有界修复书另计。
+**编号口径(2026-08-22 顺延)**:#34 不存在;T1b(#38)以修复书身份并入
+主链后,主任务书 = #35–#46 共 12 张:#38=T1b,#39=T3,#40=T4,#41=T5,
+#42=T6,#43=M0,#44=M1,#45=X 复活,#46=最终整合。
 **Phase T 前段预算(预注册)**:T0 = 0 LLM / 0 forecasting 重训 /
 ≤200 AD 评估;T1 = 0 LLM / ≤60 forecasting 重训 / ≤300 AD 评估;
 T2 起随书预注册。冻结面口径 = 现行 FROZEN_SURFACE(当前 V9,39 项)

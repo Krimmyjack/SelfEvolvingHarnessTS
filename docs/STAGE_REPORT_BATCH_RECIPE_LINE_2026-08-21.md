@@ -28,7 +28,7 @@
 | C5 | `DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_GPT_5_6_SOL` | 九环一次连续、无人接力闭合;行为改变判据 (i) 现场成立(guard 读 −0.102763 开火 → identity) | DEVELOPMENT | `operational_pipeline_v7.*` |
 | C6 | `RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM` | 确定性三臂:task_C 无 guard +0.0297 带 1 受害 / VETO 0 / **RESCOPE +0.0611 零受害剔 1**;task_D +0.0495 带 2 受害 / 0 / **+0.0959 零受害剔 2** | MECHANISM | `operational_pipeline_v8.*` |
 | C7 | `LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL` | live 单轨,`gpt-5.6-sol`:task_D 路由恰为两条越线序列,+0.049504 带 2 受害 → **+0.095879 零受害**;保留的两条序列读数逐位不动;VETO 孪生同轨为 identity 0.0 | DEVELOPMENT | `operational_pipeline_v10.*` |
-| C12 | `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL` | 同字节契约下(同一注入训练块、同一 Program 施用恰一次、两 Consumer 消费同一字节,断言 600/600),离群修复族 **4/4 程序同向翻转**:forecasting delayed 聚合 +0.0648~+0.4059,AD 聚合 −0.0455~−0.2808;镜像方向 0 例;identity 基线不退化(F1 0.6667) | POSITIVE_CONTROL | `t1_flip_control_v1.*` |
+| C12 | `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(raw);**ADJUDICATED_ESTIMAND = INPUT_SIDE_TASK_FLIP** | 同字节契约下(同一注入训练块、同一 Program 施用恰一次、两 Consumer 消费同一字节,断言 600/600),离群修复族 **4/4 程序同向翻转**:forecasting delayed 聚合 +0.0648~+0.4059,AD 聚合 −0.0455~−0.2808;镜像方向 0 例;identity 基线不退化(F1 0.6667)。**改判(2026-08-22)**:F 侧为训练数据效用、AD 侧为推理输入效用(AD Consumer 零训练直接检测 P(B)),消费模式不对称——本行只承载"清洗推理输入抹除检测信号",训练侧翻转由 T1b(#38)另证 | POSITIVE_CONTROL | `t1_flip_control_v1.*` |
 
 ### 1.2 反复观察到的机制事实
 
@@ -47,7 +47,7 @@
 4. **n 与独立性**:每 cell / 每轨迹 n=1,无重复无区间;C4 的 2/2、C8 的 16 条、C11 的 7 次里,凡标注为重放或同窗重复的都**不是独立观察**。C1 的成本对比中,"协议补全的乐观反事实 ≈99 vs 144" 是推算不是实测;首正读数 69 vs 123 不受此影响。
 5. **DEVELOPMENT ≠ FRESH**:C2/C5/C7 的窗口 outcome 由 #17 一次性打开过,这些轮次不产生新的 fresh 证据,也不产生新的 A5>A3 结果。
 6. **BY_VETO 的"无殃及"**只指不相关 episode 的决策逐位不变,不表示 guard 免费(C3)。保收益的措辞只属于 RESCOPE(C6/C7)。
-7. **POSITIVE_CONTROL 等级(C12)**:翻转由注入构造,AD 的 ground truth 恰是修复类程序可移除的事件——它验证的是仪器链能读到任务条件化翻转,**不构成自然数据上存在该翻转的声明**;自然翻转证据承重在 #39/#41。C12 的增益幅度与现役逐窗菜单增益**不可比**(P 整块施用,全局统计算子统计域 780 点 vs 逐窗 240 点),只承载方向。
+7. **POSITIVE_CONTROL 等级(C12)**:翻转由注入构造,AD 的 ground truth 恰是修复类程序可移除的事件——它验证的是仪器链能读到任务条件化翻转,**不构成自然数据上存在该翻转的声明**;自然翻转证据承重在后续自然标签轮。C12 的增益幅度与现役逐窗菜单增益**不可比**(P 整块施用,全局统计算子统计域 780 点 vs 逐窗 240 点),只承载方向。**估计对象不对称(2026-08-22 改判)**:T1 的 AD 零训练、直接检测 P(B),C12 只承载输入侧;输入侧本身是真实部署场景(流式清洗后检测),资产保留不弃;训练侧由 T1b 检验。
 
 ---
 
@@ -236,6 +236,14 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 判定 **TASK_FLIP_CONFIRMED_POSITIVE_CONTROL** 接受,入册 **C12**(0 LLM / forecasting 重训 30/60 / AD 评估 72/300;检查点 26391a6;同字节断言 600/600 零分叉;冻结面零漂移——注册表口径修正:**40 原始项 / 39 去重**,两读数并存)。四臂全部同向翻转:forecasting delayed 聚合 {iqr +0.2723, mad +0.3255, hampel +0.0648, winsorize +0.4059},AD 聚合 {−0.1046, −0.0455, −0.2808, −0.2681};C3 不退化(identity pooled F1 0.6667)。**接线事实(独立入册)**:AD 逐序列向量直读现役 guard 语法 `min_per_series_gain`(compiler 原函数,零代码改动),四臂全部正确触发 −0.005 害线——#19 缝合的 Scope/Risk 机器对第二任务向量**原生可读**,T2+ 的接线风险实测下降。
 
 五条歧义裁定:(1) **P 整块施用接受**——同字节契约本意即"一次施用、共享字节";代价已入 §1.3 caveat 7(幅度与逐窗菜单不可比,只承载方向);(2) warm-up 吃掉 [382,431) 结构性不可评,入册;(3) hampel 的 support/delayed 方向劈叉(−0.0890 / +0.0648)与 99999923908 再次越 forecasting 害线(−0.0904)是 **T3 任务条件化决策会撞上的真实读数**,单独留案;(4) 翻转方向单一(全为 F↑/AD↓),镜像方向(利 AD 害 F 的程序)本 family 未测——停车场项,T4 冲突证据设计时再议;(5) task_B 窗未评,书面 scope 如此,不补。执行方首跑 NaN-naive 比较缺陷已自查修复并重跑(两跑 ledger 字节相同、全臂读数逐位相同),处理方式接受。#37(T2 观察接线审计)发出。
+
+### #37 T2 结果与主线裁定(2026-08-22)
+
+判定 **TASK_CONTEXT_GAP_PATCHED** 接受(0 LLM / 0 重训 / 0 AD 评估;检查点 be02ab2)。审计确立三件事:(1) 公开视图确无 task/consumer/质量语义(task_kind="forecast" 硬编码于特征提取处且被 OBSERVATION_FIELDS 丢弃)——缺口由 `task_spec` 三项字段(task_id / consumer_id / quality_semantics)补上,`run_e2_skill_store_integration.py` +49/−0 纯增量,B3 三重物化验收全过(剥字段后 canonical sha 与真实 episode 录档 `public_input_sha256` 逐位相等;旧→新 diff 恰为新增字段;F→AD diff 恰为字段值之差);(2) **卡层 task 维度已在**(两卡 gate `task_kind=="forecast"`,词汇域含三任务)——T3 检索合法性过滤可直接分任务;(3) **T4 范围就此钉死** = episode 键补 task 分量(现为 `batch:<cohort>|consumer:<variant>` 无 task)+ 卡词汇补 consumer 特征,不多不少。四条歧义裁定:英文质量语义接受(提示词语言);`per_channel_ridge_a1` 命名入册 canonical;schema_version 不升版接受(升版破坏 B3 验收,现无读者依赖,读者出现时再议);AD 变体走 override 物化属实——live caller 由 #38 接线。ssi 为 V9 冻结成员(`37d31cb8…→f39c13f3…`),注册表更新授权在 #38 Part 0 执行(#18/#19 先例)。#38(T3)发出。
+
+### #38(T3)撤回与 T1b 转向(2026-08-22,sol 审核,主线采纳)
+
+#38 v1(T3)在零消耗状态撤回(未建 runner,未花 LLM/重训)。sol 指出的 **estimand 不对称**成立:T1 中 forecasting 在 P(B) 上训练、在未处理未来窗计分(训练数据效用),AD 零训练直接检测 P(B)(推理输入效用)——翻转声明混杂了"任务不同"与"消费模式不同",而项目主命题承重训练侧。裁定:(1) C12 改判 `ADJUDICATED_ESTIMAND = INPUT_SIDE_TASK_FLIP`,raw 判定保留,输入侧为真实部署场景、资产保留;(2) T0 robust-z 改标**注入可见性仪器 / 烟测 oracle**,不再是主 AD Consumer(冻结参数 49/3.5 在该角色下沿用);(3) T2 不受影响(task_spec 字段值无关训练模式;可训练 AD 的 consumer_id 注册 `ad_ridge_train_v1`,替换字段值即可);(4) 新 #38 = **T1b 训练侧任务翻转正控**:两 Consumer 都在同一 P(B) 上训练、都在固定未处理独立 Query 上计分;可训练 AD 复用仓库自有加权 ridge 闭式解(不引入 sklearn),标签取自 T1 ledger 且不随 P 变化;**双 Query 隔离**(主线加严,沿 T0 校准/正式隔离纪律):可读性门与回退选择只看校准 Query [2600,3060) seed 20260825,正式 Query [2100,2560) seed 20260824 只在计分时打开,两区均避开 task_A/task_B 全部上下文+horizon 跨度;(5) T3 修订为 #39,门控在训练侧翻转确认上,C1 改为**方差参照判据**(跨任务提案差异须大于同任务重复抽样差异,K=3+3),原 Jaccard<1 判据废止(C11 抽样方差在册);(6) 编号顺延:#38=T1b,#39=T3,#40=T4,#41=T5,#42=T6,#43=M0,#44=M1,#45=X 复活,#46=整合,主书 12 张。**预期机制注记**(负结果解读用):修复使正标签位置的特征恢复正常形态,训练出的分类器无从分离 → Query 检测退化;若未退化即为可信负读数,T3 保持暂停、回用户决策。
 
 ### #31(2026-08-22,S2)
 

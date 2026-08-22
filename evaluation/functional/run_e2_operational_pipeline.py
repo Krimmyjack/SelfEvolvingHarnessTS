@@ -273,6 +273,29 @@ A1_RESCOPE_TOUCHED: tuple[dict[str, str], ...] = (
 # v9 == v8: the downstream wiring touches two files that are already
 # frozen members, so the surface stays at 39.
 FROZEN_SURFACE_V9: tuple[str, ...] = FROZEN_SURFACE_V8
+# T2 (#37, 2026-08-22): the book's single authorized Observation-surface
+# patch.  One deterministic task_spec field enters the Fast Agent public view
+# at its construction point (_base_input).  Authorized move, not drift.
+T2_OBSERVATION_TOUCHED: tuple[dict[str, str], ...] = (
+    {
+        "path": "evaluation/functional/run_e2_skill_store_integration.py",
+        "role": (
+            "T2 Part B: _base_input injects a deterministic task_spec field "
+            "(task_id / consumer_id / one-line quality semantics; runner-"
+            "injected, never LLM-generated, no outcome).  +49/-0, purely "
+            "additive.  Byte-equivalence to the pre-patch pipeline proven "
+            "against a recorded public_input_sha256 "
+            "(artifacts/functional/e2/t2_context_wiring_v1.json)."
+        ),
+        "sha256_before_t2": (
+            "37d31cb85e9b733067304955ba33c9ca90fa5f5d0b2cc10874d0ae40c039034f"
+        ),
+        "sha256_after_t2": (
+            "f39c13f3b29ae534ee7c7b3b682ad60179316243742925022504d16974b3183e"
+        ),
+        "diff_shape": "+49/-0, purely additive",
+    },
+)
 A1_DOWNSTREAM_TOUCHED: tuple[dict[str, str], ...] = (
     {
         "path": COMPILER_FILE,
