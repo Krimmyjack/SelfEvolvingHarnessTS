@@ -26,7 +26,17 @@ RELATION_POSITIVE = "POSITIVE"
 RELATION_NEGATIVE = "NEGATIVE"
 RELATION_CONFLICT = "CONFLICT"
 RELATION_ABSTAIN = "ABSTAIN"
-RELATIONS = (RELATION_POSITIVE, RELATION_NEGATIVE, RELATION_CONFLICT, RELATION_ABSTAIN)
+# T4 (#40) A2：生命周期分类升级需要第五格——"聚合近零"既不是成功也不是失败，
+# 此前只能被挤进 POSITIVE/NEGATIVE，会让"聚合正、局部有害"与"什么也没发生"
+# 无法分辨。NEUTRAL 不进对照包（既非正例亦非负例亦非冲突），只如实存档。
+RELATION_NEUTRAL = "NEUTRAL"
+RELATIONS = (
+    RELATION_POSITIVE,
+    RELATION_NEGATIVE,
+    RELATION_CONFLICT,
+    RELATION_ABSTAIN,
+    RELATION_NEUTRAL,
+)
 
 # local_status 枚举（近期只启用 4 个；SHARED_* 跨域实验时再启用）
 STATUS_EPISODE_ONLY = "EPISODE_ONLY"
@@ -49,6 +59,55 @@ VALIDITY_INSTRUMENT_INVALID = "INSTRUMENT_INVALID"
 _FORBIDDEN_KEYS = frozenset(
     {"dataset_id", "series_uid", "filename", "file_name", "path", "query_future", "future"}
 )
+
+
+# ---------------------------------------------------------------------------
+# 0. 键：一处铸造，别处不得手拼（T4 #40 A1）
+# ---------------------------------------------------------------------------
+# 收束裁决（fast_agent.py 的运行时规范键）：Memory 的任务硬键 =
+# task_type|downstream_model_class|metric.name。此前这个格式在 fast_agent 内联
+# f-string、ssi 的一个死常量、guidance_evolution 的一处手拼里各写了一遍，而 ssi
+# 的 Episode 写入用的是第三种格式 batch:<cohort>|consumer:<variant>——同一个
+# Memory 里两种方言，检索必然错过。这里把铸造收进一处：
+#   * task_consumer_key(spec)  —— 任务硬键，唯一进 Episode.task_consumer_key 的串；
+#   * cell_key(cohort, variant) —— cohort×consumer 单元标识，**不是**任务键。
+# cohort/domain 只进 domain_namespace 与 context_summary，不进任务硬键：跨域检索
+# （T6/X）要的正是"同任务、异 cohort"能命中。
+TASK_CONSUMER_KEY_RULE = "task_type|downstream_model_class|metric.name"
+TASK_CONSUMER_KEY_FALLBACK = "forecast|ridge|sMASE"
+
+
+def task_consumer_key(task_spec: object) -> str:
+    """Episode/检索共用的任务硬键。传 None 回落到历史默认（fast_agent 原语义）。
+
+    只接受带 task_type / downstream_model_class / metric.name 的 TaskSpec 对象；
+    传字符串会被原样退回（调用方已持有铸好的键），传别的形状直接报错——静默
+    造出第四种方言比崩掉更贵。
+    """
+    if task_spec is None:
+        return TASK_CONSUMER_KEY_FALLBACK
+    if isinstance(task_spec, str):
+        return task_spec
+    try:
+        task_type = task_spec.task_type
+        model_class = task_spec.downstream_model_class
+        metric_name = task_spec.metric.name
+    except AttributeError as exc:  # pragma: no cover - 形状错误应当暴露
+        raise TypeError(
+            "task_consumer_key expects a TaskSpec-shaped object "
+            "(task_type / downstream_model_class / metric.name); got %r"
+            % (type(task_spec).__name__,)
+        ) from exc
+    return "%s|%s|%s" % (task_type, model_class, metric_name)
+
+
+def cell_key(cohort: object, consumer_variant: object) -> str:
+    """cohort x consumer 单元标识（报告字段、卡的编译落点、LOCO withhold 口径）。
+
+    与任务硬键**分立**且不可互换：这个串带 cohort，正因为它标的是"哪一批数据的
+    哪个 Consumer 单元"；任务硬键带 cohort 会把同任务跨 cohort 的经验切断。
+    """
+    return "batch:%s|consumer:%s" % (cohort, consumer_variant)
 
 
 @dataclass(frozen=True)
@@ -306,6 +365,85 @@ class CurrentHarnessState:
 # 4. 报告加载（工作包 1 数据源：v6 报告 + e288 + target_local_v2）
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# 3b. 生命周期机械分类（T4 #40 A2）
+# ---------------------------------------------------------------------------
+# 冻结阈值 ±0.005（与 bch.MATERIAL_THRESHOLD、guard 的 harm 线同一条）。规则是
+# 机械的，不看任务、不看程序名、不看任何答案表：
+#   identity                                      -> ABSTAIN（什么也没做）
+#   agg >= +t 且 min(per-series) >= -t            -> POSITIVE（聚合正且无局部伤害）
+#   agg >= +t 且 存在 per-series < -t             -> CONFLICT（聚合正但局部有害）
+#   agg <  -t                                     -> NEGATIVE
+#   其余（近零）                                   -> NEUTRAL
+# 第三格是这次升级的全部理由：没有它，"聚合正、局部有害"会被记成 POSITIVE，
+# Memory 反而会去加固当初那个错误选择。
+MEASURED_EFFECT_KEY = "measured_effect"
+CLASSIFICATION_MATERIAL_THRESHOLD = 0.005
+
+
+def classify_relation(
+    *,
+    aggregate_gain: object,
+    per_series_gains: Mapping[str, object] | None = None,
+    is_identity: bool = False,
+    consumer_id: str | None = None,
+    material_threshold: float = CLASSIFICATION_MATERIAL_THRESHOLD,
+) -> dict[str, object]:
+    """机械推导 relation + 卡要用的事实摘要。不读 outcome，不看程序名。"""
+    threshold = float(material_threshold)
+    per_series = {
+        str(uid): float(value)
+        for uid, value in dict(per_series_gains or {}).items()
+    }
+    harmed = sorted(uid for uid, value in per_series.items() if value < -threshold)
+    minimum = min(per_series.values()) if per_series else None
+    aggregate = None if aggregate_gain is None else float(aggregate_gain)
+    if is_identity:
+        relation = RELATION_ABSTAIN
+        basis = "identity: the batch was left as it is, so there is no effect to judge"
+    elif aggregate is None:
+        relation = RELATION_NEUTRAL
+        basis = "no aggregate reading, so no direction can be claimed"
+    elif aggregate >= threshold and not harmed:
+        relation = RELATION_POSITIVE
+        basis = (
+            "aggregate >= +%g and every per-series reading >= -%g"
+            % (threshold, threshold)
+        )
+    elif aggregate >= threshold:
+        relation = RELATION_CONFLICT
+        basis = (
+            "aggregate >= +%g but %d per-series reading(s) < -%g"
+            % (threshold, len(harmed), threshold)
+        )
+    elif aggregate < -threshold:
+        relation = RELATION_NEGATIVE
+        basis = "aggregate < -%g" % threshold
+    else:
+        relation = RELATION_NEUTRAL
+        basis = "aggregate within +/-%g of zero" % threshold
+    if aggregate is None:
+        direction = "unmeasured"
+    elif aggregate >= threshold:
+        direction = "improved"
+    elif aggregate < -threshold:
+        direction = "degraded"
+    else:
+        direction = "unchanged"
+    return {
+        "relation": relation,
+        "classification_basis": basis,
+        "material_threshold": threshold,
+        "consumer_id": consumer_id,
+        "aggregate_gain": aggregate,
+        "aggregate_direction": direction,
+        "series_read": len(per_series),
+        "harmed_series_count": len(harmed),
+        "harmed_series": harmed,
+        "min_per_series_gain": minimum,
+    }
+
+
 def build_episode(
     *,
     episode_id: str,
@@ -520,6 +658,57 @@ def resolve_experience_contrast_pack(
     return retriever.retrieve(query_context, domain_namespace="")
 
 
+def _measured_effect(episode: object) -> Mapping[str, object] | None:
+    """T4 (#40) A3：卡词汇的 Consumer 特征来源。
+
+    只有携带机械分类事实块的 Episode 才走事实卡；旧 Episode 一个字节不变，
+    继续走原来的方向句（向后兼容，另一线的替换/回放读数不动）。
+    """
+    if not isinstance(episode, Mapping):
+        return None
+    # delayed 优先：读数落在哪个窗口由写入方声明，delayed 是更强的证据等级。
+    for slot in ("delayed_response", "support_response"):
+        response = episode.get(slot)
+        if not isinstance(response, Mapping):
+            continue
+        facts = response.get(MEASURED_EFFECT_KEY)
+        if isinstance(facts, Mapping):
+            return facts
+    return None
+
+
+def _fact_sentence(episode: Mapping[str, object], facts: Mapping[str, object],
+                   *, index: int) -> str:
+    """事实摘要句：Consumer / 聚合方向 / harmed count / min gain。
+
+    只陈述测到了什么，不含"应选 X"或"避免 X"——方向由读者从事实推，不由卡代推
+    （章程：Episode 与卡只载事实）。数值口径故意保留 min gain：这一轮考的正是
+    风险层，而风险层是一个量级问题，抹掉量级卡就没有可读的风险信息。
+    """
+    op = str(episode.get("workflow_signature", "") or "")
+    consumer = facts.get("consumer_id")
+    consumer_text = (
+        " for Consumer `%s`" % consumer if consumer else ""
+    )
+    direction = str(facts.get("aggregate_direction") or "unmeasured")
+    harmed = facts.get("harmed_series_count")
+    read = facts.get("series_read")
+    minimum = facts.get("min_per_series_gain")
+    parts = [
+        "Reference %d: candidate operator(s) [%s] were measured on held-in "
+        "data in a similar context%s. Aggregate direction: %s."
+        % (index, op, consumer_text, direction)
+    ]
+    if isinstance(harmed, int) and isinstance(read, int) and read:
+        parts.append(
+            " Individual series harmed beyond the %+.3f line: %d of %d."
+            % (-float(facts.get("material_threshold") or 0.005), harmed, read)
+        )
+    if isinstance(minimum, (int, float)):
+        parts.append(" Worst single-series reading: %+.4f." % float(minimum))
+    return "".join(parts)
+
+
 def render_experience_pack(pack: Mapping[str, object]) -> str:
     """把对照包渲染成 TIMECLAW 风格 fenced 前缀块（prompts.py:18 模式借鉴）。
 
@@ -550,6 +739,8 @@ def render_experience_pack(pack: Mapping[str, object]) -> str:
             "as AMBIGUOUS — confirm on the current Support before relying on it, and "
             "do not treat it as a strong prior in either direction."
         )
+    elif isinstance(pos, Mapping) and _measured_effect(pos) is not None:
+        entries.append(_fact_sentence(pos, _measured_effect(pos), index=1))
     elif isinstance(pos, Mapping):
         op = pos.get("workflow_signature", "")
         dr = pos.get("delayed_response") or {}
@@ -565,13 +756,21 @@ def render_experience_pack(pack: Mapping[str, object]) -> str:
             f"held-in data in a similar context ({tail}). Consider them as priors "
             "to confirm again on the current Support."
         )
+    elif isinstance(neg, Mapping) and _measured_effect(neg) is not None:
+        entries.append(_fact_sentence(neg, _measured_effect(neg), index=2))
     elif isinstance(neg, Mapping):
         op = neg.get("workflow_signature", "")
         entries.append(
             f"Reference 2: candidate operator(s) [{op}] were verified harmful on held-in "
             "data in this domain (Support segment negative). Avoid them."
         )
-    if isinstance(conf, Mapping):
+    if isinstance(conf, Mapping) and _measured_effect(conf) is not None:
+        facts = _measured_effect(conf)
+        entries.append(
+            _fact_sentence(conf, facts, index=3)
+            + " The aggregate reading and the per-series readings disagree."
+        )
+    elif isinstance(conf, Mapping):
         op = conf.get("workflow_signature", "")
         entries.append(
             f"Reference 3: candidate operator(s) [{op}] showed a Support-positive but "
@@ -608,6 +807,13 @@ __all__ = [
     "RELATION_POSITIVE",
     "RELATION_NEGATIVE",
     "RELATION_CONFLICT",
+    "RELATION_ABSTAIN",
+    "RELATION_NEUTRAL",
+    "task_consumer_key",
+    "cell_key",
+    "classify_relation",
+    "CLASSIFICATION_MATERIAL_THRESHOLD",
+    "MEASURED_EFFECT_KEY",
     "STATUS_EPISODE_ONLY",
     "STATUS_LOCAL_DRAFT",
     "STATUS_LOCAL_ACTIVE",

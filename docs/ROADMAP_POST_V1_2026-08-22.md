@@ -174,10 +174,13 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   `TASK_CONDITIONED_PROPOSALS_CONFIRMED`(C14:完全分离 1.0>0.5,
   聚合 3/3+3/3,Risk F 0/3(先验-经验缺口:hampel 先验安全实则
   风险键外)/ AD 3/3;第二次抽样裁定有效;LLM 12/12);
-  当前 = T4(#40)任务键控冲突 Experience(**Phase T 首次改
-  Harness 本体**:episode 键 task/consumer 分量 + 卡词汇 consumer
-  特征;写入走 Runtime 现役路径禁手插;考试复用 #39 仪器,基线 =
-  #39 第二次抽样;F Risk 0/3→3/3 为主位移读数)。
+  T4 = `PARTIAL_EXPERIENCE_CONDITIONING`(C15:F Risk 0/3→3/3
+  冲突卡纠偏成立;AD 3/3→0/3 回退,机制 = 卡表达范围无 abstain
+  通道;键/写入/检索全绿;键统一落地,方言负债与 bundle 盲区入册
+  路由 #41b);当前 = #40b 修复切片(卡表达范围三件套:identity
+  过滤资格 + ContrastPack baseline 通道 + ABSTAIN 事实句;卡序
+  不动为唯一后备面;重考照 #40 协议;通过即 T4 关卷 → T5,
+  条件触发 T5 静态接缝勘察 0 LLM)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下

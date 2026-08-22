@@ -81,7 +81,11 @@ from SelfEvolvingHarnessTS.methods.ttha.experience_memory import (  # noqa: E402
     STATUS_EPISODE_ONLY,
     STATUS_LOCAL_DRAFT,
     build_episode,
+    cell_key,
     workflow_signature_of,
+)
+from SelfEvolvingHarnessTS.methods.ttha.experience_memory import (  # noqa: E402
+    task_consumer_key as mint_task_consumer_key,
 )
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (  # noqa: E402
     compile_snapshot,
@@ -121,7 +125,10 @@ LLM_CALL_BUDGET_PER_ARM_TARGET = 5
 VALIDATION_RETRIES = wvc.VALIDATION_RETRIES
 EXPERIENCE_PROVENANCE = "skill_store_integration"
 E2_DOMAIN = "batch_recipe_e2"
-TASK_CONSUMER_KEY = "forecast|ridge|sMASE"
+# T4 (#40) A1：这里原先躺着一个手拼的死常量 "forecast|ridge|sMASE"，与本文件
+# Episode 实际写入的 batch:<cohort>|consumer:<variant> 并不是同一个东西——同一个
+# Memory 里两种方言，写进去的经验用运行时规范键永远检索不到。键的铸造收进
+# experience_memory，本文件只声明自己的运行时 TaskSpec。
 
 SKILL_ID = {
     target_id: "recipe_batch_guidance_%s_v1" % target_id.lower()
@@ -365,8 +372,9 @@ def _card_payload(
             "grants_confirmation_free_try": False,
             "namespace": NAMESPACE,
             "compiled_for_target": target_id,
-            "compiled_cell": "batch:%s|consumer:%s"
-            % (target["cohort"], target["consumer_variant"]),
+            "compiled_cell": cell_key(
+                target["cohort"], target["consumer_variant"]
+            ),
             "leave_one_cohort_out_withheld": str(target["cohort"]),
             "why_this_source_class": list(PROVENANCE_POLICY["why_this_class"]),
             "clause_ids": [
@@ -863,8 +871,9 @@ def _base_input(
             "target_id": str(target["target_id"]),
             "cohort": str(target["cohort"]),
             "consumer_variant": str(target["consumer_variant"]),
-            "cell_key": "batch:%s|consumer:%s"
-            % (target["cohort"], target["consumer_variant"]),
+            "cell_key": cell_key(
+                target["cohort"], target["consumer_variant"]
+            ),
             "window_id": str(window["window_id"]),
             "support_origins": list(search.support),
             "delayed_origins": list(search.delayed),
@@ -954,6 +963,32 @@ CONSUMER_IDS = {
     "pooled": "pooled_ridge_a1",
     "per_channel": "per_channel_ridge_a1",
 }
+
+
+def _runtime_task_spec(consumer_variant: str) -> Any:
+    """本文件的运行时 TaskSpec（现役工厂，不手造 dataclass）。
+
+    downstream_model_class 取该 variant 已注册的 consumer_id——Consumer 就是下游
+    模型类，C6 要求它显式携带；metric 取本线一以贯之的 sMASE（部署可见的
+    quality_semantics 说的也是它）。
+    """
+    from SelfEvolvingHarnessTS.contracts.task import (
+        MetricSpec,
+        forecast_task_spec_v1,
+    )
+
+    variant = str(consumer_variant)
+    if variant not in CONSUMER_IDS:
+        raise ValueError("no consumer_id registered for variant %r" % variant)
+    return forecast_task_spec_v1(
+        horizon=int(bch.v6.HORIZON),
+        downstream_model_class=CONSUMER_IDS[variant],
+        metric=MetricSpec("sMASE", "lower_is_better"),
+    )
+
+
+def _runtime_task_consumer_key(consumer_variant: str) -> str:
+    return mint_task_consumer_key(_runtime_task_spec(consumer_variant))
 
 
 def _task_spec_observation(
@@ -1219,8 +1254,11 @@ def _lifecycle(record: Mapping[str, Any]) -> dict[str, Any]:
     status = STATUS_LOCAL_DRAFT if draft else STATUS_EPISODE_ONLY
     episode = build_episode(
         episode_id="ssi_%s" % str(record["episode_id"]).lower(),
-        task_consumer_key="batch:%s|consumer:%s"
-        % (record["cohort"], record["consumer_variant"]),
+        # T4 (#40) A1：任务硬键 = 运行时规范键（task_type|model_class|metric），
+        # 由 experience_memory 一处铸造；cohort 退到 domain_namespace 与
+        # context_summary.cohort，不再进任务键——同任务跨 cohort 的经验必须能
+        # 互相检索到，那正是 cohort 进硬键会切断的。
+        task_consumer_key=_runtime_task_consumer_key(record["consumer_variant"]),
         domain_namespace=str(record["cohort"]),
         context_summary={
             "cohort": {"cohort_name": str(record["cohort"])},

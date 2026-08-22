@@ -294,6 +294,15 @@ class TTHAMethod:
         core = self.fast_agent.core
         core.tools = LocalPublicToolGateway(values, task_kind=task_kind)
 
+    @property
+    def experience_episodes(self) -> tuple[object, ...]:
+        """当前实例持有的 Episode（只读视图）。
+
+        T4 (#40)：写入必须落 Runtime 才算写入，因此校验也必须从 Runtime 读回，
+        而不是读 runner 手里那份构造列表。这里只暴露读，不暴露改——追加仍然
+        只能走 append_experience_episode。"""
+        return self._experience_episodes
+
     def append_experience_episode(self, episode: object) -> None:
         """反馈写回（裁决 2026-08-09 二十八）：R1 实测后立即追加当前臂
         Episode（最小接口；不建设 Memory Store/Schema/生命周期平台）。"""

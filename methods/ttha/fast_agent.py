@@ -768,14 +768,12 @@ class TTHAFastAgent:
                 from .experience_memory import (
                     render_experience_pack,
                     resolve_experience_contrast_pack,
+                    task_consumer_key,
                 )
-                # 真实 TaskSpec 规范 key（收束裁决）：task_type|model_class|metric
-                _task_key = (
-                    f"{request.task_spec.task_type}|{request.task_spec.downstream_model_class}"
-                    f"|{request.task_spec.metric.name}"
-                    if request.task_spec is not None
-                    else "forecast|ridge|sMASE"
-                )
+                # 真实 TaskSpec 规范 key（收束裁决）：task_type|model_class|metric。
+                # T4 (#40) A1：内联 f-string 收进 experience_memory.task_consumer_key，
+                # 写入侧与检索侧从此共用同一处铸造（此前写入侧另有方言）。
+                _task_key = task_consumer_key(request.task_spec)
                 # allowed operators 方法内部自动取得（收束裁决）：TaskSpec 禁止面 +
                 # 任务允许面 + 非 changes_target_space——不依赖调用方传入
                 if allowed_operators is None and request.task_spec is not None:

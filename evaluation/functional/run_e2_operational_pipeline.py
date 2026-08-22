@@ -296,6 +296,50 @@ T2_OBSERVATION_TOUCHED: tuple[dict[str, str], ...] = (
         "diff_shape": "+49/-0, purely additive",
     },
 )
+# T4 (#40, 2026-08-23): the book's authorized Memory-surface patch, recorded
+# at the #40b checkpoint.  One key mint (task_consumer_key / cell_key), the
+# mechanical five-way lifecycle classification and the card's Consumer facts.
+# Two frozen-surface members moved; both moves are authorized, not drift.
+# The cell_key output string is byte-identical to the hand-built form it
+# replaces, so nothing the Agent reads changed at those two sites.
+T4_MEMORY_TOUCHED: tuple[dict[str, str], ...] = (
+    {
+        "path": "evaluation/functional/run_e2_skill_store_integration.py",
+        "role": (
+            "T4 Part A1: the three batch|consumer sites stop hand-building "
+            "their strings.  The two cell identifiers (_card_payload's "
+            "compiled_cell, _base_input's cell_key) mint through "
+            "experience_memory.cell_key and emit the same bytes; the Episode "
+            "write mints the runtime canonical task key through "
+            "experience_memory.task_consumer_key over a TaskSpec from the "
+            "in-service forecast factory, so cohort leaves the task key and "
+            "stays in domain_namespace and Context.  The unused hand-written "
+            "dialect constant TASK_CONSUMER_KEY was removed."
+        ),
+        "move_index": "second authorized move (first was T2_OBSERVATION_TOUCHED)",
+        "sha256_before_t4": (
+            "f39c13f3b29ae534ee7c7b3b682ad60179316243742925022504d16974b3183e"
+        ),
+        "sha256_after_t4": "0dbe61d98defd4dcce9a9081e0e297617e4606f2cc2919b5f10ed52665690c48",
+        "diff_shape": "+45/-7",
+    },
+    {
+        "path": "methods/ttha/method.py",
+        "role": (
+            "T4 Part B1: TTHAMethod gains a read-only experience_episodes "
+            "property.  A write only counts as a write if the Runtime can be "
+            "read back, and the read had to come from the instance rather "
+            "than from the runner's own list.  Read only -- appending still "
+            "goes through append_experience_episode."
+        ),
+        "move_index": "first authorized move for this path",
+        "sha256_before_t4": (
+            "e9c27af3d43db9f9ca08208553ca817211f4af4de96ea2e88d4c8f497f7e0d21"
+        ),
+        "sha256_after_t4": "cd28df33373e568b92e7500ef062ef4c03e9e057df952c80c0122a4d821244f5",
+        "diff_shape": "+9/-0, purely additive",
+    },
+)
 A1_DOWNSTREAM_TOUCHED: tuple[dict[str, str], ...] = (
     {
         "path": COMPILER_FILE,

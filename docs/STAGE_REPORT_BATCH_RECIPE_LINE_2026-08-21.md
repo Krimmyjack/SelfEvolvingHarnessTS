@@ -31,6 +31,7 @@
 | C12 | `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(raw);**ADJUDICATED_ESTIMAND = INPUT_SIDE_TASK_FLIP** | 同字节契约下(同一注入训练块、同一 Program 施用恰一次、两 Consumer 消费同一字节,断言 600/600),离群修复族 **4/4 程序同向翻转**:forecasting delayed 聚合 +0.0648~+0.4059,AD 聚合 −0.0455~−0.2808;镜像方向 0 例;identity 基线不退化(F1 0.6667)。**改判(2026-08-22)**:F 侧为训练数据效用、AD 侧为推理输入效用(AD Consumer 零训练直接检测 P(B)),消费模式不对称——本行只承载"清洗推理输入抹除检测信号",训练侧翻转由 T1b(#38)另证 | POSITIVE_CONTROL | `t1_flip_control_v1.*` |
 | C13 | `TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL` | 双 Consumer 都在同一 P(B) 上训练(C2 同字节 600/600)、固定未处理独立 Qf 计分:**winsorize 臂 forecasting delayed +0.4059(四 eval 序列全正)且 AD 宏 F1 增益 −0.1672(≈8 事件,9/12 序列为负)**——同一臂恰为 forecasting 最强臂;iqr/mad/hampel 双侧同向为正(+0.0086/+0.0413/+0.0413),**翻转为程序特异**,非"清洗必伤 AD";门 0.6109 一次过(v1→v2→v3 = 0.1709→0.1765→0.6109,解锁在特征族);AUPRC 五臂全同(0.8878,单特征正斜率下排序≡z)→ 翻转全部承载在判决边界位置;双句口径注记强制随行 | POSITIVE_CONTROL | `t1b_training_flip_v3.*` |
 | C14 | `TASK_CONDITIONED_PROPOSALS_CONFIRMED` | 空店(0 Guidance/0 Experience/0 learned Skill + 3 个任务中立 h0 bootstrap 常量,六 draw 同快照)、零 Outcome 泄漏、prompt 仅 task_spec 字节差(剥除后两臂 canonical sha 相同 96ce9fc9…)下,6/6 有效 draw **完全分离**:跨任务 9 对 Jaccard 距离全 1.0 > 同任务最大 0.5;聚合方向 3/3+3/3(F top-1 hampel_filter×3,AD top-1 identity×3);Risk 层 F 0/3(hampel 最差序列 −0.0904 出局)/ AD 3/3——空店下 Risk 不达为预注册预期,构成 T4 入口证据;**第二次抽样**(首跑 mappingproxy 写盘崩溃致 draw 1–4 丢失;暴露片段 F5=outlier_mad/AD6=identity 方向一致且风险层更优,无择果签名,主线裁定有效;LLM 12/12 收口);只证提案条件化,不含执行/采纳,任务语义部署可见 | POSITIVE_CONTROL | `t3_task_exam_v1.*` |
+| C15 | `PARTIAL_EXPERIENCE_CONDITIONING` | 10 条 T1b 重放 Episode 经 Runtime 真实写入(同 TTHAMethod 读回,DELAYED / EPISODE_ONLY / 不晋级不授执行权)后重跑 #39 考试:**F Risk 0/3→3/3**(hampel→outlier_iqr×3,冲突卡直接对应,draw-3 原话在档);**AD Risk 3/3→0/3 回退**(identity→hampel×3);分离增强(min 跨 1.0 > max 同 0.0);键/写入/检索门全绿(B4 7/7、C2 三向 7/7、零跨任务取卡);回退机制定位 = **卡表达范围**——identity 判 ABSTAIN 后 ContrastPack 三格无处安放、_hard_filter 剔除、孤立"聚合改善"卡无对照即误导(AD 三 draw reason 逐字为证);证明 Memory 机器能承载风险更正,不证明 Agent 发现新知 | POSITIVE_CONTROL | `t4_conflict_experience_v1.*` |
 
 ### 1.2 反复观察到的机制事实
 
@@ -300,6 +301,8 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 
 **店态口径修正(正典)**:"空店" = 0 Guidance / 0 Experience / 0 learned Skill + 机内 h0 bootstrap 常量(本次 3 个,任务中立,六 draw 同快照 c8c1e452…);#40 种子店必须在同一快照上**加且仅加**经验条目。工作树未提交 ROADMAP +27 行为主线沉淀/止损口径编辑,#40 Part 0 一并提交。
 
+**当前最早阻塞声明(sol 复核一致,主线入册)**:任务识别已闭合(C14 两层拆分:提案条件化已证,风险感知未证);第一阻塞移至"如何利用任务化正/负/冲突 Experience 避免局部伤害"——#40 即为此而设。**缩 Scope 边界裁定**:#40 考试菜单为保 #39 基线可比,冻结为 5 程序 + abstain,不含 rescope 动作;Agent 自由文本中自发提缩 Scope 按现行协议记 OFF_MENU 入档(有价值行为观察,非协议破损、非缺陷);缩 Scope 作为正式动作属 T5 真实执行环(guard 语法已有 RESCOPE_MASK_HARMED_SERIES)。
+
 ### #40(T4)预分发修订(2026-08-23,sol 审核 5+2 点,主线核实采纳并定键)
 
 事实核实:`fast_agent.py:772` 运行时规范键 = `task_type|downstream_model_class|metric`;`ordering_card.py` scope 四键分立(task/domain/downstream_model_class/program_family),domain 本为独立维度;ssi 三处(L368/866/1222)写 `batch:<cohort>|consumer:<variant>`,无 task 分量——方言分裂属实,原书第三格式若落地即 T5 假闭合。修订:
@@ -313,6 +316,20 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 7. 小修 b:C2 拆三向比对(T4-F vs #39-F 仅经验块异;T4-AD vs #39-AD 仅经验块异;T4 两臂互比仅 TaskSpec+各自经验块异)。
 
 科学定位(sol 措辞入册):#39 证明 Agent 能读懂不同任务;#40 检验 Harness 写入的任务化成功/失败/局部冲突经验能否纠正 F 的风险盲点,同时不破坏 AD 的保守选择。通过即 MECHANISM + POSITIVE_CONTROL 级 Memory 能力;执行/采纳/Delayed 写回/Local Skill 更新留 T5。
+
+### #40(T4)结果与 #40b 修复切片授权(2026-08-23,主线裁定)
+
+**判定采纳**:`PARTIAL_EXPERIENCE_CONDITIONING`(C15 入册),按预注册兜底格,执行方零自裁。Part 0 fd29501(5 文件)入账。Memory 面 diff 4 文件 +269/−16;V9 触碰 = ssi + methods/ttha/method.py,注册表授权移动在 #40b Part 0 执行。测试 36/36 改动前后各一跑。
+
+**歧义裁定**:(1) 执行读法即原意——任务硬键(task_consumer_key,经 task_spec 工厂铸造)与单元键(cell_key,batch|consumer,承载 leave-one-cohort-out 语义)分立两函数、三处集中铸造、cell_key 输出字节不变;书面"三处接同一 helper"为主线措辞缺陷,ssi L124 死方言常量拆除核可。(2) **方言负债普查入册,路由 #41b**:task_episode_harness/t1.py:88(被 ~15 模块 import)、run_v1_fastpath.py:50、run_v1_fastpath_framework.py:62(第二方言 forecast|ridge_smase)、run_v1_guidance_evolution.py:5834、experience_memory.load_episodes_from_v6_reports 内三条历史 Episode 键 = forecast|ridge_smase(现役检索永不可命中);依"旧工件不迁移不补写"本轮零触碰。(3) **bundle 身份盲区入册停放**:runtime_bundle_sha 的 dependency_shas 按名收录 fast_agent/method 而不含 experience_memory,Memory-only 改动不动 bundle 身份;T5 证据冻结继续以 V9+git diff 为准,修复候选停放 #41b/整合,本轮不修。(4) 39/40 悬案关闭:V9 原始 40 条、唯一 39 文件,重复项 = artifacts/functional/e2/noaa_fresh_cohort_v2.json,#35 勘误与执行方读数各自成立。
+
+**A2 分类丰富(答案键再证)**:AD 侧三温和修复全 CONFLICT(iqr 5/12 harmed min −0.27;mad/hampel 各 4/12 min −0.20),winsorize NEGATIVE(9/12,−0.50);Risk 键 {identity} 由工件推导第三次一致。
+
+**方法发现(承重,入册)**:孤立的"聚合改善"事实卡在无对照可比时误导谨慎剖面——F 臂因同屏有无害 POSITIVE 卡而受益,AD 臂无对照则"Aggregate direction: improved"单独站立即成误导。**经验呈现必须能表达"什么都不做是安全读数"**。AD 回退与 #39 的 F 犯错同构(聚合诱导),证明该错误类是呈现层通病而非任务特异。
+
+**#40b 授权(同 Memory 面有界修复)**:唯一改动 = 卡表达范围三件套——(i) _hard_filter abstain 资格;(ii) ContrastPack abstain 第四通道;(iii) ABSTAIN 事实句(零祈使)。**卡序(聚合先于风险)本轮不动**,预注册为唯一后备面。重考照 #40 协议逐字。
+
+**#40b 预分发修订(2026-08-23,sol 三硬修 + 一命名 + 一删减,主线采纳、勘察按后备条款收紧)**:(1) **A1 改为 Runtime 天然可达**:relation=ABSTAIN 且 workflow_signature=identity 的 Episode 只绕过 informative-operator membership 检查,仍须通过 response_validity / task_consumer_key / pattern_view 等全部其他过滤;不依赖 identity ∈ allowed_operators(其在真实 Runtime 来自 Operator registry,identity 属 incumbent/no-op 未必注册——原写法 = 测试专用通道假闭合);unknown 照滤。(2) **B1 改为重新物化**:#40 十条未持久化(住在当次 TTHAMethod 实例),新进程无"#40 店";在全新 TTHAMethod 实例中自 #40 v1 工件重新物化同 10 条、再经 append_experience_episode 写入,逐条断言 to_dict 与 v1 工件一致;new_independent_evidence = 0,不得称新增试验/新增独立证据;"沿用店"为主线事实错误,入册。(3) **判定按优先级补全**:RETRIEVAL_MISS → EXAM_PROTOCOL_UNREADABLE(>2/6)→ TASK_SEPARATION_REGRESSION(分离失效,附双臂 Risk 次数)→ CONFIRMED(F 3/3 ∧ AD 3/3 ∧ 分离)→ EXPERIENCE_SHIFT_RISK_REGRESSION(F<3/3 ∧ AD=3/3)→ CARD_CHANNEL_INSUFFICIENT(F=3/3 ∧ AD=0/3)→ 其余合法混合(含 AD 1–2/3)全落 PARTIAL_EXPERIENCE_CONDITIONING。(4) 通道结构字段唯一命名 `ContrastPack.abstain`(卡面可称 no-action baseline);旧行为断言收窄为"abstain is None 时最终渲染 prompt 字节不变",不苛求 to_dict 序列化不变。(5) T5 静态勘察保留但收紧:仅 CONFIRMED 触发,固定四入口(operational pipeline runner / fast_agent / online_loop / method),≤10 条缺口,只读零修复,不追踪全仓库。F 保 3/3 + AD 回 3/3 + 分离保持 → `CONFLICT_EXPERIENCE_CONDITIONS_PROPOSALS_CONFIRMED`,T4 关卷。
 
 ### #31(2026-08-22,S2)
 
