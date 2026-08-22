@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import sys
 import time
@@ -1147,16 +1148,71 @@ SLOW_NOTE = (
 )
 
 
+def behavior_predicate_schema() -> dict[str, Any]:
+    """The one definition of a behaviour predicate, as the controller has it.
+
+    ``load_stage_schema`` resolves the injection points -- the forecast
+    operator enum among them -- so this is the same object the EditController
+    validates the manifest against, not a copy of it.
+    """
+    return json.loads(
+        json.dumps(load_stage_schema("slow_edit_v1")["$defs"]["behavior_predicate"])
+    )
+
+
+def _pattern_example(pattern: str) -> str | None:
+    """A value that satisfies ``pattern``, built from the pattern itself.
+
+    The literal head of the pattern is everything before the first regex
+    group; appending a plain decimal to it is enough for the two numeric
+    predicates this vocabulary has.  The result is checked against the
+    pattern before it is offered, so a pattern that changes shape stops
+    producing an example rather than producing a wrong one.
+    """
+    head = str(pattern).lstrip("^")
+    cut = head.find("(")
+    if cut <= 0:
+        return None
+    candidate = head[:cut] + "0.5"
+    return candidate if re.fullmatch(pattern, candidate) else None
+
+
 def _behavior_vocabulary() -> list[str]:
-    schema = load_stage_schema("slow_edit_v1")
-    predicate = schema["$defs"]["behavior_predicate"]
+    """Only the values that may be written down as they stand.
+
+    A regex used to be rendered here as ``<matching ^...$>`` and sat in the
+    same list as the literal tokens.  The #28 live run copied one of those
+    strings into a manifest verbatim, the envelope had no opinion about it,
+    and the EditController rejected the edit with no retry left.  Patterns
+    now live in ``_behavior_patterns`` and are labelled as things to
+    instantiate.
+    """
     values: list[str] = []
-    for branch in predicate.get("oneOf", ()):
+    for branch in behavior_predicate_schema().get("oneOf", ()):
         if "enum" in branch:
             values.extend(str(item) for item in branch["enum"])
-        elif "pattern" in branch:
-            values.append("<matching %s>" % branch["pattern"])
     return values
+
+
+def _behavior_patterns() -> list[dict[str, Any]]:
+    """The predicate families that must be instantiated, never copied."""
+    out: list[dict[str, Any]] = []
+    for branch in behavior_predicate_schema().get("oneOf", ()):
+        pattern = branch.get("pattern")
+        if not isinstance(pattern, str):
+            continue
+        row: dict[str, Any] = {
+            "regular_expression": pattern,
+            "how_to_use": (
+                "write a concrete value that this expression accepts; the "
+                "expression itself is not a legal value"
+            ),
+        }
+        example = _pattern_example(pattern)
+        if example is not None:
+            row["example_of_a_legal_value"] = example
+        out.append(row)
+    return out
 
 
 def _authorized_surfaces(
@@ -1448,6 +1504,7 @@ def stage_b2(
                 "one or more predicates from the closed vocabulary below"
             ),
             "predicted_agent_behavior_vocabulary": _behavior_vocabulary(),
+            "predicted_agent_behavior_patterns": _behavior_patterns(),
             "predicted_data_effect": "free text, what should happen to the data",
             "falsification_condition": "free text, what would show this edit wrong",
         },
@@ -2833,6 +2890,7 @@ def stage_b2_v2(
                 "one or more predicates from the closed vocabulary below"
             ),
             "predicted_agent_behavior_vocabulary": _behavior_vocabulary(),
+            "predicted_agent_behavior_patterns": _behavior_patterns(),
             "predicted_data_effect": "free text, what should happen to the data",
             "falsification_condition": "free text, what would show this edit wrong",
         },

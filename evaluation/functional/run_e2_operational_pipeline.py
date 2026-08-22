@@ -126,7 +126,20 @@ MAX_PROTOCOL_FAILED_DRAWS = 2
 # question starts at zero: gpt-5.6-luna's two #19 abstentions were on the
 # same surface but a different public_input (the #17 pooled task_C episodes,
 # not the #23 T1 task_A episode), so they are context, not spent samples.
-PROTOCOL_FAILED_CARRY_IN: dict[str, int] = {"claude-opus-5": 2}
+# A2 (2026-08-22): cleared.  Both draws were reclassified as
+# INCONCLUSIVE_TRANSPORT after the 2026-08-22 probe showed the relay
+# answering HTTP 200 with an error payload and no choices for the whole
+# Claude family while gpt-5.6-luna answered normally in the same minute.
+# Fix (c) now raises that as AgentTransportError, so the shape that
+# consumed the cap cannot consume it again.  The history line below keeps
+# the record; the counter no longer punishes the model for an outage.
+PROTOCOL_FAILED_CARRY_IN: dict[str, int] = {"claude-opus-5": 0}
+CARRY_IN_HISTORY: dict[str, str] = {
+    "claude-opus-5": (
+        "was 2 (#24, #25); reclassified to INCONCLUSIVE_TRANSPORT x2 on the "
+        "upstream-outage finding and zeroed by the #26 ruling"
+    ),
+}
 PRIOR_PROTOCOL_FAILED_DRAWS = PROTOCOL_FAILED_CARRY_IN.get(SLOW_MODEL, 0)
 MODEL_HISTORY_ON_THIS_SURFACE: dict[str, str] = {
     "claude-opus-5": (
@@ -257,6 +270,62 @@ A1_RESCOPE_TOUCHED: tuple[dict[str, str], ...] = (
         ),
     },
 )
+# v9 == v8: the downstream wiring touches two files that are already
+# frozen members, so the surface stays at 39.
+FROZEN_SURFACE_V9: tuple[str, ...] = FROZEN_SURFACE_V8
+A1_DOWNSTREAM_TOUCHED: tuple[dict[str, str], ...] = (
+    {
+        "path": COMPILER_FILE,
+        "role": (
+            "record only: the identity-routing projection now names "
+            "per_origin_gain as null and says why, instead of dropping the "
+            "key.  No decision changes."
+        ),
+        "sha256_before_this_round": (
+            "e022732e63bcfbd05bc629da3aa927f064288eb4524be96afa14bbc2cbcad3d7"
+        ),
+    },
+    {
+        "path": H0_LOCK_FILE,
+        "role": (
+            "regenerated again: compiler_source moved.  Exactly that key, "
+            "harness_content_sha unchanged, verify_lock=True passes."
+        ),
+        "sha256_before_this_round": (
+            "03d08251842620084729f4852f1912daab40db6d76f0e9e0d71f3baa07609bf0"
+        ),
+    },
+    {
+        "path": RUNNER_FILE,
+        "role": (
+            "identity_routed_eval_series reaches its three consumers -- the "
+            "plan label, the Experience payload and the lifecycle readings "
+            "-- and PROTOCOL_FAILED_CARRY_IN['claude-opus-5'] goes to 0"
+        ),
+    },
+)
+DOWNSTREAM_WIRING_NOTE: dict[str, Any] = {
+    "why_the_frozen_readers_still_get_a_plain_plan": (
+        "FC._probe and FC._persist_draft read program and excluded_series "
+        "and ignore unknown keys.  Handing them a rescoped plan would look "
+        "like the routing had been honoured while they measured the "
+        "un-rescoped plan -- the same silent-no-op shape the action's own "
+        "geometry note refuses.  They are given the plain plan, and the "
+        "routing is carried in the readings instead."
+    ),
+    "why_that_is_the_right_split": (
+        "identity routing is a serving-side decision: which model answers "
+        "for a given evaluation series.  It does not change what the batch "
+        "is fitted on, so the probe measurement is unaffected and only the "
+        "recorded readings move."
+    ),
+    "what_is_still_not_wired": (
+        "nothing outside this pipeline reads the key.  A Skill payload "
+        "written by another line, or a consumer that resolves a plan from "
+        "the store rather than from a gate receipt, would not see the "
+        "routing."
+    ),
+}
 RESCOPE_GEOMETRY_NOTE: dict[str, Any] = {
     "what_the_round_asked_for": (
         "reuse the existing mask geometry: take the crossing series out of "
@@ -382,7 +451,7 @@ class Blocked(RuntimeError):
 
 def _freeze() -> dict[str, str]:
     frozen: dict[str, str] = {}
-    for name in sorted(set(FROZEN_SURFACE_V8)):
+    for name in sorted(set(FROZEN_SURFACE_V9)):
         path = PROJECT_ROOT / name
         if not path.is_file():
             raise SystemExit("frozen surface member is missing: %s" % name)
@@ -602,14 +671,14 @@ P1_POST_SHA = {
     # non-regression comparison against the committed pre-A1 compiler is in
     # A1_RESCOPE_TOUCHED above and is why the #21 gate result still carries.
     COMPILER_FILE: (
-        "e022732e63bcfbd05bc629da3aa927f064288eb4524be96afa14bbc2cbcad3d7"
+        "78e6772ea874b79b55b26ffe35c229de6a7bc371abab5505175bc70fdefc7e09"
     ),
     # Regenerated twice on purpose, never drifted: once by O1 after A1 moved
     # ttha:schema_contracts, and once by fix (c) after runtime:agent_backend
     # moved.  Each time exactly the expected dependency key changed,
     # harness_content_sha stayed put, and h0 passes verify_lock=True.
     H0_LOCK_FILE: (
-        "03d08251842620084729f4852f1912daab40db6d76f0e9e0d71f3baa07609bf0"
+        "b7a61852393c4b5d880ee6defc3bdb92420f70c449e7c0a722f79d57a9df9759"
     ),
 }
 
@@ -819,6 +888,86 @@ def _search(window: Mapping[str, Any], cohort: Mapping[str, Any]) -> Any:
     )
 
 
+def _routed(plan: Mapping[str, Any] | None) -> list[str]:
+    """The evaluation series a rescope took out of this plan's scope."""
+    if not plan:
+        return []
+    return sorted(
+        str(uid) for uid in (plan.get(harness_compiler.ROUTED_SERIES_KEY) or ())
+    )
+
+
+def _label(plan: Mapping[str, Any] | None) -> str:
+    """The frozen plan label, plus the routing when there is any.
+
+    ``SSU._plan_label`` is a delivered, frozen reader and is not edited: it
+    reports the program and the training-side ``excluded_series``.  A rescope
+    lives on a different axis, so it is appended rather than folded in, and
+    the two scopes stay distinguishable in every line of the record.
+    """
+    base = SSU._plan_label(plan)
+    routed = _routed(plan)
+    if not routed:
+        return base
+    return "%s -route %d" % (base, len(routed))
+
+
+def _plain_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
+    """The plan as the frozen readers understand it: program and train scope.
+
+    ``FC._probe`` and ``FC._persist_draft`` read ``program`` and
+    ``excluded_series`` and ignore anything else, so handing them a rescoped
+    plan would look like it worked while they measured the un-rescoped one.
+    They are given the plain plan on purpose, and what the routing changes --
+    the readings -- is recorded beside them by ``_finalized_readings``.
+    """
+    return {
+        "program": str(plan["program"]),
+        "excluded_series": list(plan.get("excluded_series") or ()),
+    }
+
+
+def _finalized_readings(gate: Mapping[str, Any]) -> dict[str, Any]:
+    """What the adoption is worth after the guard has had its say.
+
+    One source for consumers (ii) and (iii): the Experience row and the
+    lifecycle statistics read this, so they cannot disagree.  Every number
+    comes from the gate receipt; nothing is measured here.
+    """
+    plan = dict(gate.get("plan_after") or {})
+    delayed = dict(gate.get("delayed_after") or {})
+    support = dict(gate.get("support_after") or {})
+    routed = _routed(plan)
+    return {
+        "plan": plan,
+        "plan_label": _label(plan),
+        "identity_routed_eval_series": routed,
+        "routing_axis": (
+            "evaluation series served the identity plan; distinct from "
+            "excluded_series, which is the training-side scope"
+        ),
+        "delayed_aggregate_gain": delayed.get("aggregate_gain"),
+        "support_aggregate_gain": support.get("aggregate_gain"),
+        "per_eval_series_delayed_gain": dict(
+            delayed.get("per_eval_series_gain") or {}
+        ),
+        "harmed_eval_series": list(delayed.get("harmed_eval_series") or ()),
+        "harmed_eval_series_count": delayed.get("harmed_eval_series_count"),
+        "harmed_eval_series_total_harm": delayed.get(
+            "harmed_eval_series_total_harm"
+        ),
+        "delayed_is_projected": bool(
+            delayed.get("projected_from_measured_vector")
+        ),
+        "per_origin_gain": delayed.get("per_origin_gain"),
+        "per_origin_gain_is_null_because": delayed.get(
+            "per_origin_gain_is_null_because"
+        ),
+        "gate_changed_the_decision": bool(gate.get("changed")),
+        "fallback_source": gate.get("fallback_source"),
+    }
+
+
 def _clause_programs(clauses: Sequence[Mapping[str, Any]]) -> dict[str, list[str]]:
     """Which menu programs each Guidance clause actually names.
 
@@ -1014,6 +1163,11 @@ def _step(
             (gate.get("delayed_after") or {}).get("harmed_eval_series") or ()
         ),
         "per_eval_series_delayed_after_gate": per_series_after,
+        # (i) the routing, on the row and in the label, on its own axis
+        "identity_routed_eval_series": _routed(gate["plan_after"]),
+        "plan_after_gate_label": _label(gate["plan_after"]),
+        "plan_before_gate_label": _label(record["final_plan"]),
+        "finalized": _finalized_readings(gate),
         "gate_changed_the_decision": bool(gate.get("changed")),
         "adoption_ladder": record.get("adoption_ladder"),
         "consumer_retrains": int(search.retrains),
@@ -1028,8 +1182,8 @@ def _step(
         "retrains %d llm %d"
         % (
             tag, str(record.get("mode")),
-            SSU._plan_label(record["final_plan"]),
-            SSU._plan_label(gate["plan_after"]),
+            _label(record["final_plan"]),
+            _label(gate["plan_after"]),
             _fmt(row["support_before_gate"]), _fmt(row["delayed_before_gate"]),
             row["harmed_before_gate"] or "none",
             "moved" if gate.get("changed") else (
@@ -1351,6 +1505,17 @@ PROPOSAL_SCHEMA_V3: dict[str, Any] = json.loads(
     json.dumps(SSU.PROPOSAL_SCHEMA_V2)
 )
 PROPOSAL_SCHEMA_V3["properties"]["guard"] = GUARD_GRAMMAR_V3
+# The envelope had its own, weaker idea of a behaviour predicate --
+# {"type": "string", "minLength": 1} -- while the EditController validated
+# the manifest against behavior_predicate_v1.  Anything the first accepted
+# and the second refused died at apply_to_fork, past every retry.  There is
+# now one definition, and the envelope uses it.
+PROPOSAL_SCHEMA_V3["properties"]["predicted_agent_behavior_change"] = {
+    "type": "array",
+    "minItems": 1,
+    "uniqueItems": True,
+    "items": SSU.behavior_predicate_schema(),
+}
 PROPOSAL_SCHEMA_V3["properties"]["patch_value"] = {
     "type": "array", "minItems": 1, "maxItems": 1, "items": GUARD_GRAMMAR_V3,
 }
@@ -1485,6 +1650,7 @@ def stage_slow(
                 "one or more predicates from the closed vocabulary below"
             ),
             "predicted_agent_behavior_vocabulary": SSU._behavior_vocabulary(),
+            "predicted_agent_behavior_patterns": SSU._behavior_patterns(),
             "predicted_data_effect": "free text, what should happen to the data",
             "falsification_condition": "free text, what would show this edit wrong",
         },
@@ -1707,6 +1873,8 @@ def stage_experience(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     """One Experience row for the post-update task, tagged with its provenance."""
     task_d = rows[-1]
     plan = dict(task_d["plan_after_gate"])
+    finalized = dict(task_d.get("finalized") or {})
+    routed = _routed(plan)
     audit = {
         "provenance": "operational_pipeline",
         "counts_as_unguided_exploration": False,
@@ -1745,7 +1913,12 @@ def stage_experience(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                 "frozen_plan_scope": {
                     "excluded_series": sorted(
                         str(uid) for uid in plan["excluded_series"]
-                    )
+                    ),
+                    # The second scope axis.  The training-side list above is
+                    # untouched; this is the evaluation-side routing a
+                    # Scope/Risk rescope produced, kept separate so neither
+                    # can be mistaken for the other.
+                    "identity_routed_eval_series": list(routed),
                 },
                 "consumer_retrains": int(task_d["consumer_retrains"]),
             },
@@ -1785,9 +1958,23 @@ def stage_experience(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             "workflow_signature": episode.workflow_signature,
             "relation": str(episode.relation),
             "local_status": str(episode.local_status),
+            "plan_label": _label(plan),
+            "identity_routed_eval_series": list(routed),
             **audit,
         }],
         "row_count": 1,
+        # (ii) the harm account is kept on the projected vector; the measured
+        # pre-gate vector stays where it was, on the row, unedited.
+        "finalized_readings": finalized,
+        "harm_account_is_read_from": (
+            "the post-gate projected per-series vector; "
+            "per_eval_series_delayed_before_gate keeps the measured one"
+        ),
+        "support_and_delayed_gains_written_into_the_episode": {
+            "support": support_gain, "delayed": delayed_gain,
+            "source": "task_D's post-gate readings, the same object "
+                      "finalized_readings reports",
+        },
         "not_persisted_as_skills": (
             "handle_fast_winner is called at task_A only, as in #17"
         ),
@@ -1972,6 +2159,9 @@ def _trajectory(
     *, label: str, budget: Budget, cohort: Mapping[str, Any],
     cap: Mapping[str, Any], sink: dict[str, Any],
     slow_model: str = SLOW_MODEL,
+    grammar: Mapping[str, Any] | None = None,
+    contract: Mapping[str, Any] | None = None,
+    schema: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One complete trajectory, from a store of its own to task_D."""
     started = time.perf_counter()
@@ -2006,8 +2196,44 @@ def _trajectory(
             "probe_window": dict(WINDOW_PROBE),
             "path": dict(FC.UPDATE_PATH),
         })
+        # (iii) the lifecycle reads the guard's final word, not the
+        # ladder's draft of it.  When no guard is installed yet -- which is
+        # the case at task_A on every trajectory, because the Slow edit
+        # happens three windows later -- the two are the same object, and
+        # the record says so rather than leaving it to be inferred.
+        finalized_a = _finalized_readings(step_a["gate"])
+        life["finalized_readings"] = finalized_a
+        life["reads"] = (
+            "promotion, demotion and recall statistics are taken from the "
+            "post-gate readings above"
+        )
+        life["gate_was_active_at_task_a"] = bool(step_a["gate"].get("checked"))
+        finalized_record = dict(step_a["record"])
+        finalized_record["final_plan"] = _plain_plan(finalized_a["plan"])
+        if finalized_a["support_aggregate_gain"] is not None:
+            finalized_record["support"] = dict(
+                step_a["gate"].get("support_after") or {}
+            )
+        if finalized_a["delayed_aggregate_gain"] is not None:
+            finalized_record["delayed"] = dict(
+                step_a["gate"].get("delayed_after") or {}
+            )
+        life["what_the_frozen_readers_were_handed"] = {
+            "plan": _plain_plan(finalized_a["plan"]),
+            "why_plain": (
+                "FC._probe and FC._persist_draft read program and "
+                "excluded_series and ignore unknown keys, so a rescoped plan "
+                "would have them measure the un-rescoped one without saying "
+                "so.  Routing is a serving-side decision and does not change "
+                "what the batch is fitted on; what it changes is the "
+                "readings, and those are recorded above."
+            ),
+            "routing_dropped_for_them": finalized_a[
+                "identity_routed_eval_series"
+            ],
+        }
         draft = FC._persist_draft(
-            slot=slot, record=step_a["record"], target=FC._target(VARIANT), arm=ARM,
+            slot=slot, record=finalized_record, target=FC._target(VARIANT), arm=ARM,
         )
         life["draft"] = _public(draft)
         probe = None
@@ -2016,7 +2242,7 @@ def _trajectory(
         if draft.get("written"):
             probe = FC._probe(
                 search=step_a["search"], payload=cohort, variant=VARIANT,
-                plan=dict(step_a["record"]["final_plan"]),
+                plan=_plain_plan(finalized_a["plan"]),
             )
             probe_retrains = int(probe["consumer_retrains"])
             budget.charge_retrains(probe_retrains)
@@ -2037,7 +2263,7 @@ def _trajectory(
         )
         local_skill = promotion.get("retrievable_skill_id")
         if not local_skill:
-            adopted = dict(step_a["record"]["final_plan"])
+            adopted = dict(finalized_a["plan"])
             if str(adopted["program"]) == IDENTITY:
                 raise Blocked(
                     "NO_ADOPTABLE_PLAN_SAMPLE",
@@ -2119,7 +2345,8 @@ def _trajectory(
             slow = stage_slow(
                 slot=slot, attribution=attribution, task_c=fault,
                 budget=budget, sink=slow_sink, fault_step=str(fault_step),
-                slow_model=slow_model,
+                slow_model=slow_model, grammar=grammar, contract=contract,
+                schema=schema,
             )
             print(
                 "OP[%s] slow_edit    %s -> %s | snapshot %s -> %s"
@@ -4205,6 +4432,481 @@ def _markdown_v8(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+
+OUT_JSON_V9 = E2 / "operational_pipeline_v9.json"
+OUT_MD_V9 = E2 / "operational_pipeline_v9.md"
+LLM_CALL_BUDGET_V9 = 8
+RETRAIN_BUDGET_V9 = 200
+CLAIM_DISCIPLINE_V9: dict[str, Any] = {
+    "evidence_level": "DEVELOPMENT",
+    "backend": "ON_GPT_5_6_SOL",
+    "same_window_selection": (
+        "the guard reads the delayed window and the routing it produces is "
+        "scored on that same window, exactly as a veto is.  This trajectory "
+        "does not show that a rescope chosen on one window survives on "
+        "another; no held-out window is opened."
+    ),
+    "aggregate_lift_is_arithmetic": (
+        "aggregate_gain is the mean of the per-series vector, so removing "
+        "negative terms raises it.  A rescoped aggregate above the unguarded "
+        "one is that arithmetic, not a free improvement: the series taken "
+        "out are served identity and get nothing."
+    ),
+    "no_fresh_result": (
+        "every window here had its outcome opened by #17; this produces no "
+        "fresh confirmation and no A5-over-A3 result"
+    ),
+    "not_backend_independent": (
+        "one pinned backend decided the action; nothing here says another "
+        "would"
+    ),
+}
+
+
+def _veto_twin(guard: Mapping[str, Any]) -> dict[str, Any]:
+    """The proposed guard with its action swapped, and nothing else."""
+    twin = dict(guard)
+    twin["action"] = "VETO_AND_FALL_BACK"
+    twin["guard_id"] = "%s-veto-twin" % str(guard.get("guard_id") or "guard")[:40]
+    twin["rationale"] = (
+        "the proposed guard with one field changed, for the contrast: "
+        "veto instead of rescope"
+    )
+    return twin
+
+
+def stage_veto_twin(
+    rows: Sequence[Mapping[str, Any]], guard: Mapping[str, Any]
+) -> dict[str, Any]:
+    """What this same trajectory would have done under a veto.  0 retrains.
+
+    Deterministic, and taken after the fact off the run's own vectors: the
+    twin differs from the guard the Agent proposed in the action field
+    alone, so the difference between the two columns is what the action
+    bought on this trajectory and nothing else.
+    """
+    twin = _veto_twin(guard)
+    per_step: dict[str, Any] = {}
+    for raw in rows:
+        if not raw.get("completed"):
+            continue
+        row = _pre_gate_row(raw)
+        as_run = dict(raw.get("finalized") or {})
+        under_veto = _readjudicate(snapshot=_GuardOnly(twin), row=row)
+        per_step[str(row["step"])] = {
+            "plan_before": row.get("plan_before_gate"),
+            "as_run_plan": as_run.get("plan"),
+            "as_run_plan_label": as_run.get("plan_label"),
+            "as_run_delayed": as_run.get("delayed_aggregate_gain"),
+            "as_run_harmed": as_run.get("harmed_eval_series"),
+            "as_run_routed": as_run.get("identity_routed_eval_series"),
+            "veto_plan": under_veto["plan_after"],
+            "veto_plan_label": _label(under_veto["plan_after"]),
+            "veto_delayed": under_veto["delayed_after"],
+            "veto_harmed": under_veto["harmed_after"],
+            "veto_changed": bool(under_veto["changed"]),
+            "delta_delayed": (
+                None if as_run.get("delayed_aggregate_gain") is None
+                or under_veto["delayed_after"] is None
+                else float(as_run["delayed_aggregate_gain"])
+                - float(under_veto["delayed_after"])
+            ),
+            "consumer_retrains": 0,
+        }
+        r = per_step[str(row["step"])]
+        print(
+            "TWIN %-7s as run %s %s | under veto %s %s | delta %s" % (
+                row["step"], r["as_run_plan_label"], _fmt(r["as_run_delayed"]),
+                r["veto_plan_label"], _fmt(r["veto_delayed"]),
+                _fmt(r["delta_delayed"]),
+            ),
+            flush=True,
+        )
+    bought = [
+        step for step, r in per_step.items()
+        if (r["delta_delayed"] or 0.0) > 0.0
+    ]
+    return {
+        "ran": True,
+        "role": (
+            "the same trajectory under a veto-only reading of the same "
+            "guard; the only field that differs is the action"
+        ),
+        "twin_guard": twin,
+        "per_step": per_step,
+        "steps_where_the_rescope_kept_more_than_a_veto": bought,
+        "consumer_retrains": 0,
+        "llm_calls": 0,
+        "measurement": "none; replayed off this run's own vectors",
+    }
+
+
+def _collateral(rows: Sequence[Mapping[str, Any]], guard: Mapping[str, Any]) -> dict:
+    """Was anything routed or moved that should not have been?
+
+    Checked against the row's own measured pre-gate vector rather than
+    against the compiler's crossing set, so this is an independent reading
+    of the same question and not a restatement of it.
+    """
+    window = str(guard.get("window") or "delayed")
+    findings: list[dict[str, Any]] = []
+    checked: list[dict[str, Any]] = []
+    for raw in rows:
+        if not raw.get("completed"):
+            continue
+        measured = dict(raw.get("per_eval_series_delayed_before_gate") or {})
+        routed = set(_routed(raw.get("plan_after_gate")))
+        crossing = {
+            uid for uid, value in measured.items()
+            if harness_compiler.guard_fires(guard, float(value))
+        }
+        clean_and_moved = (
+            not raw.get("harmed_before_gate")
+            and bool(raw.get("gate_changed_the_decision"))
+        )
+        checked.append({
+            "step": raw.get("step"),
+            "window_the_guard_reads": window,
+            "measured_crossing_series": sorted(crossing),
+            "routed_series": sorted(routed),
+            "clean_adoption": not raw.get("harmed_before_gate"),
+            "gate_changed_the_decision": bool(
+                raw.get("gate_changed_the_decision")
+            ),
+        })
+        for uid in sorted(routed - crossing):
+            findings.append({
+                "step": raw.get("step"), "kind": "ROUTED_A_NON_CROSSING_SERIES",
+                "series": uid, "measured_gain": measured.get(uid),
+            })
+        if clean_and_moved:
+            findings.append({
+                "step": raw.get("step"), "kind": "MOVED_A_CLEAN_ADOPTION",
+                "plan_before": raw.get("plan_before_gate"),
+                "plan_after": raw.get("plan_after_gate"),
+            })
+    return {
+        "checked": checked,
+        "findings": findings,
+        "clean": not findings,
+        "how": (
+            "each routed series is required to satisfy the guard's own test "
+            "on the row's measured pre-gate vector, and no episode that "
+            "harmed nothing may have had its decision moved"
+        ),
+    }
+
+
+OUT_JSON_V10 = E2 / "operational_pipeline_v10.json"
+OUT_MD_V10 = E2 / "operational_pipeline_v10.md"
+CONTRACT_UNIFICATION_NOTE: dict[str, Any] = {
+    "what_v9_hit": (
+        "the Slow Agent copied a vocabulary entry verbatim -- "
+        "'<matching ^scope_modified_fraction<=...$>' -- into "
+        "predicted_agent_behavior_change.  The proposal envelope described "
+        "that field as {'type': 'string', 'minLength': 1}, so it passed with "
+        "no retry; the EditController validates the manifest against "
+        "behavior_predicate_v1 and refused it at apply_to_fork, where no "
+        "retry exists.  COMPILER_REJECTS."
+    ),
+    "what_was_changed": [
+        "the envelope's predicted_agent_behavior_change.items is now the "
+        "behavior_predicate_v1 schema itself, resolved through "
+        "load_stage_schema, so the envelope and the controller share one "
+        "definition instead of holding two",
+        "_behavior_vocabulary() lists only values that may be written as "
+        "they stand; the two regex families moved to "
+        "_behavior_patterns(), labelled as things to instantiate and "
+        "carrying an example built from the pattern and checked against it",
+    ],
+    "what_was_not_changed": (
+        "the compiler, the guard grammar and the RESCOPE action are "
+        "untouched.  v9's guard was legal on all three and the Agent chose "
+        "RESCOPE; the failure was one field away from the guard."
+    ),
+    "standing_ruling_if_this_recurs": (
+        "if this run exposes a further, independent Proposal/Manifest "
+        "mismatch, the finding is not another field to patch: it is that "
+        "this bespoke simplified proposal schema owns a duplicate copy of a "
+        "contract, and the whole envelope should be rebuilt on the real "
+        "stage schema."
+    ),
+}
+
+
+def run_v9(
+    slow_model: str = "gpt-5.6-sol",
+    *,
+    out_json: Path | None = None,
+    out_md: Path | None = None,
+    protocol: str = "operational_pipeline_v9",
+    retry_of: str | None = None,
+) -> int:
+    """One live trajectory with both guard actions on the table.
+
+    Configuration is v7 word for word.  The single difference is the
+    envelope: the grammar offers VETO_AND_FALL_BACK and
+    RESCOPE_MASK_HARMED_SERIES, the contract describes both mechanically,
+    and the model picks the action and the applies_to itself.
+    """
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_V9, RETRAIN_BUDGET_V9)
+    payload: dict[str, Any] = {
+        "protocol_version": protocol,
+        "contract_unification": CONTRACT_UNIFICATION_NOTE,
+        "retry_of": retry_of,
+        "role": (
+            "the live test of the third guard action: a new continuous "
+            "store, one sampling, both actions legal, and the whole chain "
+            "run for real"
+        ),
+        "only_difference_from_v7": (
+            "the guard grammar handed to the Slow Agent carries both "
+            "VETO_AND_FALL_BACK and RESCOPE_MASK_HARMED_SERIES.  The "
+            "windows, the cohort, the ladder, the two keys, the menu, the "
+            "prompts, the selector, the fold and the sampling discipline "
+            "are v7's, unchanged."
+        ),
+        "downstream_wiring": DOWNSTREAM_WIRING_NOTE,
+        "geometry_note": RESCOPE_GEOMETRY_NOTE,
+        "claim_discipline": CLAIM_DISCIPLINE_V9,
+        "a1_touched_files": [dict(row) for row in A1_DOWNSTREAM_TOUCHED],
+        "slow_backend": {
+            "model": slow_model,
+            "at_most_one_proposal": True,
+            "no_re_throw": "one sampling; a natural stop is recorded as it stands",
+            "carry_in": dict(PROTOCOL_FAILED_CARRY_IN),
+            "carry_in_history": dict(CARRY_IN_HISTORY),
+            "history_on_this_surface": MODEL_HISTORY_ON_THIS_SURFACE.get(
+                slow_model, "no history on record"
+            ),
+        },
+        "actions_offered": list(harness_compiler.GUARD_ACTIONS),
+        "prompt_neutrality": (
+            "the contract describes each action mechanically and states the "
+            "one hard constraint the compiler enforces; it expresses no "
+            "preference and names no default"
+        ),
+        "selector_contract": SELECTOR_CONTRACT,
+        "sampling_rule": SAMPLING_RULE,
+        "slow_error_taxonomy": SLOW_ERROR_CLASSES,
+        "pre_registered": PRE_REGISTERED,
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_V9,
+        "retrain_budget": RETRAIN_BUDGET_V9,
+    }
+    for row in payload["a1_touched_files"]:
+        row["sha256_after_this_round"] = before[row["path"]]
+    sink: dict[str, Any] = {"label": "rescope_live", "entered": False}
+    payload["trajectory_record"] = sink
+    try:
+        payload["p2_non_regression_gate"] = stage_p2_precondition()
+        payload["guard_after_precondition"] = _guard_frozen(before, "the trajectory")
+        cohort, cap, roster = _cohort()
+        payload["cohort"] = {
+            "name": COHORT_NAME, "roster": roster,
+            "eval_uids": list(cohort["eval_uids"]),
+        }
+        _trajectory(
+            label="rescope_live", budget=budget, cohort=cohort, cap=cap,
+            sink=sink, slow_model=slow_model, grammar=GUARD_GRAMMAR_V3,
+            contract=GUARD_CONTRACT_V3, schema=PROPOSAL_SCHEMA_V3,
+        )
+    except ConcurrentWrite as exc:
+        payload.update({"overall_verdict": "CONCURRENT_WRITE_ABORT",
+                        "overall_verdict_reason": str(exc)})
+    except Blocked as exc:
+        payload.update({"overall_verdict": exc.verdict,
+                        "overall_verdict_reason": exc.reason})
+    guard = ((sink.get("stages") or {}).get("slow_edit") or {}).get("guard")
+    rows = list(sink.get("trajectory") or ())
+    if guard:
+        payload["chosen_action"] = str(guard.get("action"))
+        payload["collateral_check"] = _collateral(rows, guard)
+        payload["veto_twin"] = stage_veto_twin(rows, guard)
+    if "overall_verdict" not in payload:
+        raw = str(sink.get("verdict"))
+        selector = ((sink.get("stages") or {}).get("scope_risk_selector") or {})
+        if raw != "OPERATIONAL_PIPELINE_CLOSES":
+            verdict = (
+                str(selector.get("verdict") or "NO_ELIGIBLE_SCOPE_RISK_EPISODE")
+                if raw == "PIPELINE_RUNS_NO_FAULT_SAMPLE" else raw
+            )
+            reason = sink.get("verdict_reason")
+        elif str((guard or {}).get("action")) == harness_compiler.RESCOPE_ACTION:
+            collateral = payload["collateral_check"]
+            if collateral["clean"]:
+                verdict = "LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL"
+                reason = (
+                    "the chain closed, the firing window's harm is gone, the "
+                    "aggregate is kept by projection, no non-crossing series "
+                    "was routed and no clean episode moved"
+                )
+            else:
+                verdict = "LIVE_RESCOPE_COLLATERAL"
+                reason = "collateral findings: %s" % collateral["findings"]
+        else:
+            verdict = "SLOW_PREFERS_VETO"
+            reason = (
+                "with both actions legal and no preference expressed, the "
+                "Agent chose %s.  That is a decision reading, not a failure: "
+                "the chain closed on it." % (guard or {}).get("action")
+            )
+        payload.update({
+            "overall_verdict": verdict,
+            "overall_verdict_reason": reason,
+            "trajectory_verdict_before_renaming": raw,
+        })
+    payload.update({
+        "llm_call_count": budget.llm_used,
+        "consumer_retrains_total": budget.retrains_charged,
+        "exposure": {
+            "windows_read": [
+                "2024 development training anchors",
+                "task_A/probe/task_B inside the 2024 development partition",
+                "task_C [9864, 10152] and task_D [10560, 10848], both inside "
+                "the 2025 partition #17 already opened",
+            ],
+            "beyond_17520": "SEALED, not read",
+            "fresh_claim": "none",
+        },
+        "wall_seconds": time.perf_counter() - started,
+        "frozen_surface_after": _verify(before),
+    })
+    if not payload["frozen_surface_after"]["ok"]:
+        payload["overall_verdict"] = "CONCURRENT_WRITE_ABORT"
+        payload["overall_verdict_reason"] = (
+            "the frozen surface moved during the run; the reading is void"
+        )
+    return _write(
+        payload, out_json=out_json or OUT_JSON_V9, out_md=out_md or OUT_MD_V9,
+    )
+
+
+def _markdown_v9(payload: Mapping[str, Any]) -> str:
+    sink = payload.get("trajectory_record") or {}
+    rows = list(sink.get("trajectory") or ())
+    slow = (sink.get("stages") or {}).get("slow_edit") or {}
+    twin = payload.get("veto_twin") or {}
+    collateral = payload.get("collateral_check") or {}
+    lines = [
+        "# One live trajectory, both guard actions legal",
+        "",
+        "**Overall: `%s`** -- %s" % (
+            payload.get("overall_verdict"),
+            payload.get("overall_verdict_reason", ""),
+        ),
+        "",
+        "Action the Agent chose: `%s`." % payload.get("chosen_action"),
+        "",
+        ("Retry of %s." % payload["retry_of"]) if payload.get("retry_of") else "",
+        "",
+        "## Trajectory",
+        "",
+        "| step | mode | plan before | plan after | support | delayed | "
+        "harmed before | harmed after | gate |",
+        "| --- | --- | --- | --- | ---: | ---: | --- | --- | --- |",
+    ]
+    for row in rows:
+        if not row.get("completed"):
+            continue
+        gate = row.get("gate") or {}
+        lines.append(
+            "| `%s` | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+                row.get("step"), row.get("mode"),
+                row.get("plan_before_gate_label"),
+                row.get("plan_after_gate_label"),
+                _fmt(row.get("support_before_gate")),
+                _fmt(row.get("delayed_after_gate")),
+                ", ".join(row.get("harmed_before_gate") or ()) or "none",
+                ", ".join(row.get("harmed_after_gate") or ()) or "none",
+                "moved" if gate.get("changed") else (
+                    "checked" if gate.get("checked") else "inactive"
+                ),
+            )
+        )
+    guard = slow.get("guard")
+    if guard:
+        lines.extend([
+            "", "## The Slow decision", "",
+            "Guard `%s`: %s `%s` %s -> **%s** on the %s window, applies to %s."
+            % (guard.get("guard_id"), guard.get("statistic"),
+               guard.get("comparator"), _fmt(guard.get("threshold")),
+               guard.get("action"), guard.get("window"),
+               guard.get("applies_to")),
+            "", "> %s" % guard.get("rationale"), "",
+        ])
+        for a in slow.get("attempts") or ():
+            lines.append("- draw %s: %s" % (a.get("draw"), a.get("outcome")))
+        counters = slow.get("counters") or {}
+        lines.extend([
+            "",
+            "Counters: valid %s / protocol-failed %s / LLM %s." % (
+                counters.get("valid_decision_samples"),
+                counters.get("protocol_failed_draws"),
+                counters.get("llm_calls_spent"),
+            ),
+            "",
+        ])
+    if twin:
+        lines.extend([
+            "## What the action bought, against a veto twin", "",
+            "| step | as run | delayed | under veto | delayed | delta |",
+            "| --- | --- | ---: | --- | ---: | ---: |",
+        ])
+        for step, r in (twin.get("per_step") or {}).items():
+            lines.append(
+                "| `%s` | %s | %s | %s | %s | %s |" % (
+                    step, r.get("as_run_plan_label"), _fmt(r.get("as_run_delayed")),
+                    r.get("veto_plan_label"), _fmt(r.get("veto_delayed")),
+                    _fmt(r.get("delta_delayed")),
+                )
+            )
+        lines.append("")
+    if collateral:
+        lines.extend([
+            "## Collateral check", "",
+            "`%s` -- %s" % (
+                "clean" if collateral.get("clean") else "FINDINGS",
+                collateral.get("how", ""),
+            ),
+            "",
+            "| step | crossing (measured) | routed | clean adoption | moved |",
+            "| --- | --- | --- | --- | --- |",
+        ])
+        for c in collateral.get("checked") or ():
+            lines.append(
+                "| `%s` | %s | %s | %s | %s |" % (
+                    c.get("step"),
+                    ", ".join(c.get("measured_crossing_series") or ()) or "none",
+                    ", ".join(c.get("routed_series") or ()) or "none",
+                    c.get("clean_adoption"), c.get("gate_changed_the_decision"),
+                )
+            )
+        lines.append("")
+    claim = payload.get("claim_discipline") or {}
+    after = payload.get("frozen_surface_after") or {}
+    lines.extend([
+        "## Claim discipline", "",
+        "- Evidence level: **%s**, **%s**." % (
+            claim.get("evidence_level"), claim.get("backend")),
+        "- %s" % claim.get("same_window_selection"),
+        "- %s" % claim.get("aggregate_lift_is_arithmetic"),
+        "- %s" % claim.get("no_fresh_result"),
+        "",
+        "## Cost and integrity", "",
+        "- LLM calls: %s / %s." % (payload.get("llm_call_count"),
+                                   payload.get("llm_call_budget")),
+        "- Consumer retrains: %s / %s." % (payload.get("consumer_retrains_total"),
+                                           payload.get("retrain_budget")),
+        "- Frozen surface: %s files, drift %s." % (after.get("files"),
+                                                   after.get("drift")),
+        "- Wall seconds: %.1f." % float(payload.get("wall_seconds") or 0.0),
+    ])
+    return "\n".join(lines) + "\n"
+
+
 def _markdown_models(payload: Mapping[str, Any]) -> str:
     lines = [
         "# Banked chain, one pinned Slow backend at a time",
@@ -4439,6 +5141,10 @@ def _markdown_multi(payload: Mapping[str, Any]) -> str:
 
 
 def _markdown(payload: Mapping[str, Any]) -> str:
+    if payload.get("veto_twin") is not None or payload.get(
+        "protocol_version"
+    ) == "operational_pipeline_v9":
+        return _markdown_v9(payload)
     if payload.get("b3_three_arms") is not None:
         return _markdown_v8(payload)
     if payload.get("runs") is not None:
@@ -4668,6 +5374,7 @@ def _write(
         "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_GPT_5_6_SOL",
         "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX", "P2_ONLY",
         "RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM",
+        "LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL", "SLOW_PREFERS_VETO",
     ) else 1
 
 
@@ -4694,6 +5401,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="banked completion, then one post-fix live trajectory if it closed",
     )
     parser.add_argument(
+        "--rescope-live-retry", action="store_true",
+        help="the one permitted re-run after the contract unification; v10",
+    )
+    parser.add_argument(
+        "--rescope-live", action="store_true",
+        help="one live trajectory with both guard actions legal; writes v9",
+    )
+    parser.add_argument(
         "--amend-v8", action="store_true",
         help="add the as-proposed re-adjudication to v8; no sampling",
     )
@@ -4714,6 +5429,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="allow the single-trajectory path to overwrite the v2 record",
     )
     args = parser.parse_args(argv)
+    if args.rescope_live_retry:
+        return run_v9(
+            slow_model=args.slow_model, out_json=OUT_JSON_V10,
+            out_md=OUT_MD_V10, protocol="operational_pipeline_v10",
+            retry_of=(
+                "operational_pipeline_v9, which stopped at COMPILER_REJECTS "
+                "on the behaviour-predicate contract mismatch"
+            ),
+        )
+    if args.rescope_live:
+        return run_v9(slow_model=args.slow_model)
     if args.amend_v8:
         return amend_v8()
     if args.rescope_banked:

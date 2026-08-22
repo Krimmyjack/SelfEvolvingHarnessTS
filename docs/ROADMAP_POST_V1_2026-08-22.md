@@ -30,7 +30,14 @@ Luna 证据敏感(#19 弃权为实话),Opus 两次协议失败系上游宕机已
 
 每阶段遵守:一轮一个方法面改动;预注册判定集;预算封顶;负结果照常入账并可关闭该阶段。
 
-### Phase R — 保收益修复(R1 完成)
+### Phase R — 完成(2026-08-22)
+- R2 结果:v9 COMPILER_REJECTS(信封/manifest 契约错位,已按外审指令统一契约,
+  升级条款入纪律)→ v10 **LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL**
+  (task_D 同窗对照 RESCOPE +0.0959 vs VETO 0.0,双双清零伤害,零误伤,
+  保留序列逐位不动)。遗留:记录缺陷第四例(#29 修)、纯 clone 不可导入
+  (symlink 未入库,backlog)、Opus 复跑(可选)。
+
+### Phase R 原书(存档)
 - R1 = #27 完成(v8):RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM + SLOW_PROPOSES_RESCOPE
   + NO_FALSE_POSITIVE + AS_PROPOSED_CONTAINS_WITHOUT_COLLATERAL;几何偏离已追认
   (评估侧 identity 路由 + 投影,非掩码;同窗选择 caveat 常挂)。
