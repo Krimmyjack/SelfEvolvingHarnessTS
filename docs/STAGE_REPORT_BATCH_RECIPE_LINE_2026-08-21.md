@@ -245,6 +245,28 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 
 #38 v1(T3)在零消耗状态撤回(未建 runner,未花 LLM/重训)。sol 指出的 **estimand 不对称**成立:T1 中 forecasting 在 P(B) 上训练、在未处理未来窗计分(训练数据效用),AD 零训练直接检测 P(B)(推理输入效用)——翻转声明混杂了"任务不同"与"消费模式不同",而项目主命题承重训练侧。裁定:(1) C12 改判 `ADJUDICATED_ESTIMAND = INPUT_SIDE_TASK_FLIP`,raw 判定保留,输入侧为真实部署场景、资产保留;(2) T0 robust-z 改标**注入可见性仪器 / 烟测 oracle**,不再是主 AD Consumer(冻结参数 49/3.5 在该角色下沿用);(3) T2 不受影响(task_spec 字段值无关训练模式;可训练 AD 的 consumer_id 注册 `ad_ridge_train_v1`,替换字段值即可);(4) 新 #38 = **T1b 训练侧任务翻转正控**:两 Consumer 都在同一 P(B) 上训练、都在固定未处理独立 Query 上计分;可训练 AD 复用仓库自有加权 ridge 闭式解(不引入 sklearn),标签取自 T1 ledger 且不随 P 变化;**双 Query 隔离**(主线加严,沿 T0 校准/正式隔离纪律):可读性门与回退选择只看校准 Query [2600,3060) seed 20260825,正式 Query [2100,2560) seed 20260824 只在计分时打开,两区均避开 task_A/task_B 全部上下文+horizon 跨度;(5) T3 修订为 #39,门控在训练侧翻转确认上,C1 改为**方差参照判据**(跨任务提案差异须大于同任务重复抽样差异,K=3+3),原 Jaccard<1 判据废止(C11 抽样方差在册);(6) 编号顺延:#38=T1b,#39=T3,#40=T4,#41=T5,#42=T6,#43=M0,#44=M1,#45=X 复活,#46=整合,主书 12 张。**预期机制注记**(负结果解读用):修复使正标签位置的特征恢复正常形态,训练出的分类器无从分离 → Query 检测退化;若未退化即为可信负读数,T3 保持暂停、回用户决策。
 
+### #38(T1b)v1/v2 双停与 v3 授权(2026-08-22,主线裁定)
+
+**Part 0 入账**:sha a6ba53d,6 文件(#37 交付物 + V9 注册表 ssi 授权移动 37d31cb8…→f39c13f3…,`T2_OBSERVATION_TOUCHED` 沿先例 + 两份 docs 修订);live 哈希与注册表一致,授权移动非漂移。
+
+**v1 判定成立并补根因**:`AD_TRAINABLE_SPEC_DEFECT` + `FEATURE_LABEL_GEOMETRY_MISMATCH / CURRENT_EVENT_NOT_OBSERVABLE`——排他尾随窗 [t−49,t) 不含 x_t,分类器被要求判断它看不见的点。**定性为主线规格缺陷**(把 forecasting 滞后几何照搬进点事件检测),非执行错误。门读数 49:0.1709 / 回退 25:0.2606(Qcal pooled),oracle 同批字节 0.7458 → 注入可见、规格不可读。
+
+**v2 判定成立**:含当前点窗 + 宏平均 + 先 Qcal 后 Qf 顺序下,门仍两次不达(宏 0.1765 / 0.2942),较 v1 仅 +0.03 量级 → 缺陷超出窗几何,定位到**特征族×线性头**:线性 ridge 读原始标准化窗无法表达 |x_t−med|/MAD 类稳健统计。v1+v2 合并为"原始窗×线性 ridge×稀疏点标签"规格族的**可信负结果**(两种几何一致)。Qf 全程零读取,五臂未释放,零翻转声称。
+
+**过程诚实入账(两起,均未污染读数)**:fit 广播 bug(weights[:,None] 对 1-D 标签广播成 (n,n))修复于任何门读数之前,修后两跑逐位一致;_Blocked 路径落盘遗漏补齐,注入目录 28 文件 sha 逐字节相同。成本累计 ≈202/300(v1 三跑 ~126 + v2 两跑 76),LLM 0、重训 0。接受。
+
+**歧义裁定(四条全部立为正典)**:(1) 循环计数器每 Query 区从槽 0 起步(沿 T1 独立 seeded draw 惯例);(2/3) 宏平均(逐序列 event-F1 均值)为门与判定主口径,pooled 降为副读数,量子化注记 ≈0.02/事件(每序列 4 事件粒度);(4) 168 隔离的执行解释 = σ 前缀 pristine 重算 + 区前 168 步字节与 pristine 相等断言;Query 特征读区前 49 原始字节 = 与 T0 检测器同尾随几何,零泄漏。
+
+**仪器取代关系(站规补记)**:`anomaly_detection_trainable_v1` = 化石(排他窗规格缺陷);`trainable_v2` = 化石(含点窗,族内可信负);现役接替 = `trainable_v3`(任务原生特征,本轮授权)。`anomaly_detection_v1`(robust-z 49/3.5)继续任注入可见性 oracle。
+
+**外部分析裁定(sol+grok,主线采纳)**:主因 = Consumer 表示缺口,采纳。TIMECLAW 无可训练 AD Consumer(LLM 感知问答 + 工具,无可抄);AegisTS 可借**原则**(Consumer 任务原生、观察层与效用层分离)不可借**栈**——MiniRocket/InceptionTime 为整序列分类几何,与点事件错配;TimesNet/LSTMAD 本地有源码(a-evolve/AegisTS),不采用的真实原因是 estimand 不匹配(重构族把训练异常当污染,清洗可能双任务同改善,不构成翻转正控),留给日后自然无监督 AD 线;冻结 robust-z 阈值不能任主 Consumer(不从 P(B) 学习)。**整序列分类定性修正(sol,主线采纳)**:用户已定 Task/Consumer 可变,该路不是项目身份变更,而是**新 Capability family 与新实验问题**;若 supervised-AD 正控族关闭,主线可在既定范围内自行裁定转向并在台账记明理由,阶段汇报时告知用户,不构成强制检查点。
+
+**v3 授权(同书同 runner --v3,非新书;sol 预分发审查修订版)**:sol 在分发前证伪了三特征方案——`detect()` 只公开 scores/flags/弃权计数,不公开逐点 median/MAD,f2 无法在"复用同一路径、禁止重写、原档不动"下实现;"MAD=0→[0,0,0]"亦非 T0 弃权语义(零向量过含截距 ridge 可能误报);两处均为主线书稿缺陷,分发前改正。修订后:唯一改动 = **单特征 f1 = z_t**,经 `anomaly_detection_v1.detect(values, window=49, threshold=3.5)["scores"]` 同一路径一次取得(**显式传冻结回退参数,文件默认为 25/4.0,不许吃默认**),禁止重写 median/MAD;非有限 score 全部沿 T0 弃权语义:训练时该点不入拟合并记数(正类权重只在入拟合行上计算),Query 时强制不触发,AUPRC 只用有限特征点的 Consumer score 排序计算并报未定义点数,ledger 事件不可评分自然记漏检。头/标签/P(B)/臂/Qcal/Qf/计分/顺序全沿 v2 冻结。**无回退、单发**:门不达 → `SUPERVISED_AD_PC_FAMILY_CLOSED`(三规格一致可信负;转回主线在既定范围内裁定,阶段汇报告知用户)。预注册口径注记(两句均强制入工件):该 Consumer ≈ 在任务原生充分统计量上学习的阈值头,翻转只对该 Consumer 族发声;**v3 若闭合,只证明在任务原生充分统计量可见时,训练数据效用翻转可被仪器读出——不证明 Harness 自己发现了该表示,也不代表自然异常数据上的泛化**。Part 0 修正:`_scratch/t1b_query` 在 .gitignore(L26),不入版本库,继续作只读运行底物(完整性走 sha 快照);Part 0 只提交代码、v1/v2 工件与 docs。预算:v3 切片 AD ≤120,T1b 累计上限 300→400(两次诚实停机耗损,主线批准),LLM 0、重训 0 不变。
+
+### 架构健康评估裁定(2026-08-22,主线采纳)
+
+外部评估结论采纳:方法核(methods/ttha 22 py + contracts/runtime/operators)小而分权,九环对应模块而非脚本堆;实验层(evaluation/functional 257 py、run_e2 约 96 个、e2 工件 496 份、主管线 5000+ 行叠 V3→V9 清单、AD 仪器三叉)是**刻意保留的实验化石层**,不是产品包——按章程旧 runner 与旧证据不删,故只会单调增高。裁定:(1) **机制轮中途不重构**(章程问题"不做它核心实验是否无法运行"当前答案为否);(2) 唯一整备窗口 = T5(#41)收口后、T6(#42)fresh 冻结前,修复书 **#41b**,行为保持 + 双 runner 重放逐字节验证,产出 V10,使 T6 与 X 两次 fresh 打开都发生在整备后代码上;不放在 #46,因 fresh 轮是 first-fault 归因成本最高处,不该跑在沉积峰值上;(3) 提前触发条款与即刻站规见路线图 §3.5(仪器分叉须同轮落取代关系一行,trainable_v1/v2 待 T1b 报告落地补记)。整备不计方法进展(章程 §9),报告作附注。
+
 ### #31(2026-08-22,S2)
 
 检查点 46ed5e2(8 files)。**CANDIDATE_COMPILES + LODO_TRANSFER_SUPPORTED(双向)**。Part A 硬门过:官方 OmniAnomaly 28 机文件获取(242.3 MB 仅 scratchpad),内容匹配定位(精确字节索引查表,非信号推断),28/28 逐元素一致、无缝铺满 [0,708405),拼接序非数字非字典(machine-1-5 起 machine-3-1 终,在册禁重推);官方 train=dev/held-in、test=sealed(仅报总行数 708420);#30 悬案澄清:[0,8760) 整块落在 machine-1-5 train 内,系一台机器 24 通道被当 24 序列报。Part B:证据池去重 21→12(traffic 8 + noaa 4;13→4 塌掉的 9 条全为同键重放);卡 shared_outlier_repair_with_per_series_guard_v1,四固定字段照裁定(SHARED_CANDIDATE/GUIDANCE/support_required/no_free_try),programs=[hampel,iqr,mad,winsorize]+算子无关 per-series guard(VETO+RESCOPE),适用条件全部部署时可观察(缺失可为零/z峰≥4/outlier_fraction>0/离散度即需 guard),插补+阶跃 out-of-scope 带底物指针。Part C:执行方自查废掉首版两条循环判据后,C1 traffic→noaa 4/4 SUPPORTED(3 条聚合藏害全被 guard 抓)、C2 noaa→traffic 置险 4/4 SUPPORTED(2/2)、C3 12/12 仅标 INTERNAL_CONSISTENCY_ONLY。**跨域量化副产品(升入 C8 证据链):12 行证据 5 条受害全部聚合为正,聚合单独捕获 0 次**。主线裁定:(a) C1 几乎不可证伪、C2 为信息方向,两向 SUPPORTED 挂 n=4 caveat;(b) 两侧证据均 in-selection,卡方向读数不得表述为 out-of-selection,该级证据只能来自 S3/S4;(c) #18/#19 缺口经核为零成本(去重键下与已入池行同票),提取器形状留案不修;(d) 242 MB 不入库,补记 28 文件 sha256 + 来源 ref 使重获取确定;(e) 实体粒度(NOAA 单变量实体 vs SMD 38 通道实体)为 S1b 第一项。S1b 预算解锁(0 LLM / ≤100 重训),书已发。
