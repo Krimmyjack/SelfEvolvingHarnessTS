@@ -1,0 +1,333 @@
+{
+  "protocol_version": "shared_capability_candidate_v2",
+  "supersedes": "shared_capability_candidate_v1 (frozen, not modified)",
+  "what_changed_from_v1": {
+    "shared_programs": {
+      "v1": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize"
+      ],
+      "v2": [
+        "outlier_iqr",
+        "outlier_mad"
+      ],
+      "why": "outlier_iqr, outlier_mad have positive delayed evidence in both traffic and NOAA; hampel_filter, winsorize have it in traffic only, so they may be offered as Source-local contrast or Target exploration but carry no shared recommendation right"
+    },
+    "applicability_conditions": {
+      "kept_as_gates": [
+        "missing_fraction",
+        "local_robust_z_peak"
+      ],
+      "demoted_to_evidence": [
+        "outlier_point_fraction"
+      ],
+      "removed_from_pre_execution": [
+        "per-eval-series gain dispersion of the adopted plan"
+      ],
+      "observation_surface_unchanged": true
+    },
+    "unchanged": [
+      "the risk guard: min_per_series_gain, delayed window, threshold -0.005, both VETO_AND_FALL_BACK and RESCOPE_MASK_HARMED_SERIES",
+      "the four fixed fields",
+      "the out-of-scope declaration for imputation and level shift"
+    ]
+  },
+  "status": "SHARED_CANDIDATE",
+  "authorization": "GUIDANCE",
+  "target_support_required": true,
+  "grants_confirmation_free_try": false,
+  "shared_programs": [
+    "outlier_iqr",
+    "outlier_mad"
+  ],
+  "contrast_evidence_only": {
+    "programs": [
+      "hampel_filter",
+      "winsorize"
+    ],
+    "rights": "Source-local contrast or Target exploration only; the Shared Candidate does not recommend them in advance",
+    "evidence": {
+      "hampel_filter": {
+        "traffic": {
+          "rows": 2,
+          "positive_rows": 2,
+          "best_delayed_gain": 0.20860319761138876,
+          "episodes": [
+            "traffic/pooled/hampel_filter",
+            "traffic/per_channel/hampel_filter"
+          ]
+        },
+        "noaa": {
+          "rows": 0,
+          "positive_rows": 0,
+          "best_delayed_gain": null,
+          "episodes": []
+        }
+      },
+      "winsorize": {
+        "traffic": {
+          "rows": 2,
+          "positive_rows": 2,
+          "best_delayed_gain": 0.9591409387865703,
+          "episodes": [
+            "traffic/pooled/winsorize",
+            "traffic/per_channel/winsorize"
+          ]
+        },
+        "noaa": {
+          "rows": 0,
+          "positive_rows": 0,
+          "best_delayed_gain": null,
+          "episodes": []
+        }
+      }
+    }
+  },
+  "applicability_gates": [
+    {
+      "feature": "missing_fraction",
+      "requirement": "may be zero; the capability does not need missing data",
+      "observable_type": "number"
+    },
+    {
+      "feature": "local_robust_z_peak",
+      "requirement": "at least one series at or above 4.0",
+      "observable_type": "number"
+    }
+  ],
+  "evidence_only_not_gates": [
+    {
+      "feature": "outlier_point_fraction",
+      "why": "outlier_point_fraction is not in OBSERVABLE_FEATURES, so the Fast view cannot retrieve it.  The Observation surface is not extended this round; the reading stays in the card as evidence and is not an applicability gate"
+    },
+    {
+      "feature": "per-eval-series gain dispersion of the adopted plan",
+      "why": "per_eval_series_gain is measured after a plan is adopted.  It is Risk feedback and it cannot be retrieved before execution, so it is restated as the rule that attaches the guard, not as a condition that selects the capability"
+    }
+  ],
+  "guard": {
+    "statistic": "min_per_series_gain",
+    "window": "delayed",
+    "comparator": "lt",
+    "threshold": -0.005,
+    "actions_allowed": [
+      "VETO_AND_FALL_BACK",
+      "RESCOPE_MASK_HARMED_SERIES"
+    ],
+    "operator_independent": "the guard reads the adopted plan's measured per-series vector and names no program; it applies whatever the ladder adopted"
+  },
+  "out_of_scope": {
+    "families": [
+      "imputation",
+      "level shift"
+    ],
+    "declared_because": "imputation has no substrate on two of the three corpora (traffic: missing_region_end_fraction all_zero; smd: 0 of 24 usable channels with any missing value), and level_excursion_score is identically zero on all 20 NOAA development series, so a level-repair capability has no NOAA evidence to be induced from",
+    "evidence_pointers": [
+      "artifacts/functional/e2/s1_health_v1.json substrate_shape_warning",
+      "artifacts/functional/e2/m0a_mask_geometry_census_traffic_v1.json field_stats_train.missing_region_end_fraction"
+    ]
+  },
+  "a1_audit": [
+    {
+      "feature": "missing_fraction",
+      "in_observable_features": true,
+      "verdict": "EXPRESSIBLE",
+      "why": "missing_fraction is in OBSERVABLE_FEATURES as number",
+      "original_requirement": "may be zero; the capability does not need missing data"
+    },
+    {
+      "feature": "local_robust_z_peak",
+      "in_observable_features": true,
+      "verdict": "EXPRESSIBLE",
+      "why": "local_robust_z_peak is in OBSERVABLE_FEATURES as number",
+      "original_requirement": "at least one series at or above 4.0"
+    },
+    {
+      "feature": "outlier_point_fraction",
+      "in_observable_features": false,
+      "verdict": "DEMOTED_TO_EVIDENCE",
+      "why": "outlier_point_fraction is not in OBSERVABLE_FEATURES, so the Fast view cannot retrieve it.  The Observation surface is not extended this round; the reading stays in the card as evidence and is not an applicability gate",
+      "original_requirement": "greater than zero somewhere in the pool"
+    },
+    {
+      "feature": "per-eval-series gain dispersion of the adopted plan",
+      "in_observable_features": false,
+      "verdict": "NOT_A_PRE_EXECUTION_CONDITION",
+      "why": "per_eval_series_gain is measured after a plan is adopted.  It is Risk feedback and it cannot be retrieved before execution, so it is restated as the rule that attaches the guard, not as a condition that selects the capability",
+      "original_requirement": "the guard is required whenever the minimum per-series delayed gain can fall below -0.005 while the aggregate stays positive"
+    }
+  ],
+  "a2_source_support": {
+    "outlier_iqr": {
+      "by_domain": {
+        "traffic": {
+          "rows": 2,
+          "positive_rows": 2,
+          "best_delayed_gain": 1.0197743357219498,
+          "episodes": [
+            "traffic/pooled/outlier_iqr",
+            "traffic/per_channel/outlier_iqr"
+          ]
+        },
+        "noaa": {
+          "rows": 1,
+          "positive_rows": 1,
+          "best_delayed_gain": 0.06694086622738711,
+          "episodes": [
+            "noaa/task_A/outlier_iqr"
+          ]
+        }
+      },
+      "two_domain_support": true,
+      "role": "shared"
+    },
+    "outlier_mad": {
+      "by_domain": {
+        "traffic": {
+          "rows": 2,
+          "positive_rows": 2,
+          "best_delayed_gain": 0.9582064112033299,
+          "episodes": [
+            "traffic/pooled/outlier_mad",
+            "traffic/per_channel/outlier_mad"
+          ]
+        },
+        "noaa": {
+          "rows": 3,
+          "positive_rows": 3,
+          "best_delayed_gain": 0.30637972777516714,
+          "episodes": [
+            "noaa/task_A/outlier_mad",
+            "noaa/task_C/outlier_mad",
+            "noaa/task_D/outlier_mad"
+          ]
+        }
+      },
+      "two_domain_support": true,
+      "role": "shared"
+    },
+    "hampel_filter": {
+      "by_domain": {
+        "traffic": {
+          "rows": 2,
+          "positive_rows": 2,
+          "best_delayed_gain": 0.20860319761138876,
+          "episodes": [
+            "traffic/pooled/hampel_filter",
+            "traffic/per_channel/hampel_filter"
+          ]
+        },
+        "noaa": {
+          "rows": 0,
+          "positive_rows": 0,
+          "best_delayed_gain": null,
+          "episodes": []
+        }
+      },
+      "two_domain_support": false,
+      "role": "contrast_only"
+    },
+    "winsorize": {
+      "by_domain": {
+        "traffic": {
+          "rows": 2,
+          "positive_rows": 2,
+          "best_delayed_gain": 0.9591409387865703,
+          "episodes": [
+            "traffic/pooled/winsorize",
+            "traffic/per_channel/winsorize"
+          ]
+        },
+        "noaa": {
+          "rows": 0,
+          "positive_rows": 0,
+          "best_delayed_gain": null,
+          "episodes": []
+        }
+      },
+      "two_domain_support": false,
+      "role": "contrast_only"
+    }
+  },
+  "frozen_before_any_smd_outcome_was_opened": true,
+  "a4_lodo": {
+    "traffic_to_noaa": {
+      "compiled_on": "traffic",
+      "checked_on": "noaa",
+      "shared_programs_compiled": [
+        "outlier_iqr",
+        "outlier_mad"
+      ],
+      "target_episodes_non_empty": 4,
+      "direction_agrees": 4,
+      "rows": [
+        {
+          "episode": "noaa/task_A/outlier_mad",
+          "program": "outlier_mad",
+          "delayed_aggregate_gain": 0.30637972777516714,
+          "agrees": true
+        },
+        {
+          "episode": "noaa/task_C/outlier_mad",
+          "program": "outlier_mad",
+          "delayed_aggregate_gain": 0.029687731257638534,
+          "agrees": true
+        },
+        {
+          "episode": "noaa/task_A/outlier_iqr",
+          "program": "outlier_iqr",
+          "delayed_aggregate_gain": 0.06694086622738711,
+          "agrees": true
+        },
+        {
+          "episode": "noaa/task_D/outlier_mad",
+          "program": "outlier_mad",
+          "delayed_aggregate_gain": 0.04950408483265769,
+          "agrees": true
+        }
+      ],
+      "verdict": "SUPPORTED"
+    },
+    "noaa_to_traffic": {
+      "compiled_on": "noaa",
+      "checked_on": "traffic",
+      "shared_programs_compiled": [
+        "outlier_iqr",
+        "outlier_mad"
+      ],
+      "target_episodes_non_empty": 4,
+      "direction_agrees": 4,
+      "rows": [
+        {
+          "episode": "traffic/pooled/outlier_iqr",
+          "program": "outlier_iqr",
+          "delayed_aggregate_gain": 1.0197743357219498,
+          "agrees": true
+        },
+        {
+          "episode": "traffic/pooled/outlier_mad",
+          "program": "outlier_mad",
+          "delayed_aggregate_gain": 0.9582064112033299,
+          "agrees": true
+        },
+        {
+          "episode": "traffic/per_channel/outlier_iqr",
+          "program": "outlier_iqr",
+          "delayed_aggregate_gain": 0.3482156275538379,
+          "agrees": true
+        },
+        {
+          "episode": "traffic/per_channel/outlier_mad",
+          "program": "outlier_mad",
+          "delayed_aggregate_gain": 0.31962658032985625,
+          "agrees": true
+        }
+      ],
+      "verdict": "SUPPORTED"
+    },
+    "same_source_replay": "internal consistency only; not run as transfer evidence",
+    "guard_is_not_a_result": "the harm line that defines a harmed row is the same line the guard uses, so 'the guard finds the crossing' is true by construction and is not counted here"
+  }
+}
