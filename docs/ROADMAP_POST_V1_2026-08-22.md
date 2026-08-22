@@ -58,20 +58,56 @@ Luna 证据敏感(#19 弃权为实话),Opus 两次协议失败系上游宕机已
   开放问题表 + 仪器事实表」三段;不新增结论,只整理。0 LLM。
   这是任何新会话/新 Agent 接手前的推荐第一步。
 
-### Phase S — Shared Capability 跨域(下一个方法里程碑)
-按章程:Shared Capability 需多 Domain 重复正向+风险证据,严格 Promotion 只适用此层。
-- S0 域盘点(0 LLM):列出未被本线 outcome 消费的候选第三域(electricity/weather/
-  traffic 各自的曝光状态查台账与旧线报告),给出 context_exposure / outcome_exposure 标注。
-- S1 健康检查(development 区,不开 outcome):结构、长度、缺陷 prevalence;
-  判定 PROCEED / STOP_FOR_LOW_PREVALENCE。
-- S2 候选编译(0 LLM 确定性):从 NOAA + 旧线 traffic 的正/负/冲突 Experience 归纳
-  Shared Capability candidate(含 guard 作为风险面),冻结 version;
-  凡与决策相关的 Context 必须是部署时可观察特征,禁止 Dataset 名称做相似性理由。
-- S3 development 试运行:A5'(带 Shared candidate)vs A3'(空 Source)同预算,
-  与 #17 同口径的成本/质量/harm 读数;判定后才允许 S4。
-- S4 冻结确认:roster/程序/Judge 冻结后一次性打开第三域 held-out outcome
-  (fresh 纪律,`context_exposure`/`outcome_exposure` 注明)。
-- 每步一书,预算逐书封顶;S 阶段总重训预算建议 ≤600,由用户确认。
+### Phase S — Shared Capability 跨域(下一个方法里程碑,设计定稿 2026-08-22)
+
+**科学问题(可证伪)**:把 traffic(旧线)与 NOAA(本线)两域的正/负/冲突 Experience
+与风险证据,确定性归纳为一个 Shared Capability candidate(Workflow 卡 + per-series
+harm guard,适用条件全部用部署时可观察 Context 表达,禁止数据集名);在第三个
+未消费域上同预算对照 A5''(带 candidate)vs A3''(冷启动),检验三件事:
+(i) 到首个 delayed-positive 的试错成本是否下降(#17 同口径);
+(ii) harm 是否不增加——guard 应在第三域同样拦截/路由(风险面可迁移性);
+(iii) 卡上 Context 条件的匹配判断与实际收益方向是否一致(Scope 的可证伪检验)。
+(iii) 是超出 #17 的增量:#17 考的是"菜单省成本",S 考的是"条件化的执行权"。
+
+**阶段门**(每步一书、逐书封顶、过门才发下一书):
+- S0 域盘点(0 LLM):从台账/旧线工件/data/ 实测盘点候选第三域,逐域标注
+  context_exposure(UNSEEN/AGGREGATE_SEEN/INSTANCE_SEEN)与 outcome_exposure
+  (SEALED/EXPOSED)及结构(长度/序列数/频率/缺陷可见性)。分层:
+  Tier1=不同域族(electricity 未消费切片、T233 等),Tier2=同族新区(NOAA 新
+  国家/地区站点)。门 = 至少一个 Tier1 或 Tier2 候选结构合格且 INSTANCE 级未见;
+  失败 → NO_ELIGIBLE_THIRD_DOMAIN,Phase S 阻塞,回用户(数据获取决策)。
+- S1 健康检查(development 区,零 outcome 打开):只输出冻结聚合统计
+  (结构/缺失/缺陷 prevalence);判定 PROCEED_UNCHANGED / STOP_FOR_LOW_PREVALENCE;
+  不得据此调阈值或挑个体(章程 §6 Feasibility 纪律)。主选失败换备选;
+  双失败 → 该 capability 的 Context 在可得域中不出现,如实关闭并回用户。
+- S2 候选编译(0 LLM 确定性):从两域银行 Experience 编译 candidate 并冻结
+  version;门 = 干重放(dry replay)在两个源域上复现已知结局(candidate 必须
+  能解释自己的训练证据);失败 → NO_COMPRESSIBLE_SHARED_CONTEXT(证据压不进
+  可观察条件),按章程回 Observation 面或关闭,不得用数据集名硬编码。
+- S3 development 试运行:第三域 development 区,A5'' vs A3'' 同预算,#17 同
+  口径读数 + guard 行为;预注册判定集(DELIVERS / TIE_BOUNDARY / HARMS /
+  GUARD_MISSES);通过才允许 S4。
+- S4 冻结确认(fresh):Program/Scope/Judge/roster 冻结后一次性打开第三域
+  held-out outcome;判定 SHARED_CAPABILITY_{DELIVERS,TIE,HARMS};版本一次性,
+  打开后改方法必须立新 version,原 cohort 不再 fresh。
+
+**失败分流**(每格指向被起诉的面,不许混):
+- S0 无候选 → 数据供给,用户决策;
+- S1 低 prevalence → 该 Context 不出现,Scope 事实,停车不算方法失败;
+- S2 压不进条件 → Context 表示不足 → 按章程一轮只许加一个 Observation,
+  或诚实关闭 family;
+- S3 无成本优势但无 harm → capability 级迁移边界(同 #17 per_channel 先例),
+  记边界、不晋级、candidate 保持两域局部;
+- S3 guard 未拦到第三域 harm → 风险面不可迁移 → first-fault 归因一次 +
+  至多一个有界修复,禁调参循环;再失败记负结论;
+- S3 负迁移(A5'' 比 A3'' 更差/更害)→ 最有价值的失败:Context 匹配但效用
+  翻转 → 按章程 §2.1 记 Scope 不足证据、拆分 Scope、保留反例,candidate
+  在该域降级 LOCAL_DRAFT;
+- S4 在 S3 通过后失败 → development-to-fresh 缺口,如实报,一次性版本已耗,
+  不得重开。
+
+**预算**:S0/S1/S2 均 0 LLM(S1 有少量特征计算);S3 LLM ≤30、重训 ≤400;
+S4 参照 #17(≈200 重训)。总重训 ≤700 上限,S1 报告后由用户拍板正式额度。
 
 ### 契约性收尾(小,择机并入任一轮 Part A)
 - SELECTION_MISS 适配器窄口径修复(在册缺陷,两次兑现;修复后跑一次 0-LLM 归因回归)。

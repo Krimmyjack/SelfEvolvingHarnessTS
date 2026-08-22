@@ -920,11 +920,60 @@ def _plain_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
     plan would look like it worked while they measured the un-rescoped one.
     They are given the plain plan on purpose, and what the routing changes --
     the readings -- is recorded beside them by ``_finalized_readings``.
+
+    This is the family rule, stated once in ``FROZEN_READER_RULE``: a frozen
+    reader gets the plain plan, and its output is a pre-route quantity.
     """
     return {
         "program": str(plan["program"]),
         "excluded_series": list(plan.get("excluded_series") or ()),
     }
+
+
+FROZEN_READER_RULE = (
+    "A frozen reader is handed the plain plan -- program and "
+    "excluded_series -- and never the routing key, because it would drop "
+    "the key silently and answer for the un-rescoped plan.  Whatever such a "
+    "reader produces is therefore a PRE-ROUTE quantity and must be named or "
+    "filed as one; a post-route field may only come from the gate receipt, "
+    "which projected it off the measured vector."
+)
+
+
+def _after_gate_per_series(
+    *,
+    gate: Mapping[str, Any],
+    record: Mapping[str, Any],
+    per_series_before: Mapping[str, float],
+    search: Any,
+) -> dict[str, float]:
+    """The per-series vector that belongs under ``..._after_gate``.
+
+    Three cases, and the first is the one #29 found wrong.  When the gate
+    routed evaluation series, the projected vector is already on the gate
+    receipt, next to the aggregate and the harm ledger this row also
+    reports; taking it from anywhere else is how the row came to disagree
+    with itself.  ``SSU._per_series`` is a frozen reader (see
+    ``FROZEN_READER_RULE``): asked about a rescoped plan it re-measures the
+    un-rescoped one, at the cost of a real retrain, and the answer gets
+    filed under a name that says "after gate".
+
+    With no routing, both remaining branches are exactly what they were.
+    """
+    if _routed(gate.get("plan_after")):
+        projected = dict(
+            (gate.get("delayed_after") or {}).get("per_eval_series_gain") or {}
+        )
+        if not projected:
+            raise Blocked(
+                "INSTRUMENT_DRIFT",
+                "the gate routed evaluation series but its receipt carries "
+                "no projected per-series vector",
+            )
+        return {str(uid): float(value) for uid, value in projected.items()}
+    if dict(gate["plan_after"]) == dict(record["final_plan"]):
+        return dict(per_series_before)
+    return SSU._per_series(search, gate["plan_after"])
 
 
 def _finalized_readings(gate: Mapping[str, Any]) -> dict[str, Any]:
@@ -1114,10 +1163,9 @@ def _step(
         )
     gate = _gate(search, snapshot, record, reused=reused)
     per_series_before = SSU._per_series(search, record["final_plan"])
-    per_series_after = (
-        dict(per_series_before)
-        if dict(gate["plan_after"]) == dict(record["final_plan"])
-        else SSU._per_series(search, gate["plan_after"])
+    per_series_after = _after_gate_per_series(
+        gate=gate, record=record, per_series_before=per_series_before,
+        search=search,
     )
     budget.charge_retrains(int(search.retrains))
     row = {

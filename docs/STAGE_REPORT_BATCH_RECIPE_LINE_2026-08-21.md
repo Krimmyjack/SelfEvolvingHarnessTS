@@ -1,3 +1,135 @@
+# 阶段报告:批次配方线 — 冻结 claim / 开放问题 / 仪器事实
+
+重构日期:2026-08-22(Phase C)。**这是新会话 / 新 Agent 接手本线的第一阅读件。**
+
+本次重构**不新增任何结论**,只把已有内容重排为三张表;逐轮流水账原文一字未删,
+移至文末第 4 节「历史台账」。遇口径冲突,以本文件第 1 节的 canonical 措辞为准;
+遇本文件与工件冲突,以工件为准(每条都给了指针,请直接核)。
+规划与纪律见 `docs/ROADMAP_POST_V1_2026-08-22.md`。
+
+**证据等级四档**(常备纪律第 6 条):
+`INSTRUMENT` 仪器自证 / `MECHANISM` 银行重放 / `DEVELOPMENT` 已曝光窗 live /
+`FRESH` sealed outcome 一次性打开(保留字)。
+
+---
+
+## 1. 冻结 claim 表
+
+每行 = 结论 / 口径上限(canonical 措辞,不得超出复述)/ 证据等级 / 工件指针 / 已知 caveat。
+
+### 1.1 里程碑结论
+
+| # | 结论 | 口径上限(canonical) | 等级 | 工件 |
+|---|---|---|---|---|
+| C1 | `FRESH_A5_DELIVERS` | pooled 首个正采纳成本 −43.9%(69 vs 123 重训);最终质量与 harm 同冷启动;per_channel = `A5_TIE_TRANSFER_BOUNDARY`;NOAA held-out 2025 一次性打开 | FRESH | `fresh_confirmation_v1.*` + `fresh_confirmation_v1_adjudication.md`(裁定附录为 canonical 措辞) |
+| C2 | `LOCAL_LIFECYCLE_CLOSES` | Target-local Skill 形成 / 晋级 / 持久化 / 召回四步成立 | DEVELOPMENT | `local_skill_recall_v1.*` |
+| C3 | `SLOW_CLOSES_SCOPE_GAP_BY_VETO` | 银行重放;**containment,不是效用改善**——伤害清零的同时聚合增益一并放弃 | MECHANISM | `slow_scope_update_v2.*` |
+| C4 | `BANKED_CHAIN_CLOSES_IN_K_MODELS` 2/2 | 6–9 环端到端,`gpt-5.6-sol` 与 `gpt-5.6-luna` 各一次;两模型首抽即提出同一 guard,0 次信封重试 | MECHANISM | `operational_pipeline_v6.*` |
+| C5 | `DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_GPT_5_6_SOL` | 九环一次连续、无人接力闭合;行为改变判据 (i) 现场成立(guard 读 −0.102763 开火 → identity) | DEVELOPMENT | `operational_pipeline_v7.*` |
+| C6 | `RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM` | 确定性三臂:task_C 无 guard +0.0297 带 1 受害 / VETO 0 / **RESCOPE +0.0611 零受害剔 1**;task_D +0.0495 带 2 受害 / 0 / **+0.0959 零受害剔 2** | MECHANISM | `operational_pipeline_v8.*` |
+| C7 | `LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL` | live 单轨,`gpt-5.6-sol`:task_D 路由恰为两条越线序列,+0.049504 带 2 受害 → **+0.095879 零受害**;保留的两条序列读数逐位不动;VETO 孪生同轨为 identity 0.0 | DEVELOPMENT | `operational_pipeline_v10.*` |
+
+### 1.2 反复观察到的机制事实
+
+| # | 事实 | 口径上限(canonical) | 计数 | 工件 |
+|---|---|---|---|---|
+| C8 | 聚合观察粒度看不见该故障类 | 同一 episode:逐序列读数 → `RISK_GAP` at `OUTCOME_RISK`;纯聚合读数 → `NO_ACTIONABLE_FAULT`。**该故障类在聚合观察粒度下不可见的直接证据** | **6 个不同 episode 情形,16 条机器记录**:`a5_pooled`(#18/#19)、#21 task_C、#23 T1/T2/T3、live task_C(v7/v9/v10 为同窗同方案的确定性重复,计 1)。差额全部是逐位复现的重放 | `slow_scope_update_v1/v2.*`、`operational_pipeline_v1/v4/v5/v6/v7/v9/v10.*` |
+| C9 | 两钥匙(弱晋级 + 强当窗确认 + v2 门)是实测承重件 | 三次探针晋级全在噪声带(g/se 1.09 / 0.29 / 0.56);随后 5 次复用尝试被拦(3 次当窗确认失败、2 次确认通过但 v2 门拦)+ 1 次合法放行且保持正向;**零次复用越过 aggregate harm 门** | 6 次复用尝试 | `fresh_confirmation_v1.*` |
+| C10 | 引用 ≠ 遵从 | Agent 自称引用的 Guidance 条款与它实际提出的 shortlist 之间没有强制关系;`skill_clause_use` 只记自称,无校验 | 机器字段 `clause_shortlist_overlap` 有 **6 条读数,overlap 分别为 1,1,1,2,1,1——全部 ≥1**。首个**零重叠**样本(#22,n=3:两次重叠且成功 +0.306,一次背离且停摆)**早于该字段,只存在于第 4 节散文里,无机器记录** | `operational_pipeline_v3/v7/v9/v10.*` |
+| C11 | shortlist 对抽样敏感 | 同窗、同卡、同配置的 FULL_PRICE task_A 抽样共 7 次,得到 **3 种不同 shortlist** | `[repair_level_shift, outlier_mad]` ×3(v1/v9/v10);`[repair_level_shift, outlier_iqr]` ×3(v3 的 K=3 三轨,轨间一致);`[outlier_mad, outlier_iqr]` ×1(v7)。阶梯路径:`GATE_PASS_ADOPT_NAMED` ×5、`GATE_FAIL_FALLBACK_SUPPORT_WINNER` ×2 | `operational_pipeline_v1/v3/v7/v9/v10.*` |
+
+### 1.3 全表通用 caveat
+
+1. **同窗选择**:guard 读 delayed 窗,它产生的否决/路由也在同一个 delayed 窗上计分——VETO 与 RESCOPE 同构。C6/C7 **没有**证明在一个窗上选出的路由能在另一个窗上存活;本线至今未为此开过 held-out 窗。
+2. **聚合抬升是算术必然**:`aggregate_gain` 是逐序列向量的均值,去掉负项当然抬升。RESCOPE 臂高于"无 guard"臂不是白得的收益——被路由的序列服务 identity,得零。
+3. **后端标注**:C5/C7 是 `gpt-5.6-sol` 上的读数,C4 是 sol + luna。任何"后端无关"的说法都没有证据。
+4. **n 与独立性**:每 cell / 每轨迹 n=1,无重复无区间;C4 的 2/2、C8 的 16 条、C11 的 7 次里,凡标注为重放或同窗重复的都**不是独立观察**。C1 的成本对比中,"协议补全的乐观反事实 ≈99 vs 144" 是推算不是实测;首正读数 69 vs 123 不受此影响。
+5. **DEVELOPMENT ≠ FRESH**:C2/C5/C7 的窗口 outcome 由 #17 一次性打开过,这些轮次不产生新的 fresh 证据,也不产生新的 A5>A3 结果。
+6. **BY_VETO 的"无殃及"**只指不相关 episode 的决策逐位不变,不表示 guard 免费(C3)。保收益的措辞只属于 RESCOPE(C6/C7)。
+
+---
+
+## 2. 开放问题表
+
+| # | 问题 | 现状 | 卡在谁 | 指针 |
+|---|---|---|---|---|
+| O1 | **Phase S 第三域 + 总预算** | S0 域盘点未做;Shared Capability 需多 Domain 重复正向 + 风险证据 | **用户拍板**(第三域选择与 ≤600 重训预算) | ROADMAP §Phase S |
+| O2 | per_channel 迁移边界 | #17 判 `A5_TIE_TRANSFER_BOUNDARY`;停车场项 | 需先有"什么 Observation 能区分 per-channel Context"的假设 | `fresh_confirmation_v1.*`;ROADMAP 停车场 |
+| O3 | 供给面自堵(菜单可采纳率) | #22 出现过一次"shortlist 无一可采纳 → 诚实 identity";属仪器按设计弃权,非故障 | 留观察,shortlist 稳定性表(C11)随轮追加 | `operational_pipeline_v2.*` |
+| O4 | `SELECTION_MISS` 适配器窄口径 | 在册缺陷,已两次兑现(#18 a3_pooled、#23);**冻结中,未修** | 修复后需跑一次 0-LLM 归因回归 | ROADMAP §契约性收尾 |
+| O5 | Opus 读数 | 中继宕机已证实为上游(HTTP 200 + error payload);fix (c) 已上线;carry-in 已清零 | 随时可跑,≈1 LLM,不阻塞任何 claim | `operational_pipeline_v5/v6.*` |
+| O6 | **纯 clone 不可导入** | 字节口径已修(`.gitattributes` 的 lock `-text`,新 checkout 实测通过 `stage_p2_precondition`);但 `SelfEvolvingHarnessTS/` 自指 symlink **未入库**,`git ls-files` 0 条,纯 clone 连 import 都过不去 | backlog | 本文件 §3.6 |
+| O7 | 同窗选择的 held-out 化 | C6/C7 的核心 caveat;需一个"guard 在 A 窗选出、在 B 窗计分"的设计 | 未立项 | 本文件 §1.3 第 1 条 |
+| O8 | 上一检查点漏提交 2 文件 | `compiler.py`(+11 记录性)与 `h0/snapshot.lock.json` 仍未入库;committed runner 期望 `78e6772e…`/`b7a61852…`,库内是 `e022732e…`/`03d08251…` → **新克隆 `INSTRUMENT_DRIFT`** | 下一检查点补 | 本文件 §3.6 |
+
+---
+
+## 3. 仪器事实表
+
+### 3.1 记录家族:四例与根治规则
+
+同一个病:**记录写晚了、写错地方、或被过滤掉**,导致工件缺字段或字段名不副实。
+
+| 例 | 症状 | 根治 |
+|---|---|---|
+| 一 | `stage_slow` 先抛后记,原因码丢失(#18/#21) | 进入阶段前把 sink 挂到 payload 上,阶段内边写边记 |
+| 二 | `_public()` 按名过滤,把整个 store/card 区块删掉(#21 v2) | 改为下划线 + 类型排除,不按名字过滤 |
+| 三 | `payload["trajectory"]` 在 task_C 之后才赋值,早停即丢(#22) | **每个阶段的容器在进入该阶段之前挂载** |
+| 四 | `per_eval_series_delayed_after_gate` 在发生路由时取自冻结读者重测的**未路由**方案,与同一行的 `harmed_after_gate` / `delayed_after_gate` 自相矛盾(#28 v10 task_D),并多花约 3 次重训 | 路由发生时直接取 gate 投影收据(`_after_gate_per_series`) |
+
+**根治规则**:阶段进入前挂载记录容器;**凡冻结读者产出的字段都是 pre-route 量,必须如此命名或归档**(代码常量 `FROZEN_READER_RULE`)。
+
+### 3.2 契约链:三例与升级条款
+
+同一个病:**同一份契约被两处各存一份,宽的那处放行、严的那处拒绝,且拒绝点没有重试**。
+
+| 例 | 缺口 | 修法 |
+|---|---|---|
+| 一 | 信封校验器缺 `maxLength`(与自身 `minLength` 不对称),EditController 有 → `COMPILER_REJECTS`(#21) | `schema_contracts._validate_local_schema` 补 `maxLength`(#22 A1) |
+| 二 | `_open_stores_v2` 硬断言 dependency drift 恰为两键,后续每加一个依赖就多偏一键 | 未修:该门已不再运行,#21 结果以 precondition 形式前推 |
+| 三 | 信封说 `predicted_agent_behavior_change.items` 是 `{"type":"string","minLength":1}`,EditController 按 `behavior_predicate_v1` 校验 → Agent 把词表里的 `<matching ^…$>` 原样抄进 manifest,信封 0 重试放行,`apply_to_fork` 拒绝(#28 v9) | 信封 items 直接复用 `load_stage_schema("slow_edit_v1")["$defs"]["behavior_predicate"]`;`_behavior_vocabulary()` 只留可照抄的枚举值,正则族移入 `_behavior_patterns()` 并带**由 pattern 自身生成并回验**的示例(#29) |
+
+**升级条款(用户 2026-08-22 下达)**:若再暴露一处**独立的** Proposal/Manifest 契约错位,不得继续逐字段打补丁——应判定这套自定义简化 Proposal Schema 重复拥有契约,整体改为复用真实 Schema。
+
+### 3.3 选择器语义
+
+`select_scope_risk_episode`:在已完成 / 已采纳 / delayed 已揭示的 episode 中,取**最早**一个"逐 eval 序列 delayed 增益最小值 < −0.005"者;都不满足时返回 `NO_ELIGIBLE_SCOPE_RISK_EPISODE`。
+已验证**不是写死在 task_A 上**:#23 选中 task_A,v7/v9/v10 中 task_A 干净(min +0.017726)、task_B 采纳 identity,选择器自行走到 task_C。
+
+### 3.4 三计数制
+
+`valid_decision_samples`(≤2)/ `protocol_failed_draws`(独立累计上限 2)/ `llm_calls_spent`。
+transport 失败**两者都不消耗**,记 `INCONCLUSIVE_TRANSPORT`;得提案即止,不重掷。
+`claude-opus-5` 的 carry-in 已由 2 清零,注记「重分类 `INCONCLUSIVE_TRANSPORT`×2(上游宕机证实)」。
+
+### 3.5 信封错误分类学
+
+`ENVELOPE_PROTOCOL`(消耗一次 protocol_failed_draw)/ `COMPILER_CONTROLLER`(编辑真的到过控制器才写 `COMPILER_REJECTS`)/ `TRANSPORT`(连续 3 次 → `INCONCLUSIVE_TRANSPORT`)/ `RUNTIME`。
+**中继坑**:agicto 中继会以 HTTP 200 返回 `{"error":{…"Service load is too high"…}}` 且无 `choices`。SDK 视为成功,后端曾据此构造空 `AgentResponse`,重试层无异常可重试,于是把上游宕机记成 Agent 协议失败(#24/#25 两次)。fix (c) 在 `runtime/agent_backend.py` 把该形状抬为 `AgentTransportError`。
+
+### 3.6 冻结面 / 检查点惯例
+
+- 冻结面清单跑前 `_freeze()`、跑后 `_verify()`,漂移即 `CONCURRENT_WRITE_ABORT`;当前 39 项。
+- **哈希口径 = 工作树字节**。`core.autocrlf=true` + `* text=auto` 会让 checkout 与工作树不一致;`h0/snapshot.lock.json` 因此在 `.gitattributes` 里标了 `-text`,新 checkout 实测已能通过 `stage_p2_precondition`。
+- **依赖链**:`compiler.py` / `harness_surfaces.json` / `runtime/agent_backend.py` / `methods/ttha/schema_contracts.py` 任一变动 → `dependency_shas` → `runtime_bundle_sha` → 必须重生成 h0 lock,并同步 `P1_POST_SHA`。每次只应有**一个** dependency 键移动,`harness_content_sha` 不得变。
+- 交付不 commit,统一检查点、显式 `add`(不用 `add -A`);`v*` 原档只增不改。
+- `SelfEvolvingHarnessTS/` 是指向仓库根的自指 symlink 且**未入库**;git 跟踪的是裸路径。
+
+**仪器规则第五条(验收夹具自钉)**:验收夹具**必须自钉快照或自行回卷**——
+复制被测 store 后立刻把 active 指回工件里记录的那个 sha,断言写在自己钉住的
+状态上;**禁止读活的可变 scratch 目录**。两次教训:#25 的 A1 夹具因签名漂移
+静默失效(`fake_store` 缺 `label`、`fake_slow` 缺 `fault_step`,注入的中止从未
+触发却"通过"),#29 的契约夹具因 v10 已把 `rescope_live` 打了补丁,
+`guards 0 → 1` 变成 `1 → 1` 而红——被测代码没有回归,红的是夹具的环境耦合。
+推论:**夹具本身也要有"会红"的证据**——注入一次必失败的输入,确认它确实红。
+
+---
+
+## 4. 历史台账(2026-08-22 重构前全文,一字未删)
+
+以下为本文件重构前的完整原文,逐字保留。上面三节是它的索引,不是它的替代:
+凡上面没写进去的细节——尤其逐轮的失败、改判、以及被否决的解释——都在这里。
+
 # 阶段报告:批次配方线(Batch Recipe Line)
 
 日期:2026-08-21
@@ -63,3 +195,10 @@ A5-vs-A3 里程碑的**工程原型**在配方层建立:同一搜索仪器成本
 Agent 线:`agent_recipe_mount_v1`、`agent_recipe_mount_notool_v1`、`warm_vs_cold_recipe_search_v1`、`warm_vs_cold_rotation_v1`
 审查与普查:`code_review_batch_recipe_stack_v1.md`、`m0a_mask_geometry_census_traffic_v1`
 Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_traffic}.py`、`run_e2_agent_recipe_mount{,_notool}_micro.py`、`run_e2_batch_recipe_windows.py`、`run_e2_warm_vs_cold_recipe_search.py`、`run_e2_warm_vs_cold_rotation.py`
+
+---
+
+### #29(2026-08-22,重构后首条增量)
+
+检查点 eac0582(8 files;v9/v10 原样入库)。清单再漏 2 项(compiler.py、h0 lock)→ O8 开立,新克隆 INSTRUMENT_DRIFT 复发(内容口径);主线裁定:自 #30 起检查点清单由执行方 `git status` 实测生成、主线只审排除项。Part A 记录缺陷第四例修复 6/6(NoMeasurement 夹具强制"不重测",顺带省 3 重训;FROZEN_READER_RULE 落为代码常量)。Part B 三段重构交付(190 行,原文一字未删入第 4 节)。**C10 削弱裁定:接受**——机器字段 n=6 全部 overlap≥1,零重叠样本(#22)早于字段仅存散文,claim 降级为"引用与 shortlist 无强制关系、无校验",从工件数数优先于任务书记忆。**仪器规则第五条采纳**(#29 歧义 3,两次夹具事故):验收夹具必须自钉快照/自行回卷,禁止读活的可变 scratch——待 #30 写入 §3.6。Phase S 设计定稿与 S0+S1 任务书、继任恢复提示见 `ROADMAP_POST_V1_2026-08-22.md` §Phase S 与 `SUCCESSOR_BRIEF_2026-08-22.md`。
+

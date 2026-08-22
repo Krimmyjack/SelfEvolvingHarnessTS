@@ -551,6 +551,17 @@ def project_gains_with_identity_routing(
         ),
         "harmed_eval_series": sorted(harmed),
         "per_eval_series_gain": after,
+        # Named and null rather than absent: a reader that finds the key
+        # missing cannot tell a projection from a measurement that forgot
+        # to carry it, and a reader that finds the pre-rescope list would
+        # be reading a number for a plan that no longer exists.
+        "per_origin_gain": None,
+        "per_origin_gain_is_null_because": (
+            "projecting the per-origin vector would need the "
+            "origin-by-series table, which this reader does not have and "
+            "will not invent; the measured per-origin list belongs to the "
+            "un-rescoped plan and is not carried forward"
+        ),
         "projected_from_measured_vector": True,
         "identity_routed_eval_series": sorted(off),
     }
