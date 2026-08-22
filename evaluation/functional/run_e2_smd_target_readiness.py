@@ -21,9 +21,11 @@ The official SMD test split and the anomaly labels are never opened.
 from __future__ import annotations
 
 import json
+import statistics
 import sys
 import time
 from pathlib import Path
+from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
@@ -46,6 +48,9 @@ OUT_V2_JSON = E2 / "shared_capability_candidate_v2.json"
 OUT_V2_MD = E2 / "shared_capability_candidate_v2.md"
 OUT_JSON = E2 / "smd_target_readiness_v1.json"
 OUT_MD = E2 / "smd_target_readiness_v1.md"
+OUT_JSON_V2 = E2 / "smd_target_readiness_v2.json"
+OUT_MD_V2 = E2 / "smd_target_readiness_v2.md"
+V2_CANDIDATE = E2 / "shared_capability_candidate_v2.json"
 PACKED = Path(r"C:\Users\辉\Desktop\Agent\shared_tsq_datasets\SMD\SMD_train.npy")
 
 SHARED_PROGRAMS = ("outlier_iqr", "outlier_mad")
@@ -457,6 +462,423 @@ def part_c(part: dict[str, Any], budget: Budget, which: str) -> dict[str, Any]:
     return out
 
 
+
+# ================================ aligned mode: one channel index for all 28
+# #32's mapping let every machine pick its own highest-cardinality channel.
+# That is a heterogeneous mapping: series 1 might be a memory metric and
+# series 2 a network metric, so the pooled Consumer is asked to learn one
+# batch-level recipe across quantities that share no unit.  The aligned rule
+# takes a single channel index that is eligible on every machine, so the
+# cohort is at least the same column of every machine's telemetry.
+ALIGNED_SEMANTICS = "CHANNEL_INDEX_ALIGNED_PROXY"
+ALIGNED_SEMANTICS_CAVEAT = (
+    "aligned by column position, not by known physical meaning.  SMD ships "
+    "no channel dictionary, so nothing here establishes that column 18 is "
+    "the same quantity on every machine; it establishes only that it is the "
+    "same column and that it varies enough on all 28 to be a candidate.  Any "
+    "claim that the cohort is physically homogeneous would be unsupported."
+)
+
+
+def part_a_aligned(entity: dict[str, Any]) -> dict[str, Any]:
+    """One channel index, eligible on every machine, chosen by median cardinality."""
+    packed = np.load(PACKED, mmap_mode="r")
+    cardinality: dict[str, list[int]] = {}
+    eligible: dict[str, set[int]] = {}
+    for machine in entity["machines"]:
+        offset = int(machine["offset_in_packed_array"])
+        prefix = np.asarray(packed[offset:offset + CHANNEL_PREFIX], dtype=np.float64)
+        counts = [int(np.unique(prefix[:, c]).size) for c in range(prefix.shape[1])]
+        cardinality[machine["entity"]] = counts
+        eligible[machine["entity"]] = {
+            c for c, k in enumerate(counts) if k > MIN_CARDINALITY
+        }
+    intersection = set(range(len(next(iter(cardinality.values())))))
+    for names in eligible.values():
+        intersection &= names
+    out: dict[str, Any] = {
+        "rule": {
+            "eligibility": "cardinality > %d on that machine's own [0, %d)"
+                           % (MIN_CARDINALITY, CHANNEL_PREFIX),
+            "intersection": "channels eligible on all %d machines" % len(cardinality),
+            "choice": "largest median cardinality across all machines, "
+                      "ties to the lowest channel index",
+            "single_mapping": "one channel index for every machine; no primary/"
+                              "backup pair and no third rule",
+        },
+        "eligible_per_machine": {k: sorted(v) for k, v in eligible.items()},
+        "eligible_counts": {k: len(v) for k, v in eligible.items()},
+        "intersection": sorted(intersection),
+        "intersection_size": len(intersection),
+        "mapping_semantics": ALIGNED_SEMANTICS,
+        "mapping_semantics_caveat": ALIGNED_SEMANTICS_CAVEAT,
+    }
+    if not intersection:
+        out["legal"] = False
+        out["why"] = "no channel index is eligible on all machines"
+        return out
+    medians = {
+        c: statistics.median([cardinality[m][c] for m in cardinality])
+        for c in sorted(intersection)
+    }
+    best = max(medians.values())
+    chosen = min(c for c in medians if medians[c] == best)
+    out.update({
+        "median_cardinality_in_intersection": {str(c): medians[c] for c in medians},
+        "chosen_channel_index": chosen,
+        "chosen_median_cardinality": best,
+        "tie": sorted(c for c in medians if medians[c] == best),
+        "per_machine_cardinality_at_chosen": {
+            m: cardinality[m][chosen] for m in cardinality
+        },
+    })
+    roster_entities = entity["machines"][:TRAIN_N + EVAL_N]
+    out["roster"] = {
+        "train": [m["entity"] for m in roster_entities[:TRAIN_N]],
+        "eval": [m["entity"] for m in roster_entities[TRAIN_N:]],
+        "frozen_from": "the #32 roster, unchanged",
+    }
+    farthest = max(window(s)["farthest_index"] for _, s in EPISODES)
+    out["entities_too_short"] = [
+        m["entity"] for m in roster_entities if int(m["train_length"]) < farthest
+    ]
+    out["legal"] = not out["entities_too_short"]
+    return out
+
+
+def aligned_payload(part: dict[str, Any], entity: dict[str, Any]) -> dict[str, Any]:
+    packed = np.load(PACKED, mmap_mode="r")
+    by_entity = {m["entity"]: m for m in entity["machines"]}
+    channel = int(part["chosen_channel_index"])
+    values: dict[str, np.ndarray] = {}
+    for name in part["roster"]["train"] + part["roster"]["eval"]:
+        m = by_entity[name]
+        offset, length = int(m["offset_in_packed_array"]), int(m["train_length"])
+        values[name] = np.asarray(
+            packed[offset:offset + length, channel], dtype=np.float64
+        )
+    payload = FC._cohort_payload(
+        part["roster"]["train"], part["roster"]["eval"], values
+    )
+    payload["name"] = "smd_channel_%d_aligned_v1" % channel
+    payload["exposure"] = (
+        "SMD selected train development windows: context = INSTANCE_SEEN, "
+        "outcome = EXPOSED.  SMD official test / labels: outcome = SEALED "
+        "(never read by this protocol)."
+    )
+    return payload
+
+
+def judge_and_headroom(payload: Mapping[str, Any], budget: Budget) -> dict[str, Any]:
+    """Part B then Part C, on the aligned cohort.  Same protocol as v1."""
+    out: dict[str, Any] = {"episodes": {}}
+    searches: dict[str, Any] = {}
+    readable = True
+    for index, start in EPISODES:
+        win = window(start)
+        search = FC.FreshSearch(
+            payload=payload, consumer_variant="pooled",
+            support_origins=win["support_origins"],
+            delayed_origins=win["delayed_origins"],
+        )
+        budget.charge(int(search.retrains), "identity baselines, episode %d" % index)
+        searches["episode_%d" % index] = search
+        support_read = FC._readability(
+            search._identity_support, search.eval_uids, G3.CRITERIA, block="support",
+        )
+        delayed_read = FC._readability(
+            search._identity_delayed, search.eval_uids, G3.CRITERIA, block="delayed",
+        )
+        ok = bool(support_read.get("pass")) and bool(delayed_read.get("pass"))
+        readable = readable and ok
+        out["episodes"]["episode_%d" % index] = {
+            "window": win,
+            "identity_readability": {"support": support_read, "delayed": delayed_read},
+            "readable": ok,
+        }
+        print("B  aligned ep%d support pass=%s (spread %.3f share %.3f) | "
+              "delayed pass=%s (spread %.3f share %.3f)" % (
+                  index, support_read.get("pass"),
+                  support_read.get("eval_loss_spread", float("nan")),
+                  support_read.get("largest_single_series_loss_share", float("nan")),
+                  delayed_read.get("pass"),
+                  delayed_read.get("eval_loss_spread", float("nan")),
+                  delayed_read.get("largest_single_series_loss_share", float("nan")),
+              ), flush=True)
+    out["judge_readable"] = readable
+    if not readable:
+        return out
+
+    programs: dict[str, Any] = {}
+    for program in ALL_PROGRAMS:
+        per_episode = {}
+        for index, _ in EPISODES:
+            search = searches["episode_%d" % index]
+            support = search.full_batch_support(program)
+            budget.charge(len(search.support),
+                          "%s support, episode %d" % (program, index))
+            delayed = search.delayed_gate(program, [])
+            budget.charge(len(search.delayed),
+                          "%s delayed, episode %d" % (program, index))
+            probes = [float(support["aggregate_gain"]), float(delayed["aggregate_gain"])]
+            probes += [float(v) for v in
+                       (support.get("per_eval_series_gain") or {}).values()]
+            probes += [float(v) for v in
+                       (delayed.get("per_eval_series_gain") or {}).values()]
+            changed = any(value != 0.0 for value in probes)
+            vector = {
+                str(k): float(v)
+                for k, v in (delayed.get("per_eval_series_gain") or {}).items()
+            }
+            per_episode["episode_%d" % index] = {
+                "changed_what_the_consumer_saw": changed,
+                "support_aggregate_gain": float(support["aggregate_gain"]),
+                "delayed_aggregate_gain": float(delayed["aggregate_gain"]),
+                "per_eval_series_delayed_gain": vector,
+                "harmed_eval_series": sorted(
+                    u for u, g in vector.items() if g < HARM_LINE
+                ),
+                "min_per_series_gain": min(vector.values()) if vector else None,
+                "shared_program": program in SHARED_PROGRAMS,
+            }
+            print("C  %-14s ep%d changed=%-5s sup %+.6f del %+.6f harm %s" % (
+                program, index, changed, support["aggregate_gain"],
+                delayed["aggregate_gain"],
+                per_episode["episode_%d" % index]["harmed_eval_series"] or "none",
+            ), flush=True)
+        programs[program] = per_episode
+    out["programs"] = programs
+
+    def positive(program: str) -> bool:
+        return any(
+            r["changed_what_the_consumer_saw"]
+            and r["delayed_aggregate_gain"] > MATERIAL
+            for r in programs[program].values()
+        )
+
+    shared_hits = [p for p in SHARED_PROGRAMS if positive(p)]
+    contrast_hits = [p for p in CONTRAST_PROGRAMS if positive(p)]
+    out["headroom"] = {
+        "definition": (
+            "a Program changes what the Consumer sees and reaches delayed "
+            "aggregate gain > +%.3f on at least one pre-locked episode" % MATERIAL
+        ),
+        "shared_programs_with_headroom": shared_hits,
+        "contrast_programs_with_headroom": contrast_hits,
+        "shared_headroom_available": bool(shared_hits),
+        "target_local_headroom_only": bool(contrast_hits and not shared_hits),
+        "contrast_programs_carry_no_shared_right": (
+            "hampel_filter and winsorize are reported for contrast only; a "
+            "positive reading from them does not give the Shared Candidate a "
+            "testable opportunity on SMD"
+        ),
+        "harm_does_not_cancel_headroom": (
+            "per-series harm is recorded in full because handling it is the "
+            "mechanism VETO/RESCOPE exists to test in S3"
+        ),
+    }
+    return out
+
+
+def run_aligned() -> int:
+    started = time.perf_counter()
+    budget = Budget(RETRAIN_BUDGET)
+    entity = json.loads(ENTITY.read_text(encoding="utf-8"))
+    candidate_v2 = json.loads(V2_CANDIDATE.read_text(encoding="utf-8"))
+    payload: dict[str, Any] = {
+        "protocol_version": "smd_target_readiness_v2",
+        "the_only_variable_this_round": (
+            "the entity-to-series mapping.  #32 let each machine choose its "
+            "own highest-cardinality channel; this round uses one channel "
+            "index eligible on all 28.  The Candidate v2, the Consumer, the "
+            "Metric, the thresholds, the roster, the windows, the menu, the "
+            "Program bindings, the risk line, the guard and the Observation "
+            "surface are all untouched."
+        ),
+        "candidate_v2_read_not_written": {
+            "shared_programs": candidate_v2["shared_programs"],
+            "gates": [g["feature"] for g in candidate_v2["applicability_gates"]],
+            "guard_threshold": candidate_v2["guard"]["threshold"],
+        },
+        "supersedes_nothing": (
+            "smd_target_readiness_v1 stays as the diagnostic of the "
+            "heterogeneous per-machine mapping and is not overwritten"
+        ),
+        "llm_calls": 0,
+        "retrain_budget": RETRAIN_BUDGET,
+        "exposure": {
+            "smd_selected_train_development_windows": {
+                "context": "INSTANCE_SEEN", "outcome": "EXPOSED",
+            },
+            "smd_official_test_and_labels": {"outcome": "SEALED"},
+            "read_this_round": "the official train split only",
+        },
+    }
+    try:
+        part = part_a_aligned(entity)
+        payload["part_a_aligned_mapping"] = part
+        if not part.get("legal"):
+            payload["verdict"] = "SMD_ENTITY_MAPPING_BLOCKED"
+            payload["verdict_reason"] = part.get(
+                "why", "roster entities too short: %s" % part.get("entities_too_short")
+            )
+            return _write_v2(payload, started, budget)
+        print("A  |I| = %d %s -> channel %d (median cardinality %.1f)" % (
+            part["intersection_size"], part["intersection"],
+            part["chosen_channel_index"], part["chosen_median_cardinality"]
+        ), flush=True)
+        result = judge_and_headroom(aligned_payload(part, entity), budget)
+        payload["part_b_judge"] = {
+            "episodes": result["episodes"], "readable": result["judge_readable"],
+        }
+        if not result["judge_readable"]:
+            payload["verdict"] = "JUDGE_UNREADABLE_ALIGNED_MAPPING"
+            payload["verdict_reason"] = (
+                "identity readings fail the reused NOAA bar on the aligned "
+                "mapping; there is no backup mapping and no threshold is moved"
+            )
+            payload["consequence"] = (
+                "SMD is closed as a Target under the current fixed "
+                "forecasting family.  No Judge calibration and no on-site "
+                "repair is attempted."
+            )
+            return _write_v2(payload, started, budget)
+        payload["part_c_headroom"] = {
+            "programs": result["programs"], "headroom": result["headroom"],
+        }
+        if not result["headroom"]["shared_headroom_available"]:
+            payload["verdict"] = "NO_SHARED_PROGRAM_HEADROOM"
+            payload["verdict_reason"] = (
+                "neither outlier_iqr nor outlier_mad both changes the "
+                "Consumer's input and clears +%.3f delayed on either "
+                "episode%s" % (
+                    MATERIAL,
+                    "; contrast programs with headroom: %s"
+                    % result["headroom"]["contrast_programs_with_headroom"]
+                    if result["headroom"]["target_local_headroom_only"] else "",
+                )
+            )
+            return _write_v2(payload, started, budget)
+        payload["verdict"] = "SMD_TARGET_READY_INDEX_ALIGNED_PROXY"
+        payload["verdict_reason"] = (
+            "the aligned mapping is legal, the Judge reads at identity on "
+            "both episodes and both blocks, and %s has headroom"
+            % ", ".join(result["headroom"]["shared_programs_with_headroom"])
+        )
+        payload["what_this_verdict_does_not_mean"] = [
+            ALIGNED_SEMANTICS_CAVEAT,
+            "the candidate has not transferred; S3 has not run",
+            "no Shared Capability execution right is granted",
+            "no A5-over-A3 conclusion is produced",
+        ]
+    except Budget.Exceeded as exc:
+        payload["verdict"] = "INCOMPLETE_BUDGET"
+        payload["verdict_reason"] = str(exc)
+    return _write_v2(payload, started, budget)
+
+
+def _write_v2(payload: dict[str, Any], started: float, budget: Budget) -> int:
+    payload["consumer_retrains"] = budget.used
+    payload["retrain_log"] = budget.log
+    payload["wall_seconds"] = time.perf_counter() - started
+    E2.mkdir(parents=True, exist_ok=True)
+    OUT_JSON_V2.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False, default=str) + "\n",
+        encoding="utf-8", newline="\n",
+    )
+    OUT_MD_V2.write_text(_markdown_v2(payload), encoding="utf-8", newline="\n")
+    print("wrote", OUT_JSON_V2, flush=True)
+    print("wrote", OUT_MD_V2, flush=True)
+    print("verdict", payload["verdict"], "| retrains", budget.used, flush=True)
+    return 0
+
+
+def _markdown_v2(payload: dict[str, Any]) -> str:
+    part = payload.get("part_a_aligned_mapping") or {}
+    lines = [
+        "# SMD target readiness v2 -- index-aligned mapping",
+        "",
+        "**Verdict: `%s`** -- %s" % (payload["verdict"],
+                                     payload.get("verdict_reason", "")),
+        "",
+        "The only variable this round: %s" % payload["the_only_variable_this_round"],
+        "",
+        "Exposure: SMD selected train development windows `context = "
+        "INSTANCE_SEEN`, `outcome = EXPOSED`; SMD official test and labels "
+        "`outcome = SEALED`, never read.",
+        "",
+        "## A -- the aligned mapping",
+        "",
+        "- Eligibility: %s" % part.get("rule", {}).get("eligibility"),
+        "- Intersection over all 28 machines: `%s` (|I| = %s)." % (
+            part.get("intersection"), part.get("intersection_size")),
+        "- Chosen channel index: **%s** (median cardinality %s; ties %s)." % (
+            part.get("chosen_channel_index"), part.get("chosen_median_cardinality"),
+            part.get("tie")),
+        "- `mapping_semantics = %s`.  %s" % (
+            part.get("mapping_semantics"), part.get("mapping_semantics_caveat")),
+        "",
+        "| entity | eligible channels | cardinality at the chosen index |",
+        "| --- | ---: | ---: |",
+    ]
+    at = part.get("per_machine_cardinality_at_chosen") or {}
+    for name, count in (part.get("eligible_counts") or {}).items():
+        lines.append("| `machine-%s` | %d | %s |" % (name, count, at.get(name)))
+    judge = payload.get("part_b_judge") or {}
+    if judge:
+        lines.extend(["", "## B -- Judge at identity", "",
+                      "| episode | block | spread (cap 5.0) | share (cap 0.40) | "
+                      "finite | non-degenerate | pass |",
+                      "| --- | --- | ---: | ---: | --- | --- | --- |"])
+        for name, ep in judge["episodes"].items():
+            for block in ("support", "delayed"):
+                r = ep["identity_readability"][block]
+                checks = r.get("checks", {})
+                lines.append("| %s (s=%d) | %s | %.4f | %.4f | %s | %s | %s |" % (
+                    name, ep["window"]["start"], block,
+                    r.get("eval_loss_spread", float("nan")),
+                    r.get("largest_single_series_loss_share", float("nan")),
+                    checks.get("finite"), checks.get("non_degenerate"),
+                    r.get("pass")))
+        lines.append("")
+    head = payload.get("part_c_headroom") or {}
+    if head:
+        lines.extend(["## C -- Program headroom", "",
+                      "| program | shared | episode | changed input | support "
+                      "gain | delayed gain | harmed | min per-series |",
+                      "| --- | --- | --- | --- | ---: | ---: | --- | ---: |"])
+        for program, eps in head["programs"].items():
+            for name, r in eps.items():
+                lines.append("| `%s` | %s | %s | %s | %+.6f | %+.6f | %s | %s |" % (
+                    program, r["shared_program"], name,
+                    r["changed_what_the_consumer_saw"],
+                    r["support_aggregate_gain"], r["delayed_aggregate_gain"],
+                    ", ".join(r["harmed_eval_series"]) or "none",
+                    ("%+.6f" % r["min_per_series_gain"])
+                    if r["min_per_series_gain"] is not None else "--"))
+        h = head["headroom"]
+        lines.extend(["", "**Headroom.** %s" % h["definition"], "",
+                      "- Shared programs with headroom: %s."
+                      % (h["shared_programs_with_headroom"] or "none"),
+                      "- Contrast only: %s.  %s" % (
+                          h["contrast_programs_with_headroom"] or "none",
+                          h["contrast_programs_carry_no_shared_right"]),
+                      "- %s" % h["harm_does_not_cancel_headroom"], ""])
+    lines.extend([
+        "## Cost", "",
+        "- LLM calls: 0.  Consumer retrains: %s / %s." % (
+            payload.get("consumer_retrains"), payload.get("retrain_budget")),
+        "- Wall seconds: %.1f." % float(payload.get("wall_seconds") or 0.0),
+    ])
+    if payload.get("what_this_verdict_does_not_mean"):
+        lines.extend(["", "## What this verdict does not mean", ""])
+        for row in payload["what_this_verdict_does_not_mean"]:
+            lines.append("- %s" % row)
+    if payload.get("consequence"):
+        lines.extend(["", "## Consequence", "", payload["consequence"]])
+    return "\n".join(lines) + "\n"
+
+
 def run() -> int:
     started = time.perf_counter()
     budget = Budget(RETRAIN_BUDGET)
@@ -726,4 +1148,6 @@ def _markdown(payload: dict[str, Any]) -> str:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run())
+    raise SystemExit(
+        run_aligned() if "--aligned" in sys.argv[1:] else run()
+    )

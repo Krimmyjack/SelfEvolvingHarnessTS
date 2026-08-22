@@ -109,11 +109,15 @@ harm guard,适用条件全部用部署时可观察 Context 表达,禁止数据�
 **预算**:S0/S1/S2 均 0 LLM(S1 有少量特征计算);S3 LLM ≤30、重训 ≤400;
 S4 参照 #17(≈200 重训)。总重训 ≤700 上限,S1 报告后由用户拍板正式额度。
 
-**状态(2026-08-22)**:S0 = THIRD_DOMAIN_AVAILABLE(主选 smd,无备选);
-S1 = PROCEED_UNCHANGED,附 substrate 警告 → S2 前置:candidate 限离群修复族
-+ 算子无关 harm guard,插补/阶跃 out-of-scope;S2 硬门:凭 provenance 恢复
-smd 28 机边界(禁数据推断),不可恢复则 NO_ELIGIBLE_THIRD_DOMAIN。
-**等用户拍板 O1(接受 smd + 正式预算)后发 S2 书(草案见聊天 #31)。**
+**状态(2026-08-22 终版)**:S2 = PASS,candidate v2 冻结(iqr/mad 两域证据、
+双向 LODO 4/4+4/4、authorization=GUIDANCE、target_support_required=true);
+S1b/#32 = JUDGE_UNREADABLE(异构逐机映射)、#33 = JUDGE_UNREADABLE_ALIGNED_
+MAPPING(ch18 对齐映射)→ **SMD 在当前 fixed forecasting family 下关闭**,
+且该关闭对"份额门=3×均分"的几何修正稳健(spread 实质失败仍在)。
+**Phase S 停在数据供给**:真 Tier1 新域获取(用户供数则继续)/ 停车封存 v2;
+NOAA 新区域不得冒充第三域。v2 为已冻结正资产,随新域到来即可复活 S1b→S3。
+**当前推荐的下一刀 = O7 guard held-out 化**(与新域无关,用已有 NOAA 银行,
+解全部 guard/RESCOPE claim 上最大的同窗选择 caveat)。
 
 ### 契约性收尾(小,择机并入任一轮 Part A)
 - SELECTION_MISS 适配器窄口径修复(在册缺陷,两次兑现;修复后跑一次 0-LLM 归因回归)。
@@ -138,6 +142,34 @@ smd 28 机边界(禁数据推断),不可恢复则 NO_ELIGIBLE_THIRD_DOMAIN。
 8. 冻结面跑前跑后核对;v* 原档只增不改;交付不 commit,统一检查点、显式 add。
 9. 反 SHA 扩张:沿现行清单版式,不建新哈希体系;git diff 即可。
 10. 子 Agent 不得 spawn 下级;每书注明;beyond_17520 零读取;运行期间另一线停笔。
+
+## 3.5 范围锁定与 Phase T/M/X(2026-08-22,取代上文 Phase S 的"下一步"地位)
+
+**项目范围(用户裁定)**:数据形态限定单变量;Task/Consumer、模型、Domain、
+Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命题;forecasting 线
+的全部已入账证据只覆盖一个 family。
+
+**阶段图**:
+- **Phase T — Task-conditioned quality**(当前主线):同一单变量 Pattern 下
+  forecasting 与 anomaly detection 双 Consumer 的方向翻转与条件化适配。
+  T0 仪器定义+底物普查(#35)→ T1 注入正控(#36,POSITIVE_CONTROL 等级)
+  → T2 TaskSpec/Consumer 观察接线审计 → T3 任务条件化决策(Agent 平权
+  双任务,禁 Router 硬编码)→ T4 冲突 Experience 写入与按任务检索 →
+  T5 生命周期闭环(反馈改变下一任务行为)→ T6 fresh 跨域确认(需新域,
+  见 O9)。机制阶段 T0–T5 全部用注入正控 + 自有 dev 数据,不需新数据。
+- **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
+  模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
+- **Phase X — 跨域 fresh 确认**:各 family 内 A5 vs A3(forecasting 线的
+  candidate v2 在此复活;AD family 同构重走)。跨任务经验只作对照/冲突证据,
+  不自动获得执行权。
+- Phase S 状态:停车封存,资产 = candidate v2(两域证据+双向 LODO 4/4+4/4)。
+- 供给挂账 O9:T6/X 需未消费单变量域;T4/T5 自然翻转证据需带标签的单变量
+  AD 数据(Yahoo S5 / NAB / UCR-AD 类,曝光状态待 census);筛选标准已补
+  "任务语义与实体结构必须匹配目标 Consumer"一道门。
+
+**AD Consumer 仪器纪律**:确定性检测器(固定参数)+ 事件级 F1(固定容差)
++ 既有 Support/delayed 三联窗语义 + 逐序列增益向量(guard/选择器/RESCOPE
+无改动直读);材料线与害线沿 ±0.005(预注册常数,只经仪器审计可改)。
 
 ## 4. 保留给用户的决策点
 

@@ -26,14 +26,19 @@ DEVELOPMENT 级、ON_GPT_5_6_SOL、同窗选择 caveat 常挂。FRESH 级结论�
 #17 的 FRESH_A5_DELIVERS(pooled 省 43.9% 首正成本,质量中性,per_channel
 为迁移边界),canonical 措辞在 `fresh_confirmation_v1_adjudication.md`。
 
-## 待办队列(优先级序)
-1. #30 Part 0:修 O8(compiler.py + h0 lock 未入库,新克隆 INSTRUMENT_DRIFT)
-   ——自本轮起检查点清单由执行方 `git status` 实测生成,主线只审排除项;
-   并把"仪器规则第五条"(验收夹具自钉快照,禁读活 scratch)写入台账 §3.6。
-2. #30 S0+S1(书见聊天/路线图):Phase S 域盘点 + 健康检查,0 LLM;
-   S1 报告后停,等用户拍板第三域与正式预算(O1)。
-3. 停车场:O2 per_channel、O3 供给面、O4 SELECTION_MISS、O5 Opus 复跑、
-   O6 纯 clone 不可导入、O7 同窗 held-out 化。
+## 待办队列(2026-08-22 范围锁定后)
+0. **项目范围(用户裁定,最高优先级上下文)**:数据形态限定单变量;
+   Task/Consumer、模型、Domain、Pattern 全部可变。当前主线 = Phase T
+   (forecasting vs anomaly detection 双 Consumer 的任务条件化质量),
+   阶段图与 AD 仪器纪律见路线图 §3.5。Phase S 停车封存(candidate v2
+   为已冻结资产);SMD 因多变量形态不匹配排除(非任务窄化)。
+1. #35(T0 仪器定义+底物普查)、#36(T1 注入正控,POSITIVE_CONTROL 等级)
+   ——书在聊天与路线图 §3.5;T0–T5 不需新数据。
+2. 供给挂账 O9:T6/X 的 fresh 单变量域 + 带标签 AD 数据(census 标准已
+   补"任务语义与实体结构匹配 Consumer"门)。
+3. 停车场:O2 per_channel、O4 SELECTION_MISS、O5 Opus 复跑、O6 纯 clone
+   不可导入、O7 guard held-out 化(仍是 forecasting 线 claim 的最大
+   caveat,可与 Phase T 并行择机做)。
 
 ## 裁定时必须遵守的规则(血泪版)
 - 一切事实断言(后端历史/期望哈希/样本数)必须带工件路径并核验;
