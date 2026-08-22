@@ -109,6 +109,12 @@ harm guard,适用条件全部用部署时可观察 Context 表达,禁止数据�
 **预算**:S0/S1/S2 均 0 LLM(S1 有少量特征计算);S3 LLM ≤30、重训 ≤400;
 S4 参照 #17(≈200 重训)。总重训 ≤700 上限,S1 报告后由用户拍板正式额度。
 
+**状态(2026-08-22)**:S0 = THIRD_DOMAIN_AVAILABLE(主选 smd,无备选);
+S1 = PROCEED_UNCHANGED,附 substrate 警告 → S2 前置:candidate 限离群修复族
++ 算子无关 harm guard,插补/阶跃 out-of-scope;S2 硬门:凭 provenance 恢复
+smd 28 机边界(禁数据推断),不可恢复则 NO_ELIGIBLE_THIRD_DOMAIN。
+**等用户拍板 O1(接受 smd + 正式预算)后发 S2 书(草案见聊天 #31)。**
+
 ### 契约性收尾(小,择机并入任一轮 Part A)
 - SELECTION_MISS 适配器窄口径修复(在册缺陷,两次兑现;修复后跑一次 0-LLM 归因回归)。
 - 记录家族规则已根治,后续新阶段沿用"进入阶段前挂载记录"。
