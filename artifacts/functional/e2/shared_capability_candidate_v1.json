@@ -1,0 +1,895 @@
+{
+  "protocol_version": "shared_capability_candidate_v1",
+  "llm_calls": 0,
+  "consumer_retrains": 0,
+  "smd_identity": "SMD is a third-domain CANDIDATE, not an established third domain.  Nothing in this file is evidence about SMD; it appears only as a substrate observation constraining what the card may lean on.",
+  "evidence_pool": {
+    "restricted_to": {
+      "programs": [
+        "outlier_mad",
+        "outlier_iqr",
+        "hampel_filter",
+        "winsorize"
+      ],
+      "guard": "operator-independent per-series harm guard, two actions"
+    },
+    "dedupe_key": "domain x window x plan x outcome",
+    "traffic": {
+      "before_dedupe": 8,
+      "after_dedupe": 8,
+      "collapsed": [],
+      "episodes": [
+        "traffic/pooled/hampel_filter",
+        "traffic/pooled/outlier_iqr",
+        "traffic/pooled/outlier_mad",
+        "traffic/pooled/winsorize",
+        "traffic/per_channel/hampel_filter",
+        "traffic/per_channel/outlier_iqr",
+        "traffic/per_channel/outlier_mad",
+        "traffic/per_channel/winsorize"
+      ]
+    },
+    "noaa": {
+      "before_dedupe": 13,
+      "after_dedupe": 4,
+      "collapsed_count": 9,
+      "collapsed_examples": [
+        {
+          "kept": "noaa/task_A/outlier_iqr",
+          "dropped": "noaa/task_A/outlier_iqr",
+          "dropped_source": "operational_pipeline_v3.json"
+        },
+        {
+          "kept": "noaa/task_A/outlier_iqr",
+          "dropped": "noaa/task_A/outlier_iqr",
+          "dropped_source": "operational_pipeline_v3.json"
+        },
+        {
+          "kept": "noaa/task_A/outlier_mad",
+          "dropped": "noaa/task_A/outlier_mad",
+          "dropped_source": "operational_pipeline_v7.json"
+        },
+        {
+          "kept": "noaa/task_C/outlier_mad",
+          "dropped": "noaa/task_C/outlier_mad",
+          "dropped_source": "operational_pipeline_v7.json"
+        },
+        {
+          "kept": "noaa/task_A/outlier_mad",
+          "dropped": "noaa/task_A/outlier_mad",
+          "dropped_source": "operational_pipeline_v9.json"
+        },
+        {
+          "kept": "noaa/task_C/outlier_mad",
+          "dropped": "noaa/task_C/outlier_mad",
+          "dropped_source": "operational_pipeline_v9.json"
+        },
+        {
+          "kept": "noaa/task_A/outlier_mad",
+          "dropped": "noaa/task_A/outlier_mad",
+          "dropped_source": "operational_pipeline_v10.json"
+        },
+        {
+          "kept": "noaa/task_C/outlier_mad",
+          "dropped": "noaa/task_C/outlier_mad",
+          "dropped_source": "operational_pipeline_v10.json"
+        }
+      ],
+      "episodes": [
+        "noaa/task_A/outlier_mad",
+        "noaa/task_C/outlier_mad",
+        "noaa/task_A/outlier_iqr",
+        "noaa/task_D/outlier_mad"
+      ]
+    },
+    "total_after_dedupe": 12
+  },
+  "evidence_rows": {
+    "traffic": [
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/pooled/hampel_filter",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "pooled",
+        "program": "hampel_filter",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.20860319761138876,
+        "per_eval_series_gain": {
+          "12": 0.3476689729759994,
+          "13": 0.8839900808809907,
+          "14": -0.24186940743970853,
+          "15": 0.6941834282114872,
+          "16": -0.2772991469983963,
+          "17": -2.462027313843422,
+          "18": 1.6066152090441979,
+          "19": 1.1175637580599616
+        },
+        "min_per_series_gain": -2.462027313843422,
+        "harmed": [
+          "14",
+          "16",
+          "17"
+        ],
+        "was_adopted": false,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/pooled/outlier_iqr",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "pooled",
+        "program": "outlier_iqr",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 1.0197743357219498,
+        "per_eval_series_gain": {
+          "12": 0.9856894522801098,
+          "13": 1.0281341809102544,
+          "14": -0.013082568340579526,
+          "15": 0.9023457397057231,
+          "16": 0.46299627285814526,
+          "17": 0.8099005118966653,
+          "18": 1.9638734575297643,
+          "19": 2.018337638935514
+        },
+        "min_per_series_gain": -0.013082568340579526,
+        "harmed": [
+          "14"
+        ],
+        "was_adopted": true,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/pooled/outlier_mad",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "pooled",
+        "program": "outlier_mad",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.9582064112033299,
+        "per_eval_series_gain": {
+          "12": 0.9197227224678166,
+          "13": 0.9421109024650678,
+          "14": 0.13992981267705717,
+          "15": 0.7770481622105563,
+          "16": 0.4793296853706397,
+          "17": 0.6316234672836916,
+          "18": 1.748166556549628,
+          "19": 2.027719980602183
+        },
+        "min_per_series_gain": 0.13992981267705717,
+        "harmed": [],
+        "was_adopted": false,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/pooled/winsorize",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "pooled",
+        "program": "winsorize",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.9591409387865703,
+        "per_eval_series_gain": {
+          "12": 0.9457823435958668,
+          "13": 1.0601955126346692,
+          "14": 0.46758360738833993,
+          "15": 0.7797957615474722,
+          "16": 0.3709026212435078,
+          "17": 0.7856505527865496,
+          "18": 1.9029112576330365,
+          "19": 1.3603058534631196
+        },
+        "min_per_series_gain": 0.3709026212435078,
+        "harmed": [],
+        "was_adopted": false,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/per_channel/hampel_filter",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "per_channel",
+        "program": "hampel_filter",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.130606067351813,
+        "per_eval_series_gain": {
+          "12": 0.12361939498778063,
+          "13": 0.10889931885838022,
+          "14": 0.14480616073415908,
+          "15": 0.08897805365407652,
+          "16": 0.18914855725529178,
+          "17": 0.10264212470417555,
+          "18": 0.12201137981752819,
+          "19": 0.16474354880311193
+        },
+        "min_per_series_gain": 0.08897805365407652,
+        "harmed": [],
+        "was_adopted": false,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/per_channel/outlier_iqr",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "per_channel",
+        "program": "outlier_iqr",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.3482156275538379,
+        "per_eval_series_gain": {
+          "12": 0.2902073651782242,
+          "13": 0.2230702441709409,
+          "14": 0.4676810434051747,
+          "15": 0.35706561888908483,
+          "16": 0.548031624302989,
+          "17": 0.21189928137160308,
+          "18": 0.5027918533501435,
+          "19": 0.18497798976254298
+        },
+        "min_per_series_gain": 0.18497798976254298,
+        "harmed": [],
+        "was_adopted": true,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/per_channel/outlier_mad",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "per_channel",
+        "program": "outlier_mad",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.31962658032985625,
+        "per_eval_series_gain": {
+          "12": 0.27894964036263836,
+          "13": 0.22361915445449343,
+          "14": 0.4277775154904597,
+          "15": 0.30860069410647206,
+          "16": 0.49070547263759545,
+          "17": 0.16129569585207504,
+          "18": 0.4636531907263357,
+          "19": 0.2024112790087802
+        },
+        "min_per_series_gain": 0.16129569585207504,
+        "harmed": [],
+        "was_adopted": false,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      },
+      {
+        "domain": "traffic",
+        "source": "batch_recipe_v2_all_cells_v1.json",
+        "episode": "traffic/per_channel/winsorize",
+        "window": "support[1104, 1368]/delayed[1800]",
+        "consumer_variant": "per_channel",
+        "program": "winsorize",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.37158611795621505,
+        "per_eval_series_gain": {
+          "12": 0.28668249578597527,
+          "13": 0.326011353715138,
+          "14": 0.48999915555886175,
+          "15": 0.3073381252132139,
+          "16": 0.5946874380202096,
+          "17": 0.19698843452604797,
+          "18": 0.5625928193646008,
+          "19": 0.208389121465673
+        },
+        "min_per_series_gain": 0.19698843452604797,
+        "harmed": [],
+        "was_adopted": false,
+        "in_selection": true,
+        "in_selection_note": "the artifact records that the delayed window took part in this cell's adoption decision, so both columns are in-selection readings"
+      }
+    ],
+    "noaa": [
+      {
+        "domain": "noaa",
+        "source": "operational_pipeline_v1.json",
+        "episode": "noaa/task_A/outlier_mad",
+        "window": "fresh_task_A",
+        "consumer_variant": "pooled",
+        "program": "outlier_mad",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.30637972777516714,
+        "per_eval_series_gain": {
+          "99999903062": 0.5670414653353181,
+          "99999904140": 0.1929308555447817,
+          "99999923908": 0.017725978680258898,
+          "99999963862": 0.4478206115403099
+        },
+        "min_per_series_gain": 0.017725978680258898,
+        "harmed": [],
+        "was_adopted": true,
+        "in_selection": false,
+        "in_selection_note": "the frozen v2 ladder read the delayed window to set its bar, so this reading is not out-of-selection either; it is recorded as the ladder produced it",
+        "duplicate_of": [
+          "noaa/task_A/outlier_mad @ operational_pipeline_v7.json",
+          "noaa/task_A/outlier_mad @ operational_pipeline_v9.json",
+          "noaa/task_A/outlier_mad @ operational_pipeline_v10.json"
+        ]
+      },
+      {
+        "domain": "noaa",
+        "source": "operational_pipeline_v1.json",
+        "episode": "noaa/task_C/outlier_mad",
+        "window": "fresh_task_C",
+        "consumer_variant": "pooled",
+        "program": "outlier_mad",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.029687731257638534,
+        "per_eval_series_gain": {
+          "99999903062": 0.07197853428010854,
+          "99999904140": -0.12555671706543817,
+          "99999923908": 0.15749448742498443,
+          "99999963862": 0.014834620390899333
+        },
+        "min_per_series_gain": -0.12555671706543817,
+        "harmed": [
+          "99999904140"
+        ],
+        "was_adopted": true,
+        "in_selection": false,
+        "in_selection_note": "the frozen v2 ladder read the delayed window to set its bar, so this reading is not out-of-selection either; it is recorded as the ladder produced it",
+        "duplicate_of": [
+          "noaa/task_C/outlier_mad @ operational_pipeline_v7.json",
+          "noaa/task_C/outlier_mad @ operational_pipeline_v9.json",
+          "noaa/task_C/outlier_mad @ operational_pipeline_v10.json"
+        ]
+      },
+      {
+        "domain": "noaa",
+        "source": "operational_pipeline_v3.json",
+        "episode": "noaa/task_A/outlier_iqr",
+        "window": "fresh_task_A",
+        "consumer_variant": "pooled",
+        "program": "outlier_iqr",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.06694086622738711,
+        "per_eval_series_gain": {
+          "99999903062": 0.1758052436529506,
+          "99999904140": 0.07565864395600287,
+          "99999923908": -0.062068117175643346,
+          "99999963862": 0.0783676944762383
+        },
+        "min_per_series_gain": -0.062068117175643346,
+        "harmed": [
+          "99999923908"
+        ],
+        "was_adopted": true,
+        "in_selection": false,
+        "in_selection_note": "the frozen v2 ladder read the delayed window to set its bar, so this reading is not out-of-selection either; it is recorded as the ladder produced it",
+        "duplicate_of": [
+          "noaa/task_A/outlier_iqr @ operational_pipeline_v3.json",
+          "noaa/task_A/outlier_iqr @ operational_pipeline_v3.json"
+        ]
+      },
+      {
+        "domain": "noaa",
+        "source": "operational_pipeline_v7.json",
+        "episode": "noaa/task_D/outlier_mad",
+        "window": "fresh_task_D",
+        "consumer_variant": "pooled",
+        "program": "outlier_mad",
+        "scope": "full_batch",
+        "delayed_aggregate_gain": 0.04950408483265769,
+        "per_eval_series_gain": {
+          "99999903062": 0.25846295112723666,
+          "99999904140": -0.08273528157343857,
+          "99999923908": 0.12505154097490223,
+          "99999963862": -0.10276287119806955
+        },
+        "min_per_series_gain": -0.10276287119806955,
+        "harmed": [
+          "99999904140",
+          "99999963862"
+        ],
+        "was_adopted": true,
+        "in_selection": false,
+        "in_selection_note": "the frozen v2 ladder read the delayed window to set its bar, so this reading is not out-of-selection either; it is recorded as the ladder produced it",
+        "duplicate_of": [
+          "noaa/task_D/outlier_mad @ operational_pipeline_v10.json"
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "compiles": true,
+    "provenance": "both domains",
+    "domains_the_evidence_comes_from": [
+      "noaa",
+      "traffic"
+    ],
+    "capability": {
+      "id": "shared_outlier_repair_with_per_series_guard_v1",
+      "what_it_recommends": "on a batch whose Context matches the conditions below, put the outlier-repair family on the shortlist ahead of the rest of the menu, and attach the per-series harm guard to whatever the ladder adopts",
+      "programs": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize"
+      ],
+      "guard": {
+        "statistic": "min_per_series_gain",
+        "window": "delayed",
+        "comparator": "lt",
+        "threshold": -0.005,
+        "actions_allowed": [
+          "VETO_AND_FALL_BACK",
+          "RESCOPE_MASK_HARMED_SERIES"
+        ],
+        "operator_independent": "the guard reads the adopted plan's measured per-series vector and names no program; it applies whatever the ladder adopted"
+      }
+    },
+    "applicability_conditions": {
+      "stated_as": "deployment-observable features of the batch only",
+      "forbidden": "no dataset name, no cohort id, no provenance string may appear in a condition",
+      "conditions": [
+        {
+          "feature": "missing_fraction over the training pool",
+          "requirement": "may be zero; the capability does not need missing data",
+          "why": "traffic's census records missing_region_end_fraction all_zero over its 12 training series, and #30's S1 found 0 of 24 usable channels with any missing value on the third-domain candidate.  A capability that required missing data could not apply to either."
+        },
+        {
+          "feature": "local_robust_z_peak over the training pool",
+          "requirement": "at least one series at or above 4.0",
+          "why": "this is the public signal the outlier family acts on.  Traffic's census reports per-series peaks from 3.70 to 15.72; NOAA's development block has 3 of 20 series at or above 4.0"
+        },
+        {
+          "feature": "outlier_point_fraction over the training pool",
+          "requirement": "greater than zero somewhere in the pool",
+          "why": "traffic's field stats give a mean of 0.0448 with 12 of 12 series distinct and non-degenerate"
+        },
+        {
+          "feature": "per-eval-series gain dispersion of the adopted plan",
+          "requirement": "the guard is required whenever the minimum per-series delayed gain can fall below -0.005 while the aggregate stays positive",
+          "why": "that configuration is the failure this line has recorded six times; it is invisible at aggregate granularity"
+        }
+      ]
+    },
+    "out_of_scope": {
+      "families": [
+        "imputation",
+        "level shift"
+      ],
+      "declared_because": "imputation has no substrate on two of the three corpora (traffic: missing_region_end_fraction all_zero; smd: 0 of 24 usable channels with any missing value), and level_excursion_score is identically zero on all 20 NOAA development series, so a level-repair capability has no NOAA evidence to be induced from",
+      "evidence_pointers": [
+        "artifacts/functional/e2/s1_health_v1.json substrate_shape_warning",
+        "artifacts/functional/e2/m0a_mask_geometry_census_traffic_v1.json field_stats_train.missing_region_end_fraction"
+      ]
+    },
+    "status": "SHARED_CANDIDATE",
+    "authorization": "GUIDANCE",
+    "target_support_required": true,
+    "grants_confirmation_free_try": false,
+    "evidence_rows": 12,
+    "positive_rows": 12,
+    "rows_with_harm": 5
+  },
+  "lodo": {
+    "C1": {
+      "label": "C1: compiled on traffic, checked on NOAA",
+      "ran": true,
+      "card_claims_programs": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize"
+      ],
+      "episodes_checked": 4,
+      "episodes_that_put_the_card_at_risk": 4,
+      "vacuous_passes": 0,
+      "direction_agreements_among_at_risk": 4,
+      "direction_rows": [
+        {
+          "episode": "noaa/task_A/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.30637972777516714,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_C/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.029687731257638534,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_A/outlier_iqr",
+          "program": "outlier_iqr",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.06694086622738711,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_D/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.04950408483265769,
+          "direction_agrees": true,
+          "vacuous": false
+        }
+      ],
+      "harmed_rows": 3,
+      "hidden_harms_the_aggregate_would_have_missed": 3,
+      "hidden_harms_the_guard_catches": 3,
+      "harmed_rows_the_aggregate_would_have_caught_anyway": 0,
+      "guard_rows": [
+        {
+          "episode": "noaa/task_C/outlier_mad",
+          "harmed_series": [
+            "99999904140"
+          ],
+          "min_per_series_gain": -0.12555671706543817,
+          "delayed_aggregate_gain": 0.029687731257638534,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "noaa/task_A/outlier_iqr",
+          "harmed_series": [
+            "99999923908"
+          ],
+          "min_per_series_gain": -0.062068117175643346,
+          "delayed_aggregate_gain": 0.06694086622738711,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "noaa/task_D/outlier_mad",
+          "harmed_series": [
+            "99999904140",
+            "99999963862"
+          ],
+          "min_per_series_gain": -0.10276287119806955,
+          "delayed_aggregate_gain": 0.04950408483265769,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        }
+      ],
+      "circularity_note": "the harm line that defines a harmed row is the same line the guard uses, so 'the guard catches a harmed row' is true by construction and is not reported as a result.  What is reported is the subset where the aggregate was positive -- the case the guard exists for -- and the count of rows the aggregate alone would have caught.",
+      "mismatches": [],
+      "verdict": "SUPPORTED"
+    },
+    "C2": {
+      "label": "C2: compiled on NOAA, checked on traffic",
+      "ran": true,
+      "card_claims_programs": [
+        "outlier_iqr",
+        "outlier_mad"
+      ],
+      "episodes_checked": 8,
+      "episodes_that_put_the_card_at_risk": 4,
+      "vacuous_passes": 4,
+      "direction_agreements_among_at_risk": 4,
+      "direction_rows": [
+        {
+          "episode": "traffic/pooled/hampel_filter",
+          "program": "hampel_filter",
+          "card_claims_this_program": false,
+          "puts_the_card_at_risk": false,
+          "historical_delayed_gain": 0.20860319761138876,
+          "direction_agrees": true,
+          "vacuous": true
+        },
+        {
+          "episode": "traffic/pooled/outlier_iqr",
+          "program": "outlier_iqr",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 1.0197743357219498,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/pooled/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.9582064112033299,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/pooled/winsorize",
+          "program": "winsorize",
+          "card_claims_this_program": false,
+          "puts_the_card_at_risk": false,
+          "historical_delayed_gain": 0.9591409387865703,
+          "direction_agrees": true,
+          "vacuous": true
+        },
+        {
+          "episode": "traffic/per_channel/hampel_filter",
+          "program": "hampel_filter",
+          "card_claims_this_program": false,
+          "puts_the_card_at_risk": false,
+          "historical_delayed_gain": 0.130606067351813,
+          "direction_agrees": true,
+          "vacuous": true
+        },
+        {
+          "episode": "traffic/per_channel/outlier_iqr",
+          "program": "outlier_iqr",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.3482156275538379,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/per_channel/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.31962658032985625,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/per_channel/winsorize",
+          "program": "winsorize",
+          "card_claims_this_program": false,
+          "puts_the_card_at_risk": false,
+          "historical_delayed_gain": 0.37158611795621505,
+          "direction_agrees": true,
+          "vacuous": true
+        }
+      ],
+      "harmed_rows": 2,
+      "hidden_harms_the_aggregate_would_have_missed": 2,
+      "hidden_harms_the_guard_catches": 2,
+      "harmed_rows_the_aggregate_would_have_caught_anyway": 0,
+      "guard_rows": [
+        {
+          "episode": "traffic/pooled/hampel_filter",
+          "harmed_series": [
+            "14",
+            "16",
+            "17"
+          ],
+          "min_per_series_gain": -2.462027313843422,
+          "delayed_aggregate_gain": 0.20860319761138876,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "traffic/pooled/outlier_iqr",
+          "harmed_series": [
+            "14"
+          ],
+          "min_per_series_gain": -0.013082568340579526,
+          "delayed_aggregate_gain": 1.0197743357219498,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        }
+      ],
+      "circularity_note": "the harm line that defines a harmed row is the same line the guard uses, so 'the guard catches a harmed row' is true by construction and is not reported as a result.  What is reported is the subset where the aggregate was positive -- the case the guard exists for -- and the count of rows the aggregate alone would have caught.",
+      "mismatches": [],
+      "verdict": "SUPPORTED"
+    },
+    "C3": {
+      "label": "C3: compiled on both, replayed on both",
+      "ran": true,
+      "card_claims_programs": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize"
+      ],
+      "episodes_checked": 12,
+      "episodes_that_put_the_card_at_risk": 12,
+      "vacuous_passes": 0,
+      "direction_agreements_among_at_risk": 12,
+      "direction_rows": [
+        {
+          "episode": "traffic/pooled/hampel_filter",
+          "program": "hampel_filter",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.20860319761138876,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/pooled/outlier_iqr",
+          "program": "outlier_iqr",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 1.0197743357219498,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/pooled/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.9582064112033299,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/pooled/winsorize",
+          "program": "winsorize",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.9591409387865703,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/per_channel/hampel_filter",
+          "program": "hampel_filter",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.130606067351813,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/per_channel/outlier_iqr",
+          "program": "outlier_iqr",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.3482156275538379,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/per_channel/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.31962658032985625,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "traffic/per_channel/winsorize",
+          "program": "winsorize",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.37158611795621505,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_A/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.30637972777516714,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_C/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.029687731257638534,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_A/outlier_iqr",
+          "program": "outlier_iqr",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.06694086622738711,
+          "direction_agrees": true,
+          "vacuous": false
+        },
+        {
+          "episode": "noaa/task_D/outlier_mad",
+          "program": "outlier_mad",
+          "card_claims_this_program": true,
+          "puts_the_card_at_risk": true,
+          "historical_delayed_gain": 0.04950408483265769,
+          "direction_agrees": true,
+          "vacuous": false
+        }
+      ],
+      "harmed_rows": 5,
+      "hidden_harms_the_aggregate_would_have_missed": 5,
+      "hidden_harms_the_guard_catches": 5,
+      "harmed_rows_the_aggregate_would_have_caught_anyway": 0,
+      "guard_rows": [
+        {
+          "episode": "traffic/pooled/hampel_filter",
+          "harmed_series": [
+            "14",
+            "16",
+            "17"
+          ],
+          "min_per_series_gain": -2.462027313843422,
+          "delayed_aggregate_gain": 0.20860319761138876,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "traffic/pooled/outlier_iqr",
+          "harmed_series": [
+            "14"
+          ],
+          "min_per_series_gain": -0.013082568340579526,
+          "delayed_aggregate_gain": 1.0197743357219498,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "noaa/task_C/outlier_mad",
+          "harmed_series": [
+            "99999904140"
+          ],
+          "min_per_series_gain": -0.12555671706543817,
+          "delayed_aggregate_gain": 0.029687731257638534,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "noaa/task_A/outlier_iqr",
+          "harmed_series": [
+            "99999923908"
+          ],
+          "min_per_series_gain": -0.062068117175643346,
+          "delayed_aggregate_gain": 0.06694086622738711,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        },
+        {
+          "episode": "noaa/task_D/outlier_mad",
+          "harmed_series": [
+            "99999904140",
+            "99999963862"
+          ],
+          "min_per_series_gain": -0.10276287119806955,
+          "delayed_aggregate_gain": 0.04950408483265769,
+          "aggregate_hid_it": true,
+          "guard_condition_fires": true,
+          "counts_as_evidence": true
+        }
+      ],
+      "circularity_note": "the harm line that defines a harmed row is the same line the guard uses, so 'the guard catches a harmed row' is true by construction and is not reported as a result.  What is reported is the subset where the aggregate was positive -- the case the guard exists for -- and the count of rows the aggregate alone would have caught.",
+      "mismatches": [],
+      "verdict": "SUPPORTED",
+      "INTERNAL_CONSISTENCY_ONLY": "this arm replays a card on the very episodes it was induced from.  It can only fail, never confirm, and it is not transfer evidence."
+    }
+  },
+  "verdict": "CANDIDATE_COMPILES",
+  "verdict_reason": "the card compiles from 12 deduped evidence rows and both leave-one-domain-out directions replay without a mismatch",
+  "lodo_transfer_supported": {
+    "traffic_to_noaa": "SUPPORTED",
+    "noaa_to_traffic": "SUPPORTED"
+  },
+  "wall_seconds": 0.017883900000015274
+}
