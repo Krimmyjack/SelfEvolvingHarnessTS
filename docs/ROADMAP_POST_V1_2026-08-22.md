@@ -157,6 +157,9 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   双任务,禁 Router 硬编码)→ T4 冲突 Experience 写入与按任务检索 →
   T5 生命周期闭环(反馈改变下一任务行为)→ T6 fresh 跨域确认(需新域,
   见 O9)。机制阶段 T0–T5 全部用注入正控 + 自有 dev 数据,不需新数据。
+  进度(2026-08-22):T0 = `T0_READY`(#35,AD Consumer 冻结于 49/3.5,
+  回退已用尽);T1 = `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(#36,C12,
+  4/4 程序同向,guard 语法对 AD 向量直读通过);当前 = T2(#37)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
 - **Phase X — 跨域 fresh 确认**:各 family 内 A5 vs A3(forecasting 线的

@@ -28,6 +28,7 @@
 | C5 | `DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_GPT_5_6_SOL` | 九环一次连续、无人接力闭合;行为改变判据 (i) 现场成立(guard 读 −0.102763 开火 → identity) | DEVELOPMENT | `operational_pipeline_v7.*` |
 | C6 | `RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM` | 确定性三臂:task_C 无 guard +0.0297 带 1 受害 / VETO 0 / **RESCOPE +0.0611 零受害剔 1**;task_D +0.0495 带 2 受害 / 0 / **+0.0959 零受害剔 2** | MECHANISM | `operational_pipeline_v8.*` |
 | C7 | `LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL` | live 单轨,`gpt-5.6-sol`:task_D 路由恰为两条越线序列,+0.049504 带 2 受害 → **+0.095879 零受害**;保留的两条序列读数逐位不动;VETO 孪生同轨为 identity 0.0 | DEVELOPMENT | `operational_pipeline_v10.*` |
+| C12 | `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL` | 同字节契约下(同一注入训练块、同一 Program 施用恰一次、两 Consumer 消费同一字节,断言 600/600),离群修复族 **4/4 程序同向翻转**:forecasting delayed 聚合 +0.0648~+0.4059,AD 聚合 −0.0455~−0.2808;镜像方向 0 例;identity 基线不退化(F1 0.6667) | POSITIVE_CONTROL | `t1_flip_control_v1.*` |
 
 ### 1.2 反复观察到的机制事实
 
@@ -46,6 +47,7 @@
 4. **n 与独立性**:每 cell / 每轨迹 n=1,无重复无区间;C4 的 2/2、C8 的 16 条、C11 的 7 次里,凡标注为重放或同窗重复的都**不是独立观察**。C1 的成本对比中,"协议补全的乐观反事实 ≈99 vs 144" 是推算不是实测;首正读数 69 vs 123 不受此影响。
 5. **DEVELOPMENT ≠ FRESH**:C2/C5/C7 的窗口 outcome 由 #17 一次性打开过,这些轮次不产生新的 fresh 证据,也不产生新的 A5>A3 结果。
 6. **BY_VETO 的"无殃及"**只指不相关 episode 的决策逐位不变,不表示 guard 免费(C3)。保收益的措辞只属于 RESCOPE(C6/C7)。
+7. **POSITIVE_CONTROL 等级(C12)**:翻转由注入构造,AD 的 ground truth 恰是修复类程序可移除的事件——它验证的是仪器链能读到任务条件化翻转,**不构成自然数据上存在该翻转的声明**;自然翻转证据承重在 #39/#41。C12 的增益幅度与现役逐窗菜单增益**不可比**(P 整块施用,全局统计算子统计域 780 点 vs 逐窗 240 点),只承载方向。
 
 ---
 
@@ -228,6 +230,12 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 判定 **T0_READY** 接受(0 LLM / 0 forecasting 重训 / AD 评估 176/200;检查点 7278317 / 4343d0a / 3314620;SAME_BYTE_CONTRACT_HOLDS,处理侧无分叉)。AD Consumer v1 冻结于**回退参数(窗 49 / 阈 3.5)**:primary(25/4.0)校准 F1=0.4052 未过线,回退 F1=0.5082 过线仅 +0.0082,回退已用尽。校准块 [143,431)(字面规则选出的 [0,288) 其首合法位 σ 前缀越出数组头,取最早可执行段,两读数在册);32 事件 0 skip;唯一漏检系 σ 尺度错配(注入幅度用 168 点前缀尺度、检测用 49 点尾随尺度,recall 31/32)。
 
 七条歧义主线裁定:(1) **T1 注入落位 = 训练块**(阻塞项)——实测 P 只作用训练区 [120,900)、从不触及三联窗 [912,1392)/[1608,2088),原 D2 "T1 只在三联窗内注入"为主线笔误,按同字节契约改为:注入 12 条 train 序列的 **[431,900)**(避开 T0 校准块 [143,431);[120,143) 长 23 不足边界排除弃用),seed 20260823,eval 4 序列零注入;(2) 验收门实际按 background alarm 水平选中回退(两设置 recall 同为 31/32,F1 差全来自 precision 分母),记为**仪器内张力**,门照冻结协议有效,不改;(3) 过线 +0.0082 如实入册;(4) **AD 增益事件量子化**:每序列事件数少时 per-series F1 以 0.2–0.3 跳变,±0.005 材料线在 AD 侧的实义 = "至少一个事件易手",T1 翻转判定在聚合层,不声称 0.005 级分辨率;(5) σ 尺度错配保留为已知仪器事实,不改协议(改注入尺度会把刺激与仪器耦合,更糟);(6) 校准块落位与勘误 (e) 一致;(7) C5(iii) pooled 读法接受,per-series 不设门。#36(T1)据此定稿发出。
+
+### #36 T1 结果与主线裁定(2026-08-22)
+
+判定 **TASK_FLIP_CONFIRMED_POSITIVE_CONTROL** 接受,入册 **C12**(0 LLM / forecasting 重训 30/60 / AD 评估 72/300;检查点 26391a6;同字节断言 600/600 零分叉;冻结面零漂移——注册表口径修正:**40 原始项 / 39 去重**,两读数并存)。四臂全部同向翻转:forecasting delayed 聚合 {iqr +0.2723, mad +0.3255, hampel +0.0648, winsorize +0.4059},AD 聚合 {−0.1046, −0.0455, −0.2808, −0.2681};C3 不退化(identity pooled F1 0.6667)。**接线事实(独立入册)**:AD 逐序列向量直读现役 guard 语法 `min_per_series_gain`(compiler 原函数,零代码改动),四臂全部正确触发 −0.005 害线——#19 缝合的 Scope/Risk 机器对第二任务向量**原生可读**,T2+ 的接线风险实测下降。
+
+五条歧义裁定:(1) **P 整块施用接受**——同字节契约本意即"一次施用、共享字节";代价已入 §1.3 caveat 7(幅度与逐窗菜单不可比,只承载方向);(2) warm-up 吃掉 [382,431) 结构性不可评,入册;(3) hampel 的 support/delayed 方向劈叉(−0.0890 / +0.0648)与 99999923908 再次越 forecasting 害线(−0.0904)是 **T3 任务条件化决策会撞上的真实读数**,单独留案;(4) 翻转方向单一(全为 F↑/AD↓),镜像方向(利 AD 害 F 的程序)本 family 未测——停车场项,T4 冲突证据设计时再议;(5) task_B 窗未评,书面 scope 如此,不补。执行方首跑 NaN-naive 比较缺陷已自查修复并重跑(两跑 ledger 字节相同、全臂读数逐位相同),处理方式接受。#37(T2 观察接线审计)发出。
 
 ### #31(2026-08-22,S2)
 
