@@ -314,7 +314,29 @@ GUARD_STATISTICS = (
     "min_per_series_gain",
 )
 GUARD_COMPARATORS = ("lt", "le", "gt", "ge")
-GUARD_ACTIONS = ("VETO_AND_FALL_BACK", "RECORD_ONLY")
+GUARD_ACTIONS = (
+    "VETO_AND_FALL_BACK",
+    "RECORD_ONLY",
+    # A1 (2026-08-22): the middle action.  A veto throws the whole adoption
+    # away to buy safety on a few series; this one keeps the adoption and
+    # takes the crossing evaluation series out of the plan's scope, serving
+    # them the identity plan instead.  It is legal only with
+    # ``min_per_series_gain``, because that is the one statistic whose
+    # reading names a per-series crossing set; every other statistic in the
+    # vocabulary reduces the window to a single number and cannot say which
+    # series to take out.
+    "RESCOPE_MASK_HARMED_SERIES",
+)
+RESCOPE_ACTION = "RESCOPE_MASK_HARMED_SERIES"
+RESCOPE_STATISTIC = "min_per_series_gain"
+# The plan key this action writes.  It is deliberately NOT
+# ``excluded_series``: that field indexes *training* series and is consumed
+# by the search instrument's mask geometry, while a ``min_per_series_gain``
+# crossing set indexes *evaluation* series.  The two namespaces are
+# disjoint, so writing evaluation ids into ``excluded_series`` would mask
+# nothing and report a rescope that did not happen -- the placebo shape #19
+# exists to prevent.
+ROUTED_SERIES_KEY = "identity_routed_eval_series"
 GUARD_APPLIES_TO = ("every_adoption", "reused_skill_adoption_only")
 _GUARD_FIELDS = frozenset(
     {
@@ -383,6 +405,15 @@ def _validate_scope_risk_guards(verification: object) -> None:
             raise ValueError("guard threshold must be a finite number")
         if guard["action"] not in GUARD_ACTIONS:
             raise ValueError("guard action must be one of %s" % (GUARD_ACTIONS,))
+        if (
+            guard["action"] == RESCOPE_ACTION
+            and guard["statistic"] != RESCOPE_STATISTIC
+        ):
+            raise ValueError(
+                "%s needs the %s statistic: it is the only reading that names "
+                "which evaluation series to take out of scope"
+                % (RESCOPE_ACTION, RESCOPE_STATISTIC)
+            )
         if guard["applies_to"] not in GUARD_APPLIES_TO:
             raise ValueError(
                 "guard applies_to must be one of %s" % (GUARD_APPLIES_TO,)
@@ -443,6 +474,88 @@ def guard_statistic(name: str, gains: Mapping[str, Any], eval_count: int) -> flo
     raise ValueError("unknown guard statistic: %s" % name)
 
 
+def guard_crossing_series(
+    guard: Mapping[str, Any], gains: Mapping[str, Any]
+) -> list[str]:
+    """The evaluation series whose own gain satisfies the guard's test.
+
+    ``min_per_series_gain`` is the minimum of a vector the search instrument
+    already measured; this reader keeps the same comparison and asks it of
+    every entry instead of the minimum.  Nothing is measured here.
+    """
+    vector = gains.get("per_eval_series_gain")
+    if not isinstance(vector, Mapping) or not vector:
+        raise ValueError(
+            "a per-series crossing set needs the measured per-series gain "
+            "vector under per_eval_series_gain; this gains dict does not "
+            "carry it"
+        )
+    return sorted(
+        str(uid)
+        for uid, value in vector.items()
+        if guard_fires(guard, float(value))
+    )
+
+
+def project_gains_with_identity_routing(
+    gains: Mapping[str, Any], routed: Sequence[str]
+) -> dict[str, Any]:
+    """One window's gains when the named evaluation series are served identity.
+
+    This is arithmetic on an already-measured vector, not a measurement.
+    Gain is defined against the identity plan, so a series served identity
+    has gain exactly zero, and a series left in scope keeps the number the
+    instrument measured for it -- the batch is fitted on the training pool,
+    so taking one evaluation series off the plan does not move another's
+    reading.  ``aggregate_gain`` is the mean over origins of the mean over
+    evaluation views, which is the mean of the per-series vector taken in
+    the other order; the check below refuses to project any gains dict where
+    that identity does not hold to floating-point rounding.
+
+    ``per_origin_gain`` is not projected: this reader does not have the
+    per-origin-by-series table it would need, and inventing one would be a
+    measurement.  The key is dropped rather than carried forward stale.
+    """
+    vector = gains.get("per_eval_series_gain")
+    if not isinstance(vector, Mapping) or not vector:
+        raise ValueError(
+            "identity routing needs the measured per-series gain vector"
+        )
+    measured = {str(uid): float(value) for uid, value in vector.items()}
+    aggregate = float(gains["aggregate_gain"])
+    mean_of_vector = sum(measured.values()) / len(measured)
+    if abs(aggregate - mean_of_vector) > 1e-9:
+        raise ValueError(
+            "aggregate_gain (%r) is not the mean of the measured per-series "
+            "vector (%r); this window cannot be projected without measuring"
+            % (aggregate, mean_of_vector)
+        )
+    off = {str(uid) for uid in routed}
+    unknown = sorted(off - set(measured))
+    if unknown:
+        raise ValueError(
+            "cannot route evaluation series the window never measured: "
+            + ", ".join(unknown)
+        )
+    after = {uid: (0.0 if uid in off else value) for uid, value in measured.items()}
+    harmed = [
+        str(uid)
+        for uid in (gains.get("harmed_eval_series") or ())
+        if str(uid) not in off
+    ]
+    return {
+        "aggregate_gain": sum(after.values()) / len(after),
+        "harmed_eval_series_count": len(harmed),
+        "harmed_eval_series_total_harm": float(
+            -sum(after[uid] for uid in harmed)
+        ),
+        "harmed_eval_series": sorted(harmed),
+        "per_eval_series_gain": after,
+        "projected_from_measured_vector": True,
+        "identity_routed_eval_series": sorted(off),
+    }
+
+
 def guard_fires(guard: Mapping[str, Any], value: float) -> bool:
     """The guard fires when ``statistic <comparator> threshold`` holds."""
     threshold = float(guard["threshold"])
@@ -494,6 +607,9 @@ def evaluate_scope_risk_guards(
         gains = delayed if window == "delayed" else support
         value = guard_statistic(str(guard["statistic"]), gains, eval_count)
         fired = guard_fires(guard, value)
+        crossing = None
+        if fired and str(guard["action"]) == RESCOPE_ACTION:
+            crossing = guard_crossing_series(guard, gains)
         readings.append(
             {
                 "guard_id": guard["guard_id"],
@@ -508,6 +624,7 @@ def evaluate_scope_risk_guards(
                 "threshold": float(guard["threshold"]),
                 "fired": bool(fired),
                 "action": guard["action"],
+                "crossing_eval_series": crossing,
             }
         )
     vetoed = [
@@ -515,12 +632,172 @@ def evaluate_scope_risk_guards(
         for row in readings
         if row.get("fired") and row.get("action") == "VETO_AND_FALL_BACK"
     ]
+    rescoped = [
+        row
+        for row in readings
+        if row.get("fired") and row.get("action") == RESCOPE_ACTION
+    ]
+    crossing = sorted(
+        {uid for row in rescoped for uid in (row.get("crossing_eval_series") or ())}
+    )
     return {
         "readings": readings,
         "any_fired": any(row.get("fired") for row in readings),
         "vetoed": bool(vetoed),
         "vetoed_by": [str(row["guard_id"]) for row in vetoed],
+        "rescope_requested": bool(rescoped),
+        "rescope_requested_by": [str(row["guard_id"]) for row in rescoped],
+        "crossing_eval_series": crossing,
     }
+
+
+def _walk_rescope(
+    *,
+    out: dict[str, Any],
+    first: Mapping[str, Any],
+    plan: Mapping[str, Any],
+    support: Mapping[str, Any],
+    delayed: Mapping[str, Any],
+    snapshot: HarnessSnapshot,
+    eval_count: int,
+    reused: bool,
+) -> dict[str, Any]:
+    """The RESCOPE branch of the enforcement walk.
+
+    A veto answers "this plan is unsafe" by throwing the adoption away.
+    This action answers the narrower question the reading actually supports:
+    the plan is unsafe *on these series*, so those series are served the
+    identity plan and the rest of the batch keeps the adopted plan.  No new
+    measurement is taken -- both windows are projected off the vectors the
+    instrument already measured -- and the guard is re-read on the rescoped
+    plan, so a guard that would still fire escalates to identity rather than
+    being declared satisfied.
+    """
+    routed = [str(uid) for uid in (first.get("crossing_eval_series") or ())]
+    window = "delayed"
+    for row in first.get("readings") or ():
+        if row.get("fired") and row.get("action") == RESCOPE_ACTION:
+            window = str(row.get("window") or "delayed")
+            break
+    measured = delayed if window == "delayed" else support
+    every = sorted(
+        str(uid) for uid in (measured.get("per_eval_series_gain") or {})
+    )
+    other = support if window == "delayed" else delayed
+
+    def project_other(routed_uids: Sequence[str]) -> tuple[dict[str, Any], str | None]:
+        """The window the guard did not read, projected when it can be.
+
+        A banked episode carries the measured per-series vector for the
+        window its guard reads and often nothing for the other one.  That
+        window's reading is reported, never decided on, so a missing vector
+        is recorded rather than raised -- and the reading is carried forward
+        unprojected so nobody mistakes it for a post-rescope number.
+        """
+        try:
+            return project_gains_with_identity_routing(other, routed_uids), None
+        except ValueError as exc:
+            return dict(other), str(exc)
+
+    out["rescope"] = {
+        "action": RESCOPE_ACTION,
+        "read_on_window": window,
+        "crossing_eval_series": sorted(routed),
+        "evaluation_series": every,
+        "series_kept_in_scope": [uid for uid in every if uid not in set(routed)],
+        "measurement_taken": "none: both windows are projected",
+        "projection": (
+            "methods/ttha/harness/compiler.py::"
+            "project_gains_with_identity_routing"
+        ),
+    }
+    if not routed:
+        out["why"] = (
+            "the guard fired but named no crossing series, so there is "
+            "nothing to take out of scope"
+        )
+        return out
+    if set(routed) == set(every):
+        collapsed_measured = project_gains_with_identity_routing(measured, every)
+        collapsed_other, collapsed_note = project_other(every)
+        out["rescope"]["other_window_not_projected"] = collapsed_note
+        out.update(
+            {
+                "plan_after": {"program": IDENTITY_PROGRAM, "excluded_series": []},
+                "support_after": (
+                    collapsed_measured if window == "support" else collapsed_other
+                ),
+                "delayed_after": (
+                    collapsed_measured if window == "delayed" else collapsed_other
+                ),
+                "changed": True,
+                "fallback_source": (
+                    "identity: every evaluation series crossed, so a rescope "
+                    "and a veto are the same decision"
+                ),
+                "why": (
+                    "every evaluation series crossed; the rescope collapses "
+                    "to identity"
+                ),
+            }
+        )
+        out["rescope"]["collapsed_to_identity"] = True
+        return out
+
+    rescoped_plan = {
+        "program": str(plan["program"]),
+        "excluded_series": list(plan.get("excluded_series") or ()),
+        ROUTED_SERIES_KEY: sorted(routed),
+    }
+    measured_after = project_gains_with_identity_routing(measured, routed)
+    other_after, other_note = project_other(routed)
+    out["rescope"]["other_window_not_projected"] = other_note
+    support_after = measured_after if window == "support" else other_after
+    delayed_after = measured_after if window == "delayed" else other_after
+    second = evaluate_scope_risk_guards(
+        snapshot=snapshot,
+        plan=rescoped_plan,
+        support=support_after,
+        delayed=delayed_after,
+        eval_count=int(eval_count),
+        reused=bool(reused),
+    )
+    out["check_on_rescoped_plan"] = second
+    if second["any_fired"]:
+        out["rescope"]["escalated"] = (
+            "the same guard still fires on the rescoped plan, so the rescope "
+            "is abandoned and identity decides"
+        )
+        escalated_measured = project_gains_with_identity_routing(measured, every)
+        escalated_other, _ = project_other(every)
+        out["plan_after"] = {"program": IDENTITY_PROGRAM, "excluded_series": []}
+        out["support_after"] = (
+            escalated_measured if window == "support" else escalated_other
+        )
+        out["delayed_after"] = (
+            escalated_measured if window == "delayed" else escalated_other
+        )
+        out["changed"] = True
+        out["fallback_source"] = "identity: the rescoped plan fired the same guard"
+        out["why"] = "a rescope was asked for but did not clear the guard"
+        return out
+    out.update(
+        {
+            "plan_after": dict(rescoped_plan),
+            "support_after": support_after,
+            "delayed_after": delayed_after,
+            "changed": True,
+            "fallback_source": (
+                "the adopted plan, rescoped: %d of %d evaluation series "
+                "served identity" % (len(routed), len(every))
+            ),
+            "why": (
+                "a guard asked for a rescope, so the crossing series were "
+                "taken out of the plan's scope and the adoption stood"
+            ),
+        }
+    )
+    return out
 
 
 def enforce_scope_risk_guards(
@@ -590,6 +867,11 @@ def enforce_scope_risk_guards(
     )
     out["checked"] = True
     out["check_on_adopted_plan"] = first
+    if first.get("rescope_requested") and not first["vetoed"]:
+        return _walk_rescope(
+            out=out, first=first, plan=plan, support=support, delayed=delayed,
+            snapshot=snapshot, eval_count=int(eval_count), reused=bool(reused),
+        )
     if not first["vetoed"]:
         out["why"] = (
             "a guard fired but only asked for a record"

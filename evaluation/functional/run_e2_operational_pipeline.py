@@ -218,6 +218,80 @@ FIX_C_TOUCHED: tuple[dict[str, str], ...] = (
         ),
     },
 )
+# v8 == v7: A1 touches two files that are already frozen members, so the
+# surface stays at 39.  What moves is what they are expected to hash to.
+FROZEN_SURFACE_V8: tuple[str, ...] = FROZEN_SURFACE_V7
+A1_RESCOPE_TOUCHED: tuple[dict[str, str], ...] = (
+    {
+        "path": COMPILER_FILE,
+        "role": (
+            "A1/A2: one new guard action, RESCOPE_MASK_HARMED_SERIES, and "
+            "one branch of the enforcement walk that executes it.  A veto "
+            "throws the whole adoption away; this action takes the crossing "
+            "evaluation series out of the plan's scope and lets the rest of "
+            "the batch keep the plan."
+        ),
+        "sha256_before_a1": (
+            "61cc3b4538baa17a0b1bbe8458c86a224f884167ded56296f8a87629b0ae5eb5"
+        ),
+        "diff_shape": (
+            "+283/-1: the GUARD_ACTIONS tuple is the only line replaced; everything else is added"
+        ),
+        "non_regression": (
+            "every pre-A1 path -- no guard, VETO firing, VETO not firing, "
+            "RECORD_ONLY -- was run through the committed pre-A1 compiler and "
+            "this one side by side and compared field for field: identical, "
+            "including the number of instrument calls"
+        ),
+    },
+    {
+        "path": H0_LOCK_FILE,
+        "role": (
+            "regenerated: compiler.py feeds dependency_shas under "
+            "compiler_source.  Exactly that one key moved (plus the two "
+            "fields derived from it), harness_content_sha is unchanged at "
+            "53b1c803..., and h0 compiles with verify_lock=True."
+        ),
+        "sha256_before_a1": (
+            "327f01186194cb15a91859c4260d0349f77b04dabf5db0689c3c663c9b4c046f"
+        ),
+    },
+)
+RESCOPE_GEOMETRY_NOTE: dict[str, Any] = {
+    "what_the_round_asked_for": (
+        "reuse the existing mask geometry: take the crossing series out of "
+        "the plan's scope so that series falls to identity"
+    ),
+    "what_the_instrument_actually_has": (
+        "``plan.excluded_series`` indexes TRAINING series -- "
+        "BudgetedSearch._masked builds {uid: program or None} over "
+        "train_uids -- while ``min_per_series_gain`` reads the EVALUATION "
+        "series vector.  In this cohort the two rosters are disjoint: 12 "
+        "training uids (722.../744...) against 4 evaluation uids (99999...).  "
+        "Writing evaluation ids into excluded_series would mask nothing and "
+        "report a rescope that did not happen -- the placebo shape #19 "
+        "exists to prevent."
+    ),
+    "what_was_built_instead": (
+        "the action writes its own plan key, identity_routed_eval_series, "
+        "and the two window readings are projected off the vectors the "
+        "instrument already measured: a series served identity has gain "
+        "exactly zero by the definition of gain, and a series left in scope "
+        "keeps its measured number because the batch is fitted on the "
+        "training pool.  aggregate_gain is the mean of the per-series "
+        "vector, verified on all 70 banked gains dicts to 2.8e-17, so the "
+        "projection is exact and costs no measurement."
+    ),
+    "what_this_costs_in_claim_strength": (
+        "the deployment this models is per-series model routing: serve the "
+        "cleaned-pool model to the series the plan helps and the identity "
+        "model to the ones it hurts.  That is a real rule, but the routing "
+        "is chosen on the same window it is scored on, exactly as the veto "
+        "is; and nothing downstream of the gate -- _plan_label, the "
+        "Experience lifecycle, the Skill payloads -- reads the new plan key "
+        "yet.  This round does not run it live."
+    ),
+}
 RELAY_OUTAGE_ON_RECORD: dict[str, Any] = {
     "measured": "2026-08-22, three diagnostic calls plus three raw HTTP posts",
     "what_the_relay_returns": (
@@ -308,7 +382,7 @@ class Blocked(RuntimeError):
 
 def _freeze() -> dict[str, str]:
     frozen: dict[str, str] = {}
-    for name in sorted(set(FROZEN_SURFACE_V7)):
+    for name in sorted(set(FROZEN_SURFACE_V8)):
         path = PROJECT_ROOT / name
         if not path.is_file():
             raise SystemExit("frozen surface member is missing: %s" % name)
@@ -524,15 +598,18 @@ PRE_REGISTERED: dict[str, Any] = {
 
 # ------------------------------------------------------------- P2 hard gate
 P1_POST_SHA = {
+    # A1 (#28) added the RESCOPE action and its enforcement branch; the
+    # non-regression comparison against the committed pre-A1 compiler is in
+    # A1_RESCOPE_TOUCHED above and is why the #21 gate result still carries.
     COMPILER_FILE: (
-        "61cc3b4538baa17a0b1bbe8458c86a224f884167ded56296f8a87629b0ae5eb5"
+        "e022732e63bcfbd05bc629da3aa927f064288eb4524be96afa14bbc2cbcad3d7"
     ),
     # Regenerated twice on purpose, never drifted: once by O1 after A1 moved
     # ttha:schema_contracts, and once by fix (c) after runtime:agent_backend
     # moved.  Each time exactly the expected dependency key changed,
     # harness_content_sha stayed put, and h0 passes verify_lock=True.
     H0_LOCK_FILE: (
-        "327f01186194cb15a91859c4260d0349f77b04dabf5db0689c3c663c9b4c046f"
+        "03d08251842620084729f4852f1912daab40db6d76f0e9e0d71f3baa07609bf0"
     ),
 }
 
@@ -572,9 +649,10 @@ def stage_p2_precondition() -> dict[str, Any]:
         "why_it_cannot_be_re_run_anyway": (
             "run_e2_slow_scope_update._open_stores_v2 exits unless the "
             "dependency drift is exactly [compiler_source, surface_registry].  "
-            "A1 added ttha:schema_contracts and fix (c) adds "
-            "runtime:agent_backend, so the delivered gate is now two keys "
-            "past its own assertion.  That file is committed and is not "
+            "A1 added ttha:schema_contracts, fix (c) added "
+            "runtime:agent_backend and the RESCOPE action moves "
+            "compiler_source, so the delivered gate is now three keys past "
+            "its own assertion.  That file is committed and is not "
             "edited to accommodate this; the #21 gate result is carried "
             "forward on the precondition below instead."
         ),
@@ -1234,10 +1312,57 @@ def stage_attribution(record: Mapping[str, Any], snapshot: Any) -> dict[str, Any
     return out
 
 
+# ------------------------------------------- the grammar with both actions
+# Derived from #19's V2 objects, never edited in place: the action enum is
+# taken from the compiler itself, so the envelope and the validator cannot
+# drift apart from what the runtime will accept.
+GUARD_GRAMMAR_V3: dict[str, Any] = json.loads(json.dumps(SSU.GUARD_GRAMMAR_V2))
+GUARD_GRAMMAR_V3["properties"]["action"]["enum"] = list(
+    harness_compiler.GUARD_ACTIONS
+)
+GUARD_CONTRACT_V3: dict[str, Any] = dict(SSU.GUARD_CONTRACT_V2)
+GUARD_CONTRACT_V3["actions"] = dict(
+    SSU.GUARD_CONTRACT_V2["actions"],
+    **{
+        harness_compiler.RESCOPE_ACTION: (
+            "the plan is kept and the evaluation series whose own reading "
+            "satisfies the same test are taken out of its scope: each of "
+            "them is served the identity plan, and every other evaluation "
+            "series keeps the plan.  The runtime re-reads the guard on the "
+            "rescoped plan and falls to identity if it still fires.  If "
+            "every evaluation series crosses, the rescope is identity."
+        )
+    },
+)
+GUARD_CONTRACT_V3["action_constraint"] = (
+    "%s is legal only with the %s statistic, because that is the only "
+    "reading that names which evaluation series to take out; the compiler "
+    "refuses the pair otherwise.  The other two actions work with any "
+    "statistic." % (
+        harness_compiler.RESCOPE_ACTION, harness_compiler.RESCOPE_STATISTIC,
+    )
+)
+GUARD_CONTRACT_V3["cost"] = (
+    "each fallback candidate a veto forces the runtime to look at costs real "
+    "Consumer retrains, charged to this run's budget; a rescope reads the "
+    "per-series vector the window already measured and costs none."
+)
+PROPOSAL_SCHEMA_V3: dict[str, Any] = json.loads(
+    json.dumps(SSU.PROPOSAL_SCHEMA_V2)
+)
+PROPOSAL_SCHEMA_V3["properties"]["guard"] = GUARD_GRAMMAR_V3
+PROPOSAL_SCHEMA_V3["properties"]["patch_value"] = {
+    "type": "array", "minItems": 1, "maxItems": 1, "items": GUARD_GRAMMAR_V3,
+}
+
+
 def stage_slow(
     *, slot: dict[str, Any], attribution: Mapping[str, Any],
     task_c: Mapping[str, Any], budget: Budget, sink: dict[str, Any],
     fault_step: str = "task_C", slow_model: str = SLOW_MODEL,
+    grammar: Mapping[str, Any] | None = None,
+    contract: Mapping[str, Any] | None = None,
+    schema: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """One proposal, one pinned backend, one surface, one draw.
 
@@ -1340,8 +1465,8 @@ def stage_slow(
         "route_authorization": dict(route),
         "authorized_surfaces": offered,
         "episode_evidence": evidence,
-        "guard_grammar": SSU.GUARD_GRAMMAR_V2,
-        "guard_contract": SSU.GUARD_CONTRACT_V2,
+        "guard_grammar": grammar or SSU.GUARD_GRAMMAR_V2,
+        "guard_contract": contract or SSU.GUARD_CONTRACT_V2,
         "public_boundary": {
             "rule": (
                 "a deployable edit may not encode private or path-derived "
@@ -1402,7 +1527,7 @@ def stage_slow(
                 case_id="OP_%s" % SLOT,
                 public_input=public_input, harness_view=view,
                 output_schema_name="slow_scope_guard_v1",
-                output_schema=SSU.PROPOSAL_SCHEMA_V2,
+                output_schema=schema or SSU.PROPOSAL_SCHEMA_V2,
                 source_snapshot_sha=view.effective_harness_view_sha,
                 validation_retries=wvc.VALIDATION_RETRIES,
                 post_validator=validator,
@@ -3193,6 +3318,893 @@ def run_v7(slow_model: str = "gpt-5.6-sol") -> int:
     return _write(payload, out_json=OUT_JSON_V7, out_md=OUT_MD_V7)
 
 
+
+OUT_JSON_V8 = E2 / "operational_pipeline_v8.json"
+OUT_MD_V8 = E2 / "operational_pipeline_v8.md"
+LLM_CALL_BUDGET_V8 = 6
+RETRAIN_BUDGET_V8 = 50
+RESCOPE_ROOT = WORK_ROOT / "rescope"
+V7_SOURCE = E2 / "operational_pipeline_v7.json"
+# The guard gpt-5.6-sol actually proposed in v7, and its twin with the one
+# field this round adds swapped in.  Nothing else differs between them.
+LIVE_GUARD_V7: dict[str, Any] = {
+    "guard_id": "delayed-per-series-harm-floor",
+    "window": "delayed",
+    "statistic": "min_per_series_gain",
+    "comparator": "lt",
+    "threshold": -0.005,
+    "action": "VETO_AND_FALL_BACK",
+    "applies_to": "every_adoption",
+    "rationale": (
+        "the v7 guard, verbatim: veto any plan whose delayed per-series gain "
+        "falls below the harm line"
+    ),
+}
+RESCOPE_TWIN: dict[str, Any] = dict(
+    LIVE_GUARD_V7,
+    guard_id="delayed-per-series-harm-rescope",
+    action=harness_compiler.RESCOPE_ACTION,
+    rationale=(
+        "the same reading and the same line as the v7 guard, with the one "
+        "field this round adds changed: rescope instead of veto"
+    ),
+)
+B1_SOURCES: tuple[str, ...] = (
+    "operational_pipeline_v1.json",
+    "operational_pipeline_v2.json",
+    "operational_pipeline_v3.json",
+    "operational_pipeline_v7.json",
+)
+B1_EPISODE_SOURCES: tuple[str, ...] = (
+    "slow_scope_update_v1.json",
+    "slow_scope_update_v2.json",
+)
+BANK_LIMIT_NOTE = (
+    "the bank is as wide as the per-series vector is old.  #17 and #21 "
+    "measured these same windows, but their artifacts carry only the "
+    "aggregate and the harm ledger -- the #19 O1 repair is what stopped the "
+    "instrument projecting the vector away, so no episode recorded before it "
+    "can be asked a per-series question at all.  Every episode that can be "
+    "asked is in the sweep below; there are not many, and that is a fact "
+    "about the bank, not a filter applied here."
+)
+
+
+class _GuardOnly:
+    """A snapshot stand-in that carries one guard and nothing else.
+
+    ``enforce_scope_risk_guards`` reads exactly one thing off a snapshot --
+    the guard list on the verification document -- so a false-positive sweep
+    over banked episodes does not need a compiled store per arm.  The guard
+    is put through the compiler's own validator first, so nothing illegal is
+    ever evaluated.
+    """
+
+    def __init__(self, guard: Mapping[str, Any] | None) -> None:
+        rules = {"scope_risk_guards": [] if guard is None else [dict(guard)]}
+        harness_compiler._validate_scope_risk_guards(rules)
+        self.verification = rules
+
+
+def _pre_gate_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    """A banked row as the adoption ladder left it, before any guard moved it.
+
+    ``_readjudicate`` reads the after-gate fields and falls back to the
+    before-gate ones.  For every banked row taken before #27 that is the
+    same object, because no guard was declared -- but v7's task_D after-gate
+    plan is identity precisely because the v7 guard fired on it, and asking
+    a guard about a plan another guard already vetoed measures nothing.
+    This normalisation puts every episode back in the state the ladder
+    produced, which is the state the gate actually sees.
+    """
+    out = dict(row)
+    for after, before in (
+        ("plan_after_gate", "plan_before_gate"),
+        ("delayed_after_gate", "delayed_before_gate"),
+        ("support_after_gate", "support_before_gate"),
+        ("per_eval_series_delayed_after_gate",
+         "per_eval_series_delayed_before_gate"),
+    ):
+        if before in row:
+            out[after] = row[before]
+    return out
+
+
+def _episode_rows(name: str) -> list[dict[str, Any]]:
+    """The #19-family shape: a record carrying final_plan and its delayed gains.
+
+    Those artifacts predate the trajectory ledger, so their episodes are not
+    trajectory rows.  They are translated into the same row shape here so
+    one sweep covers the whole bank.
+    """
+    path = E2 / name
+    if not path.is_file():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    found: list[dict[str, Any]] = []
+
+    def walk(node: Any, trail: str) -> None:
+        if isinstance(node, Mapping):
+            delayed = node.get("delayed")
+            plan = node.get("final_plan")
+            if (
+                isinstance(plan, Mapping) and isinstance(delayed, Mapping)
+                and delayed.get("per_eval_series_gain")
+            ):
+                found.append({
+                    "_source": name,
+                    "_trail": trail,
+                    "step": str(node.get("episode_id") or trail),
+                    "episode_id": node.get("episode_id"),
+                    "mode": node.get("mode"),
+                    "plan_before_gate": dict(plan),
+                    "plan_after_gate": dict(plan),
+                    "delayed_before_gate": delayed.get("aggregate_gain"),
+                    "delayed_after_gate": delayed.get("aggregate_gain"),
+                    "support_before_gate": (node.get("support") or {}).get(
+                        "aggregate_gain"
+                    ),
+                    "support_after_gate": (node.get("support") or {}).get(
+                        "aggregate_gain"
+                    ),
+                    "per_eval_series_delayed_before_gate": dict(
+                        delayed["per_eval_series_gain"]
+                    ),
+                    "per_eval_series_delayed_after_gate": dict(
+                        delayed["per_eval_series_gain"]
+                    ),
+                    "adoption_ladder": dict(node.get("adoption_ladder") or {}),
+                    "reuse_adopted": node.get("reuse_adopted"),
+                })
+                return
+            for key, value in node.items():
+                walk(value, trail + "/" + str(key))
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                walk(value, trail + "/%d" % index)
+
+    walk(payload, "")
+    return found
+
+
+def _banked_rows(name: str) -> list[dict[str, Any]]:
+    """Every adoption row a delivered artifact carries, wherever it sits."""
+    path = E2 / name
+    if not path.is_file():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    found: list[dict[str, Any]] = []
+
+    def walk(node: Any, trail: str) -> None:
+        if isinstance(node, Mapping):
+            if (
+                "step" in node
+                and "plan_after_gate" in node
+                and (
+                    node.get("per_eval_series_delayed_after_gate")
+                    or node.get("per_eval_series_delayed_before_gate")
+                )
+            ):
+                row = dict(node)
+                row["_source"] = name
+                row["_trail"] = trail
+                found.append(row)
+                return
+            for key, value in node.items():
+                walk(value, trail + "/" + str(key))
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                walk(value, trail + "/%d" % index)
+
+    walk(payload, "")
+    return found
+
+
+def _episode_facts(row: Mapping[str, Any]) -> dict[str, Any]:
+    per_series = {
+        str(uid): float(value)
+        for uid, value in (
+            row.get("per_eval_series_delayed_after_gate")
+            or row.get("per_eval_series_delayed_before_gate") or {}
+        ).items()
+    }
+    plan = dict(row.get("plan_after_gate") or {})
+    worst = min(per_series.values()) if per_series else 0.0
+    return {
+        "source": row.get("_source"),
+        "trail": row.get("_trail"),
+        "step": str(row.get("step")),
+        "episode_id": row.get("episode_id"),
+        "mode": row.get("mode"),
+        "plan": plan,
+        "adopted_a_program": str(plan.get("program") or "") not in ("", IDENTITY),
+        "delayed_aggregate_gain": row.get("delayed_after_gate"),
+        "min_per_series_gain": worst,
+        "harmed": sorted(
+            uid for uid, value in per_series.items() if value < HARM_THRESHOLD
+        ),
+        "clean": worst >= HARM_THRESHOLD,
+        "per_series": per_series,
+    }
+
+
+def stage_b1_false_positive() -> dict[str, Any]:
+    """B1: neither action may fire on a banked adoption that harmed nothing."""
+    started = time.perf_counter()
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    harvest: list[Mapping[str, Any]] = []
+    for name in B1_SOURCES:
+        harvest.extend(_banked_rows(name))
+    for name in B1_EPISODE_SOURCES:
+        harvest.extend(_episode_rows(name))
+    if True:
+        for raw in harvest:
+            row = _pre_gate_row(raw)
+            facts = _episode_facts(row)
+            key = (
+                str(facts["episode_id"]),
+                facts["step"],
+                json.dumps(facts["per_series"], sort_keys=True),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append({"row": row, "facts": facts})
+    clean = [r for r in rows if r["facts"]["clean"] and r["facts"]["adopted_a_program"]]
+    abstained = [r for r in rows if not r["facts"]["adopted_a_program"]]
+    crossing = [
+        r for r in rows
+        if not r["facts"]["clean"] and r["facts"]["adopted_a_program"]
+    ]
+    matrix: list[dict[str, Any]] = []
+    false_positives: list[dict[str, Any]] = []
+    for entry in clean:
+        cells: dict[str, Any] = {}
+        for label, guard in (("VETO", LIVE_GUARD_V7), ("RESCOPE", RESCOPE_TWIN)):
+            verdict = _readjudicate(snapshot=_GuardOnly(guard), row=entry["row"])
+            fired = bool(
+                (verdict["gate"].get("check_on_adopted_plan") or {}).get("any_fired")
+            )
+            cells[label] = {
+                "fired": fired,
+                "changed": bool(verdict["changed"]),
+                "plan_after": verdict["plan_after"],
+                "delayed_after": verdict["delayed_after"],
+            }
+            if fired or verdict["changed"]:
+                false_positives.append(
+                    {"episode": entry["facts"], "action": label, "cell": cells[label]}
+                )
+        matrix.append({"episode": entry["facts"], "cells": cells})
+    # The abstention floor: identity is unfilterable, so on an episode that
+    # adopted identity the gate must not even be entered, under either action.
+    floor: list[dict[str, Any]] = []
+    for entry in abstained:
+        cells = {}
+        for label, guard in (("VETO", LIVE_GUARD_V7), ("RESCOPE", RESCOPE_TWIN)):
+            verdict = _readjudicate(snapshot=_GuardOnly(guard), row=entry["row"])
+            cells[label] = {
+                "gate_entered": bool(verdict["gate"].get("checked")),
+                "changed": bool(verdict["changed"]),
+                "why": verdict["gate"].get("why"),
+            }
+            if verdict["gate"].get("checked") or verdict["changed"]:
+                false_positives.append({
+                    "episode": entry["facts"], "action": label,
+                    "cell": cells[label],
+                    "note": "identity was submitted to a guard",
+                })
+        floor.append({"episode": entry["facts"], "cells": cells})
+    # The other side of the same sweep.  A guard that never fires is also
+    # never a false positive, so the crossing episodes are run through both
+    # actions too: if they do not fire here, B1 says nothing at all.
+    sensitivity: list[dict[str, Any]] = []
+    for entry in crossing:
+        cells = {}
+        for label, guard in (("VETO", LIVE_GUARD_V7), ("RESCOPE", RESCOPE_TWIN)):
+            verdict = _readjudicate(snapshot=_GuardOnly(guard), row=entry["row"])
+            plan_after = dict(verdict["plan_after"])
+            cells[label] = {
+                "fired": bool(
+                    (verdict["gate"].get("check_on_adopted_plan") or {}).get(
+                        "any_fired"
+                    )
+                ),
+                "changed": bool(verdict["changed"]),
+                "plan_after": plan_after,
+                "delayed_after": verdict["delayed_after"],
+                "identity_routed_eval_series": list(
+                    plan_after.get(harness_compiler.ROUTED_SERIES_KEY) or ()
+                ),
+            }
+        sensitivity.append({"episode": entry["facts"], "cells": cells})
+    silent = [
+        row["episode"]["step"] for row in sensitivity
+        if not (row["cells"]["VETO"]["fired"] and row["cells"]["RESCOPE"]["fired"])
+    ]
+    out = {
+        "ran": True,
+        "role": (
+            "the half of the guard question v7 could not ask: on adoptions "
+            "that harmed nothing, both actions must be invisible"
+        ),
+        "measurement": "none; every reading is replayed from a delivered artifact",
+        "consumer_retrains": 0,
+        "llm_calls": 0,
+        "sources": list(B1_SOURCES) + list(B1_EPISODE_SOURCES),
+        "bank_limit": BANK_LIMIT_NOTE,
+        "rows_are_pre_gate": (
+            "every episode is put back in the state the adoption ladder left "
+            "it; v7's task_D is read as the outlier_mad plan the ladder "
+            "produced, not as the identity the v7 guard turned it into"
+        ),
+        "adoption_rows_found": len(rows),
+        "clean_adoptions": len(clean),
+        "crossing_adoptions": len(crossing),
+        "crossing_adoptions_excluded_from_this_sweep": [
+            r["facts"]["step"] + " @ " + str(r["facts"]["source"])
+            for r in crossing
+        ],
+        "matrix": matrix,
+        "identity_adoptions": len(abstained),
+        "identity_floor": floor,
+        "sensitivity": sensitivity,
+        "crossing_episodes_where_an_action_stayed_silent": silent,
+        "false_positives": false_positives,
+        "verdict": (
+            "GUARD_FALSE_POSITIVE" if false_positives
+            else "GUARD_SILENT_EVERYWHERE" if silent
+            else "NO_FALSE_POSITIVE"
+        ),
+        "wall_seconds": time.perf_counter() - started,
+    }
+    print(
+        "B1 %d clean adoptions, %d false positives -> %s"
+        % (len(clean), len(false_positives), out["verdict"]),
+        flush=True,
+    )
+    return out
+
+
+def _v7_row(step: str) -> dict[str, Any]:
+    payload = json.loads(V7_SOURCE.read_text(encoding="utf-8"))
+    for row in payload["trajectory_record"]["trajectory"]:
+        if str(row["step"]) == step:
+            return dict(row)
+    raise Blocked("INSTRUMENT_DRIFT", "v7 carries no %s row" % step)
+
+
+def _v7_roster() -> Any:
+    payload = json.loads(V7_SOURCE.read_text(encoding="utf-8"))
+    cohort = payload.get("cohort") or {}
+    return _BankedRoster(
+        (cohort.get("roster") or {}).get("train") or (),
+        cohort.get("eval_uids") or (),
+    )
+
+
+def stage_b2_slow_rescope(budget: Budget, slow_model: str) -> dict[str, Any]:
+    """B2: one real Slow decision with both actions on the table."""
+    out: dict[str, Any] = {"ran": False, "slow_model": slow_model}
+    source_store = STORE_ROOT / "post_fix_live" / SLOT
+    if not source_store.is_dir():
+        out.update({
+            "verdict": "NO_PREPATCH_FORK",
+            "reason": "the v7 store fork is gone: %s" % _repo_rel(source_store),
+        })
+        return out
+    if RESCOPE_ROOT.exists():
+        shutil.rmtree(RESCOPE_ROOT)
+    RESCOPE_ROOT.mkdir(parents=True, exist_ok=True)
+    fork = RESCOPE_ROOT / SLOT
+    shutil.copytree(source_store, fork)
+    store = SnapshotStore(fork / "snapshots")
+    payload = json.loads(V7_SOURCE.read_text(encoding="utf-8"))
+    pre = str(
+        ((payload["trajectory_record"]["stages"].get("slow_edit") or {})
+         .get("snapshot_before")) or ""
+    )
+    if not pre:
+        out.update({"verdict": "NO_PREPATCH_FORK",
+                    "reason": "v7 records no pre-patch snapshot"})
+        return out
+    store.active_path.write_text(
+        json.dumps({"runtime_bundle_sha": pre}, indent=2) + "\n",
+        encoding="utf-8", newline="\n",
+    )
+    snapshot = compile_snapshot(fork / "snapshots" / pre, verify_lock=False)
+    guards_at_start = harness_compiler.scope_risk_guards_of(snapshot)
+    if guards_at_start:
+        out.update({"verdict": "NO_PREPATCH_FORK",
+                    "reason": "the pre-patch snapshot already carries a guard"})
+        return out
+    slot = {"slot": SLOT, "_store": store, "_snapshot": snapshot,
+            "runtime_bundle_sha": snapshot.runtime_bundle_sha}
+    out["store_fork"] = {
+        "copied_from": _repo_rel(source_store),
+        "working_copy": _repo_rel(fork),
+        "rewound_to_pre_patch_snapshot": pre,
+        "guards_at_start": list(guards_at_start),
+        "the_v7_fork_is_left_untouched": True,
+    }
+    fault_row = _v7_row("task_C")
+    bootstrap = [
+        item.skill_id
+        for item in compile_snapshot(FC.H0_ROOT, verify_lock=False).skills
+    ]
+    record = _banked_record(fault_row, CARD_ID)
+    folded = SSU._attribute(
+        record, bootstrap_ids=bootstrap, capability_skills_present=True,
+        transport_per_series=True,
+    )
+    control = SSU._attribute(
+        record, bootstrap_ids=bootstrap, capability_skills_present=True,
+        transport_per_series=False,
+    )
+    attribution = {
+        "ran": True,
+        "evidence": "the v7 task_C episode, replayed",
+        "cause_code": folded["attribution"]["cause_code"],
+        "first_stage": folded["attribution"]["first_stage"],
+        "is_scope_risk_face": bool(folded["is_scope_risk_face"]),
+        "with_per_series_risk_reading": folded,
+        "aggregate_only_control": control,
+    }
+    out["attribution"] = {
+        "cause_code": attribution["cause_code"],
+        "first_stage": attribution["first_stage"],
+        "is_scope_risk_face": attribution["is_scope_risk_face"],
+        "aggregate_only_cause": control["attribution"]["cause_code"],
+    }
+    if not attribution["is_scope_risk_face"]:
+        out.update({"verdict": "ATTRIBUTION_BREAK",
+                    "reason": str(attribution["cause_code"])})
+        return out
+    fault = {
+        "record": record, "row": fault_row, "search": _v7_roster(),
+        "earlier_rows": [],
+    }
+    sink: dict[str, Any] = {"ran": False}
+    out["slow"] = sink
+    out["ran"] = True
+    try:
+        stage_slow(
+            slot=slot, attribution=attribution, task_c=fault, budget=budget,
+            sink=sink, fault_step="task_C", slow_model=slow_model,
+            grammar=GUARD_GRAMMAR_V3, contract=GUARD_CONTRACT_V3,
+            schema=PROPOSAL_SCHEMA_V3,
+        )
+    except Blocked as exc:
+        out.update({"verdict": exc.verdict, "reason": exc.reason})
+        return out
+    guard = dict(sink["guard"])
+    out.update({
+        "verdict": "SLOW_PROPOSES_%s" % str(guard["action"]),
+        "reason": "%s %s %s on the %s window -> %s" % (
+            guard["statistic"], guard["comparator"], _fmt(guard["threshold"]),
+            guard["window"], guard["action"],
+        ),
+        "chosen_action": str(guard["action"]),
+        "actions_on_the_table": list(harness_compiler.GUARD_ACTIONS),
+    })
+    print("B2 slow chose %s" % guard["action"], flush=True)
+    return out
+
+
+def stage_b3_three_arms() -> dict[str, Any]:
+    """B3: no guard / VETO / RESCOPE on the two v7 fault episodes.  0 retrains."""
+    started = time.perf_counter()
+    arms: dict[str, Any] = {}
+    for step in ("task_C", "task_D"):
+        row = _pre_gate_row(_v7_row(step))
+        facts = _episode_facts(dict(row, _source="operational_pipeline_v7.json"))
+        cells: dict[str, Any] = {}
+        for label, guard in (
+            ("no_guard", None),
+            ("VETO", LIVE_GUARD_V7),
+            ("RESCOPE", RESCOPE_TWIN),
+        ):
+            verdict = _readjudicate(snapshot=_GuardOnly(guard), row=row)
+            after = (verdict["gate"].get("delayed_after") or {})
+            plan_after = dict(verdict["plan_after"])
+            cells[label] = {
+                "plan_after": plan_after,
+                "identity_routed_eval_series": list(
+                    plan_after.get(harness_compiler.ROUTED_SERIES_KEY) or ()
+                ),
+                "delayed_aggregate_gain": verdict["delayed_after"],
+                "harmed_eval_series": list(verdict["harmed_after"]),
+                "harmed_count": len(verdict["harmed_after"]),
+                "per_series_after": verdict["per_series_after"],
+                "changed": bool(verdict["changed"]),
+                "fallback_source": verdict["gate"].get("fallback_source"),
+                "consumer_retrains": 0,
+            }
+        arms[step] = {"episode": facts, "cells": cells}
+        print(
+            "B3 %-7s no_guard %s/%d harmed | VETO %s/%d | RESCOPE %s/%d minus %s"
+            % (
+                step,
+                _fmt(cells["no_guard"]["delayed_aggregate_gain"]),
+                cells["no_guard"]["harmed_count"],
+                _fmt(cells["VETO"]["delayed_aggregate_gain"]),
+                cells["VETO"]["harmed_count"],
+                _fmt(cells["RESCOPE"]["delayed_aggregate_gain"]),
+                cells["RESCOPE"]["harmed_count"],
+                cells["RESCOPE"]["identity_routed_eval_series"] or "nothing",
+            ),
+            flush=True,
+        )
+    fault_steps = [
+        step for step, block in arms.items()
+        if block["episode"]["harmed"]
+    ]
+    harm_gone = all(
+        arms[step]["cells"]["RESCOPE"]["harmed_count"] == 0 for step in fault_steps
+    )
+    better = all(
+        float(arms[step]["cells"]["RESCOPE"]["delayed_aggregate_gain"] or 0.0)
+        > float(arms[step]["cells"]["VETO"]["delayed_aggregate_gain"] or 0.0)
+        for step in fault_steps
+    )
+    if not fault_steps:
+        verdict = "NO_CROSSING_EPISODE_IN_THE_CONTRAST"
+    elif harm_gone and better:
+        verdict = "RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM"
+    else:
+        verdict = "RESCOPE_NO_BETTER_THAN_VETO"
+    return {
+        "ran": True,
+        "role": "three arms on the same measured vectors, nothing re-measured",
+        "consumer_retrains": 0,
+        "llm_calls": 0,
+        "episodes_with_a_crossing_series": fault_steps,
+        "arms": arms,
+        "harm_eliminated_by_rescope": harm_gone,
+        "rescope_keeps_more_than_veto": better,
+        "verdict": verdict,
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
+def stage_b4_as_proposed(guard: Mapping[str, Any]) -> dict[str, Any]:
+    """The v7 trajectory re-adjudicated under the guard the model proposed.
+
+    B3 answers "what does the action buy" by swapping exactly one field of
+    the v7 guard.  This answers the different question the deliverable also
+    needs: what the edit that was actually applied would do to every episode
+    on the bench, including the ones it was not derived from.  0 retrains,
+    0 LLM, and the Slow stage is not sampled again.
+    """
+    rows = json.loads(V7_SOURCE.read_text(encoding="utf-8"))
+    per_step: dict[str, Any] = {}
+    for raw in rows["trajectory_record"]["trajectory"]:
+        row = _pre_gate_row(raw)
+        verdict = _readjudicate(snapshot=_GuardOnly(guard), row=row)
+        plan_after = dict(verdict["plan_after"])
+        reading = (
+            (verdict["gate"].get("check_on_adopted_plan") or {}).get("readings")
+            or [{}]
+        )[0]
+        per_step[str(row["step"])] = {
+            "mode": row.get("mode"),
+            "reuse_adopted": row.get("reuse_adopted"),
+            "plan_before": verdict["plan_before"],
+            "plan_after": plan_after,
+            "identity_routed_eval_series": list(
+                plan_after.get(harness_compiler.ROUTED_SERIES_KEY) or ()
+            ),
+            "delayed_before": verdict["delayed_before"],
+            "delayed_after": verdict["delayed_after"],
+            "harmed_before": verdict["harmed_before"],
+            "harmed_after": verdict["harmed_after"],
+            "gate_entered": bool(verdict["gate"].get("checked")),
+            "guard_checked": bool(reading.get("checked")),
+            "why_not_checked": reading.get("why_not_checked"),
+            "fired": bool(reading.get("fired")),
+            "changed": bool(verdict["changed"]),
+            "consumer_retrains": 0,
+        }
+        print(
+            "B4 %-7s reused=%-5s checked=%-5s fired=%-5s %s -> %s | delayed %s -> %s"
+            % (
+                row["step"], row.get("reuse_adopted"),
+                per_step[str(row["step"])]["guard_checked"],
+                per_step[str(row["step"])]["fired"],
+                SSU._plan_label(verdict["plan_before"]),
+                SSU._plan_label(plan_after),
+                _fmt(verdict["delayed_before"]), _fmt(verdict["delayed_after"]),
+            ),
+            flush=True,
+        )
+    harmed_left = sorted({
+        uid for block in per_step.values() for uid in block["harmed_after"]
+    })
+    clean_moved = [
+        step for step, block in per_step.items()
+        if not block["harmed_before"] and block["changed"]
+    ]
+    return {
+        "ran": True,
+        "role": (
+            "the guard the model actually proposed, run over every episode "
+            "of the v7 trajectory; B3 isolates the action, this reads the "
+            "edit"
+        ),
+        "guard": dict(guard),
+        "differs_from_the_b3_twin_in": (
+            "applies_to: the model narrowed it to reused_skill_adoption_only, "
+            "so a fresh-search adoption is not submitted to the guard at all"
+        ),
+        "per_step": per_step,
+        "harm_left_anywhere": harmed_left,
+        "clean_episodes_that_moved": clean_moved,
+        "consumer_retrains": 0,
+        "llm_calls": 0,
+        "verdict": (
+            "AS_PROPOSED_GUARD_CONTAINS_WITHOUT_COLLATERAL"
+            if not harmed_left and not clean_moved
+            else "AS_PROPOSED_GUARD_LEAVES_HARM_OR_MOVES_A_CLEAN_EPISODE"
+        ),
+    }
+
+
+def amend_v8() -> int:
+    """Add B4 to the delivered v8 without sampling the Slow Agent again."""
+    if not OUT_JSON_V8.is_file():
+        raise SystemExit("v8 has not been written yet")
+    before = _freeze()
+    payload = json.loads(OUT_JSON_V8.read_text(encoding="utf-8"))
+    guard = (
+        ((payload.get("b2_slow_decision") or {}).get("slow") or {}).get("guard")
+    )
+    if not guard:
+        raise SystemExit("v8 carries no proposed guard to re-adjudicate")
+    payload["b4_as_proposed"] = stage_b4_as_proposed(guard)
+    payload["amendment"] = {
+        "what": "B4 added after the fact; B2 was not re-sampled",
+        "llm_calls": 0,
+        "consumer_retrains": 0,
+        "frozen_surface_at_amendment": {"files": len(before), "sha256": before},
+        "why_the_runner_hash_differs_from_the_first_block": (
+            "the amendment adds this stage to the runner, which is itself a "
+            "frozen member; the first block is the hash the B1/B2/B3 run saw"
+        ),
+    }
+    payload["frozen_surface_after"] = _verify(before)
+    return _write(payload, out_json=OUT_JSON_V8, out_md=OUT_MD_V8)
+
+
+def run_v8(slow_model: str = "gpt-5.6-sol") -> int:
+    """The banked round for the third guard action.
+
+    Part A is already on disk by the time this runs; what this driver does
+    is ask the three questions the action has to answer before it is worth
+    a live trajectory: does it stay invisible on clean adoptions, does the
+    Slow Agent reach for it when both actions are on the table, and what
+    does it actually buy against a veto on the two episodes that crossed.
+    """
+    started = time.perf_counter()
+    before = _freeze()
+    budget = Budget(LLM_CALL_BUDGET_V8, RETRAIN_BUDGET_V8)
+    payload: dict[str, Any] = {
+        "protocol_version": "operational_pipeline_v8",
+        "role": (
+            "one new guard action on banked evidence: the false-positive "
+            "half, one real Slow decision with both actions offered, and a "
+            "deterministic three-arm contrast"
+        ),
+        "only_method_change_this_round": (
+            "the guard action vocabulary gains RESCOPE_MASK_HARMED_SERIES "
+            "and the enforcement walk gains one branch for it.  The "
+            "statistic set, the thresholds, the windows, the ladder, the two "
+            "keys, the menu, the prompts, the selector and the fold are all "
+            "exactly as #27 left them."
+        ),
+        "geometry_note": RESCOPE_GEOMETRY_NOTE,
+        "a1_touched_files": [dict(row) for row in A1_RESCOPE_TOUCHED],
+        "evidence_level": (
+            "DEVELOPMENT, and banked on top of that: nothing here is "
+            "measured.  Every Consumer reading is replayed from a delivered "
+            "artifact, so this round produces no fresh evidence, no "
+            "A5-over-A3 result, and no live behaviour reading."
+        ),
+        "guards_under_test": {
+            "VETO": dict(LIVE_GUARD_V7),
+            "RESCOPE": dict(RESCOPE_TWIN),
+            "what_differs": "the action field, and the guard_id that names it",
+        },
+        "slow_backend": {
+            "model": slow_model,
+            "why": "the backend that closed #26 and #27; pinned for this round",
+            "history_on_this_surface": MODEL_HISTORY_ON_THIS_SURFACE.get(
+                slow_model, "no history on record"
+            ),
+        },
+        "sampling_rule": SAMPLING_RULE,
+        "slow_error_taxonomy": SLOW_ERROR_CLASSES,
+        "frozen_surface_before": {"files": len(before), "sha256": before},
+        "llm_call_budget": LLM_CALL_BUDGET_V8,
+        "retrain_budget": RETRAIN_BUDGET_V8,
+    }
+    for row in payload["a1_touched_files"]:
+        row["sha256_after_a1"] = before[row["path"]]
+    b1: dict[str, Any] = {"ran": False}
+    b2: dict[str, Any] = {"ran": False}
+    b3: dict[str, Any] = {"ran": False}
+    payload["b1_false_positive"] = b1
+    payload["b2_slow_decision"] = b2
+    payload["b3_three_arms"] = b3
+    try:
+        payload["p2_non_regression_gate"] = stage_p2_precondition()
+        payload["guard_after_precondition"] = _guard_frozen(before, "part B")
+        b1.update(stage_b1_false_positive())
+        b3.update(stage_b3_three_arms())
+        b2.update(stage_b2_slow_rescope(budget, slow_model))
+    except ConcurrentWrite as exc:
+        payload.update({"overall_verdict": "CONCURRENT_WRITE_ABORT",
+                        "overall_verdict_reason": str(exc)})
+    except Blocked as exc:
+        payload.update({"overall_verdict": exc.verdict,
+                        "overall_verdict_reason": exc.reason})
+    if "overall_verdict" not in payload:
+        if b1.get("verdict") == "GUARD_FALSE_POSITIVE":
+            payload.update({
+                "overall_verdict": "GUARD_FALSE_POSITIVE",
+                "overall_verdict_reason": (
+                    "%d clean banked adoptions moved under a guard that was "
+                    "supposed to be invisible there"
+                    % len(b1.get("false_positives") or ()),
+                ),
+            })
+        else:
+            payload.update({
+                "overall_verdict": str(b3.get("verdict")),
+                "overall_verdict_reason": (
+                    "the deterministic contrast decides the headline; the "
+                    "Slow decision is reported under its own verdict (%s) "
+                    "because choosing a veto with both actions on the table "
+                    "is a reading, not a failure" % b2.get("verdict")
+                ),
+            })
+        payload["verdict_composition"] = (
+            "B1 first: a false positive outranks everything, because an "
+            "action that moves clean adoptions is not worth what it buys.  "
+            "Then B3, the deterministic contrast.  B2 is recorded beside "
+            "them, never folded into them."
+        )
+        payload["slow_decision_verdict"] = b2.get("verdict")
+    payload.update({
+        "llm_call_count": budget.llm_used,
+        "consumer_retrains_total": budget.retrains_charged,
+        "exposure": {
+            "windows_read": ["delivered artifacts only; nothing was measured"],
+            "beyond_17520": "SEALED, not read",
+            "fresh_claim": "none",
+        },
+        "wall_seconds": time.perf_counter() - started,
+        "frozen_surface_after": _verify(before),
+    })
+    if not payload["frozen_surface_after"]["ok"]:
+        payload["overall_verdict"] = "CONCURRENT_WRITE_ABORT"
+        payload["overall_verdict_reason"] = (
+            "the frozen surface moved during the run; the reading is void"
+        )
+    return _write(payload, out_json=OUT_JSON_V8, out_md=OUT_MD_V8)
+
+
+def _markdown_v8(payload: Mapping[str, Any]) -> str:
+    b1 = payload.get("b1_false_positive") or {}
+    b2 = payload.get("b2_slow_decision") or {}
+    b3 = payload.get("b3_three_arms") or {}
+    lines = [
+        "# A third guard action, on banked evidence",
+        "",
+        "**Overall: `%s`** -- %s" % (
+            payload.get("overall_verdict"),
+            payload.get("overall_verdict_reason", ""),
+        ),
+        "",
+        "Slow decision: `%s`." % payload.get("slow_decision_verdict"),
+        "",
+        payload.get("evidence_level", ""),
+        "",
+        "## B1 -- the false-positive half",
+        "",
+        "`%s`: %s clean banked adoptions, %s false positives."
+        % (b1.get("verdict"), b1.get("clean_adoptions"),
+           len(b1.get("false_positives") or ())),
+        "",
+        "| kind | source | step | plan | delayed | min per-series | "
+        "VETO fires | RESCOPE fires |",
+        "| --- | --- | --- | --- | ---: | ---: | --- | --- |",
+    ]
+    for entry in list(b1.get("matrix") or ()) + list(b1.get("sensitivity") or ()):
+        ep, cells = entry["episode"], entry["cells"]
+        lines.append(
+            "| %s | `%s` | `%s` | %s | %s | %s | %s | %s |" % (
+                "clean" if ep.get("clean") else "crossing",
+                str(ep.get("source", "")).replace(
+                    "operational_pipeline_", "").replace(".json", ""),
+                ep.get("step"), SSU._plan_label(ep.get("plan")),
+                _fmt(ep.get("delayed_aggregate_gain")),
+                _fmt(ep.get("min_per_series_gain")),
+                "yes" if cells["VETO"]["fired"] else "no",
+                "yes" if cells["RESCOPE"]["fired"] else "no",
+            )
+        )
+    lines.extend(["", "## B3 -- three arms", ""])
+    for step, block in (b3.get("arms") or {}).items():
+        lines.extend([
+            "### `%s`" % step, "",
+            "| arm | plan after | delayed | harmed | series taken out |",
+            "| --- | --- | ---: | --- | --- |",
+        ])
+        for label in ("no_guard", "VETO", "RESCOPE"):
+            cell = block["cells"][label]
+            lines.append(
+                "| `%s` | %s | %s | %s | %s |" % (
+                    label, SSU._plan_label(cell["plan_after"]),
+                    _fmt(cell["delayed_aggregate_gain"]),
+                    ", ".join(cell["harmed_eval_series"]) or "none",
+                    ", ".join(cell["identity_routed_eval_series"]) or "--",
+                )
+            )
+        lines.append("")
+    lines.extend(["## B2 -- the Slow decision", "",
+                  "`%s` -- %s" % (b2.get("verdict"), b2.get("reason", "")), ""])
+    slow = b2.get("slow") or {}
+    for attempt in slow.get("attempts") or ():
+        bits = [str(attempt.get("outcome"))]
+        if attempt.get("no_proposal_reason"):
+            bits.append("reason %s" % attempt["no_proposal_reason"])
+        lines.append("- draw %s: %s" % (attempt.get("draw"), "; ".join(bits)))
+    guard = slow.get("guard")
+    if guard:
+        lines.extend([
+            "",
+            "Guard `%s`: %s `%s` %s -> %s on the %s window."
+            % (guard.get("guard_id"), guard.get("statistic"),
+               guard.get("comparator"), _fmt(guard.get("threshold")),
+               guard.get("action"), guard.get("window")),
+            "", "> %s" % guard.get("rationale"), "",
+        ])
+    b4 = payload.get("b4_as_proposed") or {}
+    if b4:
+        lines.extend([
+            "## B4 -- the guard as proposed, over the whole v7 trajectory", "",
+            "`%s`.  %s" % (b4.get("verdict"), b4.get("differs_from_the_b3_twin_in", "")),
+            "",
+            "| step | mode | reused | checked | fired | plan after | delayed | "
+            "harmed after |",
+            "| --- | --- | --- | --- | --- | --- | ---: | --- |",
+        ])
+        for step, block in (b4.get("per_step") or {}).items():
+            lines.append(
+                "| `%s` | %s | %s | %s | %s | %s | %s | %s |" % (
+                    step, block.get("mode"), block.get("reuse_adopted"),
+                    block.get("guard_checked"), block.get("fired"),
+                    SSU._plan_label(block.get("plan_after")),
+                    _fmt(block.get("delayed_after")),
+                    ", ".join(block.get("harmed_after") or ()) or "none",
+                )
+            )
+        lines.append("")
+    after = payload.get("frozen_surface_after") or {}
+    lines.extend([
+        "## Cost and integrity", "",
+        "- LLM calls: %s / %s." % (payload.get("llm_call_count"),
+                                   payload.get("llm_call_budget")),
+        "- Consumer retrains: %s / %s." % (payload.get("consumer_retrains_total"),
+                                           payload.get("retrain_budget")),
+        "- Frozen surface: %s files, drift %s." % (after.get("files"),
+                                                   after.get("drift")),
+        "- Wall seconds: %.1f." % float(payload.get("wall_seconds") or 0.0),
+    ])
+    return "\n".join(lines) + "\n"
+
+
 def _markdown_models(payload: Mapping[str, Any]) -> str:
     lines = [
         "# Banked chain, one pinned Slow backend at a time",
@@ -3427,6 +4439,8 @@ def _markdown_multi(payload: Mapping[str, Any]) -> str:
 
 
 def _markdown(payload: Mapping[str, Any]) -> str:
+    if payload.get("b3_three_arms") is not None:
+        return _markdown_v8(payload)
     if payload.get("runs") is not None:
         return _markdown_models(payload)
     if payload.get("trajectories") is not None:
@@ -3653,6 +4667,7 @@ def _write(
         "BANKED_CHAIN_CLOSES", "BANKED_CHAIN_CLOSES_IN_K_MODELS",
         "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX_ON_GPT_5_6_SOL",
         "DEVELOPMENT_OPERATIONAL_PIPELINE_CLOSES_POST_FIX", "P2_ONLY",
+        "RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM",
     ) else 1
 
 
@@ -3679,6 +4694,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="banked completion, then one post-fix live trajectory if it closed",
     )
     parser.add_argument(
+        "--amend-v8", action="store_true",
+        help="add the as-proposed re-adjudication to v8; no sampling",
+    )
+    parser.add_argument(
+        "--rescope-banked", action="store_true",
+        help="the banked round for RESCOPE_MASK_HARMED_SERIES; writes v8",
+    )
+    parser.add_argument(
         "--slow-model", type=str, default="gpt-5.6-sol",
         help="the pinned Slow backend for the post-fix live trajectory",
     )
@@ -3691,6 +4714,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="allow the single-trajectory path to overwrite the v2 record",
     )
     args = parser.parse_args(argv)
+    if args.amend_v8:
+        return amend_v8()
+    if args.rescope_banked:
+        return run_v8(slow_model=args.slow_model)
     if args.slow_models:
         return run_v6([m.strip() for m in args.slow_models.split(",") if m.strip()])
     if args.post_fix_live:
