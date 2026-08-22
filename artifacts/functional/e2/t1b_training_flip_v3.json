@@ -1,0 +1,2800 @@
+{
+  "ambiguities_reported_not_self_adjudicated": [
+    "the cycle counter restarts from slot 0 per Query region (the T1 convention: each freeze is its own seeded draw); the T1b book does not name the counter rule, only the seeds",
+    "Query features for the first scored points read pristine bytes preceding the region (up to 48 back for window 49) -- the same trailing geometry the T0 detector uses, and never P-processed bytes; the v2 isolation block asserts the 168-step pre-region prefix byte-equal to pristine in every scored copy",
+    "the v2-line metric ruling holds: the gate and the judgment read the macro average of per-series event F1; the pooled F1 is kept as a secondary reading alongside",
+    "the A3 gate reads the same macro average on Qcal; a per-series reading of the gate was not pre-registered",
+    "'168-step history isolation' is implemented as (a) each injected event's sigma prefix recomputed from pristine bytes and compared to the ledger, and (b) the 168-step pre-region prefix of every scored copy asserted byte-equal to pristine; if the main line meant a different isolation, the assertion block is the single place to adjust",
+    "the z feature for the training block reads no bytes before the block (detect's warm-up starts at the block's own index 0, so training rows begin at block index 49), while Query features read the 49 pristine pre-region bytes -- the same training/query asymmetry canon as v1/v2",
+    "the detect() threshold 3.5 is passed explicitly per the book but is inert for the feature path (only ['scores'] is used, never ['flags']); it is recorded for provenance"
+  ],
+  "budgets": {
+    "ad_evaluation_budget": 120,
+    "ad_evaluation_counting": "each classifier fit counts once; each per-series Query scoring counts once; each oracle detect counts once",
+    "ad_evaluations": 78,
+    "forecasting_retrain_budget": 0,
+    "forecasting_retrains": 0,
+    "llm_budget": 0,
+    "llm_calls": 0,
+    "t1b_ad_evaluations_before_v3": 202,
+    "t1b_ad_evaluations_cumulative": 280,
+    "t1b_cumulative_cap": 400
+  },
+  "budgets_respected": true,
+  "commit_discipline": "deliverables not committed (the Part 0 checkpoint excepted); no spawn; the other line untouched",
+  "errata": [
+    {
+      "correct": {
+        "commit": "359eec5",
+        "files": 9
+      },
+      "correction_method": "erratum field appended per the #39 pre-distribution revision; the frozen field is not rewritten; no experiment re-run",
+      "date": "2026-08-22",
+      "field": "part0_checkpoint",
+      "readings_changed": false,
+      "reason": "the v3 runner embedded the T1b-era Part 0 checkpoint (a6ba53d: T2 wiring + #37); the v3 slice own Part 0 is 359eec5 (9 files: trainable v1/v2 consumers, the runner, the v1/v2 artifacts, two main-line docs)",
+      "recorded": {
+        "commit": "a6ba53d",
+        "files": 6
+      }
+    }
+  ],
+  "evidence_grade": "POSITIVE_CONTROL",
+  "evidence_grade_note": "permanent: an injected flip can be constructive, so this slice can never become transfer evidence by later reinterpretation",
+  "execution_conventions_v2": null,
+  "execution_conventions_v3": {
+    "abstention": "T0 semantics: undefined z is excluded from the fit (counted by warm_up / zero_scale / non_finite), forced to not flag at Query time, excluded from the AUPRC ranking with the count reported, never zeroed",
+    "feature_family": "the only change vs v2: the feature is the single statistic z_t from anomaly_detection_v1.detect(values, window=49, threshold=3.5)['scores'] -- explicit 49/3.5 (T0's frozen fallback parameters), never the 25/4.0 file defaults; no re-standardization.  Head, labels, P(B), arms, Queries, scoring and ordering all frozen along v2",
+    "oracle": "B4 readings cited from record (Qcal 0.7458 / Qf 0.6977), not re-run this slice",
+    "relation_to_v1_v2": "v1/v2 (raw trailing windows x linear ridge, both geometries) closed by credible negative; v3 changes only the feature family",
+    "single_shot": "no fallback: a gate miss closes the supervised-AD positive-control family (SUPERVISED_AD_PC_FAMILY_CLOSED)"
+  },
+  "frozen_surface": {
+    "name": "FROZEN_SURFACE_V9 (post-T2 registry)",
+    "raw_entries": 40,
+    "unique_files": 39,
+    "verify_after_run": {
+      "drift": [],
+      "files": 39,
+      "ok": true
+    }
+  },
+  "geometry": {
+    "dev_limit": 8760,
+    "qcal_region": [
+      2600,
+      3060
+    ],
+    "qf_region": [
+      2100,
+      2560
+    ],
+    "task_spans_avoided": [
+      [
+        912,
+        1392
+      ],
+      [
+        1608,
+        2088
+      ]
+    ],
+    "training_block": [
+      120,
+      900
+    ]
+  },
+  "git_status_before": " M docs/ROADMAP_POST_V1_2026-08-22.md\n M evaluation/functional/run_e2_t1b_training_side_flip.py\n",
+  "integrity_post_run": {
+    "originals_unchanged": true,
+    "query_copies_unchanged": true,
+    "t1_copies_unchanged": true
+  },
+  "mode": "v3",
+  "part0_checkpoint": {
+    "commit": "a6ba53d",
+    "files": 6,
+    "note": "#37 deliverables + the V9 registry's authorized ssi hash move (37d31cb8... -> f39c13f3..., T2_OBSERVATION_TOUCHED) + main-line ledger/roadmap revisions"
+  },
+  "part_a_consumer": {
+    "fallback_taken": false,
+    "feature_window_used": 49,
+    "gate_query_undefined_attribution": {
+      "non_finite": 289,
+      "warm_up": 0,
+      "zero_scale": 0
+    },
+    "gate_query_undefined_points_total": 289,
+    "readability_gate": {
+      "fallback_macro_f1": null,
+      "fallback_pooled_f1": null,
+      "gate_metric": "macro_f1",
+      "macro_f1": 0.6109126984126984,
+      "passed": true,
+      "pooled_f1": 0.6301369863013699,
+      "rule": "identity(B)-trained classifier, macro-averaged per-series event F1 on Qcal >= 0.50; the formal Query never participates"
+    },
+    "spec": {
+      "abstention": {
+        "auprc": "computed over the finite-feature points only; the undefined-point count is reported",
+        "ledger_events_all_unscoreable": "naturally counted as missed detections; no special handling",
+        "never": "a non-finite score is never converted to zero",
+        "query": "a point whose z is undefined is forced to not flag",
+        "training": "a point whose z is undefined does not enter the fit; exclusions are counted and attributed to warm_up / zero_scale / non_finite"
+      },
+      "classifier": {
+        "alpha": 1.0,
+        "classifier": "weighted closed-form ridge over the single feature z_t",
+        "decision": "score > 0.5 flags the point; an undefined z never flags",
+        "deterministic": true,
+        "fallback": "none -- v3 is single-shot; a gate miss closes the family",
+        "feature": "f1 = z_t = detect(values, window=49, threshold=3.5)['scores'], one pass through the T0 detector's own code path; explicit 49/3.5 (the frozen fallback parameters), never the 25/4.0 file defaults; no re-standardization",
+        "feature_window": 49,
+        "label": "1 at every ledger event point (all 3 points of a burst), else 0",
+        "positive_class_weight": "N_neg / N_pos, computed on the rows that enter the fit (undefined-z points are excluded first)",
+        "solver": "weighted normal equations, np.linalg.solve, mirroring evaluation/benchmark_v02/trainers.fit_closed_form (intercept column last and unpenalized)",
+        "standardization": "none -- the feature already is a robust z-score"
+      },
+      "consumer_id": "anomaly_detection_trainable_v3",
+      "score": {
+        "event_merging": "maximal runs of consecutive flagged points (T0)",
+        "main_metric": "per-series Query event F1, macro-averaged across series (v2 execution-convention ruling); the pooled F1 is reported alongside as a secondary reading",
+        "matching": "greedy nearest-distance one-to-one at +-3 (T0)",
+        "precision_is_a_lower_bound": true,
+        "scoring_parts": "anomaly_detection_v1.predicted_events / match_events / score_events, imported, not re-implemented",
+        "secondary_metric": "AUPRC from the ridge scores, threshold-free",
+        "unit": "event"
+      },
+      "sited_at": "evaluation/functional/consumers/anomaly_detection_trainable_v3.py",
+      "siting_rule": "an experiment instrument, not a Harness part: nothing under methods/ttha imports this module and this module imports nothing from the Harness under study",
+      "task": "anomaly_detection"
+    },
+    "training_exclusions": {
+      "72203812897": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72259003927": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72329003935": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 12
+      },
+      "72422093820": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72435653866": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72438093819": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72511654737": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72529014768": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72605654791": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72654014936": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      },
+      "72793494248": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 14
+      },
+      "74486514719": {
+        "non_finite": 0,
+        "warm_up": 49,
+        "zero_scale": 0
+      }
+    }
+  },
+  "part_b4_oracle_smoke": {
+    "qcal": {
+      "ad_evaluations": 0,
+      "cited_from": "t1b_training_flip_v1/v2 B4 oracle smoke (robust-z 49/3.5, injection-visibility only); not re-run this slice",
+      "pooled": {
+        "f1": 0.7457627118644068
+      }
+    },
+    "qf": {
+      "ad_evaluations": 0,
+      "cited_from": "t1b_training_flip_v1 B4 oracle smoke (the v2 run stopped at the gate and never read Qf); not re-run this slice",
+      "pooled": {
+        "f1": 0.6976744186046512
+      }
+    }
+  },
+  "part_b_queries": {
+    "qcal": {
+      "history_isolation": {
+        "holds": true,
+        "per_series": {
+          "72203812897": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72259003927": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72329003935": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72422093820": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72435653866": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72438093819": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72511654737": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72529014768": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72605654791": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72654014936": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72793494248": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "74486514719": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          }
+        },
+        "rule": "168-step history isolation: sigma prefixes are sourced from pristine bytes only (recomputed and compared per event), and the 168-step pre-region prefix of every scored copy is byte-equal to pristine"
+      },
+      "integrity": {
+        "all_copies_exact_at_ledger_indices": true,
+        "originals": "read-only: the runner opens no path under data/ for writing, and the pristine arrays are re-read and compared again after the run (post_run_originals_unchanged)",
+        "per_series": {
+          "72203812897": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72259003927": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72329003935": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72422093820": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72435653866": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72438093819": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72511654737": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72529014768": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72605654791": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72654014936": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72793494248": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "74486514719": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          }
+        }
+      },
+      "ledger_summary": {
+        "events_per_series": 4,
+        "total_events": 48,
+        "total_skips": 0,
+        "written_to": "_scratch/phase_t/injected/t1b_query/qcal"
+      },
+      "protocol": {
+        "block": {
+          "end": 3060,
+          "start": 2600
+        },
+        "constants": {
+          "boundary_exclusion": 25,
+          "cycle_counter": "from slot 0, global across the 12 train series in roster order, advancing only on an accepted event; each Query region is its own seeded freeze, independent of T0 and T1",
+          "cycle_table": [
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 3,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "delta_scale_dependence": "every delta = sign * sigma_multiple * sigma_local(pristine); no injected value is ever used as a scale source",
+          "events_per_series": 4,
+          "events_per_series_rule": "floor(region length / 112)",
+          "inherited_from": "run_e2_t0_ad_instrument via run_e2_t1_flip_control (both frozen); only the region, the seed and the output directory changed, all three book-mandated",
+          "legal_index_range": [
+            2625,
+            3035
+          ],
+          "min_event_spacing": 50,
+          "position_rule": "a seeded uniform permutation of the legal index range, then filtered in rule order: block fit, minimum spacing, sigma_local validity, target finiteness",
+          "query_processing": "none, ever: the Query is scored unprocessed (B3); P is only ever applied to the training block [120, 900)",
+          "seed": 20260825,
+          "sigma_local": "1.4826 * MAD(pristine[t-168 : t)); MAD == 0 -> std of the same prefix; still 0 -> skip the position and record it"
+        },
+        "evidence_grade": "POSITIVE_CONTROL",
+        "frozen_before_any_training_or_scoring": true,
+        "ledger": {
+          "72203812897": [
+            {
+              "cycle_slot": 3,
+              "index": 2647,
+              "magnitude": 24.907680000000006,
+              "points": 3,
+              "series": "72203812897",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2720,
+              "magnitude": -19.57031999999999,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2890,
+              "magnitude": 29.35547999999997,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.892579999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2967,
+              "magnitude": 41.512800000000006,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72259003927": [
+            {
+              "cycle_slot": 0,
+              "index": 2662,
+              "magnitude": 24.907680000000006,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2857,
+              "magnitude": -19.57031999999999,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2908,
+              "magnitude": -25.204199999999986,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 2.5204199999999988,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2979,
+              "magnitude": 19.570320000000024,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 3.261720000000004,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72329003935": [
+            {
+              "cycle_slot": 2,
+              "index": 2714,
+              "magnitude": 69.6822,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 6.968219999999999,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2765,
+              "magnitude": 29.800260000000005,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 4.966710000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2874,
+              "magnitude": -53.373599999999996,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 5.337359999999999,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2969,
+              "magnitude": 20.459880000000005,
+              "points": 3,
+              "series": "72329003935",
+              "sigma_local": 3.409980000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72422093820": [
+            {
+              "cycle_slot": 3,
+              "index": 2725,
+              "magnitude": 54.26315999999999,
+              "points": 3,
+              "series": "72422093820",
+              "sigma_local": 9.043859999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2825,
+              "magnitude": 34.692840000000004,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 5.78214,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2935,
+              "magnitude": 57.821399999999976,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 5.782139999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 3023,
+              "magnitude": -24.907680000000006,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72435653866": [
+            {
+              "cycle_slot": 1,
+              "index": 2636,
+              "magnitude": -40.03019999999998,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 6.671699999999997,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2711,
+              "magnitude": 47.146679999999996,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 7.857779999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2822,
+              "magnitude": 34.69284,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.782139999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2928,
+              "magnitude": -57.821399999999976,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.782139999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72438093819": [
+            {
+              "cycle_slot": 2,
+              "index": 2681,
+              "magnitude": 83.02560000000001,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 8.302560000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2745,
+              "magnitude": 29.35548,
+              "points": 3,
+              "series": "72438093819",
+              "sigma_local": 4.89258,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2858,
+              "magnitude": -81.543,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 8.154300000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2935,
+              "magnitude": 29.35547999999997,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 4.892579999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72511654737": [
+            {
+              "cycle_slot": 1,
+              "index": 2654,
+              "magnitude": -24.907680000000006,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2716,
+              "magnitude": 24.907680000000006,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2786,
+              "magnitude": 41.512799999999984,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 4.151279999999998,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2924,
+              "magnitude": 40.030199999999994,
+              "points": 3,
+              "series": "72511654737",
+              "sigma_local": 6.6716999999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72529014768": [
+            {
+              "cycle_slot": 4,
+              "index": 2674,
+              "magnitude": -45.96060000000001,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.5960600000000005,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2821,
+              "magnitude": -29.35548,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.89258,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2914,
+              "magnitude": 25.797240000000002,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.29954,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 3032,
+              "magnitude": 24.018120000000007,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72605654791": [
+            {
+              "cycle_slot": 2,
+              "index": 2634,
+              "magnitude": 45.219300000000004,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.52193,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2690,
+              "magnitude": -40.0302,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.00302,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2951,
+              "magnitude": 24.018120000000007,
+              "points": 3,
+              "series": "72605654791",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 3005,
+              "magnitude": 17.34642000000001,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 2.8910700000000014,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72654014936": [
+            {
+              "cycle_slot": 1,
+              "index": 2695,
+              "magnitude": -40.030199999999994,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 6.6716999999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2758,
+              "magnitude": 44.477999999999994,
+              "points": 3,
+              "series": "72654014936",
+              "sigma_local": 7.412999999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2846,
+              "magnitude": 40.03020000000001,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 3022,
+              "magnitude": 29.355479999999986,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 4.892579999999998,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72793494248": [
+            {
+              "cycle_slot": 5,
+              "index": 2680,
+              "magnitude": 24.90768,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 4.15128,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2752,
+              "magnitude": 24.90767999999999,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 4.151279999999998,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2866,
+              "magnitude": -10.674719999999994,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 1.779119999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2920,
+              "magnitude": -17.79119999999999,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 1.779119999999999,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "74486514719": [
+            {
+              "cycle_slot": 3,
+              "index": 2648,
+              "magnitude": 24.018120000000007,
+              "points": 3,
+              "series": "74486514719",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2772,
+              "magnitude": 25.204199999999986,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 2.5204199999999988,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2946,
+              "magnitude": -30.393299999999996,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 3.0393299999999996,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 3006,
+              "magnitude": 19.57031999999999,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ]
+        },
+        "protocol_version": "t1b_training_flip_v3",
+        "role": "T1b calibration Query Qcal; serves the A3 readability gate only.",
+        "skips": {
+          "72203812897": [],
+          "72259003927": [],
+          "72329003935": [],
+          "72422093820": [],
+          "72435653866": [],
+          "72438093819": [],
+          "72511654737": [],
+          "72529014768": [],
+          "72605654791": [],
+          "72654014936": [],
+          "72793494248": [],
+          "74486514719": []
+        },
+        "spacing_rejections": {
+          "72203812897": 8,
+          "72259003927": 0,
+          "72329003935": 5,
+          "72422093820": 2,
+          "72435653866": 3,
+          "72438093819": 0,
+          "72511654737": 4,
+          "72529014768": 4,
+          "72605654791": 2,
+          "72654014936": 4,
+          "72793494248": 3,
+          "74486514719": 1
+        }
+      },
+      "region": {
+        "end": 3060,
+        "start": 2600
+      }
+    },
+    "qf": {
+      "history_isolation": {
+        "holds": true,
+        "per_series": {
+          "72203812897": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72259003927": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72329003935": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72422093820": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72435653866": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72438093819": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72511654737": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72529014768": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72605654791": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72654014936": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72793494248": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "74486514719": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          }
+        },
+        "rule": "168-step history isolation: sigma prefixes are sourced from pristine bytes only (recomputed and compared per event), and the 168-step pre-region prefix of every scored copy is byte-equal to pristine"
+      },
+      "integrity": {
+        "all_copies_exact_at_ledger_indices": true,
+        "originals": "read-only: the runner opens no path under data/ for writing, and the pristine arrays are re-read and compared again after the run (post_run_originals_unchanged)",
+        "per_series": {
+          "72203812897": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72259003927": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72329003935": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 1.4210854715202004e-14
+          },
+          "72422093820": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72435653866": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72438093819": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72511654737": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72529014768": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72605654791": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72654014936": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72793494248": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "74486514719": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          }
+        }
+      },
+      "ledger_summary": {
+        "events_per_series": 4,
+        "total_events": 48,
+        "total_skips": 1,
+        "written_to": "_scratch/phase_t/injected/t1b_query/qf"
+      },
+      "protocol": {
+        "block": {
+          "end": 2560,
+          "start": 2100
+        },
+        "constants": {
+          "boundary_exclusion": 25,
+          "cycle_counter": "from slot 0, global across the 12 train series in roster order, advancing only on an accepted event; each Query region is its own seeded freeze, independent of T0 and T1",
+          "cycle_table": [
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 3,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "delta_scale_dependence": "every delta = sign * sigma_multiple * sigma_local(pristine); no injected value is ever used as a scale source",
+          "events_per_series": 4,
+          "events_per_series_rule": "floor(region length / 112)",
+          "inherited_from": "run_e2_t0_ad_instrument via run_e2_t1_flip_control (both frozen); only the region, the seed and the output directory changed, all three book-mandated",
+          "legal_index_range": [
+            2125,
+            2535
+          ],
+          "min_event_spacing": 50,
+          "position_rule": "a seeded uniform permutation of the legal index range, then filtered in rule order: block fit, minimum spacing, sigma_local validity, target finiteness",
+          "query_processing": "none, ever: the Query is scored unprocessed (B3); P is only ever applied to the training block [120, 900)",
+          "seed": 20260824,
+          "sigma_local": "1.4826 * MAD(pristine[t-168 : t)); MAD == 0 -> std of the same prefix; still 0 -> skip the position and record it"
+        },
+        "evidence_grade": "POSITIVE_CONTROL",
+        "frozen_before_any_training_or_scoring": true,
+        "ledger": {
+          "72203812897": [
+            {
+              "cycle_slot": 1,
+              "index": 2148,
+              "magnitude": -24.01811999999999,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.0030199999999985,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2249,
+              "magnitude": 24.01811999999999,
+              "points": 3,
+              "series": "72203812897",
+              "sigma_local": 4.0030199999999985,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2396,
+              "magnitude": 19.57031999999999,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2466,
+              "magnitude": 41.512799999999956,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.151279999999995,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72259003927": [
+            {
+              "cycle_slot": 4,
+              "index": 2125,
+              "magnitude": -40.771499999999996,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.07715,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2178,
+              "magnitude": 29.355480000000004,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.892580000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2282,
+              "magnitude": 29.355480000000004,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.892580000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2445,
+              "magnitude": -24.907680000000006,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72329003935": [
+            {
+              "cycle_slot": 2,
+              "index": 2188,
+              "magnitude": 70.42349999999998,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 7.042349999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2265,
+              "magnitude": 44.477999999999994,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 7.412999999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2357,
+              "magnitude": -69.68219999999997,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 6.968219999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2446,
+              "magnitude": 32.02416000000001,
+              "points": 3,
+              "series": "72329003935",
+              "sigma_local": 5.337360000000002,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72422093820": [
+            {
+              "cycle_slot": 0,
+              "index": 2216,
+              "magnitude": 48.925799999999995,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 8.1543,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2298,
+              "magnitude": -47.14668,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 7.857780000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2404,
+              "magnitude": 73.38870000000001,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 7.338870000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2468,
+              "magnitude": 27.576360000000015,
+              "points": 3,
+              "series": "72422093820",
+              "sigma_local": 4.596060000000002,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72435653866": [
+            {
+              "cycle_slot": 1,
+              "index": 2173,
+              "magnitude": -34.69284,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.782139999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2248,
+              "magnitude": -66.717,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 6.6716999999999995,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2341,
+              "magnitude": 32.024159999999995,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.337359999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2485,
+              "magnitude": 24.907680000000006,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72438093819": [
+            {
+              "cycle_slot": 3,
+              "index": 2130,
+              "magnitude": 34.69284,
+              "points": 3,
+              "series": "72438093819",
+              "sigma_local": 5.782139999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2185,
+              "magnitude": 61.5279,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 6.15279,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2447,
+              "magnitude": 34.69283999999998,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 5.782139999999997,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2534,
+              "magnitude": -41.512800000000006,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72511654737": [
+            {
+              "cycle_slot": 1,
+              "index": 2178,
+              "magnitude": -19.57032000000001,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 3.2617200000000013,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2229,
+              "magnitude": 15.122519999999993,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 2.5204199999999988,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2341,
+              "magnitude": 23.721600000000006,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 2.3721600000000005,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2525,
+              "magnitude": 28.9107,
+              "points": 3,
+              "series": "72511654737",
+              "sigma_local": 4.8184499999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72529014768": [
+            {
+              "cycle_slot": 1,
+              "index": 2181,
+              "magnitude": -27.13158,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.52193,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2268,
+              "magnitude": 17.346420000000002,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 2.89107,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2341,
+              "magnitude": -32.6172,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2479,
+              "magnitude": 34.69284000000002,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 5.782140000000003,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72605654791": [
+            {
+              "cycle_slot": 5,
+              "index": 2176,
+              "magnitude": 24.018120000000003,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.00302,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2237,
+              "magnitude": 41.5128,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.15128,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2450,
+              "magnitude": 22.239000000000004,
+              "points": 3,
+              "series": "72605654791",
+              "sigma_local": 3.7065000000000006,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2512,
+              "magnitude": -40.03020000000001,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72654014936": [
+            {
+              "cycle_slot": 3,
+              "index": 2241,
+              "magnitude": 19.57032,
+              "points": 3,
+              "series": "72654014936",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2346,
+              "magnitude": 69.6822,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 6.96822,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2415,
+              "magnitude": -32.024159999999995,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 5.337359999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2474,
+              "magnitude": 30.245039999999996,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 5.040839999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72793494248": [
+            {
+              "cycle_slot": 5,
+              "index": 2137,
+              "magnitude": 10.674719999999994,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 1.779119999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2226,
+              "magnitude": -19.57032,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2297,
+              "magnitude": 19.57032,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2355,
+              "magnitude": -23.721600000000006,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 2.3721600000000005,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "74486514719": [
+            {
+              "cycle_slot": 2,
+              "index": 2127,
+              "magnitude": 34.099799999999995,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 3.4099799999999996,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2253,
+              "magnitude": 19.57032,
+              "points": 3,
+              "series": "74486514719",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2437,
+              "magnitude": 26.686800000000016,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 4.447800000000003,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2507,
+              "magnitude": -28.9107,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 2.89107,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ]
+        },
+        "protocol_version": "t1b_training_flip_v3",
+        "role": "T1b formal Query Qf.  Frozen before any training or scoring.",
+        "skips": {
+          "72203812897": [],
+          "72259003927": [],
+          "72329003935": [],
+          "72422093820": [],
+          "72435653866": [],
+          "72438093819": [],
+          "72511654737": [],
+          "72529014768": [],
+          "72605654791": [],
+          "72654014936": [
+            {
+              "index": 2533,
+              "reason": "event_would_leave_the_block"
+            }
+          ],
+          "72793494248": [],
+          "74486514719": []
+        },
+        "spacing_rejections": {
+          "72203812897": 1,
+          "72259003927": 0,
+          "72329003935": 7,
+          "72422093820": 3,
+          "72435653866": 3,
+          "72438093819": 2,
+          "72511654737": 0,
+          "72529014768": 6,
+          "72605654791": 1,
+          "72654014936": 4,
+          "72793494248": 5,
+          "74486514719": 0
+        }
+      },
+      "region": {
+        "end": 2560,
+        "start": 2100
+      }
+    }
+  },
+  "part_c": {
+    "ad_arms": {
+      "hampel_filter": {
+        "auprc_by_series": {
+          "72203812897": 1.0,
+          "72259003927": 0.8928571428571428,
+          "72329003935": 1.0,
+          "72422093820": 0.7053571428571428,
+          "72435653866": 1.0,
+          "72438093819": 1.0,
+          "72511654737": 0.8626373626373626,
+          "72529014768": 0.95,
+          "72605654791": 1.0,
+          "72654014936": 0.6152777777777778,
+          "72793494248": 0.626984126984127,
+          "74486514719": 1.0
+        },
+        "auprc_mean": 0.8877594627594627,
+        "f1_by_series": {
+          "72203812897": 0.8571428571428571,
+          "72259003927": 0.888888888888889,
+          "72329003935": 0.888888888888889,
+          "72422093820": 0.888888888888889,
+          "72435653866": 0.75,
+          "72438093819": 0.8,
+          "72511654737": 0.8571428571428571,
+          "72529014768": 0.8571428571428571,
+          "72605654791": 0.8,
+          "72654014936": 0.6666666666666665,
+          "72793494248": 0.5,
+          "74486514719": 0.8
+        },
+        "macro_f1": 0.7962301587301588,
+        "model": {
+          "n_neg": 8682,
+          "n_pos": 64,
+          "positive_weight": 135.65625,
+          "standardization_sources": {
+            "72203812897": "none_v3_z_feature",
+            "72259003927": "none_v3_z_feature",
+            "72329003935": "none_v3_z_feature",
+            "72422093820": "none_v3_z_feature",
+            "72435653866": "none_v3_z_feature",
+            "72438093819": "none_v3_z_feature",
+            "72511654737": "none_v3_z_feature",
+            "72529014768": "none_v3_z_feature",
+            "72605654791": "none_v3_z_feature",
+            "72654014936": "none_v3_z_feature",
+            "72793494248": "none_v3_z_feature",
+            "74486514719": "none_v3_z_feature"
+          },
+          "training_exclusions": {
+            "72203812897": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72259003927": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72329003935": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 12
+            },
+            "72422093820": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72435653866": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72438093819": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72511654737": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72529014768": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72605654791": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72654014936": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72793494248": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 14
+            },
+            "74486514719": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            }
+          },
+          "training_samples": 8746
+        },
+        "pooled_f1": 0.7961165048543689,
+        "undefined_points_by_series": {
+          "72203812897": 50,
+          "72259003927": 0,
+          "72329003935": 0,
+          "72422093820": 0,
+          "72435653866": 50,
+          "72438093819": 0,
+          "72511654737": 0,
+          "72529014768": 0,
+          "72605654791": 54,
+          "72654014936": 0,
+          "72793494248": 95,
+          "74486514719": 0
+        },
+        "undefined_points_total": 249
+      },
+      "identity": {
+        "auprc_by_series": {
+          "72203812897": 1.0,
+          "72259003927": 0.8928571428571428,
+          "72329003935": 1.0,
+          "72422093820": 0.7053571428571428,
+          "72435653866": 1.0,
+          "72438093819": 1.0,
+          "72511654737": 0.8626373626373626,
+          "72529014768": 0.95,
+          "72605654791": 1.0,
+          "72654014936": 0.6152777777777778,
+          "72793494248": 0.626984126984127,
+          "74486514719": 1.0
+        },
+        "auprc_mean": 0.8877594627594627,
+        "f1_by_series": {
+          "72203812897": 0.6666666666666666,
+          "72259003927": 0.75,
+          "72329003935": 0.888888888888889,
+          "72422093820": 0.75,
+          "72435653866": 0.8571428571428571,
+          "72438093819": 1.0,
+          "72511654737": 0.6666666666666666,
+          "72529014768": 0.8571428571428571,
+          "72605654791": 1.0,
+          "72654014936": 0.3333333333333333,
+          "72793494248": 0.4,
+          "74486514719": 0.888888888888889
+        },
+        "macro_f1": 0.7548941798941798,
+        "model": {
+          "n_neg": 8682,
+          "n_pos": 64,
+          "positive_weight": 135.65625,
+          "standardization_sources": {
+            "72203812897": "none_v3_z_feature",
+            "72259003927": "none_v3_z_feature",
+            "72329003935": "none_v3_z_feature",
+            "72422093820": "none_v3_z_feature",
+            "72435653866": "none_v3_z_feature",
+            "72438093819": "none_v3_z_feature",
+            "72511654737": "none_v3_z_feature",
+            "72529014768": "none_v3_z_feature",
+            "72605654791": "none_v3_z_feature",
+            "72654014936": "none_v3_z_feature",
+            "72793494248": "none_v3_z_feature",
+            "74486514719": "none_v3_z_feature"
+          },
+          "training_exclusions": {
+            "72203812897": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72259003927": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72329003935": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 12
+            },
+            "72422093820": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72435653866": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72438093819": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72511654737": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72529014768": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72605654791": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72654014936": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72793494248": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 14
+            },
+            "74486514719": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            }
+          },
+          "training_samples": 8746
+        },
+        "pooled_f1": 0.7816091954022988,
+        "undefined_points_by_series": {
+          "72203812897": 50,
+          "72259003927": 0,
+          "72329003935": 0,
+          "72422093820": 0,
+          "72435653866": 50,
+          "72438093819": 0,
+          "72511654737": 0,
+          "72529014768": 0,
+          "72605654791": 54,
+          "72654014936": 0,
+          "72793494248": 95,
+          "74486514719": 0
+        },
+        "undefined_points_total": 249
+      },
+      "outlier_iqr": {
+        "auprc_by_series": {
+          "72203812897": 1.0,
+          "72259003927": 0.8928571428571428,
+          "72329003935": 1.0,
+          "72422093820": 0.7053571428571428,
+          "72435653866": 1.0,
+          "72438093819": 1.0,
+          "72511654737": 0.8626373626373626,
+          "72529014768": 0.95,
+          "72605654791": 1.0,
+          "72654014936": 0.6152777777777778,
+          "72793494248": 0.626984126984127,
+          "74486514719": 1.0
+        },
+        "auprc_mean": 0.8877594627594627,
+        "f1_by_series": {
+          "72203812897": 0.8571428571428571,
+          "72259003927": 0.888888888888889,
+          "72329003935": 0.888888888888889,
+          "72422093820": 0.888888888888889,
+          "72435653866": 0.75,
+          "72438093819": 0.8,
+          "72511654737": 0.6666666666666665,
+          "72529014768": 0.8,
+          "72605654791": 0.7272727272727273,
+          "72654014936": 0.6666666666666665,
+          "72793494248": 0.5,
+          "74486514719": 0.7272727272727273
+        },
+        "macro_f1": 0.7634740259740259,
+        "model": {
+          "n_neg": 8590,
+          "n_pos": 64,
+          "positive_weight": 134.21875,
+          "standardization_sources": {
+            "72203812897": "none_v3_z_feature",
+            "72259003927": "none_v3_z_feature",
+            "72329003935": "none_v3_z_feature",
+            "72422093820": "none_v3_z_feature",
+            "72435653866": "none_v3_z_feature",
+            "72438093819": "none_v3_z_feature",
+            "72511654737": "none_v3_z_feature",
+            "72529014768": "none_v3_z_feature",
+            "72605654791": "none_v3_z_feature",
+            "72654014936": "none_v3_z_feature",
+            "72793494248": "none_v3_z_feature",
+            "74486514719": "none_v3_z_feature"
+          },
+          "training_exclusions": {
+            "72203812897": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72259003927": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72329003935": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 12
+            },
+            "72422093820": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72435653866": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72438093819": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 31
+            },
+            "72511654737": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72529014768": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72605654791": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72654014936": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72793494248": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 75
+            },
+            "74486514719": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            }
+          },
+          "training_samples": 8654
+        },
+        "pooled_f1": 0.7636363636363636,
+        "undefined_points_by_series": {
+          "72203812897": 50,
+          "72259003927": 0,
+          "72329003935": 0,
+          "72422093820": 0,
+          "72435653866": 50,
+          "72438093819": 0,
+          "72511654737": 0,
+          "72529014768": 0,
+          "72605654791": 54,
+          "72654014936": 0,
+          "72793494248": 95,
+          "74486514719": 0
+        },
+        "undefined_points_total": 249
+      },
+      "outlier_mad": {
+        "auprc_by_series": {
+          "72203812897": 1.0,
+          "72259003927": 0.8928571428571428,
+          "72329003935": 1.0,
+          "72422093820": 0.7053571428571428,
+          "72435653866": 1.0,
+          "72438093819": 1.0,
+          "72511654737": 0.8626373626373626,
+          "72529014768": 0.95,
+          "72605654791": 1.0,
+          "72654014936": 0.6152777777777778,
+          "72793494248": 0.626984126984127,
+          "74486514719": 1.0
+        },
+        "auprc_mean": 0.8877594627594627,
+        "f1_by_series": {
+          "72203812897": 0.8571428571428571,
+          "72259003927": 0.888888888888889,
+          "72329003935": 0.888888888888889,
+          "72422093820": 0.888888888888889,
+          "72435653866": 0.75,
+          "72438093819": 0.8,
+          "72511654737": 0.8571428571428571,
+          "72529014768": 0.8571428571428571,
+          "72605654791": 0.8,
+          "72654014936": 0.6666666666666665,
+          "72793494248": 0.5,
+          "74486514719": 0.8
+        },
+        "macro_f1": 0.7962301587301588,
+        "model": {
+          "n_neg": 8648,
+          "n_pos": 64,
+          "positive_weight": 135.125,
+          "standardization_sources": {
+            "72203812897": "none_v3_z_feature",
+            "72259003927": "none_v3_z_feature",
+            "72329003935": "none_v3_z_feature",
+            "72422093820": "none_v3_z_feature",
+            "72435653866": "none_v3_z_feature",
+            "72438093819": "none_v3_z_feature",
+            "72511654737": "none_v3_z_feature",
+            "72529014768": "none_v3_z_feature",
+            "72605654791": "none_v3_z_feature",
+            "72654014936": "none_v3_z_feature",
+            "72793494248": "none_v3_z_feature",
+            "74486514719": "none_v3_z_feature"
+          },
+          "training_exclusions": {
+            "72203812897": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72259003927": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72329003935": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 12
+            },
+            "72422093820": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72435653866": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72438093819": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 34
+            },
+            "72511654737": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72529014768": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72605654791": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72654014936": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72793494248": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 14
+            },
+            "74486514719": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            }
+          },
+          "training_samples": 8712
+        },
+        "pooled_f1": 0.7961165048543689,
+        "undefined_points_by_series": {
+          "72203812897": 50,
+          "72259003927": 0,
+          "72329003935": 0,
+          "72422093820": 0,
+          "72435653866": 50,
+          "72438093819": 0,
+          "72511654737": 0,
+          "72529014768": 0,
+          "72605654791": 54,
+          "72654014936": 0,
+          "72793494248": 95,
+          "74486514719": 0
+        },
+        "undefined_points_total": 249
+      },
+      "winsorize": {
+        "auprc_by_series": {
+          "72203812897": 1.0,
+          "72259003927": 0.8928571428571428,
+          "72329003935": 1.0,
+          "72422093820": 0.7053571428571428,
+          "72435653866": 1.0,
+          "72438093819": 1.0,
+          "72511654737": 0.8626373626373626,
+          "72529014768": 0.95,
+          "72605654791": 1.0,
+          "72654014936": 0.6152777777777778,
+          "72793494248": 0.626984126984127,
+          "74486514719": 1.0
+        },
+        "auprc_mean": 0.8877594627594627,
+        "f1_by_series": {
+          "72203812897": 0.6,
+          "72259003927": 0.888888888888889,
+          "72329003935": 0.6153846153846153,
+          "72422093820": 0.5714285714285715,
+          "72435653866": 0.3529411764705882,
+          "72438093819": 0.6666666666666666,
+          "72511654737": 0.5333333333333333,
+          "72529014768": 0.6153846153846153,
+          "72605654791": 0.6153846153846153,
+          "72654014936": 0.5714285714285715,
+          "72793494248": 0.6,
+          "74486514719": 0.4210526315789474
+        },
+        "macro_f1": 0.5876578071624511,
+        "model": {
+          "n_neg": 8426,
+          "n_pos": 63,
+          "positive_weight": 133.74603174603175,
+          "standardization_sources": {
+            "72203812897": "none_v3_z_feature",
+            "72259003927": "none_v3_z_feature",
+            "72329003935": "none_v3_z_feature",
+            "72422093820": "none_v3_z_feature",
+            "72435653866": "none_v3_z_feature",
+            "72438093819": "none_v3_z_feature",
+            "72511654737": "none_v3_z_feature",
+            "72529014768": "none_v3_z_feature",
+            "72605654791": "none_v3_z_feature",
+            "72654014936": "none_v3_z_feature",
+            "72793494248": "none_v3_z_feature",
+            "74486514719": "none_v3_z_feature"
+          },
+          "training_exclusions": {
+            "72203812897": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72259003927": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 38
+            },
+            "72329003935": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 12
+            },
+            "72422093820": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 56
+            },
+            "72435653866": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 35
+            },
+            "72438093819": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 31
+            },
+            "72511654737": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 18
+            },
+            "72529014768": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72605654791": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            },
+            "72654014936": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 33
+            },
+            "72793494248": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 60
+            },
+            "74486514719": {
+              "non_finite": 0,
+              "warm_up": 49,
+              "zero_scale": 0
+            }
+          },
+          "training_samples": 8489
+        },
+        "pooled_f1": 0.5660377358490566,
+        "undefined_points_by_series": {
+          "72203812897": 50,
+          "72259003927": 0,
+          "72329003935": 0,
+          "72422093820": 0,
+          "72435653866": 50,
+          "72438093819": 0,
+          "72511654737": 0,
+          "72529014768": 0,
+          "72605654791": 54,
+          "72654014936": 0,
+          "72793494248": 95,
+          "74486514719": 0
+        },
+        "undefined_points_total": 249
+      }
+    },
+    "b3_query_never_processed": {
+      "expected_program_calls": 120,
+      "holds": true,
+      "program_calls": 120,
+      "rule": "v6._apply_program is called only inside t1.build_pbuffers, on [120, 900) slices; the Query arrays are never an argument"
+    },
+    "c2_same_byte": {
+      "all_equal": true,
+      "assertion": "np.array_equal between the bytes handed to the ridge stack and the bytes handed to the AD detector, on every shared index of the one P(B) buffer, per (series, program, anchor)",
+      "comparisons": 600,
+      "failures": [],
+      "note": "both Consumers slice one buffer by construction; this pass is the online guard that no code path re-derives, re-applies P, or hands over a copy that is not the same bytes"
+    },
+    "c3_guard": {
+      "pbuffers_recomputed_twice_byte_identical": true,
+      "rebuilt_gains_match_recorded_c1": true,
+      "t1_copy_shas_unchanged": true
+    },
+    "forecasting_source": {
+      "consistent_with_recorded": true,
+      "cross_check": {
+        "hampel_filter": {
+          "abs_diff": 0.0,
+          "rebuilt_aggregate": 0.0647581417473617,
+          "recorded_aggregate": 0.0647581417473617
+        },
+        "outlier_iqr": {
+          "abs_diff": 0.0,
+          "rebuilt_aggregate": 0.27226576640403444,
+          "recorded_aggregate": 0.27226576640403444
+        },
+        "outlier_mad": {
+          "abs_diff": 0.0,
+          "rebuilt_aggregate": 0.3255462450771637,
+          "recorded_aggregate": 0.3255462450771637
+        },
+        "winsorize": {
+          "abs_diff": 0.0,
+          "rebuilt_aggregate": 0.40586167760385816,
+          "recorded_aggregate": 0.40586167760385816
+        }
+      },
+      "retrains": 0,
+      "source": "artifacts/functional/e2/t1_flip_control_v1.json, read-only"
+    },
+    "pbuffers": {
+      "construction": "t1.build_pbuffers on the read-only T1 injected copies; one P(B) per (series, program), fed to both Consumers",
+      "program_calls": 120,
+      "reproducible_on_recall": true
+    }
+  },
+  "part_d": {
+    "ad_gain_per_series": {
+      "hampel_filter": {
+        "72203812897": 0.19047619047619047,
+        "72259003927": 0.13888888888888895,
+        "72329003935": 0.0,
+        "72422093820": 0.13888888888888895,
+        "72435653866": -0.1071428571428571,
+        "72438093819": -0.19999999999999996,
+        "72511654737": 0.19047619047619047,
+        "72529014768": 0.0,
+        "72605654791": -0.19999999999999996,
+        "72654014936": 0.3333333333333332,
+        "72793494248": 0.09999999999999998,
+        "74486514719": -0.0888888888888889
+      },
+      "identity": {
+        "72203812897": 0.0,
+        "72259003927": 0.0,
+        "72329003935": 0.0,
+        "72422093820": 0.0,
+        "72435653866": 0.0,
+        "72438093819": 0.0,
+        "72511654737": 0.0,
+        "72529014768": 0.0,
+        "72605654791": 0.0,
+        "72654014936": 0.0,
+        "72793494248": 0.0,
+        "74486514719": 0.0
+      },
+      "outlier_iqr": {
+        "72203812897": 0.19047619047619047,
+        "72259003927": 0.13888888888888895,
+        "72329003935": 0.0,
+        "72422093820": 0.13888888888888895,
+        "72435653866": -0.1071428571428571,
+        "72438093819": -0.19999999999999996,
+        "72511654737": -1.1102230246251565e-16,
+        "72529014768": -0.05714285714285705,
+        "72605654791": -0.2727272727272727,
+        "72654014936": 0.3333333333333332,
+        "72793494248": 0.09999999999999998,
+        "74486514719": -0.16161616161616166
+      },
+      "outlier_mad": {
+        "72203812897": 0.19047619047619047,
+        "72259003927": 0.13888888888888895,
+        "72329003935": 0.0,
+        "72422093820": 0.13888888888888895,
+        "72435653866": -0.1071428571428571,
+        "72438093819": -0.19999999999999996,
+        "72511654737": 0.19047619047619047,
+        "72529014768": 0.0,
+        "72605654791": -0.19999999999999996,
+        "72654014936": 0.3333333333333332,
+        "72793494248": 0.09999999999999998,
+        "74486514719": -0.0888888888888889
+      },
+      "winsorize": {
+        "72203812897": -0.06666666666666665,
+        "72259003927": 0.13888888888888895,
+        "72329003935": -0.27350427350427364,
+        "72422093820": -0.1785714285714285,
+        "72435653866": -0.5042016806722689,
+        "72438093819": -0.33333333333333337,
+        "72511654737": -0.1333333333333333,
+        "72529014768": -0.2417582417582418,
+        "72605654791": -0.3846153846153847,
+        "72654014936": 0.2380952380952382,
+        "72793494248": 0.19999999999999996,
+        "74486514719": -0.46783625730994155
+      }
+    },
+    "c5_mechanism_note": "mandatory for the negative reading: repair restores the positive-label positions' features to normal shape, so the classifier loses its separating signal and Query detection degrades; if detection does NOT degrade, that is a credible negative -- no re-injection, no program swap, no re-roll",
+    "consumer_family_calibration_notes_v3": [
+      "the AD Consumer is a threshold head learned on the task-native sufficient statistic (a learnable robust-z in effect); a flip verdict speaks only for this Consumer family",
+      "this result only proves that the training-data utility flip is readable by an instrument when the task-native sufficient statistic is visible -- it does not prove the Harness discovered that representation by itself, and it does not claim generalization to natural anomaly data"
+    ],
+    "flip_check_per_program": [
+      {
+        "ad_gain_metric": "macro_f1",
+        "ad_train_gain_pooled": 0.008579846079846076,
+        "flip_direction": null,
+        "forecasting_delayed_aggregate_gain": 0.27226576640403444,
+        "program": "outlier_iqr"
+      },
+      {
+        "ad_gain_metric": "macro_f1",
+        "ad_train_gain_pooled": 0.04133597883597895,
+        "flip_direction": null,
+        "forecasting_delayed_aggregate_gain": 0.3255462450771637,
+        "program": "outlier_mad"
+      },
+      {
+        "ad_gain_metric": "macro_f1",
+        "ad_train_gain_pooled": 0.04133597883597895,
+        "flip_direction": null,
+        "forecasting_delayed_aggregate_gain": 0.0647581417473617,
+        "program": "hampel_filter"
+      },
+      {
+        "ad_gain_metric": "macro_f1",
+        "ad_train_gain_pooled": -0.16723637273172876,
+        "flip_direction": "forecasting_up_ad_down",
+        "forecasting_delayed_aggregate_gain": 0.40586167760385816,
+        "program": "winsorize"
+      }
+    ],
+    "flips_found": [
+      {
+        "ad_gain_metric": "macro_f1",
+        "ad_train_gain_pooled": -0.16723637273172876,
+        "flip_direction": "forecasting_up_ad_down",
+        "forecasting_delayed_aggregate_gain": 0.40586167760385816,
+        "program": "winsorize"
+      }
+    ],
+    "forecasting_delayed_per_series": {
+      "hampel_filter": {
+        "99999903062": 0.08026916310043804,
+        "99999904140": 0.16030385729191074,
+        "99999923908": -0.0904124968690548,
+        "99999963862": 0.10887204346615283
+      },
+      "identity": {
+        "99999903062": 0.0,
+        "99999904140": 0.0,
+        "99999923908": 0.0,
+        "99999963862": 0.0
+      },
+      "outlier_iqr": {
+        "99999903062": 0.30204738689344024,
+        "99999904140": 0.6097610130509113,
+        "99999923908": 0.11870014174799393,
+        "99999963862": 0.0585545239237922
+      },
+      "outlier_mad": {
+        "99999903062": 0.30567537985810583,
+        "99999904140": 0.6211412110973565,
+        "99999923908": 0.1674334032146033,
+        "99999963862": 0.20793498613858932
+      },
+      "winsorize": {
+        "99999903062": 0.3320247454108856,
+        "99999904140": 0.44537161329058583,
+        "99999923908": 0.44362183429389496,
+        "99999963862": 0.4024285174200661
+      }
+    },
+    "quantization_note": "Qf carries 48 events (12 series x 4); with the macro average, one event changing hands moves one series' recall by 1/4 and the aggregate by roughly 0.02, so the +-0.005 line means 'at least one event changes hands', not 0.005-level resolution"
+  },
+  "protocol_version": "t1b_training_flip_v3",
+  "role": "T1b: one P(training block), two *trained* Consumers, both scored on a fixed independent unprocessed Query -- is the training data's utility itself task-flipped?",
+  "roster": {
+    "eval": [
+      "99999903062",
+      "99999904140",
+      "99999923908",
+      "99999963862"
+    ],
+    "source": "noaa_fresh_cohort_v2.step_2_health_check_v2",
+    "train": [
+      "72203812897",
+      "72259003927",
+      "72329003935",
+      "72422093820",
+      "72435653866",
+      "72438093819",
+      "72511654737",
+      "72529014768",
+      "72605654791",
+      "72654014936",
+      "72793494248",
+      "74486514719"
+    ]
+  },
+  "sealed_discipline": "NOAA 2025 / beyond_17520 / SMD test+labels: zero reads; robust-z (49/3.5) served as injection-visibility oracle only, never as the main AD Consumer",
+  "verdict": "TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL",
+  "verdict_evidence_grade": "POSITIVE_CONTROL",
+  "wall_seconds": 3.907749700010754
+}

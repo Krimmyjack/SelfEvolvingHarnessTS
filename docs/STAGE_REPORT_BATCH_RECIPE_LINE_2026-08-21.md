@@ -29,6 +29,7 @@
 | C6 | `RESCOPE_PRESERVES_GAIN_ELIMINATES_HARM` | 确定性三臂:task_C 无 guard +0.0297 带 1 受害 / VETO 0 / **RESCOPE +0.0611 零受害剔 1**;task_D +0.0495 带 2 受害 / 0 / **+0.0959 零受害剔 2** | MECHANISM | `operational_pipeline_v8.*` |
 | C7 | `LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL` | live 单轨,`gpt-5.6-sol`:task_D 路由恰为两条越线序列,+0.049504 带 2 受害 → **+0.095879 零受害**;保留的两条序列读数逐位不动;VETO 孪生同轨为 identity 0.0 | DEVELOPMENT | `operational_pipeline_v10.*` |
 | C12 | `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(raw);**ADJUDICATED_ESTIMAND = INPUT_SIDE_TASK_FLIP** | 同字节契约下(同一注入训练块、同一 Program 施用恰一次、两 Consumer 消费同一字节,断言 600/600),离群修复族 **4/4 程序同向翻转**:forecasting delayed 聚合 +0.0648~+0.4059,AD 聚合 −0.0455~−0.2808;镜像方向 0 例;identity 基线不退化(F1 0.6667)。**改判(2026-08-22)**:F 侧为训练数据效用、AD 侧为推理输入效用(AD Consumer 零训练直接检测 P(B)),消费模式不对称——本行只承载"清洗推理输入抹除检测信号",训练侧翻转由 T1b(#38)另证 | POSITIVE_CONTROL | `t1_flip_control_v1.*` |
+| C13 | `TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL` | 双 Consumer 都在同一 P(B) 上训练(C2 同字节 600/600)、固定未处理独立 Qf 计分:**winsorize 臂 forecasting delayed +0.4059(四 eval 序列全正)且 AD 宏 F1 增益 −0.1672(≈8 事件,9/12 序列为负)**——同一臂恰为 forecasting 最强臂;iqr/mad/hampel 双侧同向为正(+0.0086/+0.0413/+0.0413),**翻转为程序特异**,非"清洗必伤 AD";门 0.6109 一次过(v1→v2→v3 = 0.1709→0.1765→0.6109,解锁在特征族);AUPRC 五臂全同(0.8878,单特征正斜率下排序≡z)→ 翻转全部承载在判决边界位置;双句口径注记强制随行 | POSITIVE_CONTROL | `t1b_training_flip_v3.*` |
 
 ### 1.2 反复观察到的机制事实
 
@@ -48,6 +49,7 @@
 5. **DEVELOPMENT ≠ FRESH**:C2/C5/C7 的窗口 outcome 由 #17 一次性打开过,这些轮次不产生新的 fresh 证据,也不产生新的 A5>A3 结果。
 6. **BY_VETO 的"无殃及"**只指不相关 episode 的决策逐位不变,不表示 guard 免费(C3)。保收益的措辞只属于 RESCOPE(C6/C7)。
 7. **POSITIVE_CONTROL 等级(C12)**:翻转由注入构造,AD 的 ground truth 恰是修复类程序可移除的事件——它验证的是仪器链能读到任务条件化翻转,**不构成自然数据上存在该翻转的声明**;自然翻转证据承重在后续自然标签轮。C12 的增益幅度与现役逐窗菜单增益**不可比**(P 整块施用,全局统计算子统计域 780 点 vs 逐窗 240 点),只承载方向。**估计对象不对称(2026-08-22 改判)**:T1 的 AD 零训练、直接检测 P(B),C12 只承载输入侧;输入侧本身是真实部署场景(流式清洗后检测),资产保留不弃;训练侧由 T1b 检验。
+8. **C13 承载面与外推禁令**:v3 Consumer 单特征、正斜率,五臂 Qf 排序恒等(AUPRC 全同 0.8878),训练侧翻转全部表现在学到的判决边界位置,不表现在排序层;更丰富的 Consumer 可能两层都动,本读数不外推。翻转为程序特异(仅 winsorize),不支持"任一清洗都伤 AD 训练"的泛化。双句口径注记(阈值头族发声 + 不证明 Harness 自发现表示/不声称自然泛化)永久随 C13。
 
 ---
 
@@ -266,6 +268,26 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 ### 架构健康评估裁定(2026-08-22,主线采纳)
 
 外部评估结论采纳:方法核(methods/ttha 22 py + contracts/runtime/operators)小而分权,九环对应模块而非脚本堆;实验层(evaluation/functional 257 py、run_e2 约 96 个、e2 工件 496 份、主管线 5000+ 行叠 V3→V9 清单、AD 仪器三叉)是**刻意保留的实验化石层**,不是产品包——按章程旧 runner 与旧证据不删,故只会单调增高。裁定:(1) **机制轮中途不重构**(章程问题"不做它核心实验是否无法运行"当前答案为否);(2) 唯一整备窗口 = T5(#41)收口后、T6(#42)fresh 冻结前,修复书 **#41b**,行为保持 + 双 runner 重放逐字节验证,产出 V10,使 T6 与 X 两次 fresh 打开都发生在整备后代码上;不放在 #46,因 fresh 轮是 first-fault 归因成本最高处,不该跑在沉积峰值上;(3) 提前触发条款与即刻站规见路线图 §3.5(仪器分叉须同轮落取代关系一行,trainable_v1/v2 待 T1b 报告落地补记)。整备不计方法进展(章程 §9),报告作附注。
+
+### #38(T1b)v3 结果与 T1b 关卷(2026-08-22,主线裁定)
+
+**判定采纳**:`TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(C13 入册)。Part 0 sha 359eec5(9 文件)入账。A4 门一次过(Qcal 宏 0.6109;解锁链 0.1709→0.1765→0.6109 定位在特征族)。护栏全绿:C2 同字节 600/600、P(B) 重算逐位一致、B3 120=120、C3 复用 T1 工件且重建增益与录档一致(0 重训)、V9 39 文件零漂移、anomaly_detection_v1.py 零改动、注入拷贝 sha 前后一致(复冻结仅 protocol.json version 标签 v2→v3)。
+
+**承重发现两条**:(1) **程序特异性**——iqr/mad/hampel 两任务同向为正,唯 winsorize(forecasting 最强臂)翻转;训练数据质量是任务×程序联合条件化的,且为 T3 提供了比任务语义字符串更细的答案钥匙(AD 合宜集 = {identity, iqr, mad, hampel},唯一有害臂 = winsorize;F 合宜集 = 四个修复臂)。(2) **AUPRC 五臂全同**(0.8878)canonical 化:单特征正斜率下 Consumer 排序≡z 排序,翻转全部承载在 0.5 阈值头的映射位置(caveat 8)。
+
+**歧义裁定(四条全部沿执行解释立为正典)**:168 隔离沿 v2 实现;threshold=3.5 对特征路径惰性(只用 scores 不用 flags)作 provenance 事实;训练块特征自块内 index 49 起、Query 读区前 49 原始字节的训练/查询不对称沿 v1/v2 正典(代价 49 行/序列,不实质);循环计数器每区槽 0 起步沿旧。仪器事实入档:序列 72329003935 zero_scale 12;Qcal 未定义点 289/5520 全归因基底缺测段。
+
+**T1b 全卷收官**:v1/v2 = "原始窗×线性 ridge"规格族可信负 + v3 = 训练侧翻转正控确认;成本累计 AD 评估 280/400、LLM 0、重训 0。**T3(#39)门控条件满足,解锁。**
+
+### #39(T3)预分发修订(2026-08-22,sol 审核 7 点 + 主线 3 处收紧,分发前并入)
+
+1. **定位收窄**:本书只证任务条件化**提案**,执行/采纳/反馈留 T4/T5;弃用 `TASK_CONDITIONED_DECISION_CONFIRMED` 名。判定阶梯:完全分离+聚合方向 → `TASK_CONDITIONED_PROPOSALS_CONFIRMED`;再加 3/3 逐序列 Risk → `TASK_CONDITIONED_RISK_AWARE_PROPOSALS_CONFIRMED`;分离成立方向不满 → `TASK_SEPARATED_DIRECTION_INAPPROPRIATE`(主线补名);分离不成立 → `SAMPLING_VARIANCE_DOMINATES`。
+2. **Part 0 纯元数据勘误**:v3 runner/工件内嵌检查点引用仍为 a6ba53d/6 文件,实际 359eec5/9 文件;以**追加 erratum 字段**更正(冻结工件不静默改写),读数零改动,不重跑。
+3. **AD task_spec 语义串升级并冻结**(注册在 ad_ridge_train_v3 名下,逐字):"good preparation preserves the event signal needed to train the AD Consumer and improves event F1 on an untouched query";旧 T2 串保持绑定 ad_v1_49_35(输入侧),不删;新串只述任务目标,零任务→动作映射。
+4. **店态冻结**:新建空店快照(0 Guidance / 0 Experience / 0 Skill),六 draw 读同一快照;"优先空店"措辞废止。
+5. **旧语义冲突清障**:ssi 输入的 target.consumer_variant=pooled 等 forecasting 遗留字段不得把 AD 臂重新描述成 forecasting;A1 跑前烟测断言 task_spec 为唯一权威任务描述;两臂可加同一条中性说明,禁任务→动作映射;两臂完整 prompt 逐字入档。
+6. **双层答案键且 runner 内从冻结工件推导(禁手抄)**,harm 线 −0.005,identity 增益按定义 0:聚合方向层预期 F={iqr,mad,hampel,winsorize}、AD={identity,iqr,mad,hampel};Risk 层(逐序列无越线)预期 F={iqr,mad,winsorize}(hampel 最差序列 −0.0904 出局)、AD={identity,abstain};推导键与预期不符按歧义上报。**预注册解读**:空店无经验下 Risk 层不达属预期可能,直接构成 T4 冲突 Experience 的入口证据,不是缺陷判定;AD 逐序列 4 事件粒度下单事件易手 ≈0.2+,Risk 层近似"是否避免触碰",量子化注记随行。
+7. **协议钉死**:后端 = gpt-5.6-sol;重试每 draw ≤1(6+6=12 封顶,修正原书 ≤2 与总额 12 的冲突);abstain 在 Jaccard 中记 {__ABSTAIN__} 单元素集(避免空集距离未定义);OFF_MENU 该 draw 无效、不重掷、排除出距离矩阵并自动破坏该臂 3/3;无效 draw >2/6 → `EXAM_PROTOCOL_UNREADABLE`。
 
 ### #31(2026-08-22,S2)
 

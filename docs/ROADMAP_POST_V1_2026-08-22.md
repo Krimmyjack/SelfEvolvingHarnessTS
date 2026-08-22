@@ -167,13 +167,20 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   卡词汇 consumer 特征);T3 v1 零消耗撤回(estimand 不对称,sol 审核
   采纳,C12 改判输入侧);T1b v1/v2 双停 `AD_TRAINABLE_SPEC_DEFECT`
   (根因 = 特征族×线性头表示缺口,可信负关闭"原始窗×线性 ridge"规格族;
-  仪器取代:trainable_v1/v2 化石,v3 接任);当前 = T1b(#38)v3 切片
-  (sol 审后修订:单特征 z_t 经 detect(window=49, threshold=3.5) 同一
-  路径取得,非有限 score 沿 T0 弃权语义;单发无回退,门不达即关
-  supervised-AD 正控族——属新 family 非身份变更,主线裁定后续、
-  阶段汇报告知)。
+  仪器取代:trainable_v1/v2 化石,v3 接任);T1b v3 =
+  `TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(C13:winsorize
+  臂 F +0.4059 / AD 宏 −0.1672,程序特异翻转;门 0.6109 一次过;
+  T1b 关卷,累计 AD 280/400、LLM 0、重训 0);当前 = T3(#39)
+  任务条件化提案考试(门控已满足;sol 7 点预分发修订并入:空店冻结、
+  语义清障与新 AD task_spec 串、双层答案键 runner 内推导、判定阶梯
+  收窄至"提案"层;方差参照分离判据;gpt-5.6-sol,LLM ≤12、
+  零重训零 AD 评估;Risk 层不达 = T4 入口证据)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
+  M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
+  监督型事件分类器 vs 重构型检测器(TimesNet/AE 族,本地 AegisTS 有源码)
+  ——重构族把训练异常当污染、清洗预期帮它,监督族预期反号,天然的
+  模型条件化翻转正控。
 - **Phase X — 跨域 fresh 确认**:各 family 内 A5 vs A3(forecasting 线的
   candidate v2 在此复活;AD family 同构重走)。跨任务经验只作对照/冲突证据,
   不自动获得执行权。

@@ -58,21 +58,32 @@ from consumers import anomaly_detection_v1 as ad  # noqa: E402
 # v2 mode (main-line ruling after the v1 AD_TRAINABLE_SPEC_DEFECT stop):
 # feature geometry x[t-48:t+1] (current point included), the gate/judgment
 # metric is the macro average of per-series event F1, and Qcal is fully read
-# before any Qf byte is scored.  Default stays the delivered v1
-# configuration, so the v1 artifact remains reproducible as written.
-V2_MODE = "--v2" in sys.argv[1:]
-if V2_MODE:
+# before any Qf byte is scored.  v3 mode (same book, continued): the only
+# change is the feature family -- the single z_t statistic from the T0
+# detector's own detect() path at explicit 49/3.5; single-shot gate, no
+# fallback.  Default stays the delivered v1 configuration, so the v1
+# artifact remains reproducible as written.
+MODE = "v1"
+if "--v2" in sys.argv[1:]:
+    MODE = "v2"
+if "--v3" in sys.argv[1:]:
+    MODE = "v3"
+V2_MODE = MODE in ("v2", "v3")  # the v2-line ordering and macro metric
+V3_MODE = MODE == "v3"
+if MODE == "v3":
+    from consumers import anomaly_detection_trainable_v3 as adt  # noqa: E402
+elif MODE == "v2":
     from consumers import anomaly_detection_trainable_v2 as adt  # noqa: E402
 else:
     from consumers import anomaly_detection_trainable_v1 as adt  # noqa: E402
 
-PROTOCOL_VERSION = "t1b_training_flip_v2" if V2_MODE else "t1b_training_flip_v1"
+PROTOCOL_VERSION = "t1b_training_flip_%s" % MODE
 EVIDENCE_GRADE = "POSITIVE_CONTROL"
 E2 = PROJECT_ROOT / "artifacts" / "functional" / "e2"
-OUT_JSON = E2 / ("t1b_training_flip_v2.json" if V2_MODE else "t1b_training_flip_v1.json")
-OUT_MD = E2 / ("t1b_training_flip_v2.md" if V2_MODE else "t1b_training_flip_v1.md")
-# gate and judgment metric: macro per-series event F1 in v2, pooled in v1
-GATE_METRIC = "macro_f1" if V2_MODE else "pooled_f1"
+OUT_JSON = E2 / ("t1b_training_flip_%s.json" % MODE)
+OUT_MD = E2 / ("t1b_training_flip_%s.md" % MODE)
+# gate and judgment metric: macro per-series event F1 in v2/v3, pooled in v1
+GATE_METRIC = "pooled_f1" if MODE == "v1" else "macro_f1"
 T1_ARTIFACT = E2 / "t1_flip_control_v1.json"
 T1_DIR = t1.T1_DIR  # _scratch/phase_t/injected/t1, read-only this round
 QUERY_DIR = PROJECT_ROOT / "_scratch" / "phase_t" / "injected" / "t1b_query"
@@ -90,8 +101,51 @@ TRAIN_BLOCK = t1.BLOCK  # [120, 900); P's measured action region
 MATERIAL = float(ad.MATERIAL_THRESHOLD)  # 0.005
 
 LLM_BUDGET = 0
-FORECASTING_RETRAIN_BUDGET = 40  # re-measure only if the C3 guard fails
-AD_EVALUATION_BUDGET = 300  # classifier fits and scorings each count once
+# v3 book: forecasting retrains 0 (C3 keeps reusing the T1 artifact); the
+# re-measure path is not authorized, so a broken C3 guard stops the run.
+FORECASTING_RETRAIN_BUDGET = 0 if V3_MODE else 40
+# classifier fits and scorings each count once; the v3 slice carries its own
+# 120 cap, and the T1b cumulative cap was raised 300 -> 400 by the main line
+AD_EVALUATION_BUDGET = 120 if V3_MODE else 300
+T1B_CUMULATIVE_CAP = 400
+# AD evaluations spent by the delivered v1/v2 runs (three v1 executions
+# ~26+50+50, two v2 executions 38+38 -- the duplicate executions produced
+# bit-identical readings and are counted anyway)
+T1B_AD_EVALUATIONS_BEFORE_V3 = 202
+
+# Part 0 checkpoint per slice.  The first v3 delivery embedded the v1-era
+# checkpoint (a6ba53d) -- corrected by an appended erratum in
+# t1b_training_flip_v3.* (the frozen field there is not rewritten); the
+# runner itself is fixed here so every future run cites its own slice.
+PART0_CHECKPOINT = {
+    "v1": {
+        "commit": "a6ba53d",
+        "files": 6,
+        "note": (
+            "#37 deliverables + the V9 registry's authorized ssi hash move "
+            "(37d31cb8... -> f39c13f3..., T2_OBSERVATION_TOUCHED) + "
+            "main-line ledger/roadmap revisions"
+        ),
+    },
+    "v2": {
+        "commit": "a6ba53d",
+        "files": 6,
+        "note": (
+            "v2 had no Part 0 of its own; the reference names the "
+            "then-latest checkpoint (T2 wiring + #37)"
+        ),
+    },
+    "v3": {
+        "commit": "359eec5",
+        "files": 9,
+        "note": (
+            "T1b v1/v2 deliverables (trainable v1/v2 consumers, the runner, "
+            "the v1/v2 artifacts) + two main-line docs revisions (v1/v2 "
+            "double-stop ruling, instrument supersession, v3 authorization, "
+            "#41b prep-book siting)"
+        ),
+    },
+}
 
 READABILITY_GATE_F1 = 0.5  # A3: identity(B)-trained, pooled event F1 on Qcal
 
@@ -448,8 +502,34 @@ def training_set(
     xs: list[np.ndarray] = []
     ys: list[np.ndarray] = []
     constants: dict[str, Any] = {}
+    exclusions: dict[str, Any] = {}
     for station in train_names:
         buffer = np.asarray(buffers[(station, program)], dtype=np.float64)
+        events = {
+            int(point)
+            for row in ledger[station]
+            for point in range(int(row["index"]), int(row["index"]) + int(row["points"]))
+        }
+        if V3_MODE:
+            # the v3 feature family: one detect() pass over P(B) yields z_t;
+            # undefined-z points never enter the fit and are counted by cause
+            feats = adt.block_features(buffer)
+            z = np.asarray(feats["z"], dtype=np.float64)
+            constants[station] = {
+                "median": None,
+                "scale": None,
+                "source": "none_v3_z_feature",
+            }
+            exclusions[station] = feats["counts"]
+            absolute = np.arange(buffer.size, dtype=np.int64) + TRAIN_BLOCK[0]
+            y_all = np.array(
+                [1 if int(t) in events else 0 for t in absolute],
+                dtype=np.float64,
+            )
+            finite = np.isfinite(z)
+            xs.append(z[finite, None])
+            ys.append(y_all[finite])
+            continue
         const = adt.standardization_constants(buffer)
         constants[station] = const
         x, indices = adt.features_for_range(
@@ -457,11 +537,6 @@ def training_set(
             window=window, median=const["median"], scale=const["scale"],
         )
         absolute = indices + TRAIN_BLOCK[0]
-        events = {
-            int(point)
-            for row in ledger[station]
-            for point in range(int(row["index"]), int(row["index"]) + int(row["points"]))
-        }
         y = np.array(
             [1 if int(t) in events else 0 for t in absolute], dtype=np.float64
         )
@@ -471,6 +546,7 @@ def training_set(
         "X": np.concatenate(xs, axis=0),
         "y": np.concatenate(ys, axis=0),
         "constants": constants,
+        "exclusions": exclusions if V3_MODE else None,
     }
 
 
@@ -486,6 +562,7 @@ def fit_arm(
     model["constants"] = data["constants"]
     model["training_samples"] = int(data["X"].shape[0])
     model["training_positives"] = int(model["n_pos"])
+    model["training_exclusions"] = data["exclusions"]
     return model
 
 
@@ -528,8 +605,24 @@ def score_arm_on_query(
             station: row["auprc"] for station, row in per_series.items()
         },
         "auprc_mean": float(np.mean(auprcs)) if auprcs else None,
+        "undefined_points_by_series": {
+            station: int(row.get("undefined_points", 0))
+            for station, row in per_series.items()
+        },
+        "undefined_points_total": sum(
+            int(row.get("undefined_points", 0)) for row in per_series.values()
+        ),
+        "undefined_attribution_total": _sum_attribution(per_series),
         "ad_evaluations": evaluations,
     }
+
+
+def _sum_attribution(per_series: Mapping[str, Mapping[str, Any]]) -> dict[str, int]:
+    totals = {"warm_up": 0, "zero_scale": 0, "non_finite": 0}
+    for row in per_series.values():
+        for cause, count in (row.get("undefined_attribution") or {}).items():
+            totals[cause] = totals.get(cause, 0) + int(count)
+    return totals
 
 
 # =========================================================================== #
@@ -689,8 +782,29 @@ def _run_inner(completed: dict[str, Any]) -> int:
     # -- B4: oracle smoke, report only -----------------------------------------
     # v2 ordering convention: Qcal is fully read (oracle + gate, fallback
     # included) before any Qf byte is scored; Qf's oracle smoke sits behind
-    # the gate.
-    if V2_MODE:
+    # the gate.  v3 book B3: cite the recorded values, never re-run.
+    if V3_MODE:
+        oracle = {
+            "qcal": {
+                "pooled": {"f1": 0.7457627118644068},
+                "ad_evaluations": 0,
+                "cited_from": (
+                    "t1b_training_flip_v1/v2 B4 oracle smoke (robust-z 49/3.5, "
+                    "injection-visibility only); not re-run this slice"
+                ),
+            },
+            "qf": {
+                "pooled": {"f1": 0.6976744186046512},
+                "ad_evaluations": 0,
+                "cited_from": (
+                    "t1b_training_flip_v1 B4 oracle smoke (the v2 run stopped "
+                    "at the gate and never read Qf); not re-run this slice"
+                ),
+            },
+        }
+        print("B4 oracle cited from record: Qcal 0.7458 / Qf 0.6977 "
+              "(not re-run)", flush=True)
+    elif V2_MODE:
         oracle = {
             "qcal": oracle_smoke(qcal["injected"], qcal["ledger"], train_names, QCAL_REGION),
             "qf": None,
@@ -769,6 +883,26 @@ def _run_inner(completed: dict[str, Any]) -> int:
     evaluations += gate["ad_evaluations"]
     print("A3 gate window %d  identity-trained Qcal %s %s (pooled %s)" % (
         window, GATE_METRIC, gate[GATE_METRIC], gate["pooled_f1"]), flush=True)
+    if V3_MODE and (
+        gate[GATE_METRIC] is None or float(gate[GATE_METRIC]) < READABILITY_GATE_F1
+    ):
+        gate["training_exclusions"] = gate_model["training_exclusions"]
+        completed.update({
+            "stage": "a3_readability_gate",
+            "window": window,
+            "fallback_taken": False,
+            "gate": gate,
+            "gate_passed": False,
+            "evaluations": evaluations,
+        })
+        raise _Blocked(
+            "SUPERVISED_AD_PC_FAMILY_CLOSED",
+            "v3 is single-shot with no fallback: the identity-trained "
+            "threshold head on z_t reads Qcal at macro-averaged per-series "
+            "event F1 %s, below %.2f; the supervised-AD positive-control "
+            "family closes on three consistent specifications (v1/v2/v3)"
+            % (gate[GATE_METRIC], READABILITY_GATE_F1),
+        )
     if gate[GATE_METRIC] is None or float(gate[GATE_METRIC]) < READABILITY_GATE_F1:
         fallback_taken = True
         window = int(adt.FALLBACK_FEATURE_WINDOW)
@@ -808,6 +942,8 @@ def _run_inner(completed: dict[str, Any]) -> int:
                 ),
             )
         gate = {"primary": gate, "fallback": gate_fallback}
+    if V3_MODE:
+        gate["training_exclusions"] = gate_model["training_exclusions"]
     completed.update({
         "stage": "a3_gate_passed",
         "window": window,
@@ -818,7 +954,7 @@ def _run_inner(completed: dict[str, Any]) -> int:
     })
 
     # -- v2 ordering: only now, behind the passed gate, Qf is first read -------
-    if V2_MODE:
+    if MODE == "v2":
         oracle["qf"] = oracle_smoke(
             qf["injected"], qf["ledger"], train_names, QF_REGION
         )
@@ -844,6 +980,7 @@ def _run_inner(completed: dict[str, Any]) -> int:
             "standardization_sources": {
                 uid: row["source"] for uid, row in model["constants"].items()
             },
+            "training_exclusions": model["training_exclusions"],
         }
         arm_ad[program] = result
         print("C  AD arm %-14s Qf pooled F1 %s  mean AUPRC %s" % (
@@ -864,6 +1001,18 @@ def _run_inner(completed: dict[str, Any]) -> int:
         "rebuilt_gains_match_recorded_c1": bool(fore["consistent_with_recorded"]),
     }
     if not fore["consistent_with_recorded"]:
+        if V3_MODE:
+            completed.update({
+                "stage": "c3_guard",
+                "evaluations": evaluations,
+                "retrains": retrains,
+            })
+            raise _Blocked(
+                "SUBSTRATE_GUARD_FAIL",
+                "the C3 guard broke (rebuilt gains disagree with the recorded "
+                "c1) and the v3 book authorizes zero forecasting retrains, "
+                "so no re-measurement is permitted",
+            )
         print("C3 guard broke: rebuilt gains disagree with the recorded c1; "
               "re-measuring within the 40-retrain budget", flush=True)
         fore = forecasting_remeasure(
@@ -993,7 +1142,7 @@ def _payload(**kw: Any) -> dict[str, Any]:
         ),
         "verdict": kw["verdict"],
         "verdict_evidence_grade": EVIDENCE_GRADE,
-        "mode": "v2" if V2_MODE else "v1",
+        "mode": MODE,
         "execution_conventions_v2": (
             {
                 "feature_geometry": (
@@ -1024,7 +1173,40 @@ def _payload(**kw: Any) -> dict[str, Any]:
                     "was ordered by the main line as the minimal repair"
                 ),
             }
-            if V2_MODE else None
+            if MODE == "v2" else None
+        ),
+        "execution_conventions_v3": (
+            {
+                "feature_family": (
+                    "the only change vs v2: the feature is the single "
+                    "statistic z_t from anomaly_detection_v1.detect(values, "
+                    "window=49, threshold=3.5)['scores'] -- explicit 49/3.5 "
+                    "(T0's frozen fallback parameters), never the 25/4.0 "
+                    "file defaults; no re-standardization.  Head, labels, "
+                    "P(B), arms, Queries, scoring and ordering all frozen "
+                    "along v2"
+                ),
+                "single_shot": (
+                    "no fallback: a gate miss closes the supervised-AD "
+                    "positive-control family (SUPERVISED_AD_PC_FAMILY_CLOSED)"
+                ),
+                "abstention": (
+                    "T0 semantics: undefined z is excluded from the fit "
+                    "(counted by warm_up / zero_scale / non_finite), forced "
+                    "to not flag at Query time, excluded from the AUPRC "
+                    "ranking with the count reported, never zeroed"
+                ),
+                "oracle": (
+                    "B4 readings cited from record (Qcal 0.7458 / Qf "
+                    "0.6977), not re-run this slice"
+                ),
+                "relation_to_v1_v2": (
+                    "v1/v2 (raw trailing windows x linear ridge, both "
+                    "geometries) closed by credible negative; v3 changes "
+                    "only the feature family"
+                ),
+            }
+            if V3_MODE else None
         ),
         "budgets": {
             "llm_calls": 0,
@@ -1037,10 +1219,23 @@ def _payload(**kw: Any) -> dict[str, Any]:
                 "each classifier fit counts once; each per-series Query "
                 "scoring counts once; each oracle detect counts once"
             ),
+            "t1b_cumulative_cap": T1B_CUMULATIVE_CAP,
+            "t1b_ad_evaluations_before_v3": (
+                T1B_AD_EVALUATIONS_BEFORE_V3 if V3_MODE else None
+            ),
+            "t1b_ad_evaluations_cumulative": (
+                T1B_AD_EVALUATIONS_BEFORE_V3 + kw["evaluations"]
+                if V3_MODE else None
+            ),
         },
         "budgets_respected": (
             kw["retrains"] <= FORECASTING_RETRAIN_BUDGET
             and kw["evaluations"] <= AD_EVALUATION_BUDGET
+            and (
+                not V3_MODE
+                or T1B_AD_EVALUATIONS_BEFORE_V3 + kw["evaluations"]
+                <= T1B_CUMULATIVE_CAP
+            )
         ),
         "roster": {
             "train": names_meta["train"],
@@ -1054,15 +1249,7 @@ def _payload(**kw: Any) -> dict[str, Any]:
             "task_spans_avoided": [list(s) for s in TASK_SPANS_TO_AVOID],
             "dev_limit": DEV_LIMIT,
         },
-        "part0_checkpoint": {
-            "commit": "a6ba53d",
-            "files": 6,
-            "note": (
-                "#37 deliverables + the V9 registry's authorized ssi hash move "
-                "(37d31cb8... -> f39c13f3..., T2_OBSERVATION_TOUCHED) + "
-                "main-line ledger/roadmap revisions"
-            ),
-        },
+        "part0_checkpoint": dict(PART0_CHECKPOINT[MODE]),
         "part_a_consumer": {
             "spec": adt.spec(),
             "feature_window_used": kw["window"],
@@ -1096,6 +1283,13 @@ def _payload(**kw: Any) -> dict[str, Any]:
                 ),
                 "passed": True,
             },
+            "training_exclusions": kw["gate"].get("training_exclusions"),
+            "gate_query_undefined_points_total": kw["gate"].get(
+                "undefined_points_total"
+            ),
+            "gate_query_undefined_attribution": kw["gate"].get(
+                "undefined_attribution_total"
+            ),
         },
         "part_b_queries": {
             name: {
@@ -1144,6 +1338,12 @@ def _payload(**kw: Any) -> dict[str, Any]:
                     "f1_by_series": kw["arm_ad"][program]["f1_by_series"],
                     "auprc_by_series": kw["arm_ad"][program]["auprc_by_series"],
                     "auprc_mean": kw["arm_ad"][program]["auprc_mean"],
+                    "undefined_points_total": kw["arm_ad"][program][
+                        "undefined_points_total"
+                    ],
+                    "undefined_points_by_series": kw["arm_ad"][program][
+                        "undefined_points_by_series"
+                    ],
                     "model": kw["arm_ad"][program]["model"],
                 }
                 for program in PROGRAMS
@@ -1156,6 +1356,21 @@ def _payload(**kw: Any) -> dict[str, Any]:
                 "classifier loses its separating signal and Query detection "
                 "degrades; if detection does NOT degrade, that is a credible "
                 "negative -- no re-injection, no program swap, no re-roll"
+            ),
+            "consumer_family_calibration_notes_v3": (
+                [
+                    "the AD Consumer is a threshold head learned on the "
+                    "task-native sufficient statistic (a learnable robust-z "
+                    "in effect); a flip verdict speaks only for this "
+                    "Consumer family",
+                    "this result only proves that the training-data utility "
+                    "flip is readable by an instrument when the task-native "
+                    "sufficient statistic is visible -- it does not prove "
+                    "the Harness discovered that representation by itself, "
+                    "and it does not claim generalization to natural "
+                    "anomaly data",
+                ]
+                if V3_MODE else None
             ),
             "quantization_note": (
                 (
@@ -1236,7 +1451,29 @@ def _ambiguities() -> list[str]:
         "bytes; the v2 isolation block asserts the 168-step pre-region "
         "prefix byte-equal to pristine in every scored copy",
     ]
-    if V2_MODE:
+    if V3_MODE:
+        notes += [
+            "the v2-line metric ruling holds: the gate and the judgment "
+            "read the macro average of per-series event F1; the pooled F1 "
+            "is kept as a secondary reading alongside",
+            "the A3 gate reads the same macro average on Qcal; a "
+            "per-series reading of the gate was not pre-registered",
+            "'168-step history isolation' is implemented as (a) each "
+            "injected event's sigma prefix recomputed from pristine bytes "
+            "and compared to the ledger, and (b) the 168-step pre-region "
+            "prefix of every scored copy asserted byte-equal to pristine; "
+            "if the main line meant a different isolation, the assertion "
+            "block is the single place to adjust",
+            "the z feature for the training block reads no bytes before "
+            "the block (detect's warm-up starts at the block's own index "
+            "0, so training rows begin at block index 49), while Query "
+            "features read the 49 pristine pre-region bytes -- the same "
+            "training/query asymmetry canon as v1/v2",
+            "the detect() threshold 3.5 is passed explicitly per the book "
+            "but is inert for the feature path (only ['scores'] is used, "
+            "never ['flags']); it is recorded for provenance",
+        ]
+    elif V2_MODE:
         notes += [
             "the v2 gate and judgment read the macro average of per-series "
             "event F1 (main-line ruling); the pooled F1 is kept as a "
@@ -1349,7 +1586,7 @@ def _blocked_payload(
         ),
         "verdict": stop.verdict,
         "verdict_evidence_grade": EVIDENCE_GRADE,
-        "mode": "v2" if V2_MODE else "v1",
+        "mode": MODE,
         "blocked_reason": stop.reason,
         "stopped_at_stage": completed.get("stage", "before_part_b"),
         "budgets": {
@@ -1363,10 +1600,22 @@ def _blocked_payload(
                 "each classifier fit counts once; each per-series Query "
                 "scoring counts once; each oracle detect counts once"
             ),
+            "t1b_cumulative_cap": T1B_CUMULATIVE_CAP,
+            "t1b_ad_evaluations_before_v3": (
+                T1B_AD_EVALUATIONS_BEFORE_V3 if V3_MODE else None
+            ),
+            "t1b_ad_evaluations_cumulative": (
+                T1B_AD_EVALUATIONS_BEFORE_V3 + evaluations if V3_MODE else None
+            ),
         },
         "budgets_respected": (
             retrains <= FORECASTING_RETRAIN_BUDGET
             and evaluations <= AD_EVALUATION_BUDGET
+            and (
+                not V3_MODE
+                or T1B_AD_EVALUATIONS_BEFORE_V3 + evaluations
+                <= T1B_CUMULATIVE_CAP
+            )
         ),
         "roster": {
             "train": names_meta["train"],
@@ -1380,15 +1629,7 @@ def _blocked_payload(
             "task_spans_avoided": [list(s) for s in TASK_SPANS_TO_AVOID],
             "dev_limit": DEV_LIMIT,
         },
-        "part0_checkpoint": {
-            "commit": "a6ba53d",
-            "files": 6,
-            "note": (
-                "#37 deliverables + the V9 registry's authorized ssi hash move "
-                "(37d31cb8... -> f39c13f3..., T2_OBSERVATION_TOUCHED) + "
-                "main-line ledger/roadmap revisions"
-            ),
-        },
+        "part0_checkpoint": dict(PART0_CHECKPOINT[MODE]),
         "part_a_consumer": {
             "spec": adt.spec(),
             "feature_window_used": completed.get("window"),
@@ -1424,6 +1665,18 @@ def _blocked_payload(
                 ),
                 "passed": bool(completed.get("gate_passed", False)),
             },
+            "training_exclusions": (
+                gate.get("training_exclusions")
+                if isinstance(gate, Mapping) else None
+            ),
+            "gate_query_undefined_points_total": (
+                gate.get("undefined_points_total")
+                if isinstance(gate, Mapping) else None
+            ),
+            "gate_query_undefined_attribution": (
+                gate.get("undefined_attribution_total")
+                if isinstance(gate, Mapping) else None
+            ),
         },
         "part_b_queries": queries_block,
         "part_b4_oracle_smoke": completed.get("oracle", "not_reached"),
@@ -1524,6 +1777,16 @@ def _blocked_markdown(payload: Mapping[str, Any]) -> str:
             gate["fallback_pooled_f1"],
             gate["passed"],
         ),
+    ]
+    if payload.get("mode") == "v3":
+        lines.append(
+            "- v3 is single-shot (no fallback); training exclusions "
+            "(warm_up / zero_scale / non_finite): %s" % json.dumps(
+                payload["part_a_consumer"].get("training_exclusions"),
+                ensure_ascii=False,
+            )
+        )
+    lines += [
         "",
         "## Part B -- the two Query regions",
         "",
@@ -1647,6 +1910,30 @@ def _markdown(payload: Mapping[str, Any]) -> str:
             "- relation to v1: %s" % conv["relation_to_v1"],
             "",
         ]
+    if payload.get("mode") == "v3" and payload.get("execution_conventions_v3"):
+        conv = payload["execution_conventions_v3"]
+        lines += [
+            "## v3 conventions (same book, continued)",
+            "",
+            "- feature family: %s" % conv["feature_family"],
+            "- single shot: %s" % conv["single_shot"],
+            "- abstention: %s" % conv["abstention"],
+            "- oracle: %s" % conv["oracle"],
+            "- relation to v1/v2: %s" % conv["relation_to_v1_v2"],
+            "",
+        ]
+    if (
+        payload.get("mode") == "v3"
+        and payload["verdict"] == "TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL"
+        and payload["part_d"].get("consumer_family_calibration_notes_v3")
+    ):
+        lines += [
+            "## Mandatory calibration notes carried by the confirmed verdict",
+            "",
+        ]
+        for note in payload["part_d"]["consumer_family_calibration_notes_v3"]:
+            lines.append("- %s" % note)
+        lines.append("")
     lines += [
         "## Part A -- the trainable AD Consumer",
         "",
@@ -1676,9 +1963,11 @@ def _markdown(payload: Mapping[str, Any]) -> str:
     lines += [
         "",
         "B4 oracle smoke (robust-z 49/3.5, injection visibility only, never a "
-        "verdict input): Qf pooled F1 %s, Qcal pooled F1 %s" % (
+        "verdict input): Qf pooled F1 %s, Qcal pooled F1 %s%s" % (
             payload["part_b4_oracle_smoke"]["qf"]["pooled"]["f1"],
             payload["part_b4_oracle_smoke"]["qcal"]["pooled"]["f1"],
+            " (cited from record, not re-run this slice)"
+            if payload.get("mode") == "v3" else "",
         ),
         "",
         "## Part C -- both Consumers trained on the same P(B)",
@@ -1695,20 +1984,21 @@ def _markdown(payload: Mapping[str, Any]) -> str:
             payload["part_c"]["forecasting_source"]["retrains"],
         ),
         "",
-        "| program | forecasting delayed agg | AD macro F1 | AD pooled F1 | AD train gain | mean AUPRC | flip |",
-        "|---|---|---|---|---|---|---|",
+        "| program | forecasting delayed agg | AD macro F1 | AD pooled F1 | AD train gain | mean AUPRC | undef pts | flip |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     arms = payload["part_c"]["ad_arms"]
     flips = {row["program"]: row for row in payload["part_d"]["flip_check_per_program"]}
     for program in sorted(arms):
         row = flips.get(program, {})
-        lines.append("| %s | %s | %s | %s | %s | %s | %s |" % (
+        lines.append("| %s | %s | %s | %s | %s | %s | %s | %s |" % (
             program,
             _fmt(row.get("forecasting_delayed_aggregate_gain")),
             _fmt(arms[program]["macro_f1"]),
             _fmt(arms[program]["pooled_f1"]),
             _fmt(row.get("ad_train_gain_pooled")),
             _fmt(arms[program]["auprc_mean"]),
+            arms[program]["undefined_points_total"],
             row.get("flip_direction") or "—",
         ))
     lines += [
