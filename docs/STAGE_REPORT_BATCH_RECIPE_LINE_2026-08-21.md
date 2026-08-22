@@ -53,14 +53,14 @@
 
 | # | 问题 | 现状 | 卡在谁 | 指针 |
 |---|---|---|---|---|
-| O1 | **Phase S 第三域 + 总预算** | S0 域盘点未做;Shared Capability 需多 Domain 重复正向 + 风险证据 | **用户拍板**(第三域选择与 ≤600 重训预算) | ROADMAP §Phase S |
+| O1 | Phase S 第三域 + 总预算(**已了结,#30–#33**) | S0/S1/S2/S1b 已跑:SMD 唯一候选,S2 编译过,S1b JUDGE_UNREADABLE 且对门槛修正稳健 → SMD 关闭,Phase S 停车封存(candidate v2 冻结);第三域供给并入 O9 | 无(Phase X 复活时再开) | 本文件范围锁定段;`shared_capability_candidate_v2.*` |
 | O2 | per_channel 迁移边界 | #17 判 `A5_TIE_TRANSFER_BOUNDARY`;停车场项 | 需先有"什么 Observation 能区分 per-channel Context"的假设 | `fresh_confirmation_v1.*`;ROADMAP 停车场 |
 | O3 | 供给面自堵(菜单可采纳率) | #22 出现过一次"shortlist 无一可采纳 → 诚实 identity";属仪器按设计弃权,非故障 | 留观察,shortlist 稳定性表(C11)随轮追加 | `operational_pipeline_v2.*` |
 | O4 | `SELECTION_MISS` 适配器窄口径 | 在册缺陷,已两次兑现(#18 a3_pooled、#23);**冻结中,未修** | 修复后需跑一次 0-LLM 归因回归 | ROADMAP §契约性收尾 |
 | O5 | Opus 读数 | 中继宕机已证实为上游(HTTP 200 + error payload);fix (c) 已上线;carry-in 已清零 | 随时可跑,≈1 LLM,不阻塞任何 claim | `operational_pipeline_v5/v6.*` |
 | O6 | **纯 clone 不可导入** | 字节口径已修(`.gitattributes` 的 lock `-text`,新 checkout 实测通过 `stage_p2_precondition`);但 `SelfEvolvingHarnessTS/` 自指 symlink **未入库**,`git ls-files` 0 条,纯 clone 连 import 都过不去 | backlog | 本文件 §3.6 |
 | O7 | 同窗选择的 held-out 化 | C6/C7 的核心 caveat;需一个"guard 在 A 窗选出、在 B 窗计分"的设计 | 未立项 | 本文件 §1.3 第 1 条 |
-| O8 | 上一检查点漏提交 2 文件 | `compiler.py`(+11 记录性)与 `h0/snapshot.lock.json` 仍未入库;committed runner 期望 `78e6772e…`/`b7a61852…`,库内是 `e022732e…`/`03d08251…` → **新克隆 `INSTRUMENT_DRIFT`** | 下一检查点补 | 本文件 §3.6 |
+| O8 | 上一检查点漏提交 2 文件(**已闭合,#30 Part 0**) | `compiler.py` 与 `h0/snapshot.lock.json` 已入库;#35 A2 实测 `git ls-files --error-unmatch` 两条均命中(#35 勘误 (b) 据此撤回) | 无 | 本文件 §3.6 |
 | O9 | **Phase T/X 数据供给** | T6/X 需未消费单变量 fresh 域;T4/T5 自然翻转证据需带标签单变量 AD 数据(Yahoo S5 / NAB / UCR-AD 类,曝光状态待 census);census 标准已补"任务语义与实体结构匹配 Consumer"门 | 最早 #39 承重,T0–T3 不阻塞 | 本文件范围锁定段;ROADMAP §3.5 |
 
 ---
@@ -220,6 +220,14 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 **#35 修订裁定(2026-08-22,sol 评审 REVISE_BEFORE_DISTRIBUTION,主线全部采纳)**:#35 v1 收回不分发,v2 修订六点:(1) AD Consumer 落位 `evaluation/functional/consumers/`(实验仪器,不得入 methods/ttha/);(2) 冻结**同字节契约**——同一注入块 B、同一 Program P、同一作用几何产出唯一 P(B),两 Consumer 读同一字节,处理侧零分叉;预测读未来/检测读块内的不对称属任务语义,非几何混杂;违约判 PROGRAM_GEOMETRY_UNALIGNED,否则 T1 只能叫 TASK_AND_GEOMETRY_FLIP;(3) T0 校准注入与 T1 正式注入硬隔离(不同 seed、不同块),T0 回退一旦启用当场冻结参数,T1 不得再调;#35/#36 不合并执行(主线收回"可连续跑"提议);(4) 可读性验收弃恒等式,改三条:同输入重复跑逐位一致、无注入孪生块只报 background alarm rate(不得冒充 FPR)、校准注入块 P/R/F1 有限且 F1≥0.5;(5) 事件 F1 钉死一对一贪心匹配、最小事件间距、窗口边界排除;(6) 注入协议禁用范围表达:密度、构成循环表、符号、两档强度与爆发占比、间距、边界排除、σ 来源(注入前合法前缀)、MAD=0 处理全部预注册为常数或确定性规则。另两项规划裁定:#39 注入正控证据**永久**标 evidence_grade=POSITIVE_CONTROL、不授 Shared Capability 执行权,自然标签 AD 数据承重在 #41;编号口径 = #34 不存在,主任务书 #35–#45 共 11 张,有界修复书另计。
 
 **#35 分发勘误(2026-08-22,三方阅读代理交叉核对)**:(a) 纪律段"v7 注册表"勘正为现行 `FROZEN_SURFACE_V9`(39 项,机制为 runner 内清单+工作树 sha256,非独立注册表文件);(b) Part 0 预期入列追加 O8 两文件(`methods/ttha/harness/compiler.py` 与 `h0/snapshot.lock.json`,历史漏提交,属预期入列非漂移,本轮顺手闭 O8);(c) `methods/ttha/consumers/` 已存在但仅有 `__init__.py`,AD Consumer 仍按裁定落 `evaluation/functional/consumers/`,不得挪用前者;(d) T1 契约注记:forecasting 逐序列增益定义在 4 条 eval 序列上、注入与 AD 检测发生在 12 条 train 序列块内——同字节契约不受影响(两 Consumer 消费同一份 P(train 块)),但翻转判定在聚合层,逐序列对照只在各自任务内做,guard 直读检查用 AD 向量;(e) 校准块锚点:task_A 三联窗上下文+horizon 跨度约 [912,1392),[0,912) 为最早无重叠区,校准块按"最早等长段"规则落位,以 T0 B3 实测为准。
+
+**勘误的勘误(#35 A2 实测后)**:(a) `FROZEN_SURFACE_V9` 实测 **40** 项非 39(§3.6 旧文过期);(b) **撤回**——O8 两文件已于 #30 检查点入库,§2 表行系过期未更(现已更);(c) 执行方按 v1 误建的 `methods/ttha/consumers/` 已删,现不存在。
+
+### #35 T0 结果与主线裁定(2026-08-22)
+
+判定 **T0_READY** 接受(0 LLM / 0 forecasting 重训 / AD 评估 176/200;检查点 7278317 / 4343d0a / 3314620;SAME_BYTE_CONTRACT_HOLDS,处理侧无分叉)。AD Consumer v1 冻结于**回退参数(窗 49 / 阈 3.5)**:primary(25/4.0)校准 F1=0.4052 未过线,回退 F1=0.5082 过线仅 +0.0082,回退已用尽。校准块 [143,431)(字面规则选出的 [0,288) 其首合法位 σ 前缀越出数组头,取最早可执行段,两读数在册);32 事件 0 skip;唯一漏检系 σ 尺度错配(注入幅度用 168 点前缀尺度、检测用 49 点尾随尺度,recall 31/32)。
+
+七条歧义主线裁定:(1) **T1 注入落位 = 训练块**(阻塞项)——实测 P 只作用训练区 [120,900)、从不触及三联窗 [912,1392)/[1608,2088),原 D2 "T1 只在三联窗内注入"为主线笔误,按同字节契约改为:注入 12 条 train 序列的 **[431,900)**(避开 T0 校准块 [143,431);[120,143) 长 23 不足边界排除弃用),seed 20260823,eval 4 序列零注入;(2) 验收门实际按 background alarm 水平选中回退(两设置 recall 同为 31/32,F1 差全来自 precision 分母),记为**仪器内张力**,门照冻结协议有效,不改;(3) 过线 +0.0082 如实入册;(4) **AD 增益事件量子化**:每序列事件数少时 per-series F1 以 0.2–0.3 跳变,±0.005 材料线在 AD 侧的实义 = "至少一个事件易手",T1 翻转判定在聚合层,不声称 0.005 级分辨率;(5) σ 尺度错配保留为已知仪器事实,不改协议(改注入尺度会把刺激与仪器耦合,更糟);(6) 校准块落位与勘误 (e) 一致;(7) C5(iii) pooled 读法接受,per-series 不设门。#36(T1)据此定稿发出。
 
 ### #31(2026-08-22,S2)
 
