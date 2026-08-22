@@ -61,6 +61,7 @@
 | O6 | **纯 clone 不可导入** | 字节口径已修(`.gitattributes` 的 lock `-text`,新 checkout 实测通过 `stage_p2_precondition`);但 `SelfEvolvingHarnessTS/` 自指 symlink **未入库**,`git ls-files` 0 条,纯 clone 连 import 都过不去 | backlog | 本文件 §3.6 |
 | O7 | 同窗选择的 held-out 化 | C6/C7 的核心 caveat;需一个"guard 在 A 窗选出、在 B 窗计分"的设计 | 未立项 | 本文件 §1.3 第 1 条 |
 | O8 | 上一检查点漏提交 2 文件 | `compiler.py`(+11 记录性)与 `h0/snapshot.lock.json` 仍未入库;committed runner 期望 `78e6772e…`/`b7a61852…`,库内是 `e022732e…`/`03d08251…` → **新克隆 `INSTRUMENT_DRIFT`** | 下一检查点补 | 本文件 §3.6 |
+| O9 | **Phase T/X 数据供给** | T6/X 需未消费单变量 fresh 域;T4/T5 自然翻转证据需带标签单变量 AD 数据(Yahoo S5 / NAB / UCR-AD 类,曝光状态待 census);census 标准已补"任务语义与实体结构匹配 Consumer"门 | 最早 #39 承重,T0–T3 不阻塞 | 本文件范围锁定段;ROADMAP §3.5 |
 
 ---
 
@@ -217,6 +218,8 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 用户最终范围:**数据形态限定单变量;Task/Consumer、模型、Domain、Pattern 全部可变**——项目是"质量标准随任务/模型/模式变化"的 Data Readiness Harness,不是预测清洗 Harness。sol 两次收窄(→单变量→单变量预测)被用户纠正,主线确认:至今全部已入账证据都在 forecasting 一个 family 内,原始命题"同一处理在预测与异常检测上方向相反"从未被测过——Phase T 即回到该第一性命题。裁定:(1) SMD 排除理由改判"多变量形态不匹配"(非任务窄化),JUDGE_UNREADABLE 系数据-仪器形态错配非方法失败;(2) **筛选标准补一道门:数据原始任务语义与实体结构必须与目标 Consumer 匹配**,不得只看长度与离群 prevalence(census 标准修订);(3) Phase S 停车封存(v2 冻结带双向 LODO),在 Phase X 内按 family 复活;(4) 新阶段图 = **Phase T(task-conditioned:forecasting vs anomaly detection 双 Consumer)→ Phase M(model-conditioned)→ Phase X(各 family 内跨域 fresh)**;(5) T0–T5 不需新数据(注入正控+自有 dev 数据),T6 fresh 域与 AD 自然标签数据为已知供给问题挂 **O9**;(6) AD Consumer 按仪器纪律最小化建设:确定性检测器+事件级 F1+既有三联窗语义+**逐序列增益向量**(guard/选择器/RESCOPE 全套机器无改动直读);(7) T1 判定必须标 POSITIVE_CONTROL 等级(注入翻转可能是构造性的),自然翻转证据留 T4/T5,措辞不得混用。#35(T0)、#36(T1)任务书已发。
 
 **#35 修订裁定(2026-08-22,sol 评审 REVISE_BEFORE_DISTRIBUTION,主线全部采纳)**:#35 v1 收回不分发,v2 修订六点:(1) AD Consumer 落位 `evaluation/functional/consumers/`(实验仪器,不得入 methods/ttha/);(2) 冻结**同字节契约**——同一注入块 B、同一 Program P、同一作用几何产出唯一 P(B),两 Consumer 读同一字节,处理侧零分叉;预测读未来/检测读块内的不对称属任务语义,非几何混杂;违约判 PROGRAM_GEOMETRY_UNALIGNED,否则 T1 只能叫 TASK_AND_GEOMETRY_FLIP;(3) T0 校准注入与 T1 正式注入硬隔离(不同 seed、不同块),T0 回退一旦启用当场冻结参数,T1 不得再调;#35/#36 不合并执行(主线收回"可连续跑"提议);(4) 可读性验收弃恒等式,改三条:同输入重复跑逐位一致、无注入孪生块只报 background alarm rate(不得冒充 FPR)、校准注入块 P/R/F1 有限且 F1≥0.5;(5) 事件 F1 钉死一对一贪心匹配、最小事件间距、窗口边界排除;(6) 注入协议禁用范围表达:密度、构成循环表、符号、两档强度与爆发占比、间距、边界排除、σ 来源(注入前合法前缀)、MAD=0 处理全部预注册为常数或确定性规则。另两项规划裁定:#39 注入正控证据**永久**标 evidence_grade=POSITIVE_CONTROL、不授 Shared Capability 执行权,自然标签 AD 数据承重在 #41;编号口径 = #34 不存在,主任务书 #35–#45 共 11 张,有界修复书另计。
+
+**#35 分发勘误(2026-08-22,三方阅读代理交叉核对)**:(a) 纪律段"v7 注册表"勘正为现行 `FROZEN_SURFACE_V9`(39 项,机制为 runner 内清单+工作树 sha256,非独立注册表文件);(b) Part 0 预期入列追加 O8 两文件(`methods/ttha/harness/compiler.py` 与 `h0/snapshot.lock.json`,历史漏提交,属预期入列非漂移,本轮顺手闭 O8);(c) `methods/ttha/consumers/` 已存在但仅有 `__init__.py`,AD Consumer 仍按裁定落 `evaluation/functional/consumers/`,不得挪用前者;(d) T1 契约注记:forecasting 逐序列增益定义在 4 条 eval 序列上、注入与 AD 检测发生在 12 条 train 序列块内——同字节契约不受影响(两 Consumer 消费同一份 P(train 块)),但翻转判定在聚合层,逐序列对照只在各自任务内做,guard 直读检查用 AD 向量;(e) 校准块锚点:task_A 三联窗上下文+horizon 跨度约 [912,1392),[0,912) 为最早无重叠区,校准块按"最早等长段"规则落位,以 T0 B3 实测为准。
 
 ### #31(2026-08-22,S2)
 
