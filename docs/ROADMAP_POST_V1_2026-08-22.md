@@ -170,11 +170,14 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   仪器取代:trainable_v1/v2 化石,v3 接任);T1b v3 =
   `TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(C13:winsorize
   臂 F +0.4059 / AD 宏 −0.1672,程序特异翻转;门 0.6109 一次过;
-  T1b 关卷,累计 AD 280/400、LLM 0、重训 0);当前 = T3(#39)
-  任务条件化提案考试(门控已满足;sol 7 点预分发修订并入:空店冻结、
-  语义清障与新 AD task_spec 串、双层答案键 runner 内推导、判定阶梯
-  收窄至"提案"层;方差参照分离判据;gpt-5.6-sol,LLM ≤12、
-  零重训零 AD 评估;Risk 层不达 = T4 入口证据)。
+  T1b 关卷,累计 AD 280/400、LLM 0、重训 0);T3 =
+  `TASK_CONDITIONED_PROPOSALS_CONFIRMED`(C14:完全分离 1.0>0.5,
+  聚合 3/3+3/3,Risk F 0/3(先验-经验缺口:hampel 先验安全实则
+  风险键外)/ AD 3/3;第二次抽样裁定有效;LLM 12/12);
+  当前 = T4(#40)任务键控冲突 Experience(**Phase T 首次改
+  Harness 本体**:episode 键 task/consumer 分量 + 卡词汇 consumer
+  特征;写入走 Runtime 现役路径禁手插;考试复用 #39 仪器,基线 =
+  #39 第二次抽样;F Risk 0/3→3/3 为主位移读数)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
@@ -202,6 +205,33 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
 **编号口径(2026-08-22 顺延)**:#34 不存在;T1b(#38)以修复书身份并入
 主链后,主任务书 = #35–#46 共 12 张:#38=T1b,#39=T3,#40=T4,#41=T5,
 #42=T6,#43=M0,#44=M1,#45=X 复活,#46=最终整合。
+**沉淀口径(2026-08-22,回应"不只是实验脚本"之问)**:仪器
+(consumers/runner/注入协议/翻转表)是项目的永久测量资产但不是
+Harness 本体;本体增长点 = T2 task_spec 观察(已落)→ T4 任务键控
+冲突 Experience 入 methods/ttha(episode 键 task 分量 + 卡词汇
+consumer 特征,Phase T 首次大改本体)→ T5 延迟反馈改变后续行为
+→ #41b 实验层入口收敛 → #46 最终整合。章程纪律:考出 Harness
+决策缺陷才动本体,故 T0–T3 先造秤、T4 起改机器;#39 的三种结局
+分别指认 T4 该动哪一面。
+**Phase T 合并判据与止损线(2026-08-22,sol 提议、主线定名采纳)**:
+#39–#41 必须收敛到同一个可运行 Harness,否则该实现路线止损。
+#41(T5)验收链 = 单一 Harness 入口 → 接收 TaskSpec / Consumer
+adapter → 检索任务相关成功/失败/冲突 Experience → Agent 自主生成
+Workflow → Runtime 执行并取得该任务下游反馈 → 写回 Task/Consumer
+条件化 Experience → 形成/修订 Target-local Skill → 下一任务读取后
+行为改变。允许变化的只有 TaskSpec、Consumer adapter、数据 Context。
+禁止:写死任务→动作映射;每任务一套 Harness;runner 手工指定
+Workflow;答案键代替真实执行与反馈;为过关新增 Consumer/Gate/
+Schema。#41 若仍需 runner 手工拼接 → `PHASE_T_NO_HARNESS_
+CAPABILITY`,止损并升用户检查点。#39–#41 三轮零新基础设施,任何
+新组件先过章程之问("不加它,#39–#41 是否无法运行或解释?")。
+T4 硬约束:冲突 Episode 必须经正常 Runtime 写入路径产生(重放
+T1b 臂或真实执行),禁止手工插行;Context 字段 = 可观察特征,
+非数据集名、非答案表。仪器处置口径:注入底物 / trainable v1/v2 /
+SMD 诊断为脚手架,证据归档不删;v3 Consumer 为可复用测量资产
+(T4/T5 反馈源、M0 配对),不在丢弃之列。自然阶段薄接 AegisTS/
+TSLib 成熟单变量 AD Consumer 与 O9 数据(Yahoo S5/NAB/UCR 均
+单变量带标签,与 T6 排期合流),不再自造分类器。
 **整备书位置(2026-08-22 裁定)**:实验层沉积(96 个 run_e2 runner、
 主管线 5000+ 行叠 V3→V9 清单、仪器分叉)不在机制轮中途重构;唯一整备
 窗口 = **#41(T5)收口之后、#42(T6)fresh 冻结之前**,以修复书 #41b

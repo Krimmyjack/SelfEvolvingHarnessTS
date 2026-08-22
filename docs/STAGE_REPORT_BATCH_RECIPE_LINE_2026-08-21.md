@@ -30,6 +30,7 @@
 | C7 | `LIVE_RESCOPE_CONTAINS_WITHOUT_COLLATERAL` | live 单轨,`gpt-5.6-sol`:task_D 路由恰为两条越线序列,+0.049504 带 2 受害 → **+0.095879 零受害**;保留的两条序列读数逐位不动;VETO 孪生同轨为 identity 0.0 | DEVELOPMENT | `operational_pipeline_v10.*` |
 | C12 | `TASK_FLIP_CONFIRMED_POSITIVE_CONTROL`(raw);**ADJUDICATED_ESTIMAND = INPUT_SIDE_TASK_FLIP** | 同字节契约下(同一注入训练块、同一 Program 施用恰一次、两 Consumer 消费同一字节,断言 600/600),离群修复族 **4/4 程序同向翻转**:forecasting delayed 聚合 +0.0648~+0.4059,AD 聚合 −0.0455~−0.2808;镜像方向 0 例;identity 基线不退化(F1 0.6667)。**改判(2026-08-22)**:F 侧为训练数据效用、AD 侧为推理输入效用(AD Consumer 零训练直接检测 P(B)),消费模式不对称——本行只承载"清洗推理输入抹除检测信号",训练侧翻转由 T1b(#38)另证 | POSITIVE_CONTROL | `t1_flip_control_v1.*` |
 | C13 | `TRAINING_SIDE_TASK_FLIP_CONFIRMED_POSITIVE_CONTROL` | 双 Consumer 都在同一 P(B) 上训练(C2 同字节 600/600)、固定未处理独立 Qf 计分:**winsorize 臂 forecasting delayed +0.4059(四 eval 序列全正)且 AD 宏 F1 增益 −0.1672(≈8 事件,9/12 序列为负)**——同一臂恰为 forecasting 最强臂;iqr/mad/hampel 双侧同向为正(+0.0086/+0.0413/+0.0413),**翻转为程序特异**,非"清洗必伤 AD";门 0.6109 一次过(v1→v2→v3 = 0.1709→0.1765→0.6109,解锁在特征族);AUPRC 五臂全同(0.8878,单特征正斜率下排序≡z)→ 翻转全部承载在判决边界位置;双句口径注记强制随行 | POSITIVE_CONTROL | `t1b_training_flip_v3.*` |
+| C14 | `TASK_CONDITIONED_PROPOSALS_CONFIRMED` | 空店(0 Guidance/0 Experience/0 learned Skill + 3 个任务中立 h0 bootstrap 常量,六 draw 同快照)、零 Outcome 泄漏、prompt 仅 task_spec 字节差(剥除后两臂 canonical sha 相同 96ce9fc9…)下,6/6 有效 draw **完全分离**:跨任务 9 对 Jaccard 距离全 1.0 > 同任务最大 0.5;聚合方向 3/3+3/3(F top-1 hampel_filter×3,AD top-1 identity×3);Risk 层 F 0/3(hampel 最差序列 −0.0904 出局)/ AD 3/3——空店下 Risk 不达为预注册预期,构成 T4 入口证据;**第二次抽样**(首跑 mappingproxy 写盘崩溃致 draw 1–4 丢失;暴露片段 F5=outlier_mad/AD6=identity 方向一致且风险层更优,无择果签名,主线裁定有效;LLM 12/12 收口);只证提案条件化,不含执行/采纳,任务语义部署可见 | POSITIVE_CONTROL | `t3_task_exam_v1.*` |
 
 ### 1.2 反复观察到的机制事实
 
@@ -288,6 +289,30 @@ Runner:`run_batch_composition_headroom.py`、`run_e2_m0a_mask_geometry_census{,_
 5. **旧语义冲突清障**:ssi 输入的 target.consumer_variant=pooled 等 forecasting 遗留字段不得把 AD 臂重新描述成 forecasting;A1 跑前烟测断言 task_spec 为唯一权威任务描述;两臂可加同一条中性说明,禁任务→动作映射;两臂完整 prompt 逐字入档。
 6. **双层答案键且 runner 内从冻结工件推导(禁手抄)**,harm 线 −0.005,identity 增益按定义 0:聚合方向层预期 F={iqr,mad,hampel,winsorize}、AD={identity,iqr,mad,hampel};Risk 层(逐序列无越线)预期 F={iqr,mad,winsorize}(hampel 最差序列 −0.0904 出局)、AD={identity,abstain};推导键与预期不符按歧义上报。**预注册解读**:空店无经验下 Risk 层不达属预期可能,直接构成 T4 冲突 Experience 的入口证据,不是缺陷判定;AD 逐序列 4 事件粒度下单事件易手 ≈0.2+,Risk 层近似"是否避免触碰",量子化注记随行。
 7. **协议钉死**:后端 = gpt-5.6-sol;重试每 draw ≤1(6+6=12 封顶,修正原书 ≤2 与总额 12 的冲突);abstain 在 Jaccard 中记 {__ABSTAIN__} 单元素集(避免空集距离未定义);OFF_MENU 该 draw 无效、不重掷、排除出距离矩阵并自动破坏该臂 3/3;无效 draw >2/6 → `EXAM_PROTOCOL_UNREADABLE`。
+
+### #39(T3)结果与关卷(2026-08-23,主线裁定)
+
+**判定采纳**:`TASK_CONDITIONED_PROPOSALS_CONFIRMED`(C14 入册)。Part 0 sha bd5922d(6 文件)入账;t1b v3 工件勘误以追加 erratum 落点(a6ba53d/6→359eec5/9),冻结字段未改写,核可。A1 烟测 9/9:两臂 prompt 剥除 task_spec 后 canonical sha 相同(96ce9fc9…),system 同一份(0a657752…),AD 臂零 forecast/sMASE 词、F 臂零 anomaly 词,信息墙零增益/翻转泄漏;prompts_verbatim 三 sha 入档。
+
+**第二次抽样裁定(有效)**:首跑 6 draw 死于 mappingproxy 写盘缺陷,draw 1–4 不可恢复,暴露片段仅 F5=outlier_mad / AD6=identity。裁定理由:(1) 死因为实现缺陷非读数不利;(2) 暴露片段本身即过关方向,无择果动机;(3) 第二次抽样 F 侧结果(hampel,Risk 出局)较暴露片段(outlier_mad,Risk 合宜)更不利,与择果签名相反。首跑片段存档,不计入判定;LLM 预算 12/12 收口。
+
+**承重发现**:(1) 任务轴第一条 Harness 侧证据——仅 task_spec 字节差即完全翻转提案(F {hampel,mad} → AD {identity});(2) **先验-经验风险缺口**:F 臂 3/3 选 hampel,LLM 先验把中值滤波当安全牌,而冻结键中 hampel 恰是唯一被逐序列 harm 线踢出 F Risk 键的温和臂(−0.0904),先验以为激进的 winsorize 反而四序列全正——此缺口无经验不可弥合,即 T4 headroom 的直接演示;(3) AD 臂 3/3 纯 identity 短单 = 谨慎剖面,与 C13 合宜集吻合;(4) 同任务 top-1 稳定 3/3(C11 的 7 抽 3 单为不同店态/上下文,不互推)。
+
+**店态口径修正(正典)**:"空店" = 0 Guidance / 0 Experience / 0 learned Skill + 机内 h0 bootstrap 常量(本次 3 个,任务中立,六 draw 同快照 c8c1e452…);#40 种子店必须在同一快照上**加且仅加**经验条目。工作树未提交 ROADMAP +27 行为主线沉淀/止损口径编辑,#40 Part 0 一并提交。
+
+### #40(T4)预分发修订(2026-08-23,sol 审核 5+2 点,主线核实采纳并定键)
+
+事实核实:`fast_agent.py:772` 运行时规范键 = `task_type|downstream_model_class|metric`;`ordering_card.py` scope 四键分立(task/domain/downstream_model_class/program_family),domain 本为独立维度;ssi 三处(L368/866/1222)写 `batch:<cohort>|consumer:<variant>`,无 task 分量——方言分裂属实,原书第三格式若落地即 T5 假闭合。修订:
+
+1. **键统一(主线定夺)**:不造第三方言。写入与检索共用运行时规范键 helper(`task_type|downstream_model_class|metric`;AD 值由现役 helper 从 task_spec 推导,不得手造);cohort/domain 只进 domain scope 字段与 Context,**不进任务硬键**(护 T6/X 跨域检索);旧工件不迁移不补写。A1 从"键加 task 分量"改为"ssi 写入路径接运行时规范键 helper"。
+2. **生命周期分类必须看见"聚合正、局部有害"**:预注册机械分类(冻结阈值推导,非答案键)——identity→ABSTAIN;agg≥+0.005 且 min(per-series)≥−0.005→POSITIVE;agg≥+0.005 且 ∃per-series<−0.005→CONFLICT;agg<−0.005→NEGATIVE;近零→NEUTRAL。产出:F = iqr/mad/winsorize POSITIVE + hampel CONFLICT;AD = winsorize NEGATIVE + iqr/mad/hampel CONFLICT + identity 中性。不修则 hampel 被记 POSITIVE,T4 反而强化 #39 错误选择。
+3. **写入必须落 Runtime**:build_episode → TTHAMethod.append_experience_episode → **同一 TTHAMethod 的 prepare/检索可读**(报告内构造不算写入);10 条全部 evidence_level=DELAYED、local_status=EPISODE_ONLY、不晋 LOCAL_DRAFT、不授 TRY/自动执行权、普通唯一 ID——历史重放非新证据,防重复计数(章程)。
+4. **B4 改类别验收**(防 ID 排序塑形):F 必回 hampel 局部伤害 CONFLICT + 至少一个 {iqr,mad,winsorize} 无害 POSITIVE;AD 必回 winsorize NEGATIVE + 至少一个修复程序 CONFLICT;两臂零跨任务取卡;卡载事实摘要(consumer/聚合方向/harmed count/min gain),禁"应选 X";不钉死实例名。
+5. **判定补 PARTIAL_EXPERIENCE_CONDITIONING 统一兜底**:F 1/3–2/3 改善、分离丢失、不安全位移等全落此格,必报字段 = F/AD 安全次数、分离读数、AD 风险回退标志;原 EXPERIENCE_SHIFT_RISK_REGRESSION 并入必报字段不单列。
+6. 小修 a:撤销 B3 新店 sha,保留 h0 快照标识,报 0→10、10 个 episode ID、检索日志(反过度工程)。
+7. 小修 b:C2 拆三向比对(T4-F vs #39-F 仅经验块异;T4-AD vs #39-AD 仅经验块异;T4 两臂互比仅 TaskSpec+各自经验块异)。
+
+科学定位(sol 措辞入册):#39 证明 Agent 能读懂不同任务;#40 检验 Harness 写入的任务化成功/失败/局部冲突经验能否纠正 F 的风险盲点,同时不破坏 AD 的保守选择。通过即 MECHANISM + POSITIVE_CONTROL 级 Memory 能力;执行/采纳/Delayed 写回/Local Skill 更新留 T5。
 
 ### #31(2026-08-22,S2)
 
