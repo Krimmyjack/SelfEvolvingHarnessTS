@@ -264,6 +264,16 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   ("不重跑"推理撤回,v1 判定不背书 v2)、0-LLM 送达断言;
   **行为重放立为任何 h0s_vN 进正式考场的前置**;两新 Runner
   化石(禁扩建,入 #46 债);本轮性质 = 机制/适配修复;
+  收口书跑完 = SKILL_V2_FROZEN_PENDING_BEHAVIOR_REPLAY;sol 补
+  两缺口(plan_v2 入库自足;h0s 临时快照永不提交、从冻结 entry
+  确定性重建、禁重调 Slow);ad_source_skill.py issue_v2() 冻结;
+  #42e0(sol 直发短书,主线追认)= **C21 RISK_SKILL_NO_
+  TRIGGERING_CANDIDATE** @ ad4f7b82:v2 送达 4/4-0/4、无全局
+  坍缩、hampel 双臂 0、两臂同激活 mad +0.0111(轨迹事实不归因,
+  池宽差异如实报);禁再抽 NAB 钓触发;下一步 = #42e Source 扩充
+  (realTraffic/realTweets 第 3/4 cohort,冻结门重整合,停止线 =
+  SOURCE_EVIDENCE_INSUFFICIENT_FOR_ACTIONABLE_TRANSFER)→ 有
+  h0s_v3 则 #42e1 行为重放 → 才谈 fresh Target;
   排期编号后移:#42e = Source 扩充(realTraffic/realTweets,
   TRY 解锁唯一路径)→ #42f = 新域 census(Yahoo S5 优先)→
   #42g = 正式 A5vsA3 v2(禁用惰性 h0s 消耗处女域)。

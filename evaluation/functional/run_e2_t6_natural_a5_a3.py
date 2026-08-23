@@ -36,6 +36,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -217,6 +218,13 @@ OUT_SMOKE = E2 / "t6_nab_evaluate_smoke_v1.json"
 # the B4 budget-interrupt probe writes its own file so the main smoke
 # reading is never overwritten by a deliberately starved run
 OUT_SMOKE_BUDGET = E2 / "t6_nab_evaluate_smoke_budget_v1.json"
+OUT_SKILL_V2 = E2 / "t6_nab_42d_source_skill_v2.json"
+OUT_REPLAY_V2 = E2 / "t6_nab_42e0_skill_v2_replay.json"
+OUT_REPLAY_V2_MD = E2 / "t6_nab_42e0_skill_v2_replay.md"
+REPLAY_V2_LOCK = E2 / "t6_nab_42e0_skill_v2_replay.lock"
+REPLAY_V2_SKILL_ID = "source_investigation_ad_v2"
+REPLAY_V2_LLM_BUDGET = 32
+REPLAY_V2_AD_FIT_BUDGET = 24
 # Part B: the smoke stands Source cohorts in the Target cell positions.  The
 # frozen order, arms and rounds are untouched; only where a cell's rows come
 # from is parameterized, and only the first two series of each stand-in
@@ -1779,17 +1787,46 @@ def _run_cells(
                 if local_active:
                     state["activated"] = True
                     state["first_active_round"] = round_name
+            retrieved_ids = list(getattr(trace, "retrieved_skill_ids", ()) or ())
+            pool = list(getattr(trace, "candidate_ids", ()) or ())
+            probe_order = list(getattr(result, "probe_order_after_card", ())
+                               or getattr(result, "probe_order_before_card", ())
+                               or [])
+            probes = [{"candidate_id": p["candidate_id"],
+                       "kind": p.get("kind"), "gain": p.get("gain")}
+                      for p in result.actual_probed_programs]
+            hampel_proposed = any("hampel_filter" in str(x) for x in pool)
+            hampel_chosen = "hampel_filter" in str(
+                getattr(trace, "chosen_candidate_id", "") or "")
+            hampel_probed = sum(
+                1 for p in probes
+                if p.get("kind") == "probe"
+                and "hampel_filter" in str(p.get("candidate_id", "")))
+            non_hampel_proposals = [
+                x for x in pool
+                if x and x != "identity" and "hampel_filter" not in str(x)]
+            non_hampel_probes = [
+                p for p in probes
+                if p.get("kind") == "probe"
+                and str(p.get("candidate_id", "")) != "identity"
+                and "hampel_filter" not in str(p.get("candidate_id", ""))]
             record.update({
-                "pool": list(getattr(trace, "candidate_ids", ()) or ()),
+                "retrieved_skill_ids": retrieved_ids,
+                "pool": pool,
+                "pool_order": list(pool),
                 "chosen": getattr(trace, "chosen_candidate_id", None),
+                "probe_order": probe_order,
+                "hampel_proposed": hampel_proposed,
+                "hampel_chosen": hampel_chosen,
+                "hampel_probed": hampel_probed,
+                "non_hampel_proposal_count": len(non_hampel_proposals),
+                "non_hampel_probe_count": len(non_hampel_probes),
                 "memory_resolution": getattr(
                     trace, "memory_resolution_status", None),
                 "proposal_count": result.proposal_count,
                 "support_receipts": result.target_support_receipts_used,
                 "non_identity_trials": len(non_identity),
-                "probes": [{"candidate_id": p["candidate_id"],
-                            "kind": p.get("kind"), "gain": p.get("gain")}
-                           for p in result.actual_probed_programs],
+                "probes": probes,
                 "winner_program": _plain(result.winner_program),
                 "abstained": bool(getattr(result, "abstained", False)),
                 "harm_count": result.harm_count,
@@ -2897,8 +2934,274 @@ def plan(*, row_order_contract: bool = False) -> int:
     return _write(doc, row_order_contract=row_order_contract)
 
 
+def _materialize_skill_v2_snapshot():
+    """Compile h0 + the frozen v2 entry.  No Slow, no Temp h0s_v2."""
+    from SelfEvolvingHarnessTS.contracts.harness import (
+        EditManifest, EditOperation,
+    )
+    from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
+        EditController, FaultRouter, SurfaceRegistry,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
+    from SelfEvolvingHarnessTS.methods.ttha.slow_agent import (
+        _resolve_apply_manifest,
+    )
+
+    if not OUT_SKILL_V2.exists():
+        raise Stop("V2_DELIVERY_FAILED",
+                   "missing frozen skill artifact %s" % _repo_rel(OUT_SKILL_V2))
+    doc = json.loads(OUT_SKILL_V2.read_text(encoding="utf-8"))
+    entry = dict(doc.get("entry") or {})
+    if entry.get("skill_id") != REPLAY_V2_SKILL_ID:
+        raise Stop("V2_DELIVERY_FAILED",
+                   "frozen entry skill_id is %r" % entry.get("skill_id"))
+    h0 = compile_snapshot(
+        PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+        verify_lock=False)
+    store_root = Path(tempfile.gettempdir()) / "t6e0_h0_plus_v2"
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    store = SnapshotStore(store_root / "snapshots")
+    store.materialize(h0)
+    store.set_active(h0.runtime_bundle_sha)
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter())
+    manifest = EditManifest(
+        edit_id=REPLAY_V2_SKILL_ID,
+        base_harness_sha=h0.harness_content_sha,
+        target_pattern_id="t6-42e0-replay-ad-skill-v2",
+        target_surface_id="skill_library.entries/" + REPLAY_V2_SKILL_ID,
+        operation=EditOperation.ADD,
+        surface_precondition={"kind": "ABSENT"},
+        dependency_precondition_shas={},
+        new_value=entry,
+        observable_applicability=dict(entry.get("observable_applicability")
+                                      or {}),
+        predicted_agent_behavior_change=(
+            "retrieve_skill:" + REPLAY_V2_SKILL_ID,),
+        predicted_data_effect=("safer_proposal_stage",),
+        automatically_selected_risk_cases=(),
+        falsification_condition=("no_improvement",),
+        patch_id=None,
+    )
+    parent = store.materialize(h0)
+    receipt = controller.apply_to_fork(
+        parent,
+        _resolve_apply_manifest(manifest, h0),
+        confirmed_cause="SKILL_LIBRARY_GAP",
+    )
+    snapshot = receipt.candidate_snapshot.snapshot
+    store.set_active(snapshot.runtime_bundle_sha)
+    ids = [s.skill_id for s in snapshot.skills]
+    if REPLAY_V2_SKILL_ID not in ids:
+        raise Stop("V2_DELIVERY_FAILED",
+                   "materialized snapshot missing %s" % REPLAY_V2_SKILL_ID)
+    return h0, snapshot
+
+
+def _replay_v2_verdict(run: Mapping[str, Any]) -> dict[str, Any]:
+    cells = [c for c in (run.get("cells") or []) if "error" not in c]
+    a3 = [c for c in cells if c.get("arm") == "A3"]
+    a5 = [c for c in cells if c.get("arm") == "A5"]
+    a5_miss = [c["cell"] for c in a5
+               if REPLAY_V2_SKILL_ID not in (c.get("retrieved_skill_ids") or [])]
+    a3_leak = [c["cell"] for c in a3
+               if REPLAY_V2_SKILL_ID in (c.get("retrieved_skill_ids") or [])]
+    source_memory = [
+        c["cell"] for c in cells
+        if int((c.get("retrieval_before_round") or {}).get("held") or 0) > 0
+        or (c.get("retrieval_before_round") or {}).get("source_cards")
+    ]
+    if a5_miss or a3_leak or source_memory or run.get("stopped") == "V2_DELIVERY_FAILED":
+        return {"verdict": "V2_DELIVERY_FAILED",
+                "a5_miss": a5_miss, "a3_leak": a3_leak,
+                "source_memory_cells": source_memory}
+
+    def _sum(rows, key):
+        return sum(int(c.get(key) or 0) for c in rows)
+
+    a3_hampel = _sum(a3, "hampel_probed") + sum(
+        1 for c in a3 if c.get("hampel_proposed") or c.get("hampel_chosen"))
+    a5_hampel = _sum(a5, "hampel_probed") + sum(
+        1 for c in a5 if c.get("hampel_proposed") or c.get("hampel_chosen"))
+    a3_hampel_probed = _sum(a3, "hampel_probed")
+    a5_hampel_probed = _sum(a5, "hampel_probed")
+    a3_non = _sum(a3, "non_hampel_probe_count") + _sum(a3, "non_hampel_proposal_count")
+    a5_non = _sum(a5, "non_hampel_probe_count") + _sum(a5, "non_hampel_proposal_count")
+    a3_non_probe = _sum(a3, "non_hampel_probe_count")
+    a5_non_probe = _sum(a5, "non_hampel_probe_count")
+    a3_any_non_hampel = a3_non > 0
+    a5_any_non_hampel = a5_non > 0
+    a3_any_plan = any(
+        (c.get("non_identity_trials") or 0) > 0 or (c.get("pool") or []) != ["identity"]
+        for c in a3)
+    a5_any_plan = any(
+        (c.get("non_identity_trials") or 0) > 0 or any(
+            x and x != "identity" for x in (c.get("pool") or []))
+        for c in a5)
+
+    if a3_any_non_hampel and not a5_any_non_hampel:
+        verdict = "V2_GLOBAL_EXPLORATION_COLLAPSE"
+    elif ((a3_hampel > 0) and (a5_hampel < a3_hampel or a5_hampel_probed < a3_hampel_probed)
+          and a5_non_probe > 0):
+        verdict = "V2_SCOPED_RISK_BEHAVIOR_OBSERVED"
+    elif a3_hampel == 0 and a5_hampel == 0 and a5_any_non_hampel:
+        verdict = "RISK_SKILL_NO_TRIGGERING_CANDIDATE"
+    elif not a3_any_plan and not a5_any_plan:
+        verdict = "V2_REPLAY_NO_ACTIONABLE_PLAN_SAMPLE"
+    elif a5_hampel > a3_hampel or a5_hampel_probed > a3_hampel_probed:
+        verdict = "V2_RISK_GUIDANCE_REGRESSION"
+    else:
+        verdict = "V2_RISK_GUIDANCE_IGNORED"
+    return {
+        "verdict": verdict,
+        "a3_hampel_events": a3_hampel,
+        "a5_hampel_events": a5_hampel,
+        "a3_hampel_probed": a3_hampel_probed,
+        "a5_hampel_probed": a5_hampel_probed,
+        "a3_non_hampel": a3_non,
+        "a5_non_hampel": a5_non,
+        "a3_non_hampel_probes": a3_non_probe,
+        "a5_non_hampel_probes": a5_non_probe,
+    }
+
+
+def replay_skill_v2() -> int:
+    """One-shot development replay of frozen source_investigation_ad_v2."""
+    if not OUT_JSON_V2.exists():
+        print(json.dumps({"verdict": "V2_DELIVERY_FAILED",
+                          "reason": "missing v2 plan"}, indent=1))
+        return 1
+    leftover = [
+        line for line in os.popen("ps -ef").read().splitlines()
+        if "run_e2_t6_natural_a5_a3.py" in line
+        and "--replay-skill-v2" in line
+        and str(os.getpid()) not in line
+    ]
+    if leftover:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": leftover}, indent=1))
+        return 2
+    REPLAY_V2_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        lock_fd = os.open(str(REPLAY_V2_LOCK),
+                          os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": "lock held"}, indent=1))
+        return 2
+    os.write(lock_fd, str(os.getpid()).encode("ascii"))
+    os.close(lock_fd)
+    run_id = datetime.now().strftime("%Y%m%dT%H%M%SZ")
+    plan = json.loads(OUT_JSON_V2.read_text(encoding="utf-8"))
+    try:
+        h0, h0_plus_v2 = _materialize_skill_v2_snapshot()
+    except Stop as stop:
+        payload = {"verdict": stop.verdict, "reason": stop.reason,
+                   "run_id": run_id}
+        OUT_REPLAY_V2.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload, ensure_ascii=False, indent=1))
+        return 1
+    wall = LabelWall(released=True)
+    universe = _load_universe(gate_all(row_order_contract=True))
+    budget = FitBudget(REPLAY_V2_AD_FIT_BUDGET)
+    store_tag = "t6e0_%s" % run_id
+    try:
+        run = _run_cells(
+            plan=plan,
+            cohort_rows=universe["target"],
+            agent_factory=_evaluate_agent,
+            backend_factory=_evaluate_backend,
+            llm_budget=REPLAY_V2_LLM_BUDGET,
+            fit_budget=budget,
+            wall=wall,
+            store_tag=store_tag,
+            snapshot_for_arm={"A3": h0, "A5": h0_plus_v2},
+        )
+    except Stop as stop:
+        payload = {"verdict": stop.verdict, "reason": stop.reason,
+                   "run_id": run_id}
+        OUT_REPLAY_V2.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload, ensure_ascii=False, indent=1))
+        return 1
+    run["label_wall"] = wall.audit()
+    run["run_id"] = run_id
+    run["h0_runtime_bundle_sha"] = h0.runtime_bundle_sha
+    run["h0_plus_v2_runtime_bundle_sha"] = h0_plus_v2.runtime_bundle_sha
+    run["construction_memory_empty"] = True
+    run["v2_source"] = _repo_rel(OUT_SKILL_V2)
+    verdict = _replay_v2_verdict(run)
+    payload = {
+        "protocol_version": "t6_nab_42e0_skill_v2_replay_v1",
+        "entry": "--replay-skill-v2",
+        "evidence_grade": "DEVELOPMENT",
+        "evidence_standing": "same-context",
+        "counts_as_capability_claim": False,
+        "counts_as_cross_domain_claim": False,
+        "run": run,
+        "verdict": verdict,
+    }
+    OUT_REPLAY_V2.write_text(_json_text(payload), encoding="utf-8")
+    lines = [
+        "# #42e0 Skill v2 development replay",
+        "",
+        "verdict: **%s**" % verdict["verdict"],
+        "evidence_grade: DEVELOPMENT / same-context",
+        "run_id: %s" % run_id,
+        "LLM %s / %s; AD fit %s / %s" % (
+            run.get("llm_calls"), run.get("llm_budget"),
+            run.get("ad_fits"), run.get("ad_fit_cap")),
+        "",
+        "| cell | retrieved v2 | pool | chosen | hampel p/c/pr | non-hampel prop/probe | relation |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for cell in run.get("cells") or []:
+        ids = cell.get("retrieved_skill_ids") or []
+        rels = [(e.get("workflow_signature"), e.get("relation"),
+                 e.get("local_status")) for e in cell.get("episode_rows") or []]
+        lines.append(
+            "| %s | %s | %s | %s | %s/%s/%s | %s/%s | %s |" % (
+                cell.get("cell"),
+                REPLAY_V2_SKILL_ID in ids,
+                cell.get("pool"),
+                cell.get("chosen"),
+                cell.get("hampel_proposed"),
+                cell.get("hampel_chosen"),
+                cell.get("hampel_probed"),
+                cell.get("non_hampel_proposal_count"),
+                cell.get("non_hampel_probe_count"),
+                rels or "—",
+            ))
+    lines.extend([
+        "",
+        "A3 hampel events %s / probed %s; A5 hampel events %s / probed %s"
+        % (verdict.get("a3_hampel_events"), verdict.get("a3_hampel_probed"),
+           verdict.get("a5_hampel_events"), verdict.get("a5_hampel_probed")),
+        "A3 non-hampel %s; A5 non-hampel %s"
+        % (verdict.get("a3_non_hampel"), verdict.get("a5_non_hampel")),
+    ])
+    OUT_REPLAY_V2_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict["verdict"],
+        "llm_calls": run.get("llm_calls"),
+        "ad_fits": run.get("ad_fits"),
+        "hampel": {"A3": verdict.get("a3_hampel_probed"),
+                   "A5": verdict.get("a5_hampel_probed")},
+        "non_hampel": {"A3": verdict.get("a3_non_hampel_probes"),
+                       "A5": verdict.get("a5_non_hampel_probes")},
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_REPLAY_V2)
+    print("wrote", OUT_REPLAY_V2_MD)
+    return 0 if verdict["verdict"] != "V2_DELIVERY_FAILED" else 1
+
+
 def main() -> int:
     argv = sys.argv[1:]
+    if "--replay-skill-v2" in argv:
+        return replay_skill_v2()
     if "--evaluate-lifecycle-fixture" in argv:
         cap = FIXTURE_AD_FIT_BUDGET
         for token in argv:
@@ -2920,7 +3223,7 @@ def main() -> int:
     if "--plan" in argv:
         return plan()
     print("usage: --plan | --plan-v2 | --evaluate | --evaluate-smoke "
-          "[--fit-cap=N] | --evaluate-lifecycle-fixture")
+          "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2")
     return 2
 
 
