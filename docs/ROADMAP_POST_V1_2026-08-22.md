@@ -177,10 +177,18 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   T4 = `PARTIAL_EXPERIENCE_CONDITIONING`(C15:F Risk 0/3→3/3
   冲突卡纠偏成立;AD 3/3→0/3 回退,机制 = 卡表达范围无 abstain
   通道;键/写入/检索全绿;键统一落地,方言负债与 bundle 盲区入册
-  路由 #41b);当前 = #40b 修复切片(卡表达范围三件套:identity
-  过滤资格 + ContrastPack baseline 通道 + ABSTAIN 事实句;卡序
-  不动为唯一后备面;重考照 #40 协议;通过即 T4 关卷 → T5,
-  条件触发 T5 静态接缝勘察 0 LLM)。
+  路由 #41b);  #40b = `TASK_SEPARATION_REGRESSION`(C16:abstain 通道使 AD Risk
+  0/3→2/3、F 3/3 保持;分离门败于共有合法弃权词 identity 进双臂
+  shortlist,非任务趋同;判据教训入册);T4 收束 = Memory 机制部分
+  成立、安全闭环未完成,不做卡序第三修(防答案 Router);
+  当前 = T5(#41)单入口双 Consumer 生命周期闭合(第一阻塞 =
+  AD 算子供给为空 + 写回硬编码 + delayed 只读聚合且 NEUTRAL 也
+  扩权 + Skill ID 跨任务撞名;A1 供给解锁与菜单等同 / A2 Consumer
+  adapter 只产读数 / A3 写回统一双键断言 / A4 delayed 风险门
+  classify_relation=POSITIVE 才批准 + 任务化 Skill ID,method.py
+  入接线面;Part B 0-LLM 烟测含 B6 冲突撤权格,全绿门控 Part C
+  live 交错轨迹 F→dF→AD→dAD→F2→dF→AD2→dAD,全新空店;
+  LLM ≤16、重训 ≤120、AD 评估 ≤180;不调 Slow)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下

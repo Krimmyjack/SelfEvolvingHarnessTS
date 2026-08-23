@@ -210,19 +210,28 @@ def canonical_sha256(obj: object) -> str:
 
 @dataclass(frozen=True)
 class ContrastPack:
-    """Fast Path 得到的对照包：最相似的成功/失败/冲突 + 证据充分性。"""
+    """Fast Path 得到的对照包：最相似的成功/失败/冲突/未动作 + 证据充分性。
+
+    T4b (#40b) A2：第四格 abstain。#40 的读数指认了这个缺口——AD 臂正确答案
+    是"什么都不做"，而 identity 判 ABSTAIN 后三格里无处安放，能渲染的只剩
+    "winsorize 退化"与"hampel 聚合改善"，孤立的聚合改善卡把谨慎剖面推翻了。
+    字段名 abstain 唯一；卡面可称 no-action baseline。默认 None，位置在末尾，
+    既有位置构造保持可用。
+    """
 
     positive: ExperienceEpisode | None
     negative: ExperienceEpisode | None
     conflict: ExperienceEpisode | None
     evidence_sufficient: bool
     retrieval_note: str
+    abstain: ExperienceEpisode | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
             "positive": self.positive.to_dict() if self.positive else None,
             "negative": self.negative.to_dict() if self.negative else None,
             "conflict": self.conflict.to_dict() if self.conflict else None,
+            "abstain": self.abstain.to_dict() if self.abstain else None,
             "evidence_sufficient": self.evidence_sufficient,
             "retrieval_note": self.retrieval_note,
         }
@@ -274,6 +283,19 @@ class SignedEpisodeRetriever:
             return False
         if self._pattern_view is not None and episode.pattern_view != self._pattern_view:
             return False  # 区别化：只在匹配的 pattern 视角内检索
+        # T4b (#40b) A1：ABSTAIN + identity 的 Episode 只绕过下面这一条
+        # informative-operator membership 检查，上面的 response_validity /
+        # task_consumer_key / pattern_view 全部照过。绕过的理由：这条经验说的
+        # 就是"没有动用任何算子"，用"算子是否在允许集里"去筛它是范畴错误；
+        # 且真实 Runtime 的 allowed_operators 来自 Operator registry，identity
+        # 作为 no-op 未必在册——挂靠 identity ∈ allowed_operators 会做成考试
+        # 专用通道。unknown 签名不在此列：那是"声明≠执行"的解析失败，照滤。
+        if (
+            self._allowed_operators
+            and episode.relation == RELATION_ABSTAIN
+            and episode.workflow_signature == "identity"
+        ):
+            return True
         if self._allowed_operators:
             ops = tuple(episode.workflow_signature.split("|"))
             # identity/unknown 无信息量（什么都没做 / 解析失败），显式排除；
@@ -304,11 +326,16 @@ class SignedEpisodeRetriever:
         positive = next((ep for ep in ranked if ep.relation == RELATION_POSITIVE), None)
         negative = next((ep for ep in ranked if ep.relation == RELATION_NEGATIVE), None)
         conflict = next((ep for ep in ranked if ep.relation == RELATION_CONFLICT), None)
+        abstain = next((ep for ep in ranked if ep.relation == RELATION_ABSTAIN), None)
         count = len(ranked)
-        note = f"{count} valid episodes; same-domain-first; signed pack (pos/neg/conflict)"
-        # 证据充分性：至少存在一个正或负经验，且同域优先命中
+        note = (
+            f"{count} valid episodes; same-domain-first; signed pack "
+            "(pos/neg/conflict/abstain)"
+        )
+        # 证据充分性口径不动（正或负才算充分）：abstain 是"未动作"的读数，
+        # 它让谨慎选择可被看见，但本身不构成"有足够证据去做什么"。
         sufficient = positive is not None or negative is not None
-        return ContrastPack(positive, negative, conflict, sufficient, note)
+        return ContrastPack(positive, negative, conflict, sufficient, note, abstain)
 
 
 # ---------------------------------------------------------------------------
@@ -709,6 +736,37 @@ def _fact_sentence(episode: Mapping[str, object], facts: Mapping[str, object],
     return "".join(parts)
 
 
+def _abstain_sentence(episode: Mapping[str, object],
+                      facts: Mapping[str, object], *, index: int) -> str:
+    """未动作读数的事实句（T4b #40b A3）。零祈使。
+
+    句内顺序与其余事实句一致（做了什么 -> 聚合 -> harmed -> 来源）：本轮禁动
+    卡序，聚合先于风险的排法留作唯一后备面。这一句唯一要说清的是：把这一批
+    原样留下，也是同一来源、同一 Consumer 下记录在案的一个读数。
+    """
+    consumer = facts.get("consumer_id")
+    consumer_text = " for Consumer `%s`" % consumer if consumer else ""
+    read = facts.get("series_read")
+    harmed = facts.get("harmed_series_count")
+    threshold = -float(facts.get("material_threshold") or 0.005)
+    parts = [
+        "Reference %d: leaving the batch as it is -- no operator applied -- is "
+        "itself a recorded outcome%s in a similar context. Aggregate reading: "
+        "0.0000, unchanged by definition." % (index, consumer_text)
+    ]
+    if isinstance(harmed, int) and isinstance(read, int) and read:
+        parts.append(
+            " Individual series harmed beyond the %+.3f line: %d of %d."
+            % (threshold, harmed, read)
+        )
+    parts.append(
+        " It comes from the same source and the same Consumer as the "
+        "references above."
+    )
+    _ = episode
+    return "".join(parts)
+
+
 def render_experience_pack(pack: Mapping[str, object]) -> str:
     """把对照包渲染成 TIMECLAW 风格 fenced 前缀块（prompts.py:18 模式借鉴）。
 
@@ -777,6 +835,13 @@ def render_experience_pack(pack: Mapping[str, object]) -> str:
             "delayed-negative flip. Treat as risk; confirm on the delayed segment before "
             "relying on it."
         )
+    # T4b (#40b) A3：第四格 no-action baseline，附在既有三条之后——既有
+    # Reference 编号（正 1 / 负 2 / 冲突 3）一个不动，本轮禁动卡序。
+    abst = pack.get("abstain")
+    if isinstance(abst, Mapping):
+        abst_facts = _measured_effect(abst)
+        if abst_facts is not None:
+            entries.append(_abstain_sentence(abst, abst_facts, index=4))
     if not entries:
         return ""
     body = "\n\n".join(entries)

@@ -1,0 +1,2765 @@
+{
+  "protocol_version": "t4_conflict_experience_v2",
+  "evidence_grade": "POSITIVE_CONTROL",
+  "role": "T4b bounded repair: the card's expressive range only",
+  "part0_checkpoint": {
+    "commit": "fbba86f",
+    "files": 10,
+    "note": "#40 deliverables (the four-file Memory diff + t4 runner + t4_conflict_experience_v1.json/.md) + the main-line doc revisions (C15, the #40 ruling, the #40b authorization and pre-issue revision section, the progress line) + the two authorized FROZEN_SURFACE_V9 moves recorded as T4_MEMORY_TOUCHED",
+    "v9_moves": {
+      "evaluation/functional/run_e2_skill_store_integration.py": {
+        "before": "f39c13f3b29ae534ee7c7b3b682ad60179316243742925022504d16974b3183e",
+        "after": "0dbe61d98defd4dcce9a9081e0e297617e4606f2cc2919b5f10ed52665690c48",
+        "move_index": "second"
+      },
+      "methods/ttha/method.py": {
+        "before": "e9c27af3d43db9f9ca08208553ca817211f4af4de96ea2e88d4c8f497f7e0d21",
+        "after": "cd28df33373e568b92e7500ef062ef4c03e9e057df952c80c0122a4d821244f5",
+        "move_index": "first"
+      }
+    }
+  },
+  "question": "with a no-action baseline card available, does the AD arm recover its conservative choice without costing F the correction #40 bought",
+  "change_surface": {
+    "declared": "ContrastPack abstain channel (three edits, one file)",
+    "edits": [
+      "SignedEpisodeRetriever._hard_filter: an ABSTAIN + identity episode bypasses the informative-operator membership check only; every other filter still applies and nothing depends on identity being in allowed_operators",
+      "ContrastPack gains the abstain field and retrieve() fills it",
+      "render_experience_pack appends a zero-imperative Reference 4 when the pack carries an abstain episode"
+    ],
+    "frozen_at_40": [
+      "keys",
+      "relation classification",
+      "card order",
+      "Consumer",
+      "menu",
+      "backend",
+      "exam protocol"
+    ]
+  },
+  "verdict": "TASK_SEPARATION_REGRESSION",
+  "stopped": null,
+  "ambiguities_reported_not_self_adjudicated": [
+    "B1 asks for a literal episode.to_dict() comparison against the #40 artifact, but #40 persisted a per-episode summary rather than the serialized Episode; the 16 persisted fields, the frozen readings block and both task keys are compared instead, and this run records the full to_dict() so the literal check becomes possible later"
+  ],
+  "arm_order": [
+    "forecasting",
+    "anomaly_detection",
+    "forecasting",
+    "anomaly_detection",
+    "forecasting",
+    "anomaly_detection"
+  ],
+  "menu": [
+    "identity",
+    "outlier_iqr",
+    "outlier_mad",
+    "hampel_filter",
+    "winsorize"
+  ],
+  "task_keys": {
+    "forecasting": "forecast|pooled_ridge_a1|sMASE",
+    "anomaly_detection": "anomaly_detection|ad_ridge_train_v3|F1"
+  },
+  "task_specs": {
+    "forecasting": {
+      "task_id": "forecasting",
+      "consumer_id": "pooled_ridge_a1",
+      "quality_semantics": "good preparation lowers the sMASE of the evaluation-series forecasts"
+    },
+    "anomaly_detection": {
+      "task_id": "anomaly_detection",
+      "consumer_id": "ad_ridge_train_v3",
+      "quality_semantics": "good preparation preserves the event signal needed to train the AD Consumer and improves event F1 on an untouched query"
+    }
+  },
+  "store_state": {
+    "store_root": "_scratch/skill_store/t4_conflict_experience_v2/snapshots",
+    "h0_source": "methods/ttha/harness/h0",
+    "runtime_bundle_sha": "e6d42cc5c9aea28a85dd799b83b00be45aa0f3758fe5d5a0760f6baa4bc68699",
+    "harness_content_sha": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+    "skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ],
+    "materialized_root": "_scratch/skill_store/t4_conflict_experience_v2/snapshots/e6d42cc5c9aea28a85dd799b83b00be45aa0f3758fe5d5a0760f6baa4bc68699",
+    "resolved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ],
+    "resolved_memory_ids": [],
+    "effective_harness_view_sha": "95be1f62050790b4784e47d6b3270c9a3511b2001ebfb6e57c3b77ebb03039d6",
+    "harness_content_sha_matches_40": true,
+    "effective_harness_view_sha_matches_40": true,
+    "empty_store_statement": "the same h0 snapshot #39 and #40 read; this slice re-materializes the same ten Experience episodes into a fresh TTHAMethod and adds nothing else"
+  },
+  "rematerialization": {
+    "rule": "the ten Episodes are re-materialized in a fresh TTHAMethod from the same frozen T1b v3 readings and re-written through append_experience_episode.  #40's ten were never persisted -- they lived in that run's method instance -- so there is no #40 store to carry over; re-materialization is the only faithful way to stand the same evidence up again.",
+    "new_independent_evidence": 0,
+    "not_a_new_trial": "no reading was taken here.  Nothing in this slice may be described as a new trial or as new independent evidence",
+    "compared_fields": [
+      "episode_id",
+      "arm",
+      "program",
+      "task_consumer_key",
+      "domain_namespace",
+      "workflow_signature",
+      "relation",
+      "evidence_level",
+      "local_status",
+      "aggregate_gain",
+      "aggregate_direction",
+      "series_read",
+      "harmed_series_count",
+      "harmed_series",
+      "min_per_series_gain",
+      "classification_basis"
+    ],
+    "comparison_caveat": "the #40 v1 artifact persisted a per-episode summary, not ExperienceEpisode.to_dict(); the literal to_dict comparison the book asks for is therefore not reconstructible from v1.  Every field v1 did persist is compared, together with the frozen readings block and both task keys.  This run records the full to_dict() so a later slice can do the literal check.",
+    "per_episode": [
+      {
+        "episode_id": "t4_anomaly_detection_hampel_filter_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "CONFLICT",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_identity_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "ABSTAIN",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_outlier_iqr_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "CONFLICT",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_outlier_mad_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "CONFLICT",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_winsorize_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "NEGATIVE",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1"
+      },
+      {
+        "episode_id": "t4_forecasting_hampel_filter_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "CONFLICT",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE"
+      },
+      {
+        "episode_id": "t4_forecasting_identity_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "ABSTAIN",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE"
+      },
+      {
+        "episode_id": "t4_forecasting_outlier_iqr_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "POSITIVE",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE"
+      },
+      {
+        "episode_id": "t4_forecasting_outlier_mad_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "POSITIVE",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE"
+      },
+      {
+        "episode_id": "t4_forecasting_winsorize_replay_v1",
+        "identical": true,
+        "differing_fields": [],
+        "relation": "POSITIVE",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE"
+      }
+    ],
+    "all_identical": true,
+    "frozen_readings_identical_to_v1": true,
+    "task_keys_identical_to_v1": true,
+    "count": 10
+  },
+  "episodes": {
+    "rows": [
+      {
+        "episode_id": "t4_forecasting_identity_replay_v1",
+        "arm": "forecasting",
+        "program": "identity",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "identity",
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 4,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0,
+        "classification_basis": "identity: the batch was left as it is, so there is no effect to judge"
+      },
+      {
+        "episode_id": "t4_forecasting_outlier_iqr_replay_v1",
+        "arm": "forecasting",
+        "program": "outlier_iqr",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "outlier_iqr",
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.27226576640403444,
+        "aggregate_direction": "improved",
+        "series_read": 4,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0585545239237922,
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005"
+      },
+      {
+        "episode_id": "t4_forecasting_outlier_mad_replay_v1",
+        "arm": "forecasting",
+        "program": "outlier_mad",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "outlier_mad",
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.3255462450771637,
+        "aggregate_direction": "improved",
+        "series_read": 4,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.1674334032146033,
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005"
+      },
+      {
+        "episode_id": "t4_forecasting_hampel_filter_replay_v1",
+        "arm": "forecasting",
+        "program": "hampel_filter",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "hampel_filter",
+        "relation": "CONFLICT",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.0647581417473617,
+        "aggregate_direction": "improved",
+        "series_read": 4,
+        "harmed_series_count": 1,
+        "harmed_series": [
+          "99999923908"
+        ],
+        "min_per_series_gain": -0.0904124968690548,
+        "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005"
+      },
+      {
+        "episode_id": "t4_forecasting_winsorize_replay_v1",
+        "arm": "forecasting",
+        "program": "winsorize",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "winsorize",
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.40586167760385816,
+        "aggregate_direction": "improved",
+        "series_read": 4,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.3320247454108856,
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_identity_replay_v1",
+        "arm": "anomaly_detection",
+        "program": "identity",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "identity",
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 12,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0,
+        "classification_basis": "identity: the batch was left as it is, so there is no effect to judge"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_outlier_iqr_replay_v1",
+        "arm": "anomaly_detection",
+        "program": "outlier_iqr",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "outlier_iqr",
+        "relation": "CONFLICT",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.008579846079846076,
+        "aggregate_direction": "improved",
+        "series_read": 12,
+        "harmed_series_count": 5,
+        "harmed_series": [
+          "72435653866",
+          "72438093819",
+          "72529014768",
+          "72605654791",
+          "74486514719"
+        ],
+        "min_per_series_gain": -0.2727272727272727,
+        "classification_basis": "aggregate >= +0.005 but 5 per-series reading(s) < -0.005"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_outlier_mad_replay_v1",
+        "arm": "anomaly_detection",
+        "program": "outlier_mad",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "outlier_mad",
+        "relation": "CONFLICT",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.04133597883597895,
+        "aggregate_direction": "improved",
+        "series_read": 12,
+        "harmed_series_count": 4,
+        "harmed_series": [
+          "72435653866",
+          "72438093819",
+          "72605654791",
+          "74486514719"
+        ],
+        "min_per_series_gain": -0.19999999999999996,
+        "classification_basis": "aggregate >= +0.005 but 4 per-series reading(s) < -0.005"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_hampel_filter_replay_v1",
+        "arm": "anomaly_detection",
+        "program": "hampel_filter",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "hampel_filter",
+        "relation": "CONFLICT",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": 0.04133597883597895,
+        "aggregate_direction": "improved",
+        "series_read": 12,
+        "harmed_series_count": 4,
+        "harmed_series": [
+          "72435653866",
+          "72438093819",
+          "72605654791",
+          "74486514719"
+        ],
+        "min_per_series_gain": -0.19999999999999996,
+        "classification_basis": "aggregate >= +0.005 but 4 per-series reading(s) < -0.005"
+      },
+      {
+        "episode_id": "t4_anomaly_detection_winsorize_replay_v1",
+        "arm": "anomaly_detection",
+        "program": "winsorize",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "domain_namespace": "noaa_train_block",
+        "workflow_signature": "winsorize",
+        "relation": "NEGATIVE",
+        "evidence_level": "DELAYED",
+        "local_status": "EPISODE_ONLY",
+        "aggregate_gain": -0.16723637273172876,
+        "aggregate_direction": "degraded",
+        "series_read": 12,
+        "harmed_series_count": 9,
+        "harmed_series": [
+          "72203812897",
+          "72329003935",
+          "72422093820",
+          "72435653866",
+          "72438093819",
+          "72511654737",
+          "72529014768",
+          "72605654791",
+          "74486514719"
+        ],
+        "min_per_series_gain": -0.5042016806722689,
+        "classification_basis": "aggregate < -0.005"
+      }
+    ],
+    "count": 10,
+    "rule": "relation is classify_relation's mechanical output over the frozen +/-0.005 line; identity -> ABSTAIN; aggregate >= +t with no per-series below -t -> POSITIVE; aggregate >= +t with at least one below -t -> CONFLICT; aggregate < -t -> NEGATIVE; the rest -> NEUTRAL",
+    "expected": {
+      "forecasting": {
+        "identity": "ABSTAIN",
+        "outlier_iqr": "POSITIVE",
+        "outlier_mad": "POSITIVE",
+        "winsorize": "POSITIVE",
+        "hampel_filter": "CONFLICT"
+      },
+      "anomaly_detection": {
+        "identity": "ABSTAIN",
+        "outlier_iqr": "CONFLICT",
+        "outlier_mad": "CONFLICT",
+        "hampel_filter": "CONFLICT",
+        "winsorize": "NEGATIVE"
+      }
+    },
+    "matches_expectation": true,
+    "mismatches": [],
+    "neutral_produced": []
+  },
+  "episodes_to_dict": [
+    {
+      "episode_id": "t4_forecasting_identity_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "identity",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": false,
+        "gain": 0.0,
+        "reading_window": "delayed window aggregate + per evaluation series",
+        "measured_effect": {
+          "relation": "ABSTAIN",
+          "classification_basis": "identity: the batch was left as it is, so there is no effect to judge",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.0,
+          "aggregate_direction": "unchanged",
+          "series_read": 4,
+          "harmed_series_count": 0,
+          "harmed_series": [],
+          "min_per_series_gain": 0.0
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_forecasting_outlier_iqr_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "outlier_iqr",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.27226576640403444,
+        "reading_window": "delayed window aggregate + per evaluation series",
+        "measured_effect": {
+          "relation": "POSITIVE",
+          "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.27226576640403444,
+          "aggregate_direction": "improved",
+          "series_read": 4,
+          "harmed_series_count": 0,
+          "harmed_series": [],
+          "min_per_series_gain": 0.0585545239237922
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_forecasting_outlier_mad_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "outlier_mad",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "outlier_mad",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.3255462450771637,
+        "reading_window": "delayed window aggregate + per evaluation series",
+        "measured_effect": {
+          "relation": "POSITIVE",
+          "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.3255462450771637,
+          "aggregate_direction": "improved",
+          "series_read": 4,
+          "harmed_series_count": 0,
+          "harmed_series": [],
+          "min_per_series_gain": 0.1674334032146033
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_forecasting_hampel_filter_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "hampel_filter",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "hampel_filter",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.0647581417473617,
+        "reading_window": "delayed window aggregate + per evaluation series",
+        "measured_effect": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.0647581417473617,
+          "aggregate_direction": "improved",
+          "series_read": 4,
+          "harmed_series_count": 1,
+          "harmed_series": [
+            "99999923908"
+          ],
+          "min_per_series_gain": -0.0904124968690548
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "CONFLICT",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_forecasting_winsorize_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "winsorize",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "winsorize",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.40586167760385816,
+        "reading_window": "delayed window aggregate + per evaluation series",
+        "measured_effect": {
+          "relation": "POSITIVE",
+          "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.40586167760385816,
+          "aggregate_direction": "improved",
+          "series_read": 4,
+          "harmed_series_count": 0,
+          "harmed_series": [],
+          "min_per_series_gain": 0.3320247454108856
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_anomaly_detection_identity_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "identity",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": false,
+        "gain": 0.0,
+        "reading_window": "training-side pooled macro-F1 + per training series",
+        "measured_effect": {
+          "relation": "ABSTAIN",
+          "classification_basis": "identity: the batch was left as it is, so there is no effect to judge",
+          "material_threshold": 0.005,
+          "consumer_id": "ad_ridge_train_v3",
+          "aggregate_gain": 0.0,
+          "aggregate_direction": "unchanged",
+          "series_read": 12,
+          "harmed_series_count": 0,
+          "harmed_series": [],
+          "min_per_series_gain": 0.0
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_anomaly_detection_outlier_iqr_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "outlier_iqr",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.008579846079846076,
+        "reading_window": "training-side pooled macro-F1 + per training series",
+        "measured_effect": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 5 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "ad_ridge_train_v3",
+          "aggregate_gain": 0.008579846079846076,
+          "aggregate_direction": "improved",
+          "series_read": 12,
+          "harmed_series_count": 5,
+          "harmed_series": [
+            "72435653866",
+            "72438093819",
+            "72529014768",
+            "72605654791",
+            "74486514719"
+          ],
+          "min_per_series_gain": -0.2727272727272727
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "CONFLICT",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_anomaly_detection_outlier_mad_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "outlier_mad",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "outlier_mad",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.04133597883597895,
+        "reading_window": "training-side pooled macro-F1 + per training series",
+        "measured_effect": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 4 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "ad_ridge_train_v3",
+          "aggregate_gain": 0.04133597883597895,
+          "aggregate_direction": "improved",
+          "series_read": 12,
+          "harmed_series_count": 4,
+          "harmed_series": [
+            "72435653866",
+            "72438093819",
+            "72605654791",
+            "74486514719"
+          ],
+          "min_per_series_gain": -0.19999999999999996
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "CONFLICT",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_anomaly_detection_hampel_filter_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "hampel_filter",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "hampel_filter",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.04133597883597895,
+        "reading_window": "training-side pooled macro-F1 + per training series",
+        "measured_effect": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 4 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "ad_ridge_train_v3",
+          "aggregate_gain": 0.04133597883597895,
+          "aggregate_direction": "improved",
+          "series_read": 12,
+          "harmed_series_count": 4,
+          "harmed_series": [
+            "72435653866",
+            "72438093819",
+            "72605654791",
+            "74486514719"
+          ],
+          "min_per_series_gain": -0.19999999999999996
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "CONFLICT",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    },
+    {
+      "episode_id": "t4_anomaly_detection_winsorize_replay_v1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+      "domain_namespace": "noaa_train_block",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "noaa_train_block",
+          "series_count": 12,
+          "observation_cutoff": 780
+        },
+        "local_pattern": {
+          "estimated_level_offset": 0.0,
+          "estimated_region_end_fraction": 0.6724358974358975,
+          "estimated_region_start_fraction": 0.26089743589743586,
+          "level_excursion_score": 3.827302694158219,
+          "level_region_end_fraction": 0.2532051282051282,
+          "level_region_fraction": 0.08717948717948718,
+          "local_robust_z_peak": 11.136765848926917,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.6724358974358975,
+          "period_change_score": 5.125,
+          "period_reliability": 1.0
+        },
+        "program_geometry": {
+          "program": "winsorize",
+          "scope": "training_rows",
+          "block_length": 780,
+          "applied_once_per_training_window": true
+        }
+      },
+      "workflow_signature": "winsorize",
+      "support_response": {
+        "evaluated": false,
+        "gain": null,
+        "why_no_support_reading": "this is a replay of a delayed/training-side reading taken in an earlier round; no Support window was spent here"
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": -0.16723637273172876,
+        "reading_window": "training-side pooled macro-F1 + per training series",
+        "measured_effect": {
+          "relation": "NEGATIVE",
+          "classification_basis": "aggregate < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "ad_ridge_train_v3",
+          "aggregate_gain": -0.16723637273172876,
+          "aggregate_direction": "degraded",
+          "series_read": 12,
+          "harmed_series_count": 9,
+          "harmed_series": [
+            "72203812897",
+            "72329003935",
+            "72422093820",
+            "72435653866",
+            "72438093819",
+            "72511654737",
+            "72529014768",
+            "72605654791",
+            "74486514719"
+          ],
+          "min_per_series_gain": -0.5042016806722689
+        },
+        "historical_replay": true,
+        "counts_as_new_evidence": false,
+        "grants_try_right": false,
+        "authorizes_execution": false
+      },
+      "relation": "NEGATIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "artifacts/functional/e2/t1b_training_flip_v3.json",
+        "t4_conflict_experience_v1"
+      ]
+    }
+  ],
+  "write": {
+    "path": "experience_memory.build_episode -> TTHAMethod.append_experience_episode -> the same instance's retrieval; nothing was hand-inserted and nothing built inside the report counts as a write",
+    "episodes_before": 0,
+    "episodes_after": 10,
+    "appended": 10,
+    "episode_ids": [
+      "t4_forecasting_identity_replay_v1",
+      "t4_forecasting_outlier_iqr_replay_v1",
+      "t4_forecasting_outlier_mad_replay_v1",
+      "t4_forecasting_hampel_filter_replay_v1",
+      "t4_forecasting_winsorize_replay_v1",
+      "t4_anomaly_detection_identity_replay_v1",
+      "t4_anomaly_detection_outlier_iqr_replay_v1",
+      "t4_anomaly_detection_outlier_mad_replay_v1",
+      "t4_anomaly_detection_hampel_filter_replay_v1",
+      "t4_anomaly_detection_winsorize_replay_v1"
+    ],
+    "read_back_from_runtime": true,
+    "store_snapshot_note": "the store is #39's h0 snapshot, materialized fresh and not written to; the ten episodes live in the method instance, so there is no new store sha to report",
+    "evidence_levels": [
+      "DELAYED"
+    ],
+    "local_statuses": [
+      "EPISODE_ONLY"
+    ],
+    "no_promotion": true
+  },
+  "retrieval": {
+    "held_episode_count": 10,
+    "arms": {
+      "forecasting": {
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "evidence_sufficient": true,
+        "retrieval_note": "5 valid episodes; same-domain-first; signed pack (pos/neg/conflict/abstain)",
+        "picked": {
+          "positive": {
+            "episode_id": "t4_forecasting_outlier_iqr_replay_v1",
+            "program": "outlier_iqr",
+            "relation": "POSITIVE",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "harmed_series_count": 0,
+            "min_per_series_gain": 0.0585545239237922
+          },
+          "negative": null,
+          "conflict": {
+            "episode_id": "t4_forecasting_hampel_filter_replay_v1",
+            "program": "hampel_filter",
+            "relation": "CONFLICT",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "harmed_series_count": 1,
+            "min_per_series_gain": -0.0904124968690548
+          },
+          "abstain": {
+            "episode_id": "t4_forecasting_identity_replay_v1",
+            "program": "identity",
+            "relation": "ABSTAIN",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "harmed_series_count": 0,
+            "min_per_series_gain": 0.0
+          }
+        },
+        "card_episode_ids": [
+          "t4_forecasting_outlier_iqr_replay_v1",
+          "t4_forecasting_hampel_filter_replay_v1",
+          "t4_forecasting_identity_replay_v1"
+        ],
+        "abstain_card_id": "t4_forecasting_identity_replay_v1",
+        "cross_task_card_ids": [],
+        "rendered_card": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 1: candidate operator(s) [outlier_iqr] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 0 of 4. Worst single-series reading: +0.0586.\n\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 1 of 4. Worst single-series reading: -0.0904. The aggregate reading and the per-series readings disagree.\n\nReference 4: leaving the batch as it is -- no operator applied -- is itself a recorded outcome for Consumer `pooled_ridge_a1` in a similar context. Aggregate reading: 0.0000, unchanged by definition. Individual series harmed beyond the -0.005 line: 0 of 4. It comes from the same source and the same Consumer as the references above.\n=== END REFERENCES ===\n\n",
+        "rendered_card_without_abstain": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 1: candidate operator(s) [outlier_iqr] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 0 of 4. Worst single-series reading: +0.0586.\n\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 1 of 4. Worst single-series reading: -0.0904. The aggregate reading and the per-series readings disagree.\n=== END REFERENCES ===\n\n",
+        "rendered_card_sha256": "71ac6f2f82ed2c51f6db029b61f1d7c93ff000649ab3eb5300b4db166075b437",
+        "rendered_card_length": 1262
+      },
+      "anomaly_detection": {
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "evidence_sufficient": true,
+        "retrieval_note": "5 valid episodes; same-domain-first; signed pack (pos/neg/conflict/abstain)",
+        "picked": {
+          "positive": null,
+          "negative": {
+            "episode_id": "t4_anomaly_detection_winsorize_replay_v1",
+            "program": "winsorize",
+            "relation": "NEGATIVE",
+            "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+            "harmed_series_count": 9,
+            "min_per_series_gain": -0.5042016806722689
+          },
+          "conflict": {
+            "episode_id": "t4_anomaly_detection_hampel_filter_replay_v1",
+            "program": "hampel_filter",
+            "relation": "CONFLICT",
+            "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+            "harmed_series_count": 4,
+            "min_per_series_gain": -0.19999999999999996
+          },
+          "abstain": {
+            "episode_id": "t4_anomaly_detection_identity_replay_v1",
+            "program": "identity",
+            "relation": "ABSTAIN",
+            "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+            "harmed_series_count": 0,
+            "min_per_series_gain": 0.0
+          }
+        },
+        "card_episode_ids": [
+          "t4_anomaly_detection_winsorize_replay_v1",
+          "t4_anomaly_detection_hampel_filter_replay_v1",
+          "t4_anomaly_detection_identity_replay_v1"
+        ],
+        "abstain_card_id": "t4_anomaly_detection_identity_replay_v1",
+        "cross_task_card_ids": [],
+        "rendered_card": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 2: candidate operator(s) [winsorize] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: degraded. Individual series harmed beyond the -0.005 line: 9 of 12. Worst single-series reading: -0.5042.\n\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 4 of 12. Worst single-series reading: -0.2000. The aggregate reading and the per-series readings disagree.\n\nReference 4: leaving the batch as it is -- no operator applied -- is itself a recorded outcome for Consumer `ad_ridge_train_v3` in a similar context. Aggregate reading: 0.0000, unchanged by definition. Individual series harmed beyond the -0.005 line: 0 of 12. It comes from the same source and the same Consumer as the references above.\n=== END REFERENCES ===\n\n",
+        "rendered_card_without_abstain": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 2: candidate operator(s) [winsorize] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: degraded. Individual series harmed beyond the -0.005 line: 9 of 12. Worst single-series reading: -0.5042.\n\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 4 of 12. Worst single-series reading: -0.2000. The aggregate reading and the per-series readings disagree.\n=== END REFERENCES ===\n\n",
+        "rendered_card_sha256": "c0c21f6cf79ac31ce3f0094ae8f99ab9e82512fa4b1b34bd974c8b5491586f80",
+        "rendered_card_length": 1269
+      }
+    }
+  },
+  "a4_assertions": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "A4 forecasting: with abstain removed the card is byte-identical to #40's",
+        "passed": true,
+        "detail": {
+          "sha_without_abstain": "cc97ef47382bfa4b10b052a3ed6ed490a5dead640d6c60b85ec3ff7446e7b079",
+          "sha_recorded_in_v1": "cc97ef47382bfa4b10b052a3ed6ed490a5dead640d6c60b85ec3ff7446e7b079",
+          "length_delta": 335
+        }
+      },
+      {
+        "name": "A4 anomaly_detection: with abstain removed the card is byte-identical to #40's",
+        "passed": true,
+        "detail": {
+          "sha_without_abstain": "1a893ef5e483ae81a74b56481def70d0b718abf8f842b5d697f2b851056b733a",
+          "sha_recorded_in_v1": "1a893ef5e483ae81a74b56481def70d0b718abf8f842b5d697f2b851056b733a",
+          "length_delta": 338
+        }
+      },
+      {
+        "name": "A4 legacy shape (the other line's episodes): the old sentences are rendered unchanged and no fourth reference appears",
+        "passed": true,
+        "detail": {
+          "legacy_render_sha256": "5e30b1aaffa757c4600256f578e4be8529de6a99194a0a6abd7c531a33ed7ad5",
+          "reference_4_present": false,
+          "legacy_render": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 1: candidate operator(s) [outlier_mad] were verified beneficial on held-in data in a similar context (Support segment positive; delayed segment not yet evaluated). Consider them as priors to confirm again on the current Support.\n\nReference 3: candidate operator(s) [W_rowblock|W_curation] showed a Support-positive but delayed-negative flip. Treat as risk; confirm on the delayed segment before relying on it.\n=== END REFERENCES ===\n\n"
+        }
+      },
+      {
+        "name": "A4 empty pack still renders nothing",
+        "passed": true,
+        "detail": null
+      }
+    ],
+    "note": "ContrastPack.to_dict now carries an abstain key and the retrieval_note names the fourth channel; the book exempts serialization from the byte-equality requirement and neither reaches the prompt"
+  },
+  "b2_acceptance": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "the AD pack now carries an abstain card, and it is identity/ABSTAIN",
+        "passed": true,
+        "detail": {
+          "episode_id": "t4_anomaly_detection_identity_replay_v1",
+          "program": "identity",
+          "relation": "ABSTAIN",
+          "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+          "harmed_series_count": 0,
+          "min_per_series_gain": 0.0
+        }
+      },
+      {
+        "name": "the AD card face renders the no-action baseline",
+        "passed": true,
+        "detail": {
+          "rendered_card_length": 1269,
+          "length_without_abstain": 931
+        }
+      },
+      {
+        "name": "the abstain card prescribes nothing",
+        "passed": true,
+        "detail": null
+      },
+      {
+        "name": "the F arm's abstain card is archived too (rendered or not)",
+        "passed": true,
+        "detail": {
+          "forecasting_abstain": {
+            "episode_id": "t4_forecasting_identity_replay_v1",
+            "program": "identity",
+            "relation": "ABSTAIN",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "harmed_series_count": 0,
+            "min_per_series_gain": 0.0
+          },
+          "forecasting_card_has_reference_4": true
+        }
+      },
+      {
+        "name": "no card crosses tasks in either arm, abstain included",
+        "passed": true,
+        "detail": {
+          "forecasting": [],
+          "anomaly_detection": []
+        }
+      }
+    ]
+  },
+  "b4_acceptance": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "F retrieval returns a locally harmful CONFLICT card",
+        "passed": true,
+        "detail": {
+          "episode_id": "t4_forecasting_hampel_filter_replay_v1",
+          "program": "hampel_filter",
+          "relation": "CONFLICT",
+          "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+          "harmed_series_count": 1,
+          "min_per_series_gain": -0.0904124968690548
+        }
+      },
+      {
+        "name": "F retrieval returns a harmless POSITIVE card from the repair family",
+        "passed": true,
+        "detail": {
+          "episode_id": "t4_forecasting_outlier_iqr_replay_v1",
+          "program": "outlier_iqr",
+          "relation": "POSITIVE",
+          "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+          "harmed_series_count": 0,
+          "min_per_series_gain": 0.0585545239237922
+        }
+      },
+      {
+        "name": "AD retrieval returns a NEGATIVE card",
+        "passed": true,
+        "detail": {
+          "episode_id": "t4_anomaly_detection_winsorize_replay_v1",
+          "program": "winsorize",
+          "relation": "NEGATIVE",
+          "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+          "harmed_series_count": 9,
+          "min_per_series_gain": -0.5042016806722689
+        }
+      },
+      {
+        "name": "AD retrieval returns a CONFLICT card from a repair program",
+        "passed": true,
+        "detail": {
+          "episode_id": "t4_anomaly_detection_hampel_filter_replay_v1",
+          "program": "hampel_filter",
+          "relation": "CONFLICT",
+          "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+          "harmed_series_count": 4,
+          "min_per_series_gain": -0.19999999999999996
+        }
+      },
+      {
+        "name": "no card crosses tasks in either arm",
+        "passed": true,
+        "detail": {
+          "forecasting": [],
+          "anomaly_detection": []
+        }
+      },
+      {
+        "name": "the card face carries consumer, aggregate direction, harmed count and worst single-series reading, and prescribes nothing",
+        "passed": true,
+        "detail": {
+          "forecasting": {
+            "names_a_consumer": true,
+            "states_aggregate_direction": true,
+            "states_harmed_count": true,
+            "states_worst_series_reading": true,
+            "contains_no_instruction_to_choose": true
+          },
+          "anomaly_detection": {
+            "names_a_consumer": true,
+            "states_aggregate_direction": true,
+            "states_harmed_count": true,
+            "states_worst_series_reading": true,
+            "contains_no_instruction_to_choose": true
+          }
+        }
+      },
+      {
+        "name": "both arms retrieved something",
+        "passed": true,
+        "detail": {
+          "forecasting": [
+            "t4_forecasting_outlier_iqr_replay_v1",
+            "t4_forecasting_hampel_filter_replay_v1",
+            "t4_forecasting_identity_replay_v1"
+          ],
+          "anomaly_detection": [
+            "t4_anomaly_detection_winsorize_replay_v1",
+            "t4_anomaly_detection_hampel_filter_replay_v1",
+            "t4_anomaly_detection_identity_replay_v1"
+          ]
+        }
+      }
+    ],
+    "rule": "category acceptance, not instance pinning: the F CONFLICT card is hampel_filter only because it is the only F conflict the frozen readings produce, and the AD conflict is required to be some repair program, not a named one"
+  },
+  "three_way": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "#40b-forecasting vs #40-forecasting: the user message is byte-identical",
+        "passed": true,
+        "detail": {
+          "v2_user_sha256": "4f7b9474b2ba129c07ddc5e9ebd0c0e1a411ffa5a912b8d1f75400dedd11283f",
+          "v1_user_sha256": "4f7b9474b2ba129c07ddc5e9ebd0c0e1a411ffa5a912b8d1f75400dedd11283f"
+        }
+      },
+      {
+        "name": "#40b-forecasting vs #40-forecasting: the system message differs only by the abstain block",
+        "passed": true,
+        "detail": {
+          "reverted_equals_v1_system": true,
+          "reverted_sha256": "5ff7d939f9b7c1b259c7aa4feaccb0910490a67dd6215145ae4fd6330aa25150",
+          "v1_system_sha256": "5ff7d939f9b7c1b259c7aa4feaccb0910490a67dd6215145ae4fd6330aa25150",
+          "abstain_block_chars": 335
+        }
+      },
+      {
+        "name": "#40b-anomaly_detection vs #40-anomaly_detection: the user message is byte-identical",
+        "passed": true,
+        "detail": {
+          "v2_user_sha256": "3b3c32166e748886ca9b33860fbcf94d7d1f633311eca441b06173537fb70296",
+          "v1_user_sha256": "3b3c32166e748886ca9b33860fbcf94d7d1f633311eca441b06173537fb70296"
+        }
+      },
+      {
+        "name": "#40b-anomaly_detection vs #40-anomaly_detection: the system message differs only by the abstain block",
+        "passed": true,
+        "detail": {
+          "reverted_equals_v1_system": true,
+          "reverted_sha256": "3af7d4634c9179a61aa4dcba57dd45f577c6e2e904a82719c37134ac5430c650",
+          "v1_system_sha256": "3af7d4634c9179a61aa4dcba57dd45f577c6e2e904a82719c37134ac5430c650",
+          "abstain_block_chars": 338
+        }
+      },
+      {
+        "name": "#40b-F vs #40b-AD: the user messages differ exactly at the task_spec bytes",
+        "passed": true,
+        "detail": {
+          "task_spec_occurrences": 1,
+          "replace_test": true
+        }
+      },
+      {
+        "name": "#40b-F vs #40b-AD: the system messages differ only by their own experience blocks",
+        "passed": true,
+        "detail": {
+          "forecasting_card_sha256": "71ac6f2f82ed2c51f6db029b61f1d7c93ff000649ab3eb5300b4db166075b437",
+          "anomaly_card_sha256": "c0c21f6cf79ac31ce3f0094ae8f99ab9e82512fa4b1b34bd974c8b5491586f80"
+        }
+      },
+      {
+        "name": "each arm's card is present in the bytes that will be sent",
+        "passed": true,
+        "detail": null
+      }
+    ],
+    "baseline_source": "artifacts/functional/e2/t4_conflict_experience_v1.json"
+  },
+  "answer_keys": {
+    "derivation": {
+      "rule": "aggregate layer: F = programs with T1 forecasting delayed aggregate gain >= +0.005 (t1 part_c.c1_flip_check_per_program); AD = {identity} plus programs with T1b v3 ad_train_gain >= -0.005 (v3 part_d.flip_check_per_program).  Risk layer: inside the aggregate key, every per-series reading >= -0.005 (t1 part_b_arms.forecasting[*].delayed_gain.per_eval_series_gain; v3 part_d.ad_gain_per_series).  identity gain is 0 by definition; abstain is credited at the Risk layer only.",
+      "sources": [
+        "artifacts/functional/e2/t1_flip_control_v1.json",
+        "artifacts/functional/e2/t1b_training_flip_v3.json"
+      ],
+      "cross_checks": {
+        "forecasting_aggregate_t1_vs_v3": true,
+        "forecasting_per_series_t1_vs_v3": true
+      }
+    },
+    "readings": {
+      "forecasting_delayed_aggregate_gain": {
+        "outlier_iqr": 0.27226576640403444,
+        "outlier_mad": 0.3255462450771637,
+        "hampel_filter": 0.0647581417473617,
+        "winsorize": 0.40586167760385816
+      },
+      "forecasting_delayed_per_series": {
+        "outlier_iqr": {
+          "99999903062": 0.30204738689344024,
+          "99999904140": 0.6097610130509113,
+          "99999923908": 0.11870014174799393,
+          "99999963862": 0.0585545239237922
+        },
+        "outlier_mad": {
+          "99999903062": 0.30567537985810583,
+          "99999904140": 0.6211412110973565,
+          "99999923908": 0.1674334032146033,
+          "99999963862": 0.20793498613858932
+        },
+        "hampel_filter": {
+          "99999903062": 0.08026916310043804,
+          "99999904140": 0.16030385729191074,
+          "99999923908": -0.0904124968690548,
+          "99999963862": 0.10887204346615283
+        },
+        "winsorize": {
+          "99999903062": 0.3320247454108856,
+          "99999904140": 0.44537161329058583,
+          "99999923908": 0.44362183429389496,
+          "99999963862": 0.4024285174200661
+        }
+      },
+      "ad_train_gain_aggregate": {
+        "outlier_iqr": 0.008579846079846076,
+        "outlier_mad": 0.04133597883597895,
+        "hampel_filter": 0.04133597883597895,
+        "winsorize": -0.16723637273172876
+      },
+      "ad_gain_per_series": {
+        "outlier_iqr": {
+          "72203812897": 0.19047619047619047,
+          "72259003927": 0.13888888888888895,
+          "72329003935": 0.0,
+          "72422093820": 0.13888888888888895,
+          "72435653866": -0.1071428571428571,
+          "72438093819": -0.19999999999999996,
+          "72511654737": -1.1102230246251565e-16,
+          "72529014768": -0.05714285714285705,
+          "72605654791": -0.2727272727272727,
+          "72654014936": 0.3333333333333332,
+          "72793494248": 0.09999999999999998,
+          "74486514719": -0.16161616161616166
+        },
+        "outlier_mad": {
+          "72203812897": 0.19047619047619047,
+          "72259003927": 0.13888888888888895,
+          "72329003935": 0.0,
+          "72422093820": 0.13888888888888895,
+          "72435653866": -0.1071428571428571,
+          "72438093819": -0.19999999999999996,
+          "72511654737": 0.19047619047619047,
+          "72529014768": 0.0,
+          "72605654791": -0.19999999999999996,
+          "72654014936": 0.3333333333333332,
+          "72793494248": 0.09999999999999998,
+          "74486514719": -0.0888888888888889
+        },
+        "hampel_filter": {
+          "72203812897": 0.19047619047619047,
+          "72259003927": 0.13888888888888895,
+          "72329003935": 0.0,
+          "72422093820": 0.13888888888888895,
+          "72435653866": -0.1071428571428571,
+          "72438093819": -0.19999999999999996,
+          "72511654737": 0.19047619047619047,
+          "72529014768": 0.0,
+          "72605654791": -0.19999999999999996,
+          "72654014936": 0.3333333333333332,
+          "72793494248": 0.09999999999999998,
+          "74486514719": -0.0888888888888889
+        },
+        "winsorize": {
+          "72203812897": -0.06666666666666665,
+          "72259003927": 0.13888888888888895,
+          "72329003935": -0.27350427350427364,
+          "72422093820": -0.1785714285714285,
+          "72435653866": -0.5042016806722689,
+          "72438093819": -0.33333333333333337,
+          "72511654737": -0.1333333333333333,
+          "72529014768": -0.2417582417582418,
+          "72605654791": -0.3846153846153847,
+          "72654014936": 0.2380952380952382,
+          "72793494248": 0.19999999999999996,
+          "74486514719": -0.46783625730994155
+        }
+      }
+    },
+    "derived": {
+      "aggregate": {
+        "forecasting": [
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize"
+        ],
+        "anomaly_detection": [
+          "identity",
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad"
+        ]
+      },
+      "risk": {
+        "forecasting": [
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize"
+        ],
+        "anomaly_detection": [
+          "identity"
+        ]
+      }
+    },
+    "expected": {
+      "aggregate": {
+        "forecasting": [
+          "outlier_iqr",
+          "outlier_mad",
+          "hampel_filter",
+          "winsorize"
+        ],
+        "anomaly_detection": [
+          "identity",
+          "outlier_iqr",
+          "outlier_mad",
+          "hampel_filter"
+        ]
+      },
+      "risk": {
+        "forecasting": [
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize"
+        ],
+        "anomaly_detection": [
+          "identity"
+        ]
+      },
+      "risk_layer_also_credits": [
+        "abstain"
+      ]
+    },
+    "matches_expectation": true,
+    "mismatches": []
+  },
+  "baseline_39": {
+    "source": "artifacts/functional/e2/t3_task_exam_v1.json",
+    "verdict": "TASK_CONDITIONED_PROPOSALS_CONFIRMED",
+    "draws": [
+      {
+        "case_id": "T3EXAM_F1",
+        "arm": "forecasting",
+        "classification": "VALID_PROPOSE",
+        "top1": "hampel_filter",
+        "shortlist": [
+          "hampel_filter",
+          "outlier_mad"
+        ]
+      },
+      {
+        "case_id": "T3EXAM_AD2",
+        "arm": "anomaly_detection",
+        "classification": "VALID_PROPOSE",
+        "top1": "identity",
+        "shortlist": [
+          "identity"
+        ]
+      },
+      {
+        "case_id": "T3EXAM_F3",
+        "arm": "forecasting",
+        "classification": "VALID_PROPOSE",
+        "top1": "hampel_filter",
+        "shortlist": [
+          "hampel_filter",
+          "outlier_mad"
+        ]
+      },
+      {
+        "case_id": "T3EXAM_AD4",
+        "arm": "anomaly_detection",
+        "classification": "VALID_PROPOSE",
+        "top1": "identity",
+        "shortlist": [
+          "identity"
+        ]
+      },
+      {
+        "case_id": "T3EXAM_F5",
+        "arm": "forecasting",
+        "classification": "VALID_PROPOSE",
+        "top1": "hampel_filter",
+        "shortlist": [
+          "hampel_filter"
+        ]
+      },
+      {
+        "case_id": "T3EXAM_AD6",
+        "arm": "anomaly_detection",
+        "classification": "VALID_PROPOSE",
+        "top1": "identity",
+        "shortlist": [
+          "identity"
+        ]
+      }
+    ],
+    "top1_by_arm": {
+      "forecasting": [
+        "hampel_filter",
+        "hampel_filter",
+        "hampel_filter"
+      ],
+      "anomaly_detection": [
+        "identity",
+        "identity",
+        "identity"
+      ]
+    },
+    "risk_layer": {
+      "forecasting": 0,
+      "anomaly_detection": 3
+    },
+    "aggregate_layer": {
+      "forecasting": 3,
+      "anomaly_detection": 3
+    },
+    "min_cross_task": 1.0,
+    "max_same_task": 0.5,
+    "complete_separation": true
+  },
+  "baseline_40": {
+    "source": "artifacts/functional/e2/t4_conflict_experience_v1.json",
+    "verdict": "PARTIAL_EXPERIENCE_CONDITIONING",
+    "top1_by_arm": {
+      "forecasting": [
+        "outlier_iqr",
+        "outlier_iqr",
+        "outlier_iqr"
+      ],
+      "anomaly_detection": [
+        "hampel_filter",
+        "hampel_filter",
+        "hampel_filter"
+      ]
+    },
+    "risk_layer": {
+      "forecasting": 3,
+      "anomaly_detection": 0
+    }
+  },
+  "prompts_verbatim": {
+    "system_forecasting": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 1: candidate operator(s) [outlier_iqr] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 0 of 4. Worst single-series reading: +0.0586.\n\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 1 of 4. Worst single-series reading: -0.0904. The aggregate reading and the per-series readings disagree.\n\nReference 4: leaving the batch as it is -- no operator applied -- is itself a recorded outcome for Consumer `pooled_ridge_a1` in a similar context. Aggregate reading: 0.0000, unchanged by definition. Individual series harmed beyond the -0.005 line: 0 of 4. It comes from the same source and the same Consumer as the references above.\n=== END REFERENCES ===\n\nYou are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n\nRuntime rule: return exactly one agent-envelope/1 JSON value. Never concatenate multiple JSON values in one response. The outer envelope is mandatory; never return the stage payload by itself and never use schema_name/content as substitute wrapper keys. Do not emit PASS/FAIL judgments or hidden reasoning.\nResolved Harness: {\"controls\":{\"candidate_policy\":{\"agent_program_slots\":3,\"identity_slots\":1,\"proposal_guidance\":\"Supply only minimal effect-distinct candidates justified by public evidence.\",\"schema_version\":\"candidate-policy/1\",\"selection_guidance\":\"Choose one candidate explicitly and prefer identity when public evidence is insufficient.\",\"total_k\":4},\"role\":\"fast\",\"verification\":{\"identity_unfilterable\":true,\"max_modified_fraction\":0.35,\"preserve_outside_candidate_region\":true,\"require_explicit_choice\":true,\"schema_version\":\"verification/1\",\"scope_risk_guards\":[]}},\"instruction\":\"=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\\n\\nReference 1: candidate operator(s) [outlier_iqr] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 0 of 4. Worst single-series reading: +0.0586.\\n\\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `pooled_ridge_a1`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 1 of 4. Worst single-series reading: -0.0904. The aggregate reading and the per-series readings disagree.\\n\\nReference 4: leaving the batch as it is -- no operator applied -- is itself a recorded outcome for Consumer `pooled_ridge_a1` in a similar context. Aggregate reading: 0.0000, unchanged by definition. Individual series harmed beyond the -0.005 line: 0 of 4. It comes from the same source and the same Consumer as the references above.\\n=== END REFERENCES ===\\n\\nYou are the TTHA preparation Agent. Use only public observations, declared tools,\\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\\nNever request or infer clean references, injection metadata, candidate utility, or\\nprivate rankings. Inspect before proposing. Supply at most the configured number of\\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\\nKeep modifications local and abstain when public evidence does not justify a repair.\\n\",\"memories\":[],\"skills\":[{\"allowed_tools\":[],\"body\":\"TS Workflow Construction Procedure. This procedure is read at every Fast stage; apply only the section that matches your current stage.\\n[FIXED_CONTRACT]\\n1. Goal. From the current TaskContext, the public Pattern evidence, and any retrieved Experience, construct minimal, effect-distinct typed PROGRAM candidates whose expected effects can be verified on the current Context. The runtime always retains identity as the control; never propose an identity candidate yourself.\\n2. Inputs by stage. At the inspect stage only the deployment-visible feature summary and the public tools are available. At the propose stage the inspection payload (inspected region fractions, uncertainty, and structured pattern hypotheses), the allowed operator contracts, the fixed probe panel, and any retrieved positive, negative, or conflict Experience are additionally available. At the select stage the verified candidate pool with verification receipts is available. Never invent datasets, fields, outcomes, or utility estimates outside these inputs.\\n4a. Candidate budget. The pool reserves one identity slot and up to three non-identity program slots (one of which may be occupied by the runtime prior). Propose at most two minimal, effect-distinct PROGRAM candidates yourself: one current-context exploration candidate and at most one additional effect-distinct alternative. Two candidates are effect-distinct only when they use different operator mechanisms or a different step order; a parameter-only variant of the same operator sequence is not effect-distinct.\\n4b. Runtime-owned prior slot. The Source prior, when admissible, is injected by the runtime into a pool slot; do not propose a copy of it. Your capacity belongs to current-context exploration plus at most one effect-distinct alternative, and the exploration candidate must differ from any injected prior.\\n4e. Program binding. Bind dynamic parameters only through the public parameter bindings declared in the operator contract, using current feature values; never replay numerical parameters from a previous Context or Episode. Targeting semantics determine how an operator locates its effects, but do not by themselves establish semantic relevance to a hypothesis. An intrinsic operator locates its own hit points during execution and requires no external region parameter. Hypothesis span alone, including a whole-series span, must not be used to declare an intrinsic binding illegal. An external_region operator must bind its region from the current inspection, and the bound region must remain within the addressed hypothesis region. A global operator acts on the whole series by definition and is admissible only when the hypothesis mechanism, TaskContext, and risk constraints justify a whole-series effect.\\n4f. Risk floor. Never fabricate hypotheses, references, parameters, or expected effects. The runtime verifier and downstream Support decide program validity; the agent never approves its own program. Retrieved Experience may inform the prior slot but must never remove the exploration slot.\\n6. Output. The response schema carries only the candidate id, the optional addresses_hypothesis_id, and ordered typed steps; the expected effect geometry and any verification request must therefore determine the choice of operators, order, and bindings rather than appear as free text.\\n[inspect_pattern_guidance]\\n3. Comparing hypotheses. Classify the dominant observable mechanisms from the public features: missingness (missing_fraction, longest_missing_run_fraction), extreme local deviation (local_robust_z_peak), level excursion or offset (level_excursion_score, estimated_level_offset), period inconsistency (period_change_score, period_evidence_status), regime ambiguity (conflicting level and deviation signals), or no actionable signal. Emit at most two structured pattern hypotheses with disjoint regions, evidence features, and confidence. When several mechanisms compete, keep at most two Pattern hypotheses and let the candidates represent them; preserve disjoint narrow hypotheses instead of merging a broad span when a strong robust-z signal sits inside a low-density region. Never infer the mechanism from a dataset or series identity.\\n[propose_construction_guidance]\\npropose.rule.hypothesis_binding: Every proposed candidate must set addresses_hypothesis_id to one hypothesis_id emitted by the inspect stage. Its operator mechanism, step order, and targeting semantics must address that hypothesis. An intrinsic operator requires no region parameter; its relevance is determined from the hypothesis pattern and evidence, while its realized modification is checked by execution verification and downstream Support. An external_region operator must bind a region contained within the hypothesis region. A global operator requires evidence that a whole-series effect is appropriate.\\npropose.rule.effect_distinct: One hypothesis maps to one mechanism family, and two distinct hypotheses map to two effect-distinct candidates; do not propose operators merely because they are allowed.\\npropose.rule.inert_and_order: Skip operators that are deterministically inert on the current Context (for example, missingness-only operators when no missingness is observed). Every step must satisfy its contract preconditions, and each later step must preserve or build on the effect of earlier steps; prefer a single minimal step over stacking same-family steps.\\npropose.rule.no_legal_binding: When no legal binding exists for a hypothesis, abstain by returning an empty candidate set rather than an unverifiable program.\\npropose.rule.exploration_supply: Supply the current-context exploration candidate whenever at least one hypothesis has a legal, verifiable binding; supply at most one additional candidate only when it is effect-distinct.\\n[select_guidance]\\n5. At the select stage. Compare the verified candidates against their hypotheses, the deployment-visible evidence, and the risk guards only; choose one id explicitly, record verification actions and scope, and prefer identity when no candidate is justified.\",\"risk_guards\":{},\"skill_id\":\"build_contrastive_candidates\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence, and localize regions. Output at most two structured pattern_hypotheses, each with a canonical hypothesis_id, a pattern_type from missingness, extreme_deviation, level_excursion, period_inconsistency, regime_ambiguity, or no_actionable_signal, the region_fractions it covers, the evidence_features supporting it, and a confidence level. Preserve disjoint narrow hypotheses when a high robust-z signal spans a broad low-density region instead of merging the whole span. Keep competing mechanisms as separate hypotheses. Procedure marker: sparse_localization_subregions/v1.\",\"risk_guards\":{},\"skill_id\":\"inspect_and_localize\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.\",\"risk_guards\":{},\"skill_id\":\"select_or_identity_and_verify\",\"skill_kind\":\"bootstrap_procedure\"}]}",
+    "system_anomaly_detection": "=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\n\nReference 2: candidate operator(s) [winsorize] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: degraded. Individual series harmed beyond the -0.005 line: 9 of 12. Worst single-series reading: -0.5042.\n\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 4 of 12. Worst single-series reading: -0.2000. The aggregate reading and the per-series readings disagree.\n\nReference 4: leaving the batch as it is -- no operator applied -- is itself a recorded outcome for Consumer `ad_ridge_train_v3` in a similar context. Aggregate reading: 0.0000, unchanged by definition. Individual series harmed beyond the -0.005 line: 0 of 12. It comes from the same source and the same Consumer as the references above.\n=== END REFERENCES ===\n\nYou are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n\nRuntime rule: return exactly one agent-envelope/1 JSON value. Never concatenate multiple JSON values in one response. The outer envelope is mandatory; never return the stage payload by itself and never use schema_name/content as substitute wrapper keys. Do not emit PASS/FAIL judgments or hidden reasoning.\nResolved Harness: {\"controls\":{\"candidate_policy\":{\"agent_program_slots\":3,\"identity_slots\":1,\"proposal_guidance\":\"Supply only minimal effect-distinct candidates justified by public evidence.\",\"schema_version\":\"candidate-policy/1\",\"selection_guidance\":\"Choose one candidate explicitly and prefer identity when public evidence is insufficient.\",\"total_k\":4},\"role\":\"fast\",\"verification\":{\"identity_unfilterable\":true,\"max_modified_fraction\":0.35,\"preserve_outside_candidate_region\":true,\"require_explicit_choice\":true,\"schema_version\":\"verification/1\",\"scope_risk_guards\":[]}},\"instruction\":\"=== EXPERIENCE REFERENCES FROM PRIOR TRIALS ===\\nBelow are similar prior trials in this context and how their candidate operators behaved on held-in data. Use them as a guide for operator choice. The correct choice for the current data may differ; do not copy blindly, and ignore them if the context clearly does not match.\\n\\nReference 2: candidate operator(s) [winsorize] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: degraded. Individual series harmed beyond the -0.005 line: 9 of 12. Worst single-series reading: -0.5042.\\n\\nReference 3: candidate operator(s) [hampel_filter] were measured on held-in data in a similar context for Consumer `ad_ridge_train_v3`. Aggregate direction: improved. Individual series harmed beyond the -0.005 line: 4 of 12. Worst single-series reading: -0.2000. The aggregate reading and the per-series readings disagree.\\n\\nReference 4: leaving the batch as it is -- no operator applied -- is itself a recorded outcome for Consumer `ad_ridge_train_v3` in a similar context. Aggregate reading: 0.0000, unchanged by definition. Individual series harmed beyond the -0.005 line: 0 of 12. It comes from the same source and the same Consumer as the references above.\\n=== END REFERENCES ===\\n\\nYou are the TTHA preparation Agent. Use only public observations, declared tools,\\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\\nNever request or infer clean references, injection metadata, candidate utility, or\\nprivate rankings. Inspect before proposing. Supply at most the configured number of\\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\\nKeep modifications local and abstain when public evidence does not justify a repair.\\n\",\"memories\":[],\"skills\":[{\"allowed_tools\":[],\"body\":\"TS Workflow Construction Procedure. This procedure is read at every Fast stage; apply only the section that matches your current stage.\\n[FIXED_CONTRACT]\\n1. Goal. From the current TaskContext, the public Pattern evidence, and any retrieved Experience, construct minimal, effect-distinct typed PROGRAM candidates whose expected effects can be verified on the current Context. The runtime always retains identity as the control; never propose an identity candidate yourself.\\n2. Inputs by stage. At the inspect stage only the deployment-visible feature summary and the public tools are available. At the propose stage the inspection payload (inspected region fractions, uncertainty, and structured pattern hypotheses), the allowed operator contracts, the fixed probe panel, and any retrieved positive, negative, or conflict Experience are additionally available. At the select stage the verified candidate pool with verification receipts is available. Never invent datasets, fields, outcomes, or utility estimates outside these inputs.\\n4a. Candidate budget. The pool reserves one identity slot and up to three non-identity program slots (one of which may be occupied by the runtime prior). Propose at most two minimal, effect-distinct PROGRAM candidates yourself: one current-context exploration candidate and at most one additional effect-distinct alternative. Two candidates are effect-distinct only when they use different operator mechanisms or a different step order; a parameter-only variant of the same operator sequence is not effect-distinct.\\n4b. Runtime-owned prior slot. The Source prior, when admissible, is injected by the runtime into a pool slot; do not propose a copy of it. Your capacity belongs to current-context exploration plus at most one effect-distinct alternative, and the exploration candidate must differ from any injected prior.\\n4e. Program binding. Bind dynamic parameters only through the public parameter bindings declared in the operator contract, using current feature values; never replay numerical parameters from a previous Context or Episode. Targeting semantics determine how an operator locates its effects, but do not by themselves establish semantic relevance to a hypothesis. An intrinsic operator locates its own hit points during execution and requires no external region parameter. Hypothesis span alone, including a whole-series span, must not be used to declare an intrinsic binding illegal. An external_region operator must bind its region from the current inspection, and the bound region must remain within the addressed hypothesis region. A global operator acts on the whole series by definition and is admissible only when the hypothesis mechanism, TaskContext, and risk constraints justify a whole-series effect.\\n4f. Risk floor. Never fabricate hypotheses, references, parameters, or expected effects. The runtime verifier and downstream Support decide program validity; the agent never approves its own program. Retrieved Experience may inform the prior slot but must never remove the exploration slot.\\n6. Output. The response schema carries only the candidate id, the optional addresses_hypothesis_id, and ordered typed steps; the expected effect geometry and any verification request must therefore determine the choice of operators, order, and bindings rather than appear as free text.\\n[inspect_pattern_guidance]\\n3. Comparing hypotheses. Classify the dominant observable mechanisms from the public features: missingness (missing_fraction, longest_missing_run_fraction), extreme local deviation (local_robust_z_peak), level excursion or offset (level_excursion_score, estimated_level_offset), period inconsistency (period_change_score, period_evidence_status), regime ambiguity (conflicting level and deviation signals), or no actionable signal. Emit at most two structured pattern hypotheses with disjoint regions, evidence features, and confidence. When several mechanisms compete, keep at most two Pattern hypotheses and let the candidates represent them; preserve disjoint narrow hypotheses instead of merging a broad span when a strong robust-z signal sits inside a low-density region. Never infer the mechanism from a dataset or series identity.\\n[propose_construction_guidance]\\npropose.rule.hypothesis_binding: Every proposed candidate must set addresses_hypothesis_id to one hypothesis_id emitted by the inspect stage. Its operator mechanism, step order, and targeting semantics must address that hypothesis. An intrinsic operator requires no region parameter; its relevance is determined from the hypothesis pattern and evidence, while its realized modification is checked by execution verification and downstream Support. An external_region operator must bind a region contained within the hypothesis region. A global operator requires evidence that a whole-series effect is appropriate.\\npropose.rule.effect_distinct: One hypothesis maps to one mechanism family, and two distinct hypotheses map to two effect-distinct candidates; do not propose operators merely because they are allowed.\\npropose.rule.inert_and_order: Skip operators that are deterministically inert on the current Context (for example, missingness-only operators when no missingness is observed). Every step must satisfy its contract preconditions, and each later step must preserve or build on the effect of earlier steps; prefer a single minimal step over stacking same-family steps.\\npropose.rule.no_legal_binding: When no legal binding exists for a hypothesis, abstain by returning an empty candidate set rather than an unverifiable program.\\npropose.rule.exploration_supply: Supply the current-context exploration candidate whenever at least one hypothesis has a legal, verifiable binding; supply at most one additional candidate only when it is effect-distinct.\\n[select_guidance]\\n5. At the select stage. Compare the verified candidates against their hypotheses, the deployment-visible evidence, and the risk guards only; choose one id explicitly, record verification actions and scope, and prefer identity when no candidate is justified.\",\"risk_guards\":{},\"skill_id\":\"build_contrastive_candidates\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence, and localize regions. Output at most two structured pattern_hypotheses, each with a canonical hypothesis_id, a pattern_type from missingness, extreme_deviation, level_excursion, period_inconsistency, regime_ambiguity, or no_actionable_signal, the region_fractions it covers, the evidence_features supporting it, and a confidence level. Preserve disjoint narrow hypotheses when a high robust-z signal spans a broad low-density region instead of merging the whole span. Keep competing mechanisms as separate hypotheses. Procedure marker: sparse_localization_subregions/v1.\",\"risk_guards\":{},\"skill_id\":\"inspect_and_localize\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.\",\"risk_guards\":{},\"skill_id\":\"select_or_identity_and_verify\",\"skill_kind\":\"bootstrap_procedure\"}]}",
+    "user_forecasting": "{\"allowed_local_tools\":[],\"public_input\":{\"consumer_structure\":{\"per_channel\":\"each training channel fits its own model; every evaluation channel is predicted by the equal-weight mean of those channel-wise models\",\"pooled\":\"one model fitted on the stacked windows of all training channels\"},\"identity_is_always_available\":true,\"program_menu\":[\"identity\",\"outlier_iqr\",\"outlier_mad\",\"hampel_filter\",\"winsorize\"],\"public_observation\":{\"rows\":[{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.9320512820512821,\"estimated_region_start_fraction\":0.45384615384615384,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":10.725800235108206,\"longest_missing_run_fraction\":0.017948717948717947,\"missing_fraction\":0.017948717948717947,\"period_change_score\":0.0,\"period_reliability\":0.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72203812897\"},{\"estimated_level_offset\":-12.450000000000001,\"estimated_region_end_fraction\":0.9217948717948717,\"estimated_region_start_fraction\":0.24358974358974358,\"level_excursion_score\":4.289761230271145,\"level_region_fraction\":0.1141025641025641,\"local_robust_z_peak\":6.14779441521651,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":5.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72259003927\"},{\"estimated_level_offset\":-8.625,\"estimated_region_end_fraction\":0.9128205128205128,\"estimated_region_start_fraction\":0.2641025641025641,\"level_excursion_score\":3.8670803543324794,\"level_region_fraction\":0.09102564102564102,\"local_robust_z_peak\":14.724672871981651,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":0.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72329003935\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.6923076923076923,\"estimated_region_start_fraction\":0.5269230769230769,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":14.518551493622313,\"longest_missing_run_fraction\":0.002564102564102564,\"missing_fraction\":0.002564102564102564,\"period_change_score\":0.5,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72422093820\"},{\"estimated_level_offset\":-9.55,\"estimated_region_end_fraction\":0.4807692307692308,\"estimated_region_start_fraction\":0.2512820512820513,\"level_excursion_score\":5.452133639102478,\"level_region_fraction\":0.11923076923076924,\"local_robust_z_peak\":14.786598618043374,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72435653866\"},{\"estimated_level_offset\":-9.799999999999999,\"estimated_region_end_fraction\":0.6051282051282051,\"estimated_region_start_fraction\":0.25769230769230766,\"level_excursion_score\":6.867542278307151,\"level_region_fraction\":0.09615384615384616,\"local_robust_z_peak\":21.63200192945235,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":5.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72438093819\"},{\"estimated_level_offset\":5.85,\"estimated_region_end_fraction\":0.7730769230769231,\"estimated_region_start_fraction\":0.11153846153846154,\"level_excursion_score\":3.7875250339839583,\"level_region_fraction\":0.13333333333333333,\"local_robust_z_peak\":8.615384615384617,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72511654737\"},{\"estimated_level_offset\":-7.0,\"estimated_region_end_fraction\":0.6448717948717949,\"estimated_region_start_fraction\":0.4230769230769231,\"level_excursion_score\":4.196831392298814,\"level_region_fraction\":0.08333333333333333,\"local_robust_z_peak\":11.54773146274563,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72529014768\"},{\"estimated_level_offset\":5.825,\"estimated_region_end_fraction\":0.9525641025641025,\"estimated_region_start_fraction\":0.13846153846153847,\"level_excursion_score\":4.136215392672651,\"level_region_fraction\":0.12307692307692308,\"local_robust_z_peak\":10.02328976916546,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72605654791\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.5846153846153846,\"estimated_region_start_fraction\":0.3564102564102564,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":4.898933096556878,\"longest_missing_run_fraction\":0.001282051282051282,\"missing_fraction\":0.001282051282051282,\"period_change_score\":7.5,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72654014936\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.6166666666666667,\"estimated_region_start_fraction\":0.2794871794871795,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":9.377878630205625,\"longest_missing_run_fraction\":0.001282051282051282,\"missing_fraction\":0.002564102564102564,\"period_change_score\":5.25,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72793494248\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.6525641025641026,\"estimated_region_start_fraction\":0.22564102564102564,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":13.737273946405763,\"longest_missing_run_fraction\":0.008974358974358974,\"missing_fraction\":0.016666666666666666,\"period_change_score\":5.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"74486514719\"}],\"rule\":\"public features of each training series on its own public prefix values[uid][:observation_cutoff]\"},\"retrieved_guidance\":{\"may_be_empty\":true,\"what_it_authorizes\":\"guidance for the proposal stage only. A retrieved Skill cannot supply a candidate and authorizes no execution: the plan you name is still measured on this batch's own Support and still has to clear the delayed gate\",\"where_it_comes_from\":\"any Skill in the resolved Harness of this call was returned by retrieval for this Task Context; nothing was placed there by hand\"},\"schema_version\":\"skill-store-integration-input/1\",\"stage_note\":\"This is a proposal-only exercise. No Support evaluation is run here and no delayed window exists: you are naming what you would propose for this batch, and nothing is measured. `decision` is \\\"propose\\\" or \\\"abstain\\\". When you propose, `shortlist` lists the menu entries you would try, in the order you would try them, and `top1` names the single entry you would try first; `top1` must be a member of `shortlist`. `identity` is always available and means leaving the batch as it is. When the public evidence does not justify any proposal for this task, decide \\\"abstain\\\", leave `shortlist` empty and `top1` as \\\"\\\". `reason` is one or two sentences in public terms.\",\"target\":{\"cell_key\":\"batch:noaa_train_block|consumer:pooled\",\"cohort\":\"noaa_train_block\",\"consumer_variant\":\"pooled\",\"delayed_origins\":[],\"evaluation_series_count\":0,\"exposure\":\"development_substrate__outcomes_not_read\",\"observation_cutoff\":780,\"support_origins\":[780],\"target_id\":\"t3_exam_block\",\"training_series\":[\"72203812897\",\"72259003927\",\"72329003935\",\"72422093820\",\"72435653866\",\"72438093819\",\"72511654737\",\"72529014768\",\"72605654791\",\"72654014936\",\"72793494248\",\"74486514719\"],\"window_id\":\"block_120_900\"},\"task_description_authority\":\"task_spec is the only authoritative description of the task and the Consumer for this call; every other field describes the data substrate and the pipeline wiring, which are shared across tasks.\",\"task_spec\":{\"consumer_id\":\"pooled_ridge_a1\",\"quality_semantics\":\"good preparation lowers the sMASE of the evaluation-series forecasts\",\"task_id\":\"forecasting\"}},\"response_contract\":{\"bare_stage_payload_forbidden\":true,\"exactly_one_json_value_per_response\":true,\"outer_envelope_required\":true,\"stage_result_template\":\"{\\\"schema_version\\\":\\\"agent-envelope/1\\\",\\\"kind\\\":\\\"stage_result\\\",\\\"stage\\\":\\\"t3_task_conditioned_proposal\\\",\\\"payload\\\":<OBJECT SATISFYING t3_task_conditioned_proposal_v1>}\",\"tool_request_allowed\":false,\"tool_request_rule\":\"No local tool is allowed in this stage; return one stage_result.\"},\"role\":\"fast\",\"schema_version\":\"public-agent-input/1\",\"stage\":\"t3_task_conditioned_proposal\",\"stage_payload_schema\":{\"$id\":\"t3-task-conditioned-proposal/1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"decision\":{\"enum\":[\"propose\",\"abstain\"]},\"reason\":{\"type\":\"string\"},\"shortlist\":{\"items\":{\"type\":\"string\"},\"maxItems\":5,\"type\":\"array\",\"uniqueItems\":true},\"top1\":{\"type\":\"string\"}},\"required\":[\"decision\",\"shortlist\",\"top1\",\"reason\"],\"type\":\"object\"},\"stage_payload_schema_name\":\"t3_task_conditioned_proposal_v1\"}",
+    "user_anomaly_detection": "{\"allowed_local_tools\":[],\"public_input\":{\"consumer_structure\":{\"per_channel\":\"each training channel fits its own model; every evaluation channel is predicted by the equal-weight mean of those channel-wise models\",\"pooled\":\"one model fitted on the stacked windows of all training channels\"},\"identity_is_always_available\":true,\"program_menu\":[\"identity\",\"outlier_iqr\",\"outlier_mad\",\"hampel_filter\",\"winsorize\"],\"public_observation\":{\"rows\":[{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.9320512820512821,\"estimated_region_start_fraction\":0.45384615384615384,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":10.725800235108206,\"longest_missing_run_fraction\":0.017948717948717947,\"missing_fraction\":0.017948717948717947,\"period_change_score\":0.0,\"period_reliability\":0.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72203812897\"},{\"estimated_level_offset\":-12.450000000000001,\"estimated_region_end_fraction\":0.9217948717948717,\"estimated_region_start_fraction\":0.24358974358974358,\"level_excursion_score\":4.289761230271145,\"level_region_fraction\":0.1141025641025641,\"local_robust_z_peak\":6.14779441521651,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":5.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72259003927\"},{\"estimated_level_offset\":-8.625,\"estimated_region_end_fraction\":0.9128205128205128,\"estimated_region_start_fraction\":0.2641025641025641,\"level_excursion_score\":3.8670803543324794,\"level_region_fraction\":0.09102564102564102,\"local_robust_z_peak\":14.724672871981651,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":0.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72329003935\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.6923076923076923,\"estimated_region_start_fraction\":0.5269230769230769,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":14.518551493622313,\"longest_missing_run_fraction\":0.002564102564102564,\"missing_fraction\":0.002564102564102564,\"period_change_score\":0.5,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72422093820\"},{\"estimated_level_offset\":-9.55,\"estimated_region_end_fraction\":0.4807692307692308,\"estimated_region_start_fraction\":0.2512820512820513,\"level_excursion_score\":5.452133639102478,\"level_region_fraction\":0.11923076923076924,\"local_robust_z_peak\":14.786598618043374,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72435653866\"},{\"estimated_level_offset\":-9.799999999999999,\"estimated_region_end_fraction\":0.6051282051282051,\"estimated_region_start_fraction\":0.25769230769230766,\"level_excursion_score\":6.867542278307151,\"level_region_fraction\":0.09615384615384616,\"local_robust_z_peak\":21.63200192945235,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":5.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72438093819\"},{\"estimated_level_offset\":5.85,\"estimated_region_end_fraction\":0.7730769230769231,\"estimated_region_start_fraction\":0.11153846153846154,\"level_excursion_score\":3.7875250339839583,\"level_region_fraction\":0.13333333333333333,\"local_robust_z_peak\":8.615384615384617,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72511654737\"},{\"estimated_level_offset\":-7.0,\"estimated_region_end_fraction\":0.6448717948717949,\"estimated_region_start_fraction\":0.4230769230769231,\"level_excursion_score\":4.196831392298814,\"level_region_fraction\":0.08333333333333333,\"local_robust_z_peak\":11.54773146274563,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72529014768\"},{\"estimated_level_offset\":5.825,\"estimated_region_end_fraction\":0.9525641025641025,\"estimated_region_start_fraction\":0.13846153846153847,\"level_excursion_score\":4.136215392672651,\"level_region_fraction\":0.12307692307692308,\"local_robust_z_peak\":10.02328976916546,\"longest_missing_run_fraction\":0.0,\"missing_fraction\":0.0,\"period_change_score\":11.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":false,\"series_uid\":\"72605654791\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.5846153846153846,\"estimated_region_start_fraction\":0.3564102564102564,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":4.898933096556878,\"longest_missing_run_fraction\":0.001282051282051282,\"missing_fraction\":0.001282051282051282,\"period_change_score\":7.5,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72654014936\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.6166666666666667,\"estimated_region_start_fraction\":0.2794871794871795,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":9.377878630205625,\"longest_missing_run_fraction\":0.001282051282051282,\"missing_fraction\":0.002564102564102564,\"period_change_score\":5.25,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"72793494248\"},{\"estimated_level_offset\":0.0,\"estimated_region_end_fraction\":0.6525641025641026,\"estimated_region_start_fraction\":0.22564102564102564,\"level_excursion_score\":0.0,\"level_region_fraction\":0.0,\"local_robust_z_peak\":13.737273946405763,\"longest_missing_run_fraction\":0.008974358974358974,\"missing_fraction\":0.016666666666666666,\"period_change_score\":5.0,\"period_reliability\":1.0,\"post_shift_support_sufficient\":true,\"series_uid\":\"74486514719\"}],\"rule\":\"public features of each training series on its own public prefix values[uid][:observation_cutoff]\"},\"retrieved_guidance\":{\"may_be_empty\":true,\"what_it_authorizes\":\"guidance for the proposal stage only. A retrieved Skill cannot supply a candidate and authorizes no execution: the plan you name is still measured on this batch's own Support and still has to clear the delayed gate\",\"where_it_comes_from\":\"any Skill in the resolved Harness of this call was returned by retrieval for this Task Context; nothing was placed there by hand\"},\"schema_version\":\"skill-store-integration-input/1\",\"stage_note\":\"This is a proposal-only exercise. No Support evaluation is run here and no delayed window exists: you are naming what you would propose for this batch, and nothing is measured. `decision` is \\\"propose\\\" or \\\"abstain\\\". When you propose, `shortlist` lists the menu entries you would try, in the order you would try them, and `top1` names the single entry you would try first; `top1` must be a member of `shortlist`. `identity` is always available and means leaving the batch as it is. When the public evidence does not justify any proposal for this task, decide \\\"abstain\\\", leave `shortlist` empty and `top1` as \\\"\\\". `reason` is one or two sentences in public terms.\",\"target\":{\"cell_key\":\"batch:noaa_train_block|consumer:pooled\",\"cohort\":\"noaa_train_block\",\"consumer_variant\":\"pooled\",\"delayed_origins\":[],\"evaluation_series_count\":0,\"exposure\":\"development_substrate__outcomes_not_read\",\"observation_cutoff\":780,\"support_origins\":[780],\"target_id\":\"t3_exam_block\",\"training_series\":[\"72203812897\",\"72259003927\",\"72329003935\",\"72422093820\",\"72435653866\",\"72438093819\",\"72511654737\",\"72529014768\",\"72605654791\",\"72654014936\",\"72793494248\",\"74486514719\"],\"window_id\":\"block_120_900\"},\"task_description_authority\":\"task_spec is the only authoritative description of the task and the Consumer for this call; every other field describes the data substrate and the pipeline wiring, which are shared across tasks.\",\"task_spec\":{\"consumer_id\":\"ad_ridge_train_v3\",\"quality_semantics\":\"good preparation preserves the event signal needed to train the AD Consumer and improves event F1 on an untouched query\",\"task_id\":\"anomaly_detection\"}},\"response_contract\":{\"bare_stage_payload_forbidden\":true,\"exactly_one_json_value_per_response\":true,\"outer_envelope_required\":true,\"stage_result_template\":\"{\\\"schema_version\\\":\\\"agent-envelope/1\\\",\\\"kind\\\":\\\"stage_result\\\",\\\"stage\\\":\\\"t3_task_conditioned_proposal\\\",\\\"payload\\\":<OBJECT SATISFYING t3_task_conditioned_proposal_v1>}\",\"tool_request_allowed\":false,\"tool_request_rule\":\"No local tool is allowed in this stage; return one stage_result.\"},\"role\":\"fast\",\"schema_version\":\"public-agent-input/1\",\"stage\":\"t3_task_conditioned_proposal\",\"stage_payload_schema\":{\"$id\":\"t3-task-conditioned-proposal/1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"decision\":{\"enum\":[\"propose\",\"abstain\"]},\"reason\":{\"type\":\"string\"},\"shortlist\":{\"items\":{\"type\":\"string\"},\"maxItems\":5,\"type\":\"array\",\"uniqueItems\":true},\"top1\":{\"type\":\"string\"}},\"required\":[\"decision\",\"shortlist\",\"top1\",\"reason\"],\"type\":\"object\"},\"stage_payload_schema_name\":\"t3_task_conditioned_proposal_v1\"}"
+  },
+  "backend_declaration": {
+    "requested_model": "gpt-5.6-sol",
+    "base_url": "https://api.agicto.cn/v1",
+    "returned_models": [
+      "gpt-5.6-sol"
+    ],
+    "prompt_tokens": 37188,
+    "completion_tokens": 2102
+  },
+  "budgets": {
+    "llm_budget": 12,
+    "llm_calls": 6,
+    "forecasting_retrains": 0,
+    "ad_evaluations": 0,
+    "episodes_written": 10,
+    "budgets_respected": true
+  },
+  "frozen_surface": {
+    "name": "FROZEN_SURFACE_V9",
+    "raw_entries": 40,
+    "unique_files": 39,
+    "before_files": 39,
+    "after": {
+      "files": 39,
+      "drift": [],
+      "ok": true
+    }
+  },
+  "git": {
+    "status_uno_short_at_start": "M evaluation/functional/run_e2_t4_conflict_experience.py\n M methods/ttha/experience_memory.py",
+    "diff_name_only_at_end": "evaluation/functional/run_e2_t4_conflict_experience.py\nmethods/ttha/experience_memory.py"
+  },
+  "read_only_integrity": {
+    "before": {
+      "artifacts/functional/e2/t4_conflict_experience_v1.json": "c3d3f217d4d134906516c0ffeab98893c6804dd8e23e2c87921d6ce74e6a1179",
+      "artifacts/functional/e2/t3_task_exam_v1.json": "ef62b3502515130e3de653698306afb95bd60595816898b8f4ab7be21416a9d2",
+      "artifacts/functional/e2/t1b_training_flip_v3.json": "db48bb9c53ab1c935164c21aaef1f82f6afa4e9c04e40a92af3ed185e2f8d296",
+      "artifacts/functional/e2/t1_flip_control_v1.json": "15b4f3122364d7658e1d81cd73d375df5146c02cb4c0aacd70b2dc48cc42c1eb",
+      "_scratch/phase_t/injected/t1/ledger.json": "fd70cba89175adab54bd9d4d4fa510c3a97c348f587be529bd442debd901308b",
+      "_scratch/phase_t/injected/t1/protocol.json": "3550054f1058c15d3a316c211629fc3ddaa23c2b920597c3bb3de8cc551dfb68",
+      "_scratch/phase_t/injected/t1/72203812897.npy": "00eafe5326f18afd4326aeba31a750dd035559829845e9732c83508c7798e918",
+      "_scratch/phase_t/injected/t1/72259003927.npy": "15a730742e9fc03f05fa8130bfe9f53574ee4c78bd3bede28af60e4c03bf4f07",
+      "_scratch/phase_t/injected/t1/72329003935.npy": "839afb945da70e942c6edd8222b102ebb948a597742242cc8701f24fcf7e97e0",
+      "_scratch/phase_t/injected/t1/72422093820.npy": "5da8971082fd1efd219445ce93c3392e16c8e96e8787bb6084f38429b862afb9",
+      "_scratch/phase_t/injected/t1/72435653866.npy": "4f3ac3b4ac07dab8f520696c34c15ce34b176779ff4b6d841b09514c301d0feb",
+      "_scratch/phase_t/injected/t1/72438093819.npy": "f6a1b8dd4c11664211409f3893dea6b66c7fc56bbbec6f9d78691692e6d987cf",
+      "_scratch/phase_t/injected/t1/72511654737.npy": "aa02cdb5872884132d7468fe66a193ddd58349beeced43ff0d49556f015a24ad",
+      "_scratch/phase_t/injected/t1/72529014768.npy": "6bd43044fa2419ea508184313a5ee2ea8556d08e00ad05889b5abaa329559144",
+      "_scratch/phase_t/injected/t1/72605654791.npy": "5687486c6e6ac5522131be982cd597f966d28f3ee1ddb63c66f1862c584f7b3e",
+      "_scratch/phase_t/injected/t1/72654014936.npy": "6561adbe202c9356adc4999866801b4b4b92708feb65477fd44da7bdd1101af5",
+      "_scratch/phase_t/injected/t1/72793494248.npy": "ceae1c14d5a9d74a01a3a75ba871b36b4949c677dd5c0d78c734e968292c06b6",
+      "_scratch/phase_t/injected/t1/74486514719.npy": "5a6625bee12a807917d27f75165302b8bdc358201c09152689a62c7f9f907868"
+    },
+    "after": {
+      "artifacts/functional/e2/t4_conflict_experience_v1.json": "c3d3f217d4d134906516c0ffeab98893c6804dd8e23e2c87921d6ce74e6a1179",
+      "artifacts/functional/e2/t3_task_exam_v1.json": "ef62b3502515130e3de653698306afb95bd60595816898b8f4ab7be21416a9d2",
+      "artifacts/functional/e2/t1b_training_flip_v3.json": "db48bb9c53ab1c935164c21aaef1f82f6afa4e9c04e40a92af3ed185e2f8d296",
+      "artifacts/functional/e2/t1_flip_control_v1.json": "15b4f3122364d7658e1d81cd73d375df5146c02cb4c0aacd70b2dc48cc42c1eb",
+      "_scratch/phase_t/injected/t1/ledger.json": "fd70cba89175adab54bd9d4d4fa510c3a97c348f587be529bd442debd901308b",
+      "_scratch/phase_t/injected/t1/protocol.json": "3550054f1058c15d3a316c211629fc3ddaa23c2b920597c3bb3de8cc551dfb68",
+      "_scratch/phase_t/injected/t1/72203812897.npy": "00eafe5326f18afd4326aeba31a750dd035559829845e9732c83508c7798e918",
+      "_scratch/phase_t/injected/t1/72259003927.npy": "15a730742e9fc03f05fa8130bfe9f53574ee4c78bd3bede28af60e4c03bf4f07",
+      "_scratch/phase_t/injected/t1/72329003935.npy": "839afb945da70e942c6edd8222b102ebb948a597742242cc8701f24fcf7e97e0",
+      "_scratch/phase_t/injected/t1/72422093820.npy": "5da8971082fd1efd219445ce93c3392e16c8e96e8787bb6084f38429b862afb9",
+      "_scratch/phase_t/injected/t1/72435653866.npy": "4f3ac3b4ac07dab8f520696c34c15ce34b176779ff4b6d841b09514c301d0feb",
+      "_scratch/phase_t/injected/t1/72438093819.npy": "f6a1b8dd4c11664211409f3893dea6b66c7fc56bbbec6f9d78691692e6d987cf",
+      "_scratch/phase_t/injected/t1/72511654737.npy": "aa02cdb5872884132d7468fe66a193ddd58349beeced43ff0d49556f015a24ad",
+      "_scratch/phase_t/injected/t1/72529014768.npy": "6bd43044fa2419ea508184313a5ee2ea8556d08e00ad05889b5abaa329559144",
+      "_scratch/phase_t/injected/t1/72605654791.npy": "5687486c6e6ac5522131be982cd597f966d28f3ee1ddb63c66f1862c584f7b3e",
+      "_scratch/phase_t/injected/t1/72654014936.npy": "6561adbe202c9356adc4999866801b4b4b92708feb65477fd44da7bdd1101af5",
+      "_scratch/phase_t/injected/t1/72793494248.npy": "ceae1c14d5a9d74a01a3a75ba871b36b4949c677dd5c0d78c734e968292c06b6",
+      "_scratch/phase_t/injected/t1/74486514719.npy": "5a6625bee12a807917d27f75165302b8bdc358201c09152689a62c7f9f907868"
+    },
+    "unchanged": true
+  },
+  "wall_seconds": 555.936131800001,
+  "draws": [
+    {
+      "draw_index": 1,
+      "arm": "forecasting",
+      "case_id": "T4EXAM_F1",
+      "public_input_sha256": "2d2984ca6817bf83b37be9e581a834c4d13819ff7b2b019a9a6d9399098cce9c",
+      "retrieval_log": {
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "card_episode_ids": [
+          "t4_forecasting_outlier_iqr_replay_v1",
+          "t4_forecasting_hampel_filter_replay_v1",
+          "t4_forecasting_identity_replay_v1"
+        ],
+        "cross_task_card_ids": [],
+        "rendered_card_sha256": "71ac6f2f82ed2c51f6db029b61f1d7c93ff000649ab3eb5300b4db166075b437",
+        "card_in_this_view": true,
+        "note": "retrieval is deterministic and the pack is identical on every draw of an arm; the per-draw entry records which cards this draw's view actually carried"
+      },
+      "classification": "VALID_PROPOSE",
+      "valid": true,
+      "why": null,
+      "raw_assistant_text": "{\"schema_version\":\"agent-envelope/1\",\"kind\":\"stage_result\",\"stage\":\"t3_task_conditioned_proposal\",\"payload\":{\"decision\":\"propose\",\"shortlist\":[\"outlier_iqr\",\"hampel_filter\",\"identity\"],\"top1\":\"outlier_iqr\",\"reason\":\"Most training series show strong localized robust deviations, with several also showing substantial level excursions, so a local outlier repair is publicly justified. outlier_iqr is the first proposal because similar public experience for this consumer was consistently favorable, while identity remains available if verification does not support the repair.\"}}",
+      "parsed_payload": {
+        "decision": "propose",
+        "shortlist": [
+          "outlier_iqr",
+          "hampel_filter",
+          "identity"
+        ],
+        "top1": "outlier_iqr",
+        "reason": "Most training series show strong localized robust deviations, with several also showing substantial level excursions, so a local outlier repair is publicly justified. outlier_iqr is the first proposal because similar public experience for this consumer was consistently favorable, while identity remains available if verification does not support the repair."
+      },
+      "proposal_set": [
+        "hampel_filter",
+        "identity",
+        "outlier_iqr"
+      ],
+      "top1": "outlier_iqr",
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "request_hashes": [
+        "bebf3de350a4b7d942d151d830304f4d669f3f5f403f095a757414cce07b9c66"
+      ],
+      "returned_model": "gpt-5.6-sol",
+      "usage": {
+        "prompt_tokens": 4734,
+        "completion_tokens": 455
+      },
+      "returned_models_delta": [
+        "gpt-5.6-sol"
+      ],
+      "llm_calls_cumulative": 1
+    },
+    {
+      "draw_index": 2,
+      "arm": "anomaly_detection",
+      "case_id": "T4EXAM_AD2",
+      "public_input_sha256": "43eadb3641b079633019d3333f84ae6afc9eff01e338a46293076cf842eabe9d",
+      "retrieval_log": {
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "card_episode_ids": [
+          "t4_anomaly_detection_winsorize_replay_v1",
+          "t4_anomaly_detection_hampel_filter_replay_v1",
+          "t4_anomaly_detection_identity_replay_v1"
+        ],
+        "cross_task_card_ids": [],
+        "rendered_card_sha256": "c0c21f6cf79ac31ce3f0094ae8f99ab9e82512fa4b1b34bd974c8b5491586f80",
+        "card_in_this_view": true,
+        "note": "retrieval is deterministic and the pack is identical on every draw of an arm; the per-draw entry records which cards this draw's view actually carried"
+      },
+      "classification": "VALID_PROPOSE",
+      "valid": true,
+      "why": null,
+      "raw_assistant_text": "{\"schema_version\":\"agent-envelope/1\",\"kind\":\"stage_result\",\"stage\":\"t3_task_conditioned_proposal\",\"payload\":{\"decision\":\"propose\",\"shortlist\":[\"identity\"],\"top1\":\"identity\",\"reason\":\"Strong local deviations, level excursions, and period changes occur across many training series and may be event signal required by the anomaly-detection consumer. With no localized repair evidence and mixed-to-harmful prior filtering outcomes, leaving the batch unchanged is the justified first choice.\"}}",
+      "parsed_payload": {
+        "decision": "propose",
+        "shortlist": [
+          "identity"
+        ],
+        "top1": "identity",
+        "reason": "Strong local deviations, level excursions, and period changes occur across many training series and may be event signal required by the anomaly-detection consumer. With no localized repair evidence and mixed-to-harmful prior filtering outcomes, leaving the batch unchanged is the justified first choice."
+      },
+      "proposal_set": [
+        "identity"
+      ],
+      "top1": "identity",
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "request_hashes": [
+        "469ad01a536de02dd1b90562f41a2abb6f48be7fd6822a048ceef2c28f101285"
+      ],
+      "returned_model": "gpt-5.6-sol",
+      "usage": {
+        "prompt_tokens": 9122,
+        "completion_tokens": 377
+      },
+      "returned_models_delta": [],
+      "llm_calls_cumulative": 2
+    },
+    {
+      "draw_index": 3,
+      "arm": "forecasting",
+      "case_id": "T4EXAM_F3",
+      "public_input_sha256": "2d2984ca6817bf83b37be9e581a834c4d13819ff7b2b019a9a6d9399098cce9c",
+      "retrieval_log": {
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "card_episode_ids": [
+          "t4_forecasting_outlier_iqr_replay_v1",
+          "t4_forecasting_hampel_filter_replay_v1",
+          "t4_forecasting_identity_replay_v1"
+        ],
+        "cross_task_card_ids": [],
+        "rendered_card_sha256": "71ac6f2f82ed2c51f6db029b61f1d7c93ff000649ab3eb5300b4db166075b437",
+        "card_in_this_view": true,
+        "note": "retrieval is deterministic and the pack is identical on every draw of an arm; the per-draw entry records which cards this draw's view actually carried"
+      },
+      "classification": "VALID_PROPOSE",
+      "valid": true,
+      "why": null,
+      "raw_assistant_text": "{\"schema_version\":\"agent-envelope/1\",\"kind\":\"stage_result\",\"stage\":\"t3_task_conditioned_proposal\",\"payload\":{\"decision\":\"propose\",\"shortlist\":[\"outlier_iqr\"],\"top1\":\"outlier_iqr\",\"reason\":\"The training channels show widespread extreme local deviations, with robust-z peaks reaching 21.63, while missingness is negligible. A minimal intrinsic IQR outlier treatment directly targets that signal and has safer relevant prior evidence than Hampel filtering for this consumer.\"}}",
+      "parsed_payload": {
+        "decision": "propose",
+        "shortlist": [
+          "outlier_iqr"
+        ],
+        "top1": "outlier_iqr",
+        "reason": "The training channels show widespread extreme local deviations, with robust-z peaks reaching 21.63, while missingness is negligible. A minimal intrinsic IQR outlier treatment directly targets that signal and has safer relevant prior evidence than Hampel filtering for this consumer."
+      },
+      "proposal_set": [
+        "outlier_iqr"
+      ],
+      "top1": "outlier_iqr",
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "request_hashes": [
+        "bebf3de350a4b7d942d151d830304f4d669f3f5f403f095a757414cce07b9c66"
+      ],
+      "returned_model": "gpt-5.6-sol",
+      "usage": {
+        "prompt_tokens": 4734,
+        "completion_tokens": 404
+      },
+      "returned_models_delta": [],
+      "llm_calls_cumulative": 3
+    },
+    {
+      "draw_index": 4,
+      "arm": "anomaly_detection",
+      "case_id": "T4EXAM_AD4",
+      "public_input_sha256": "43eadb3641b079633019d3333f84ae6afc9eff01e338a46293076cf842eabe9d",
+      "retrieval_log": {
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "card_episode_ids": [
+          "t4_anomaly_detection_winsorize_replay_v1",
+          "t4_anomaly_detection_hampel_filter_replay_v1",
+          "t4_anomaly_detection_identity_replay_v1"
+        ],
+        "cross_task_card_ids": [],
+        "rendered_card_sha256": "c0c21f6cf79ac31ce3f0094ae8f99ab9e82512fa4b1b34bd974c8b5491586f80",
+        "card_in_this_view": true,
+        "note": "retrieval is deterministic and the pack is identical on every draw of an arm; the per-draw entry records which cards this draw's view actually carried"
+      },
+      "classification": "VALID_PROPOSE",
+      "valid": true,
+      "why": null,
+      "raw_assistant_text": "{\"schema_version\":\"agent-envelope/1\",\"kind\":\"stage_result\",\"stage\":\"t3_task_conditioned_proposal\",\"payload\":{\"decision\":\"propose\",\"shortlist\":[\"identity\"],\"top1\":\"identity\",\"reason\":\"The widespread robust deviations, level excursions, and period changes may be event signal required by the anomaly-detection consumer, while missingness is sparse. Public evidence does not localize a repair that would reliably preserve those events, and prior filtering outcomes show material per-series harm.\"}}",
+      "parsed_payload": {
+        "decision": "propose",
+        "shortlist": [
+          "identity"
+        ],
+        "top1": "identity",
+        "reason": "The widespread robust deviations, level excursions, and period changes may be event signal required by the anomaly-detection consumer, while missingness is sparse. Public evidence does not localize a repair that would reliably preserve those events, and prior filtering outcomes show material per-series harm."
+      },
+      "proposal_set": [
+        "identity"
+      ],
+      "top1": "identity",
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "request_hashes": [
+        "469ad01a536de02dd1b90562f41a2abb6f48be7fd6822a048ceef2c28f101285"
+      ],
+      "returned_model": "gpt-5.6-sol",
+      "usage": {
+        "prompt_tokens": 9122,
+        "completion_tokens": 181
+      },
+      "returned_models_delta": [],
+      "llm_calls_cumulative": 4
+    },
+    {
+      "draw_index": 5,
+      "arm": "forecasting",
+      "case_id": "T4EXAM_F5",
+      "public_input_sha256": "2d2984ca6817bf83b37be9e581a834c4d13819ff7b2b019a9a6d9399098cce9c",
+      "retrieval_log": {
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "card_episode_ids": [
+          "t4_forecasting_outlier_iqr_replay_v1",
+          "t4_forecasting_hampel_filter_replay_v1",
+          "t4_forecasting_identity_replay_v1"
+        ],
+        "cross_task_card_ids": [],
+        "rendered_card_sha256": "71ac6f2f82ed2c51f6db029b61f1d7c93ff000649ab3eb5300b4db166075b437",
+        "card_in_this_view": true,
+        "note": "retrieval is deterministic and the pack is identical on every draw of an arm; the per-draw entry records which cards this draw's view actually carried"
+      },
+      "classification": "VALID_PROPOSE",
+      "valid": true,
+      "why": null,
+      "raw_assistant_text": "{\"schema_version\":\"agent-envelope/1\",\"kind\":\"stage_result\",\"stage\":\"t3_task_conditioned_proposal\",\"payload\":{\"decision\":\"propose\",\"shortlist\":[\"outlier_iqr\"],\"top1\":\"outlier_iqr\",\"reason\":\"The training series show widespread, strong local robust-deviation peaks, while missingness is negligible. A single robust outlier treatment is a localized, conservative proposal for the pooled consumer.\"}}",
+      "parsed_payload": {
+        "decision": "propose",
+        "shortlist": [
+          "outlier_iqr"
+        ],
+        "top1": "outlier_iqr",
+        "reason": "The training series show widespread, strong local robust-deviation peaks, while missingness is negligible. A single robust outlier treatment is a localized, conservative proposal for the pooled consumer."
+      },
+      "proposal_set": [
+        "outlier_iqr"
+      ],
+      "top1": "outlier_iqr",
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "request_hashes": [
+        "bebf3de350a4b7d942d151d830304f4d669f3f5f403f095a757414cce07b9c66"
+      ],
+      "returned_model": "gpt-5.6-sol",
+      "usage": {
+        "prompt_tokens": 4734,
+        "completion_tokens": 331
+      },
+      "returned_models_delta": [],
+      "llm_calls_cumulative": 5
+    },
+    {
+      "draw_index": 6,
+      "arm": "anomaly_detection",
+      "case_id": "T4EXAM_AD6",
+      "public_input_sha256": "43eadb3641b079633019d3333f84ae6afc9eff01e338a46293076cf842eabe9d",
+      "retrieval_log": {
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|F1",
+        "card_episode_ids": [
+          "t4_anomaly_detection_winsorize_replay_v1",
+          "t4_anomaly_detection_hampel_filter_replay_v1",
+          "t4_anomaly_detection_identity_replay_v1"
+        ],
+        "cross_task_card_ids": [],
+        "rendered_card_sha256": "c0c21f6cf79ac31ce3f0094ae8f99ab9e82512fa4b1b34bd974c8b5491586f80",
+        "card_in_this_view": true,
+        "note": "retrieval is deterministic and the pack is identical on every draw of an arm; the per-draw entry records which cards this draw's view actually carried"
+      },
+      "classification": "VALID_PROPOSE",
+      "valid": true,
+      "why": null,
+      "raw_assistant_text": "{\"schema_version\":\"agent-envelope/1\",\"kind\":\"stage_result\",\"stage\":\"t3_task_conditioned_proposal\",\"payload\":{\"decision\":\"propose\",\"shortlist\":[\"hampel_filter\",\"identity\"],\"top1\":\"hampel_filter\",\"reason\":\"Most training series show strong local robust deviations, with several also showing substantial level excursions, so a local Hampel repair is the most justified exploratory proposal for preserving the anomaly-detection signal. Winsorization is not prioritized because similar held-in experience degraded, while identity remains the conservative fallback.\"}}",
+      "parsed_payload": {
+        "decision": "propose",
+        "shortlist": [
+          "hampel_filter",
+          "identity"
+        ],
+        "top1": "hampel_filter",
+        "reason": "Most training series show strong local robust deviations, with several also showing substantial level excursions, so a local Hampel repair is the most justified exploratory proposal for preserving the anomaly-detection signal. Winsorization is not prioritized because similar held-in experience degraded, while identity remains the conservative fallback."
+      },
+      "proposal_set": [
+        "hampel_filter",
+        "identity"
+      ],
+      "top1": "hampel_filter",
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "request_hashes": [
+        "469ad01a536de02dd1b90562f41a2abb6f48be7fd6822a048ceef2c28f101285"
+      ],
+      "returned_model": "gpt-5.6-sol",
+      "usage": {
+        "prompt_tokens": 4742,
+        "completion_tokens": 354
+      },
+      "returned_models_delta": [],
+      "llm_calls_cumulative": 6
+    }
+  ],
+  "distance_matrix": {
+    "rule": "sets are the proposed menu entries; an abstaining draw is the singleton {__ABSTAIN__}; invalid draws are excluded.  Complete separation = min over cross-task pairs > max over same-task pairs.",
+    "same_task_pairs": [
+      {
+        "pair": "T4EXAM_F1/T4EXAM_F3",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "outlier_iqr"
+        ],
+        "jaccard_distance": 0.6666666666666667,
+        "top1_agree": true
+      },
+      {
+        "pair": "T4EXAM_F1/T4EXAM_F5",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "outlier_iqr"
+        ],
+        "jaccard_distance": 0.6666666666666667,
+        "top1_agree": true
+      },
+      {
+        "pair": "T4EXAM_F3/T4EXAM_F5",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "outlier_iqr"
+        ],
+        "jaccard_distance": 0.0,
+        "top1_agree": true
+      },
+      {
+        "pair": "T4EXAM_AD2/T4EXAM_AD4",
+        "a": [
+          "identity"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 0.0,
+        "top1_agree": true
+      },
+      {
+        "pair": "T4EXAM_AD2/T4EXAM_AD6",
+        "a": [
+          "identity"
+        ],
+        "b": [
+          "hampel_filter",
+          "identity"
+        ],
+        "jaccard_distance": 0.5,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_AD4/T4EXAM_AD6",
+        "a": [
+          "identity"
+        ],
+        "b": [
+          "hampel_filter",
+          "identity"
+        ],
+        "jaccard_distance": 0.5,
+        "top1_agree": false
+      }
+    ],
+    "cross_task_pairs": [
+      {
+        "pair": "T4EXAM_F1/T4EXAM_AD2",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 0.6666666666666667,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F1/T4EXAM_AD4",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 0.6666666666666667,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F1/T4EXAM_AD6",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "hampel_filter",
+          "identity"
+        ],
+        "jaccard_distance": 0.33333333333333337,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F3/T4EXAM_AD2",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 1.0,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F3/T4EXAM_AD4",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 1.0,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F3/T4EXAM_AD6",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "hampel_filter",
+          "identity"
+        ],
+        "jaccard_distance": 1.0,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F5/T4EXAM_AD2",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 1.0,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F5/T4EXAM_AD4",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "identity"
+        ],
+        "jaccard_distance": 1.0,
+        "top1_agree": false
+      },
+      {
+        "pair": "T4EXAM_F5/T4EXAM_AD6",
+        "a": [
+          "outlier_iqr"
+        ],
+        "b": [
+          "hampel_filter",
+          "identity"
+        ],
+        "jaccard_distance": 1.0,
+        "top1_agree": false
+      }
+    ],
+    "computable": true,
+    "min_cross_task": 0.33333333333333337,
+    "max_same_task": 0.6666666666666667,
+    "complete_separation": false,
+    "top1_agreement_same_task": 0.6666666666666666
+  },
+  "scoring": {
+    "aggregate_direction_passed": true,
+    "risk_passed": false,
+    "layers": {
+      "aggregate": {
+        "forecasting": {
+          "key": [
+            "hampel_filter",
+            "outlier_iqr",
+            "outlier_mad",
+            "winsorize"
+          ],
+          "abstain_credited": false,
+          "appropriate": 3,
+          "of": 3,
+          "passed": true,
+          "draws": [
+            {
+              "case_id": "T4EXAM_F1",
+              "classification": "VALID_PROPOSE",
+              "top1": "outlier_iqr",
+              "appropriate": true,
+              "basis": "top1 'outlier_iqr' vs key ['hampel_filter', 'outlier_iqr', 'outlier_mad', 'winsorize']"
+            },
+            {
+              "case_id": "T4EXAM_F3",
+              "classification": "VALID_PROPOSE",
+              "top1": "outlier_iqr",
+              "appropriate": true,
+              "basis": "top1 'outlier_iqr' vs key ['hampel_filter', 'outlier_iqr', 'outlier_mad', 'winsorize']"
+            },
+            {
+              "case_id": "T4EXAM_F5",
+              "classification": "VALID_PROPOSE",
+              "top1": "outlier_iqr",
+              "appropriate": true,
+              "basis": "top1 'outlier_iqr' vs key ['hampel_filter', 'outlier_iqr', 'outlier_mad', 'winsorize']"
+            }
+          ]
+        },
+        "anomaly_detection": {
+          "key": [
+            "hampel_filter",
+            "identity",
+            "outlier_iqr",
+            "outlier_mad"
+          ],
+          "abstain_credited": false,
+          "appropriate": 3,
+          "of": 3,
+          "passed": true,
+          "draws": [
+            {
+              "case_id": "T4EXAM_AD2",
+              "classification": "VALID_PROPOSE",
+              "top1": "identity",
+              "appropriate": true,
+              "basis": "top1 'identity' vs key ['hampel_filter', 'identity', 'outlier_iqr', 'outlier_mad']"
+            },
+            {
+              "case_id": "T4EXAM_AD4",
+              "classification": "VALID_PROPOSE",
+              "top1": "identity",
+              "appropriate": true,
+              "basis": "top1 'identity' vs key ['hampel_filter', 'identity', 'outlier_iqr', 'outlier_mad']"
+            },
+            {
+              "case_id": "T4EXAM_AD6",
+              "classification": "VALID_PROPOSE",
+              "top1": "hampel_filter",
+              "appropriate": true,
+              "basis": "top1 'hampel_filter' vs key ['hampel_filter', 'identity', 'outlier_iqr', 'outlier_mad']"
+            }
+          ]
+        }
+      },
+      "risk": {
+        "forecasting": {
+          "key": [
+            "outlier_iqr",
+            "outlier_mad",
+            "winsorize"
+          ],
+          "abstain_credited": true,
+          "appropriate": 3,
+          "of": 3,
+          "passed": true,
+          "draws": [
+            {
+              "case_id": "T4EXAM_F1",
+              "classification": "VALID_PROPOSE",
+              "top1": "outlier_iqr",
+              "appropriate": true,
+              "basis": "top1 'outlier_iqr' vs key ['outlier_iqr', 'outlier_mad', 'winsorize']"
+            },
+            {
+              "case_id": "T4EXAM_F3",
+              "classification": "VALID_PROPOSE",
+              "top1": "outlier_iqr",
+              "appropriate": true,
+              "basis": "top1 'outlier_iqr' vs key ['outlier_iqr', 'outlier_mad', 'winsorize']"
+            },
+            {
+              "case_id": "T4EXAM_F5",
+              "classification": "VALID_PROPOSE",
+              "top1": "outlier_iqr",
+              "appropriate": true,
+              "basis": "top1 'outlier_iqr' vs key ['outlier_iqr', 'outlier_mad', 'winsorize']"
+            }
+          ]
+        },
+        "anomaly_detection": {
+          "key": [
+            "identity"
+          ],
+          "abstain_credited": true,
+          "appropriate": 2,
+          "of": 3,
+          "passed": false,
+          "draws": [
+            {
+              "case_id": "T4EXAM_AD2",
+              "classification": "VALID_PROPOSE",
+              "top1": "identity",
+              "appropriate": true,
+              "basis": "top1 'identity' vs key ['identity']"
+            },
+            {
+              "case_id": "T4EXAM_AD4",
+              "classification": "VALID_PROPOSE",
+              "top1": "identity",
+              "appropriate": true,
+              "basis": "top1 'identity' vs key ['identity']"
+            },
+            {
+              "case_id": "T4EXAM_AD6",
+              "classification": "VALID_PROPOSE",
+              "top1": "hampel_filter",
+              "appropriate": false,
+              "basis": "top1 'hampel_filter' vs key ['identity']"
+            }
+          ]
+        }
+      }
+    },
+    "quantization_note": "AD per-series granularity is 4 events per series, so one event changing hands moves a series reading by ~0.2 or more; the AD Risk layer reads approximately as 'did the proposal avoid touching the substrate at all'.  F Risk is read at the -0.005 harm line on four evaluation series."
+  },
+  "shift_table": {
+    "rows": [
+      {
+        "arm": "forecasting",
+        "top1_39": [
+          "hampel_filter",
+          "hampel_filter",
+          "hampel_filter"
+        ],
+        "top1_40": [
+          "outlier_iqr",
+          "outlier_iqr",
+          "outlier_iqr"
+        ],
+        "top1_40b": [
+          "outlier_iqr",
+          "outlier_iqr",
+          "outlier_iqr"
+        ],
+        "shortlists_40b": [
+          [
+            "hampel_filter",
+            "identity",
+            "outlier_iqr"
+          ],
+          [
+            "outlier_iqr"
+          ],
+          [
+            "outlier_iqr"
+          ]
+        ],
+        "risk_39": 0,
+        "risk_40": 3,
+        "risk_40b": 3,
+        "aggregate_39": 3,
+        "aggregate_40": 3,
+        "aggregate_40b": 3,
+        "moved_since_40": false
+      },
+      {
+        "arm": "anomaly_detection",
+        "top1_39": [
+          "identity",
+          "identity",
+          "identity"
+        ],
+        "top1_40": [
+          "hampel_filter",
+          "hampel_filter",
+          "hampel_filter"
+        ],
+        "top1_40b": [
+          "identity",
+          "identity",
+          "hampel_filter"
+        ],
+        "shortlists_40b": [
+          [
+            "identity"
+          ],
+          [
+            "identity"
+          ],
+          [
+            "hampel_filter",
+            "identity"
+          ]
+        ],
+        "risk_39": 3,
+        "risk_40": 0,
+        "risk_40b": 2,
+        "aggregate_39": 3,
+        "aggregate_40": 3,
+        "aggregate_40b": 3,
+        "moved_since_40": true
+      }
+    ],
+    "rule": "two baseline columns: #39 is the empty-store second sample, #40 is the same ten episodes without an abstain channel; #40b adds the channel and changes nothing else"
+  },
+  "verdict_reason": "separation lost: min cross 0.33333333333333337 vs max same 0.6666666666666667; Risk F 3/3, AD 2/3",
+  "verdict_required_fields": {
+    "forecasting_safe_top1_count": 3,
+    "anomaly_detection_safe_top1_count": 2,
+    "of": 3,
+    "min_cross_task_distance": 0.33333333333333337,
+    "max_same_task_distance": 0.6666666666666667,
+    "separation_kept": false,
+    "ad_risk_regression_flag": true,
+    "risk_39": {
+      "forecasting": 0,
+      "anomaly_detection": 3
+    },
+    "risk_40": {
+      "forecasting": 3,
+      "anomaly_detection": 0
+    },
+    "risk_40b": {
+      "forecasting": 3,
+      "anomaly_detection": 2
+    },
+    "forecasting_top1_now": [
+      "outlier_iqr",
+      "outlier_iqr",
+      "outlier_iqr"
+    ],
+    "anomaly_top1_now": [
+      "identity",
+      "identity",
+      "hampel_filter"
+    ]
+  },
+  "verdict_ladder_trace": {
+    "invalid_draws": 0,
+    "retrieval_empty_handed_arms": [],
+    "cross_task_cards": [],
+    "separation_kept": false,
+    "forecasting_safe": 3,
+    "anomaly_detection_safe": 2
+  },
+  "scope_note": "POSITIVE_CONTROL, permanent: this shows Memory presentation can carry the correction, not that the Agent discovered anything.  Proposal-only; execution and adoption stay in T5",
+  "t4b_findings": {
+    "separation_diagnosis": {
+      "verdict_is_not_revisited": "the pre-registered ladder reads separation before the F/AD counts, and separation did not hold; this section explains the reading, it does not change it",
+      "min_cross_task": 0.33333333333333337,
+      "max_same_task": 0.6666666666666667,
+      "binding_cross_pair": {
+        "pair": "T4EXAM_F1/T4EXAM_AD6",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "hampel_filter",
+          "identity"
+        ],
+        "jaccard_distance": 0.33333333333333337,
+        "top1_agree": false
+      },
+      "binding_same_pair": {
+        "pair": "T4EXAM_F1/T4EXAM_F3",
+        "a": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "b": [
+          "outlier_iqr"
+        ],
+        "jaccard_distance": 0.6666666666666667,
+        "top1_agree": true
+      },
+      "metric_is_over_shortlists_not_top1": "the Jaccard distance is computed over the proposed sets.  At the top-1 layer the two tasks stayed completely disjoint: F named ['outlier_iqr'], AD named ['hampel_filter', 'identity'], with no shared entry.",
+      "top1_sets_disjoint": true,
+      "what_actually_moved": "identity entered the shortlists of both arms.  It is the one menu entry the no-action baseline card speaks about, and it is legal under either task, so once both arms could see that evidence they both named it as an option.  Shared vocabulary raises cross-task overlap and same-task spread at once: ['T4EXAM_AD2', 'T4EXAM_AD4', 'T4EXAM_AD6', 'T4EXAM_F1'] carry identity in their shortlist.  Cross-task distance did not collapse because the tasks converged on an answer -- their top-1 choices never overlapped -- but because the shortlists now share one token.",
+      "shortlists": {
+        "T4EXAM_F1": [
+          "hampel_filter",
+          "identity",
+          "outlier_iqr"
+        ],
+        "T4EXAM_AD2": [
+          "identity"
+        ],
+        "T4EXAM_F3": [
+          "outlier_iqr"
+        ],
+        "T4EXAM_AD4": [
+          "identity"
+        ],
+        "T4EXAM_F5": [
+          "outlier_iqr"
+        ],
+        "T4EXAM_AD6": [
+          "hampel_filter",
+          "identity"
+        ]
+      }
+    },
+    "ad_recovery": {
+      "risk_layer_39_40_40b": [
+        3,
+        0,
+        2
+      ],
+      "top1_39_40_40b": [
+        [
+          "identity",
+          "identity",
+          "identity"
+        ],
+        [
+          "hampel_filter",
+          "hampel_filter",
+          "hampel_filter"
+        ],
+        [
+          "identity",
+          "identity",
+          "hampel_filter"
+        ]
+      ],
+      "reading": "the channel reached the choice: two of three AD draws went back to identity after #40's three-for-three regression, and the third kept identity in its shortlist as the stated fallback.  The recovery is partial, not complete",
+      "evidence_in_the_agents_own_words": [
+        {
+          "draw_index": 1,
+          "arm": "forecasting",
+          "top1": "outlier_iqr",
+          "reason": "Most training series show strong localized robust deviations, with several also showing substantial level excursions, so a local outlier repair is publicly justified. outlier_iqr is the first proposal because similar public experience for this consumer was consistently favorable, while identity remains available if verification does not support the repair."
+        },
+        {
+          "draw_index": 2,
+          "arm": "anomaly_detection",
+          "top1": "identity",
+          "reason": "Strong local deviations, level excursions, and period changes occur across many training series and may be event signal required by the anomaly-detection consumer. With no localized repair evidence and mixed-to-harmful prior filtering outcomes, leaving the batch unchanged is the justified first choice."
+        },
+        {
+          "draw_index": 3,
+          "arm": "forecasting",
+          "top1": "outlier_iqr",
+          "reason": "The training channels show widespread extreme local deviations, with robust-z peaks reaching 21.63, while missingness is negligible. A minimal intrinsic IQR outlier treatment directly targets that signal and has safer relevant prior evidence than Hampel filtering for this consumer."
+        },
+        {
+          "draw_index": 4,
+          "arm": "anomaly_detection",
+          "top1": "identity",
+          "reason": "The widespread robust deviations, level excursions, and period changes may be event signal required by the anomaly-detection consumer, while missingness is sparse. Public evidence does not localize a repair that would reliably preserve those events, and prior filtering outcomes show material per-series harm."
+        },
+        {
+          "draw_index": 5,
+          "arm": "forecasting",
+          "top1": "outlier_iqr",
+          "reason": "The training series show widespread, strong local robust-deviation peaks, while missingness is negligible. A single robust outlier treatment is a localized, conservative proposal for the pooled consumer."
+        },
+        {
+          "draw_index": 6,
+          "arm": "anomaly_detection",
+          "top1": "hampel_filter",
+          "reason": "Most training series show strong local robust deviations, with several also showing substantial level excursions, so a local Hampel repair is the most justified exploratory proposal for preserving the anomaly-detection signal. Winsorization is not prioritized because similar held-in experience degraded, while identity remains the conservative fallback."
+        }
+      ]
+    },
+    "a1_reachability_evidence": {
+      "why_it_matters": "#40b's A1 was written so the abstain channel does not depend on identity being a member of allowed_operators.  That was not a hypothetical: identity is absent from the operator registry entirely, so the rejected formulation would have produced an exam-only channel that the live Runtime could never open",
+      "measured": {
+        "identity_in_operator_registry": false,
+        "allowed_tasks_of_the_four_repair_programs": [
+          "forecast",
+          "classification"
+        ],
+        "anomaly_detection_absent_from_those_allowed_tasks": true
+      },
+      "not_acted_on": "the registry is not this slice's change surface and nothing was touched; recorded so the main line can route it"
+    },
+    "part_c_not_triggered": "the T5 static seam reconnaissance runs only on CONFLICT_EXPERIENCE_CONDITIONS_PROPOSALS_CONFIRMED; this run did not reach that verdict, so _t5_seam_recon was not called and no recon section is part of this delivery"
+  },
+  "annotation_note": "t4b_findings is a pure function of the readings already in this artifact; adding it made no backend call and llm_calls is unchanged."
+}

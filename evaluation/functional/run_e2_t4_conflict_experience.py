@@ -1691,7 +1691,1356 @@ def main() -> None:
     )
 
 
-if __name__ == "__main__":
-    raise SystemExit(
-        annotate() if "--annotate" in sys.argv[1:] else (main() or 0)
+
+
+# =========================================================================== #
+# #40b (T4b): the abstain-channel repair slice.  --v2
+# =========================================================================== #
+V2_PROTOCOL_VERSION = "t4_conflict_experience_v2"
+V2_OUT_JSON = E2 / "t4_conflict_experience_v2.json"
+V2_OUT_MD = E2 / "t4_conflict_experience_v2.md"
+V1_ARTIFACT = OUT_JSON
+V2_STORE_ROOT = (
+    PROJECT_ROOT / "_scratch" / "skill_store" / "t4_conflict_experience_v2"
+)
+V2_PART0_CHECKPOINT = {
+    "commit": "fbba86f",
+    "files": 10,
+    "note": (
+        "#40 deliverables (the four-file Memory diff + t4 runner + "
+        "t4_conflict_experience_v1.json/.md) + the main-line doc revisions "
+        "(C15, the #40 ruling, the #40b authorization and pre-issue "
+        "revision section, the progress line) + the two authorized "
+        "FROZEN_SURFACE_V9 moves recorded as T4_MEMORY_TOUCHED"
+    ),
+    "v9_moves": {
+        "evaluation/functional/run_e2_skill_store_integration.py": {
+            "before": (
+                "f39c13f3b29ae534ee7c7b3b682ad60179316243742925022504d16974b3183e"
+            ),
+            "after": (
+                "0dbe61d98defd4dcce9a9081e0e297617e4606f2cc2919b5f10ed52665690c48"
+            ),
+            "move_index": "second",
+        },
+        "methods/ttha/method.py": {
+            "before": (
+                "e9c27af3d43db9f9ca08208553ca817211f4af4de96ea2e88d4c8f497f7e0d21"
+            ),
+            "after": (
+                "cd28df33373e568b92e7500ef062ef4c03e9e057df952c80c0122a4d821244f5"
+            ),
+            "move_index": "first",
+        },
+    },
+}
+
+# The fields the #40 v1 artifact persisted for each Episode.  The literal
+# to_dict() comparison the book asks for is not available from v1 -- v1 wrote
+# a per-episode summary, not the serialized Episode -- so the re-materialization
+# is asserted over every field v1 did persist, plus the frozen source sha.
+V1_PERSISTED_EPISODE_FIELDS = (
+    "episode_id",
+    "arm",
+    "program",
+    "task_consumer_key",
+    "domain_namespace",
+    "workflow_signature",
+    "relation",
+    "evidence_level",
+    "local_status",
+    "aggregate_gain",
+    "aggregate_direction",
+    "series_read",
+    "harmed_series_count",
+    "harmed_series",
+    "min_per_series_gain",
+    "classification_basis",
+)
+
+
+# ------------------------------------------------------- B1 re-materialization
+def _rematerialize(
+    *, rebuilt: Mapping[str, Any], v1: Mapping[str, Any],
+    keys: Mapping[str, Any], readings: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Assert the ten Episodes are the same ten, not ten new ones.
+
+    This is a replay of readings already taken.  ``new_independent_evidence``
+    is zero by construction and this slice must never be described as adding a
+    trial or a piece of independent evidence.
+    """
+    v1_rows = {str(row["episode_id"]): row for row in v1["episodes"]["rows"]}
+    now_rows = {str(row["episode_id"]): row for row in rebuilt["rows"]}
+    per_episode: list[dict[str, Any]] = []
+    for episode_id in sorted(set(v1_rows) | set(now_rows)):
+        old = v1_rows.get(episode_id)
+        new = now_rows.get(episode_id)
+        if old is None or new is None:
+            per_episode.append({
+                "episode_id": episode_id,
+                "identical": False,
+                "differing_fields": ["present_in_v1=%s present_now=%s"
+                                     % (old is not None, new is not None)],
+            })
+            continue
+        differing = [
+            field for field in V1_PERSISTED_EPISODE_FIELDS
+            if old.get(field) != new.get(field)
+        ]
+        per_episode.append({
+            "episode_id": episode_id,
+            "identical": not differing,
+            "differing_fields": differing,
+            "relation": new["relation"],
+            "task_consumer_key": new["task_consumer_key"],
+        })
+    source_same = (
+        readings["aggregate"] == v1["frozen_readings"]["aggregate"]
+        and readings["per_series"] == v1["frozen_readings"]["per_series"]
     )
+    keys_same = {
+        arm: keys[arm]["key"] for arm in ("forecasting", "anomaly_detection")
+    } == v1["task_keys"]
+    return {
+        "rule": (
+            "the ten Episodes are re-materialized in a fresh TTHAMethod from "
+            "the same frozen T1b v3 readings and re-written through "
+            "append_experience_episode.  #40's ten were never persisted -- "
+            "they lived in that run's method instance -- so there is no #40 "
+            "store to carry over; re-materialization is the only faithful "
+            "way to stand the same evidence up again."
+        ),
+        "new_independent_evidence": 0,
+        "not_a_new_trial": (
+            "no reading was taken here.  Nothing in this slice may be "
+            "described as a new trial or as new independent evidence"
+        ),
+        "compared_fields": list(V1_PERSISTED_EPISODE_FIELDS),
+        "comparison_caveat": (
+            "the #40 v1 artifact persisted a per-episode summary, not "
+            "ExperienceEpisode.to_dict(); the literal to_dict comparison the "
+            "book asks for is therefore not reconstructible from v1.  Every "
+            "field v1 did persist is compared, together with the frozen "
+            "readings block and both task keys.  This run records the full "
+            "to_dict() so a later slice can do the literal check."
+        ),
+        "per_episode": per_episode,
+        "all_identical": all(row["identical"] for row in per_episode),
+        "frozen_readings_identical_to_v1": source_same,
+        "task_keys_identical_to_v1": keys_same,
+        "count": len(per_episode),
+    }
+
+
+# --------------------------------------------------------- A4 legacy assertions
+def _legacy_pack() -> dict[str, Any]:
+    """A pack shaped like the other line's: no measured_effect, no abstain."""
+    def episode(signature: str, relation: str) -> dict[str, Any]:
+        return {
+            "workflow_signature": signature,
+            "relation": relation,
+            "delayed_response": {"evaluated": False, "gain": None},
+            "support_response": {"gain": 0.1, "accepted": True},
+        }
+
+    return {
+        "positive": episode("outlier_mad", RELATION_POSITIVE),
+        "negative": None,
+        "conflict": episode("W_rowblock|W_curation", RELATION_CONFLICT),
+        "abstain": None,
+        "evidence_sufficient": True,
+        "retrieval_note": "legacy shape",
+    }
+
+
+def _a4_assertions(
+    *, retrieval: Mapping[str, Any], v1: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Old behaviour is unchanged wherever the new channel is empty."""
+    checks: list[dict[str, Any]] = []
+
+    def check(name: str, passed: bool, detail: Any) -> None:
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    for arm in ("forecasting", "anomaly_detection"):
+        without = retrieval["arms"][arm]["rendered_card_without_abstain"]
+        recorded = str(v1["retrieval"]["arms"][arm]["rendered_card"])
+        check(
+            "A4 %s: with abstain removed the card is byte-identical to #40's"
+            % arm,
+            without == recorded,
+            {
+                "sha_without_abstain": canonical_sha256(without),
+                "sha_recorded_in_v1": canonical_sha256(recorded),
+                "length_delta": len(
+                    retrieval["arms"][arm]["rendered_card"]
+                ) - len(recorded),
+            },
+        )
+    legacy_now = render_experience_pack(_legacy_pack())
+    legacy_sentences = (
+        "were verified beneficial on held-in data in a similar context",
+        "Consider them as priors to confirm again on the current Support.",
+        "showed a Support-positive but delayed-negative flip",
+        "Treat as risk; confirm on the delayed segment before relying on it.",
+    )
+    check(
+        "A4 legacy shape (the other line's episodes): the old sentences are "
+        "rendered unchanged and no fourth reference appears",
+        all(item in legacy_now for item in legacy_sentences)
+        and "Reference 4" not in legacy_now,
+        {
+            "legacy_render_sha256": canonical_sha256(legacy_now),
+            "reference_4_present": "Reference 4" in legacy_now,
+            "legacy_render": legacy_now,
+        },
+    )
+    check(
+        "A4 empty pack still renders nothing",
+        render_experience_pack(
+            {"positive": None, "negative": None, "conflict": None,
+             "abstain": None, "evidence_sufficient": False,
+             "retrieval_note": ""}
+        ) == "",
+        None,
+    )
+    return {
+        "passed": all(row["passed"] for row in checks),
+        "checks": checks,
+        "note": (
+            "ContrastPack.to_dict now carries an abstain key and the "
+            "retrieval_note names the fourth channel; the book exempts "
+            "serialization from the byte-equality requirement and neither "
+            "reaches the prompt"
+        ),
+    }
+
+
+# --------------------------------------------------------------- B2 acceptance
+def _b2_abstain_acceptance(retrieval: Mapping[str, Any]) -> dict[str, Any]:
+    """The AD arm must now see a no-action baseline card."""
+    checks: list[dict[str, Any]] = []
+
+    def check(name: str, passed: bool, detail: Any) -> None:
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    ad = retrieval["arms"]["anomaly_detection"]
+    f = retrieval["arms"]["forecasting"]
+    ad_abstain = ad["picked"].get("abstain")
+    f_abstain = f["picked"].get("abstain")
+    check(
+        "the AD pack now carries an abstain card, and it is identity/ABSTAIN",
+        bool(ad_abstain)
+        and ad_abstain["relation"] == RELATION_ABSTAIN
+        and ad_abstain["program"] == "identity",
+        ad_abstain,
+    )
+    check(
+        "the AD card face renders the no-action baseline",
+        "no operator applied" in ad["rendered_card"]
+        and "Reference 4" in ad["rendered_card"],
+        {
+            "rendered_card_length": ad["rendered_card_length"],
+            "length_without_abstain": len(ad["rendered_card_without_abstain"]),
+        },
+    )
+    check(
+        "the abstain card prescribes nothing",
+        not any(
+            token in ad["rendered_card"].lower()
+            for token in ("you should", "must choose", "pick ", "prefer ",
+                          "recommended", "avoid them")
+        ),
+        None,
+    )
+    check(
+        "the F arm's abstain card is archived too (rendered or not)",
+        True,
+        {
+            "forecasting_abstain": f_abstain,
+            "forecasting_card_has_reference_4": "Reference 4" in f["rendered_card"],
+        },
+    )
+    check(
+        "no card crosses tasks in either arm, abstain included",
+        not f["cross_task_card_ids"] and not ad["cross_task_card_ids"],
+        {
+            "forecasting": f["cross_task_card_ids"],
+            "anomaly_detection": ad["cross_task_card_ids"],
+        },
+    )
+    return {
+        "passed": all(row["passed"] for row in checks),
+        "checks": checks,
+    }
+
+
+# ------------------------------------------------------------- B3 three-way v2
+def _three_way_v2(
+    *, prompts: Mapping[str, Mapping[str, str]], v1: Mapping[str, Any],
+    cards: Mapping[str, str], cards_without_abstain: Mapping[str, str],
+) -> dict[str, Any]:
+    """#40b vs #40, and #40b's two arms against each other."""
+    checks: list[dict[str, Any]] = []
+
+    def check(name: str, passed: bool, detail: Any) -> None:
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    verbatim = v1["prompts_verbatim"]
+    base_system = {
+        "forecasting": str(verbatim["system_forecasting"]),
+        "anomaly_detection": str(verbatim["system_anomaly_detection"]),
+    }
+    base_user = {
+        "forecasting": str(verbatim["user_forecasting"]),
+        "anomaly_detection": str(verbatim["user_anomaly_detection"]),
+    }
+    for arm in ("forecasting", "anomaly_detection"):
+        system = prompts[arm]["system"]
+        card = cards[arm]
+        older = cards_without_abstain[arm]
+        # Put #40's card back in place of #40b's, twice: the prefix and the
+        # JSON-escaped copy inside the resolved Harness.
+        reverted = system.replace(card, older, 1).replace(
+            _json_escaped(card), _json_escaped(older), 1
+        )
+        check(
+            "#40b-%s vs #40-%s: the user message is byte-identical" % (arm, arm),
+            prompts[arm]["user"] == base_user[arm],
+            {
+                "v2_user_sha256": canonical_sha256(prompts[arm]["user"]),
+                "v1_user_sha256": canonical_sha256(base_user[arm]),
+            },
+        )
+        check(
+            "#40b-%s vs #40-%s: the system message differs only by the "
+            "abstain block" % (arm, arm),
+            reverted == base_system[arm],
+            {
+                "reverted_equals_v1_system": reverted == base_system[arm],
+                "reverted_sha256": canonical_sha256(reverted),
+                "v1_system_sha256": canonical_sha256(base_system[arm]),
+                "abstain_block_chars": len(card) - len(older),
+            },
+        )
+    f_user = prompts["forecasting"]["user"]
+    ad_user = prompts["anomaly_detection"]["user"]
+    f_spec_bytes = _json_spec_bytes(v1, "forecasting")
+    ad_spec_bytes = _json_spec_bytes(v1, "anomaly_detection")
+    check(
+        "#40b-F vs #40b-AD: the user messages differ exactly at the task_spec "
+        "bytes",
+        f_user.count(f_spec_bytes) == 1
+        and ad_user == f_user.replace(f_spec_bytes, ad_spec_bytes),
+        {
+            "task_spec_occurrences": f_user.count(f_spec_bytes),
+            "replace_test": ad_user == f_user.replace(f_spec_bytes, ad_spec_bytes),
+        },
+    )
+    check(
+        "#40b-F vs #40b-AD: the system messages differ only by their own "
+        "experience blocks",
+        _strip_card(prompts["forecasting"]["system"], cards["forecasting"])
+        == _strip_card(
+            prompts["anomaly_detection"]["system"], cards["anomaly_detection"]
+        ),
+        {
+            "forecasting_card_sha256": canonical_sha256(cards["forecasting"]),
+            "anomaly_card_sha256": canonical_sha256(cards["anomaly_detection"]),
+        },
+    )
+    check(
+        "each arm's card is present in the bytes that will be sent",
+        all(
+            bool(cards[arm]) and cards[arm] in prompts[arm]["system"]
+            for arm in ("forecasting", "anomaly_detection")
+        ),
+        None,
+    )
+    return {
+        "passed": all(row["passed"] for row in checks),
+        "checks": checks,
+        "baseline_source": _repo_rel(V1_ARTIFACT),
+    }
+
+
+# ------------------------------------------------------------ two-column shift
+def _shift_table_v2(
+    *, draws: Sequence[Mapping[str, Any]], baseline_39: Mapping[str, Any],
+    v1: Mapping[str, Any], scoring: Mapping[str, Any],
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    v1_top1 = {
+        arm: [row.get("top1") for row in v1["draws"] if row["arm"] == arm]
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    for arm in ("forecasting", "anomaly_detection"):
+        now = [row for row in draws if row["arm"] == arm]
+        rows.append({
+            "arm": arm,
+            "top1_39": list(baseline_39["top1_by_arm"][arm]),
+            "top1_40": v1_top1[arm],
+            "top1_40b": [row.get("top1") for row in now],
+            "shortlists_40b": [
+                sorted(row.get("proposal_set") or []) for row in now
+            ],
+            "risk_39": baseline_39["risk_layer"][arm],
+            "risk_40": v1["scoring"]["layers"]["risk"][arm]["appropriate"],
+            "risk_40b": scoring["layers"]["risk"][arm]["appropriate"],
+            "aggregate_39": baseline_39["aggregate_layer"][arm],
+            "aggregate_40": v1["scoring"]["layers"]["aggregate"][arm]["appropriate"],
+            "aggregate_40b": scoring["layers"]["aggregate"][arm]["appropriate"],
+            "moved_since_40": v1_top1[arm] != [row.get("top1") for row in now],
+        })
+    return {
+        "rows": rows,
+        "rule": (
+            "two baseline columns: #39 is the empty-store second sample, #40 "
+            "is the same ten episodes without an abstain channel; #40b adds "
+            "the channel and changes nothing else"
+        ),
+    }
+
+
+# ------------------------------------------------------------------ verdict v2
+def _verdict_v2(
+    *, draws: Sequence[Mapping[str, Any]], matrix: Mapping[str, Any],
+    scoring: Mapping[str, Any], retrieval: Mapping[str, Any],
+    baseline_39: Mapping[str, Any], v1: Mapping[str, Any],
+) -> dict[str, Any]:
+    invalid = [row for row in draws if not row["valid"]]
+    by_arm = {
+        arm: [row for row in draws if row["arm"] == arm]
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    f_safe = sum(
+        1 for row in by_arm["forecasting"]
+        if row["valid"] and row.get("top1") in F_SAFE_TOP1
+    )
+    ad_safe = sum(
+        1 for row in by_arm["anomaly_detection"]
+        if row["valid"]
+        and (
+            row.get("top1") in AD_SAFE_TOP1
+            or row["classification"] == "VALID_ABSTAIN"
+        )
+    )
+    separation = bool(matrix["complete_separation"])
+    cross_task_cards = sorted(
+        cid
+        for arm in retrieval["arms"].values()
+        for cid in arm["cross_task_card_ids"]
+    )
+    empty_handed = [
+        arm for arm, row in retrieval["arms"].items()
+        if not row["card_episode_ids"]
+    ]
+    ad_regressed = (
+        scoring["layers"]["risk"]["anomaly_detection"]["appropriate"]
+        < baseline_39["risk_layer"]["anomaly_detection"]
+    )
+    required = {
+        "forecasting_safe_top1_count": f_safe,
+        "anomaly_detection_safe_top1_count": ad_safe,
+        "of": DRAWS_PER_TASK,
+        "min_cross_task_distance": matrix["min_cross_task"],
+        "max_same_task_distance": matrix["max_same_task"],
+        "separation_kept": separation,
+        "ad_risk_regression_flag": bool(ad_regressed),
+        "risk_39": baseline_39["risk_layer"],
+        "risk_40": {
+            arm: v1["scoring"]["layers"]["risk"][arm]["appropriate"]
+            for arm in ("forecasting", "anomaly_detection")
+        },
+        "risk_40b": {
+            arm: scoring["layers"]["risk"][arm]["appropriate"]
+            for arm in ("forecasting", "anomaly_detection")
+        },
+        "forecasting_top1_now": [row.get("top1") for row in by_arm["forecasting"]],
+        "anomaly_top1_now": [
+            row.get("top1") or ABSTAIN_TOKEN
+            for row in by_arm["anomaly_detection"]
+        ],
+    }
+    # Pre-registered ladder, read strictly in this order.
+    if empty_handed or cross_task_cards:
+        verdict, reason = "RETRIEVAL_MISS", (
+            "retrieval came back empty-handed for %s or crossed tasks (%s)"
+            % (empty_handed or "no arm", cross_task_cards or "none")
+        )
+    elif len(invalid) > 2:
+        verdict, reason = "EXAM_PROTOCOL_UNREADABLE", (
+            "%d of 6 draws are invalid" % len(invalid)
+        )
+    elif not separation:
+        verdict, reason = "TASK_SEPARATION_REGRESSION", (
+            "separation lost: min cross %s vs max same %s; Risk F %d/3, AD "
+            "%d/3" % (
+                matrix["min_cross_task"], matrix["max_same_task"],
+                scoring["layers"]["risk"]["forecasting"]["appropriate"],
+                scoring["layers"]["risk"]["anomaly_detection"]["appropriate"],
+            )
+        )
+    elif f_safe == DRAWS_PER_TASK and ad_safe == DRAWS_PER_TASK:
+        verdict, reason = "CONFLICT_EXPERIENCE_CONDITIONS_PROPOSALS_CONFIRMED", (
+            "F 3/3 top-1 inside the risk-safe set, AD 3/3 top-1 "
+            "identity-or-abstain, separation kept; T4 closes"
+        )
+    elif f_safe < DRAWS_PER_TASK and ad_safe == DRAWS_PER_TASK:
+        verdict, reason = "EXPERIENCE_SHIFT_RISK_REGRESSION", (
+            "AD recovered to 3/3 but F fell to %d/3" % f_safe
+        )
+    elif f_safe == DRAWS_PER_TASK and ad_safe == 0:
+        verdict, reason = "CARD_CHANNEL_INSUFFICIENT", (
+            "F holds 3/3 and AD is still 0/3: the abstain channel did not "
+            "reach the choice; the reserved fallback surface is card order, "
+            "which this slice does not touch"
+        )
+    else:
+        verdict, reason = "PARTIAL_EXPERIENCE_CONDITIONING", (
+            "a legal mixed state: F %d/3 safe, AD %d/3 safe, separation kept "
+            "%s" % (f_safe, ad_safe, separation)
+        )
+    return {
+        "verdict": verdict,
+        "reason": reason,
+        "required_fields": required,
+        "ladder_trace": {
+            "invalid_draws": len(invalid),
+            "retrieval_empty_handed_arms": empty_handed,
+            "cross_task_cards": cross_task_cards,
+            "separation_kept": separation,
+            "forecasting_safe": f_safe,
+            "anomaly_detection_safe": ad_safe,
+        },
+        "scope_note": (
+            "POSITIVE_CONTROL, permanent: this shows Memory presentation can "
+            "carry the correction, not that the Agent discovered anything.  "
+            "Proposal-only; execution and adoption stay in T5"
+        ),
+    }
+
+
+# ------------------------------------------------------------------- report v2
+def _render_md_v2(doc: Mapping[str, Any]) -> str:
+    lines = [
+        "# T4b (#40b) abstain channel -- %s" % doc["verdict"],
+        "",
+        "- protocol: `%s` (evidence grade %s, permanent)"
+        % (doc["protocol_version"], doc["evidence_grade"]),
+        "- Part 0 checkpoint: `%s` (%d files)"
+        % (doc["part0_checkpoint"]["commit"], doc["part0_checkpoint"]["files"]),
+        "- only change: the card's expressive range (ContrastPack.abstain); "
+        "keys, relation classification, card order, Consumer, menu, backend "
+        "and protocol all frozen at #40",
+        "- cost: %d LLM calls; 0 retrains; 0 AD evaluations; "
+        "new_independent_evidence = %d"
+        % (
+            doc["budgets"]["llm_calls"],
+            doc["rematerialization"]["new_independent_evidence"],
+        ),
+        "",
+        "## B1 re-materialization",
+        "",
+        "- %d episodes, all fields identical to #40: %s"
+        % (
+            doc["rematerialization"]["count"],
+            doc["rematerialization"]["all_identical"],
+        ),
+        "- frozen readings identical to #40: %s; task keys identical: %s"
+        % (
+            doc["rematerialization"]["frozen_readings_identical_to_v1"],
+            doc["rematerialization"]["task_keys_identical_to_v1"],
+        ),
+        "",
+        "## A4 old-behaviour assertions: %s"
+        % ("PASSED" if doc["a4_assertions"]["passed"] else "FAILED"),
+        "",
+    ]
+    for row in doc["a4_assertions"]["checks"]:
+        lines.append("- [%s] %s" % ("x" if row["passed"] else " ", row["name"]))
+    lines += [
+        "",
+        "## B2 abstain acceptance: %s"
+        % ("PASSED" if doc["b2_acceptance"]["passed"] else "FAILED"),
+        "",
+    ]
+    for row in doc["b2_acceptance"]["checks"]:
+        lines.append("- [%s] %s" % ("x" if row["passed"] else " ", row["name"]))
+    lines += [
+        "",
+        "## B4 category acceptance (re-run): %s"
+        % ("PASSED" if doc["b4_acceptance"]["passed"] else "FAILED"),
+        "",
+        "## B3 three-way prompt assertions: %s"
+        % ("PASSED" if doc["three_way"]["passed"] else "FAILED"),
+        "",
+    ]
+    for row in doc["three_way"]["checks"]:
+        lines.append("- [%s] %s" % ("x" if row["passed"] else " ", row["name"]))
+    if doc.get("draws"):
+        lines += [
+            "",
+            "## Draws (order %s)" % ", ".join(doc["arm_order"]),
+            "",
+            "| # | arm | classification | top1 | shortlist | cards |",
+            "|---|-----|----------------|------|-----------|-------|",
+        ]
+        for row in doc["draws"]:
+            payload = row.get("parsed_payload") or {}
+            lines.append(
+                "| %d | %s | %s | %s | %s | %s |"
+                % (
+                    row["draw_index"], row["arm"], row["classification"],
+                    row.get("top1")
+                    or ("__ABSTAIN__" if row["classification"] == "VALID_ABSTAIN"
+                        else "-"),
+                    ", ".join(payload.get("shortlist", ()) or ()) or "-",
+                    ", ".join(row["retrieval_log"]["card_episode_ids"]) or "-",
+                )
+            )
+    if doc.get("shift_table"):
+        lines += [
+            "",
+            "## Displacement (#39 -> #40 -> #40b)",
+            "",
+            "| arm | #39 top-1 | #40 top-1 | #40b top-1 | Risk 39 | Risk 40 | "
+            "Risk 40b |",
+            "|-----|-----------|-----------|------------|---------|---------|"
+            "----------|",
+        ]
+        for row in doc["shift_table"]["rows"]:
+            lines.append(
+                "| %s | %s | %s | %s | %d/3 | %d/3 | %d/3 |"
+                % (
+                    row["arm"],
+                    ", ".join(str(x) for x in row["top1_39"]),
+                    ", ".join(str(x) for x in row["top1_40"]),
+                    ", ".join(str(x) for x in row["top1_40b"]),
+                    row["risk_39"], row["risk_40"], row["risk_40b"],
+                )
+            )
+    if doc.get("distance_matrix"):
+        matrix = doc["distance_matrix"]
+        lines += [
+            "",
+            "## Distance matrix",
+            "",
+            "- min cross-task %s; max same-task %s; complete separation %s"
+            % (
+                matrix["min_cross_task"], matrix["max_same_task"],
+                matrix["complete_separation"],
+            ),
+        ]
+    if doc.get("t5_seam_recon"):
+        recon = doc["t5_seam_recon"]
+        lines += [
+            "",
+            "## T5 static seam reconnaissance (0 LLM, read-only)",
+            "",
+            "Entry points: %s" % ", ".join(recon["entry_points"]),
+            "",
+            "| # | site | type | what breaks |",
+            "|---|------|------|-------------|",
+        ]
+        for index, gap in enumerate(recon["gaps"], start=1):
+            lines.append(
+                "| %d | `%s` | %s | %s |"
+                % (index, gap["site"], gap["type"], gap["gap"])
+            )
+    lines += [
+        "",
+        "## Verdict",
+        "",
+        "**%s** -- %s" % (doc["verdict"], doc.get("verdict_reason") or ""),
+        "",
+        "> %s" % (doc.get("scope_note") or ""),
+        "",
+    ]
+    findings = doc.get("t4b_findings")
+    if findings:
+        sep = findings["separation_diagnosis"]
+        rec = findings["ad_recovery"]
+        a1 = findings["a1_reachability_evidence"]
+        lines += [
+            "",
+            "## Findings handed back (no LLM cost)",
+            "",
+            "### Why separation did not hold",
+            "",
+            "> %s" % sep["verdict_is_not_revisited"],
+            "",
+            "- min cross-task %s (binding pair `%s`); max same-task %s "
+            "(binding pair `%s`)"
+            % (
+                sep["min_cross_task"], sep["binding_cross_pair"]["pair"],
+                sep["max_same_task"], sep["binding_same_pair"]["pair"],
+            ),
+            "- %s" % sep["metric_is_over_shortlists_not_top1"],
+            "",
+            sep["what_actually_moved"],
+            "",
+            "### AD recovery",
+            "",
+            "- Risk layer #39 / #40 / #40b: %s"
+            % (rec["risk_layer_39_40_40b"],),
+            "- top-1 #39 / #40 / #40b: %s" % (rec["top1_39_40_40b"],),
+            "",
+            rec["reading"],
+            "",
+            "### A1 reachability",
+            "",
+            a1["why_it_matters"],
+            "",
+            "- %s" % a1["not_acted_on"],
+            "",
+            "> %s" % findings["part_c_not_triggered"],
+            "",
+        ]
+    if doc.get("ambiguities_reported_not_self_adjudicated"):
+        lines += ["## Ambiguities (reported, not self-adjudicated)", ""]
+        for item in doc["ambiguities_reported_not_self_adjudicated"]:
+            lines.append("- %s" % item)
+        lines.append("")
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------- main v2
+def main_v2() -> int:
+    started = time.perf_counter()
+    smoke_only = "--smoke-only" in sys.argv[1:]
+    ambiguities: list[str] = []
+
+    frozen_before = _freeze()
+    git_status_start = _git(["status", "--short", "-uno"])
+    read_only_paths = (V1_ARTIFACT, T3_ARTIFACT, T1B_V3_ARTIFACT)
+    read_only_before = {_repo_rel(p): _sha256(p) for p in read_only_paths}
+    read_only_before.update(t3._read_only_inventory())
+
+    v1 = json.loads(V1_ARTIFACT.read_text(encoding="utf-8"))
+    baseline_39 = json.loads(T3_ARTIFACT.read_text(encoding="utf-8"))
+
+    substrate = t3._load_substrate()
+    search = t3._StandInSearch(substrate)
+    t3.STORE_ROOT = V2_STORE_ROOT
+    store = t3._build_empty_store()
+    snapshot = store["_snapshot"]
+    context = ssi._public_features(search)
+    features = dict(context["features"])
+    base_view = resolve_harness_view(snapshot, features, role="fast")
+    store_state = {
+        key: value for key, value in store.items() if not key.startswith("_")
+    }
+    store_state.update({
+        "resolved_skill_ids": list(base_view.skill_ids),
+        "resolved_memory_ids": list(base_view.memory_ids),
+        "effective_harness_view_sha": base_view.effective_harness_view_sha,
+        "harness_content_sha_matches_40": (
+            store["harness_content_sha"] == v1["store_state"]["harness_content_sha"]
+        ),
+        "effective_harness_view_sha_matches_40": (
+            base_view.effective_harness_view_sha
+            == v1["store_state"]["effective_harness_view_sha"]
+        ),
+        "empty_store_statement": (
+            "the same h0 snapshot #39 and #40 read; this slice re-materializes "
+            "the same ten Experience episodes into a fresh TTHAMethod and "
+            "adds nothing else"
+        ),
+    })
+
+    inputs = t3._public_inputs(search)
+    keys = _arm_task_keys(inputs)
+    readings = _frozen_readings()
+    rebuilt = _build_episodes(
+        keys=keys, readings=readings, features=features,
+        substrate=substrate, cutoff=int(search.support[0]),
+    )
+    remat = _rematerialize(rebuilt=rebuilt, v1=v1, keys=keys, readings=readings)
+
+    backend = _default_backend_factory(LLM_BUDGET)
+    gateway = t3.wvc.NoToolGateway(
+        {"episode_id": V2_PROTOCOL_VERSION, "arm": "exam"}
+    )
+    core = TTHAAgentCore(backend, gateway, model=EXAM_MODEL, base_url=NF_BASE_URL)
+    written = _write_through_runtime(
+        core=core, snapshot=snapshot, episodes=rebuilt["episodes"],
+    )
+    method = written["method"]
+    retrieval = _retrieve_v2(method=method, keys=keys, features=features)
+
+    b4 = _b4_acceptance(retrieval)
+    b2 = _b2_abstain_acceptance(retrieval)
+    a4 = _a4_assertions(retrieval=retrieval, v1=v1)
+
+    cards = {
+        arm: retrieval["arms"][arm]["rendered_card"]
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    cards_without_abstain = {
+        arm: retrieval["arms"][arm]["rendered_card_without_abstain"]
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    views = {
+        arm: dataclasses.replace(
+            base_view, instruction=cards[arm] + base_view.instruction
+        )
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    prompts = {
+        arm: t3._render_prompts(views[arm], inputs)[arm]
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    three_way = _three_way_v2(
+        prompts=prompts, v1=v1, cards=cards,
+        cards_without_abstain=cards_without_abstain,
+    )
+    answer_keys = t3._derive_answer_keys()
+    baseline = _baseline(baseline_39)
+
+    doc: dict[str, Any] = {
+        "protocol_version": V2_PROTOCOL_VERSION,
+        "evidence_grade": EVIDENCE_GRADE,
+        "role": "T4b bounded repair: the card's expressive range only",
+        "part0_checkpoint": dict(V2_PART0_CHECKPOINT),
+        "question": (
+            "with a no-action baseline card available, does the AD arm "
+            "recover its conservative choice without costing F the "
+            "correction #40 bought"
+        ),
+        "change_surface": {
+            "declared": "ContrastPack abstain channel (three edits, one file)",
+            "edits": [
+                "SignedEpisodeRetriever._hard_filter: an ABSTAIN + identity "
+                "episode bypasses the informative-operator membership check "
+                "only; every other filter still applies and nothing depends "
+                "on identity being in allowed_operators",
+                "ContrastPack gains the abstain field and retrieve() fills it",
+                "render_experience_pack appends a zero-imperative Reference 4 "
+                "when the pack carries an abstain episode",
+            ],
+            "frozen_at_40": [
+                "keys", "relation classification", "card order",
+                "Consumer", "menu", "backend", "exam protocol",
+            ],
+        },
+        "verdict": None,
+        "stopped": None,
+        "ambiguities_reported_not_self_adjudicated": ambiguities,
+        "arm_order": list(ARM_ORDER),
+        "menu": list(MENU),
+        "task_keys": {
+            arm: keys[arm]["key"] for arm in ("forecasting", "anomaly_detection")
+        },
+        "task_specs": {
+            "forecasting": inputs["forecasting"]["task_spec"],
+            "anomaly_detection": inputs["anomaly_detection"]["task_spec"],
+        },
+        "store_state": store_state,
+        "rematerialization": remat,
+        "episodes": {
+            key: value for key, value in rebuilt.items() if key != "episodes"
+        },
+        "episodes_to_dict": [
+            episode.to_dict() for episode in rebuilt["episodes"]
+        ],
+        "write": written["record"],
+        "retrieval": {
+            "held_episode_count": retrieval["held_episode_count"],
+            "arms": dict(retrieval["arms"]),
+        },
+        "a4_assertions": a4,
+        "b2_acceptance": b2,
+        "b4_acceptance": b4,
+        "three_way": three_way,
+        "answer_keys": answer_keys,
+        "baseline_39": baseline,
+        "baseline_40": {
+            "source": _repo_rel(V1_ARTIFACT),
+            "verdict": v1["verdict"],
+            "top1_by_arm": {
+                arm: [row.get("top1") for row in v1["draws"] if row["arm"] == arm]
+                for arm in ("forecasting", "anomaly_detection")
+            },
+            "risk_layer": {
+                arm: v1["scoring"]["layers"]["risk"][arm]["appropriate"]
+                for arm in ("forecasting", "anomaly_detection")
+            },
+        },
+        "prompts_verbatim": {
+            "system_forecasting": prompts["forecasting"]["system"],
+            "system_anomaly_detection": prompts["anomaly_detection"]["system"],
+            "user_forecasting": prompts["forecasting"]["user"],
+            "user_anomaly_detection": prompts["anomaly_detection"]["user"],
+        },
+        "backend_declaration": {
+            "requested_model": EXAM_MODEL,
+            "base_url": NF_BASE_URL,
+            "returned_models": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+        },
+        "budgets": {
+            "llm_budget": LLM_BUDGET,
+            "llm_calls": 0,
+            "forecasting_retrains": 0,
+            "ad_evaluations": 0,
+            "episodes_written": rebuilt["count"],
+            "budgets_respected": True,
+        },
+        "frozen_surface": {
+            "name": "FROZEN_SURFACE_V9",
+            "raw_entries": len(list(FROZEN_SURFACE_V9)),
+            "unique_files": len(set(FROZEN_SURFACE_V9)),
+            "before_files": len(frozen_before),
+            "after": None,
+        },
+        "git": {
+            "status_uno_short_at_start": git_status_start,
+            "diff_name_only_at_end": None,
+        },
+        "read_only_integrity": {
+            "before": read_only_before, "after": None, "unchanged": None,
+        },
+        "wall_seconds": None,
+    }
+
+    if not remat["all_identical"]:
+        ambiguities.append(
+            "re-materialization differs from #40 on: %s"
+            % [row for row in remat["per_episode"] if not row["identical"]]
+        )
+    ambiguities.append(
+        "B1 asks for a literal episode.to_dict() comparison against the #40 "
+        "artifact, but #40 persisted a per-episode summary rather than the "
+        "serialized Episode; the %d persisted fields, the frozen readings "
+        "block and both task keys are compared instead, and this run records "
+        "the full to_dict() so the literal check becomes possible later"
+        % len(V1_PERSISTED_EPISODE_FIELDS)
+    )
+
+    if not (a4["passed"] and b2["passed"] and b4["passed"] and three_way["passed"]):
+        doc["stopped"] = "PRE_EXAM_ASSERTION_FAILED"
+        doc["verdict"] = "RETRIEVAL_MISS" if not (b2["passed"] and b4["passed"]) else None
+        doc["verdict_reason"] = (
+            "a pre-exam assertion failed (A4 %s / B2 %s / B4 %s / B3 %s); no "
+            "LLM call was made" % (
+                a4["passed"], b2["passed"], b4["passed"], three_way["passed"]
+            )
+        )
+        doc["wall_seconds"] = time.perf_counter() - started
+        V2_OUT_JSON.write_text(_json_text(doc), encoding="utf-8")
+        V2_OUT_MD.write_text(_render_md_v2(doc), encoding="utf-8")
+        print("PRE-EXAM ASSERTION FAILED; see %s" % V2_OUT_JSON)
+        return 1
+    if smoke_only:
+        print("A4 + B2 + B4 + B3 passed (--smoke-only; no LLM call)")
+        for row in (a4["checks"] + b2["checks"] + b4["checks"]
+                    + three_way["checks"]):
+            print("  [%s] %s" % ("x" if row["passed"] else " ", row["name"]))
+        return 0
+
+    outcome = _run_draws(
+        core=core, backend=backend, views=views, inputs=inputs,
+        retrieval=retrieval,
+    )
+    draws = outcome["draws"]
+    doc["stopped"] = outcome["stopped"]
+    doc["draws"] = draws
+    doc["budgets"]["llm_calls"] = outcome["llm_calls"]
+    doc["budgets"]["budgets_respected"] = outcome["llm_calls"] <= LLM_BUDGET
+    doc["backend_declaration"].update({
+        "returned_models": outcome["returned_models"],
+        "prompt_tokens": outcome["prompt_tokens"],
+        "completion_tokens": outcome["completion_tokens"],
+    })
+
+    if outcome["stopped"] is not None:
+        ambiguities.append(
+            "the exam stopped on an infrastructure error (%s); no verdict is "
+            "claimed" % outcome["stopped"]
+        )
+    else:
+        matrix = t3._distance_matrix(draws)
+        scoring = t3._score(draws, answer_keys)
+        shift = _shift_table_v2(
+            draws=draws, baseline_39=baseline, v1=v1, scoring=scoring,
+        )
+        verdict = _verdict_v2(
+            draws=draws, matrix=matrix, scoring=scoring, retrieval=retrieval,
+            baseline_39=baseline, v1=v1,
+        )
+        doc["distance_matrix"] = matrix
+        doc["scoring"] = scoring
+        doc["shift_table"] = shift
+        doc["verdict"] = verdict["verdict"]
+        doc["verdict_reason"] = verdict["reason"]
+        doc["verdict_required_fields"] = verdict["required_fields"]
+        doc["verdict_ladder_trace"] = verdict["ladder_trace"]
+        doc["scope_note"] = verdict["scope_note"]
+        if verdict["verdict"] == "CONFLICT_EXPERIENCE_CONDITIONS_PROPOSALS_CONFIRMED":
+            doc["t5_seam_recon"] = _t5_seam_recon()
+
+    doc["frozen_surface"]["after"] = _verify(frozen_before)
+    doc["git"]["diff_name_only_at_end"] = _git(["diff", "--name-only", "HEAD"])
+    read_only_after = {_repo_rel(p): _sha256(p) for p in read_only_paths}
+    read_only_after.update(t3._read_only_inventory())
+    doc["read_only_integrity"].update({
+        "after": read_only_after,
+        "unchanged": read_only_after == read_only_before,
+    })
+    doc["wall_seconds"] = time.perf_counter() - started
+
+    V2_OUT_JSON.write_text(_json_text(doc), encoding="utf-8")
+    V2_OUT_MD.write_text(_render_md_v2(doc), encoding="utf-8")
+    print(
+        "T4b exam: verdict=%s llm=%d stopped=%s"
+        % (doc["verdict"], outcome["llm_calls"], outcome["stopped"])
+    )
+    return 0
+
+
+# =========================================================================== #
+# what #40b hands back: findings that cost no LLM call
+# =========================================================================== #
+def t4b_findings(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Pure function of the artifact.  Diagnostic only -- the verdict stands
+    where the pre-registered ladder put it and is not revisited here."""
+    matrix = payload["distance_matrix"]
+    draws = payload["draws"]
+    by_arm = {
+        arm: [row for row in draws if row["arm"] == arm]
+        for arm in ("forecasting", "anomaly_detection")
+    }
+    f_top1 = sorted({row.get("top1") for row in by_arm["forecasting"]})
+    ad_top1 = sorted({row.get("top1") for row in by_arm["anomaly_detection"]})
+    shortlists = {
+        row["case_id"]: sorted(row.get("proposal_set") or []) for row in draws
+    }
+    identity_in = sorted(
+        case for case, items in shortlists.items() if "identity" in items
+    )
+    worst_cross = min(
+        matrix["cross_task_pairs"], key=lambda row: row["jaccard_distance"]
+    )
+    worst_same = max(
+        matrix["same_task_pairs"], key=lambda row: row["jaccard_distance"]
+    )
+    return {
+        "separation_diagnosis": {
+            "verdict_is_not_revisited": (
+                "the pre-registered ladder reads separation before the F/AD "
+                "counts, and separation did not hold; this section explains "
+                "the reading, it does not change it"
+            ),
+            "min_cross_task": matrix["min_cross_task"],
+            "max_same_task": matrix["max_same_task"],
+            "binding_cross_pair": worst_cross,
+            "binding_same_pair": worst_same,
+            "metric_is_over_shortlists_not_top1": (
+                "the Jaccard distance is computed over the proposed sets.  At "
+                "the top-1 layer the two tasks stayed completely disjoint: F "
+                "named %s, AD named %s, with no shared entry."
+                % (f_top1, ad_top1)
+            ),
+            "top1_sets_disjoint": not (set(f_top1) & set(ad_top1)),
+            "what_actually_moved": (
+                "identity entered the shortlists of both arms.  It is the one "
+                "menu entry the no-action baseline card speaks about, and it "
+                "is legal under either task, so once both arms could see that "
+                "evidence they both named it as an option.  Shared vocabulary "
+                "raises cross-task overlap and same-task spread at once: %s "
+                "carry identity in their shortlist.  Cross-task distance did "
+                "not collapse because the tasks converged on an answer -- "
+                "their top-1 choices never overlapped -- but because the "
+                "shortlists now share one token."
+                % (identity_in,)
+            ),
+            "shortlists": shortlists,
+        },
+        "ad_recovery": {
+            "risk_layer_39_40_40b": [
+                payload["baseline_39"]["risk_layer"]["anomaly_detection"],
+                payload["baseline_40"]["risk_layer"]["anomaly_detection"],
+                payload["scoring"]["layers"]["risk"]["anomaly_detection"][
+                    "appropriate"
+                ],
+            ],
+            "top1_39_40_40b": [
+                payload["baseline_39"]["top1_by_arm"]["anomaly_detection"],
+                payload["baseline_40"]["top1_by_arm"]["anomaly_detection"],
+                [row.get("top1") for row in by_arm["anomaly_detection"]],
+            ],
+            "reading": (
+                "the channel reached the choice: two of three AD draws went "
+                "back to identity after #40's three-for-three regression, and "
+                "the third kept identity in its shortlist as the stated "
+                "fallback.  The recovery is partial, not complete"
+            ),
+            "evidence_in_the_agents_own_words": [
+                {
+                    "draw_index": row["draw_index"],
+                    "arm": row["arm"],
+                    "top1": row.get("top1"),
+                    "reason": (row.get("parsed_payload") or {}).get("reason"),
+                }
+                for row in draws
+            ],
+        },
+        "a1_reachability_evidence": {
+            "why_it_matters": (
+                "#40b's A1 was written so the abstain channel does not depend "
+                "on identity being a member of allowed_operators.  That was "
+                "not a hypothetical: identity is absent from the operator "
+                "registry entirely, so the rejected formulation would have "
+                "produced an exam-only channel that the live Runtime could "
+                "never open"
+            ),
+            "measured": {
+                "identity_in_operator_registry": False,
+                "allowed_tasks_of_the_four_repair_programs": [
+                    "forecast", "classification"
+                ],
+                "anomaly_detection_absent_from_those_allowed_tasks": True,
+            },
+            "not_acted_on": (
+                "the registry is not this slice's change surface and nothing "
+                "was touched; recorded so the main line can route it"
+            ),
+        },
+        "part_c_not_triggered": (
+            "the T5 static seam reconnaissance runs only on "
+            "CONFLICT_EXPERIENCE_CONDITIONS_PROPOSALS_CONFIRMED; this run did "
+            "not reach that verdict, so _t5_seam_recon was not called and no "
+            "recon section is part of this delivery"
+        ),
+    }
+
+
+def annotate_v2() -> int:
+    """Add t4b_findings to the #40b artifact.  Spends no LLM call."""
+    payload = json.loads(V2_OUT_JSON.read_text(encoding="utf-8"))
+    payload["t4b_findings"] = t4b_findings(payload)
+    payload["annotation_note"] = (
+        "t4b_findings is a pure function of the readings already in this "
+        "artifact; adding it made no backend call and llm_calls is unchanged."
+    )
+    V2_OUT_JSON.write_text(_json_text(payload), encoding="utf-8")
+    V2_OUT_MD.write_text(_render_md_v2(payload), encoding="utf-8")
+    print("annotated", V2_OUT_JSON, flush=True)
+    return 0
+
+
+# ------------------------------------------------- retrieval with the 4th slot
+def _retrieve_v2(
+    *, method: Any, keys: Mapping[str, Any], features: Mapping[str, Any],
+) -> dict[str, Any]:
+    """#40's retrieval plus the abstain slot and the without-abstain render.
+
+    The without-abstain render is what A4 and B3 compare against: it is the
+    same pack with the fourth channel emptied, so any byte difference from
+    #40's recorded card would be a change this slice did not authorize.
+    """
+    held = list(method.experience_episodes)
+    out: dict[str, Any] = {"arms": {}, "held_episode_count": len(held)}
+    for arm in ("forecasting", "anomaly_detection"):
+        pack = resolve_experience_contrast_pack(
+            held, features, keys[arm]["key"], allowed_operators=tuple(MENU),
+        )
+        payload = pack.to_dict() if pack else {}
+        rendered = render_experience_pack(payload) if pack else ""
+        without = (
+            render_experience_pack({**payload, "abstain": None}) if pack else ""
+        )
+        picked: dict[str, Any] = {}
+        for slot in ("positive", "negative", "conflict", "abstain"):
+            episode = getattr(pack, slot, None) if pack else None
+            facts = (
+                dict(episode.delayed_response.get(MEASURED_EFFECT_KEY) or {})
+                if episode is not None
+                else {}
+            )
+            picked[slot] = (
+                {
+                    "episode_id": episode.episode_id,
+                    "program": episode.workflow_signature,
+                    "relation": episode.relation,
+                    "task_consumer_key": episode.task_consumer_key,
+                    "harmed_series_count": facts.get("harmed_series_count"),
+                    "min_per_series_gain": facts.get("min_per_series_gain"),
+                }
+                if episode is not None
+                else None
+            )
+        card_ids = [row["episode_id"] for row in picked.values() if row]
+        cross_task = [
+            row["episode_id"] for row in picked.values()
+            if row and row["task_consumer_key"] != keys[arm]["key"]
+        ]
+        out["arms"][arm] = {
+            "task_consumer_key": keys[arm]["key"],
+            "evidence_sufficient": bool(pack.evidence_sufficient) if pack else False,
+            "retrieval_note": pack.retrieval_note if pack else "no pack",
+            "picked": picked,
+            "card_episode_ids": card_ids,
+            "abstain_card_id": (picked["abstain"] or {}).get("episode_id"),
+            "cross_task_card_ids": cross_task,
+            "rendered_card": rendered,
+            "rendered_card_without_abstain": without,
+            "rendered_card_sha256": canonical_sha256(rendered),
+            "rendered_card_length": len(rendered),
+        }
+    return out
+
+
+# --------------------------------------------------- Part C: T5 seam recon
+def _t5_seam_recon() -> dict[str, Any]:
+    """Static, read-only reconnaissance.  0 LLM, no code touched.
+
+    The question: swap the three task_spec fields to the AD ones and bind
+    ad_ridge_train_v3 as the Consumer -- how far does the live path get before
+    it breaks?  Only the four entry points the book fixes were traced; the
+    rest of the repository was not, and no repair is proposed here.
+    """
+    return {
+        "scope": (
+            "four fixed entry points, read-only, no repository-wide trace and "
+            "no repair proposal; each gap is one sentence"
+        ),
+        "entry_points": [
+            "evaluation/functional/run_e2_operational_pipeline.py",
+            "methods/ttha/fast_agent.py",
+            "methods/ttha/online_loop.py",
+            "methods/ttha/method.py",
+        ],
+        "premise": (
+            "task_spec carries task_id=anomaly_detection, "
+            "consumer_id=ad_ridge_train_v3 and the AD quality semantics, and "
+            "the AD Consumer is bound as the downstream model class"
+        ),
+        "gaps": [
+            {
+                "site": "methods/ttha/fast_agent.py:69,138,267",
+                "type": "Consumer adapter",
+                "gap": (
+                    "every operator gate reads OPERATOR_METADATA[op]"
+                    "['allowed_tasks'], and all four repair programs are "
+                    "registered for ('forecast', 'classification') only, so "
+                    "under an anomaly_detection TaskSpec the actionable and "
+                    "full pools both come back empty and the Agent has "
+                    "nothing legal to propose"
+                ),
+            },
+            {
+                "site": "methods/ttha/fast_agent.py:786-791",
+                "type": "Consumer adapter",
+                "gap": (
+                    "the auto-derived allowed_operators filter has the same "
+                    "root, so the AD arm would also reach retrieval with an "
+                    "empty allowed set; the abstain channel survives this "
+                    "only because #40b's A1 deliberately does not depend on "
+                    "identity being registered -- identity is in fact absent "
+                    "from the operator registry entirely"
+                ),
+            },
+            {
+                "site": "methods/ttha/fast_agent.py:133-134,236-237",
+                "type": "Consumer adapter",
+                "gap": (
+                    "task_kind falls back to the literal 'forecast' whenever "
+                    "task_spec is None, so any caller that has not been "
+                    "taught to pass an AD spec silently extracts forecasting "
+                    "features for an AD task"
+                ),
+            },
+            {
+                "site": "methods/ttha/method.py:340-342,504-516",
+                "type": "Consumer adapter",
+                "gap": (
+                    "the approval gate itself is already Consumer-agnostic -- "
+                    "evaluator / delayed_evaluator are caller-supplied "
+                    "callbacks returning .gain and .verification -- but no "
+                    "adapter exists that presents the AD Consumer in that "
+                    "shape, so the gate has nothing to call"
+                ),
+            },
+            {
+                "site": "methods/ttha/method.py:511,1104",
+                "type": "反馈接线",
+                "gap": (
+                    "approval compares a scalar aggregate gain against "
+                    "MATERIAL_THRESHOLD (+/-0.005); the AD Consumer's "
+                    "readable unit is per-series event F1 whose quantization "
+                    "is around 0.2, so that line sits far below the "
+                    "instrument's resolution and would approve on noise"
+                ),
+            },
+            {
+                "site": "methods/ttha/online_loop.py:137",
+                "type": "Delayed 写回",
+                "gap": (
+                    "_write_target_episode hardwires "
+                    "task_consumer_key='forecast|ridge|sMASE', so every "
+                    "feedback write-back is forecasting-keyed no matter what "
+                    "task ran -- an AD round would write experience that AD "
+                    "retrieval can never find"
+                ),
+            },
+            {
+                "site": "methods/ttha/online_loop.py:162-188",
+                "type": "反馈接线",
+                "gap": (
+                    "_update_delayed_status is a second, independent relation "
+                    "assignment (four states from the support/delayed sign "
+                    "pair) that never calls classify_relation and has no "
+                    "'aggregate positive, locally harmful' state, so the live "
+                    "loop cannot produce the CONFLICT episode the card needs"
+                ),
+            },
+            {
+                "site": "methods/ttha/online_loop.py:508",
+                "type": "Consumer adapter",
+                "gap": (
+                    "the group-feedback path passes a literal "
+                    "{'task_kind': 'forecast'} feature context, which an AD "
+                    "round would have to override and currently cannot"
+                ),
+            },
+            {
+                "site": "evaluation/functional/run_e2_operational_pipeline.py:90",
+                "type": "Consumer adapter",
+                "gap": (
+                    "VARIANT = bch.CONSUMER_POOLED is a module constant, so "
+                    "binding a different Consumer means editing the runner "
+                    "rather than passing a spec -- the entry point takes no "
+                    "Consumer argument"
+                ),
+            },
+            {
+                "site": "evaluation/functional/run_e2_operational_pipeline.py:2017",
+                "type": "Delayed 写回",
+                "gap": (
+                    "the operational path still writes its Episode with the "
+                    "cell-key dialect batch:<cohort>|consumer:<variant>, so "
+                    "even a correctly-run AD round would deposit experience "
+                    "under a key the runtime retrieval does not use"
+                ),
+            },
+        ],
+        "not_traced": (
+            "Skill 更新 was not reachable within these four entry points: "
+            "handle_fast_winner builds a Target-local Draft Skill but its "
+            "task binding lives in the card builder the runner supplies, "
+            "which is outside the fixed scope of this reconnaissance"
+        ),
+    }
+
+
+if __name__ == "__main__":
+    _argv = sys.argv[1:]
+    if "--annotate" in _argv:
+        raise SystemExit(annotate_v2() if "--v2" in _argv else annotate())
+    if "--v2" in _argv:
+        raise SystemExit(main_v2())
+    raise SystemExit(main() or 0)
