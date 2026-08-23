@@ -468,6 +468,24 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   scope 天花板、方向一致率、赢家重叠;决策门 ≥+0.02 →
   Scope 线 / <+0.01 → Supply 线;一致率 ≤50% → 反馈单元
   按事件质量重设)。分叉裁定后才动 41 条与 AD-native 增补。
+  **sol 预读定分叉(待 b2 工件复核)**:oracle +0.0375(14/24)
+  = Scope 潜力不薄;方向一致 17/40=42.5% + 保守 policy −0.0070
+  = 现役反馈非可学信号。契约 v0r1 定稿(改名 anomaly_background_
+  model_quality_contract_v1 限 Consumer 族;删新 Receipt 与
+  no_contamination_evidence)。**执行序改钉:b2 复核 →
+  Feedback Unit 重设计(EXPOSED 24,预注册候选单元,判据 =
+  一致率 + policy-regret)→ 契约 wiring(纯代码)→ Scope/
+  Observation 线 → EXPOSED 24 闭合 → 41 sealed 三臂终考
+  (50/20/30)**;"契约 + Scope 合并一书"作废;41 条不动。
+  **#42g-b2 收口 = C28 FEEDBACK_UNIT_REDESIGN 门生效**:
+  executor 与 sol 独立重聚合逐数一致(仪器交叉验证通过);
+  A3 新载重 = 三程序赢家两两 ≤2、三交 ∅、并集 14 →
+  "单一可清洗子群"证伪,Scope 线须程序条件化 Observation;
+  hampel = 全局最害(12/24)且 oracle 最大贡献者(+0.383/6 条)
+  = 高方差算子,series 条件化最强单点证据。**#42h 反馈单元
+  书已发**(四候选 U0–U3 预注册;主判据 C2 policy 模拟;
+  选定即冻结,41 条只用不调);序:#42h → 契约 wiring →
+  Scope 线 → EXPOSED 闭合 → #42g-c 三臂终考。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
