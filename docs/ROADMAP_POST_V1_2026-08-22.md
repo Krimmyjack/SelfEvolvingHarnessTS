@@ -175,9 +175,30 @@ Consumer Context 并安全改变适配行为";主线"L1+M0 即保底"表述收�
 首正成本、试验数、feedback 消耗为解释性辅读数,不得单独支撑能力主张。
 held-in 预算由已曝光 development 轨迹预先冻结,禁挑选"刚好让 A5 赢"的
 紧预算;保留适应过程曲线;宽预算下终态打平而 A5 更快仍记有效加速;
-处女 held-out 只被冻结态触碰。**独有性声称前置**:相关工作检索(载体
-条件化与 Pattern 机制在既有 harness 进化文献中的存在性)完成前,
-不得声称"独有",入 #46 前债。
+处女 held-out 只被冻结态触碰。
+**协议语义钉(2026-08-23,用户定义立为正典)**:held-in = 反馈可用区
+——Support(即时)与 delayed(后续)反馈、Episode 写入、Slow 修正、
+Target-local Skill 形成/批准/撤权全部只在其内;held-out = 零反馈
+Fast-only 部署区——冻结态检索 Skill + 部署可观察 Context 自主出
+Workflow,禁 open_delayed / 反馈回传 / Slow / Skill 变更 / 按 outcome
+写 Experience / 看结果重试;计分 = 全臂输出冻结后外部 evaluator
+一次性开 outcome,开即 EXPOSED。#42g 四段 = held-in adaptation →
+freeze(Static*/A3*/A5*)→ held-out deployment(Fast-only)→
+offline evaluation;Part C 需新增 Fast-only 部署入口(现役 replay
+均含 open_delayed,仪器缺口在册),Part D 沿用 LabelWall +
+evaluate_released;#42f 获取 census 时即冻结划分并封存 held-out
+outcome。首正成本 = held-in 读数;FRESH_A5_DELIVERS 属"fresh 区域
+反馈消耗式适应"读数,与冻结部署 held-out 读数不可互替。
+**当前执行锁(C23 后,2026-08-23)**:#42e1 已以
+`RISK_PRIOR_EFFECT_AMBIGUOUS` 收口,v3 归档,当前 #42g 的 AD L2
+关闭且不得通过修改 v3、重抽 AdExchange 或追加 Source cohort 重开。
+无条件主线固定为 #42f(冻结未曝光 Target 的 held-in/held-out 边界)→
+#42g L1(Static vs A3)。#42e2 若已分发可按冻结单假设完成一次,但它是
+L3 增强线测量,不阻塞 #42f/#42g L1,也不自动为当前 #42g 增加 A5;
+任何未来 Pattern-conditioned Source Skill 必须建立新 version、另过
+development 行为验收,进入后续独立正式考场。
+**独有性声称前置**:相关工作检索(载体条件化与 Pattern 机制在既有
+harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前债。
 
 **阶段图**:
 - **Phase T — Task-conditioned quality**(当前主线):同一单变量 Pattern 下
@@ -326,13 +347,28 @@ held-in 预算由已曝光 development 轨迹预先冻结,禁挑选"刚好让 A5
   source_investigation_ad_v3,h0s_v3 f2054da1…,v1/v2 superseded
   不入;v3 首次可触发(v2 只降权 hampel 历史 0 提案;v3 纳入
   mad/iqr 历史提案 4/2 次);LLM 1/8、fit 170/240;r1 增补页因
-  执行交叉降为事后解释规则,family 已封顶禁新下载);排序更正:
+  执行交叉降为事后解释规则,family 已封顶禁新下载);  排序更正:
   **#42e1(v3 一次性行为验收,书已发)先于 #42e2**;#42g L2 仅当
   #42e1 = RISK_PRIOR_BEHAVIOR_EFFECTIVE 才开;#45 重定位 =
   forecasting 复现/回归验证(NOAA 2025 已开不得再称 fresh);
   距离改按能力门计:底座成 + forecasting 纵向切片成,缺 AD 纵向
   切片(#42g L1)与载体条件化切片(M0+M1),主体两场 = #42g L1
   与 M1,增强线不得拖住。
+  **#42e1 = C23 RISK_PRIOR_EFFECT_AMBIGUOUS**(Part 0 = 20218007b;
+  送达 4/4-0/4、h0s_v3 从 entry 重建哈希相符;触发场合实存——
+  CPM r2 双臂各探 mad +0.0593 → delayed +0.0111 → LOCAL_ACTIVE
+  终态打平;A5 未少探 mad 反多列 hampel 且提案不引用降权条款,
+  无可归因行为效应;阶梯外新格主线追认,今后判定集必带 residual
+  格);**v3 归档,#42g L2(AD)当前知识下关闭**,#42g 简化为
+  L1 主考(Static vs A3)——主线不受增强线拖累首次兑现;
+  风险事实入册:v3 的无条件 mad 降权与本 Target 唯一自然正向 mad
+  证据方向冲突;若它严格阻断 mad 会损失该正例,但该反事实并未发生,
+  不得写成已观测负迁移。合法 Pattern/Context 分辨力因此成为候选
+  first-fault,尚未被证明为唯一必要修复;
+  增强线 A(AD)四轮弧线收口(#42d→#42e0→#42e→#42e1,诚实
+  诊断性负结果);**#42e2 书已发**(纯测量 0 LLM / 0 fit:
+  isolated-extreme × winsorize 单假设判别 + 代理审计 + LOCO,
+  mad 附录;一轮一假设)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下

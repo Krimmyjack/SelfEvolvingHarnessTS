@@ -235,6 +235,17 @@ EXPANSION_V3_LOCK = E2 / "t6_nab_42e_source_expansion.lock"
 SOURCE_SKILL_ID_V3 = "source_investigation_ad_v3"
 EXPANSION_LLM_CAP = 8
 EXPANSION_AD_FIT_CAP = 240
+OUT_ACCEPT_V3 = E2 / "t6_nab_42e1_behavior_acceptance.json"
+OUT_ACCEPT_V3_MD = E2 / "t6_nab_42e1_behavior_acceptance.md"
+ACCEPT_V3_LOCK = E2 / "t6_nab_42e1_behavior_acceptance.lock"
+H0S_V3_EXPECTED_SHA = (
+    "f2054da1d18e2059457ed62282b7f7ff972ae219aedf98b39204ba2009bd7914"
+)
+ACCEPT_V3_LLM_BUDGET = 32
+ACCEPT_V3_AD_FIT_BUDGET = 24
+RISK_OPS_V3: tuple[str, ...] = (
+    "hampel_filter", "outlier_iqr", "outlier_mad",
+)
 EXPANSION_COHORTS: dict[str, tuple[str, tuple[str, ...]]] = {
     "source_real_traffic": ("realTraffic", (
         "TravelTime_387.csv", "TravelTime_451.csv",
@@ -4132,8 +4143,577 @@ def source_expansion_v3() -> int:
     return 0
 
 
+def _reconstruct_h0s_v3():
+    """Deterministic rebuild from the frozen v3 entry.  No Slow."""
+    if not OUT_SKILL_V3.exists():
+        raise Stop("CHECKPOINT_FAILED",
+                   "missing frozen v3 artifact %s" % _repo_rel(OUT_SKILL_V3))
+    doc = json.loads(OUT_SKILL_V3.read_text(encoding="utf-8"))
+    entry = dict(doc.get("entry") or {})
+    if entry.get("skill_id") != SOURCE_SKILL_ID_V3:
+        raise Stop("CHECKPOINT_FAILED",
+                   "frozen entry skill_id is %r" % entry.get("skill_id"))
+    h0, snapshot = _materialize_named_skill(SOURCE_SKILL_ID_V3, entry)
+    if snapshot.runtime_bundle_sha != H0S_V3_EXPECTED_SHA:
+        raise Stop(
+            "CHECKPOINT_FAILED",
+            "reconstructed h0s_v3 sha %s != expected %s"
+            % (snapshot.runtime_bundle_sha, H0S_V3_EXPECTED_SHA))
+    return h0, snapshot, entry
+
+
+def _static_delivery_v3(h0, snapshot) -> dict[str, Any]:
+    from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod
+    from SelfEvolvingHarnessTS.methods.ttha.retrieval import (
+        resolve_harness_view,
+    )
+    from evaluation.functional.task_episode_harness.e1 import _FastAgentStub
+
+    a5 = TTHAMethod(_FastAgentStub(), snapshot, ())
+    a3 = TTHAMethod(_FastAgentStub(), h0, ())
+    a5_view = resolve_harness_view(
+        snapshot, {"task_kind": "anomaly_detection"}, role="fast")
+    a3_view = resolve_harness_view(
+        h0, {"task_kind": "anomaly_detection"}, role="fast")
+    a5_ids = [s.skill_id for s in a5_view.skills]
+    a3_ids = [s.skill_id for s in a3_view.skills]
+    delivery = {
+        "a5_retrieves_v3": SOURCE_SKILL_ID_V3 in a5_ids,
+        "a3_does_not_retrieve_v3": SOURCE_SKILL_ID_V3 not in a3_ids,
+        "a5_memory_empty": list(
+            getattr(a5, "experience_episodes", ()) or ()) == [],
+        "a3_memory_empty": list(
+            getattr(a3, "experience_episodes", ()) or ()) == [],
+        "a5_view_skill_ids": a5_ids,
+        "a3_view_skill_ids": a3_ids,
+        "h0s_v3_runtime_bundle_sha": snapshot.runtime_bundle_sha,
+        "h0_runtime_bundle_sha": h0.runtime_bundle_sha,
+    }
+    delivery["pass"] = all((
+        delivery["a5_retrieves_v3"],
+        delivery["a3_does_not_retrieve_v3"],
+        delivery["a5_memory_empty"],
+        delivery["a3_memory_empty"],
+    ))
+    if not delivery["pass"]:
+        raise Stop("CHECKPOINT_FAILED",
+                   "static delivery failed: %s" % delivery)
+    return delivery
+
+
+def _names_in(blob: Any) -> set[str]:
+    text = json.dumps(blob, ensure_ascii=False).lower() if not isinstance(
+        blob, str) else blob.lower()
+    found: set[str] = set()
+    if "hampel" in text:
+        found.add("hampel_filter")
+    if "iqr" in text:
+        found.add("outlier_iqr")
+    if "mad" in text:
+        found.add("outlier_mad")
+    if "winsor" in text:
+        found.add("winsorize")
+    if "identity" in text:
+        found.add("identity")
+    return found
+
+
+def _op_counts(items: Sequence[Any]) -> dict[str, int]:
+    counts = {name: 0 for name in RISK_OPS_V3 + ("winsorize", "identity")}
+    for item in items:
+        names = _names_in(item)
+        for name in counts:
+            if name in names:
+                counts[name] += 1
+    return counts
+
+
+def _cite_v3(trace: Any, retrieved: Sequence[str]) -> dict[str, Any]:
+    """Causal cite: retrieved v3 AND proposal text names the risk knowledge."""
+    retrieved_hit = SOURCE_SKILL_ID_V3 in list(retrieved or [])
+    blobs: list[str] = []
+    for attr in (
+        "proposal_rationale", "rationale", "decision_text",
+        "retrieved_knowledge_summary",
+    ):
+        value = getattr(trace, attr, None)
+        if value:
+            blobs.append(json.dumps(value, ensure_ascii=False)
+                         if not isinstance(value, str) else value)
+    stages = getattr(trace, "stages", None) or ()
+    for stage in stages:
+        payload = getattr(stage, "payload", None) or {}
+        blobs.append(json.dumps(payload, ensure_ascii=False))
+        name = str(getattr(stage, "stage", "") or payload.get("stage") or "")
+        if name == "propose" or "propose" in json.dumps(payload).lower():
+            blobs.append(json.dumps(payload, ensure_ascii=False))
+    joined = "\n".join(blobs).lower()
+    cites = any(token in joined for token in (
+        "source_investigation_ad_v3",
+        "lower proposal priority",
+        "restricted probe",
+        "depriorit",
+        "降权",
+        "降低",
+    ))
+    names_risk = bool(_names_in(joined) & set(RISK_OPS_V3))
+    return {
+        "retrieved_v3": retrieved_hit,
+        "cites_risk_knowledge": cites and retrieved_hit,
+        "names_risk_operator_in_propose": names_risk,
+        "excerpt": joined[:400],
+    }
+
+
+def _cell_acceptance_row(cell: Mapping[str, Any]) -> dict[str, Any]:
+    retrieved = list(cell.get("retrieved_skill_ids") or [])
+    pool = list(cell.get("pool") or [])
+    probes = list(cell.get("probes") or [])
+    probe_ids = [p.get("candidate_id") for p in probes]
+    chosen = cell.get("chosen")
+    proposed = _op_counts(pool)
+    probed = _op_counts(probe_ids)
+    selected = _op_counts([chosen] if chosen else [])
+    occupants = []
+    for item in pool:
+        names = _names_in(item)
+        if names & set(RISK_OPS_V3):
+            continue
+        if "winsorize" in names:
+            occupants.append("winsorize")
+        elif str(item) == "identity" or names == {"identity"}:
+            occupants.append("identity")
+        elif item:
+            occupants.append(str(item))
+    episodes = list(cell.get("episode_rows") or [])
+    risk_positive = []
+    for ep in episodes:
+        sig = str(ep.get("workflow_signature") or "")
+        rel = str(ep.get("relation") or "").upper()
+        if rel == "POSITIVE" and any(
+                token in sig for token in ("mad", "iqr")):
+            risk_positive.append({
+                "workflow": sig, "relation": rel,
+                "status": ep.get("local_status"),
+                "layer": ep.get("evidence_level"),
+            })
+    support_event = cell.get("fast_skill_event") or {}
+    delayed_event = cell.get("delayed_event") or {}
+    override = "NO_OVERRIDE_OCCASION"
+    probed_risk = any(probed[op] > 0 for op in RISK_OPS_V3)
+    support_pos = False
+    if isinstance(support_event, Mapping):
+        blob = json.dumps(support_event, ensure_ascii=False).lower()
+        support_pos = "positive" in blob and "draft" in blob
+    if probed_risk and (
+            any(e.get("relation") == "POSITIVE"
+                and e.get("evidence_level") == "SUPPORT"
+                for e in episodes) or support_pos):
+        statuses = {e.get("local_status") for e in episodes}
+        override = (
+            "DRAFT_FORMED" if (
+                "LOCAL_DRAFT" in statuses or cell.get("approved_skill_id")
+                or "LOCAL_ACTIVE" in statuses)
+            else "NO_DRAFT"
+        )
+    return {
+        "cell": cell.get("cell"),
+        "arm": cell.get("arm"),
+        "cohort": cell.get("cohort"),
+        "round": cell.get("round"),
+        "retrieved_v3": SOURCE_SKILL_ID_V3 in retrieved,
+        "retrieved_skill_ids": retrieved,
+        "held": (cell.get("retrieval_before_round") or {}).get("held"),
+        "pool": pool,
+        "chosen": chosen,
+        "probe_order": cell.get("probe_order"),
+        "probes": probes,
+        "proposed": proposed,
+        "shortlisted": proposed,
+        "probed": probed,
+        "selected": selected,
+        "vacated_slot_occupants": occupants,
+        "risk_positive_events": risk_positive,
+        "override": override,
+        "harm_support": cell.get("harmed_series_support_layer"),
+        "harm_delayed": cell.get("harmed_series_delayed_layer"),
+        "delayed_utility": cell.get("delayed_utility"),
+        "delayed_event": delayed_event,
+        "approved_skill_id": cell.get("approved_skill_id"),
+        "activated": cell.get("activated"),
+        "episode_rows": episodes,
+        "non_identity_trials": cell.get("non_identity_trials"),
+        "abstained": cell.get("abstained"),
+        "winsorize_proposed": proposed["winsorize"],
+        "winsorize_selected": selected["winsorize"],
+        "cite": _cite_v3(type("T", (), {})(), retrieved) | {
+            "cell_blob_cites": any(
+                token in json.dumps(cell, ensure_ascii=False).lower()
+                for token in (
+                    "source_investigation_ad_v3",
+                    "lower proposal priority",
+                    "restricted probe",
+                    "depriorit",
+                )
+            ),
+        },
+    }
+
+
+def _pair_cells(rows: Sequence[Mapping[str, Any]]
+                ) -> dict[tuple[str, str], dict[str, Mapping[str, Any]]]:
+    pairs: dict[tuple[str, str], dict[str, Mapping[str, Any]]] = {}
+    for row in rows:
+        key = (str(row.get("cohort")), str(row.get("round")))
+        pairs.setdefault(key, {})[str(row.get("arm"))] = row
+    return pairs
+
+
+def _accept_v3_verdict(
+    rows: Sequence[Mapping[str, Any]],
+    run: Mapping[str, Any],
+) -> dict[str, Any]:
+    a3 = [r for r in rows if r.get("arm") == "A3"]
+    a5 = [r for r in rows if r.get("arm") == "A5"]
+    a5_miss = [r["cell"] for r in a5 if not r.get("retrieved_v3")]
+    a3_leak = [r["cell"] for r in a3 if r.get("retrieved_v3")]
+    memory = [r["cell"] for r in rows if int(r.get("held") or 0) > 0]
+    if a5_miss or a3_leak or memory or run.get("stopped"):
+        return {
+            "verdict": (
+                run.get("stopped") or "CHECKPOINT_FAILED"),
+            "a5_miss": a5_miss, "a3_leak": a3_leak, "memory": memory,
+            "l2_opens": False,
+        }
+
+    a3_non = sum(int(r.get("non_identity_trials") or 0) for r in a3)
+    a5_non = sum(int(r.get("non_identity_trials") or 0) for r in a5)
+    if a5_non == 0 and a3_non > 0:
+        return {"verdict": "IDENTITY_ONLY_COLLAPSE",
+                "a3_non_identity": a3_non, "a5_non_identity": a5_non,
+                "l2_opens": False, "v3": "closed"}
+
+    missed: list[dict[str, Any]] = []
+    associated_miss: list[dict[str, Any]] = []
+    pairs = _pair_cells(rows)
+    for key, arms in pairs.items():
+        left, right = arms.get("A3"), arms.get("A5")
+        if not left or not right:
+            continue
+        a3_pos = left.get("risk_positive_events") or []
+        if not a3_pos:
+            continue
+        a5_probed_mi = (
+            int((right.get("probed") or {}).get("outlier_mad") or 0)
+            + int((right.get("probed") or {}).get("outlier_iqr") or 0)
+        )
+        if a5_probed_mi > 0:
+            continue
+        cite = right.get("cite") or {}
+        a3_had = (
+            int((left.get("proposed") or {}).get("outlier_mad") or 0)
+            + int((left.get("proposed") or {}).get("outlier_iqr") or 0)
+            + int((left.get("probed") or {}).get("outlier_mad") or 0)
+            + int((left.get("probed") or {}).get("outlier_iqr") or 0)
+        )
+        rec = {
+            "cell_pair": "%s/%s" % key,
+            "a3_events": a3_pos,
+            "a5_retrieved_v3": right.get("retrieved_v3"),
+            "a5_cites_risk_knowledge": cite.get("cites_risk_knowledge"),
+            "a3_had_risk_operator": a3_had > 0,
+        }
+        causal = bool(
+            right.get("retrieved_v3")
+            and (cite.get("cites_risk_knowledge") or a3_had > 0)
+        )
+        if causal:
+            missed.append(rec)
+        else:
+            associated_miss.append(rec)
+    if missed:
+        return {
+            "verdict": "SOURCE_RISK_PRIOR_BLOCKS_TARGET_ADAPTATION",
+            "missed_positive_events": missed,
+            "associated_misses_not_causal": associated_miss,
+            "l2_opens": False, "v3": "closed",
+        }
+
+    def _sum_risk_probes(group):
+        return sum(
+            int((r.get("probed") or {}).get(op) or 0)
+            for r in group for op in RISK_OPS_V3)
+
+    a3_risk_p = _sum_risk_probes(a3)
+    a5_risk_p = _sum_risk_probes(a5)
+    a3_win_prop = sum(int(r.get("winsorize_proposed") or 0) for r in a3)
+    a5_win_prop = sum(int(r.get("winsorize_proposed") or 0) for r in a5)
+    a3_win_sel = sum(int(r.get("winsorize_selected") or 0) for r in a3)
+    a5_win_sel = sum(int(r.get("winsorize_selected") or 0) for r in a5)
+    a5_win_harm = sum(
+        1 for r in a5
+        if (r.get("winsorize_proposed") or r.get("winsorize_selected"))
+        and (int(r.get("harm_support") or 0) > 0
+             or int(r.get("harm_delayed") or 0) > 0)
+    )
+    if (a5_risk_p < a3_risk_p
+            and (a5_win_prop > a3_win_prop or a5_win_sel > a3_win_sel)
+            and a5_win_harm > 0):
+        return {
+            "verdict": "RISK_DISPLACEMENT_NEGATIVE_TRANSFER",
+            "a3_risk_probes": a3_risk_p, "a5_risk_probes": a5_risk_p,
+            "a3_winsorize": {"proposed": a3_win_prop, "selected": a3_win_sel},
+            "a5_winsorize": {"proposed": a5_win_prop, "selected": a5_win_sel,
+                             "harm_cells": a5_win_harm},
+            "l2_opens": False, "v3": "closed",
+        }
+
+    def _harmful_risk(group):
+        n = 0
+        for r in group:
+            if not any(int((r.get("probed") or {}).get(op) or 0)
+                       for op in RISK_OPS_V3):
+                continue
+            if int(r.get("harm_support") or 0) > 0 or int(
+                    r.get("harm_delayed") or 0) > 0:
+                n += 1
+        return n
+
+    a3_harm_risk = _harmful_risk(a3)
+    a5_harm_risk = _harmful_risk(a5)
+    a3_delayed = [r.get("delayed_utility") for r in a3]
+    a5_delayed = [r.get("delayed_utility") for r in a5]
+    a3_harm = sum(int(r.get("harm_delayed") or 0) for r in a3)
+    a5_harm = sum(int(r.get("harm_delayed") or 0) for r in a5)
+
+    def _num(xs):
+        vals = [float(x) for x in xs if isinstance(x, (int, float))]
+        return sum(vals) if vals else 0.0
+
+    terminal_not_worse = (
+        a5_harm <= a3_harm and _num(a5_delayed) >= _num(a3_delayed)
+    )
+    if a5_harm_risk < a3_harm_risk and not missed and terminal_not_worse:
+        return {
+            "verdict": "RISK_PRIOR_BEHAVIOR_EFFECTIVE",
+            "a3_harmful_risk_cells": a3_harm_risk,
+            "a5_harmful_risk_cells": a5_harm_risk,
+            "associated_misses_not_causal": associated_miss,
+            "l2_opens": True, "v3": "kept",
+        }
+
+    identical = True
+    for key, arms in pairs.items():
+        left, right = arms.get("A3"), arms.get("A5")
+        if not left or not right:
+            identical = False
+            break
+        if (left.get("proposed") != right.get("proposed")
+                or left.get("probed") != right.get("probed")
+                or left.get("selected") != right.get("selected")):
+            identical = False
+            break
+    a3_risk_prop = sum(
+        int((r.get("proposed") or {}).get(op) or 0)
+        for r in a3 for op in RISK_OPS_V3)
+    a5_risk_prop = sum(
+        int((r.get("proposed") or {}).get(op) or 0)
+        for r in a5 for op in RISK_OPS_V3)
+    if identical:
+        sub = None
+        if a3_risk_prop == 0 and a5_risk_prop == 0:
+            sub = "NO_TRIGGERING_OCCASION"
+        return {
+            "verdict": "RISK_PRIOR_INERT",
+            "sub": sub,
+            "l2_opens": False, "v3": "archived",
+        }
+    return {
+        "verdict": "RISK_PRIOR_EFFECT_AMBIGUOUS",
+        "associated_misses_not_causal": associated_miss,
+        "l2_opens": False, "v3": "archived",
+        "note": "arms differ but no pre-registered effect cell fired",
+    }
+
+
+def accept_skill_v3() -> int:
+    """#42e1: reconstruct frozen v3, then one-shot 8-cell acceptance."""
+    leftover = [
+        line for line in os.popen("ps -ef").read().splitlines()
+        if "run_e2_t6_natural_a5_a3.py" in line
+        and "--accept-skill-v3" in line
+        and str(os.getpid()) not in line
+    ]
+    autopsy = leftover
+    if leftover:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": leftover}, indent=1))
+        return 2
+    ACCEPT_V3_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        lock_fd = os.open(str(ACCEPT_V3_LOCK),
+                          os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": "lock held"}, indent=1))
+        return 2
+    os.write(lock_fd, str(os.getpid()).encode("ascii"))
+    os.close(lock_fd)
+    run_id = datetime.now().strftime("%Y%m%dT%H%M%SZ")
+    try:
+        h0, snapshot, entry = _reconstruct_h0s_v3()
+        delivery = _static_delivery_v3(h0, snapshot)
+    except Stop as stop:
+        payload = {
+            "protocol_version": "t6_nab_42e1_behavior_acceptance_v1",
+            "verdict": {"verdict": stop.verdict, "reason": stop.reason},
+            "run_id": run_id, "autopsy": autopsy,
+        }
+        OUT_ACCEPT_V3.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    if not OUT_JSON_V2.exists():
+        payload = {"verdict": {"verdict": "CHECKPOINT_FAILED",
+                               "reason": "missing v2 plan"}}
+        OUT_ACCEPT_V3.write_text(_json_text(payload), encoding="utf-8")
+        return 1
+    plan = json.loads(OUT_JSON_V2.read_text(encoding="utf-8"))
+    wall = LabelWall(released=True)
+    universe = _load_universe(gate_all(row_order_contract=True))
+    budget = FitBudget(ACCEPT_V3_AD_FIT_BUDGET)
+    store_tag = "t6e1_%s" % run_id
+    try:
+        run = _run_cells(
+            plan=plan,
+            cohort_rows=universe["target"],
+            agent_factory=_evaluate_agent,
+            backend_factory=_evaluate_backend,
+            llm_budget=ACCEPT_V3_LLM_BUDGET,
+            fit_budget=budget,
+            wall=wall,
+            store_tag=store_tag,
+            snapshot_for_arm={"A3": h0, "A5": snapshot},
+        )
+    except Stop as stop:
+        payload = {
+            "protocol_version": "t6_nab_42e1_behavior_acceptance_v1",
+            "verdict": {"verdict": stop.verdict, "reason": stop.reason},
+            "run_id": run_id, "delivery": delivery,
+            "label_wall": wall.audit(),
+        }
+        OUT_ACCEPT_V3.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    # attach cite from live traces already stored on cells via retrieved ids;
+    # re-read last_trace fields if present on cell records.
+    rows = []
+    for cell in run.get("cells") or []:
+        row = _cell_acceptance_row(cell)
+        rows.append(row)
+    verdict = _accept_v3_verdict(rows, run)
+    sharp = next(
+        (r for r in rows
+         if r.get("cohort") == "target_cpm" and r.get("round") == "r2"),
+        None)
+    sharp_pair = {
+        arm: next((r for r in rows if r.get("arm") == arm
+                   and r.get("cohort") == "target_cpm"
+                   and r.get("round") == "r2"), None)
+        for arm in ("A3", "A5")
+    }
+    payload = {
+        "protocol_version": "t6_nab_42e1_behavior_acceptance_v1",
+        "entry": "--accept-skill-v3",
+        "evidence_grade": "DEVELOPMENT",
+        "evidence_standing": "same-context",
+        "counts_as_capability_claim": False,
+        "counts_as_cross_domain_claim": False,
+        "l2_decision": (
+            "OPEN" if verdict.get("l2_opens") else "CLOSED"
+        ),
+        "run_id": run_id,
+        "lock": _repo_rel(ACCEPT_V3_LOCK),
+        "autopsy": autopsy,
+        "h0s_v3_runtime_bundle_sha": snapshot.runtime_bundle_sha,
+        "v3_entry_skill_id": entry.get("skill_id"),
+        "v3_text_frozen": True,
+        "delivery": delivery,
+        "cells": rows,
+        "sharp_cell_cpm_r2": sharp_pair,
+        "verdict": verdict,
+        "cost": {
+            "llm": run.get("llm_calls"),
+            "llm_cap": run.get("llm_budget"),
+            "ad_fits": run.get("ad_fits"),
+            "ad_fit_cap": run.get("ad_fit_cap"),
+            "forecast_retrains": 0,
+        },
+        "label_wall": wall.audit(),
+        "stopped": run.get("stopped"),
+    }
+    OUT_ACCEPT_V3.write_text(_json_text(payload), encoding="utf-8")
+    lines = [
+        "# #42e1 v3 behavior acceptance",
+        "",
+        "verdict: **%s**" % verdict["verdict"],
+        "L2: **%s**" % payload["l2_decision"],
+        "run_id: `%s`" % run_id,
+        "h0s_v3: `%s`" % snapshot.runtime_bundle_sha,
+        "LLM %s / %s; AD fit %s / %s; retrain 0" % (
+            run.get("llm_calls"), run.get("llm_budget"),
+            run.get("ad_fits"), run.get("ad_fit_cap")),
+        "wall breached: %s; target_key_requests: %s" % (
+            wall.audit()["breached"],
+            len(wall.audit()["target_key_requests"])),
+        "",
+        "| cell | v3? | pool | chosen | ham/iqr/mad prop | probes | win p/s | non-id | delayed | harmS/D | status |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for row in rows:
+        prop = row["proposed"]
+        prb = row["probed"]
+        lines.append(
+            "| %s | %s | %s | %s | %s/%s/%s | %s/%s/%s | %s/%s | %s | %s | %s/%s | %s |"
+            % (
+                row["cell"], row["retrieved_v3"], row["pool"], row["chosen"],
+                prop["hampel_filter"], prop["outlier_iqr"], prop["outlier_mad"],
+                prb["hampel_filter"], prb["outlier_iqr"], prb["outlier_mad"],
+                row["winsorize_proposed"], row["winsorize_selected"],
+                row["non_identity_trials"], row["delayed_utility"],
+                row["harm_support"], row["harm_delayed"],
+                [(e.get("workflow_signature"), e.get("relation"),
+                  e.get("local_status")) for e in row["episode_rows"]] or "—",
+            ))
+    lines.extend([
+        "",
+        "## CPM r2 (sharp cell)",
+        "",
+        json.dumps(sharp_pair, ensure_ascii=False, indent=2),
+        "",
+        "## verdict detail",
+        "",
+        json.dumps(verdict, ensure_ascii=False, indent=2),
+    ])
+    OUT_ACCEPT_V3_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict["verdict"],
+        "l2": payload["l2_decision"],
+        "llm": run.get("llm_calls"),
+        "ad_fits": run.get("ad_fits"),
+        "sha": snapshot.runtime_bundle_sha,
+        "wall": wall.audit()["breached"],
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_ACCEPT_V3)
+    print("wrote", OUT_ACCEPT_V3_MD)
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
+    if "--accept-skill-v3" in argv:
+        return accept_skill_v3()
     if "--source-expansion-v3" in argv:
         return source_expansion_v3()
     if "--replay-skill-v2" in argv:
@@ -4160,7 +4740,7 @@ def main() -> int:
         return plan()
     print("usage: --plan | --plan-v2 | --evaluate | --evaluate-smoke "
           "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2 "
-          "| --source-expansion-v3")
+          "| --source-expansion-v3 | --accept-skill-v3")
     return 2
 
 

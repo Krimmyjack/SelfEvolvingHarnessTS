@@ -488,6 +488,30 @@ runner:1285 `_evaluate_released()` 为占位体:脚手架真实(Consumer/LabelWa
 
 **#42e1 书发出(见分发件)**:development 一次性同跑行为验收;v3 文本冻结(验收前禁改);判定五格 + 边界退化格(NO_TRIGGERING_OCCASION 如实报,禁钓鱼);唯一开关 = #42g L2 是否加 A5 臂,任何判定不构成 Capability 正证据;Part 0 先入库 #42e 五工件 + Runner 修改 + 两 docs(allowlist + 密钥扫描)。
 
+### held-in/held-out 协议语义钉:用户定义立为正典(2026-08-23 21:3x,sol 形式化,主线采纳并补三钉)
+
+**歧义与裁定**:主线此前流程表述把"delayed feedback 批准/撤权"与"held-out 验收"写得相邻,可误读为 held-out 结果仍可回写 Skill——chat 层歧义,主线认领;用户定义立为正典。**held-in = 反馈可用区**:下游 Consumer 反馈(Support 即时 + delayed 后续)全部在其内,Episode 写入、Slow 修正、Target-local Skill 形成/批准/撤权、固定反馈预算全部只发生于此(delayed 的作用是防"同批反馈上自提自批",它不是 held-out)。**held-out = 零反馈部署区**:冻结终态 H* 只走 Fast——检索冻结 Skill + 读部署时可观察 Context 自主出 Workflow,运行期不知处理好坏。
+
+**held-out 禁行清单(预注册为 #42g 协议违规判词素材)**:open_delayed;下游反馈回传 Agent;Slow;新增/修改/批准/撤销 Skill;按 held-out outcome 写 Experience;看结果后重试/调参/换 Workflow。可用:部署时可观察 Context、冻结 Source-derived Skill、held-in 形成的 Target-local Skill、不读 Outcome 的确定性合法性检查。**计分协议**:全部臂(Static/A3/A5)held-out 输出冻结后,外部 evaluator 一次性打开 outcome,只算效用/harm/abstention、只写报告、不回流本次 Harness;打开即 EXPOSED,不得重跑改法(与 one-shot 站规同族)。**三臂语义**:Static = 无 held-in 适应冻默认态;A3 = 空 Source + held-in 固定预算适应后冻 A3*;A5 = 冻结 Source Skill + 与 A3 相同 held-in 预算后冻 A5*;三者同一 held-out。首正成本/试验数/反馈消耗 = held-in 读数;终态效用/harm = held-out 外部评价读数。
+
+**存量证据重标注(零改判)**:T5/#42d/#42e0/#42e1(在途)全程在已曝光 development 数据上,其 delayed 进生命周期属 held-in 语义内,继续作 development/机制证据,从未主张 held-out 泛化。**FRESH_A5_DELIVERS 协议类型注记(主线补钉一)**:NOAA 2025 打开后的运行是"fresh 区域上的反馈消耗式适应"(首正成本在适应过程中测得),按新分类属适应效率读数,非冻结部署 held-out 读数;其 L2 首个有界正例地位不变,但 #42g L2 主读数(冻结终态 held-out)是更严的另一统计量,两者不可互替。
+
+**#42g 四段结构(预注册)**:Part A held-in adaptation(Support/delayed/Slow/Skill 更新全许,预算预冻结)→ Part B freeze(Static*/A3*/A5* 落盘)→ Part C held-out deployment(Fast-only,零反馈零更新)→ Part D offline evaluation(输出全冻后一次性开 outcome,只计分)。**仪器缺口预告(主线补钉二,#42g 书前置项)**:现役 T6 Runner 无 Fast-only 零反馈部署模式(现有 replay 入口均含 open_delayed),Part C 需新增部署入口;Part D 沿用 LabelWall + evaluate_released 既有封存/释放机制(照 #42a/#42c 先例,含"核验可执行体存在"清单)。**#42f 前置义务(主线补钉三)**:获取 census 时即冻结 held-in/held-out 划分(按序列、保 cohort 结构),held-out outcome 自获取起入墙封存;划分冻结先于任何 outcome 打开。
+
+### #42e1 结果 = C23(RISK_PRIOR_EFFECT_AMBIGUOUS);增强线 A(AD)收口,#42g L2 关闭;#42e2 书发出(2026-08-23 21:4x,主线裁定)
+
+**判定追认(阶梯外新格)**:执行方走完五格预注册阶梯逐一不中——非坍缩(A5 非恒等 1 = A3)、非 BLOCKS(读数 4 空,A5 同样拿到 mad+)、非位移(winsorize 双臂 0)、非 EFFECTIVE(A5 风险算子探测未更少)、非 INERT(CPM r2 池宽异,A5 多列 hampel)——新立 RISK_PRIOR_EFFECT_AMBIGUOUS 而不强贴标签,正确处置,主线追认入判定集。**阶梯缺格教训(主线认领)**:书面未预置"方向相反的歧义关联"格;今后行为验收类判定集必带 residual 格(OBSERVED_BUT_UNCLASSIFIED → 上报主线),沿常备纪律 2 精神。
+
+**C23 canonical(主线依回报入典)**:Part 0 = 20218007b(八件,密钥扫描 clean,runner `authorization:` 形参与 docs `authorization=GUIDANCE` 记科学用语);Part A 从冻结 entry 重建 h0s_v3 未调 Slow、哈希 f2054da1… 相符、送达 4/4-0/4、构造期 Memory held=0;Part B run-id 20260823T213436Z 一次性(锁 + 无 leftover 首次独占),LLM 22/32、fit 12/24、重训 0,墙 breached=false(target_key_requests=6 = evaluate 释放路径对 CPM delayed 计分的合法读取,与 #42e0 同口径)。前六格双臂 identity-only、三风险算子提案 0,信息量集中 CPM r2:A3 池 [identity, mad] 探 mad Support +0.0593 → delayed +0.0111 POSITIVE → LOCAL_ACTIVE;A5 池 [identity, mad, hampel] 先探 mad 同读数同终态(hampel 列 probe_order 第二未实探);**A5 未少探 mad,反多列 hampel,提案理由未引用降权条款(cites_risk_knowledge=false;cell_blob_cites=true 系工件 skill_id 字符串非理由引用——"关联≠因果"与在册"引用≠遵从 n=7"成对)**。读数 5 全程 NO_OVERRIDE_OCCASION;读数 10 无位移。v3 六段未改;交付未 commit。
+
+**科学定性(主线,承重)**:送达成立、触发场合实存(mad 被双臂探测),但**未观察到可归因的行为效应**——"送达≠采用"家族最干净一例。**风险事实(反直觉,入册)**:v3 的无条件 mad 降权与本 Target 唯一自然正向 mad 证据方向冲突;若降权被严格执行且致跳过 mad 将损失 +0.0111,但该反事实未发生,不得写成已观测负迁移或"v3 实为误导"。当前同时存在两个候选缺口:census 层缺合法 Pattern/Context 分辨力、Fast 层未操作化先验(提案不引用);#42e1 无法区分二者,故 Pattern 条件化只是下一项有界测量假设,不是已证明的唯一必要修复。机制假设留案不归因:RISK 段点名算子可能经提示显著性反向增加提案可得性(#42e0 v2 仅点名 hampel 时 A5 池无 hampel;本轮 v3 点名三算子后 hampel 现于 A5 池——各 n=1 方向一致,留观察不立项)。
+
+**决策**:v3 归档(v1/v2/v3 链全 superseded 保留不删);**#42g L2(AD)= 当前知识下关闭**,A5 臂不入 #42g,#42g 简化为 L1 主考(Static vs A3)——"主线不受增强线拖累"的设计首次兑现。#42e2 即使产出合法 Pattern 条件化候选,也不得自动重开当前 #42g L2:新候选必须建立新 version、另过 development 行为验收,只可进入后续独立正式考场。**增强线 A(AD Source 先验)四轮弧线收口**:#42d(形成未触发)→ 收口 + #42e0(送达无触发场合)→ #42e(census:仅无条件谨慎)→ #42e1(触发场合存在仍无可归因效应)——诚实的诊断性负结果,claim 沿 C22 表不变。evidence_grade = DEVELOPMENT/same-context。
+
+**#42e2 书发出(见分发件)**:增强线 B 首实验,纯测量(0 LLM / 0 AD fit / 0 重训 / 0 新数据);单一 Observation 假设(冻结)= winsorize 作用几何相关的孤立尖峰结构 isolated_dominant(robust z≥4 沿在册词表,isolated_fraction≥0.5,禁扫阈值);判别 + 代理审计(episode 级,两侧各 ≥2 cohort)+ LOCO + 打乱地板/dataset-ID 天花板双基线;mad 反号表零成本描述性附录;判定三格 + 仪器格;一轮一假设,不判定不换特征重跑;交付不 commit。
+
+**C23 后执行锁(防主线再次被增强线拖住)**:#42e2 若已启动,只允许按冻结假设完成这一轮,不得换特征、扩 Source 或追加重放;它的任何结果都不阻塞 #42f/#42g L1。当前无条件下一能力门 = #42f 冻结未曝光 Target → #42g Static vs A3 的 held-in adaptation / freeze / held-out Fast-only / offline evaluation。A5 不进入当前 #42g;Pattern-conditioned 新 Skill 若未来形成,须另立 version、另过 development 行为验收并进入后续独立考场。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
@@ -501,4 +525,3 @@ runner:1285 `_evaluate_released()` 为占位体:脚手架真实(Consumer/LabelWa
 ### #31(2026-08-22,S2)
 
 检查点 46ed5e2(8 files)。**CANDIDATE_COMPILES + LODO_TRANSFER_SUPPORTED(双向)**。Part A 硬门过:官方 OmniAnomaly 28 机文件获取(242.3 MB 仅 scratchpad),内容匹配定位(精确字节索引查表,非信号推断),28/28 逐元素一致、无缝铺满 [0,708405),拼接序非数字非字典(machine-1-5 起 machine-3-1 终,在册禁重推);官方 train=dev/held-in、test=sealed(仅报总行数 708420);#30 悬案澄清:[0,8760) 整块落在 machine-1-5 train 内,系一台机器 24 通道被当 24 序列报。Part B:证据池去重 21→12(traffic 8 + noaa 4;13→4 塌掉的 9 条全为同键重放);卡 shared_outlier_repair_with_per_series_guard_v1,四固定字段照裁定(SHARED_CANDIDATE/GUIDANCE/support_required/no_free_try),programs=[hampel,iqr,mad,winsorize]+算子无关 per-series guard(VETO+RESCOPE),适用条件全部部署时可观察(缺失可为零/z峰≥4/outlier_fraction>0/离散度即需 guard),插补+阶跃 out-of-scope 带底物指针。Part C:执行方自查废掉首版两条循环判据后,C1 traffic→noaa 4/4 SUPPORTED(3 条聚合藏害全被 guard 抓)、C2 noaa→traffic 置险 4/4 SUPPORTED(2/2)、C3 12/12 仅标 INTERNAL_CONSISTENCY_ONLY。**跨域量化副产品(升入 C8 证据链):12 行证据 5 条受害全部聚合为正,聚合单独捕获 0 次**。主线裁定:(a) C1 几乎不可证伪、C2 为信息方向,两向 SUPPORTED 挂 n=4 caveat;(b) 两侧证据均 in-selection,卡方向读数不得表述为 out-of-selection,该级证据只能来自 S3/S4;(c) #18/#19 缺口经核为零成本(去重键下与已入池行同票),提取器形状留案不修;(d) 242 MB 不入库,补记 28 文件 sha256 + 来源 ref 使重获取确定;(e) 实体粒度(NOAA 单变量实体 vs SMD 38 通道实体)为 S1b 第一项。S1b 预算解锁(0 LLM / ≤100 重训),书已发。
-
