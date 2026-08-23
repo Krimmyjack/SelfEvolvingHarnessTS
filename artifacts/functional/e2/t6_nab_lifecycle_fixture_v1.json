@@ -1,0 +1,270 @@
+{
+  "protocol_version": "t6_nab_lifecycle_fixture_v1",
+  "entry": "--evaluate-lifecycle-fixture",
+  "mechanical_fixture": true,
+  "counts_as_method_evidence": false,
+  "note": "MECHANICAL_FIXTURE: the live evaluate body on the already-exposed source_aws_cloudwatch r2 cell, identity + winsorize, full 8 series.  Closes the lifecycle branch the 2-series stand-in never reached.  Not a new method reading.",
+  "fixture": {
+    "source_cohort": "source_aws_cloudwatch",
+    "round": "r2",
+    "arm": "A3",
+    "cell_slot": "target_cpc",
+    "series": [
+      "ec2_cpu_utilization_24ae8d.csv",
+      "ec2_cpu_utilization_53ea38.csv",
+      "ec2_cpu_utilization_5f5533.csv",
+      "ec2_cpu_utilization_77c1ca.csv",
+      "ec2_cpu_utilization_825cc2.csv",
+      "ec2_cpu_utilization_ac20cd.csv",
+      "ec2_cpu_utilization_c6585a.csv",
+      "ec2_cpu_utilization_fe7f93.csv"
+    ],
+    "operators": [
+      "winsorize"
+    ],
+    "support_trial_budget": 1,
+    "identity_is_baseline": true
+  },
+  "checks": [
+    {
+      "id": "support_gain_material",
+      "ok": true,
+      "detail": "winsorize support gain = 0.026785714285714288"
+    },
+    {
+      "id": "draft_formed",
+      "ok": true,
+      "detail": "fast_skill_event=pending local_status=['LOCAL_ACTIVE']"
+    },
+    {
+      "id": "delayed_opened_and_classified",
+      "ok": true,
+      "detail": "adapter_parts=['support', 'support', 'delayed', 'delayed', 'delayed', 'delayed'] delayed_event=POSITIVE evaluated=1"
+    },
+    {
+      "id": "delayed_positive",
+      "ok": true,
+      "detail": "delayed_relation=POSITIVE episode_relations=[('POSITIVE', 'LOCAL_ACTIVE')]"
+    },
+    {
+      "id": "episode_local_active",
+      "ok": true,
+      "detail": "local_active_episodes=['target_cpc_target_winsorize_a3_r2_p1']"
+    },
+    {
+      "id": "activate_approved",
+      "ok": true,
+      "detail": "activated=True call_counts={'target_cpc/A3/r2': {'run_online_round': 1, 'open_delayed': 1, 'activate_approved': 1}}"
+    },
+    {
+      "id": "zero_target_label_service",
+      "ok": true,
+      "detail": "target key requests [], breached False, retained False"
+    },
+    {
+      "id": "budget_inside_authorization",
+      "ok": true,
+      "detail": "ad_fits=16/20 llm_calls=0"
+    }
+  ],
+  "call_counts": {
+    "target_cpc/A3/r2": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 1
+    }
+  },
+  "budget_trace": {
+    "ad_fits_used": 16,
+    "ad_fit_cap": 20,
+    "llm_calls": 0,
+    "llm_cap": 0,
+    "llm_ledger": "one shared backend across every cohort, arm and round"
+  },
+  "cell": {
+    "cell": "target_cpc/A3/r2",
+    "cohort": "target_cpc",
+    "arm": "A3",
+    "round": "r2",
+    "support_origin": 2822,
+    "delayed_origin": 3427,
+    "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+    "memory_size": 0,
+    "retrieval_before_round": {
+      "held": 0,
+      "card_ids": [],
+      "rendered": false,
+      "source_cards": [],
+      "target_cards": []
+    },
+    "llm_calls_before": 0,
+    "ad_fits_before": 0,
+    "pool": [
+      "identity",
+      "cand_winsorize"
+    ],
+    "chosen": "cand_winsorize",
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "non_identity_trials": 1,
+    "probes": [
+      {
+        "candidate_id": "cand_winsorize",
+        "kind": "probe",
+        "gain": 0.026785714285714288
+      }
+    ],
+    "winner_program": [
+      {
+        "op": "winsorize",
+        "params": {}
+      }
+    ],
+    "abstained": false,
+    "harm_count": 0,
+    "harmed_series_support_layer": 0,
+    "harmed_series_delayed_layer": 0,
+    "worst_per_series_delayed_gain": 0.0,
+    "delayed_responses_evaluated": 1,
+    "fast_skill_event": {
+      "stage": "pending",
+      "support_gain": 0.026785714285714288,
+      "support_passed": true,
+      "support_reused": true,
+      "support_relation": "POSITIVE",
+      "support_evidence": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "aegists_iforest_v1",
+        "aggregate_gain": 0.026785714285714288,
+        "aggregate_direction": "improved",
+        "series_read": 8,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+      },
+      "edit_id": "fast_winner_anomaly_detection_aegists_iforest_v1_macro_event_f1_winsorize"
+    },
+    "delayed_event": {
+      "stage": "approved",
+      "delayed_gain": 0.007804878048780467,
+      "delayed_relation": "POSITIVE",
+      "delayed_evidence": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "aegists_iforest_v1",
+        "aggregate_gain": 0.007804878048780467,
+        "aggregate_direction": "improved",
+        "series_read": 8,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+      },
+      "snapshot_updated": true
+    },
+    "delayed_utility": 0.007804878048780467,
+    "approved_skill_id": "fast_winner_anomaly_detection_aegists_iforest_v1_macro_event_f1_winsorize",
+    "activated": true,
+    "episode_rows": [
+      {
+        "episode_id": "target_cpc_target_winsorize_a3_r2_p1",
+        "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+        "domain_namespace": "target_cpc",
+        "workflow_signature": "winsorize",
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "local_status": "LOCAL_ACTIVE"
+      }
+    ],
+    "local_active_episodes": [
+      "target_cpc_target_winsorize_a3_r2_p1"
+    ],
+    "restricted_episodes": [],
+    "llm_calls_after": 0,
+    "ad_fits_after": 16,
+    "adapter_calls": [
+      {
+        "signature": "identity",
+        "part": "support",
+        "origin": 2822,
+        "macro_f1": 0.03571428571428571
+      },
+      {
+        "signature": "winsorize",
+        "part": "support",
+        "origin": 2822,
+        "macro_f1": 0.0625
+      },
+      {
+        "signature": "identity",
+        "part": "delayed",
+        "origin": 3427,
+        "macro_f1": 0.13719512195121952
+      },
+      {
+        "signature": "winsorize",
+        "part": "delayed",
+        "origin": 3427,
+        "macro_f1": 0.145
+      },
+      {
+        "signature": "winsorize",
+        "part": "delayed",
+        "origin": 3427,
+        "macro_f1": 0.145
+      },
+      {
+        "signature": "winsorize",
+        "part": "delayed",
+        "origin": 3427,
+        "macro_f1": 0.145
+      }
+    ]
+  },
+  "readings": {
+    "target_cpc/A3": {
+      "non_identity_trials_before_first_local_active": 1,
+      "first_activation_round": "r2",
+      "final_delayed_macro_f1_gain": 0.007804878048780467,
+      "harmed_support_receipts": 0,
+      "harmed_series_support_layer": 0,
+      "harmed_series_delayed_layer": 0,
+      "worst_per_series_delayed_gain": 0.0,
+      "delayed_responses_evaluated": 1,
+      "abstentions": 0,
+      "source_cards_retrieved": [],
+      "memory_resolution_per_round": [
+        "no_memory"
+      ],
+      "target_feedback_consumed": 1,
+      "llm_calls": 0,
+      "rounds_completed": 1,
+      "activations": 1
+    }
+  },
+  "label_wall": {
+    "released": false,
+    "target_values_retained_in_memory": false,
+    "key_presence_discloses_nothing": "all six Target files carry an entry in combined_windows.json, so the presence of a key says nothing about which series is the clean one; only the window list would, and it is dropped",
+    "target_keys_walled": [
+      "realAdExchange/exchange-2_cpc_results.csv",
+      "realAdExchange/exchange-2_cpm_results.csv",
+      "realAdExchange/exchange-3_cpc_results.csv",
+      "realAdExchange/exchange-3_cpm_results.csv",
+      "realAdExchange/exchange-4_cpc_results.csv",
+      "realAdExchange/exchange-4_cpm_results.csv"
+    ],
+    "target_key_requests": [],
+    "breached": false
+  },
+  "stopped": null,
+  "stop_reason": null,
+  "evaluate_released_untouched": false,
+  "verdict": {
+    "verdict": "LIFECYCLE_FIXTURE_CLOSED",
+    "reason": "Support POSITIVE → Draft → delayed POSITIVE → LOCAL_ACTIVE / activate_approved on the mechanical fixture; not method evidence"
+  }
+}

@@ -72,7 +72,10 @@ from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (  # noqa: E402
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import (  # noqa: E402
     SnapshotStore,
 )
-from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod  # noqa: E402
+from SelfEvolvingHarnessTS.methods.ttha.method import (  # noqa: E402
+    TTHAMethod,
+    fast_winner_skill_id,
+)
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: E402
     resolve_harness_view,
 )
@@ -408,7 +411,7 @@ def _persist_local_skill(
         raise ValueError("cached #11 delayed evidence was not approved: %r" % delayed_event)
     snapshot = method._active_snapshot()
     store.set_active(snapshot.runtime_bundle_sha)
-    skill_id = "fast_winner_%s" % episode.workflow_signature
+    skill_id = fast_winner_skill_id(episode)
     snapshot, guards = _patch_lifecycle_metadata(
         store=store,
         snapshot=snapshot,

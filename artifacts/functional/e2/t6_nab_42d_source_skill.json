@@ -1,0 +1,215 @@
+{
+  "protocol_version": "t6_nab_42d_source_skill_v1",
+  "skill_id": "source_investigation_ad_v1",
+  "authorized_try_operators": [],
+  "risk_authorized_operators": [
+    "hampel_filter"
+  ],
+  "llm_api_call_count": 1,
+  "llm_cap": 8,
+  "target_outcome_read": false,
+  "slow_payload": {
+    "authorized_try_operators": [],
+    "risk_authorized_operators": [
+      "hampel_filter"
+    ],
+    "authorization": {
+      "min_distinct_cohorts": 2,
+      "harm_definition": "delayed_relation in {NEGATIVE, CONFLICT}",
+      "harm_definition_strict": "delayed_relation == NEGATIVE",
+      "try_authorized": [],
+      "risk_authorized": [
+        "hampel_filter"
+      ],
+      "preregistered_expectation": {
+        "try": [],
+        "risk": [
+          "hampel_filter"
+        ]
+      },
+      "matches_preregistration": true,
+      "per_program": {
+        "hampel_filter": "RISK: >=2 cohort extended harm (NEGATIVE|CONFLICT), zero pool POSITIVE",
+        "outlier_iqr": "neither: positive_cohorts=[] extended_harm=['source_known_cause']",
+        "outlier_mad": "neither: positive_cohorts=[] extended_harm=['source_known_cause']",
+        "winsorize": "neither: positive_cohorts=['source_aws_cloudwatch'] extended_harm=['source_known_cause']"
+      }
+    },
+    "signed_summary": [
+      {
+        "program": "hampel_filter",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "conflict_cohorts": [
+          "source_known_cause"
+        ],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "extended_harm_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ]
+      },
+      {
+        "program": "outlier_iqr",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause"
+        ]
+      },
+      {
+        "program": "outlier_mad",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause"
+        ]
+      },
+      {
+        "program": "winsorize",
+        "positive_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "negative_cohorts": [
+          "source_known_cause"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause"
+        ]
+      }
+    ],
+    "known_limits": [
+      "winsorize's two delayed POSITIVE episodes are both source_aws_cloudwatch (r1 and r2): same cohort, different round windows.  That is one cohort under the r3 vote unit, not two."
+    ],
+    "required_sections": [
+      "WHEN",
+      "OBSERVE",
+      "TRY",
+      "RISK",
+      "VERIFY",
+      "FALLBACK"
+    ],
+    "try_abstain_literal": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+    "skill_id": "source_investigation_ad_v1",
+    "applicability": {
+      "feature": "task_kind",
+      "op": "==",
+      "value": "anomaly_detection"
+    },
+    "target_domain": "a different domain from the census; write what to observe and what would have to hold, not what happened in a named cohort"
+  },
+  "slow_response": {
+    "decision": "ADD",
+    "sections": {
+      "WHEN": "Apply this entry when task_kind is anomaly_detection in a domain different from the one used to build this evidence census.",
+      "OBSERVE": "In the current Workspace, inspect task_kind and the observed delayed_relation for the available programs before selecting any intervention.",
+      "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+      "RISK": "Treat hampel_filter as risky when repeated observations show delayed_relation as NEGATIVE or CONFLICT, particularly when no positive delayed_relation support is present. Do not infer that outlier_iqr, outlier_mad, or winsorize is beneficial from this census.",
+      "VERIFY": "Before believing any result, the Task's own Target Support must show a delayed_relation that is not NEGATIVE or CONFLICT for the selected handling, using distinct tasks rather than repeated attempts.",
+      "FALLBACK": "If OBSERVE does not support a guarded recommendation, make no operator change and preserve the current Workspace state."
+    },
+    "reason": "The census authorizes no active TRY operator. It does authorize a risk warning for hampel_filter, while the other programs have no sufficiently consistent positive basis for recommendation."
+  },
+  "audit": {
+    "pass": true,
+    "checks": {
+      "all_six_sections_present": true,
+      "no_extra_sections": true,
+      "no_invented_operator": true,
+      "no_invented_observable_feature": true,
+      "no_numeric_threshold": true,
+      "no_source_cohort_identity_leaked": true,
+      "try_clause_within_authorization": true
+    },
+    "missing_sections": [],
+    "extra_sections": [],
+    "invented_operators": [],
+    "invented_observable_features": [],
+    "numeric_literals": [],
+    "leaked_cohort_tokens": [],
+    "operators_named_in_try": [],
+    "unauthorized_operators_in_try": [],
+    "authorized_try_operators": [],
+    "try_abstained": true
+  },
+  "verdict": "SOURCE_SKILL_WRITTEN",
+  "skill_written": true,
+  "entry": {
+    "schema_version": "skill-entry/1",
+    "skill_id": "source_investigation_ad_v1",
+    "skill_kind": "capability",
+    "revision": 1,
+    "body": "WHEN: Apply this entry when task_kind is anomaly_detection in a domain different from the one used to build this evidence census.\nOBSERVE: In the current Workspace, inspect task_kind and the observed delayed_relation for the available programs before selecting any intervention.\nTRY: NO_AUTHORIZED_ACTIVE_RECOMMENDATION\nRISK: Treat hampel_filter as risky when repeated observations show delayed_relation as NEGATIVE or CONFLICT, particularly when no positive delayed_relation support is present. Do not infer that outlier_iqr, outlier_mad, or winsorize is beneficial from this census.\nVERIFY: Before believing any result, the Task's own Target Support must show a delayed_relation that is not NEGATIVE or CONFLICT for the selected handling, using distinct tasks rather than repeated attempts.\nFALLBACK: If OBSERVE does not support a guarded recommendation, make no operator change and preserve the current Workspace state.",
+    "observable_applicability": {
+      "feature": "task_kind",
+      "op": "==",
+      "value": "anomaly_detection"
+    },
+    "allowed_tools": [],
+    "risk_guards": {
+      "carrier": "source_derived_general_skill",
+      "advises_the_proposal_stage_only": true,
+      "never_supplies_a_candidate": true,
+      "requires_target_support": true,
+      "sections": {
+        "WHEN": "Apply this entry when task_kind is anomaly_detection in a domain different from the one used to build this evidence census.",
+        "OBSERVE": "In the current Workspace, inspect task_kind and the observed delayed_relation for the available programs before selecting any intervention.",
+        "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+        "RISK": "Treat hampel_filter as risky when repeated observations show delayed_relation as NEGATIVE or CONFLICT, particularly when no positive delayed_relation support is present. Do not infer that outlier_iqr, outlier_mad, or winsorize is beneficial from this census.",
+        "VERIFY": "Before believing any result, the Task's own Target Support must show a delayed_relation that is not NEGATIVE or CONFLICT for the selected handling, using distinct tasks rather than repeated attempts.",
+        "FALLBACK": "If OBSERVE does not support a guarded recommendation, make no operator change and preserve the current Workspace state."
+      }
+    }
+  },
+  "store_root": "C:\\Users\\辉\\AppData\\Local\\Temp\\t6_42d_h0s",
+  "runtime_bundle_sha": "c5e5a7346b0201d39f038cb88d90651f5949a40b5a61fcc328409790ff06e595",
+  "skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_ad_v1"
+  ],
+  "part_0": {
+    "head": "5dee103",
+    "action": "verified only -- this round does not commit; Part 0 status is recorded, not sealed",
+    "porcelain_lines": 771,
+    "note": "the working tree already carries untracked #42/#42c artifacts; Part 0 is not a commit this session"
+  },
+  "census_artifact": "artifacts/functional/e2/t6_nab_42d_source_census.json",
+  "wall_seconds": 27.867945900012273
+}

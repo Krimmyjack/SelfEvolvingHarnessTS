@@ -188,12 +188,85 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   协议缺陷,不重跑,未证项移交自然阶段);收尾追认(任务化 ID 破
   五测全修,手拼副本收口为 fast_winner_skill_id() 单一出处;MKL
   崩溃 = 既有环境故障路由 #41b);
-  当前 = **#41b-lite 检查点**(--really-refresh + 六件逐文件提交 +
-  四项验证 + 最小 V10;v1 五项方案撤回见整备条目)→
-  **#42(T6)自然单变量 A5 vs A3**(sol 书 + 主线六补注;本轮仅
-  --plan:0 LLM / AD fit ≤200,NAB AdExchange Target 零开放,
-  Source 经验银行三类就绪门;evaluate 路径同时实现并冻结,
-  LLM ≤48 / AD fit ≤120,等主线核验 SEALED 后释放)。
+  #41b-lite = V10_READY_FOR_T6 @ 5dee103(V10 四十成员零漂移);
+  #42 v1 = NATURAL_DATA_SHAPE_INELIGIBLE(有效 first-fault,四路
+  越权补救零触碰,LabelWall 构造时丢弃,freshness 未烧;根因改判 =
+  A4 门与行序 Consumer 契约错配,书面缺陷主线共领);
+  #42a = **T6_NATURAL_PLAN_READY**(C18:三类 delayed 层独立集齐
+  2P/4N/1C,契约 20/20 无损,29/29 窗口全映射,自然跨 cohort 效用
+  翻转两例 = 核心前提自然实证;known_cause r1 delayed 近零分辨率
+  为已知限制随卷);主线独立核验封存后已置位 evaluate_released=true;
+  evaluate 首次释放收回(sol 发现执行体 stub:runner:1285 一次未调
+  run_online_round,note 字符串 + 退出码 0 双重陷阱,gateway 绑
+  zeros(1) 占位;SEALED 完好,flag 已翻回 false;主线释放清单新增
+  "核验可执行体存在");
+  #42b 执行体已补(759 行,八 cell smoke 未覆盖正向分支——顺序
+  教训:纵向最小切片对仪器同样适用);
+  #42c = LIFECYCLE_FIXTURE_CLOSED(单 cell 全链真实走通含
+  LOCAL_ACTIVE 正向分支,读数机械复现 v2 bank,16/20 fits 0 LLM;
+  flag 事件裁定 = 主线蓄意置位非误触,执行方拒跑上报 = 正确,
+  永久口径"flag 必要非充分");
+  正式 evaluate 完成 = **C19**(盘面 SAFER_NOT_FASTER + 竞态影子
+  样本 NO_ADVANTAGE,承重取交集:未加速一致、无负迁移一致、
+  安全优势 1/2 不稳;**附带首次自然生命周期闭合**:CPM A3 r2
+  outlier_mad LOCAL_ACTIVE;AdExchange 已曝光不再 virgin;
+  one-shot 站规新增 run-id 隔离 + 启动锁 + 杀后验尸);
+  **[15:2x supersede]** 修面路由撤回——架构回退裁定:仓库级
+  AGENTS.md override(L21-99,压过 workspace 章程)禁 Episode/
+  ContrastPack 直入 Fast,前例 T233 = RAW_SOURCE_EPISODES_TO_FAST_
+  REJECTED 且路线锁禁"检索/聚合式修复";#40 卡线 → #42 A5 直连 =
+  重建被否决路线;C19 主线审定 = INCONCLUSIVE_CONCURRENT_EXECUTION_
+  COLLISION + 受控旁路,NAB Target 降 development 永久非 virgin;
+  C14-C16 改标旁路机制证据;T5/域内轨迹检索合法无损(override
+  L44 明许当前轨迹 Support 历史);C18 bank 成立(整合原料);
+  当前 = **校正后 A5 主链(照 override L86-95 既定切片)**:
+  (1) 关直连接线 →(2) 新方法切片:Source census → Slow 整合 →
+  冻结 Source-derived Skill(NAB 20 卡为原料)→(3) 已曝光轨迹
+  development replay 机制验证 →(4) O9 第二未曝光域 census →
+  正式 A5vsA3 v2(A5 = h0 + 冻结 Skill,单进程站规)→(5) M0。
+  workspace AGENTS.md 已由 sol 改为纯路由(仓库级 override 唯一
+  权威);开书前必读仓库级 override 立为站规。
+  #42d 书 r1 修订(本地 agent 评审三事实核验采纳):census 证据
+  单元改 episode_id、cell = program × 可观察条件((cohort,round,
+  program) 分组实测 20 组全单例,v1 证据线不可满足,主线认领);
+  Slow 整合复用 T233 既有 source_skill.py 审计链(AD 薄封装,
+  本体零改动);replay 改同跑配对 A3/A5'(历史读数按 C19 降附录);
+  bank 实况:全池无条件时无程序可获授权,整合器必须靠可观察
+  Context 分辨,ABSTAIN 为合法出口;待 sol 复核后分发。
+  r2(sol 保真审计采纳):两证据 Runner 手写旧 ID 坐实(recall:411 /
+  fresh:1866,重跑必 ValueError——响亮失败非静默错数);两道门
+  收紧确认为 #41 T5 A4 在册授权(六旧正例读数全过新门);#42d
+  前置 Part 0b 保真收口硬门(修 ID → 公有 fast_winner_skill_id +
+  0-LLM 缓存重放,绿 = FORECASTING_COMPAT_RESTORED 续跑,
+  红即停);T6 直连行现为 :1619,Part A 删除对象确认。
+  r3(sol 三修采纳 + 主线 claim 勘误):FRESH_A5_DELIVERS 在册
+  (NOAA held-out 2025 pooled 首正成本 −43.9%,per-channel 迁移
+  边界)——主线"预测线从未证明"表述错误收回,#42f 定位更正为
+  已证优势向第二任务+独立域的推广考试;证据门回归已证水准
+  (TRY/RISK 均 ≥2 个不同 Source cohort 计票,min=1 撤回);
+  pss 实测完美复刻 cohort 身份且 bank 仅 3 布尔特征(2 常量 +
+  1 代理)→ 本 bank 合法条件化结构性不可用,census 增 cohort
+  代理检查义务;source_skill.py 改最小参数化(默认路径字节等同
+  断言);  预注册推演:TRY 无候选,RISK 唯一候选 hampel(CONFLICT
+  计伤害待 sol 终审)或全 ABSTAIN → 跳 Part D 报
+  CONSOLIDATION_NO_ELIGIBLE_SKILL,扩 Source 路由
+  (realTraffic/realTweets 作第 3/4 Source cohort)。
+  **#42d 跑完 = C20**(r1+r2+r3 预注册全兑现):0b 兼容恢复
+  6/6、直连已拆、census 逐字合预注册、SOURCE_SKILL_WRITTEN
+  (risk-only hampel)、D = SCOPE_CORRECT_NO_APPLICABLE
+  (hampel 双臂 0 提案,无坍缩;LLM 25/40,fit 12/120)——
+  架构纠偏成功,降权效果未获触发机会,不得声称更快/更安全;
+  v1 Skill 文本时序惰性缺陷(RISK 挂未来观察 t=0 永不点火,
+  与 T233 惰性同族;审计只查词汇不查时序)→ 收口书 v2(sol
+  四修):allowlist 提交 + 密钥扫描前置(raw/临时 Store/另一线
+  untracked 显式排除)、时序审计机械化(hampel 非硬禁、VERIFY
+  精确两阶段)、判定 = SKILL_V2_FROZEN_PENDING_BEHAVIOR_REPLAY
+  ("不重跑"推理撤回,v1 判定不背书 v2)、0-LLM 送达断言;
+  **行为重放立为任何 h0s_vN 进正式考场的前置**;两新 Runner
+  化石(禁扩建,入 #46 债);本轮性质 = 机制/适配修复;
+  排期编号后移:#42e = Source 扩充(realTraffic/realTweets,
+  TRY 解锁唯一路径)→ #42f = 新域 census(Yahoo S5 优先)→
+  #42g = 正式 A5vsA3 v2(禁用惰性 h0s 消耗处女域)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
@@ -280,7 +353,43 @@ first-fault 因 runner 纠缠无法归因)即构成仪器层 first fault,
 **Phase T 前段预算(预注册)**:T0 = 0 LLM / 0 forecasting 重训 /
 ≤200 AD 评估;T1 = 0 LLM / ≤60 forecasting 重训 / ≤300 AD 评估;
 T2 起随书预注册。冻结面口径 = 现行 FROZEN_SURFACE(当前 V9,39 项)
-+ git diff,#35 v2 书中"v7 注册表"字样按此勘正。
++ git diff,#35 v2 书中"v7 注册表"字样按此勘正;#41b-lite 起为
+V10(40 项,含 experience_memory.py)。
+
+**主线操作纪律(2026-08-23,由当日三次折返的共同病根立规——
+"拿名义规范当事实,不核实测状态")**:
+1. 预算一律从工件实测成本推导(如 t1b --v3 = 78 AD 评估、T5 实测
+   ~5 call/轮),禁按名义步数拍;重试/validation 流量计入常规。
+2. 合法性门与形状契约一律从 estimand 与仪器实际输入契约推导
+   (Consumer 按行序开窗就不得要求时间戳严格递增),禁审美门。
+3. 释放任何冻结路径前,主线必须核验:封存状态 + 协议冻结 +
+   **可执行体真实存在且非占位**;"已实现"的报告语句须行级证据。
+4. 机械修复快车道:纯机械、可自测的仪器修复(stub 清除、占位数据
+   替换、烟测断言修正、字面量改 import)授权执行方修完自测通过
+   直接续跑,只报结果不逐步等裁定;方法面、协议面、封存面、
+   预算面改动仍需主线裁定后动手。
+5. 接口/ID/键统一类改动的兼容修复清单必须包含**所有承载在册
+   证据的 Runner 与入口**(以台账证据行反查),不得只修当轮
+   报错项;修复后以零消耗缓存重放证明旧正例在新接口下仍复现
+   (2026-08-23,#42d r2 由两 forecasting 证据 Runner 手写旧 ID
+   缺口立规)。
+
+**文档更新纪律(2026-08-23 明文化)**:两文档制,不新建第三份
+长期文档。台账(STAGE_REPORT)= 事件驱动:每次裁定当轮写入
+结果、歧义裁定与教训,不隔夜、不攒批。roadmap = 状态驱动:
+进度线每轮裁定后同步;常设规则只在被 supersede 或新增站规时改,
+supersession 同轮标注、原文不删。执行方与子 Agent 不改这两份
+文档,只报告;主线是唯一写入者。工件内主线只允许触碰
+release 类字段且必须同轮登账。
+
+**附属书编号(2026-08-23)**:主书号 #35–#46 不变;修复/补全/
+收尾书以字母后缀挂靠主书(#41b-lite、#42a、#42b),不占主号、
+不改主链计数。
+
+**#42 正判后的复核预留**:NATURAL/provisional 升格需第二自然
+单变量域独立复核(候选 Yahoo S5 / UCR-AD,获取时同走曝光
+census、结构门与行序契约);排期在 #42 出判定后与 #43(M0)
+一并定夺,不预建仪器。
 
 ## 4. 保留给用户的决策点
 

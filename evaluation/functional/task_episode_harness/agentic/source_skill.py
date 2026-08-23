@@ -104,11 +104,25 @@ _SLOW_SYSTEM_TEMPLATE = (
 )
 
 
-def slow_system(authorized: Sequence[str]) -> str:
+def _slow_system_template(skill_id: str | None = None) -> str:
+    """The frozen forecasting template, with an optional Skill id override.
+
+    The default path returns the import-time string unchanged so T233
+    artifacts keep seeing the same bytes.  An override only replaces the
+    quoted Skill id; every other sentence stays put.
+    """
+    if not skill_id or skill_id == SOURCE_SKILL_ID:
+        return _SLOW_SYSTEM_TEMPLATE
+    return _SLOW_SYSTEM_TEMPLATE.replace(
+        "'%s'" % SOURCE_SKILL_ID, "'%s'" % skill_id, 1)
+
+
+def slow_system(authorized: Sequence[str],
+                skill_id: str | None = None) -> str:
     """The Slow system prompt with this call's authorization stated in it."""
     listed = ", ".join(sorted(authorized)) if authorized else "(empty)"
     return (
-        _SLOW_SYSTEM_TEMPLATE
+        _slow_system_template(skill_id)
         + "\nauthorized_try_operators for this call: " + listed + "."
     )
 
@@ -425,7 +439,12 @@ def audit_sections(
     }
 
 
-def build_skill_payload(sections: Mapping[str, Any]) -> dict[str, Any]:
+def build_skill_payload(
+    sections: Mapping[str, Any],
+    *,
+    skill_id: str | None = None,
+    applicability: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """The ``skill-entry/1`` value for the Source-derived General Skill.
 
     ``allowed_tools`` is empty and the body carries no frozen program, so
@@ -434,17 +453,21 @@ def build_skill_payload(sections: Mapping[str, Any]) -> dict[str, Any]:
     its own.  The structured sections are duplicated into ``risk_guards``
     because ``skill-entry/1`` has a closed field set and that is the only
     free-form JSON on it -- the body is what the Agent reads.
+
+    ``skill_id`` / ``applicability`` default to the frozen forecasting
+    constants.  Passing them is how the AD wrapper names its own entry
+    without rewriting this module's defaults.
     """
     body = "\n".join(
         "%s: %s" % (name, str(sections[name]).strip()) for name in SECTIONS
     )
     return {
         "schema_version": "skill-entry/1",
-        "skill_id": SOURCE_SKILL_ID,
+        "skill_id": skill_id or SOURCE_SKILL_ID,
         "skill_kind": "capability",
         "revision": 1,
         "body": body,
-        "observable_applicability": dict(SOURCE_APPLICABILITY),
+        "observable_applicability": dict(applicability or SOURCE_APPLICABILITY),
         "allowed_tools": [],
         "risk_guards": {
             "carrier": "source_derived_general_skill",

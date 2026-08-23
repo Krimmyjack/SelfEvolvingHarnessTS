@@ -89,7 +89,10 @@ from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (  # noqa: E402
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import (  # noqa: E402
     SnapshotStore,
 )
-from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod  # noqa: E402
+from SelfEvolvingHarnessTS.methods.ttha.method import (  # noqa: E402
+    TTHAMethod,
+    fast_winner_skill_id,
+)
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: E402
     resolve_harness_view,
 )
@@ -1863,7 +1866,7 @@ def _persist_draft(
         support_gain=support_gain,
         confirmed_cause="SKILL_LIBRARY_GAP",
     )
-    skill_id = "fast_winner_%s" % episode.workflow_signature
+    skill_id = fast_winner_skill_id(episode)
     written = str(event.get("stage")) == "pending"
     slot["_method"] = method
     slot["_episode"] = episode
