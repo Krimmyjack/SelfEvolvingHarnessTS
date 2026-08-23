@@ -1,0 +1,1617 @@
+{
+  "protocol_version": "t5_lifecycle_v1",
+  "evidence_grade": "POSITIVE_CONTROL",
+  "grade_note": "the substrate is the injected T1 copy and the already-exposed Qcal/Qf surfaces; a confirmed verdict here says the lifecycle machine closes along the task axis, never that it generalizes to natural data",
+  "part_0": {
+    "head_commit": "eb4a03c",
+    "head_subject": "checkpoint: T4b abstain channel (TASK_SEPARATION_REGRESSION, C16) + T4 close-out and #41 T5 authorization",
+    "tracked_modified": [
+      "ethods/ttha/method.py",
+      "methods/ttha/online_loop.py",
+      "operators/registry.py"
+    ],
+    "exclusions": [
+      "_scratch/",
+      ".a5a3_",
+      "artifacts/experience/",
+      "artifacts/functional/e1",
+      ".harness_forks/",
+      "_tmp_"
+    ],
+    "note": "the #40b deliverables and the main-line docs revisions were committed as this round's Part 0 checkpoint before any wiring was touched; the ledger's C16 verdict (TASK_SEPARATION_REGRESSION) is carried forward unedited"
+  },
+  "part_a": {
+    "menu": {
+      "allowlist": [
+        "outlier_iqr",
+        "outlier_mad",
+        "hampel_filter",
+        "winsorize"
+      ],
+      "forbidden_count": 22,
+      "forbidden": [
+        "denoise_median",
+        "denoise_savgol",
+        "denoise_stl",
+        "denoise_wavelet",
+        "fft_decompose",
+        "impute_ar",
+        "impute_ema",
+        "impute_fft",
+        "impute_linear",
+        "impute_ssm",
+        "lag_features",
+        "minmax_norm",
+        "period_complete",
+        "period_median_complete",
+        "repair_level_shift",
+        "resample_uniform",
+        "sliding_window",
+        "smooth_ema",
+        "smooth_ma",
+        "spectral_features",
+        "stl_decompose",
+        "znorm"
+      ]
+    },
+    "task_specs": {
+      "forecasting": {
+        "task_type": "forecast",
+        "target_semantics": "future_values",
+        "label_availability": "history_only",
+        "metric": {
+          "name": "sMASE",
+          "direction": "lower_is_better"
+        },
+        "horizon": 48,
+        "downstream_model_class": "pooled_ridge_a1",
+        "forbidden_modifications": [
+          "denoise_median",
+          "denoise_savgol",
+          "denoise_stl",
+          "denoise_wavelet",
+          "fft_decompose",
+          "impute_ar",
+          "impute_ema",
+          "impute_fft",
+          "impute_linear",
+          "impute_ssm",
+          "lag_features",
+          "minmax_norm",
+          "period_complete",
+          "period_median_complete",
+          "repair_level_shift",
+          "resample_uniform",
+          "sliding_window",
+          "smooth_ema",
+          "smooth_ma",
+          "spectral_features",
+          "stl_decompose",
+          "znorm"
+        ]
+      },
+      "anomaly_detection": {
+        "task_type": "anomaly_detection",
+        "target_semantics": "anomaly_events",
+        "label_availability": "unlabeled",
+        "metric": {
+          "name": "macro_event_f1",
+          "direction": "higher_is_better"
+        },
+        "horizon": null,
+        "downstream_model_class": "ad_ridge_train_v3",
+        "forbidden_modifications": [
+          "denoise_median",
+          "denoise_savgol",
+          "denoise_stl",
+          "denoise_wavelet",
+          "fft_decompose",
+          "impute_ar",
+          "impute_ema",
+          "impute_fft",
+          "impute_linear",
+          "impute_ssm",
+          "lag_features",
+          "minmax_norm",
+          "period_complete",
+          "period_median_complete",
+          "repair_level_shift",
+          "resample_uniform",
+          "sliding_window",
+          "smooth_ema",
+          "smooth_ma",
+          "spectral_features",
+          "stl_decompose",
+          "znorm"
+        ]
+      }
+    },
+    "public_operator_contract_ids": {
+      "forecasting": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize"
+      ],
+      "anomaly_detection": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize"
+      ]
+    },
+    "key_migration": {
+      "legacy_literal_removed_from_online_loop": "forecast|ridge|sMASE",
+      "legacy_fixture_key": "forecast|ridge|sMASE",
+      "actual_forecasting_key": "forecast|pooled_ridge_a1|sMASE",
+      "anomaly_detection_key": "anomaly_detection|ad_ridge_train_v3|macro_event_f1",
+      "note": "the old literal was itself a dialect: the real forecasting Consumer on this substrate is the pooled ridge, so the minted key differs from the literal by design.  A byte-equal assertion here would only have forced a false green"
+    },
+    "checks": [
+      {
+        "id": "A1_ad_supply_non_empty",
+        "ok": true,
+        "detail": "AD candidate supply is 4 programs"
+      },
+      {
+        "id": "A1_allowlists_identical",
+        "ok": true,
+        "detail": "F=['hampel_filter', 'outlier_iqr', 'outlier_mad', 'winsorize'] AD=['hampel_filter', 'outlier_iqr', 'outlier_mad', 'winsorize']"
+      },
+      {
+        "id": "A1_contract_id_sets_identical",
+        "ok": true,
+        "detail": "['hampel_filter', 'outlier_iqr', 'outlier_mad', 'winsorize']"
+      },
+      {
+        "id": "A1_forbidden_sets_identical",
+        "ok": true,
+        "detail": "22 forbidden entries, one function"
+      },
+      {
+        "id": "A1_identity_reserved_not_registered",
+        "ok": true,
+        "detail": "identity is absent from OPERATOR_METADATA"
+      },
+      {
+        "id": "A1_other_ad_bans_untouched",
+        "ok": true,
+        "detail": "smoothing/decompose AD bans left as they were"
+      },
+      {
+        "id": "A3_legacy_fixture_key_matches_old_literal",
+        "ok": true,
+        "detail": "task_consumer_key(forecast/ridge/sMASE) == 'forecast|ridge|sMASE'"
+      },
+      {
+        "id": "A3_actual_f_key_is_minted_not_literal",
+        "ok": true,
+        "detail": "actual F key 'forecast|pooled_ridge_a1|sMASE'; old literal 'forecast|ridge|sMASE' (differs, as expected)"
+      },
+      {
+        "id": "A3_ad_key_distinct",
+        "ok": true,
+        "detail": "AD key 'anomaly_detection|ad_ridge_train_v3|macro_event_f1'"
+      },
+      {
+        "id": "A3_no_hardcoded_key_left_in_online_loop",
+        "ok": true,
+        "detail": "no quoted forecast|ridge|sMASE remains in online_loop; the only surviving mention is the comment recording the removal"
+      },
+      {
+        "id": "A3_fallback_still_available_for_none_spec",
+        "ok": true,
+        "detail": "task_spec=None keeps the historical default"
+      }
+    ],
+    "all_passed": true
+  },
+  "wiring_diff": {
+    "tracked": {
+      "operators/registry.py": {
+        "diff": "diff --git a/operators/registry.py b/operators/registry.py\nindex a90d559..4339df3 100644\n--- a/operators/registry.py\n+++ b/operators/registry.py\n@@ -33,6 +33,13 @@ from ._provenance import record as _prov_record\n \n _ALL_TASKS = (\"forecast\", \"classification\", \"anomaly_detection\")\n _NON_ANOMALY = (\"forecast\", \"classification\")   # 平滑/删改类：物理禁 anomaly（毁 spike/changepoint 信号）\n+# T5 #41 A1（Program Supply 与菜单等同）：四个点式离群修复程序对\n+# anomaly_detection 由\"物理禁\"改为\"机械可执行\"。allowed_tasks 只表达**可试**，\n+# 不表达**有益**——AD 下这四个程序仍可能删掉正要检的 spike，那是 Consumer\n+# feedback 的判词（classify_relation 会把\"聚合正、逐序列有害\"记成 CONFLICT），\n+# 不该由注册表提前替 Agent 决定。其余 smoothing/denoise/decompose 的 AD 禁令\n+# 一律不动：它们的禁因是形状级的（毁 changepoint 结构），不是\"没试过\"。\n+_REPAIR_ALL_TASKS = _ALL_TASKS\n \n _CONTRACT_BASE = {\n     \"allowed_tasks\": _ALL_TASKS,\n@@ -134,15 +141,15 @@ OPERATOR_SPECS = [\n         dependency_policy=\"recorded_fallback\",               # 与 impute_ssm 的 hard_fail 刻意不同\n         fallback_policy=\"explicit_record→denoise_savgol\")),\n     (\"winsorize\", \"outlier\", \"s1\", [\"destructive\"], s1_outlier.winsorize, False,\n-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode=\"intrinsic\")),\n+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode=\"intrinsic\")),\n     (\"outlier_iqr\", \"outlier\", \"s1\", [\"destructive\"], s1_outlier.outlier_iqr, False,\n-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode=\"intrinsic\")),\n+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode=\"intrinsic\")),\n     (\"outlier_mad\", \"outlier\", \"s1\", [\"destructive\"], s1_outlier.outlier_mad, False,\n-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode=\"intrinsic\")),\n+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode=\"intrinsic\")),\n     # —— E-3.3 R3：局部自适应点式离群修复（与上面三个全局阈值裁剪算子机制不同）——\n     (\"hampel_filter\", \"outlier\", \"s1\", [\"destructive\"], s1_outlier.hampel_filter, False,\n      _c(\n-         allowed_tasks=_NON_ANOMALY,\n+         allowed_tasks=_REPAIR_ALL_TASKS,\n          destructive=True,\n          targeting_mode=\"intrinsic\",\n          public_parameter_schema={",
+        "stat": "operators/registry.py | 15 +++++++++++----\n 1 file changed, 11 insertions(+), 4 deletions(-)",
+        "sha256_now": "d03a83d1374a2c166c6ebcb0e292402d7965bd68f1f88aef2f9e4191e52525d0"
+      },
+      "methods/ttha/online_loop.py": {
+        "diff": "diff --git a/methods/ttha/online_loop.py b/methods/ttha/online_loop.py\nindex 8bdc7d5..170e390 100644\n--- a/methods/ttha/online_loop.py\n+++ b/methods/ttha/online_loop.py\n@@ -47,9 +47,12 @@ from dataclasses import dataclass, field\n from typing import Any, Callable, Mapping, Sequence\n \n from .experience_memory import (\n+    MEASURED_EFFECT_KEY,\n     STATUS_EPISODE_ONLY,\n     STATUS_LOCAL_DRAFT,\n     build_episode,\n+    classify_relation,\n+    task_consumer_key,\n     workflow_signature_of,\n )\n from .fast_agent import public_operator_contract\n@@ -105,6 +108,11 @@ class RoundResult:\n     _delayed_event: dict | None = field(default=None, repr=False)\n     _method: Any = field(default=None, repr=False)\n     _values: Mapping[str, Any] | None = field(default=None, repr=False)\n+    # T5 #41 A3：本轮的真实任务绑定——delayed 侧要用同一个键/同一批 uid\n+    # 分类，不得在 open_delayed 里第二次猜。\n+    _task_spec: Any = field(default=None, repr=False)\n+    _series_uids: tuple = field(default=(), repr=False)\n+    _consumer_id: str | None = field(default=None, repr=False)\n     _period: int = field(default=24, repr=False)\n     _domain: str = field(default=\"target\", repr=False)\n     _deferred_slow: str | None = field(default=None, repr=False)\n@@ -114,12 +122,30 @@ class RoundResult:\n     _group_slow_done: bool = field(default=False, repr=False)\n \n \n+def _per_series_gains(per_view_gain: Sequence[float] | None,\n+                      roster_uids: Sequence[str] | None = None\n+                      ) -> dict[str, float] | None:\n+    \"\"\"per_view_gain 是位置序列（评估仪器逐 view 输出）；classify_relation\n+    要的是 uid → gain 映射。T5 #41 A3：只做形状转换，不做判断——没有\n+    per-view 读数就返回 None（\"读不到\"与\"读到 0 条\"不得混同）。\"\"\"\n+    if per_view_gain is None:\n+        return None\n+    values = [float(v) for v in per_view_gain]\n+    uids = list(roster_uids or ())\n+    if len(uids) != len(values):\n+        uids = [\"view_%d\" % i for i in range(len(values))]\n+    return {str(uid): value for uid, value in zip(uids, values)}\n+\n+\n def _write_target_episode(*, domain: str, op: str,\n                           program_steps: Sequence[Mapping[str, object]],\n                           support_gain: float, support_context: Mapping[str, float],\n                           episode_id_suffix: str,\n                           per_view_gain: Sequence[float] | None = None,\n-                          support_origin: int | None = None) -> Any:\n+                          support_origin: int | None = None,\n+                          task_spec: Any = None,\n+                          series_uids: Sequence[str] | None = None,\n+                          consumer_id: str | None = None) -> Any:\n     \"\"\"与 run_v1_target_local_loop.write_target_episode 同构（生产路径\n     直接复用 experience_memory.build_episode）。\n \n@@ -132,9 +158,24 @@ def _write_target_episode(*, domain: str, op: str,\n     full_sig = workflow_signature_of(\n         [{\"op\": s.get(\"op\"), \"params\": dict(s.get(\"params\") or {})}\n          for s in program_steps]) if program_steps else op\n+    # T5 #41 A3（写回统一）：任务硬键从真实 request.task_spec 铸出——原先\n+    # 这里是一句 forecast|ridge|sMASE 字面量，任何非预测轮次写出的经验都\n+    # 会落在预测键下，AD 检索永远找不到。task_spec=None 时 helper 自己\n+    # 回落到历史默认，语义与旧字面量一致（legacy fixture 断言即此格）。\n+    key = task_consumer_key(task_spec)\n+    # 生命周期改读风险感知分类：relation 不再由 support_gain 的符号一句\n+    # 决定，而是与 Memory 卡、delayed 门共用同一个 classify_relation。\n+    # \"聚合正、逐序列有害\" 因此必然写成 CONFLICT，而不是 POSITIVE。\n+    facts = classify_relation(\n+        aggregate_gain=support_gain,\n+        per_series_gains=_per_series_gains(per_view_gain, series_uids),\n+        is_identity=(op == \"identity\"),\n+        consumer_id=consumer_id,\n+    )\n+    relation = str(facts[\"relation\"])\n     return build_episode(\n         episode_id=f\"{domain}_target_{op}{episode_id_suffix}\",\n-        task_consumer_key=\"forecast|ridge|sMASE\",\n+        task_consumer_key=key,\n         domain_namespace=domain,\n         context_summary={\n             \"cohort\": {\"series_count\": 1, \"evaluation_series_count\": 0},\n@@ -145,38 +186,65 @@ def _write_target_episode(*, domain: str, op: str,\n                                  \"program_steps\": list(program_steps)},\n             \"per_view_gain\": list(per_view_gain)\n             if per_view_gain is not None else [],\n+            # T5 #41 A3：逐 view 读数的 uid 序一并留痕——delayed 侧与\n+            # method 层要按同一批 uid 分类，不得各自猜。\n+            \"series_uids\": [str(u) for u in (series_uids or ())],\n             \"support_origin\": support_origin,\n         },\n         workflow_signature=full_sig,\n         support_response={\"gain\": support_gain,\n-                          \"accepted\": support_gain >= M},\n+                          \"accepted\": relation == \"POSITIVE\",\n+                          MEASURED_EFFECT_KEY: dict(facts)},\n         delayed_response={\"evaluated\": False, \"gain\": None},\n-        relation=\"POSITIVE\" if support_gain >= M else \"NEGATIVE\",\n+        relation=relation,\n         evidence_level=\"SUPPORT\",\n-        local_status=STATUS_LOCAL_DRAFT if support_gain >= M\n+        # Support = POSITIVE 才形成 Draft；CONFLICT/NEGATIVE/NEUTRAL/ABSTAIN\n+        # 只写 Episode，不扩执行权。\n+        local_status=STATUS_LOCAL_DRAFT if relation == \"POSITIVE\"\n         else STATUS_EPISODE_ONLY,\n         evidence_refs=[\"online_loop\"],\n     )\n \n \n def _update_delayed_status(episode: Any, delayed_gain: float,\n-                           delayed_context: Mapping[str, float]) -> Any:\n-    \"\"\"与 run_v1_target_local_loop.update_delayed_status 同构（四类状态\n-    转移：双正 POSITIVE / support 正 delayed 负 CONFLICT-RESTRICTED /\n-    双负 NEGATIVE / support 负 delayed 正 CONFLICT-EPISODE_ONLY）。\"\"\"\n-    sg = float(episode.support_response.get(\"gain\") or 0.0)\n-    m = M\n-    if sg >= m and delayed_gain >= m:\n-        relation, status = \"POSITIVE\", \"LOCAL_ACTIVE\"\n-    elif sg >= m and delayed_gain < m:\n-        relation, status = \"CONFLICT\", \"RESTRICTED\"\n-    elif sg < m and delayed_gain < m:\n-        relation, status = \"NEGATIVE\", \"EPISODE_ONLY\"\n+                           delayed_context: Mapping[str, float],\n+                           *,\n+                           per_view_gain: Sequence[float] | None = None,\n+                           series_uids: Sequence[str] | None = None,\n+                           consumer_id: str | None = None) -> Any:\n+    \"\"\"T5 #41 A3（写回统一）：delayed 的 relation 也走 classify_relation。\n+\n+    此前这里是第二套符号判断——四个状态由 (support 符号, delayed 符号)\n+    的组合硬写出来，既不看逐序列读数，也没有\"聚合正、逐序列有害\"这一格；\n+    真实回路因此**产生不出** CONFLICT，而 Memory 的卡正靠它。现在关系\n+    由同一个分类器给出，状态只作机械映射：\n+\n+      POSITIVE                      -> LOCAL_ACTIVE（唯一扩权格）\n+      CONFLICT（含聚合正逐序列害）  -> RESTRICTED（已部署者受限，不撤证据）\n+      NEGATIVE / NEUTRAL / ABSTAIN  -> EPISODE_ONLY\n+\n+    NEUTRAL 从此不再进 LOCAL_ACTIVE——这是本轮授权的行为变化，不是回归。\n+    aggregate 与 per-series 原始读数一并留在 delayed_response 里。\"\"\"\n+    facts = classify_relation(\n+        aggregate_gain=delayed_gain,\n+        per_series_gains=_per_series_gains(per_view_gain, series_uids),\n+        is_identity=(str(episode.workflow_signature) == \"identity\"),\n+        consumer_id=consumer_id,\n+    )\n+    relation = str(facts[\"relation\"])\n+    if relation == \"POSITIVE\":\n+        status = \"LOCAL_ACTIVE\"\n+    elif relation == \"CONFLICT\":\n+        status = \"RESTRICTED\"\n     else:\n-        relation, status = \"CONFLICT\", \"EPISODE_ONLY\"\n+        status = \"EPISODE_ONLY\"\n     return dataclasses.replace(\n         episode,\n-        delayed_response={\"evaluated\": True, \"gain\": delayed_gain},\n+        delayed_response={\"evaluated\": True, \"gain\": delayed_gain,\n+                          \"per_view_gain\": ([float(v) for v in per_view_gain]\n+                                            if per_view_gain is not None\n+                                            else None),\n+                          MEASURED_EFFECT_KEY: dict(facts)},\n         relation=relation,\n         evidence_level=\"DELAYED\",\n         local_status=status,\n@@ -261,6 +329,9 @@ def run_online_round(\n     result._values = values\n     result._period = period\n     result._domain = domain\n+    result._task_spec = getattr(request, \"task_spec\", None)\n+    result._series_uids = tuple(str(uid) for uid in values)\n+    result._consumer_id = str(getattr(request.task_spec, \"downstream_model_class\", \"\"))         if getattr(request, \"task_spec\", None) is not None else None\n     series0 = np_values(request, values)\n     # 1. prepare 一次（E2.5-A：runtime_prior_slot 透传——真实 LLM +\n     # Runtime-owned 双槽）\n@@ -336,7 +407,10 @@ def run_online_round(\n             support_context=dict(window_context(values, origin, period)),\n             episode_id_suffix=f\"_{round_name}_p{len(result._episodes) + 1}\",\n             per_view_gain=getattr(rr, \"per_view_gain\", None),\n-            support_origin=origin)\n+            support_origin=origin,\n+            task_spec=result._task_spec,\n+            series_uids=result._series_uids,\n+            consumer_id=result._consumer_id)\n         method.append_experience_episode(ep)\n         result.episode_ids.append(ep.episode_id)\n         result._episodes.append((ep, tuple(steps)))\n@@ -344,7 +418,9 @@ def run_online_round(\n         # 经当前 Target Support 探测确认；停止探测）。\n         # E0：first-positive index 用合法 Support receipt 计数（不含\n         # verifier_rejected 条目——原 len(actual_probed_programs) 会算入）。\n-        if gain >= M:\n+        # T5 #41 A4：Support = POSITIVE 才形成 winner/Draft。聚合过线但\n+        # 逐序列有害（CONFLICT）不再取得部署权——证据照写，执行权不发。\n+        if str(ep.relation) == \"POSITIVE\":\n             result.winner_program = [\n                 {\"op\": o, \"params\": dict(p)} for o, p in steps]\n             result._winner_candidate_id = str(cand)\n@@ -673,7 +749,10 @@ def open_delayed(result: RoundResult, executor: Any, *,\n             continue  # 未评估——不更新 delayed 状态\n         upd = _update_delayed_status(\n             ep, dg, delayed_context=dict(window_context(\n-                values, d_origin, result._period)))\n+                values, d_origin, result._period)),\n+            per_view_gain=getattr(rd, \"per_view_gain\", None),\n+            series_uids=result._series_uids,\n+            consumer_id=result._consumer_id)\n         method.update_experience_episode(upd)\n     # 两阶段批准（10）：pending 必须经 handle_feedback_delayed\n     if result._slow_event is not None \\",
+        "stat": "methods/ttha/online_loop.py | 123 ++++++++++++++++++++++++++++++++++++--------\n 1 file changed, 101 insertions(+), 22 deletions(-)",
+        "sha256_now": "3c3e8c0123c086b0abff3e1de8b440ce9120aa06ac0aaef6bb74ada687488e94"
+      },
+      "methods/ttha/method.py": {
+        "diff": "diff --git a/methods/ttha/method.py b/methods/ttha/method.py\nindex ed0dc03..6e4afa3 100644\n--- a/methods/ttha/method.py\n+++ b/methods/ttha/method.py\n@@ -1,5 +1,7 @@\n from __future__ import annotations\n \n+import re\n+\n from collections.abc import Callable, Mapping, Sequence\n \n from SelfEvolvingHarnessTS.contracts.harness import (\n@@ -14,6 +16,7 @@ from .agent_core import AgentProtocolError\n from .fast_agent import TTHAFastAgent\n from .retrieval import evaluate_applicability\n from .signed_radius import MATERIAL_THRESHOLD\n+from .experience_memory import classify_relation as _classify_relation\n \n \n def _typed_patch_preflight(card: Mapping[str, object],\n@@ -205,6 +208,73 @@ def _op_of_episode(episode: object) -> str:\n     return \"op\"\n \n \n+def _per_series_map(per_view_gain: Any,\n+                    series_uids: Any = None) -> dict[str, float] | None:\n+    \"\"\"位置序列 → uid 映射（online_loop._per_series_gains 的同一形状转换）。\n+    读不到 per-view 读数就返回 None——\"没读到\"不得当成\"读到 0 条有害\"。\"\"\"\n+    if per_view_gain is None:\n+        return None\n+    values = [float(v) for v in per_view_gain]\n+    uids = [str(u) for u in (series_uids or ())]\n+    if len(uids) != len(values):\n+        uids = [\"view_%d\" % i for i in range(len(values))]\n+    return dict(zip(uids, values))\n+\n+\n+def _steps_are_identity(steps: Any) -> bool:\n+    ops = [str(op) for op, _p in (steps or ())]\n+    return not ops or ops == [\"identity\"]\n+\n+\n+def _task_scope_of_episode(episode: object) -> tuple[str, str, str]:\n+    \"\"\"T5 #41 A5：Skill 命名用的任务范围三元组。\n+\n+    取自 Episode 的任务硬键（task_type|downstream_model_class|metric.name）\n+    ——与 Memory 检索键同源，不另铸第四种方言。缺键时回落到历史默认，\n+    使旧 fixture 的命名保持可预测。\"\"\"\n+    key = str(getattr(episode, \"task_consumer_key\", \"\") or \"\")\n+    parts = key.split(\"|\")\n+    if len(parts) == 3 and all(parts):\n+        return (parts[0], parts[1], parts[2])\n+    return (\"forecast\", \"ridge\", \"sMASE\")\n+\n+\n+def _series_uids_of_episode(episode: object) -> tuple[str, ...]:\n+    \"\"\"Episode 里记下的逐 view 读数长度对应的 uid 序（无则空 tuple——\n+    _per_series_map 会自行退回 view_i 位置名，不伪造 uid）。\"\"\"\n+    summary = getattr(episode, \"context_summary\", {}) or {}\n+    uids = summary.get(\"series_uids\")\n+    if isinstance(uids, (list, tuple)):\n+        return tuple(str(u) for u in uids)\n+    return ()\n+\n+\n+def _fast_winner_skill_id(episode: object) -> str:\n+    \"\"\"无哈希、任务化的 Fast winner Skill ID。\n+\n+    原名 fast_winner_{op} 只带算子：预测轮次学到的 fast_winner_winsorize\n+    与异常检测轮次学到的同名条目会在同一个 skill_library 里**撞名**——\n+    第二次 ADD 撞上 surface_precondition={\"kind\": \"ABSENT\"} 直接硬失败，\n+    真实双任务轨迹因此在第二轮就停住。ID 里带上任务范围即可分开。\n+    本轮只声称 task_kind 隔离（见 handle_fast_winner 的 applicability\n+    注记）；同任务跨 Consumer 的隔离不在本轮的声称范围内。\"\"\"\n+    task_type, model_class, metric = _task_scope_of_episode(episode)\n+    # EditManifest.edit_id 走 contracts.harness 的 canonical-id 语法\n+    # (^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$)：任务键里的 metric 名带大小写\n+    # （sMASE），直接拼进去会被 manifest 硬拒。逐段折成小写并把非法字符\n+    # 折成下划线——折叠是确定性的、无哈希的，且三处（edit_id /\n+    # target_surface_id / skill_id）共用这一个函数，不会再各写一遍。\n+    parts = [_canonical_fragment(x)\n+             for x in (task_type, model_class, metric,\n+                       _op_of_episode(episode))]\n+    return \"fast_winner_\" + \"_\".join(parts)\n+\n+\n+def _canonical_fragment(value: object) -> str:\n+    text = re.sub(r\"[^a-z0-9]+\", \"_\", str(value).lower()).strip(\"_\")\n+    return text or \"x\"\n+\n+\n def _applicability_reachable(\n     card: Mapping[str, object],\n     applicability: Mapping[str, object],\n@@ -565,17 +635,17 @@ class TTHAMethod:\n         ev: dict[str, Any] = {\"stage\": \"started\"}\n         applicability = _applicability_from_card(card)\n         manifest = EditManifest(\n-            edit_id=f\"fast_winner_{_op_of_episode(episode)}\",\n+            edit_id=_fast_winner_skill_id(episode),\n             base_harness_sha=self._active_snapshot().harness_content_sha,\n             target_pattern_id=str(card.get(\"pattern_id\", \"fast-winner\")),\n             target_surface_id=\"skill_library.entries/\"\n-                              f\"fast_winner_{_op_of_episode(episode)}\",\n+                              + _fast_winner_skill_id(episode),\n             operation=EditOperation.ADD,\n             surface_precondition={\"kind\": \"ABSENT\"},\n             dependency_precondition_shas={},\n             new_value={\n                 \"schema_version\": \"skill-entry/1\",\n-                \"skill_id\": f\"fast_winner_{_op_of_episode(episode)}\",\n+                \"skill_id\": _fast_winner_skill_id(episode),\n                 \"skill_kind\": \"capability\",\n                 \"revision\": 1,\n                 \"body\": \"Frozen program steps: \" + _json.dumps(\n@@ -631,18 +701,51 @@ class TTHAMethod:\n         # Support 判定（计量修正 2026-08-12）：提供 support_gain（本轮\n         # 探测已获——winner）则直接复用——不重开相同 Context×Program 的\n         # Support 评估（不计预算的重复仪器评估）；否则重放确认。\n+        _uids = _series_uids_of_episode(episode)\n+        _consumer = _task_scope_of_episode(episode)[1]\n+        support_facts: Mapping[str, Any] | None = None\n         if support_gain is not None:\n             sg = float(support_gain)\n             ev[\"support_gain\"] = sg\n             ev[\"support_passed\"] = True\n             ev[\"support_reused\"] = True\n+            # 复用本轮探测的 Support 时，逐序列读数已由 online_loop 在写\n+            # Episode 时分类过——直接读回，不重开评估、也不第二次分类。\n+            recorded = dict(getattr(episode, \"support_response\", {}) or {})\n+            measured = recorded.get(\"measured_effect\")\n+            if isinstance(measured, Mapping):\n+                support_facts = dict(measured)\n         else:\n             support = evaluator(steps, 0)\n             sg = (float(support.gain) if support.gain is not None else None)\n             ev[\"support_gain\"] = sg\n             ev[\"support_passed\"] = bool(support.verification.passed)\n-        if sg is None or sg < MATERIAL_THRESHOLD:\n+            if sg is not None:\n+                support_facts = _classify_relation(\n+                    aggregate_gain=sg,\n+                    per_series_gains=_per_series_map(\n+                        getattr(support, \"per_view_gain\", None), _uids),\n+                    is_identity=_steps_are_identity(steps),\n+                    consumer_id=_consumer,\n+                )\n+        if sg is None:\n+            ev[\"stage\"] = \"support_rejected\"\n+            return ev\n+        # T5 #41 A4：Support = POSITIVE 才形成 Draft。聚合过线但逐序列有害\n+        # （CONFLICT）与 NEGATIVE/NEUTRAL/ABSTAIN 只留 Episode，不扩执行权。\n+        # 读不到逐序列读数时 classify_relation 退化为纯聚合判定，与旧门\n+        # 在正向侧同结论（旧门另放行 NEUTRAL，本轮起不再放行）。\n+        if support_facts is None:\n+            support_facts = _classify_relation(\n+                aggregate_gain=sg, per_series_gains=None,\n+                is_identity=_steps_are_identity(steps),\n+                consumer_id=_consumer)\n+        ev[\"support_relation\"] = support_facts[\"relation\"]\n+        ev[\"support_evidence\"] = dict(support_facts)\n+        if support_facts[\"relation\"] != \"POSITIVE\":\n             ev[\"stage\"] = \"support_rejected\"\n+            ev[\"support_reject_reason\"] = \"relation_%s\" % str(\n+                support_facts[\"relation\"]).lower()\n             return ev\n         # 两阶段 pending（delayed 到达前不激活）\n         self._pending_update = {\n@@ -650,6 +753,8 @@ class TTHAMethod:\n             \"manifest_applied\": manifest_applied,\n             \"receipt\": receipt,\n             \"episode_id\": getattr(episode, \"episode_id\", None),\n+            \"series_uids\": tuple(_uids),\n+            \"consumer_id\": _consumer,\n         }\n         ev[\"stage\"] = \"pending\"\n         ev[\"edit_id\"] = manifest.edit_id\n@@ -1105,11 +1210,16 @@ class TTHAMethod:\n             ev[\"stage\"] = \"support_rejected\"\n             return ev\n         # ---- 候选冻结（pending——delayed 到达前不激活）----\n+        # T5 #41 A4：Slow 路径的 Support 门本轮不动（单假设纪律——本轮的\n+        # 行为机制只挂在 Fast winner 的 Draft 门与 delayed 门上）。逐序列\n+        # uid/consumer 仍随 pending 记下，供 delayed 侧分类使用。\n         self._pending_update = {\n             \"steps\": steps,\n             \"manifest_applied\": manifest_applied,\n             \"receipt\": receipt,\n             \"episode_id\": getattr(episode, \"episode_id\", None),\n+            \"series_uids\": tuple(_series_uids_of_episode(episode)),\n+            \"consumer_id\": _task_scope_of_episode(episode)[1],\n         }\n         ev[\"stage\"] = \"pending\"\n         return ev\n@@ -1337,15 +1447,39 @@ class TTHAMethod:\n         dg_finite = dg is not None and bool(__import__(\"math\").isfinite(dg))\n         ev: dict[str, Any] = {\"stage\": \"pending\", \"delayed_gain\": dg}\n         # 复核 Blocker 3（2026-08-11）：delayed 必须 verifier 通过 + gain\n-        # 有限 + 不显著负向才批准；None/NaN/verifier 失败 → 拒绝（丢弃\n-        # pending，snapshot 不变）\n-        if not (delayed.verification.passed and dg_finite\n-                and dg >= -MATERIAL_THRESHOLD):\n+        # 有限；None/NaN/verifier 失败 → 拒绝（丢弃 pending，snapshot 不变）\n+        if not (delayed.verification.passed and dg_finite):\n             ev[\"stage\"] = \"delayed_rejected\"\n             ev[\"delayed_reject_reason\"] = (\n                 \"verifier_failed\" if not delayed.verification.passed\n-                else \"gain_unavailable\" if not dg_finite\n-                else \"material_negative\")\n+                else \"gain_unavailable\")\n+            self._pending_update = None\n+            return ev\n+        # T5 #41 A4（生命周期风险门）：批准条件由 \"dg >= -MATERIAL_THRESHOLD\"\n+        # 改为 classify_relation(...) == POSITIVE，与 Memory 卡、online_loop\n+        # 的写回共用同一个分类器。两处实质变化：\n+        #   * 聚合过线但有逐序列伤害 → CONFLICT → 不批准（原门读不到逐序列\n+        #     读数，这类候选会被放进 active snapshot）；\n+        #   * NEUTRAL（|dg| < 阈值）不再扩权——原门 dg ≥ −0.005 即批准，\n+        #     零效果的候选也能进 snapshot。这是本轮授权的行为变化。\n+        # aggregate 与 per-series 原始读数无论批准与否都留在 evidence 里。\n+        facts = _classify_relation(\n+            aggregate_gain=dg,\n+            per_series_gains=_per_series_map(\n+                getattr(delayed, \"per_view_gain\", None),\n+                pend.get(\"series_uids\")),\n+            is_identity=_steps_are_identity(pend[\"steps\"]),\n+            consumer_id=pend.get(\"consumer_id\"),\n+        )\n+        ev[\"delayed_relation\"] = facts[\"relation\"]\n+        ev[\"delayed_evidence\"] = dict(facts)\n+        if facts[\"relation\"] != \"POSITIVE\":\n+            ev[\"stage\"] = \"delayed_rejected\"\n+            ev[\"delayed_reject_reason\"] = \"relation_%s\" % str(\n+                facts[\"relation\"]).lower()\n+            # CONFLICT/NEGATIVE：丢弃 pending。已部署 Skill 的限制由\n+            # online_loop 的 delayed 状态更新（RESTRICTED）与 revoke 路径\n+            # 处理——本方法不越权改别人的 snapshot 条目。\n             self._pending_update = None\n             return ev\n         # episode_id 匹配检查（复核 Major）：pending 只应由其对应 Episode",
+        "stat": "methods/ttha/method.py | 154 +++++++++++++++++++++++++++++++++++++++++++++----\n 1 file changed, 144 insertions(+), 10 deletions(-)",
+        "sha256_now": "fd55861f03ca4fcb2e59bb35e81738db236654f3c2c80cc118bca0e287e94a89"
+      }
+    },
+    "new_files": {
+      "evaluation/functional/consumers/ad_scope_adapter.py": {
+        "sha256": "3708ae7a00267bffc6ecf073208b4cc147ca5a6a25971c182f6bbd67e9023c04",
+        "lines": 256,
+        "note": "new file; its whole content is the diff"
+      }
+    },
+    "v9_membership": {
+      "operators/registry.py": false,
+      "methods/ttha/online_loop.py": false,
+      "methods/ttha/method.py": true,
+      "evaluation/functional/consumers/ad_scope_adapter.py": false
+    },
+    "v9_touched_this_round": [
+      "methods/ttha/method.py"
+    ]
+  },
+  "substrate": {
+    "train": [
+      "72203812897",
+      "72259003927",
+      "72329003935",
+      "72422093820",
+      "72435653866",
+      "72438093819",
+      "72511654737",
+      "72529014768",
+      "72605654791",
+      "72654014936",
+      "72793494248",
+      "74486514719"
+    ],
+    "forecasting_train": [
+      "72203812897",
+      "72259003927",
+      "72329003935",
+      "72422093820",
+      "72435653866",
+      "72438093819",
+      "72511654737",
+      "72529014768"
+    ],
+    "forecasting_eval": [
+      "72605654791",
+      "72654014936",
+      "72793494248",
+      "74486514719"
+    ],
+    "anomaly_detection_train": [
+      "72203812897",
+      "72259003927",
+      "72329003935",
+      "72422093820",
+      "72435653866",
+      "72438093819",
+      "72511654737",
+      "72529014768",
+      "72605654791",
+      "72654014936",
+      "72793494248",
+      "74486514719"
+    ],
+    "t1_eval_uids_not_injected": [
+      "99999903062",
+      "99999904140",
+      "99999923908",
+      "99999963862"
+    ],
+    "source": "_scratch/phase_t/injected/t1",
+    "block": [
+      120,
+      840
+    ],
+    "anchors": [
+      312,
+      552,
+      792
+    ],
+    "support_origin": 840,
+    "delayed_origin": 888,
+    "qcal_region": [
+      2600,
+      3060
+    ],
+    "qf_region": [
+      2100,
+      2560
+    ]
+  },
+  "budgets": {
+    "llm": 16,
+    "forecasting_retrains": 120,
+    "ad_evaluations": 180
+  },
+  "ambiguities": [
+    "Part B is a wiring acceptance on scripted readings, not new evidence: its numbers are fixtures chosen to put each lifecycle cell under test, and they travel the real entry point unchanged.",
+    "The T1 injected copy carries only the twelve training stations, so the forecasting arm splits them 8 train / 4 eval rather than reach outside the injected copy for T1's four original eval series. The AD arm keeps all twelve because its scored surface is the Query region, which the training block never touches. The two arms therefore see the same series but not the same roster roles; the book fixes the Harness, Memory, Agent, DSL and menu as shared, not the roster.",
+    "The AD adapter's action region is the concatenation of the three verified windows ([120,840)), not the full T1 block [120,900). The 44 of 48 injected training events that fall inside it carry the label signal; the four outside it are not seen by the fit.",
+    "The AD reading is reported to the executor as -macro_f1 so the executor's own gain arithmetic (baseline - candidate) yields candidate_F1 - baseline_F1. No executor code was changed to do it, but the negation is a convention this adapter chose and it is recorded here rather than buried.",
+    "Both rounds of a task run at the same origin on purpose (the book requires byte-identical Context between r1 and r2), so the AD adapter's memo makes the second round's identical readings free. The fit and scoring are closed-form and deterministic, so a re-run returns identical numbers by construction; only cache misses are counted against the AD evaluation budget.",
+    "A4 tightens handle_feedback_delayed for every task, not just AD: NEUTRAL delayed no longer extends privilege. That is the authorized behaviour change of this round, and it is what B5 re-checks on the forecasting side rather than a regression to be worked around.",
+    "handle_feedback_support (the Slow path) was NOT given the same relation gate. Part C runs with allow_slow=False so it is never reached here; extending the gate there is a second wiring surface and was left for the main line to route."
+  ],
+  "part_b": {
+    "checks": [
+      {
+        "id": "B1_support_positive_draft",
+        "ok": true,
+        "detail": "outlier_iqr episode written"
+      },
+      {
+        "id": "B1_winner_formed",
+        "ok": true,
+        "detail": "winner=[{'op': 'outlier_iqr', 'params': {}}]"
+      },
+      {
+        "id": "B1_draft_pending",
+        "ok": true,
+        "detail": "fast winner stage=pending"
+      },
+      {
+        "id": "B1_delayed_positive_active",
+        "ok": true,
+        "detail": "episode relation=POSITIVE status=LOCAL_ACTIVE"
+      },
+      {
+        "id": "B1_delayed_approved",
+        "ok": true,
+        "detail": "delayed stage=approved"
+      },
+      {
+        "id": "B5_forecasting_positive_delayed_still_approves",
+        "ok": true,
+        "detail": "the tightened gate still approves an unambiguously positive delayed"
+      },
+      {
+        "id": "B2_ad_candidate_supplied",
+        "ok": true,
+        "detail": "AD probed 1 candidate(s): [{'candidate_id': 'cand_hampel_filter', 'gain': 0.050000000000000044}]"
+      },
+      {
+        "id": "B2_conflict_recorded",
+        "ok": true,
+        "detail": "AD episode relation=CONFLICT (aggregate up, one series harmed)"
+      },
+      {
+        "id": "B2_conflict_grants_no_execution",
+        "ok": true,
+        "detail": "winner=None approved=None status=EPISODE_ONLY"
+      },
+      {
+        "id": "B2_no_ad_skill_in_snapshot",
+        "ok": true,
+        "detail": "no AD fast_winner skill was written"
+      },
+      {
+        "id": "B3_forecasting_key_correct",
+        "ok": true,
+        "detail": "F episodes keyed forecast|pooled_ridge_a1|sMASE"
+      },
+      {
+        "id": "B3_ad_key_correct",
+        "ok": true,
+        "detail": "AD episodes keyed anomaly_detection|ad_ridge_train_v3|macro_event_f1"
+      },
+      {
+        "id": "B3_zero_cross_task",
+        "ok": true,
+        "detail": "the two arms' key sets are disjoint"
+      },
+      {
+        "id": "B4_f_skill_written",
+        "ok": true,
+        "detail": "learned skills after B1: ['fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr']"
+      },
+      {
+        "id": "B4_next_f_round_retrieves",
+        "ok": true,
+        "detail": "forecast view carries ['fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr']"
+      },
+      {
+        "id": "B4_next_ad_round_cannot_read_f_skill",
+        "ok": true,
+        "detail": "anomaly_detection view carries ['build_contrastive_candidates', 'inspect_and_localize', 'select_or_identity_and_verify']"
+      },
+      {
+        "id": "B4_skill_id_is_task_scoped",
+        "ok": true,
+        "detail": "task-scoped, hash-free ids: ['fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr']"
+      },
+      {
+        "id": "B6_support_positive_then_draft",
+        "ok": true,
+        "detail": "Support POSITIVE reached pending Draft"
+      },
+      {
+        "id": "B6_delayed_conflict",
+        "ok": true,
+        "detail": "episode=CONFLICT gate=CONFLICT"
+      },
+      {
+        "id": "B6_not_approved_pending_discarded",
+        "ok": true,
+        "detail": "stage=delayed_rejected approved=None pending=None"
+      },
+      {
+        "id": "B6_skill_restricted",
+        "ok": true,
+        "detail": "episode local_status=RESTRICTED"
+      },
+      {
+        "id": "B6_raw_readings_retained",
+        "ok": true,
+        "detail": "aggregate=0.06000000000000005 series_read=4 harmed=1"
+      }
+    ],
+    "detail": {
+      "B1": {
+        "arm": "forecasting",
+        "winner_program": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "probes": [
+          {
+            "candidate_id": "cand_outlier_iqr",
+            "gain": 0.09999999999999998
+          }
+        ],
+        "fast_skill_event": {
+          "stage": "pending",
+          "support_gain": 0.09999999999999998,
+          "support_passed": true,
+          "support_reused": true,
+          "support_relation": "POSITIVE",
+          "support_evidence": {
+            "relation": "POSITIVE",
+            "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.09999999999999998,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 0,
+            "harmed_series": [],
+            "min_per_series_gain": 0.09999999999999998
+          },
+          "edit_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr"
+        },
+        "delayed_event": {
+          "stage": "approved",
+          "delayed_gain": 0.07999999999999996,
+          "delayed_relation": "POSITIVE",
+          "delayed_evidence": {
+            "relation": "POSITIVE",
+            "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.07999999999999996,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 0,
+            "harmed_series": [],
+            "min_per_series_gain": 0.07999999999999996
+          },
+          "snapshot_updated": true
+        },
+        "approved_skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr",
+        "activated": true,
+        "episode_rows": [
+          {
+            "episode_id": "t5:forecasting_target_outlier_iqr_b1_p1",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "workflow_signature": "outlier_iqr",
+            "relation": "POSITIVE",
+            "evidence_level": "DELAYED",
+            "local_status": "LOCAL_ACTIVE"
+          }
+        ],
+        "snapshot_skills": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr",
+            "kind": "CAPABILITY",
+            "requires_target_support": true,
+            "restricted": false,
+            "applicability": {
+              "all": [
+                {
+                  "feature": "task_kind",
+                  "op": "==",
+                  "value": "forecast"
+                }
+              ]
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ]
+      },
+      "B2": {
+        "arm": "anomaly_detection",
+        "winner_program": null,
+        "probes": [
+          {
+            "candidate_id": "cand_hampel_filter",
+            "gain": 0.050000000000000044
+          }
+        ],
+        "fast_skill_event": null,
+        "delayed_event": null,
+        "approved_skill_id": null,
+        "activated": false,
+        "episode_rows": [
+          {
+            "episode_id": "t5:anomaly_detection_target_hampel_filter_b2_p1",
+            "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|macro_event_f1",
+            "workflow_signature": "hampel_filter",
+            "relation": "CONFLICT",
+            "evidence_level": "SUPPORT",
+            "local_status": "EPISODE_ONLY"
+          }
+        ],
+        "snapshot_skills": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ]
+      },
+      "B4": {
+        "learned_skills": [
+          "fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr"
+        ],
+        "visible_to_forecast": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "visible_to_anomaly_detection": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "skill_rows": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_iqr",
+            "kind": "CAPABILITY",
+            "requires_target_support": true,
+            "restricted": false,
+            "applicability": {
+              "all": [
+                {
+                  "feature": "task_kind",
+                  "op": "==",
+                  "value": "forecast"
+                }
+              ]
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ]
+      },
+      "B6": {
+        "arm": "forecasting",
+        "winner_program": [
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ],
+        "probes": [
+          {
+            "candidate_id": "cand_outlier_mad",
+            "gain": 0.09999999999999998
+          }
+        ],
+        "fast_skill_event": {
+          "stage": "pending",
+          "support_gain": 0.09999999999999998,
+          "support_passed": true,
+          "support_reused": true,
+          "support_relation": "POSITIVE",
+          "support_evidence": {
+            "relation": "POSITIVE",
+            "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.09999999999999998,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 0,
+            "harmed_series": [],
+            "min_per_series_gain": 0.09999999999999998
+          },
+          "edit_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_mad"
+        },
+        "delayed_event": {
+          "stage": "delayed_rejected",
+          "delayed_gain": 0.06000000000000005,
+          "delayed_relation": "CONFLICT",
+          "delayed_evidence": {
+            "relation": "CONFLICT",
+            "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.06000000000000005,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 1,
+            "harmed_series": [
+              "view_1"
+            ],
+            "min_per_series_gain": -0.020000000000000018
+          },
+          "delayed_reject_reason": "relation_conflict"
+        },
+        "approved_skill_id": null,
+        "activated": false,
+        "episode_rows": [
+          {
+            "episode_id": "t5:forecasting_target_outlier_mad_b6_p1",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "workflow_signature": "outlier_mad",
+            "relation": "CONFLICT",
+            "evidence_level": "DELAYED",
+            "local_status": "RESTRICTED"
+          }
+        ],
+        "snapshot_skills": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ]
+      }
+    },
+    "all_passed": true,
+    "llm_calls": 0
+  },
+  "part_c": {
+    "store": "<outside-repo>/pc",
+    "h0_runtime_bundle_sha": "cfb770e854baf9833a55a72be5e75ea0ecba9b9c6c30fc10fd9e13104db2b3d7",
+    "pre_seeded_cards": 0,
+    "rounds": [
+      {
+        "arm": "forecasting",
+        "round": "r1",
+        "task_spec_sha": "eea6a6c1247b7fe2",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "public_features_sha256": "5749f59d1d2bdde629c725869612c8c2e0a20f003373e3d05019319959905f1f",
+        "snapshot_before": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_before": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_before": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "episodes_before": 0,
+        "pool": [
+          "identity",
+          "mad_outlier_repair",
+          "hampel_outlier_repair"
+        ],
+        "chosen": "mad_outlier_repair",
+        "memory_resolution": "no_memory",
+        "proposal_count": 2,
+        "probes": [
+          {
+            "candidate_id": "mad_outlier_repair",
+            "kind": "probe",
+            "gain": -0.21656152747417345
+          },
+          {
+            "candidate_id": "hampel_outlier_repair",
+            "kind": "probe",
+            "gain": 0.192035220917806
+          }
+        ],
+        "winner_program": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ],
+        "receipts": 2,
+        "harm_count": 1,
+        "fast_skill_event": {
+          "stage": "pending",
+          "support_gain": 0.192035220917806,
+          "support_passed": true,
+          "support_reused": true,
+          "support_relation": "POSITIVE",
+          "support_evidence": {
+            "relation": "POSITIVE",
+            "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.192035220917806,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 0,
+            "harmed_series": [],
+            "min_per_series_gain": 0.002767101657776605
+          },
+          "edit_id": "fast_winner_forecast_pooled_ridge_a1_smase_hampel_filter"
+        },
+        "delayed_event": {
+          "stage": "delayed_rejected",
+          "delayed_gain": 0.04500688582382373,
+          "delayed_relation": "CONFLICT",
+          "delayed_evidence": {
+            "relation": "CONFLICT",
+            "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.04500688582382373,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 1,
+            "harmed_series": [
+              "view_0"
+            ],
+            "min_per_series_gain": -0.07137698624657429
+          },
+          "delayed_reject_reason": "relation_conflict"
+        },
+        "delayed_utility": 0.04500688582382373,
+        "approved_skill_id": null,
+        "activated": false,
+        "episode_rows": [
+          {
+            "episode_id": "t5:forecasting_target_outlier_mad_forecasting_r1_p1",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "workflow_signature": "outlier_mad",
+            "relation": "NEGATIVE",
+            "evidence_level": "SUPPORT",
+            "local_status": "EPISODE_ONLY",
+            "aggregate_gain": null,
+            "per_series": {
+              "relation": "NEGATIVE",
+              "classification_basis": "aggregate < -0.005",
+              "material_threshold": 0.005,
+              "consumer_id": "pooled_ridge_a1",
+              "aggregate_gain": -0.21656152747417345,
+              "aggregate_direction": "degraded",
+              "series_read": 4,
+              "harmed_series_count": 3,
+              "harmed_series": [
+                "view_0",
+                "view_2",
+                "view_3"
+              ],
+              "min_per_series_gain": -0.9124072027820749
+            }
+          },
+          {
+            "episode_id": "t5:forecasting_target_hampel_filter_forecasting_r1_p2",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "workflow_signature": "hampel_filter",
+            "relation": "CONFLICT",
+            "evidence_level": "DELAYED",
+            "local_status": "RESTRICTED",
+            "aggregate_gain": 0.04500688582382373,
+            "per_series": {
+              "relation": "CONFLICT",
+              "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+              "material_threshold": 0.005,
+              "consumer_id": "pooled_ridge_a1",
+              "aggregate_gain": 0.04500688582382373,
+              "aggregate_direction": "improved",
+              "series_read": 4,
+              "harmed_series_count": 1,
+              "harmed_series": [
+                "view_0"
+              ],
+              "min_per_series_gain": -0.07137698624657429
+            }
+          }
+        ],
+        "episodes_after": 2,
+        "snapshot_after": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_after": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_after": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ]
+      },
+      {
+        "arm": "anomaly_detection",
+        "round": "r1",
+        "task_spec_sha": "63dea5987aaecc86",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|macro_event_f1",
+        "public_features_sha256": "6531cdf2b610fbf9bcf75fb6dbe0ec65ac190ba596c4caad78122f2f0a7906dc",
+        "snapshot_before": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_before": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_before": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "episodes_before": 2,
+        "pool": [
+          "identity",
+          "outlier_mad_localized_extreme_deviation"
+        ],
+        "chosen": "outlier_mad_localized_extreme_deviation",
+        "memory_resolution": "rendered_empty",
+        "proposal_count": 1,
+        "probes": [
+          {
+            "candidate_id": "outlier_mad_localized_extreme_deviation",
+            "kind": "probe",
+            "gain": 0.2032407407407406
+          }
+        ],
+        "winner_program": null,
+        "receipts": 1,
+        "harm_count": 0,
+        "fast_skill_event": null,
+        "delayed_event": null,
+        "delayed_utility": null,
+        "approved_skill_id": null,
+        "activated": false,
+        "episode_rows": [
+          {
+            "episode_id": "t5:anomaly_detection_target_outlier_mad_anomaly_detection_r1_p1",
+            "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|macro_event_f1",
+            "workflow_signature": "outlier_mad",
+            "relation": "CONFLICT",
+            "evidence_level": "SUPPORT",
+            "local_status": "EPISODE_ONLY",
+            "aggregate_gain": null,
+            "per_series": {
+              "relation": "CONFLICT",
+              "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+              "material_threshold": 0.005,
+              "consumer_id": "ad_ridge_train_v3",
+              "aggregate_gain": 0.2032407407407406,
+              "aggregate_direction": "improved",
+              "series_read": 12,
+              "harmed_series_count": 1,
+              "harmed_series": [
+                "72511654737"
+              ],
+              "min_per_series_gain": -0.19047619047619047
+            }
+          }
+        ],
+        "episodes_after": 3,
+        "snapshot_after": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_after": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_after": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ]
+      },
+      {
+        "arm": "forecasting",
+        "round": "r2",
+        "task_spec_sha": "eea6a6c1247b7fe2",
+        "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+        "public_features_sha256": "5749f59d1d2bdde629c725869612c8c2e0a20f003373e3d05019319959905f1f",
+        "snapshot_before": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_before": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_before": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "episodes_before": 3,
+        "pool": [
+          "identity",
+          "hampel_extreme_deviation",
+          "mad_extreme_deviation"
+        ],
+        "chosen": "hampel_extreme_deviation",
+        "memory_resolution": "rendered",
+        "proposal_count": 2,
+        "probes": [
+          {
+            "candidate_id": "hampel_extreme_deviation",
+            "kind": "probe",
+            "gain": 0.192035220917806
+          }
+        ],
+        "winner_program": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ],
+        "receipts": 1,
+        "harm_count": 0,
+        "fast_skill_event": {
+          "stage": "pending",
+          "support_gain": 0.192035220917806,
+          "support_passed": true,
+          "support_reused": true,
+          "support_relation": "POSITIVE",
+          "support_evidence": {
+            "relation": "POSITIVE",
+            "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.192035220917806,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 0,
+            "harmed_series": [],
+            "min_per_series_gain": 0.002767101657776605
+          },
+          "edit_id": "fast_winner_forecast_pooled_ridge_a1_smase_hampel_filter"
+        },
+        "delayed_event": {
+          "stage": "delayed_rejected",
+          "delayed_gain": 0.04500688582382373,
+          "delayed_relation": "CONFLICT",
+          "delayed_evidence": {
+            "relation": "CONFLICT",
+            "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+            "material_threshold": 0.005,
+            "consumer_id": "pooled_ridge_a1",
+            "aggregate_gain": 0.04500688582382373,
+            "aggregate_direction": "improved",
+            "series_read": 4,
+            "harmed_series_count": 1,
+            "harmed_series": [
+              "view_0"
+            ],
+            "min_per_series_gain": -0.07137698624657429
+          },
+          "delayed_reject_reason": "relation_conflict"
+        },
+        "delayed_utility": 0.04500688582382373,
+        "approved_skill_id": null,
+        "activated": false,
+        "episode_rows": [
+          {
+            "episode_id": "t5:forecasting_target_hampel_filter_forecasting_r2_p1",
+            "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+            "workflow_signature": "hampel_filter",
+            "relation": "CONFLICT",
+            "evidence_level": "DELAYED",
+            "local_status": "RESTRICTED",
+            "aggregate_gain": 0.04500688582382373,
+            "per_series": {
+              "relation": "CONFLICT",
+              "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+              "material_threshold": 0.005,
+              "consumer_id": "pooled_ridge_a1",
+              "aggregate_gain": 0.04500688582382373,
+              "aggregate_direction": "improved",
+              "series_read": 4,
+              "harmed_series_count": 1,
+              "harmed_series": [
+                "view_0"
+              ],
+              "min_per_series_gain": -0.07137698624657429
+            }
+          }
+        ],
+        "episodes_after": 4,
+        "snapshot_after": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_after": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_after": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ]
+      },
+      {
+        "arm": "anomaly_detection",
+        "round": "r2",
+        "task_spec_sha": "63dea5987aaecc86",
+        "task_consumer_key": "anomaly_detection|ad_ridge_train_v3|macro_event_f1",
+        "public_features_sha256": "6531cdf2b610fbf9bcf75fb6dbe0ec65ac190ba596c4caad78122f2f0a7906dc",
+        "snapshot_before": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "skills_before": [
+          {
+            "skill_id": "build_contrastive_candidates",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "inspect_and_localize",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          },
+          {
+            "skill_id": "select_or_identity_and_verify",
+            "kind": "BOOTSTRAP_PROCEDURE",
+            "requires_target_support": false,
+            "restricted": false,
+            "applicability": {
+              "const": true
+            }
+          }
+        ],
+        "view_skill_ids_before": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "episodes_before": 4,
+        "error": "AgentCallBudgetExceeded: Agent call budget exhausted at 16"
+      }
+    ],
+    "stopped": "INCOMPLETE_LLM_BUDGET",
+    "llm_calls": 1,
+    "models_returned": [
+      "gpt-5.6-sol"
+    ]
+  },
+  "r1_r2_comparison": {
+    "arms": {
+      "forecasting": {
+        "r1": {
+          "pool": [
+            "identity",
+            "mad_outlier_repair",
+            "hampel_outlier_repair"
+          ],
+          "chosen": "mad_outlier_repair",
+          "memory_resolution": "no_memory",
+          "winner_program": [
+            {
+              "op": "hampel_filter",
+              "params": {}
+            }
+          ],
+          "probes": [
+            {
+              "candidate_id": "mad_outlier_repair",
+              "kind": "probe",
+              "gain": -0.21656152747417345
+            },
+            {
+              "candidate_id": "hampel_outlier_repair",
+              "kind": "probe",
+              "gain": 0.192035220917806
+            }
+          ],
+          "view_skill_ids_before": [
+            "build_contrastive_candidates",
+            "inspect_and_localize",
+            "select_or_identity_and_verify"
+          ],
+          "episodes_before": 0,
+          "approved_skill_id": null,
+          "delayed_utility": 0.04500688582382373
+        },
+        "r2": {
+          "pool": [
+            "identity",
+            "hampel_extreme_deviation",
+            "mad_extreme_deviation"
+          ],
+          "chosen": "hampel_extreme_deviation",
+          "memory_resolution": "rendered",
+          "winner_program": [
+            {
+              "op": "hampel_filter",
+              "params": {}
+            }
+          ],
+          "probes": [
+            {
+              "candidate_id": "hampel_extreme_deviation",
+              "kind": "probe",
+              "gain": 0.192035220917806
+            }
+          ],
+          "view_skill_ids_before": [
+            "build_contrastive_candidates",
+            "inspect_and_localize",
+            "select_or_identity_and_verify"
+          ],
+          "episodes_before": 3,
+          "approved_skill_id": null,
+          "delayed_utility": 0.04500688582382373
+        },
+        "changed_fields": {
+          "pool": true,
+          "chosen": true,
+          "winner": false,
+          "probes": true,
+          "memory_resolution": true,
+          "view_skill_ids": false
+        },
+        "behavior_changed": true
+      },
+      "anomaly_detection": {
+        "incomplete": true
+      }
+    },
+    "assertions": [
+      {
+        "id": "forecasting_context_identical_between_rounds",
+        "ok": true,
+        "detail": "task_spec sha eea6a6c1247b7fe2, public features sha 5749f59d1d2b and Consumer key forecast|pooled_ridge_a1|sMASE are the same bytes in both rounds, so any behaviour difference has to come from what the trajectory itself wrote"
+      },
+      {
+        "id": "forecasting_memory_or_skill_grew_between_rounds",
+        "ok": true,
+        "detail": "episodes 0 -> 3; skills visible before r2: ['build_contrastive_candidates', 'inspect_and_localize', 'select_or_identity_and_verify']"
+      }
+    ]
+  },
+  "cross_task": {
+    "key_mismatches": [],
+    "skill_leaks": [],
+    "expected_keys": {
+      "forecasting": "forecast|pooled_ridge_a1|sMASE",
+      "anomaly_detection": "anomaly_detection|ad_ridge_train_v3|macro_event_f1"
+    }
+  },
+  "cost": {
+    "llm_calls": 16,
+    "forecasting_retrains": 5,
+    "ad_evaluations": 24,
+    "ad_reader_calls": [
+      {
+        "signature": "identity",
+        "region": "qcal",
+        "origin": 840,
+        "cache": "miss",
+        "ad_evaluations": 12,
+        "macro_f1": 0.5950396825396825
+      },
+      {
+        "signature": "outlier_mad({})",
+        "region": "qcal",
+        "origin": 840,
+        "cache": "miss",
+        "ad_evaluations": 12,
+        "macro_f1": 0.7982804232804231
+      }
+    ],
+    "forecasting_reader_calls": [
+      {
+        "signature": "identity",
+        "origin": 840,
+        "cache": "miss",
+        "retrains": 1,
+        "mean_smase": 1.5781081021411543
+      },
+      {
+        "signature": "outlier_mad({})",
+        "origin": 840,
+        "cache": "miss",
+        "retrains": 1,
+        "mean_smase": 1.7946696296153277
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 840,
+        "cache": "miss",
+        "retrains": 1,
+        "mean_smase": 1.3860728812233483
+      },
+      {
+        "signature": "identity",
+        "origin": 888,
+        "cache": "miss",
+        "retrains": 1,
+        "mean_smase": 1.7997312176721278
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 888,
+        "cache": "miss",
+        "retrains": 1,
+        "mean_smase": 1.7547243318483041
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 888,
+        "cache": "hit",
+        "retrains": 0
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 888,
+        "cache": "hit",
+        "retrains": 0
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 840,
+        "cache": "hit",
+        "retrains": 0
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 888,
+        "cache": "hit",
+        "retrains": 0
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 888,
+        "cache": "hit",
+        "retrains": 0
+      },
+      {
+        "signature": "hampel_filter({})",
+        "origin": 888,
+        "cache": "hit",
+        "retrains": 0
+      }
+    ],
+    "llm_calls_raw_field": 1,
+    "llm_calls_derivation": "part_c.llm_calls was read off backend.returned_models, which is the set of distinct model names, not a call counter. The true total is the cap itself: the run stopped with AgentCallBudgetExceeded at 16, which fires only on the call after the 16th. The runner now reads backend.calls; this artifact's field is corrected rather than re-measured, because re-measuring would spend a second round's budget."
+  },
+  "verdict": {
+    "verdict": "INCOMPLETE_LLM_BUDGET",
+    "reason": "the live trajectory stopped: INCOMPLETE_LLM_BUDGET",
+    "completed_rounds": 3
+  },
+  "frozen_surface": {
+    "before": {
+      "artifacts/functional/e2/batch_recipe_T233_v1.json": "3d20cf922a9188cec5baed0a2bda1f8874102916831a6786470e249e5edbd2b1",
+      "artifacts/functional/e2/batch_recipe_electricity_v1.json": "7e30f6f45ef353a3f69d1e9ca93416714803fa07f420a96cc6d9a4c7921c68ba",
+      "artifacts/functional/e2/batch_recipe_traffic_v1.json": "74d07e2a57fb58f57a433cc7e36337875f376105e4de2de16c66700968ef3caa",
+      "artifacts/functional/e2/batch_recipe_v2_all_cells_v1.json": "633f320bb944ac98295268ceecc4cec23d639e9faf897f795b57fef761713786",
+      "artifacts/functional/e2/batch_recipe_windows_v1.json": "35ef54b5477b436a2115fb804358fc375f03e80eb22399e798e6bd3ff1b2ccf4",
+      "artifacts/functional/e2/fresh_confirmation_v1.json": "e966b68a5016721ff2133ad3507d6396628d45fc49d636c9067f6b4226856314",
+      "artifacts/functional/e2/fresh_confirmation_v1.md": "943bd933bbeee54e4983e0b4da7493fe6da914fde9ecbdbaf54f092c406d8e37",
+      "artifacts/functional/e2/fresh_confirmation_v1_adjudication.md": "374e93c6935e6e8e1fe7983ad004a9cdcf006bfb2e590405fd3e7bf64be090aa",
+      "artifacts/functional/e2/local_skill_recall_v1.json": "ba3cc55e371931c647f5d9b3057801d18b03a90eccc4f1f9ff2f6e7eea3e8f08",
+      "artifacts/functional/e2/noaa_fresh_cohort_v2.json": "281742e91d8cb684be77d11f824540c1e936921211078232d6056e60042a280e",
+      "artifacts/functional/e2/recipe_skill_cards_v1.json": "4878a0f2986555d2979a83bd8269e3f1c48972d8afa501025ca9e89a3d8ddd03",
+      "artifacts/functional/e2/slow_scope_update_v1.json": "ecafbc902e013196fdf62fb8d71f9f38cf9acfc6cf454b7a4cff36a28b069803",
+      "artifacts/functional/e2/slow_scope_update_v2.json": "52780c8d429dab06ed3001e5f16c1824cd1154d0fd88c5c45b6fdc029064167e",
+      "data/benchmark_noaa_fresh_v1/manifest.json": "dfe9555fa372f4226dba17fb408538212ed62db48c3a1a9188eb4af9a127abda",
+      "evaluation/functional/run_batch_composition_headroom.py": "4536ef974edd5a26673c66ea09a6927458ecbeccabeeee2f4bc20d217cec91b5",
+      "evaluation/functional/run_e2_autonomous_natural_workflow_generation.py": "5dc797a2c7a825a9bef97d5e0e158d8b3b774ad7d65c77c819cd82d005f4db0c",
+      "evaluation/functional/run_e2_fresh_confirmation.py": "13f0cb09fbdf2bd75f4b59b59c21b92de79d7f2684c4f3799523ce79d3986b14",
+      "evaluation/functional/run_e2_local_skill_recall.py": "85467d28dcd4fbb46dd0e5f74c4281d75a34f9e85c75f11e4d27231806714f68",
+      "evaluation/functional/run_e2_operational_pipeline.py": "7f0e80219bc75f8aeab2724c92e91a8d0164241eb26ef80dc81cbe1ddcee4074",
+      "evaluation/functional/run_e2_recipe_experience_to_skill.py": "312a2d0f8c9d630da1772d6eb4f44a3b75e160f20712287f24d2b98c724b8ce4",
+      "evaluation/functional/run_e2_skill_store_integration.py": "0dbe61d98defd4dcce9a9081e0e297617e4606f2cc2919b5f10ed52665690c48",
+      "evaluation/functional/run_e2_slow_scope_update.py": "0f3c3c8fb1e2a472f3a30c596d6f63f43ac8f30bfc734914c6b16ec68cab09cb",
+      "evaluation/functional/run_e2_warm_vs_cold_recipe_search.py": "ffd53275210039483c297452a891db104e6c30621eb05cfdb288d937371c80b7",
+      "evaluation/functional/run_v1_kdd2018_natural_slow_update.py": "7bcb165dd881b8995739f99f87b13ffcb35fa784deb88b35c0513c867e7c35cb",
+      "evaluation/functional/task_episode_harness/e1.py": "389110c5fad6dff4319eeb77475cafb0b3497062bf6313439a6482f76136acee",
+      "evaluation/functional/task_episode_harness/runner.py": "11ec71a1946e9727215626eb87dd13b64d1898e387b255aef818df64b7562586",
+      "evaluation/minipipe/config/m0_rules.json": "5c6fe7b69462ae4cd6be8b862814041f529d53fe108530003b1d4dc87b37ce63",
+      "evaluation/minipipe/feedback/fault_routes.json": "00900bb483f569ca6d40f09d1a624935eaa40781dcee50a46562e82955db74c2",
+      "evaluation/minipipe/feedback/first_fault.py": "09a22100995a0571afb8ddb07d1e743f19f9e8cbc3df1b01b7c8ba360d6a0cdc",
+      "evaluation/minipipe/feedback/router.py": "dcc2c8bdbcc40994c30a014e54d059d755e0d1036ad15e10e7301eb2ef8e84fd",
+      "evaluation/minipipe/replay/edit_controller.py": "14597c758febab68262d644f68ff7fbd11eda46e88b0412f330ebc5dad3c7100",
+      "methods/ttha/harness/compiler.py": "78e6772ea874b79b55b26ffe35c229de6a7bc371abab5505175bc70fdefc7e09",
+      "methods/ttha/harness/h0/snapshot.lock.json": "b7a61852393c4b5d880ee6defc3bdb92420f70c449e7c0a722f79d57a9df9759",
+      "methods/ttha/harness/h0/verification.json": "0dfa07bdd4a955e5346f591793648b818dfed2edc1fdc481806e78945f86d614",
+      "methods/ttha/harness/harness_surfaces.json": "e222daff89026ded3a111141a056ba3cd86c21a64bc32b350483ef11b5882824",
+      "methods/ttha/method.py": "fd55861f03ca4fcb2e59bb35e81738db236654f3c2c80cc118bca0e287e94a89",
+      "methods/ttha/retrieval.py": "785d6994e5d05de14653b31f59956404fa519c8fee7d91f132f840d131b25243",
+      "methods/ttha/schema_contracts.py": "4ec56a613d4e5e06dab07126e290ab6e32f7836b32f27ddda257644a897bc408",
+      "runtime/agent_backend.py": "a551f39b0c3a2b147e44939220fa41899d05278b30477a4b0a16146f54de0b50"
+    },
+    "after": {
+      "files": 39,
+      "drift": [],
+      "ok": true
+    }
+  },
+  "t5_findings": {
+    "llm_budget_arithmetic": {
+      "authorized": 16,
+      "book_nominal_per_round": 3,
+      "book_expected_total": 12,
+      "observed_total": 16,
+      "observed_rounds_completed": 3,
+      "observed_rate_per_round": 4.0,
+      "raw_field_correction": "part_c.llm_calls was read off backend.returned_models, which is the set of distinct model names, not a call counter. The true total is the cap itself: the run stopped with AgentCallBudgetExceeded at 16, which fires only on the call after the 16th. The runner now reads backend.calls; this artifact's field is corrected rather than re-measured, because re-measuring would spend a second round's budget.",
+      "reading": "three rounds and the first stage of a fourth consumed the whole cap, so the live entry costs about five agent calls per round, not the three the book's arithmetic assumed. fast prepare has exactly three stages (inspect / propose / select), each carrying validation_retries=1, so the four calls the book set aside as retry headroom were spent as ordinary traffic rather than left spare. A four-round trajectory needs roughly 20, not 16. The cap is the book's and was not raised."
+    },
+    "completed_segment": {
+      "rounds_completed": 3,
+      "round_not_reached": [
+        {
+          "arm": "anomaly_detection",
+          "round": "r2",
+          "error": "AgentCallBudgetExceeded: Agent call budget exhausted at 16"
+        }
+      ],
+      "what_the_completed_segment_shows": [
+        "F r1: the Agent proposed and probed outlier_mad first (-0.2166, three of four series harmed -> NEGATIVE), then hampel_filter (+0.1920, no series harmed -> POSITIVE), which became the winner and reached a pending Draft Skill.",
+        "F r1 delayed: aggregate +0.0450 but one of four series at -0.0714 -> CONFLICT -> not approved, pending discarded, the Episode written RESTRICTED. Under the gate this round replaced (dg >= -0.005) that same reading would have been APPROVED and written into the active snapshot.",
+        "AD r1: the AD arm was supplied candidates at all, which was the first blocker; it proposed outlier_mad, whose Support aggregate was +0.2032 with one of twelve series at -0.1905 -> CONFLICT -> no winner, no Draft, Episode only.",
+        "F r2: memory_resolution moved no_memory -> rendered, the candidate pool changed, and the Agent no longer probed the harmful outlier_mad at all (1 Support receipt instead of 2, harm_count 0 instead of 1) -- with TaskSpec, public features and Consumer key byte-identical to r1."
+      ],
+      "what_it_does_not_show": "no Skill was ever approved in the live trajectory, because every delayed window came back CONFLICT. Target-local Skill update and live cross-task Skill retrieval were therefore not exercised; they hold only at the Part B (scripted-reading) level. The AD arm's second round never ran."
+    },
+    "collateral_on_the_other_line": {
+      "what": "the A5 rename to fast_winner_{task}_{model}_{metric}_{op} is a naming contract five existing functional tests depend on",
+      "failing_tests": [
+        "tests/functional/test_skill_revocation.py::test_delayed_harm_revokes_retrieved_skill",
+        "tests/functional/test_skill_evolution_e0.py::test_e0_add_compile_retrieval_delayed_and_revocation",
+        "tests/functional/test_e1_v2_protocol_repair.py::test_e1_v2_arm_isolation_window_non_overlap_and_local_skill_reuse",
+        "tests/functional/test_g1_proposal_guidance.py::test_next_task_reuses_instead_of_colliding",
+        "tests/functional/test_f1_forecast_pilot.py::test_f1_pilot_runs_on_frozen_h2_without_promoting_harness"
+      ],
+      "two_kinds": "three are literal expectations of the old id string. The other two are not: evaluation/functional/task_episode_harness/e1.py detects an already-present arm-local Skill by the prefix _LOCAL_SKILL_PREFIX = 'fast_winner_e1v2_', and the task scope now sits between 'fast_winner_' and the operator segment, so the prefix stops matching, the reuse path is not taken, and the re-ADD collides with the ABSENT precondition (AddTargetExistsError).",
+      "not_fixed_and_why": "e1.py is a FROZEN_SURFACE_V9 member and this round authorized method.py only. Reported for the main line to route; not self-adjudicated, not worked around, and the book's ID format was implemented as written rather than bent to keep the prefix alive."
+    },
+    "v9_touched_this_round": [
+      "methods/ttha/method.py"
+    ]
+  },
+  "annotation_note": "t5_findings and the corrected wiring diff are pure functions of this artifact and of git; adding them made no backend call."
+}

@@ -47,9 +47,12 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Sequence
 
 from .experience_memory import (
+    MEASURED_EFFECT_KEY,
     STATUS_EPISODE_ONLY,
     STATUS_LOCAL_DRAFT,
     build_episode,
+    classify_relation,
+    task_consumer_key,
     workflow_signature_of,
 )
 from .fast_agent import public_operator_contract
@@ -105,6 +108,11 @@ class RoundResult:
     _delayed_event: dict | None = field(default=None, repr=False)
     _method: Any = field(default=None, repr=False)
     _values: Mapping[str, Any] | None = field(default=None, repr=False)
+    # T5 #41 A3：本轮的真实任务绑定——delayed 侧要用同一个键/同一批 uid
+    # 分类，不得在 open_delayed 里第二次猜。
+    _task_spec: Any = field(default=None, repr=False)
+    _series_uids: tuple = field(default=(), repr=False)
+    _consumer_id: str | None = field(default=None, repr=False)
     _period: int = field(default=24, repr=False)
     _domain: str = field(default="target", repr=False)
     _deferred_slow: str | None = field(default=None, repr=False)
@@ -114,12 +122,30 @@ class RoundResult:
     _group_slow_done: bool = field(default=False, repr=False)
 
 
+def _per_series_gains(per_view_gain: Sequence[float] | None,
+                      roster_uids: Sequence[str] | None = None
+                      ) -> dict[str, float] | None:
+    """per_view_gain 是位置序列（评估仪器逐 view 输出）；classify_relation
+    要的是 uid → gain 映射。T5 #41 A3：只做形状转换，不做判断——没有
+    per-view 读数就返回 None（"读不到"与"读到 0 条"不得混同）。"""
+    if per_view_gain is None:
+        return None
+    values = [float(v) for v in per_view_gain]
+    uids = list(roster_uids or ())
+    if len(uids) != len(values):
+        uids = ["view_%d" % i for i in range(len(values))]
+    return {str(uid): value for uid, value in zip(uids, values)}
+
+
 def _write_target_episode(*, domain: str, op: str,
                           program_steps: Sequence[Mapping[str, object]],
                           support_gain: float, support_context: Mapping[str, float],
                           episode_id_suffix: str,
                           per_view_gain: Sequence[float] | None = None,
-                          support_origin: int | None = None) -> Any:
+                          support_origin: int | None = None,
+                          task_spec: Any = None,
+                          series_uids: Sequence[str] | None = None,
+                          consumer_id: str | None = None) -> Any:
     """与 run_v1_target_local_loop.write_target_episode 同构（生产路径
     直接复用 experience_memory.build_episode）。
 
@@ -132,9 +158,24 @@ def _write_target_episode(*, domain: str, op: str,
     full_sig = workflow_signature_of(
         [{"op": s.get("op"), "params": dict(s.get("params") or {})}
          for s in program_steps]) if program_steps else op
+    # T5 #41 A3（写回统一）：任务硬键从真实 request.task_spec 铸出——原先
+    # 这里是一句 forecast|ridge|sMASE 字面量，任何非预测轮次写出的经验都
+    # 会落在预测键下，AD 检索永远找不到。task_spec=None 时 helper 自己
+    # 回落到历史默认，语义与旧字面量一致（legacy fixture 断言即此格）。
+    key = task_consumer_key(task_spec)
+    # 生命周期改读风险感知分类：relation 不再由 support_gain 的符号一句
+    # 决定，而是与 Memory 卡、delayed 门共用同一个 classify_relation。
+    # "聚合正、逐序列有害" 因此必然写成 CONFLICT，而不是 POSITIVE。
+    facts = classify_relation(
+        aggregate_gain=support_gain,
+        per_series_gains=_per_series_gains(per_view_gain, series_uids),
+        is_identity=(op == "identity"),
+        consumer_id=consumer_id,
+    )
+    relation = str(facts["relation"])
     return build_episode(
         episode_id=f"{domain}_target_{op}{episode_id_suffix}",
-        task_consumer_key="forecast|ridge|sMASE",
+        task_consumer_key=key,
         domain_namespace=domain,
         context_summary={
             "cohort": {"series_count": 1, "evaluation_series_count": 0},
@@ -145,38 +186,65 @@ def _write_target_episode(*, domain: str, op: str,
                                  "program_steps": list(program_steps)},
             "per_view_gain": list(per_view_gain)
             if per_view_gain is not None else [],
+            # T5 #41 A3：逐 view 读数的 uid 序一并留痕——delayed 侧与
+            # method 层要按同一批 uid 分类，不得各自猜。
+            "series_uids": [str(u) for u in (series_uids or ())],
             "support_origin": support_origin,
         },
         workflow_signature=full_sig,
         support_response={"gain": support_gain,
-                          "accepted": support_gain >= M},
+                          "accepted": relation == "POSITIVE",
+                          MEASURED_EFFECT_KEY: dict(facts)},
         delayed_response={"evaluated": False, "gain": None},
-        relation="POSITIVE" if support_gain >= M else "NEGATIVE",
+        relation=relation,
         evidence_level="SUPPORT",
-        local_status=STATUS_LOCAL_DRAFT if support_gain >= M
+        # Support = POSITIVE 才形成 Draft；CONFLICT/NEGATIVE/NEUTRAL/ABSTAIN
+        # 只写 Episode，不扩执行权。
+        local_status=STATUS_LOCAL_DRAFT if relation == "POSITIVE"
         else STATUS_EPISODE_ONLY,
         evidence_refs=["online_loop"],
     )
 
 
 def _update_delayed_status(episode: Any, delayed_gain: float,
-                           delayed_context: Mapping[str, float]) -> Any:
-    """与 run_v1_target_local_loop.update_delayed_status 同构（四类状态
-    转移：双正 POSITIVE / support 正 delayed 负 CONFLICT-RESTRICTED /
-    双负 NEGATIVE / support 负 delayed 正 CONFLICT-EPISODE_ONLY）。"""
-    sg = float(episode.support_response.get("gain") or 0.0)
-    m = M
-    if sg >= m and delayed_gain >= m:
-        relation, status = "POSITIVE", "LOCAL_ACTIVE"
-    elif sg >= m and delayed_gain < m:
-        relation, status = "CONFLICT", "RESTRICTED"
-    elif sg < m and delayed_gain < m:
-        relation, status = "NEGATIVE", "EPISODE_ONLY"
+                           delayed_context: Mapping[str, float],
+                           *,
+                           per_view_gain: Sequence[float] | None = None,
+                           series_uids: Sequence[str] | None = None,
+                           consumer_id: str | None = None) -> Any:
+    """T5 #41 A3（写回统一）：delayed 的 relation 也走 classify_relation。
+
+    此前这里是第二套符号判断——四个状态由 (support 符号, delayed 符号)
+    的组合硬写出来，既不看逐序列读数，也没有"聚合正、逐序列有害"这一格；
+    真实回路因此**产生不出** CONFLICT，而 Memory 的卡正靠它。现在关系
+    由同一个分类器给出，状态只作机械映射：
+
+      POSITIVE                      -> LOCAL_ACTIVE（唯一扩权格）
+      CONFLICT（含聚合正逐序列害）  -> RESTRICTED（已部署者受限，不撤证据）
+      NEGATIVE / NEUTRAL / ABSTAIN  -> EPISODE_ONLY
+
+    NEUTRAL 从此不再进 LOCAL_ACTIVE——这是本轮授权的行为变化，不是回归。
+    aggregate 与 per-series 原始读数一并留在 delayed_response 里。"""
+    facts = classify_relation(
+        aggregate_gain=delayed_gain,
+        per_series_gains=_per_series_gains(per_view_gain, series_uids),
+        is_identity=(str(episode.workflow_signature) == "identity"),
+        consumer_id=consumer_id,
+    )
+    relation = str(facts["relation"])
+    if relation == "POSITIVE":
+        status = "LOCAL_ACTIVE"
+    elif relation == "CONFLICT":
+        status = "RESTRICTED"
     else:
-        relation, status = "CONFLICT", "EPISODE_ONLY"
+        status = "EPISODE_ONLY"
     return dataclasses.replace(
         episode,
-        delayed_response={"evaluated": True, "gain": delayed_gain},
+        delayed_response={"evaluated": True, "gain": delayed_gain,
+                          "per_view_gain": ([float(v) for v in per_view_gain]
+                                            if per_view_gain is not None
+                                            else None),
+                          MEASURED_EFFECT_KEY: dict(facts)},
         relation=relation,
         evidence_level="DELAYED",
         local_status=status,
@@ -261,6 +329,9 @@ def run_online_round(
     result._values = values
     result._period = period
     result._domain = domain
+    result._task_spec = getattr(request, "task_spec", None)
+    result._series_uids = tuple(str(uid) for uid in values)
+    result._consumer_id = str(getattr(request.task_spec, "downstream_model_class", ""))         if getattr(request, "task_spec", None) is not None else None
     series0 = np_values(request, values)
     # 1. prepare 一次（E2.5-A：runtime_prior_slot 透传——真实 LLM +
     # Runtime-owned 双槽）
@@ -336,7 +407,10 @@ def run_online_round(
             support_context=dict(window_context(values, origin, period)),
             episode_id_suffix=f"_{round_name}_p{len(result._episodes) + 1}",
             per_view_gain=getattr(rr, "per_view_gain", None),
-            support_origin=origin)
+            support_origin=origin,
+            task_spec=result._task_spec,
+            series_uids=result._series_uids,
+            consumer_id=result._consumer_id)
         method.append_experience_episode(ep)
         result.episode_ids.append(ep.episode_id)
         result._episodes.append((ep, tuple(steps)))
@@ -344,7 +418,9 @@ def run_online_round(
         # 经当前 Target Support 探测确认；停止探测）。
         # E0：first-positive index 用合法 Support receipt 计数（不含
         # verifier_rejected 条目——原 len(actual_probed_programs) 会算入）。
-        if gain >= M:
+        # T5 #41 A4：Support = POSITIVE 才形成 winner/Draft。聚合过线但
+        # 逐序列有害（CONFLICT）不再取得部署权——证据照写，执行权不发。
+        if str(ep.relation) == "POSITIVE":
             result.winner_program = [
                 {"op": o, "params": dict(p)} for o, p in steps]
             result._winner_candidate_id = str(cand)
@@ -673,7 +749,10 @@ def open_delayed(result: RoundResult, executor: Any, *,
             continue  # 未评估——不更新 delayed 状态
         upd = _update_delayed_status(
             ep, dg, delayed_context=dict(window_context(
-                values, d_origin, result._period)))
+                values, d_origin, result._period)),
+            per_view_gain=getattr(rd, "per_view_gain", None),
+            series_uids=result._series_uids,
+            consumer_id=result._consumer_id)
         method.update_experience_episode(upd)
     # 两阶段批准（10）：pending 必须经 handle_feedback_delayed
     if result._slow_event is not None \

@@ -33,6 +33,13 @@ from ._provenance import record as _prov_record
 
 _ALL_TASKS = ("forecast", "classification", "anomaly_detection")
 _NON_ANOMALY = ("forecast", "classification")   # 平滑/删改类：物理禁 anomaly（毁 spike/changepoint 信号）
+# T5 #41 A1（Program Supply 与菜单等同）：四个点式离群修复程序对
+# anomaly_detection 由"物理禁"改为"机械可执行"。allowed_tasks 只表达**可试**，
+# 不表达**有益**——AD 下这四个程序仍可能删掉正要检的 spike，那是 Consumer
+# feedback 的判词（classify_relation 会把"聚合正、逐序列有害"记成 CONFLICT），
+# 不该由注册表提前替 Agent 决定。其余 smoothing/denoise/decompose 的 AD 禁令
+# 一律不动：它们的禁因是形状级的（毁 changepoint 结构），不是"没试过"。
+_REPAIR_ALL_TASKS = _ALL_TASKS
 
 _CONTRACT_BASE = {
     "allowed_tasks": _ALL_TASKS,
@@ -134,15 +141,15 @@ OPERATOR_SPECS = [
         dependency_policy="recorded_fallback",               # 与 impute_ssm 的 hard_fail 刻意不同
         fallback_policy="explicit_record→denoise_savgol")),
     ("winsorize", "outlier", "s1", ["destructive"], s1_outlier.winsorize, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode="intrinsic")),
     ("outlier_iqr", "outlier", "s1", ["destructive"], s1_outlier.outlier_iqr, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode="intrinsic")),
     ("outlier_mad", "outlier", "s1", ["destructive"], s1_outlier.outlier_mad, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode="intrinsic")),
     # —— E-3.3 R3：局部自适应点式离群修复（与上面三个全局阈值裁剪算子机制不同）——
     ("hampel_filter", "outlier", "s1", ["destructive"], s1_outlier.hampel_filter, False,
      _c(
-         allowed_tasks=_NON_ANOMALY,
+         allowed_tasks=_REPAIR_ALL_TASKS,
          destructive=True,
          targeting_mode="intrinsic",
          public_parameter_schema={

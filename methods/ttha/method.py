@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from collections.abc import Callable, Mapping, Sequence
 
 from SelfEvolvingHarnessTS.contracts.harness import (
@@ -14,6 +16,7 @@ from .agent_core import AgentProtocolError
 from .fast_agent import TTHAFastAgent
 from .retrieval import evaluate_applicability
 from .signed_radius import MATERIAL_THRESHOLD
+from .experience_memory import classify_relation as _classify_relation
 
 
 def _typed_patch_preflight(card: Mapping[str, object],
@@ -203,6 +206,73 @@ def _op_of_episode(episode: object) -> str:
     if steps:
         return str(steps[0].get("op", "op"))
     return "op"
+
+
+def _per_series_map(per_view_gain: Any,
+                    series_uids: Any = None) -> dict[str, float] | None:
+    """位置序列 → uid 映射（online_loop._per_series_gains 的同一形状转换）。
+    读不到 per-view 读数就返回 None——"没读到"不得当成"读到 0 条有害"。"""
+    if per_view_gain is None:
+        return None
+    values = [float(v) for v in per_view_gain]
+    uids = [str(u) for u in (series_uids or ())]
+    if len(uids) != len(values):
+        uids = ["view_%d" % i for i in range(len(values))]
+    return dict(zip(uids, values))
+
+
+def _steps_are_identity(steps: Any) -> bool:
+    ops = [str(op) for op, _p in (steps or ())]
+    return not ops or ops == ["identity"]
+
+
+def _task_scope_of_episode(episode: object) -> tuple[str, str, str]:
+    """T5 #41 A5：Skill 命名用的任务范围三元组。
+
+    取自 Episode 的任务硬键（task_type|downstream_model_class|metric.name）
+    ——与 Memory 检索键同源，不另铸第四种方言。缺键时回落到历史默认，
+    使旧 fixture 的命名保持可预测。"""
+    key = str(getattr(episode, "task_consumer_key", "") or "")
+    parts = key.split("|")
+    if len(parts) == 3 and all(parts):
+        return (parts[0], parts[1], parts[2])
+    return ("forecast", "ridge", "sMASE")
+
+
+def _series_uids_of_episode(episode: object) -> tuple[str, ...]:
+    """Episode 里记下的逐 view 读数长度对应的 uid 序（无则空 tuple——
+    _per_series_map 会自行退回 view_i 位置名，不伪造 uid）。"""
+    summary = getattr(episode, "context_summary", {}) or {}
+    uids = summary.get("series_uids")
+    if isinstance(uids, (list, tuple)):
+        return tuple(str(u) for u in uids)
+    return ()
+
+
+def _fast_winner_skill_id(episode: object) -> str:
+    """无哈希、任务化的 Fast winner Skill ID。
+
+    原名 fast_winner_{op} 只带算子：预测轮次学到的 fast_winner_winsorize
+    与异常检测轮次学到的同名条目会在同一个 skill_library 里**撞名**——
+    第二次 ADD 撞上 surface_precondition={"kind": "ABSENT"} 直接硬失败，
+    真实双任务轨迹因此在第二轮就停住。ID 里带上任务范围即可分开。
+    本轮只声称 task_kind 隔离（见 handle_fast_winner 的 applicability
+    注记）；同任务跨 Consumer 的隔离不在本轮的声称范围内。"""
+    task_type, model_class, metric = _task_scope_of_episode(episode)
+    # EditManifest.edit_id 走 contracts.harness 的 canonical-id 语法
+    # (^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$)：任务键里的 metric 名带大小写
+    # （sMASE），直接拼进去会被 manifest 硬拒。逐段折成小写并把非法字符
+    # 折成下划线——折叠是确定性的、无哈希的，且三处（edit_id /
+    # target_surface_id / skill_id）共用这一个函数，不会再各写一遍。
+    parts = [_canonical_fragment(x)
+             for x in (task_type, model_class, metric,
+                       _op_of_episode(episode))]
+    return "fast_winner_" + "_".join(parts)
+
+
+def _canonical_fragment(value: object) -> str:
+    text = re.sub(r"[^a-z0-9]+", "_", str(value).lower()).strip("_")
+    return text or "x"
 
 
 def _applicability_reachable(
@@ -565,17 +635,17 @@ class TTHAMethod:
         ev: dict[str, Any] = {"stage": "started"}
         applicability = _applicability_from_card(card)
         manifest = EditManifest(
-            edit_id=f"fast_winner_{_op_of_episode(episode)}",
+            edit_id=_fast_winner_skill_id(episode),
             base_harness_sha=self._active_snapshot().harness_content_sha,
             target_pattern_id=str(card.get("pattern_id", "fast-winner")),
             target_surface_id="skill_library.entries/"
-                              f"fast_winner_{_op_of_episode(episode)}",
+                              + _fast_winner_skill_id(episode),
             operation=EditOperation.ADD,
             surface_precondition={"kind": "ABSENT"},
             dependency_precondition_shas={},
             new_value={
                 "schema_version": "skill-entry/1",
-                "skill_id": f"fast_winner_{_op_of_episode(episode)}",
+                "skill_id": _fast_winner_skill_id(episode),
                 "skill_kind": "capability",
                 "revision": 1,
                 "body": "Frozen program steps: " + _json.dumps(
@@ -631,18 +701,51 @@ class TTHAMethod:
         # Support 判定（计量修正 2026-08-12）：提供 support_gain（本轮
         # 探测已获——winner）则直接复用——不重开相同 Context×Program 的
         # Support 评估（不计预算的重复仪器评估）；否则重放确认。
+        _uids = _series_uids_of_episode(episode)
+        _consumer = _task_scope_of_episode(episode)[1]
+        support_facts: Mapping[str, Any] | None = None
         if support_gain is not None:
             sg = float(support_gain)
             ev["support_gain"] = sg
             ev["support_passed"] = True
             ev["support_reused"] = True
+            # 复用本轮探测的 Support 时，逐序列读数已由 online_loop 在写
+            # Episode 时分类过——直接读回，不重开评估、也不第二次分类。
+            recorded = dict(getattr(episode, "support_response", {}) or {})
+            measured = recorded.get("measured_effect")
+            if isinstance(measured, Mapping):
+                support_facts = dict(measured)
         else:
             support = evaluator(steps, 0)
             sg = (float(support.gain) if support.gain is not None else None)
             ev["support_gain"] = sg
             ev["support_passed"] = bool(support.verification.passed)
-        if sg is None or sg < MATERIAL_THRESHOLD:
+            if sg is not None:
+                support_facts = _classify_relation(
+                    aggregate_gain=sg,
+                    per_series_gains=_per_series_map(
+                        getattr(support, "per_view_gain", None), _uids),
+                    is_identity=_steps_are_identity(steps),
+                    consumer_id=_consumer,
+                )
+        if sg is None:
             ev["stage"] = "support_rejected"
+            return ev
+        # T5 #41 A4：Support = POSITIVE 才形成 Draft。聚合过线但逐序列有害
+        # （CONFLICT）与 NEGATIVE/NEUTRAL/ABSTAIN 只留 Episode，不扩执行权。
+        # 读不到逐序列读数时 classify_relation 退化为纯聚合判定，与旧门
+        # 在正向侧同结论（旧门另放行 NEUTRAL，本轮起不再放行）。
+        if support_facts is None:
+            support_facts = _classify_relation(
+                aggregate_gain=sg, per_series_gains=None,
+                is_identity=_steps_are_identity(steps),
+                consumer_id=_consumer)
+        ev["support_relation"] = support_facts["relation"]
+        ev["support_evidence"] = dict(support_facts)
+        if support_facts["relation"] != "POSITIVE":
+            ev["stage"] = "support_rejected"
+            ev["support_reject_reason"] = "relation_%s" % str(
+                support_facts["relation"]).lower()
             return ev
         # 两阶段 pending（delayed 到达前不激活）
         self._pending_update = {
@@ -650,6 +753,8 @@ class TTHAMethod:
             "manifest_applied": manifest_applied,
             "receipt": receipt,
             "episode_id": getattr(episode, "episode_id", None),
+            "series_uids": tuple(_uids),
+            "consumer_id": _consumer,
         }
         ev["stage"] = "pending"
         ev["edit_id"] = manifest.edit_id
@@ -1105,11 +1210,16 @@ class TTHAMethod:
             ev["stage"] = "support_rejected"
             return ev
         # ---- 候选冻结（pending——delayed 到达前不激活）----
+        # T5 #41 A4：Slow 路径的 Support 门本轮不动（单假设纪律——本轮的
+        # 行为机制只挂在 Fast winner 的 Draft 门与 delayed 门上）。逐序列
+        # uid/consumer 仍随 pending 记下，供 delayed 侧分类使用。
         self._pending_update = {
             "steps": steps,
             "manifest_applied": manifest_applied,
             "receipt": receipt,
             "episode_id": getattr(episode, "episode_id", None),
+            "series_uids": tuple(_series_uids_of_episode(episode)),
+            "consumer_id": _task_scope_of_episode(episode)[1],
         }
         ev["stage"] = "pending"
         return ev
@@ -1337,15 +1447,39 @@ class TTHAMethod:
         dg_finite = dg is not None and bool(__import__("math").isfinite(dg))
         ev: dict[str, Any] = {"stage": "pending", "delayed_gain": dg}
         # 复核 Blocker 3（2026-08-11）：delayed 必须 verifier 通过 + gain
-        # 有限 + 不显著负向才批准；None/NaN/verifier 失败 → 拒绝（丢弃
-        # pending，snapshot 不变）
-        if not (delayed.verification.passed and dg_finite
-                and dg >= -MATERIAL_THRESHOLD):
+        # 有限；None/NaN/verifier 失败 → 拒绝（丢弃 pending，snapshot 不变）
+        if not (delayed.verification.passed and dg_finite):
             ev["stage"] = "delayed_rejected"
             ev["delayed_reject_reason"] = (
                 "verifier_failed" if not delayed.verification.passed
-                else "gain_unavailable" if not dg_finite
-                else "material_negative")
+                else "gain_unavailable")
+            self._pending_update = None
+            return ev
+        # T5 #41 A4（生命周期风险门）：批准条件由 "dg >= -MATERIAL_THRESHOLD"
+        # 改为 classify_relation(...) == POSITIVE，与 Memory 卡、online_loop
+        # 的写回共用同一个分类器。两处实质变化：
+        #   * 聚合过线但有逐序列伤害 → CONFLICT → 不批准（原门读不到逐序列
+        #     读数，这类候选会被放进 active snapshot）；
+        #   * NEUTRAL（|dg| < 阈值）不再扩权——原门 dg ≥ −0.005 即批准，
+        #     零效果的候选也能进 snapshot。这是本轮授权的行为变化。
+        # aggregate 与 per-series 原始读数无论批准与否都留在 evidence 里。
+        facts = _classify_relation(
+            aggregate_gain=dg,
+            per_series_gains=_per_series_map(
+                getattr(delayed, "per_view_gain", None),
+                pend.get("series_uids")),
+            is_identity=_steps_are_identity(pend["steps"]),
+            consumer_id=pend.get("consumer_id"),
+        )
+        ev["delayed_relation"] = facts["relation"]
+        ev["delayed_evidence"] = dict(facts)
+        if facts["relation"] != "POSITIVE":
+            ev["stage"] = "delayed_rejected"
+            ev["delayed_reject_reason"] = "relation_%s" % str(
+                facts["relation"]).lower()
+            # CONFLICT/NEGATIVE：丢弃 pending。已部署 Skill 的限制由
+            # online_loop 的 delayed 状态更新（RESTRICTED）与 revoke 路径
+            # 处理——本方法不越权改别人的 snapshot 条目。
             self._pending_update = None
             return ev
         # episode_id 匹配检查（复核 Major）：pending 只应由其对应 Episode
