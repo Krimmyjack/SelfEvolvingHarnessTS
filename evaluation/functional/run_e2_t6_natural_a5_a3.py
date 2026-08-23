@@ -246,6 +246,21 @@ ACCEPT_V3_AD_FIT_BUDGET = 24
 OUT_PATTERN_V1 = E2 / "t6_nab_42e2_pattern_discriminator.json"
 OUT_PATTERN_V1_MD = E2 / "t6_nab_42e2_pattern_discriminator.md"
 ISOLATED_FRACTION_THRESHOLD = 0.5
+OUT_DEPLOY_SMOKE = E2 / "t6_42g_deploy_fast_only_smoke.json"
+OUT_L1 = E2 / "t6_42g_l1_static_vs_a3.json"
+OUT_L1_MD = E2 / "t6_42g_l1_static_vs_a3.md"
+L1_LOCK = E2 / "t6_42g_l1.lock"
+YAHOO_FREEZE = E2 / "t6_42f_yahoo_a1_freeze.json"
+L1_LLM_CAP = 24
+L1_AD_FIT_CAP = 240
+L1_ROSTER_N = 24
+L1_ROUNDS: dict[str, dict[str, tuple[float, float]]] = {
+    "r1": {"train": (0.00, 0.30), "support": (0.30, 0.40),
+           "delayed": (0.40, 0.50)},
+    "r2": {"train": (0.00, 0.50), "support": (0.50, 0.60),
+           "delayed": (0.60, 0.70)},
+}
+L1_HELDOUT = (0.70, 1.00)
 RISK_OPS_V3: tuple[str, ...] = (
     "hampel_filter", "outlier_iqr", "outlier_mad",
 )
@@ -744,13 +759,40 @@ def _load_consumer() -> Any:
     return consumer
 
 
+def _canonical_menu_program(name: str) -> str:
+    """Map a Fast candidate id / winner op onto the frozen five-entry menu."""
+    raw = str(name or "").strip()
+    if not raw or raw == "identity":
+        return "identity"
+    if raw in PROGRAMS:
+        return raw
+    lowered = raw.lower()
+    # longest menu name first so outlier_mad wins over a bare 'mad' token
+    for menu in sorted(PROGRAMS, key=len, reverse=True):
+        if menu == "identity":
+            continue
+        if menu in lowered:
+            return menu
+    aliases = (
+        ("hampel", "hampel_filter"),
+        ("winsor", "winsorize"),
+        ("iqr", "outlier_iqr"),
+        ("mad", "outlier_mad"),
+    )
+    for token, menu in aliases:
+        if token in lowered:
+            return menu
+    return "identity"
+
+
 def _program_steps(program: str) -> tuple[tuple[str, dict], ...]:
-    if program == "identity":
+    menu = _canonical_menu_program(program)
+    if menu == "identity":
         return ()
-    if program not in OPERATOR_METADATA:
+    if menu not in OPERATOR_METADATA:
         raise Stop("NATURAL_DATA_SHAPE_INELIGIBLE",
                    "menu entry %r is not a registered operator" % program)
-    return ((program, {}),)
+    return ((menu, {}),)
 
 
 def _apply_program(block: Any, program: str) -> np.ndarray:
@@ -5109,8 +5151,791 @@ def pattern_discriminator_v1() -> int:
     return 0
 
 
+def _store_fingerprint(store) -> dict[str, Any]:
+    active = getattr(store, "active_path", None)
+    payload = ""
+    if active is not None and Path(active).is_file():
+        payload = Path(active).read_text(encoding="utf-8")
+    root = Path(getattr(store, "root"))
+    names = sorted(p.name for p in root.glob("*") if p.is_dir()) if root.is_dir() else []
+    return {
+        "active_text": payload,
+        "snapshot_dirs": names,
+        "sha": hashlib.sha256(
+            (payload + "\n" + "\n".join(names)).encode("utf-8")).hexdigest(),
+    }
+
+
+def _deploy_fast_only(
+    *,
+    rows: Mapping[str, Any],
+    snapshot,
+    origin: int,
+    store_tag: str,
+    agent_factory: Any,
+    backend_factory: Any,
+    llm_budget: int,
+    program_override: str | None = None,
+    wall: LabelWall | None = None,
+) -> dict[str, Any]:
+    """One cohort-level Fast decision.  Never open_delayed / Slow / Skill write."""
+    from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
+    from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod
+
+    if wall is None:
+        wall = LabelWall(released=False)
+    store_root = Path(tempfile.gettempdir()) / store_tag
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    store = SnapshotStore(store_root / "snapshots")
+    store.materialize(snapshot)
+    store.set_active(snapshot.runtime_bundle_sha)
+    before = _store_fingerprint(store)
+    experience_before = []
+    backend = backend_factory(llm_budget)
+    # smoke/evaluate factories key windows by r1/r2; deploy reuses r2
+    # support origin as the public prefix, never a new window name.
+    agent = agent_factory(rows, backend, "r2")
+    method = TTHAMethod(agent, snapshot, ())
+    experience_before = [
+        getattr(e, "episode_id", None)
+        for e in (getattr(method, "experience_episodes", ()) or ())]
+    spec = _source_task_spec()
+    values = {uid: np.asarray(rows[uid]["values"], dtype=np.float64)
+              for uid in rows}
+    first = sorted(rows)[0]
+    series0 = values[first]
+    observed = dict(resolver.window_context(values, origin, PERIOD_HINT))
+    observed["bound_period"] = float(PERIOD_HINT)
+    request = PreparationRequest(
+        "t6-deploy", series0[:origin], spec, dict(observed))
+    method.bind_round_data(series0[:origin], task_kind="anomaly_detection")
+    method.prepare(request, runtime_prior_slot=False)
+    trace = method.last_trace
+    chosen = getattr(trace, "chosen_candidate_id", None) or ""
+    if program_override is not None:
+        applied = program_override
+        abstained = program_override == "identity"
+        decision_source = "static_override"
+    else:
+        applied = chosen if chosen and chosen != "identity" else "identity"
+        abstained = not chosen or chosen == "identity"
+        decision_source = "fast_cohort"
+    logs = []
+    for uid in sorted(rows):
+        logs.append({
+            "series": uid,
+            "scope": "cohort",
+            "decision": applied,
+            "abstain": abstained,
+            "applied": applied,
+        })
+    after = _store_fingerprint(store)
+    experience_after = [
+        getattr(e, "episode_id", None)
+        for e in (getattr(method, "experience_episodes", ()) or ())]
+    llm_calls = int(getattr(backend, "calls", 0) or 0)
+    breach = []
+    if before["sha"] != after["sha"]:
+        breach.append("store_hash_changed")
+    if experience_before != experience_after:
+        breach.append("experience_changed")
+    if llm_calls and program_override is not None:
+        breach.append("static_arm_spent_llm")
+    result = {
+        "open_delayed_calls": 0,
+        "slow_calls": 0,
+        "store_before": before,
+        "store_after": after,
+        "store_unchanged": before["sha"] == after["sha"],
+        "experience_before": experience_before,
+        "experience_after": experience_after,
+        "experience_unchanged": experience_before == experience_after,
+        "llm_calls": llm_calls,
+        "chosen_raw": chosen,
+        "applied_program": applied,
+        "abstained": abstained,
+        "decision_source": decision_source,
+        "per_series": logs,
+        "yahoo_touched": False,
+        "breach": breach,
+        "ok": not breach,
+    }
+    return result
+
+
+def deploy_fast_only_smoke() -> int:
+    """Existing Source fixture, 0 LLM.  Must not touch Yahoo."""
+    if not OUT_JSON_V2.exists():
+        print(json.dumps({"verdict": "INSTRUMENT_UNREADABLE",
+                          "reason": "missing plan_v2"}, indent=1))
+        return 1
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+    wall = LabelWall(released=False)
+    universe = _load_universe(gate_all(row_order_contract=True))
+    rows = universe["source"][FIXTURE_SOURCE_COHORT]
+    # one-cell smoke: first two series of the already-exposed Source cohort
+    slim = {k: rows[k] for k in sorted(rows)[:2]}
+    origin = min(int(slim[u]["windows"]["r2"]["support"][0]) for u in slim)
+    h0 = compile_snapshot(
+        PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+        verify_lock=False)
+    run = _deploy_fast_only(
+        rows=slim, snapshot=h0, origin=origin,
+        store_tag="t6g_deploy_smoke",
+        agent_factory=_smoke_agent_factory(("winsorize",)),
+        backend_factory=_smoke_backend_factory(("winsorize",)),
+        llm_budget=0,
+        wall=wall,
+    )
+    yahoo_paths = list((PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1").rglob("*"))
+    run["yahoo_files_present_but_unread"] = True
+    run["label_wall"] = wall.audit()
+    if wall.audit()["target_key_requests"]:
+        run["breach"].append("target_wall_requested")
+        run["ok"] = False
+    verdict = "DEPLOY_FAST_ONLY_SMOKE_OK" if run["ok"] else "PROTOCOL_BREACH"
+    payload = {
+        "protocol_version": "t6_42g_deploy_fast_only_smoke_v1",
+        "entry": "--deploy-fast-only-smoke",
+        "fixture": "source_aws_cloudwatch first two series, r2 support origin",
+        "yahoo_touched": False,
+        "verdict": verdict,
+        "run": run,
+    }
+    OUT_DEPLOY_SMOKE.write_text(_json_text(payload), encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict,
+        "open_delayed": run["open_delayed_calls"],
+        "slow": run["slow_calls"],
+        "store_unchanged": run["store_unchanged"],
+        "applied": run["applied_program"],
+        "llm": run["llm_calls"],
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_DEPLOY_SMOKE)
+    return 0 if run["ok"] else 1
+
+
+def _yahoo_l1_windows(n: int) -> dict[str, Any]:
+    plan: dict[str, Any] = {}
+    for name, spans in L1_ROUNDS.items():
+        row: dict[str, Any] = {}
+        for part, (lo, hi) in spans.items():
+            row[part] = [int(lo * n), int(hi * n)]
+        plan[name] = row
+    plan["heldout"] = [int(L1_HELDOUT[0] * n), n]
+    return plan
+
+
+def _load_yahoo_l1_roster() -> dict[str, Any]:
+    if not YAHOO_FREEZE.exists():
+        raise Stop("INSTRUMENT_UNREADABLE", "missing yahoo freeze list")
+    freeze = json.loads(YAHOO_FREEZE.read_text(encoding="utf-8"))
+    roster = sorted(freeze["roster"], key=lambda r: r["file"])[:L1_ROSTER_N]
+    if len(roster) != L1_ROSTER_N:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "freeze roster shorter than 24: %d" % len(roster))
+    work = PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1" / "work"
+    vault_in = PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1" / "vaults" / "held_in"
+    rows: dict[str, Any] = {}
+    for rec in roster:
+        path = work / rec["file"]
+        if not path.is_file():
+            raise Stop("INSTRUMENT_UNREADABLE", "missing work copy %s" % path)
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.reader(handle)
+            header = next(reader)
+            if header[:2] != ["timestamp", "value"]:
+                raise Stop("LAYOUT_UNEXPECTED_STOP",
+                           "work header %s" % header)
+            data = list(reader)
+        values = np.asarray([float(r[1]) for r in data], dtype=np.float64)
+        stamps = [r[0] for r in data]
+        n = int(values.size)
+        rows[rec["file"]] = {
+            "values": values,
+            "timestamps": stamps,
+            "length": n,
+            "nab_key": rec["nab_style_key"],
+            "windows": _yahoo_l1_windows(n),
+            "held_in_vault": vault_in / rec["file"],
+            "freeze": rec,
+        }
+    return {"freeze": freeze, "rows": rows, "order": [r["file"] for r in roster]}
+
+
+class YahooHeldInWall:
+    """Release held-in vault labels one scoring window at a time.  No held-out."""
+
+    def __init__(self, rows: Mapping[str, Any]) -> None:
+        self._rows = rows
+        self._cache: dict[tuple[str, int, int], list[list[int]]] = {}
+        self.requests: list[dict[str, Any]] = []
+        self.held_out_requests = 0
+
+    def events_for(self, uid: str, lo: int, hi: int) -> list[list[int]]:
+        rec = self._rows[uid]
+        n = rec["length"]
+        wall = rec["windows"]["heldout"][0]
+        if lo >= wall or hi > wall:
+            self.held_out_requests += 1
+            self.requests.append({"uid": uid, "lo": lo, "hi": hi,
+                                  "granted": False, "why": "held_out"})
+            raise Stop("PROTOCOL_BREACH",
+                       "held-out label requested for %s [%s,%s)" % (uid, lo, hi))
+        key = (uid, int(lo), int(hi))
+        if key in self._cache:
+            self.requests.append({"uid": uid, "lo": lo, "hi": hi,
+                                  "granted": True, "cached": True})
+            return self._cache[key]
+        path = rec["held_in_vault"]
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.reader(handle)
+            header = next(reader)
+            if header[:3] != ["row_index", "timestamp", "is_anomaly"]:
+                raise Stop("LAYOUT_UNEXPECTED_STOP",
+                           "vault header %s" % header)
+            flags = []
+            for line in reader:
+                idx = int(line[0])
+                if lo <= idx < hi:
+                    flags.append((idx, line[2].strip() in {"1", "1.0", "true", "True"}))
+        # do not keep unused rows
+        on = [idx for idx, flag in flags if flag]
+        events = []
+        if on:
+            run = [on[0]]
+            for idx in on[1:]:
+                if idx == run[-1] + 1:
+                    run.append(idx)
+                else:
+                    events.append(run)
+                    run = [idx]
+            events.append(run)
+        self._cache[key] = events
+        self.requests.append({"uid": uid, "lo": lo, "hi": hi,
+                              "granted": True, "cached": False})
+        return events
+
+    def audit(self) -> dict[str, Any]:
+        return {
+            "held_out_requests": self.held_out_requests,
+            "n_requests": len(self.requests),
+            "windows_opened": sorted({
+                (r["uid"], r["lo"], r["hi"]) for r in self.requests if r["granted"]
+            }),
+        }
+
+
+class _YahooAdapter:
+    """Same scoring arithmetic as the NAB adapter; Yahoo held-in vault truth."""
+
+    def __init__(self, *, consumer: Any, rows: Mapping[str, Any],
+                 round_name: str, wall: YahooHeldInWall, budget: FitBudget,
+                 support_origin: int, delayed_origin: int) -> None:
+        self._consumer = consumer
+        self._rows = dict(rows)
+        self._round = str(round_name)
+        self._yahoo_wall = wall
+        self._budget = budget
+        self._support_origin = int(support_origin)
+        self._delayed_origin = int(delayed_origin)
+        self._models: dict[tuple[str, str], Any] = {}
+        self.calls: list[dict[str, Any]] = []
+
+    def _part_for(self, origin: int) -> str:
+        return "support" if int(origin) < self._delayed_origin else "delayed"
+
+    def _model(self, uid: str, signature: str, program_steps: Any) -> Any:
+        key = (uid, signature)
+        if key in self._models:
+            return self._models[key]
+        row = self._rows[uid]
+        lo, hi = row["windows"][self._round]["train"]
+        block = np.asarray(row["values"], dtype=np.float64)[lo:hi]
+        if program_steps:
+            result = run_pipeline(list(program_steps), block)
+            if not result.ok or result.artifact is None:
+                raise Stop("TARGET_FEEDBACK_UNREADABLE",
+                           "program %s failed on a training block: %s"
+                           % (signature, result.error))
+            block = np.asarray(result.artifact, dtype=np.float64).ravel()
+        self._budget.spend(1)
+        model = self._consumer.fit_series(block)
+        self._models[key] = model
+        return model
+
+    def __call__(self, roster, values, compiled, config, *, origin):
+        steps = compiled_steps(compiled)
+        signature = "|".join(op for op, _p in steps) or "identity"
+        part = self._part_for(int(origin))
+        per_view: list[float] = []
+        scored: dict[str, Any] = {}
+        behavior = 0
+        for uid in sorted(self._rows):
+            model = self._model(uid, signature, steps)
+            lo, hi = self._rows[uid]["windows"][self._round][part]
+            raw = np.asarray(self._rows[uid]["values"], dtype=np.float64)
+            truth = self._yahoo_wall.events_for(uid, lo, hi)
+            reading = self._consumer.score_series(model, raw, (lo, hi), truth)
+            scored[uid] = reading
+            per_view.append(float(reading["f1"]))
+            behavior += int(model["training_windows"])
+        macro = self._consumer.macro_f1(scored)
+        out = {
+            "mean_smase": -float(macro if macro is not None else 0.0),
+            "per_view_smase": [-v for v in per_view],
+            "behavior_point_count": int(behavior),
+            "ad_macro_f1": float(macro) if macro is not None else None,
+            "ad_f1_by_series": {uid: scored[uid]["f1"] for uid in scored},
+            "part": part,
+        }
+        self.calls.append({"signature": signature, "part": part,
+                           "origin": int(origin),
+                           "macro_f1": out["ad_macro_f1"]})
+        return out
+
+
+def _score_heldout_static(rows: Mapping[str, Any], program: str,
+                          budget: FitBudget) -> dict[str, Any]:
+    """Fit on full held-in [0,0.7n) after applying program; score raw held-out."""
+    consumer = _load_consumer()
+    per: dict[str, Any] = {}
+    for uid, rec in rows.items():
+        n = rec["length"]
+        cut = rec["windows"]["heldout"][0]
+        raw = np.asarray(rec["values"], dtype=np.float64)
+        train = _apply_program(raw[:cut], program)
+        budget.spend(1)
+        model = consumer.fit_series(train)
+        # held-out labels loaded only here, by the offline evaluator
+        vault = (PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1"
+                 / "vaults" / "held_out" / uid)
+        flags = []
+        with vault.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.reader(handle)
+            next(reader)
+            for line in reader:
+                flags.append((int(line[0]),
+                              line[2].strip() in {"1", "1.0", "true", "True"}))
+        on = [i for i, f in flags if f]
+        events: list[list[int]] = []
+        if on:
+            run = [on[0]]
+            for idx in on[1:]:
+                if idx == run[-1] + 1:
+                    run.append(idx)
+                else:
+                    events.append(run)
+                    run = [idx]
+            events.append(run)
+        per[uid] = consumer.score_series(model, raw, (cut, n), events)
+    macro = consumer.macro_f1(per)
+    return {
+        "program": program,
+        "macro_f1": macro,
+        "f1_by_series": {k: v["f1"] for k, v in per.items()},
+    }
+
+
+def l1_score_heldout_only(*, a3_program: str = "outlier_mad") -> int:
+    """Instrument repair: score the already-run A3* without reopening held-in."""
+    pack = _load_yahoo_l1_roster()
+    rows = pack["rows"]
+    budget = FitBudget(L1_AD_FIT_CAP)
+    program = _canonical_menu_program(a3_program)
+    ident = _score_heldout_static(rows, "identity", budget)
+    hampel = _score_heldout_static(rows, "hampel_filter", budget)
+    a3s = _score_heldout_static(rows, program, budget)
+    best_static = max(ident["macro_f1"], hampel["macro_f1"])
+    delta_id = float(a3s["macro_f1"] - ident["macro_f1"])
+    delta_best = float(a3s["macro_f1"] - best_static)
+    harmed = [uid for uid, f1 in a3s["f1_by_series"].items()
+              if float(f1) - float(ident["f1_by_series"][uid]) < -0.005]
+    worst = min(float(a3s["f1_by_series"][uid]) - float(ident["f1_by_series"][uid])
+                for uid in a3s["f1_by_series"])
+    hampel_harmed = [uid for uid, f1 in hampel["f1_by_series"].items()
+                     if float(f1) - float(ident["f1_by_series"][uid]) < -0.005]
+    if delta_best > 0.005 and len(harmed) <= 1 and worst >= -0.02:
+        verdict = "ADAPTATION_DELIVERS_HELDOUT"
+    elif (abs(delta_id) <= 0.005 and not harmed
+          and (hampel["macro_f1"] - ident["macro_f1"] < -0.005
+               or len(hampel_harmed) > 2)):
+        verdict = "ADAPTATION_SAFETY_ONLY"
+    elif abs(delta_best) <= 0.005 and not harmed:
+        verdict = "ADAPTATION_TIE"
+    elif delta_id < -0.005 or len(harmed) > 2:
+        verdict = "ADAPTATION_HARMS_HELDOUT"
+    else:
+        verdict = "OBSERVED_BUT_UNCLASSIFIED"
+    payload = {
+        "protocol_version": "t6_42g_l1_static_vs_a3_v1",
+        "entry": "--l1-score-heldout-only",
+        "held_in_not_rerun": True,
+        "a3_star_snapshot": "h0 (no learned skill on 20260824T002018Z store)",
+        "a3_program_from_first_run_winner_alias": "extreme-deviation-mad",
+        "a3_program": program,
+        "roster": pack["order"],
+        "heldout": {
+            "identity": ident,
+            "hampel_filter": hampel,
+            "a3_star": a3s,
+            "best_static_macro": best_static,
+            "delta_vs_identity": delta_id,
+            "delta_vs_best_static": delta_best,
+            "harmed_vs_identity": harmed,
+            "worst_delta_vs_identity": worst,
+            "hampel_harmed_vs_identity": hampel_harmed,
+        },
+        "cost": {"llm": 0, "ad_fits": budget.used, "ad_fit_cap": budget.cap,
+                 "forecast_retrains": 0,
+                 "note": "held-in LLM/fit of the crashed first run are not in this file"},
+        "verdict": {"verdict": verdict},
+        "instrument_note": (
+            "first official run completed held-in + Fast-only deploy then "
+            "crashed mapping winner op extreme-deviation-mad onto the menu; "
+            "this scores Part D only"
+        ),
+    }
+    OUT_L1.write_text(_json_text(payload), encoding="utf-8")
+    OUT_L1_MD.write_text(
+        "# #42g L1 Static vs A3\n\nverdict: **%s**\n\n"
+        "A3* program (mapped): `%s` from `extreme-deviation-mad`\n\n"
+        "macro F1 identity %s / hampel %s / A3* %s\n"
+        "Δ vs identity %s; Δ vs best-static %s; harmed %s; worst %s\n"
+        % (verdict, program, ident["macro_f1"], hampel["macro_f1"],
+           a3s["macro_f1"], delta_id, delta_best, harmed, worst),
+        encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict,
+        "a3_program": program,
+        "fits": budget.used,
+        "macro": {"identity": ident["macro_f1"],
+                  "hampel": hampel["macro_f1"],
+                  "a3": a3s["macro_f1"]},
+        "delta_id": delta_id, "delta_best": delta_best,
+        "harmed": harmed, "worst": worst,
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_L1)
+    return 0
+
+
+def l1_static_vs_a3() -> int:
+    """#42g r1 L1: A3 held-in two rounds, then Fast-only held-out vs Static."""
+    leftover = [
+        line for line in os.popen("ps -ef").read().splitlines()
+        if "run_e2_t6_natural_a5_a3.py" in line
+        and "--l1-static-vs-a3" in line
+        and str(os.getpid()) not in line
+    ]
+    if leftover:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": leftover}, indent=1))
+        return 2
+    L1_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        lock_fd = os.open(str(L1_LOCK), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": "lock held"}, indent=1))
+        return 2
+    os.write(lock_fd, str(os.getpid()).encode("ascii"))
+    os.close(lock_fd)
+    run_id = datetime.now().strftime("%Y%m%dT%H%M%SZ")
+    if not OUT_DEPLOY_SMOKE.exists():
+        print(json.dumps({"verdict": "INSTRUMENT_UNREADABLE",
+                          "reason": "smoke artifact missing"}, indent=1))
+        return 1
+    smoke = json.loads(OUT_DEPLOY_SMOKE.read_text(encoding="utf-8"))
+    if smoke.get("verdict") != "DEPLOY_FAST_ONLY_SMOKE_OK":
+        print(json.dumps({"verdict": "INSTRUMENT_UNREADABLE",
+                          "reason": "smoke not green"}, indent=1))
+        return 1
+    try:
+        pack = _load_yahoo_l1_roster()
+    except Stop as stop:
+        print(json.dumps({"verdict": stop.verdict, "reason": stop.reason},
+                         indent=1))
+        return 1
+    rows = pack["rows"]
+    wall = YahooHeldInWall(rows)
+    budget = FitBudget(L1_AD_FIT_CAP)
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
+    from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod
+    from SelfEvolvingHarnessTS.methods.ttha.online_loop import (
+        activate_approved, open_delayed, run_online_round,
+    )
+    h0 = compile_snapshot(
+        PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+        verify_lock=False)
+    store_root = Path(tempfile.gettempdir()) / ("t6g_l1_%s" % run_id)
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    store = SnapshotStore(store_root / "snapshots")
+    store.materialize(h0)
+    store.set_active(h0.runtime_bundle_sha)
+    backend = _evaluate_backend(L1_LLM_CAP)
+    agent = _evaluate_agent(rows, backend, "r1")
+    method = TTHAMethod(agent, h0, ())
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter())
+    consumer = _load_consumer()
+    cells = []
+    stopped = None
+    try:
+        for round_name in ("r1", "r2"):
+            support_origin = min(
+                rec["windows"][round_name]["support"][0] for rec in rows.values())
+            delayed_origin = min(
+                rec["windows"][round_name]["delayed"][0] for rec in rows.values())
+            adapter = _YahooAdapter(
+                consumer=consumer, rows=rows, round_name=round_name,
+                wall=wall, budget=budget,
+                support_origin=support_origin, delayed_origin=delayed_origin)
+            executor = _NABScopeExecutor(
+                rows=rows, round_name=round_name, evaluate_fn=adapter)
+            values = {uid: rec["values"] for uid, rec in rows.items()}
+            first = pack["order"][0]
+            series0 = values[first]
+            spec = _source_task_spec()
+            observed = dict(resolver.window_context(
+                values, support_origin, PERIOD_HINT))
+            observed["bound_period"] = float(PERIOD_HINT)
+            request = PreparationRequest(
+                "t6-l1-yahoo", series0[:support_origin], spec, dict(observed))
+            features = dict(extract_public_features(
+                series0[:support_origin], task_kind="anomaly_detection"))
+            method.bind_round_data(
+                series0[:support_origin], task_kind="anomaly_detection")
+            result = run_online_round(
+                method, executor, request, values,
+                origin=support_origin, slow_agent=None,
+                controller=controller, store=store,
+                card_builder=_card_builder_for("anomaly_detection"),
+                round_name="a3_%s" % round_name,
+                budget=2, allow_slow=False,
+                domain="yahoo_s5_a1", period=PERIOD_HINT,
+                fast_features=features,
+                allow_fast_skill=True, runtime_prior_slot=False)
+            open_delayed(result, executor,
+                         delayed_origin=delayed_origin, store=store)
+            activated = False
+            if result.approved_skill_id is not None:
+                activated = activate_approved(result, store)
+            cells.append({
+                "round": round_name,
+                "chosen": getattr(method.last_trace, "chosen_candidate_id", None),
+                "pool": list(getattr(method.last_trace, "candidate_ids", ()) or ()),
+                "winner": _plain(result.winner_program),
+                "winner_menu": _canonical_menu_program(
+                    (result.winner_program or [{}])[0].get("op")
+                    if result.winner_program else "identity"),
+                "probes": [{"candidate_id": p.get("candidate_id"),
+                            "kind": p.get("kind"), "gain": p.get("gain")}
+                           for p in result.actual_probed_programs],
+                "abstained": bool(getattr(result, "abstained", False)),
+                "approved_skill_id": result.approved_skill_id,
+                "activated": activated,
+                "harm_count": result.harm_count,
+                "delayed_utility": result.delayed_utility,
+                "adapter_calls": list(adapter.calls),
+                "llm_after": int(getattr(backend, "calls", 0)),
+                "fits_after": budget.used,
+            })
+            if budget.used >= budget.cap:
+                stopped = "CONSUMER_FIT_BUDGET_EXCEEDED"
+                break
+    except Stop as stop:
+        stopped = stop.verdict
+        stop_reason = stop.reason
+    else:
+        stop_reason = None
+
+    a3_sha = store.active_path.read_text(encoding="utf-8") if store.active_path.is_file() else ""
+    # Part B freeze record
+    freeze_doc = {
+        "a3_store_root": str(store_root),
+        "a3_active": a3_sha,
+        "static": ["identity", "hampel_filter"],
+        "cells": cells,
+        "stopped": stopped,
+    }
+    if stopped in {
+        "PROTOCOL_BREACH", "CONSUMER_FIT_BUDGET_EXCEEDED",
+        "TARGET_FEEDBACK_UNREADABLE", "INCOMPLETE_LLM_BUDGET",
+        "INSTRUMENT_UNREADABLE",
+    }:
+        payload = {
+            "protocol_version": "t6_42g_l1_static_vs_a3_v1",
+            "run_id": run_id,
+            "verdict": {"verdict": stopped, "reason": stop_reason},
+            "held_in": cells,
+            "wall": wall.audit(),
+            "cost": {"llm": int(getattr(backend, "calls", 0)),
+                     "ad_fits": budget.used, "ad_fit_cap": budget.cap},
+        }
+        OUT_L1.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    # Part C: Fast-only on held-in prefix (origin = 0.7n min) then apply
+    # the frozen decision as training program for held-out scoring.
+    origin = min(rec["windows"]["heldout"][0] for rec in rows.values())
+    deploy = _deploy_fast_only(
+        rows=rows, snapshot=method._active_snapshot(),
+        origin=origin, store_tag="t6g_l1_deploy_%s" % run_id,
+        agent_factory=_evaluate_agent,
+        backend_factory=lambda cap: backend,
+        llm_budget=max(0, L1_LLM_CAP - int(getattr(backend, "calls", 0))),
+        wall=LabelWall(released=False),
+    )
+    if not deploy["ok"]:
+        payload = {
+            "protocol_version": "t6_42g_l1_static_vs_a3_v1",
+            "run_id": run_id,
+            "verdict": {"verdict": "PROTOCOL_BREACH",
+                        "reason": deploy["breach"]},
+            "deploy": deploy,
+            "held_in": cells,
+        }
+        OUT_L1.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    a3_program = "identity"
+    winner = cells[-1].get("winner") if cells else None
+    if isinstance(winner, list) and winner:
+        a3_program = _canonical_menu_program(winner[0].get("op") or "identity")
+    else:
+        a3_program = _canonical_menu_program(deploy.get("applied_program") or "identity")
+
+    # Part D: offline evaluator opens held-out vault once
+    try:
+        ident = _score_heldout_static(rows, "identity", budget)
+        hampel = _score_heldout_static(rows, "hampel_filter", budget)
+        a3s = _score_heldout_static(rows, a3_program, budget)
+    except Stop as stop:
+        payload = {
+            "protocol_version": "t6_42g_l1_static_vs_a3_v1",
+            "run_id": run_id,
+            "verdict": {"verdict": stop.verdict, "reason": stop.reason},
+            "held_in": cells,
+            "deploy": {
+                "open_delayed": deploy["open_delayed_calls"],
+                "slow": deploy["slow_calls"],
+                "store_unchanged": deploy["store_unchanged"],
+                "applied": deploy["applied_program"],
+            },
+            "a3_program_resolved": a3_program,
+            "wall": wall.audit(),
+            "cost": {"llm": int(getattr(backend, "calls", 0)),
+                     "ad_fits": budget.used, "ad_fit_cap": budget.cap},
+        }
+        OUT_L1.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+    best_static = max(ident["macro_f1"], hampel["macro_f1"])
+    delta_id = float(a3s["macro_f1"] - ident["macro_f1"])
+    delta_best = float(a3s["macro_f1"] - best_static)
+    harmed = [uid for uid, f1 in a3s["f1_by_series"].items()
+              if float(f1) - float(ident["f1_by_series"][uid]) < -0.005]
+    worst = min(float(a3s["f1_by_series"][uid]) - float(ident["f1_by_series"][uid])
+                for uid in a3s["f1_by_series"])
+    hampel_harmed = [uid for uid, f1 in hampel["f1_by_series"].items()
+                     if float(f1) - float(ident["f1_by_series"][uid]) < -0.005]
+    n = float(len(a3s["f1_by_series"]))
+    if delta_best > 0.005 and len(harmed) <= 1 and worst >= -0.02:
+        verdict = "ADAPTATION_DELIVERS_HELDOUT"
+    elif (abs(delta_id) <= 0.005 and not harmed
+          and (hampel["macro_f1"] - ident["macro_f1"] < -0.005
+               or len(hampel_harmed) > 2)):
+        verdict = "ADAPTATION_SAFETY_ONLY"
+    elif abs(delta_best) <= 0.005 and not harmed:
+        verdict = "ADAPTATION_TIE"
+    elif delta_id < -0.005 or len(harmed) > 2:
+        verdict = "ADAPTATION_HARMS_HELDOUT"
+    else:
+        verdict = "OBSERVED_BUT_UNCLASSIFIED"
+    payload = {
+        "protocol_version": "t6_42g_l1_static_vs_a3_v1",
+        "entry": "--l1-static-vs-a3",
+        "run_id": run_id,
+        "roster": pack["order"],
+        "held_in_cells": cells,
+        "freeze": freeze_doc,
+        "deploy": {
+            "open_delayed": deploy["open_delayed_calls"],
+            "slow": deploy["slow_calls"],
+            "store_unchanged": deploy["store_unchanged"],
+            "applied": deploy["applied_program"],
+            "per_series_n": len(deploy["per_series"]),
+            "llm": deploy["llm_calls"],
+        },
+        "heldout": {
+            "identity": ident,
+            "hampel_filter": hampel,
+            "a3_star": a3s,
+            "a3_program": a3_program,
+            "best_static_macro": best_static,
+            "delta_vs_identity": delta_id,
+            "delta_vs_best_static": delta_best,
+            "harmed_vs_identity": harmed,
+            "worst_delta_vs_identity": worst,
+            "hampel_harmed_vs_identity": hampel_harmed,
+        },
+        "wall": wall.audit(),
+        "cost": {
+            "llm": int(getattr(backend, "calls", 0)),
+            "llm_cap": L1_LLM_CAP,
+            "ad_fits": budget.used,
+            "ad_fit_cap": L1_AD_FIT_CAP,
+            "forecast_retrains": 0,
+        },
+        "verdict": {"verdict": verdict},
+    }
+    OUT_L1.write_text(_json_text(payload), encoding="utf-8")
+    OUT_L1_MD.write_text(
+        "# #42g L1 Static vs A3\n\nverdict: **%s**\n\n"
+        "roster 24; LLM %s/%s; fit %s/%s\n\n"
+        "A3* program: `%s`\n\nmacro F1 identity %s / hampel %s / A3* %s\n"
+        "Δ vs identity %s; Δ vs best-static %s; harmed %s; worst %s\n"
+        % (verdict, payload["cost"]["llm"], L1_LLM_CAP,
+           budget.used, L1_AD_FIT_CAP, a3_program,
+           ident["macro_f1"], hampel["macro_f1"], a3s["macro_f1"],
+           delta_id, delta_best, harmed, worst),
+        encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict,
+        "llm": payload["cost"]["llm"],
+        "fits": budget.used,
+        "a3_program": a3_program,
+        "macro": {"identity": ident["macro_f1"],
+                  "hampel": hampel["macro_f1"],
+                  "a3": a3s["macro_f1"]},
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_L1)
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
+    if "--deploy-fast-only-smoke" in argv:
+        return deploy_fast_only_smoke()
+    if "--deploy-fast-only" in argv:
+        print(json.dumps({
+            "verdict": "DEPLOYMENT_GRANULARITY_UNSUPPORTED",
+            "reason": "official Yahoo held-out must go through l1_main after smoke",
+        }, indent=1))
+        return 2
+    if "--l1-score-heldout-only" in argv:
+        return l1_score_heldout_only()
+    if "--l1-static-vs-a3" in argv:
+        return l1_static_vs_a3()
     if "--pattern-discriminator-v1" in argv:
         return pattern_discriminator_v1()
     if "--accept-skill-v3" in argv:
@@ -5142,7 +5967,8 @@ def main() -> int:
     print("usage: --plan | --plan-v2 | --evaluate | --evaluate-smoke "
           "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2 "
           "| --source-expansion-v3 | --accept-skill-v3 "
-          "| --pattern-discriminator-v1")
+          "| --pattern-discriminator-v1 | --deploy-fast-only-smoke "
+          "| --l1-static-vs-a3")
     return 2
 
 

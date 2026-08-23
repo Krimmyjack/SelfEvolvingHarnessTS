@@ -582,6 +582,50 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **#42f 书发出(见分发件)**:备考非承重;Part 0 = #42e2 交付检查点;Part A = 本地单变量带标签 AD 候选盘点(存在性/许可/结构/标签形态/曝光状态,禁开任何标签值,禁下载);Part B = 仅当候选合格且布局符合预期,按预注册规则冻结:roster(结构门,不看标签)、cohort 如实登记、每序列 [0,0.7n)/[0.7n,n) 时间边界(与 NAB r1/r2 train 前缀惯例一致)、标签双仓隔离(held-in 仓 #42g Part A 才开;held-out 仓 Part D 才开)、raw 不入库;判定集 = TARGET_FROZEN_SEALED / NO_LOCAL_SEALED_CANDIDATE(→ 下载为用户决策)/ LAYOUT_UNEXPECTED_STOP / INSTRUMENT_UNREADABLE / OBSERVED_BUT_UNCLASSIFIED;0 LLM / 0 fit / 0 重训。
 
+### 依赖梳理与今夜设计预冻结:#42g 预分发稿 v0、M0 设计钉、M1 schema 草案(2026-08-23 23:1x,主线;待 sol 审 + #42f 回填,未分发)
+
+**依赖图**:#42f→#42g 硬依赖(roster/双仓);Fast-only 入口 = #42g Part C 硬前置但与 #42f 无关,并入 #42g Part 0b 实施(烟测只用 dev fixture,sealed 域仅正式运行触碰);M0 数据无依赖(用已曝光 dev 数据),仪器前置 = 第二 Consumer(AegisTS 重构族)薄适配,排期纪律仍 #42g 先行;M0→M1 硬依赖(翻转存在性/配对/效应量定预算);#45 独立仅占带宽;三臂同场 = 合格积累 Skill + 新 sealed 域(用户供给决策,#42g 后拍板;候选:forecasting 侧复活 candidate v2[Skill 已在,缺域] vs AD 侧[Skill 域双缺])+ 复用 #42g 仪器;#46 收尾。
+
+**#42g v0 预冻结决策**:Static 双基线 = identity + hampel_filter 菜单默认参(选型理由 = 领域惯用稳健清洗默认,非取其 NAB 伤害史;对比对象 = best-of 双基线,该选择只可能抬高 A3 门槛);roster 上限 = 字典序前 24(NAB 先例);R_max = 2,r1 train [0,0.40n) / r2 [0,0.70n)(与 bank 形成惯例同构),窗口全 ≤0.7n,停止规则 = 预算尽/一轮无新提案/轮尽;Fast-only 入口硬断言 = open_delayed=0、Slow=0、store 哈希前后不变、逐序列部署日志,违规硬失败;判定集 = ADAPTATION_DELIVERS_HELDOUT / ADAPTATION_AVOIDS_DEFAULT_HARM(A3 平 identity 而 hampel 实害 = 拒有害默认的安全价值格)/ ADAPTATION_TIE / ADAPTATION_HARMS_HELDOUT / PROTOCOL_BREACH / INSTRUMENT_UNREADABLE / OBSERVED_BUT_UNCLASSIFIED;阈值 v0 = 材料线 ±0.005 先例 + worst ≥−0.02 + 伤害份额 1/24(主线拍值待 sol);预算挂公式(LLM ≤24,AD fit ≤200,按 #42e1 每 cell 实测外推)待 #42f 实测回填;方向一致率 = A3* 活跃序列 held-in delayed 号 vs held-out 号。
+
+**M0 设计钉**:配对 = 监督型事件分类器 vs 重构型检测器(AegisTS 薄适配入 consumers/,确定性训练,同轮登记);纯度清单 = 仅 Consumer 归纳偏置可变,Task/数据/窗口/Program 字节/预算/Metric/最终评价目标全同;两段式 = S0 自然 census(40-episode bank 双 Consumer 反号表,A 侧走缓存 0 新 fit、B 侧 ≤300 fit)→ 仅当零翻转才 S1 注入正控(T1b 同族);预期方向预注册 = 清洗训练异常助重构族/损监督族;判定集含 NATURAL/INJECTED_ONLY 分格 + residual。
+
+**M1 schema 草案(M0 后定稿)**:Consumer Context 合法字段 = family / uses_labels / training_objective / anomaly_treatment_in_train / scoring,禁模型名与 ID;反作弊双检 = Runner 只传 schema + 改名不变行为测试;验收链复用 #42g 协议仪器。
+
+### #42f 结果 = C25(TARGET_FROZEN_SEALED);授权下载;#42g r1(sol 七条)追认,书已分发(2026-08-24 00:2x,主线核验裁定)
+
+**C25 canonical(主线读冻结工件 + 隔离抽查)**:执行流 = 本地盘点判 NO_LOCAL_SEALED_CANDIDATE(停报保留)→ 用户授权下载续跑(书面预设决策点,流程正确)。来源链入档:官方 GitHub 404 → HF 官方 gated → 镜像 muditdham/time-series-auto-encoder@24958b84,A1Benchmark 67 文件,raw 不入库。布局 = 公开 schema(timestamp,value,is_anomaly 内联点标签),无官方 train/test → 0.7n 外墙兼容,单自然 cohort yahoo_s5_a1。**长度门偏差(已申报,结果等价)**:书面 ≥800,实用 T6 现役 MIN_LENGTH=1000(仪器一致性);被剔 real_54/real_62 均 n=741,双门下 roster 同为 65。切分 = 每序列 [0,int(0.7n)) / [int(0.7n),n);事件映射 = 连续 is_anomaly==1 → merge_events 行集合,合成 fixture 三例通过(未触真标签)。隔离抽查(主线):work 65 文件仅 timestamp,value(real_1 头行实读)、vaults 65+65、real_54/62 确不在 work。曝光如实:值载入后 context = INSTANCE_SEEN;held-in 标签封至 #42g Part A,held-out 封至 Part D。0 LLM / 0 fit / 0 重训;交付两件未 commit。
+
+**镜像来源 caveat(承重,claim 措辞义务)**:数据为社区镜像副本非官方 Webscope 发行;冻结 JSON 逐文件 sha 锁定本副本身份;考场内部效度不受影响(三臂同字节),但对外引用 Yahoo S5 公开基准数字的可比性未经官方副本核验,今后任何 claim 须注 "mirror copy, provenance recorded"。
+
+**#42g r1(sol 七条)追认,与 v0 合并为正式书(用户已分发,以 r1 为准)**:R1-1 实况回填(roster 65,考场 = 字典序前 24,总长 34,507,min/med/max = 1420/1439/1461,held-in 24,140 行 / held-out 10,367 行;其余 41 条双区标签本轮 evaluator 亦不得请求);R1-2 两轮窗口写死(r1 train [0,.30n) / Support [.30n,.40n) / delayed [.40n,.50n);r2 train [0,.50n) / Support [.50n,.60n) / delayed [.60n,.70n);标签墙按窗序逐开,未来窗与 held-out 不得预载;R_max=2 固定执行,仅预算尽/协议违规/仪器不可读可早停)——supersede v0 的 [0,.40n)/[0,.70n) train 映射;R1-3 Fast 决策粒度保持现役 cohort 级(不新增 24 次独立 Agent 决策),逐序列日志记同一冻结决策的 Scope/实际应用/abstain/输出,LLM≤24 内维持不了则判 **DEPLOYMENT_GRANULARITY_UNSUPPORTED** 且不开正式 held-out;R1-4 评价语义 = 三臂同用完整 held-in [0,.70n) 为下游 fit 底物(identity 不处理 / hampel 冻结默认参 / A3* 只读冻结态 Fast 输出),Program 只作用训练底物,held-out Query 原始字节不处理,事件匹配零额外容差沿现役行集合重叠一对一贪心;R1-5 预算 LLM≤24、AD fit≤240(held-in 上界 144 + held-out 三臂 72 + 余量 24),delayed 必须复用同轮已拟合模型,烟测不复用则正式运行前停报重裁,禁运行中加码;R1-6 Static 口径 = identity 主 Static,hampel 改称"固定清洗压力基线"(主线"领域默认"措辞收回),best_static_macro = 两完整静态臂宏均 F1 全局最大、禁逐序列 oracle 选臂,AVOIDS_DEFAULT_HARM 改名 **ADAPTATION_SAFETY_ONLY**(只算安全结果,不表述为 held-out 效用提升);R1-7 判定优先序 = PROTOCOL_BREACH → INCOMPLETE_LLM_BUDGET / CONSUMER_FIT_BUDGET_EXCEEDED → TARGET_FEEDBACK_UNREADABLE → DEPLOYMENT_GRANULARITY_UNSUPPORTED → INSTRUMENT_UNREADABLE → 科学结果格 → OBSERVED_BUT_UNCLASSIFIED。
+
+### 数据三角色术语钉与比例语义裁定;#42g 不中途改(2026-08-24 00:3x,用户 + sol 会审,主线采纳)
+
+**语义更正(用户直觉 → 三角色拆分)**:用户直觉 = "held-in 应少于 held-out(适应数据非训练数据)";sol 拆分数据三角色采纳为正典:(1) **Target base-train** = 下游模型拟合 + Agent 无标签 Context,零 Harness 反馈;(2) **feedback-bearing adaptation windows** = Support/delayed 反馈窗——真正应当控小的量;(3) **frozen held-out** = 零反馈验收。应小的是 (2),非 (1)+(2) 前缀整体。今后文档与任务书不再把整个前缀称"适应集",改用三角色命名。
+
+**参考核对(sol 实核,主线快搜未复现仓库、未独立复核,记参考值)**:本地 Self-Harness = 43 train/held-in 任务 + 21 heldout ≈ 67/33,无"held-in 必须更小"规则;可借鉴点 = held-in 多轮反复用于 Harness 改进、heldout 用于候选验收,非具体比例。**无固定比例教条;claim 义务 = 显式报告反馈窗份额。**
+
+**#42g 现行书裁定**:不中途改协议,按"70/30 外墙下第一版组件实验"跑完。实际三角色在 r1 墙设计中已隔离(train 前缀无标签,墙按 Support/delayed 窗序逐开),仅命名混用;本轮反馈窗份额 = **40%**(r1/r2 各 Support+delayed 10%×4)。回报与主线裁定的措辞义务:结果 scope 注记"40% 反馈窗份额下的适应组件验收"。
+
+**后续选项登记(不排期,#42g 后拍)**:(a) 剩余 41 条 sealed 序列预注册更小反馈窗份额做后续确认——sol 20% 方案备案:base-train [0,.50n),r1 S [.50,.55)/D [.55,.60),r2 train [0,.60n)、S [.60,.65)/D [.65,.70),held-out 30%,满足"反馈数据 < held-out"且保两轮自进化;已开标签的 24 条不得换比例重称 fresh;(b) 下一新域直接冻结 base-train / adaptation / held-out 三分协议。
+
+### #42g L1 结果裁定 = C26:PROTOCOL_BREACH(部署绑定);ADAPTATION_HARMS_HELDOUT 撤回;AD 特设设计原则;#42g-b 诊断书发出(2026-08-24 01:2x,主线依 sol 代码审计裁定)
+
+**改判(执行方科学格拒绝,按 R1-7 优先序)**:C26 = **PROTOCOL_BREACH**,注记 HELDOUT_WORKFLOW_ATTRIBUTION_UNAVAILABLE;ADAPTATION_HARMS_HELDOUT 不入 claim 表。三处字节级违规(sol 代码审计,主线核):(i) runner:5811 `winner = cells[-1].winner` 优先于 `deploy.applied_program`——冻结态 = h0、skills/learned/ 空、delayed 未批准、Fast-only 实际未采,`outlier_mad` 仍被强行计为 A3* 部署,违 R1-4"A3* 只读冻结态 Fast 输出";正确绑定下 A3* ≡ identity;(ii) runner:5717 `slow_agent=None, allow_slow=False`,违书面"Episode/Slow/Skill 生命周期全许",静默降配;(iii) 首进程死于 OUT_L1 落盘前,held-in 逐格表/该次 LLM-fit 计数/方向一致率永久缺失,补跑 `--l1-score-heldout-only` 未先补轨迹——held-in/freeze/deploy 三段工件未在开 held-out 前分别落盘。执行流两阶段:held-in 一次跑 20260824T002018Z;Part D 首崩于别名映射(`extreme-deviation-mad`→`outlier_mad`,崩于开仓前,非换样本),修复后仅补计分。Part 0 = 21bff04(四件);Fast-only 烟测 = DEPLOY_FAST_ONLY_SMOKE_OK(曝光 fixture,open_delayed=0,store 不变,未读 Yahoo)。执行方漏产自报义务兑现(C24 规),但未按 R1-7 首查协议格——**新站规:Part D 必须断言 scored_program == deploy.applied_program,阶梯行走从协议格开始**。
+
+**保留读数(development,EXPOSED,可靠)**:Yahoo A1 前 24 条,`outlier_mad` 作全 cohort 训练底物处理 → held-out macro 事件 F1 0.2624 vs identity 0.3227(Δ −0.0602),受害 7/24,worst −0.6667(real_11);hampel 压力基线 0.265(−0.057)自伤 12/24;identity = best_static。**逐序列异质:改善 5 / 平 12 / 伤 7**——cohort 粒度掩盖 series 条件化,恰为项目核心命题(Pattern × Program × Consumer)的自然证据素材,但当前无合法 Observation 区分 5 与 7。计分 fit=72,补跑 LLM=0。前 24 条双区标签 EXPOSED 永久 development;**41 条双区 sealed 完好**。
+
+**反馈稀疏事实(sol 读 EXPOSED 标签,主线采信,#42g-b 工件化义务)**:held-in 反馈窗事件极稀——r1 Support 3 事件(21/24 空窗)、r1 delayed 3(23/24 空)、r2 Support 5(20/24 空)、r2 delayed 5(19/24 空),反馈区合计 14 事件、14/24 序列全程无事件;held-out 38 事件、仅 2/24 空。事件质量沿时间非平稳,反馈分布与 held-out 错配;空窗上 macro 事件 F1 主要读误报。解释:难成 delayed POSITIVE、无 Target-local Skill、held-in 选择不预测 held-out——"有效反馈事件太少",非"时间点太少"。
+
+**两常备格立规**:NO_FROZEN_ADAPTATION_STATE(冻结态与初始 h0 等价且无 learned Skill 时,A3 列按构造 = identity 报告,不单独消耗 held-out);FEEDBACK_EVENT_STARVATION(反馈窗事件数不足支撑判定时如实报,不得记能力负结果)。**修复三件(机械,#42g-b Part 0b,字节可验)**:(a) A3* 计分只取 deploy.applied_program + Part D 绑定断言;(b) held-in/freeze/deploy 三段工件各自落盘且先于任何 held-out 打开(顺序断言);(c) Slow 接线按书面配置,禁静默降配。
+
+**AegisTS/TimeClaw 对照教训(sol 代码读证入册)**:AegisTS = 整份数据反复清洗 + 每动作重训轻量下游取密集 reward + 离线 meta 选择器(FMMS/VUS-PR)+ 冻结 RL 策略零射新数据集(RLclean.py:365/:1208,detectors/main.py:45);TimeClaw = 任务实例 ~50/50 切分 + train 实例直给答案记录工具轨迹 + 重复成功提炼 Memory/工具(相似任务 held-out 通过率门)+ test 冻结检索求解(common.py:70,tsrbench.py:355,agents.py:97,summarize.py:100)。两者反馈单元均远大于 #42g 设置;我们的差异化(真下游反馈在线适应 + 零反馈冻结部署)保留,反馈密度设计向"held-in 整池 + 多轮重用"修正。
+
+**AD 特设设计原则(主线裁定,回应用户"AD 与预测不同需特设")**:P1 反馈以事件质量计,不以时间份额计——AD 的效用信号只住在事件上(预测任务每个 origin 都有连续 sMASE 信号,AD 空窗只有误报面),每书报告反馈窗事件数,starvation 格兜底,拒绝以聚合标签预窥换取设计便利(sealed 纯度优先,靠扩 roster 降 starvation 概率);P2 series 级条件化 Scope 一等公民,abstain-by-default,禁全 cohort 强推(5/12/7 异质为证);P3 Program Supply 现实性——五菜单系 forecasting 承继,清洗训练底物对检测器可能本质反向(T1b/M0 翻转逻辑),AD-native 候选仅在 headroom census 证菜单枯竭后新增一个;P4 生命周期硬门——仅 LOCAL_ACTIVE Skill 可冻结部署,NO_FROZEN_ADAPTATION_STATE 省 held-out;P5 held-in 整池反馈 + 多轮重用(撤销窗内顺序墙,Support/delayed 角色切分保留防自批);P6 确认场 = 41 条 sealed,50% base-train / 20% adaptation / 30% held-out 三分协议。
+
+**#42g-b 诊断书发出(见分发件)**:0 LLM,EXPOSED 24 条上五程序 × 24 序列全响应表(held-in 底物 fit 一次、双区计分),headroom 判定树 + 事件稀疏表工件化 + 选择缺失核查;主判 = NO_MENU_HEADROOM / GLOBAL_HEADROOM_EXISTS / PARTIAL_SERIES_HEADROOM_ONLY(副 flag:SELECTION_MISS)/ INSTRUMENT_UNREADABLE / OBSERVED_BUT_UNCLASSIFIED;fit ≤150。诊断出结果前:不下载、不改 Harness 本体、41 条不动。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。

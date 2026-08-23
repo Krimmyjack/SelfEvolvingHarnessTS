@@ -212,6 +212,15 @@ cohort 定义、**按序列内时间边界**的 held-in/held-out 切分
 held-in outcome 至 #42g Part A 才开,held-out outcome 封存至
 Part D 离线计分。首正成本 = held-in 读数;FRESH_A5_DELIVERS 属
 "fresh 区域反馈消耗式适应"读数,与冻结部署 held-out 读数不可互替。
+**数据三角色细分(2026-08-24 用户+sol 会审)**:外墙内再分
+Target base-train(下游拟合 + 无标签 Context,零反馈)与
+feedback-bearing adaptation windows(Support/delayed 反馈窗,
+真正应控小的量),连同 frozen held-out 构成三角色;今后不再把
+整个前缀称"适应集"。无固定比例教条(Self-Harness 43/21 参考,
+sol 核);claim 须显式报告反馈窗份额。#42g 现行 = 70/30 外墙
+第一版组件实验(反馈窗份额 40%),不中途改;后续选项 = 剩余
+41 条 sealed 序列预注册更小份额(sol 20% 方案备案)确认,或
+下一新域冻结三分协议;已开标签 24 条不得换比例重称 fresh。
 **当前执行锁(C23 后,2026-08-23)**:#42e1 已以
 `RISK_PRIOR_EFFECT_AMBIGUOUS` 收口,v3 归档,当前 #42g 的 AD L2
 关闭且不得通过修改 v3、重抽 AdExchange 或追加 Source cohort 重开。该裁定只
@@ -421,6 +430,33 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   增强线 B 暂闭至 #42g 后);**#42f 书已发**(本地盘点 → 预注册
   规则冻结 roster/cohort/0.7n 序列内时间边界/标签双仓隔离;
   禁下载禁开标签;NO_LOCAL_SEALED_CANDIDATE → 用户决策)。
+  **#42f = C25 TARGET_FROZEN_SEALED**(停报 → 用户授权下载;
+  Yahoo S5 A1 镜像 67 文件 @24958b84,roster 65[MIN_LENGTH=1000,
+  与书面 800 结果等价,已申报],单 cohort yahoo_s5_a1,0.7n 双仓
+  封存,主线隔离抽查通过;**镜像来源 caveat 承重**:对外引用
+  公开基准数字须注 mirror copy);  **#42g 正式书已分发**
+  (v0 + sol r1 七条:字典序前 24、两轮窗口写死[.30/.40/.50 与
+  .50/.60/.70]、cohort 级 Fast 粒度 + DEPLOYMENT_GRANULARITY_
+  UNSUPPORTED 格、训练底物评价语义[held-out Query 原始字节
+  不处理]、LLM≤24 / fit≤240、identity 主 Static + hampel
+  "固定清洗压力基线" + SAFETY_ONLY 改名、判定优先序;两处
+  运行前停报门 = delayed 模型复用烟测、部署粒度)。
+  **#42g 首跑 = C26 PROTOCOL_BREACH(裁定改判)**:执行方报
+  ADAPTATION_HARMS_HELDOUT 被撤回——冻结态 h0 无 learned
+  Skill,计分却按"末轮 winner 优先"(runner:5811)把未批准的
+  outlier_mad 当 A3* 部署,违 R1-4;Slow 静默关闭(:5717);
+  held-in 轨迹未落盘。保留读数(development):outlier_mad 全
+  cohort → held-out 宏 F1 0.2624 vs identity 0.3227,伤 7/24,
+  逐序列 5 改善/12 平/7 伤;hampel 自伤 12/24。反馈稀疏实证:
+  held-in 反馈窗合计 14 事件(14/24 全空)vs held-out 38。
+  前 24 条 EXPOSED 永久 development;41 条 sealed 完好 =
+  确认场(50/20/30 三分协议)。AD 特设原则 P1–P6 入台账;
+  两常备格 NO_FROZEN_ADAPTATION_STATE / FEEDBACK_EVENT_
+  STARVATION;三机械修复(绑定断言/三段落盘顺序/Slow 按书面
+  配置)入 #42g-b Part 0b。**#42g-b 诊断书已发**(0 LLM,
+  EXPOSED 24 条五程序全响应表 + headroom 判定树 + 稀疏表
+  工件化 + 选择缺失核查,fit≤150);定序更新:#42g-b 诊断 →
+  #42g-c 确认(41 条 sealed,50/20/30)→ #43 M0 → #44 M1。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
