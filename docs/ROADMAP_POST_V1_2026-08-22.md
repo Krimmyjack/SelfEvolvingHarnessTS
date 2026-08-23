@@ -2,12 +2,14 @@
 
 本文件是 V1 里程碑(v7 九环闭合)之后的总体安排,供主线、执行 Agent 与外审共同使用。
 逐轮台账见 `docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md`(canonical,遇冲突以台账为准)。
+当前系统形态、证据切面与数据曝光的短表见
+`docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`。
 
 ## 0. 已入账状态(带工件指针,不得复述超出其口径)
 
 | 结论 | 口径上限 | 工件 |
 |---|---|---|
-| FRESH_A5_DELIVERS | pooled 首正成本 −43.9%(69 vs 123 重训),最终质量与 harm 同冷启动;per_channel = A5_TIE_TRANSFER_BOUNDARY;NOAA held-out 2025 一次性打开 | `fresh_confirmation_v1.*` + `fresh_confirmation_v1_adjudication.md`(canonical 措辞) |
+| FRESH_A5_DELIVERS | pooled 首正成本 −43.9%(69 vs 123 重训),最终质量与 harm 同冷启动;per_channel = A5_TIE_TRANSFER_BOUNDARY;NOAA 2025 fresh 区域在反馈消耗式适应中一次性打开（非 Fast-only held-out） | `fresh_confirmation_v1.*` + `fresh_confirmation_v1_adjudication.md`(canonical 措辞) |
 | LOCAL_LIFECYCLE_CLOSES | Target-local Skill 形成/晋级/持久化/召回,development 级 | `local_skill_recall_v1.*` |
 | SLOW_CLOSES_SCOPE_GAP_BY_VETO | 银行重放,containment 非效用改善 | `slow_scope_update_v2.*` |
 | BANKED_CHAIN_CLOSES_IN_K_MODELS 2/2 | 6–9 环端到端,gpt-5.6-sol 与 gpt-5.6-luna | `operational_pipeline_v6.*` |
@@ -153,9 +155,21 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
 正解"式单条总主张,台账同日节为准)**:总主张 = 构建面向多 Task、多
 Consumer、多 Domain 的时序数据质量适应 Harness——依据部署时可观察的局部
 时序 Pattern、候选 Program 的作用几何与 Task/Consumer 的质量语义,在新域
-held-in 上自主生成/验证/更新 Target-local Workflow Skill,在同域 held-out
+held-in 上多轮自主生成/验证/更新 Target-local Workflow Skill 与 Harness,在同域 held-out
 上验收效用与风险;当 Source 与 Target 共享可观察决策 Context 时,冻结
-Source-derived Skill 进一步减少适应成本与负迁移。四层主张与主比较:
+Source-derived Skill 进一步减少适应成本与负迁移。
+**系统形态澄清(2026-08-23 用户质询裁定)**:系统形态上积累与适应不可拆
+——最终交付是单一进化 Harness,跨域积累 → 新域 held-in 适应 → 冻结
+held-out 部署为同一生命周期;held-in/held-out 只切反馈可得性,不切知识
+可用性,系统臂(A5/全量)的跨域 Skill 在两侧全程在场,held-out 禁学习
+不禁知识使用。L1/L2 是归因刻度不是产品拆分:A3 是"关闭积累"的消融臂,
+存在目的是让胜利可归因。弃用"主线/增强线"命名(产品化误读),改称
+L1 = 必要条件层、L2 = 积累贡献层。"积累承担大部分、适应只是校准"是
+权重假设:控制世界旧证据支持(W47 A5 AdaptAUC 1.0 vs A3 0.875;W56
+A4 零射 6/6 正),自然世界证据当前只支持条件加速器(FRESH −43.9% 终态
+平;#42e1 先验对 Target 实误、未采用反避损)。渐近方向 = 库成熟后逐
+新域以递减 held-in 预算复测 L2,重复测量支持时该假设即升格(亦为旧 A4
+零/少探针重新入场路径),测到为止,不预设。四层主张与主比较:
 - L1 核心适应性:新域 held-in 适应 → 冻结 → held-out 终态(A3 vs 静态
   默认;无条件承重,不依赖任何 Source 先验);
 - L2 Source 先验价值:同 held-in 预算下 A5 vs A3,同一 held-out 验收
@@ -165,11 +179,11 @@ Source-derived Skill 进一步减少适应成本与负迁移。四层主张与�
   (消融臂只跑已曝光域);
 - L4 载体条件化:同一处理随 Task/Consumer 反号且 Harness 随之改变行为
   (M0/M1;T1b 注入正控为先例)。
-旧 A4(少/零 probe Shared Capability)= 远期可选目标,非成立前提。
-L1/L4 不依赖 Source 迁移成败;L2/L3 为更强迁移贡献。
-**最小可辩护闭环 = #42g L1 + M0 + M1**(2026-08-23 sol 修正:M0 仅证
-"反号现象存在"的正控,载体条件化的能力主张须 M1 坐实"Harness 读取
-Consumer Context 并安全改变适配行为";主线"L1+M0 即保底"表述收回)。
+旧 A4(少/零 probe 直接执行)= 远期可选目标;但“经审计的跨域积累参与新域
+held-in 校准”是完整 Harness 的组成,不是可永久删除的增强项。L1–L4 只作
+证据归因坐标。**当前组件闭环 = #42g Static/A3 + M0 + M1;项目最终闭环还
+必须包含至少一次自然数据上的 Static/A3/A5 同场验收。**M0 仅证"反号现象
+存在"的正控,载体条件化能力须 M1 坐实;只有 A3 的正结果不能替代完整 Harness。
 **承重读数纪律**:能力对比以冻结终态在 held-out 的效用与安全承重
 (utility / harmed series / worst-series gain / abstention / 方向一致率);
 首正成本、试验数、feedback 消耗为解释性辅读数,不得单独支撑能力主张。
@@ -178,25 +192,39 @@ held-in 预算由已曝光 development 轨迹预先冻结,禁挑选"刚好让 A5
 处女 held-out 只被冻结态触碰。
 **协议语义钉(2026-08-23,用户定义立为正典)**:held-in = 反馈可用区
 ——Support(即时)与 delayed(后续)反馈、Episode 写入、Slow 修正、
-Target-local Skill 形成/批准/撤权全部只在其内;held-out = 零反馈
+Target-local Skill 形成/批准/撤权全部只在其内。held-in 是可在预冻结总反馈
+预算与停止规则内运行 `r1...rR` 的 self-harness 适应环境,不是一次性 batch:
+前轮 Episode/Skill/Risk/Harness Patch 可进入后轮 Fast replay;每次 Consumer
+调用仍计预算,同一 Outcome 的缓存重放或重复读取不得计作独立新证据;
+held-out = 零反馈
 Fast-only 部署区——冻结态检索 Skill + 部署可观察 Context 自主出
 Workflow,禁 open_delayed / 反馈回传 / Slow / Skill 变更 / 按 outcome
 写 Experience / 看结果重试;计分 = 全臂输出冻结后外部 evaluator
-一次性开 outcome,开即 EXPOSED。#42g 四段 = held-in adaptation →
+一次性开 outcome,开即 EXPOSED。#42g 四段 = held-in iterative adaptation(多轮 r1…rR;轮数上限、
+总反馈预算、可用窗口、停止规则书面预冻结,禁预指定 Workflow 或
+逐轮答案;2026-08-23 C24 轮钉)→
 freeze(Static*/A3*/A5*)→ held-out deployment(Fast-only)→
 offline evaluation;Part C 需新增 Fast-only 部署入口(现役 replay
 均含 open_delayed,仪器缺口在册),Part D 沿用 LabelWall +
-evaluate_released;#42f 获取 census 时即冻结划分并封存 held-out
-outcome。首正成本 = held-in 读数;FRESH_A5_DELIVERS 属"fresh 区域
-反馈消耗式适应"读数,与冻结部署 held-out 读数不可互替。
+evaluate_released;#42f 获取 census 时即预冻结:文件 roster、
+cohort 定义、**按序列内时间边界**的 held-in/held-out 切分
+(2026-08-23 sol 修正采纳,supersede"按序列切")、标签隔离方式;
+held-in outcome 至 #42g Part A 才开,held-out outcome 封存至
+Part D 离线计分。首正成本 = held-in 读数;FRESH_A5_DELIVERS 属
+"fresh 区域反馈消耗式适应"读数,与冻结部署 held-out 读数不可互替。
 **当前执行锁(C23 后,2026-08-23)**:#42e1 已以
 `RISK_PRIOR_EFFECT_AMBIGUOUS` 收口,v3 归档,当前 #42g 的 AD L2
-关闭且不得通过修改 v3、重抽 AdExchange 或追加 Source cohort 重开。
-无条件主线固定为 #42f(冻结未曝光 Target 的 held-in/held-out 边界)→
-#42g L1(Static vs A3)。#42e2 若已分发可按冻结单假设完成一次,但它是
-L3 增强线测量,不阻塞 #42f/#42g L1,也不自动为当前 #42g 增加 A5;
+关闭且不得通过修改 v3、重抽 AdExchange 或追加 Source cohort 重开。该裁定只
+关闭 v3 进入本次考场的资格,不关闭完整系统中的 A5/累积知识角色。下一组件门
+固定为 #42f(冻结未曝光 Target 的 held-in/held-out 边界)→ #42g
+(Static vs A3),用于验收 AD Target 校准端口,不作为最终产品形态。#42e2 若已
+分发可按冻结单假设完成一次,但它是 Pattern 机制诊断,不阻塞 #42f/#42g,
+也不自动为当前 #42g 增加 A5;
 任何未来 Pattern-conditioned Source Skill 必须建立新 version、另过
 development 行为验收,进入后续独立正式考场。
+**#42f 数据获取顺序**:先盘点本地已有候选与 exposure;只有本地不存在满足
+任务语义、时间 held-in/held-out 和 outcome=SEALED 的 Target 时,才按任务书与
+用户授权下载。新域用于一次干净验收,不是继续堆 Source 数据。
 **独有性声称前置**:相关工作检索(载体条件化与 Pattern 机制在既有
 harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前债。
 
@@ -291,7 +319,7 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   0-LLM 缓存重放,绿 = FORECASTING_COMPAT_RESTORED 续跑,
   红即停);T6 直连行现为 :1619,Part A 删除对象确认。
   r3(sol 三修采纳 + 主线 claim 勘误):FRESH_A5_DELIVERS 在册
-  (NOAA held-out 2025 pooled 首正成本 −43.9%,per-channel 迁移
+  (NOAA 2025 fresh 适应区 pooled 首正成本 −43.9%,非 Fast-only held-out;per-channel 迁移
   边界)——主线"预测线从未证明"表述错误收回,#42f 定位更正为
   已证优势向第二任务+独立域的推广考试;证据门回归已证水准
   (TRY/RISK 均 ≥2 个不同 Source cohort 计票,min=1 撤回);
@@ -369,6 +397,30 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   诊断性负结果);**#42e2 书已发**(纯测量 0 LLM / 0 fit:
   isolated-extreme × winsorize 单假设判别 + 代理审计 + LOCO,
   mad 附录;一轮一假设)。
+  **sol 排期审核采纳(2026-08-23)**:唯一承重两场 = #42g L1 与
+  #44 M1(M0 = 前提正控非承重,#42f 备考,#45 回归,#46 收口);
+  #42e2 r1 = 顶格判词改 PATTERN_CANDIDATE_CLUE(正例侧单 cohort
+  为结构性上限)+ 非阻塞钉 + 完美分离两读法区分义务;#42g 三态
+  写死(Static = identity + 一条预注册固定通用清洗双基线);
+  M0 纯度钉(只变 Consumer 归纳偏置)+ M1 禁按模型名派答案;
+  #45 压缩为 #46 前轻量回归;#46 交付 = 单一 Harness 入口处理
+  不同 TaskSpec/Consumer 的最终纵向系统;项目 AGENTS.md 对齐
+  核验属实;workspace ccfa.yaml 最小状态更新完成(stage 块 +
+  authority_note,历史段保留)。
+  最终定序:#42e2 → #42f → #42g L1 → #43 M0 → #44 M1 →
+  #45 轻量回归 → Static/A3/A5 三臂同场验收(合格累积 Skill +
+  sealed Target 齐备后,#46 前必经;用户二次校正 2026-08-23)
+  → #46 系统整合。
+  **#42e2 = C24 PATTERN_NO_DISCRIMINATION**(主线读工件核验:
+  aws 正例与 traffic/tweets 负例同为 isolated_dominant=True,
+  唯一 False = kc 长 burst 结构;C1 反侧率 0.25<0.75、C2 单
+  cohort 指示器、C3 剔 aws 不可读;family 关闭不入 Scope;
+  mad 附录与双基线漏产记偏差主线豁免,教训 = 书面义务分
+  "必跑/仅通过时跑"且漏产须自行申报;first-fault =
+  OBSERVATION_INSUFFICIENT 限本特征×本程序;L3 零活跃候选,
+  增强线 B 暂闭至 #42g 后);**#42f 书已发**(本地盘点 → 预注册
+  规则冻结 roster/cohort/0.7n 序列内时间边界/标签双仓隔离;
+  禁下载禁开标签;NO_LOCAL_SEALED_CANDIDATE → 用户决策)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下

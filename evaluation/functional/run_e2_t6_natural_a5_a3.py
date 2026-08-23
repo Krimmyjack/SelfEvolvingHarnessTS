@@ -243,6 +243,9 @@ H0S_V3_EXPECTED_SHA = (
 )
 ACCEPT_V3_LLM_BUDGET = 32
 ACCEPT_V3_AD_FIT_BUDGET = 24
+OUT_PATTERN_V1 = E2 / "t6_nab_42e2_pattern_discriminator.json"
+OUT_PATTERN_V1_MD = E2 / "t6_nab_42e2_pattern_discriminator.md"
+ISOLATED_FRACTION_THRESHOLD = 0.5
 RISK_OPS_V3: tuple[str, ...] = (
     "hampel_filter", "outlier_iqr", "outlier_mad",
 )
@@ -4710,8 +4713,406 @@ def accept_skill_v3() -> int:
     return 0
 
 
+def _winsorize_rows_from_frozen() -> list[dict[str, Any]]:
+    """Read 8 winsorize cards from committed banks.  Do not recompute relations."""
+    if not OUT_JSON_V2.exists() or not OUT_CENSUS_V3.exists():
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "missing plan_v2 or census_v3")
+    plan = json.loads(OUT_JSON_V2.read_text(encoding="utf-8"))
+    census = json.loads(OUT_CENSUS_V3.read_text(encoding="utf-8"))
+    old = [r for r in ((plan.get("source_bank") or {}).get("rows") or [])
+           if r.get("program") == "winsorize"]
+    new = [r for r in (census.get("new_bank_rows") or [])
+           if r.get("program") == "winsorize"]
+    rows = old + new
+    if len(rows) != 8:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "expected 8 winsorize episodes, found %d" % len(rows))
+    return rows
+
+
+def _cohort_series_files() -> dict[str, list[tuple[str, Path]]]:
+    mapping: dict[str, list[tuple[str, Path]]] = {}
+    if not OUT_JSON_V2.exists():
+        raise Stop("INSTRUMENT_UNREADABLE", "missing plan_v2")
+    plan = json.loads(OUT_JSON_V2.read_text(encoding="utf-8"))
+    source = ((plan.get("cohorts") or {}).get("source") or {})
+    for cohort, (directory, _take) in SOURCE_COHORTS.items():
+        names = list(source.get(cohort) or [])
+        mapping[cohort] = [
+            (name, DATA_ROOT / directory / name) for name in names]
+    for cohort, (directory, names) in EXPANSION_COHORTS.items():
+        mapping[cohort] = [
+            (name, DATA_ROOT / directory / name) for name in names]
+    return mapping
+
+
+def _extreme_runs(block: np.ndarray) -> dict[str, Any]:
+    """Reuse public_features MAD / z>=4 semantics.  No new epsilon."""
+    from SelfEvolvingHarnessTS.contracts.observables import (
+        OUTLIER_Z_THRESHOLD, PUBLIC_ROBUST_Z_MAD_FLOOR,
+    )
+
+    values = np.asarray(block, dtype=np.float64).ravel()
+    finite = np.isfinite(values)
+    if not np.any(finite):
+        filled = np.zeros_like(values)
+    else:
+        indices = np.arange(values.size, dtype=np.float64)
+        filled = np.interp(indices, indices[finite], values[finite])
+    median = float(np.median(filled))
+    mad = float(np.median(np.abs(filled - median)))
+    scale = max(1.4826 * mad, PUBLIC_ROBUST_Z_MAD_FLOOR)
+    z = np.abs(filled - median) / scale
+    extreme = z >= OUTLIER_Z_THRESHOLD
+    runs: list[int] = []
+    length = 0
+    for flag in extreme.tolist():
+        if flag:
+            length += 1
+            continue
+        if length:
+            runs.append(length)
+            length = 0
+    if length:
+        runs.append(length)
+    isolated = sum(1 for run in runs if run == 1)
+    return {
+        "n": int(values.size),
+        "finite": int(finite.sum()),
+        "median": median,
+        "mad": mad,
+        "scale": float(scale),
+        "z_peak": float(np.max(z)) if z.size else None,
+        "extreme_count": int(extreme.sum()),
+        "run_count": len(runs),
+        "isolated_run_count": isolated,
+        "max_run_len": max(runs) if runs else 0,
+        "runs": runs,
+        "mad_was_zero": mad == 0.0,
+    }
+
+
+def _episode_observation(
+    row: Mapping[str, Any],
+    files: Sequence[tuple[str, Path]],
+) -> dict[str, Any]:
+    round_name = str(row["round"])
+    series_rows: list[dict[str, Any]] = []
+    isolated_sum = 0
+    run_sum = 0
+    max_run = 0
+    for name, path in files:
+        if not path.is_file():
+            raise Stop("INSTRUMENT_UNREADABLE",
+                       "missing series file %s" % path)
+        read = _read_series(path, row_order_contract=True)
+        if not read.get("ok"):
+            raise Stop("INSTRUMENT_UNREADABLE",
+                       "%s failed row-order read: %s"
+                       % (name, read.get("failures")))
+        values = np.asarray(read["values"], dtype=np.float64)
+        lo, hi = _window_plan(int(read["length"]))[round_name]["train"]
+        stats = _extreme_runs(values[lo:hi])
+        stats["file"] = name
+        stats["train_span"] = [lo, hi]
+        series_rows.append(stats)
+        isolated_sum += int(stats["isolated_run_count"])
+        run_sum += int(stats["run_count"])
+        max_run = max(max_run, int(stats["max_run_len"]))
+    if run_sum == 0:
+        frac = None
+        dominant = None
+        excluded = True
+    else:
+        frac = isolated_sum / run_sum
+        dominant = bool(frac >= ISOLATED_FRACTION_THRESHOLD)
+        excluded = False
+    delayed = str(row["delayed_relation"]).upper()
+    if delayed == "POSITIVE":
+        cls = "positive"
+    elif delayed in {"NEGATIVE", "CONFLICT"}:
+        cls = "adverse"
+    else:
+        cls = "archive"
+    return {
+        "episode_id": row["episode_id"],
+        "cohort": row["cohort"],
+        "round": round_name,
+        "support_relation": row["support_relation"],
+        "delayed_relation": delayed,
+        "support_harmed": row.get("support_harmed"),
+        "delayed_harmed": row.get("delayed_harmed"),
+        "support_worst_series": row.get("support_worst_series"),
+        "delayed_worst_series": row.get("delayed_worst_series"),
+        "class": cls,
+        "episode_isolated_fraction": frac,
+        "episode_max_run_len": max_run,
+        "isolated_dominant": dominant,
+        "excluded_na": excluded,
+        "isolated_run_sum": isolated_sum,
+        "run_sum": run_sum,
+        "series": series_rows,
+    }
+
+
+def _c2_proxy(classified: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    by_value: dict[str, set[str]] = {}
+    by_cohort: dict[str, set[str]] = {}
+    for row in classified:
+        value = str(bool(row["isolated_dominant"]))
+        cohort = str(row["cohort"])
+        by_value.setdefault(value, set()).add(cohort)
+        by_cohort.setdefault(cohort, set()).add(value)
+    sides = {key: by_value.get(key, set()) for key in ("True", "False")}
+    single = any(len(cs) == 1 for cs in by_value.values())
+    complete = (
+        all(len(cs) == 1 for cs in by_value.values())
+        and all(len(vs) == 1 for vs in by_cohort.values())
+        and len(by_value) == len(by_cohort)
+        and len(by_value) > 0
+    )
+    both_ge2 = all(len(cs) >= 2 for cs in sides.values()) and all(sides.values())
+    return {
+        "values_to_cohorts": {k: sorted(v) for k, v in sorted(by_value.items())},
+        "single_cohort_indicator": single,
+        "complete_cohort_partition_replica": complete,
+        "both_boolean_sides_present": all(bool(cs) for cs in sides.values()),
+        "both_boolean_sides_ge2_cohorts": both_ge2,
+        "usable_as_scope": (
+            not single and not complete and both_ge2
+        ),
+    }
+
+
+def _c1_direction(classified: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    pos = [r for r in classified if r["class"] == "positive"]
+    adv = [r for r in classified if r["class"] == "adverse"]
+    pos_sides = {r["isolated_dominant"] for r in pos}
+    adv_true = sum(1 for r in adv if r["isolated_dominant"] is True)
+    adv_false = sum(1 for r in adv if r["isolated_dominant"] is False)
+    if not pos or not adv or None in pos_sides or len(pos_sides) != 1:
+        return {
+            "separates": False,
+            "positive_side": None,
+            "all_positive_same_side": bool(pos) and len(pos_sides) == 1,
+            "adverse_opposite_rate": None,
+            "positive_n": len(pos),
+            "adverse_n": len(adv),
+        }
+    side = next(iter(pos_sides))
+    opposite = adv_false if side is True else adv_true
+    rate = opposite / len(adv)
+    return {
+        "separates": bool(rate >= 0.75),
+        "positive_side": side,
+        "all_positive_same_side": True,
+        "adverse_opposite_rate": rate,
+        "adverse_opposite_count": opposite,
+        "positive_n": len(pos),
+        "adverse_n": len(adv),
+    }
+
+
+def _c3_loco(classified: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    cohorts = sorted({r["cohort"] for r in classified})
+    folds = []
+    all_readable = True
+    direction_holds = True
+    base = _c1_direction(classified)
+    for left_out in cohorts:
+        remain = [r for r in classified if r["cohort"] != left_out]
+        pos = [r for r in remain if r["class"] == "positive"]
+        adv = [r for r in remain if r["class"] == "adverse"]
+        if not pos or not adv:
+            folds.append({
+                "left_out": left_out, "readable": False,
+                "reason": "LOCO_UNREADABLE",
+                "positive_n": len(pos), "adverse_n": len(adv),
+            })
+            all_readable = False
+            continue
+        c1 = _c1_direction(remain)
+        holds = (
+            c1["all_positive_same_side"]
+            and c1["positive_side"] == base.get("positive_side")
+            and (c1.get("adverse_opposite_rate") or 0) >= 0.75
+        )
+        if not holds:
+            direction_holds = False
+        folds.append({
+            "left_out": left_out, "readable": True, "c1": c1,
+            "direction_holds": holds,
+        })
+    return {
+        "folds": folds,
+        "all_readable": all_readable,
+        "direction_holds": bool(all_readable and direction_holds and folds),
+    }
+
+
+def _pattern_verdict(
+    *,
+    instrument_ok: bool,
+    classified: Sequence[Mapping[str, Any]],
+    c1: Mapping[str, Any],
+    c2: Mapping[str, Any],
+    c3: Mapping[str, Any],
+    pos_cohorts: Sequence[str],
+    adv_cohorts: Sequence[str],
+) -> dict[str, Any]:
+    if not instrument_ok:
+        return {"verdict": "INSTRUMENT_UNREADABLE"}
+    c2_pass = bool(c2.get("usable_as_scope"))
+    independent = len(pos_cohorts) >= 2 and len(adv_cohorts) >= 2
+    if (c1.get("separates") and c1.get("all_positive_same_side")
+            and c2_pass and independent and c3.get("all_readable")
+            and c3.get("direction_holds")):
+        return {
+            "verdict": "PATTERN_DISCRIMINATES_WITH_INDEPENDENT_COHORT_SUPPORT",
+            "claim_cap": "MECHANISM",
+            "may_enter_skill_scope": False,
+            "note": "legal mechanism clue; Scope admission is a later mainline cut",
+        }
+    if c1.get("separates") and not c2_pass:
+        return {
+            "verdict": "PATTERN_CORRELATES_BUT_COHORT_PROXY",
+            "may_enter_skill_scope": False,
+        }
+    if c1.get("separates") and c2_pass and (
+            not independent or not c3.get("all_readable")):
+        return {
+            "verdict": "PATTERN_SEPARATES_BUT_POSITIVE_COHORT_SINGLETON",
+            "may_enter_skill_scope": False,
+            "claim_cap": "MECHANISM_CANDIDATE",
+        }
+    if not c1.get("separates"):
+        return {
+            "verdict": "PATTERN_NO_DISCRIMINATION",
+            "family_closed": "isolated-extreme × winsorize",
+        }
+    return {"verdict": "OBSERVED_BUT_UNCLASSIFIED"}
+
+
+def pattern_discriminator_v1() -> int:
+    """#42e2 r1: one frozen Observation on winsorize.  0 LLM / 0 fit."""
+    try:
+        rows = _winsorize_rows_from_frozen()
+        files = _cohort_series_files()
+        observations = []
+        for row in rows:
+            cohort = str(row["cohort"])
+            if cohort not in files:
+                raise Stop("INSTRUMENT_UNREADABLE",
+                           "no files mapped for %s" % cohort)
+            observations.append(_episode_observation(row, files[cohort]))
+    except Stop as stop:
+        payload = {
+            "protocol_version": "t6_nab_42e2_pattern_discriminator_v1",
+            "verdict": {"verdict": stop.verdict, "reason": stop.reason},
+            "cost": {"llm": 0, "ad_fits": 0, "forecast_retrains": 0},
+        }
+        OUT_PATTERN_V1.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    bags = {"positive": [], "negative": [], "conflict": [], "immaterial": []}
+    for row in observations:
+        delayed = row["delayed_relation"]
+        if delayed == "POSITIVE":
+            bags["positive"].append(row["episode_id"])
+        elif delayed == "NEGATIVE":
+            bags["negative"].append(row["episode_id"])
+        elif delayed == "CONFLICT":
+            bags["conflict"].append(row["episode_id"])
+        else:
+            bags["immaterial"].append(row["episode_id"])
+
+    classified = [r for r in observations if not r["excluded_na"]
+                  and r["class"] in {"positive", "adverse"}]
+    excluded = [r["episode_id"] for r in observations if r["excluded_na"]]
+    pos_cohorts = sorted({r["cohort"] for r in classified if r["class"] == "positive"})
+    adv_cohorts = sorted({r["cohort"] for r in classified if r["class"] == "adverse"})
+    c1 = _c1_direction(classified)
+    c2 = _c2_proxy(classified)
+    c3 = _c3_loco(classified)
+    verdict = _pattern_verdict(
+        instrument_ok=True, classified=classified, c1=c1, c2=c2, c3=c3,
+        pos_cohorts=pos_cohorts, adv_cohorts=adv_cohorts)
+    payload = {
+        "protocol_version": "t6_nab_42e2_pattern_discriminator_v1",
+        "entry": "--pattern-discriminator-v1",
+        "evidence_grade": "MECHANISM",
+        "evidence_standing": "development",
+        "counts_as_capability_claim": False,
+        "forms_skill": False,
+        "observation": {
+            "name": "isolated_dominant",
+            "z_threshold": 4.0,
+            "isolated_fraction_threshold": ISOLATED_FRACTION_THRESHOLD,
+            "window": "episode train span; per-series, never concatenated",
+            "mad_scale": "public_features: max(1.4826*MAD, PUBLIC_ROBUST_Z_MAD_FLOOR)",
+            "no_second_feature": True,
+        },
+        "response_table": observations,
+        "bags": bags,
+        "excluded_na": excluded,
+        "classified_n": len(classified),
+        "positive_distinct_cohorts": pos_cohorts,
+        "adverse_distinct_cohorts": adv_cohorts,
+        "c1": c1,
+        "c2": c2,
+        "c3": c3,
+        "verdict": verdict,
+        "cost": {"llm": 0, "ad_fits": 0, "forecast_retrains": 0},
+    }
+    OUT_PATTERN_V1.write_text(_json_text(payload), encoding="utf-8")
+    lines = [
+        "# #42e2 isolated_dominant × winsorize",
+        "",
+        "verdict: **%s**" % verdict["verdict"],
+        "may_enter_skill_scope: %s" % verdict.get("may_enter_skill_scope"),
+        "positive cohorts: %s" % pos_cohorts,
+        "adverse cohorts: %s" % adv_cohorts,
+        "excluded NA: %s" % excluded,
+        "",
+        "| episode | delayed | class | isolated_frac | dominant | max_run |",
+        "|---|---|---|---|---|---|",
+    ]
+    for row in observations:
+        lines.append("| %s | %s | %s | %s | %s | %s |" % (
+            row["episode_id"], row["delayed_relation"], row["class"],
+            row["episode_isolated_fraction"], row["isolated_dominant"],
+            row["episode_max_run_len"]))
+    lines.extend([
+        "",
+        "## C1",
+        json.dumps(c1, ensure_ascii=False, indent=2),
+        "",
+        "## C2",
+        json.dumps(c2, ensure_ascii=False, indent=2),
+        "",
+        "## C3",
+        json.dumps(c3, ensure_ascii=False, indent=2),
+    ])
+    OUT_PATTERN_V1_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict["verdict"],
+        "pos_cohorts": pos_cohorts,
+        "adv_cohorts": adv_cohorts,
+        "c1": c1.get("separates"),
+        "excluded": excluded,
+        "scope": verdict.get("may_enter_skill_scope"),
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_PATTERN_V1)
+    print("wrote", OUT_PATTERN_V1_MD)
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
+    if "--pattern-discriminator-v1" in argv:
+        return pattern_discriminator_v1()
     if "--accept-skill-v3" in argv:
         return accept_skill_v3()
     if "--source-expansion-v3" in argv:
@@ -4740,7 +5141,8 @@ def main() -> int:
         return plan()
     print("usage: --plan | --plan-v2 | --evaluate | --evaluate-smoke "
           "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2 "
-          "| --source-expansion-v3 | --accept-skill-v3")
+          "| --source-expansion-v3 | --accept-skill-v3 "
+          "| --pattern-discriminator-v1")
     return 2
 
 

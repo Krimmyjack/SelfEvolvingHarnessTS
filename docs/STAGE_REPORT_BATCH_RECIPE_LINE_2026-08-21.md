@@ -6,6 +6,8 @@
 移至文末第 4 节「历史台账」。遇口径冲突,以本文件第 1 节的 canonical 措辞为准;
 遇本文件与工件冲突,以工件为准(每条都给了指针,请直接核)。
 规划与纪律见 `docs/ROADMAP_POST_V1_2026-08-22.md`。
+当前系统形态、证据切面与数据使用短表见
+`docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`。
 
 **证据等级四档**(常备纪律第 6 条):
 `INSTRUMENT` 仪器自证 / `MECHANISM` 银行重放 / `DEVELOPMENT` 已曝光窗 live /
@@ -21,7 +23,7 @@
 
 | # | 结论 | 口径上限(canonical) | 等级 | 工件 |
 |---|---|---|---|---|
-| C1 | `FRESH_A5_DELIVERS` | pooled 首个正采纳成本 −43.9%(69 vs 123 重训);最终质量与 harm 同冷启动;per_channel = `A5_TIE_TRANSFER_BOUNDARY`;NOAA held-out 2025 一次性打开 | FRESH | `fresh_confirmation_v1.*` + `fresh_confirmation_v1_adjudication.md`(裁定附录为 canonical 措辞) |
+| C1 | `FRESH_A5_DELIVERS` | pooled 首个正采纳成本 −43.9%(69 vs 123 重训);最终质量与 harm 同冷启动;per_channel = `A5_TIE_TRANSFER_BOUNDARY`;NOAA 2025 fresh 区域在反馈消耗式适应中一次性打开（非 Fast-only held-out） | FRESH | `fresh_confirmation_v1.*` + `fresh_confirmation_v1_adjudication.md`(裁定附录为 canonical 措辞) |
 | C2 | `LOCAL_LIFECYCLE_CLOSES` | Target-local Skill 形成 / 晋级 / 持久化 / 召回四步成立 | DEVELOPMENT | `local_skill_recall_v1.*` |
 | C3 | `SLOW_CLOSES_SCOPE_GAP_BY_VETO` | 银行重放;**containment,不是效用改善**——伤害清零的同时聚合增益一并放弃 | MECHANISM | `slow_scope_update_v2.*` |
 | C4 | `BANKED_CHAIN_CLOSES_IN_K_MODELS` 2/2 | 6–9 环端到端,`gpt-5.6-sol` 与 `gpt-5.6-luna` 各一次;两模型首抽即提出同一 guard,0 次信封重试 | MECHANISM | `operational_pipeline_v6.*` |
@@ -510,7 +512,75 @@ runner:1285 `_evaluate_released()` 为占位体:脚手架真实(Consumer/LabelWa
 
 **#42e2 书发出(见分发件)**:增强线 B 首实验,纯测量(0 LLM / 0 AD fit / 0 重训 / 0 新数据);单一 Observation 假设(冻结)= winsorize 作用几何相关的孤立尖峰结构 isolated_dominant(robust z≥4 沿在册词表,isolated_fraction≥0.5,禁扫阈值);判别 + 代理审计(episode 级,两侧各 ≥2 cohort)+ LOCO + 打乱地板/dataset-ID 天花板双基线;mad 反号表零成本描述性附录;判定三格 + 仪器格;一轮一假设,不判定不换特征重跑;交付不 commit。
 
-**C23 后执行锁(防主线再次被增强线拖住)**:#42e2 若已启动,只允许按冻结假设完成这一轮,不得换特征、扩 Source 或追加重放;它的任何结果都不阻塞 #42f/#42g L1。当前无条件下一能力门 = #42f 冻结未曝光 Target → #42g Static vs A3 的 held-in adaptation / freeze / held-out Fast-only / offline evaluation。A5 不进入当前 #42g;Pattern-conditioned 新 Skill 若未来形成,须另立 version、另过 development 行为验收并进入后续独立考场。
+### sol 排期审核采纳:承重更正、四钉、#45 压缩、#46 交付定义;#42e2 r1;ccfa.yaml 最小更新(2026-08-23 22:1x,主线核验裁定)
+
+**两处核验(当时口径;L1/L2 层级读法由下文“用户二次校正”supersede)**:(1) 项目 AGENTS.md 与当时主张架构 v2 对齐属实;(2) workspace ccfa.yaml 实读 = 旧 W/E 线元数据(stage 停 2026-08-03,next_actions 停 W61,claims C0–C4 为 A5 主导旧叙事,code_root 指旧布局)——按 sol 建议完成最小状态更新:仅改 stage 块与 authority_note,claims/experiments/next_actions/risks 保留为历史证据不删不改。
+
+**承重更正(组件口径)**:近期两场组件承重 = **#42g(Target 校准端口)与 #44 M1(Consumer 条件化端口)**;#42e2 = Pattern 线索、#42f = 备考、#43 M0 = 前提正控、#45 = 回归。下文用户二次校正后,这两场不再等同项目最终收口;完整系统还欠自然数据 Static/A3/A5 同场验收。
+
+**四钉采纳**:(钉1)#42e2 非阻塞 + claim 封顶——正例侧仅 aws 单 cohort,顶格判词改 **PATTERN_CANDIDATE_CLUE**,本库内永不得表述为"已证跨 cohort 共同 Pattern",升级只可能来自未来新域自然证据;r1 增补页发出(含完美分离时 single_cohort_indicator 必然触发的两种读法区分义务:特征即 cohort 代理[组内无变差,永禁] vs 正例侧结构性重合[组内有变差,记线索上限]);sol"聚合与判词小修"原文未随转述到达,r1 按其意涵落实,分发前若原文另有具体聚合口径以 sol 文本为准合并。(钉2)#42f 义务细化——Yahoo S5 不作同质域:预冻结文件 roster、cohort 定义、**按序列内时间边界**的 held-in/held-out 切分(supersede 主线此前"按序列切"表述;时间切分与部署语义及 NOAA 2025 时间 held-out 先例一致)、标签隔离方式;held-in outcome 至 #42g Part A 才开,held-out outcome 封存至 Part D 离线计分。(钉3)#42g 三态写死——Static = 无 held-in 适应,identity + 一条预注册固定通用清洗双基线;A3 = 空 Source 在 held-in 反馈适应;A3* = 冻结后 held-out Fast-only(禁 open_delayed/Slow/Skill 更新/看结果重试)。(钉4)M0 纯度 + M1 反作弊——M0 只变 Consumer 归纳偏置,Task/数据/窗口/Program/最终评价目标全同,否则测混合变化;M1 = Agent 读合法 Consumer Context 自主改 Workflow,Runner 禁按模型名派答案。
+
+**尾段定形**:#45 压缩为 #46 前轻量回归,不再发展成大实验;#46 交付定义 = "同一个 Harness 入口处理不同 TaskSpec/Consumer"的最终纵向系统 + 清债(化石名册/RUNNER_INDEX/V3–V8 归档/键方言/相关工作检索),不再造方法。经下文二次校正,#46 前还必须具备自然数据 Static/A3/A5 同场结果,否则只能收口组件而非完整系统。**当前定序**:#42e2 一次性收尾 → #42f 冻结新域与 held-in/held-out → #42g Target 校准组件 → #43 M0 → #44 M1 → #45 轻量回归 → 完整三臂验收 → #46 系统整合。
+
+### 系统形态 vs 归因刻度:用户质询裁定(2026-08-23 22:2x)
+
+**质询**:主线/增强线分开是否违背项目目的——"主线像在 held-in 上快速找一个 Skill";held-in 只是适应集合,不代表跨域经验不起作用;用户预期 = 积累整体起大部分作用,适应是贴合新数据特征的调整;积累与 transfer 不应切得太开。
+
+**裁定**:(1) 系统形态维持用户观:最终交付是单一进化 Harness,积累 → 适应 → 部署为同一生命周期,产品上不可拆;held-in/held-out 只切反馈可得性不切知识可用性——系统臂跨域 Skill 在两侧全程在场,held-out 禁学习不禁知识使用。(2) L1/L2 = 归因刻度非产品拆分:A3 是"关闭积累"的消融臂,使胜利可归因;评审与导师必问"赢的是进化环还是先验",不设 A3 无法回答。(3) "在 held-in 快速找 Skill"不是 L1 定义:承重读数 = 冻结终态 held-out utility/safety,速度只是辅读数(承重读数纪律已册)。(4) 权重问题是实证问题:控制世界旧证据支持积累主导(W47 A5 AdaptAUC 1.0 vs A3 0.875;W56 A4 零射 6/6 正、宏增益 +0.176),自然世界当前只支持条件加速器(FRESH −43.9% 终态平;#42e1 送达不采用且 v3 对 Target 实误——若积累默认主导、适应只轻调,错误先验会沉没新域;"先验软、反馈硬"是负迁移证据逼出的安全设计)。当前总主张维持"适应为必要主干、积累为条件加速器(需 Pattern/Context 条件化)",不得超前声称积累主导。(5) 渐近方向入册:库成熟后逐新域以递减 held-in 预算复测 L2,重复测量支持时"积累主导"即升格,同路重新入场旧 A4 零/少探针——用户终局以测量抵达,不以预设抵达。(6) 命名收敛:弃"主线/增强线",改称 L1 = 必要条件层、L2 = 积累贡献层,今后书内沿用新名。**不变项**:#42g 仍 Static vs A3 承重(必要条件 + 当前无行为验收合格的 AD Skill 可组 A5 臂;v3 已按"对 Target 实误"归档,塞入主考 = 注入已知坏先验);L2 门逐域常开,forecasting 侧正例已在库。
+
+### 用户二次校正:完整系统臂优先于证据层级叙事(2026-08-23,本轮文档化)
+
+**对上段的语义收紧**:“自然证据目前只支持条件加速器”是当前读数上限,不能反向
+定义项目架构为“A3 主体 + A5 可选增强”。产品/方法形态固定为 **A5 = 经审计的
+跨域积累 + 当前 Target held-in 校准**;A3 是删除积累的消融,Static 是删除适应的
+消融。accumulation、transfer、adaptation 是同一自进化循环的相邻阶段;Source 与
+Target 是时间角色,不是两套 Harness。可以且必须用分臂回答各部分贡献,但不能用
+A3 单臂组件结果替代完整系统结果。是否“积累承担大部分数值收益”仍由实验回答,
+不预写结论。
+
+**对排期的影响**:#42g 因 v3 未通过行为验收仍只跑 Static/A3,但降格为 **AD
+Target 校准端口的组件验收**,不再称项目最终主考。v3 关闭只关闭该 candidate/该
+考场,不关闭 A5 角色。#46 前必须另有至少一次自然数据上的 Static/A3/A5 同场
+held-in→freeze→held-out 验收;否则只能报告组件成立,不能报告完整 Harness 收口。
+Pattern/Context 也不是可丢弃的解释性增强,而是控制跨域知识何时复用、何时由
+Target 反馈修订的核心方法 Context。当前数据与证据全貌见
+`docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`。
+
+**C23 后执行锁(防单一诊断支线拖住组件门)**:#42e2 若已启动,只允许按冻结假设完成这一轮,不得换特征、扩 Source 或追加重放;它的任何结果都不阻塞 #42f/#42g。当前下一能力门 = #42f 冻结未曝光 Target → #42g Static vs A3 的 held-in adaptation / freeze / held-out Fast-only / offline evaluation。A5 不进入当前 #42g只因 v3 未过行为验收;Pattern-conditioned 新 Skill 若未来形成,须另立 version、另过 development 行为验收并进入后续独立考场。#42g 只验 Target 校准组件,不替代后续完整三臂系统验收。
+
+### 用户三次校正:held-in 是多轮 self-harness 适应环境(2026-08-23,本轮文档化)
+
+**正典补充**:held-in 不是“一次 Support 后即丢弃”的一次性集合。freeze 之前,
+Harness 可在预冻结的总反馈预算、可用窗口和停止规则内运行 `r1...rR` 多轮:
+Fast 提案/probe → Support 与 held-in delayed → Episode 写回/first-fault → 必要时
+Slow 单面修正与确定性审计 → Fast replay。前一轮形成的 Episode、Target-local
+Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 self-harness 的
+域内演化环。每次 Consumer 评估/重训仍计预算;同一 Outcome 的缓存重放或重复读取
+不得冒充独立新证据。held-out 定义不变:freeze 后零反馈、零更新、Fast-only,
+外部一次性计分不得回流本次 Harness。后续 #42g 与自然三臂任务书均须显式给出
+最大轮数/总反馈预算/停止规则,不得把“一个 cell 一轮”误写成方法边界。
+
+### 文档体系定形与外部写入追认;全项目总结交付(2026-08-23 22:3x,主线)
+
+**外部写入追认**:上节"用户二次校正"与 `PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`、项目 AGENTS.md §2 三臂归因/§5 状态锁为同批用户授权写入(非主线执笔)。主线逐条复核采纳,全部入典:产品形态 = A5(经审计跨域积累 + Target held-in 校准),A3/Static 为归因消融;#42g 降格为 AD Target 校准端口组件验收;**#46 前必须另有至少一次自然数据 Static/A3/A5 三臂同场 held-in→freeze→held-out 验收**(需合格累积 Skill + sealed Target 同时具备,数据供给为用户决策点);前节(4)中"适应为必要主干、积累为条件加速器"降为当前读数上限陈述,不作架构定义。
+
+**文档地图定形(两文档制条款修订)**:AGENTS.md = 长期方法权威(sol 维护)| ROADMAP = 排期与常设规则(主线)| STAGE_REPORT = 逐轮台账(主线)| PROJECT_STATE_AND_DATA_MAP = 人读导航快照(状态/数据曝光/Pattern 历史;与工件冲突以工件为准)| ccfa.yaml = workspace 元数据(已最小更新)。此外不再新增长期文档;历史 docs/*(V1 计划、Phase S 预注册等)保留为证据记录不删不改。
+
+**本轮交付**:应用户令产出全项目总结(目标/技术路线/证据现状/未来计划,chat 交付,不新建文档);内容与本台账、roadmap、数据图核对零冲突。
+
+### #42e2 结果 = C24(PATTERN_NO_DISCRIMINATION);增强线 B(AD Pattern 机制)暂闭;#42g 多轮 held-in 钉;#42f 书发出(2026-08-23 22:5x,主线读工件核验)
+
+**判定追认**:`PATTERN_NO_DISCRIMINATION`,阶梯应用正确(非仪器故障 → C1 不达标即出格,2–4 格未到);family isolated-extreme × winsorize 关闭,不入任何 Skill Scope,未形成 Skill;evidence_grade = MECHANISM/development,非 Capability 证据;不阻塞 #42f/#42g L1,不重开 #42g L2。
+
+**C24 canonical(主线读 md+json 工件核验)**:Part 0 = 3411bb5(HEAD 核符,五件 = #42e1 runner 修改 + 两工件 + 两 docs;密钥扫描 clean);回报特征表缺 aws 两行系转述截断非工件缺失——实读 aws r1 0.7045/True/max_run 172、r2 0.7890/True/172。响应表(delayed 实读):正类 = aws r1/r2;adverse = kc r2、traffic r1/r2、tweets r1;archive = kc r1、tweets r2(NEUTRAL);conflict 0;positive_distinct_cohorts=1(仅 aws)。C1 = {all_positive_same_side=true(True 侧),adverse_opposite_rate=0.25<0.75} 不分离;C2 = {False→仅 kc,single_cohort_indicator=true,usable_as_scope=false};C3 = 剔 aws fold 正类空 LOCO_UNREADABLE,其余三 fold direction_holds 全 false。窗口 = 各 episode train 区间(r1 [0,0.40n)/r2 [0,0.70n))与 bank 形成一致;z≥4 / isolated_fraction≥0.5 未扫描;MAD=0 走现役 public_features floor,无新 epsilon;排除 NA=0。成本 0 LLM / 0 fit / 0 重训 / 0 新数据;未改 v1/v2/v3 与 h0;交付未 commit。
+
+**书面义务偏差两项(不承重,主线豁免)**:mad 反号描述性附录、置换地板/dataset-ID 天花板双基线未产出(json 无对应键,主线核验发现,执行方未申报)。判定不受影响:C1 冻结判据独立成立,两项均预注册为"不得改变主判"的描述参照。豁免理由 = family 已关闭无当前消费者;未来任何新 L3 假设若需 mad 响应表,可从同一冻结 bank 确定性重生成(0 成本)。**教训立规**:今后书面义务须标注"必跑 / 仅通过时跑"两类;执行方漏产任何预注册项须在回报中自行申报,不得静默。
+
+**科学定性(主线,承重)**:干净的机制负结果——孤立尖峰几何**不能解释 winsorize 反号**:aws 正例与 traffic/tweets 负例同为 isolated_dominant=True,唯一 False 的 kc 是长 burst 结构(max_run 140/222 vs traffic 19/22),该特征实质是 kc 结构指示器(C2 单 cohort 指示器与之相符)。first-fault = OBSERVATION_INSUFFICIENT,**限定于 isolated-extreme × winsorize**;不否定 Pattern 总命题、winsorize 的 Context 条件化价值、Source 积累或方法本体。**L3(AD Pattern 机制)当前零活跃候选,增强线 B 暂闭至 #42g 之后**;任何新 Pattern 假设 = 新预注册 family、非阻塞、一轮一假设。
+
+**#42g 多轮 held-in 协议钉(采纳,与协议语义钉合并)**:Part A = held-in r1 → feedback/Episode/Skill 或 Harness 更新 → r2 → … → rR → freeze → held-out Fast-only。任务书冻结:最大轮数 R、总反馈预算、可用窗口、停止规则;**禁预指定 Workflow 或逐轮答案**;delayed 语义沿在册(防同批自提自批);held-out 零反馈不变。
+
+**#42f 书发出(见分发件)**:备考非承重;Part 0 = #42e2 交付检查点;Part A = 本地单变量带标签 AD 候选盘点(存在性/许可/结构/标签形态/曝光状态,禁开任何标签值,禁下载);Part B = 仅当候选合格且布局符合预期,按预注册规则冻结:roster(结构门,不看标签)、cohort 如实登记、每序列 [0,0.7n)/[0.7n,n) 时间边界(与 NAB r1/r2 train 前缀惯例一致)、标签双仓隔离(held-in 仓 #42g Part A 才开;held-out 仓 Part D 才开)、raw 不入库;判定集 = TARGET_FROZEN_SEALED / NO_LOCAL_SEALED_CANDIDATE(→ 下载为用户决策)/ LAYOUT_UNEXPECTED_STOP / INSTRUMENT_UNREADABLE / OBSERVED_BUT_UNCLASSIFIED;0 LLM / 0 fit / 0 重训。
 
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
