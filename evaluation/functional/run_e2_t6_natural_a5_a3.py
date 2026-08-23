@@ -249,7 +249,16 @@ ISOLATED_FRACTION_THRESHOLD = 0.5
 OUT_DEPLOY_SMOKE = E2 / "t6_42g_deploy_fast_only_smoke.json"
 OUT_L1 = E2 / "t6_42g_l1_static_vs_a3.json"
 OUT_L1_MD = E2 / "t6_42g_l1_static_vs_a3.md"
+OUT_L1_HELDIN = E2 / "t6_42g_l1_held_in.json"
+OUT_L1_FREEZE = E2 / "t6_42g_l1_freeze.json"
+OUT_L1_DEPLOY = E2 / "t6_42g_l1_deploy.json"
+OUT_HEADROOM = E2 / "t6_42g_b_menu_headroom.json"
+OUT_HEADROOM_MD = E2 / "t6_42g_b_menu_headroom.md"
 L1_LOCK = E2 / "t6_42g_l1.lock"
+# #42g-b: Slow is config-injected, not hardcoded off at the call site.
+# This book spends 0 LLM, so Slow stays unused.
+L1_ALLOW_SLOW = False
+L1_SLOW_AGENT = None
 YAHOO_FREEZE = E2 / "t6_42f_yahoo_a1_freeze.json"
 L1_LLM_CAP = 24
 L1_AD_FIT_CAP = 240
@@ -5714,11 +5723,11 @@ def l1_static_vs_a3() -> int:
                 series0[:support_origin], task_kind="anomaly_detection")
             result = run_online_round(
                 method, executor, request, values,
-                origin=support_origin, slow_agent=None,
+                origin=support_origin, slow_agent=L1_SLOW_AGENT,
                 controller=controller, store=store,
                 card_builder=_card_builder_for("anomaly_detection"),
                 round_name="a3_%s" % round_name,
-                budget=2, allow_slow=False,
+                budget=2, allow_slow=L1_ALLOW_SLOW,
                 domain="yahoo_s5_a1", period=PERIOD_HINT,
                 fast_features=features,
                 allow_fast_skill=True, runtime_prior_slot=False)
@@ -5757,14 +5766,26 @@ def l1_static_vs_a3() -> int:
         stop_reason = None
 
     a3_sha = store.active_path.read_text(encoding="utf-8") if store.active_path.is_file() else ""
-    # Part B freeze record
+    held_in_doc = {
+        "run_id": run_id,
+        "cells": cells,
+        "wall": wall.audit(),
+        "llm": int(getattr(backend, "calls", 0)),
+        "ad_fits": budget.used,
+        "stopped": stopped,
+        "eval_zone_name": "feedback_windows_inside_held_in",
+    }
+    OUT_L1_HELDIN.write_text(_json_text(held_in_doc), encoding="utf-8")
+    # Part B freeze record — must hit disk before any development_exposed_eval open
     freeze_doc = {
         "a3_store_root": str(store_root),
         "a3_active": a3_sha,
         "static": ["identity", "hampel_filter"],
         "cells": cells,
         "stopped": stopped,
+        "written_before_eval_open": True,
     }
+    OUT_L1_FREEZE.write_text(_json_text(freeze_doc), encoding="utf-8")
     if stopped in {
         "PROTOCOL_BREACH", "CONSUMER_FIT_BUDGET_EXCEEDED",
         "TARGET_FEEDBACK_UNREADABLE", "INCOMPLETE_LLM_BUDGET",
@@ -5794,6 +5815,15 @@ def l1_static_vs_a3() -> int:
         llm_budget=max(0, L1_LLM_CAP - int(getattr(backend, "calls", 0))),
         wall=LabelWall(released=False),
     )
+    OUT_L1_DEPLOY.write_text(_json_text({
+        "run_id": run_id,
+        "deploy": deploy,
+        "written_before_eval_open": True,
+    }), encoding="utf-8")
+    if not (OUT_L1_HELDIN.exists() and OUT_L1_FREEZE.exists() and OUT_L1_DEPLOY.exists()):
+        print(json.dumps({"verdict": "INSTRUMENT_UNREADABLE",
+                          "reason": "held-in/freeze/deploy not all on disk"}, indent=1))
+        return 1
     if not deploy["ok"]:
         payload = {
             "protocol_version": "t6_42g_l1_static_vs_a3_v1",
@@ -5807,18 +5837,21 @@ def l1_static_vs_a3() -> int:
         print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
         return 1
 
-    a3_program = "identity"
-    winner = cells[-1].get("winner") if cells else None
-    if isinstance(winner, list) and winner:
-        a3_program = _canonical_menu_program(winner[0].get("op") or "identity")
-    else:
-        a3_program = _canonical_menu_program(deploy.get("applied_program") or "identity")
+    a3_program = _canonical_menu_program(deploy.get("applied_program") or "identity")
+    scored_program = a3_program
+    if scored_program != _canonical_menu_program(deploy.get("applied_program") or "identity"):
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "scored_program %s != deploy.applied_program %s"
+                   % (scored_program, deploy.get("applied_program")))
 
-    # Part D: offline evaluator opens held-out vault once
+    # Part D: offline evaluator opens development_exposed_eval vault once
     try:
         ident = _score_heldout_static(rows, "identity", budget)
         hampel = _score_heldout_static(rows, "hampel_filter", budget)
-        a3s = _score_heldout_static(rows, a3_program, budget)
+        a3s = _score_heldout_static(rows, scored_program, budget)
+        if scored_program != _canonical_menu_program(deploy.get("applied_program") or "identity"):
+            raise Stop("INSTRUMENT_UNREADABLE",
+                       "post-score assert scored_program != deploy.applied_program")
     except Stop as stop:
         payload = {
             "protocol_version": "t6_42g_l1_static_vs_a3_v1",
@@ -5922,6 +5955,244 @@ def l1_static_vs_a3() -> int:
     return 0
 
 
+def _point_events_from_vault(path: Path, lo: int, hi: int) -> list[list[int]]:
+    on: list[int] = []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        next(reader)
+        for line in reader:
+            idx = int(line[0])
+            if lo <= idx < hi and line[2].strip() in {"1", "1.0", "true", "True"}:
+                on.append(idx)
+    events: list[list[int]] = []
+    if on:
+        run = [on[0]]
+        for idx in on[1:]:
+            if idx == run[-1] + 1:
+                run.append(idx)
+            else:
+                events.append(run)
+                run = [idx]
+        events.append(run)
+    return events
+
+
+def menu_headroom_v1() -> int:
+    """#42g-b: five-program census on the 24 EXPOSED series.  0 LLM."""
+    pack = _load_yahoo_l1_roster()
+    rows = pack["rows"]
+    consumer = _load_consumer()
+    budget = FitBudget(150)
+    programs = list(PROGRAMS)
+    per_series: dict[str, Any] = {}
+    for uid, rec in rows.items():
+        n = rec["length"]
+        cut = rec["windows"]["heldout"][0]
+        raw = np.asarray(rec["values"], dtype=np.float64)
+        vault_in = rec["held_in_vault"]
+        vault_out = (PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1"
+                     / "vaults" / "held_out" / uid)
+        # event sparsity: feedback windows r1 support/delayed + r2 support/delayed
+        windows = rec["windows"]
+        fb_spans = [
+            ("r1_support", windows["r1"]["support"]),
+            ("r1_delayed", windows["r1"]["delayed"]),
+            ("r2_support", windows["r2"]["support"]),
+            ("r2_delayed", windows["r2"]["delayed"]),
+        ]
+        fb_events = {
+            name: _point_events_from_vault(vault_in, lo, hi)
+            for name, (lo, hi) in fb_spans
+        }
+        eval_events = _point_events_from_vault(vault_out, cut, n)
+        ident_train = raw[:cut]
+        budget.spend(1)
+        ident_model = consumer.fit_series(ident_train)
+        # Agent-visible feedback estimand = union of the four feedback
+        # windows [.30n,.70n), not the unlabeled base-train prefix.
+        fb_lo = rec["windows"]["r1"]["support"][0]
+        fb_hi = cut
+        fb_truth = _point_events_from_vault(vault_in, fb_lo, fb_hi)
+        ident_fb = consumer.score_series(ident_model, raw, (fb_lo, fb_hi), fb_truth)
+        ident_ev = consumer.score_series(ident_model, raw, (cut, n), eval_events)
+        programs_out = {}
+        for program in programs:
+            if program == "identity":
+                programs_out[program] = {
+                    "feedback_f1": ident_fb["f1"],
+                    "eval_f1": ident_ev["f1"],
+                    "feedback_delta": 0.0,
+                    "eval_delta": 0.0,
+                }
+                continue
+            prepared = _apply_program(raw[:cut], program)
+            budget.spend(1)
+            model = consumer.fit_series(prepared)
+            fb = consumer.score_series(model, raw, (fb_lo, fb_hi), fb_truth)
+            ev = consumer.score_series(model, raw, (cut, n), eval_events)
+            programs_out[program] = {
+                "feedback_f1": fb["f1"],
+                "eval_f1": ev["f1"],
+                "feedback_delta": float(fb["f1"] - ident_fb["f1"]),
+                "eval_delta": float(ev["f1"] - ident_ev["f1"]),
+            }
+        feats = dict(extract_public_features(
+            raw[:cut], task_kind="anomaly_detection"))
+        per_series[uid] = {
+            "n": n,
+            "feedback_event_counts": {k: len(v) for k, v in fb_events.items()},
+            "development_exposed_eval_event_count": len(eval_events),
+            "has_any_feedback_event": any(fb_events.values()),
+            "has_eval_event": bool(eval_events),
+            "public_features": {
+                k: v for k, v in feats.items()
+                if isinstance(v, (int, float, bool))
+            },
+            "programs": programs_out,
+        }
+    # B1 / B2
+    global_ok = {}
+    local_ok = {}
+    for program in programs:
+        if program == "identity":
+            continue
+        deltas = [per_series[u]["programs"][program]["eval_delta"]
+                  for u in per_series]
+        harmed = sum(1 for d in deltas if d < -0.005)
+        macro = sum(deltas) / len(deltas)
+        improved = [u for u in per_series
+                    if per_series[u]["programs"][program]["eval_delta"] > 0.005]
+        global_ok[program] = {
+            "macro_eval_delta": macro,
+            "harmed": harmed,
+            "pass": macro > 0.005 and harmed <= 2,
+        }
+        local_ok[program] = {
+            "n_improved": len(improved),
+            "series": improved,
+            "pass": len(improved) >= 5,
+        }
+    # public-feature association (report only; no threshold scan / no Scope)
+    association = {}
+    bool_keys = [
+        "level_only_post_shift_support_sufficient",
+        "post_shift_support_sufficient",
+        "period_repair_available",
+    ]
+    for program, loc in local_ok.items():
+        if not loc["pass"]:
+            association[program] = "NOT_APPLICABLE"
+            continue
+        improved = set(loc["series"])
+        seen = False
+        for key in bool_keys:
+            yes = {u for u in per_series if bool(per_series[u]["public_features"].get(key))}
+            no = set(per_series) - yes
+            if not yes or not no:
+                continue
+            # association if one side is mostly improved and the other is not
+            yes_rate = len(improved & yes) / len(yes)
+            no_rate = len(improved & no) / len(no)
+            if abs(yes_rate - no_rate) >= 0.4:
+                seen = True
+        association[program] = (
+            "PUBLIC_FEATURE_ASSOCIATION_SEEN" if seen
+            else "PUBLIC_FEATURE_ASSOCIATION_NOT_SEEN"
+        )
+
+    def _pref(subset: list[str]) -> dict[str, float]:
+        out = {}
+        if not subset:
+            return {p: None for p in programs if p != "identity"}
+        for program in programs:
+            if program == "identity":
+                continue
+            out[program] = sum(
+                per_series[u]["programs"][program]["feedback_delta"]
+                for u in subset) / len(subset)
+        return out
+
+    all_ids = list(per_series)
+    with_evt = [u for u in all_ids if per_series[u]["has_any_feedback_event"]]
+    no_evt = [u for u in all_ids if not per_series[u]["has_any_feedback_event"]]
+    b3 = {
+        "all_series_feedback_macro_delta": _pref(all_ids),
+        "event_bearing_feedback_macro_delta": _pref(with_evt),
+        "zero_event_feedback_macro_delta": _pref(no_evt),
+        "n_all": len(all_ids),
+        "n_event_bearing": len(with_evt),
+        "n_zero_event": len(no_evt),
+    }
+    flags: list[str] = []
+    if any(v["pass"] for v in global_ok.values()):
+        winners = [p for p, v in global_ok.items() if v["pass"]]
+        # in-service estimand = all-series feedback macro
+        preferred = max(
+            winners,
+            key=lambda p: b3["all_series_feedback_macro_delta"][p] or -1e9)
+        fb_prefers = (b3["all_series_feedback_macro_delta"][preferred] or 0) > 0.005
+        if fb_prefers:
+            flags.append("SELECTION_OR_LIFECYCLE_MISS_UNRESOLVED")
+        elif (b3["event_bearing_feedback_macro_delta"].get(preferred) or 0) > 0.005:
+            flags.append("FEEDBACK_EVENT_STARVATION_OR_TARGET_MISMATCH")
+        verdict = "GLOBAL_HEADROOM_EXISTS"
+    elif any(v["pass"] for v in local_ok.values()):
+        verdict = "PARTIAL_SERIES_HEADROOM_ONLY"
+    else:
+        verdict = "NO_MENU_HEADROOM"
+    payload = {
+        "protocol_version": "t6_42g_b_menu_headroom_v1",
+        "entry": "--menu-headroom-v1",
+        "eval_zone": "development_exposed_eval",
+        "true_held_out": "remaining 41 sealed series; unread this book",
+        "claim_cap_if_no_headroom": (
+            "under the in-service Consumer, five-program menu, and the "
+            "pre-registered global/local bars, there is no actionable headroom"
+        ),
+        "roster": pack["order"],
+        "per_series": per_series,
+        "b1_global": global_ok,
+        "b2_local": local_ok,
+        "public_feature_association": association,
+        "b3": b3,
+        "flags": flags,
+        "verdict": {"verdict": verdict, "flags": flags},
+        "cost": {"llm": 0, "ad_fits": budget.used, "ad_fit_cap": 150,
+                 "forecast_retrains": 0},
+    }
+    OUT_HEADROOM.write_text(_json_text(payload), encoding="utf-8")
+    lines = [
+        "# #42g-b menu headroom",
+        "",
+        "verdict: **%s**" % verdict,
+        "flags: %s" % (flags or "none"),
+        "eval zone: development_exposed_eval (24 EXPOSED). 41 sealed unread.",
+        "fits %s / 150; LLM 0" % budget.used,
+        "",
+        "## B1 global eval Δ",
+        "",
+    ]
+    for p, v in global_ok.items():
+        lines.append("- %s macroΔ=%.4f harmed=%s pass=%s" % (
+            p, v["macro_eval_delta"], v["harmed"], v["pass"]))
+    lines.extend(["", "## B2 local (≥5 series Δ>+0.005)", ""])
+    for p, v in local_ok.items():
+        lines.append("- %s n=%s assoc=%s" % (
+            p, v["n_improved"], association.get(p)))
+    lines.extend(["", "## B3 feedback preference", "",
+                  json.dumps(b3, ensure_ascii=False, indent=2)])
+    OUT_HEADROOM_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict,
+        "flags": flags,
+        "b1": {p: v["pass"] for p, v in global_ok.items()},
+        "b2": {p: v["n_improved"] for p, v in local_ok.items()},
+        "fits": budget.used,
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_HEADROOM)
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
     if "--deploy-fast-only-smoke" in argv:
@@ -5932,6 +6203,8 @@ def main() -> int:
             "reason": "official Yahoo held-out must go through l1_main after smoke",
         }, indent=1))
         return 2
+    if "--menu-headroom-v1" in argv:
+        return menu_headroom_v1()
     if "--l1-score-heldout-only" in argv:
         return l1_score_heldout_only()
     if "--l1-static-vs-a3" in argv:

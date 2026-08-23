@@ -457,6 +457,17 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   EXPOSED 24 条五程序全响应表 + headroom 判定树 + 稀疏表
   工件化 + 选择缺失核查,fit≤150);定序更新:#42g-b 诊断 →
   #42g-c 确认(41 条 sealed,50/20/30)→ #43 M0 → #44 M1。
+  **#42g-b 收口 = C27 PARTIAL_SERIES_HEADROOM_ONLY(采纳)**:
+  B1 四程序全局宏 Δ 全负(winsorize −0.092/14 最重,变形
+  强度与受害同序);B2 局部赢家 iqr6(特征不可见)/mad5/
+  hampel7;B3 反馈 estimand 无偏好(有事件 10 条仍全负,
+  14/24 零事件)。机制读法 = "去污染不变形":AD 就绪惩罚
+  变形,预测就绪奖励变形;菜单系预测遗产但未枯竭。
+  first-fault 移至 Scope/Observation 与 Program Supply
+  并列;**#42g-b2 派生读数书已发**(0 LLM/0 fit:oracle-
+  scope 天花板、方向一致率、赢家重叠;决策门 ≥+0.02 →
+  Scope 线 / <+0.01 → Supply 线;一致率 ≤50% → 反馈单元
+  按事件质量重设)。分叉裁定后才动 41 条与 AD-native 增补。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
