@@ -181,14 +181,19 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   0/3→2/3、F 3/3 保持;分离门败于共有合法弃权词 identity 进双臂
   shortlist,非任务趋同;判据教训入册);T4 收束 = Memory 机制部分
   成立、安全闭环未完成,不做卡序第三修(防答案 Router);
-  当前 = T5(#41)单入口双 Consumer 生命周期闭合(第一阻塞 =
-  AD 算子供给为空 + 写回硬编码 + delayed 只读聚合且 NEUTRAL 也
-  扩权 + Skill ID 跨任务撞名;A1 供给解锁与菜单等同 / A2 Consumer
-  adapter 只产读数 / A3 写回统一双键断言 / A4 delayed 风险门
-  classify_relation=POSITIVE 才批准 + 任务化 Skill ID,method.py
-  入接线面;Part B 0-LLM 烟测含 B6 冲突撤权格,全绿门控 Part C
-  live 交错轨迹 F→dF→AD→dAD→F2→dF→AD2→dAD,全新空店;
-  LLM ≤16、重训 ≤120、AD 评估 ≤180;不调 Slow)。
+  T5(#41)= `INCOMPLETE_LLM_BUDGET`(C17,687af6e:单入口双任务
+  真实运行、三 delayed 全 CONFLICT 全拒、F 自写经验改变下一轮探索
+  且归因字节级成立、零串写零泄漏——止损线首考存活;未证 = AD r2、
+  真实轨迹 Skill 激活复用、Memory 直选安全计划;预算算术为主线
+  协议缺陷,不重跑,未证项移交自然阶段);收尾追认(任务化 ID 破
+  五测全修,手拼副本收口为 fast_winner_skill_id() 单一出处;MKL
+  崩溃 = 既有环境故障路由 #41b);
+  当前 = **#41b-lite 检查点**(--really-refresh + 六件逐文件提交 +
+  四项验证 + 最小 V10;v1 五项方案撤回见整备条目)→
+  **#42(T6)自然单变量 A5 vs A3**(sol 书 + 主线六补注;本轮仅
+  --plan:0 LLM / AD fit ≤200,NAB AdExchange Target 零开放,
+  Source 经验银行三类就绪门;evaluate 路径同时实现并冻结,
+  LLM ≤48 / AD fit ≤120,等主线核验 SEALED 后释放)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
@@ -204,6 +209,13 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
 - 供给挂账 O9:T6/X 需未消费单变量域;T4/T5 自然翻转证据需带标签的单变量
   AD 数据(Yahoo S5 / NAB / UCR-AD 类,曝光状态待 census);筛选标准已补
   "任务语义与实体结构必须匹配目标 Consumer"一道门。
+  **O9 落定(2026-08-23)**:NAB 官方固定 ref,raw 不入库;
+  Source(outcome 开放)= realAWSCloudwatch 字典序前 8 +
+  realKnownCause 字典序前 6;Target = realAdExchange 六条全纳
+  (CPC×3/CPM×3,聚合披露"一条正常"实例 SEALED);
+  **realTraffic/realTweets 改判 INSTANCE_SEEN**(sol 检索暴露部分
+  异常窗)不得作 virgin Target;Consumer = aegists_iforest_v1
+  (薄接本地 AegisTS IForest 结构,借结构不搬栈)。
 
 **AD Consumer 仪器纪律**:确定性检测器(固定参数)+ 事件级 F1(固定容差,
 一对一贪心匹配)+ 既有 Support/delayed 三联窗语义 + 逐序列增益向量
@@ -251,6 +263,13 @@ TSLib 成熟单变量 AD Consumer 与 O9 数据(Yahoo S5/NAB/UCR 均
 与打开;禁止落在任何冻结与打开之间。范围五项封顶:现役评估入口抽取、
 仪器名册(现役/化石取代关系)、V3–V8 死清单移出活管线归档、
 RUNNER_INDEX(入口 runner vs 化石 runner,零删除)、重放验证。
+**Supersession(2026-08-23)**:五项方案撤回——A1 前提过时(评估
+入口已在 online_loop.py:289/:722 独立承载)、重放预算不可兑现
+(t1b --v3 实测 78 AD 评估)、余项不阻塞 T6;整备窗口以
+**#41b-lite** 兑现(--really-refresh 检查点 + 四项验证 + 最小 V10,
+experience_memory.py 纳入清单,0 LLM/0 重训/0 AD 评估);
+名册/RUNNER_INDEX/V3–V8 归档延后 #46;键方言只登记;
+bundle-sha 不扩依赖(违反反过度工程条款)。
 0 LLM,不计方法进展,报告作附注。**提前触发条款**:T5 前任一书在
 沉积层本身上摔倒(import 断裂、仪器分叉误接、冻结清单自相矛盾、
 first-fault 因 runner 纠缠无法归因)即构成仪器层 first fault,

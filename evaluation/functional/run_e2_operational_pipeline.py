@@ -273,6 +273,17 @@ A1_RESCOPE_TOUCHED: tuple[dict[str, str], ...] = (
 # v9 == v8: the downstream wiring touches two files that are already
 # frozen members, so the surface stays at 39.
 FROZEN_SURFACE_V9: tuple[str, ...] = FROZEN_SURFACE_V8
+# v10 == v9 + experience_memory.py (#41b-lite, the T6/X freeze surface).
+# Memory coverage enters through manifest membership, not through the
+# runtime_bundle_sha dependency graph, which stays unchanged (the #41b v1
+# dependency expansion was revoked as against the AGENTS.md
+# anti-overengineering clause).  The file itself did not move at inclusion:
+# hashing it into the surface is what makes a future Memory change a
+# registered, drift-visible move instead of an invisible one.
+EXPERIENCE_MEMORY_FILE = "methods/ttha/experience_memory.py"
+FROZEN_SURFACE_V10: tuple[str, ...] = FROZEN_SURFACE_V9 + (
+    EXPERIENCE_MEMORY_FILE,
+)
 # T2 (#37, 2026-08-22): the book's single authorized Observation-surface
 # patch.  One deterministic task_spec field enters the Fast Agent public view
 # at its construction point (_base_input).  Authorized move, not drift.
@@ -338,7 +349,270 @@ T4_MEMORY_TOUCHED: tuple[dict[str, str], ...] = (
         ),
         "sha256_after_t4": "cd28df33373e568b92e7500ef062ef4c03e9e057df952c80c0122a4d821244f5",
         "diff_shape": "+9/-0, purely additive",
+        # ---- T5 (#41), second authorized move for this path --------------
+        # The book put method.py on the necessary-wiring surface for T5:
+        # A4 replaced the delayed approval gate (dg >= -MATERIAL_THRESHOLD)
+        # with classify_relation(...) == POSITIVE, so a candidate whose
+        # aggregate clears the line while harming an individual series is no
+        # longer approved, and a NEUTRAL delayed no longer extends privilege
+        # either; the Fast-winner Draft gate reads the same classifier; and
+        # A5 made the Fast-winner Skill id task-scoped and hash-free
+        # (fast_winner_{task_type}_{model_class}_{metric}_{op}) so a
+        # forecasting and an anomaly-detection round stop colliding on one
+        # skill_library surface.  The #41 closeout then added the public
+        # fast_winner_skill_id() spelling, because two callers outside this
+        # file were still hand-building the old string.
+        "t5_role": (
+            "T5 A4 lifecycle risk gate + A5 task-scoped Skill id + the "
+            "public fast_winner_skill_id() spelling of that id rule"
+        ),
+        "sha256_before_t5": (
+            "cd28df33373e568b92e7500ef062ef4c03e9e057df952c80c0122a4d821244f5"
+        ),
+        "sha256_after_t5": (
+            "ccf2b837cbbee6a00cba4da61aa1a2c4e32cb70e68c3e7303d147dbda49a4fa3"
+        ),
+        "t5_diff_shape": "+156/-11 against the T4 value",
     },
+    {
+        "path": "evaluation/functional/task_episode_harness/e1.py",
+        "role": (
+            "T5 #41 closeout: _LOCAL_SKILL_PREFIX was a literal prefix test "
+            "against fast_winner_e1v2_.  A5 moved the arm's own e1v2_ marker "
+            "out from directly behind fast_winner_ and into the signature "
+            "segment, so the prefix stopped recognising this arm's own "
+            "Skills: the reuse path was skipped and the re-ADD hit the "
+            "ABSENT precondition (AddTargetExistsError) instead of being "
+            "recorded as deployed_existing_skill.  The four call sites now "
+            "go through _is_local_skill_id(), which matches the marker "
+            "wherever the task scope puts it and still accepts the legacy "
+            "spelling so pre-rename stores keep reading."
+        ),
+        "move_index": "first authorized move for this path",
+        "sha256_before_t5": (
+            "389110c5fad6dff4319eeb77475cafb0b3497062bf6313439a6482f76136acee"
+        ),
+        "sha256_after_t5": (
+            "e5501fe94ad7efd777ed9c67e30dfc6d7eed7df4b0ab2616f7857fe45341097f"
+        ),
+        "t5_diff_shape": "+25/-4",
+    },
+)
+# V10 member registry (#41b-lite, 2026-08-23): every frozen member pinned
+# at its post-closeout (#41) value.  "before" = the value last registered
+# for V9 (identical to "after" here because #41b-lite moves no content;
+# the #41 moves are already registered in the T5 sub-entries above);
+# "after" = the value at the #41b-lite checkpoint.  experience_memory.py
+# is the one new member: Memory coverage enters through manifest
+# membership, not through the runtime_bundle_sha dependency graph.  The
+# runner itself is not self-registered -- it hosts this registry and every
+# prior one (host self-touch, consistent with FIX_C_TOUCHED and
+# A1_RESCOPE_TOUCHED); _freeze() measures it at run time like any member.
+V10_MEMBERS: tuple[tuple[str, str, str], ...] = (
+    # (path, sha256_before_v10, sha256_after_v10)
+    (
+        "artifacts/functional/e2/batch_recipe_T233_v1.json",
+        "3d20cf922a9188cec5baed0a2bda1f8874102916831a6786470e249e5edbd2b1",
+        "3d20cf922a9188cec5baed0a2bda1f8874102916831a6786470e249e5edbd2b1",
+    ),
+    (
+        "artifacts/functional/e2/batch_recipe_electricity_v1.json",
+        "7e30f6f45ef353a3f69d1e9ca93416714803fa07f420a96cc6d9a4c7921c68ba",
+        "7e30f6f45ef353a3f69d1e9ca93416714803fa07f420a96cc6d9a4c7921c68ba",
+    ),
+    (
+        "artifacts/functional/e2/batch_recipe_traffic_v1.json",
+        "74d07e2a57fb58f57a433cc7e36337875f376105e4de2de16c66700968ef3caa",
+        "74d07e2a57fb58f57a433cc7e36337875f376105e4de2de16c66700968ef3caa",
+    ),
+    (
+        "artifacts/functional/e2/batch_recipe_v2_all_cells_v1.json",
+        "633f320bb944ac98295268ceecc4cec23d639e9faf897f795b57fef761713786",
+        "633f320bb944ac98295268ceecc4cec23d639e9faf897f795b57fef761713786",
+    ),
+    (
+        "artifacts/functional/e2/batch_recipe_windows_v1.json",
+        "35ef54b5477b436a2115fb804358fc375f03e80eb22399e798e6bd3ff1b2ccf4",
+        "35ef54b5477b436a2115fb804358fc375f03e80eb22399e798e6bd3ff1b2ccf4",
+    ),
+    (
+        "artifacts/functional/e2/fresh_confirmation_v1.json",
+        "e966b68a5016721ff2133ad3507d6396628d45fc49d636c9067f6b4226856314",
+        "e966b68a5016721ff2133ad3507d6396628d45fc49d636c9067f6b4226856314",
+    ),
+    (
+        "artifacts/functional/e2/fresh_confirmation_v1.md",
+        "943bd933bbeee54e4983e0b4da7493fe6da914fde9ecbdbaf54f092c406d8e37",
+        "943bd933bbeee54e4983e0b4da7493fe6da914fde9ecbdbaf54f092c406d8e37",
+    ),
+    (
+        "artifacts/functional/e2/fresh_confirmation_v1_adjudication.md",
+        "374e93c6935e6e8e1fe7983ad004a9cdcf006bfb2e590405fd3e7bf64be090aa",
+        "374e93c6935e6e8e1fe7983ad004a9cdcf006bfb2e590405fd3e7bf64be090aa",
+    ),
+    (
+        "artifacts/functional/e2/local_skill_recall_v1.json",
+        "ba3cc55e371931c647f5d9b3057801d18b03a90eccc4f1f9ff2f6e7eea3e8f08",
+        "ba3cc55e371931c647f5d9b3057801d18b03a90eccc4f1f9ff2f6e7eea3e8f08",
+    ),
+    (
+        "artifacts/functional/e2/noaa_fresh_cohort_v2.json",
+        "281742e91d8cb684be77d11f824540c1e936921211078232d6056e60042a280e",
+        "281742e91d8cb684be77d11f824540c1e936921211078232d6056e60042a280e",
+    ),
+    (
+        "artifacts/functional/e2/recipe_skill_cards_v1.json",
+        "4878a0f2986555d2979a83bd8269e3f1c48972d8afa501025ca9e89a3d8ddd03",
+        "4878a0f2986555d2979a83bd8269e3f1c48972d8afa501025ca9e89a3d8ddd03",
+    ),
+    (
+        "artifacts/functional/e2/slow_scope_update_v1.json",
+        "ecafbc902e013196fdf62fb8d71f9f38cf9acfc6cf454b7a4cff36a28b069803",
+        "ecafbc902e013196fdf62fb8d71f9f38cf9acfc6cf454b7a4cff36a28b069803",
+    ),
+    (
+        "artifacts/functional/e2/slow_scope_update_v2.json",
+        "52780c8d429dab06ed3001e5f16c1824cd1154d0fd88c5c45b6fdc029064167e",
+        "52780c8d429dab06ed3001e5f16c1824cd1154d0fd88c5c45b6fdc029064167e",
+    ),
+    (
+        "data/benchmark_noaa_fresh_v1/manifest.json",
+        "dfe9555fa372f4226dba17fb408538212ed62db48c3a1a9188eb4af9a127abda",
+        "dfe9555fa372f4226dba17fb408538212ed62db48c3a1a9188eb4af9a127abda",
+    ),
+    (
+        "evaluation/functional/run_batch_composition_headroom.py",
+        "4536ef974edd5a26673c66ea09a6927458ecbeccabeeee2f4bc20d217cec91b5",
+        "4536ef974edd5a26673c66ea09a6927458ecbeccabeeee2f4bc20d217cec91b5",
+    ),
+    (
+        "evaluation/functional/run_e2_autonomous_natural_workflow_generation.py",
+        "5dc797a2c7a825a9bef97d5e0e158d8b3b774ad7d65c77c819cd82d005f4db0c",
+        "5dc797a2c7a825a9bef97d5e0e158d8b3b774ad7d65c77c819cd82d005f4db0c",
+    ),
+    (
+        "evaluation/functional/run_e2_fresh_confirmation.py",
+        "13f0cb09fbdf2bd75f4b59b59c21b92de79d7f2684c4f3799523ce79d3986b14",
+        "13f0cb09fbdf2bd75f4b59b59c21b92de79d7f2684c4f3799523ce79d3986b14",
+    ),
+    (
+        "evaluation/functional/run_e2_local_skill_recall.py",
+        "85467d28dcd4fbb46dd0e5f74c4281d75a34f9e85c75f11e4d27231806714f68",
+        "85467d28dcd4fbb46dd0e5f74c4281d75a34f9e85c75f11e4d27231806714f68",
+    ),
+    (
+        "evaluation/functional/run_e2_recipe_experience_to_skill.py",
+        "312a2d0f8c9d630da1772d6eb4f44a3b75e160f20712287f24d2b98c724b8ce4",
+        "312a2d0f8c9d630da1772d6eb4f44a3b75e160f20712287f24d2b98c724b8ce4",
+    ),
+    (
+        "evaluation/functional/run_e2_skill_store_integration.py",
+        "0dbe61d98defd4dcce9a9081e0e297617e4606f2cc2919b5f10ed52665690c48",
+        "0dbe61d98defd4dcce9a9081e0e297617e4606f2cc2919b5f10ed52665690c48",
+    ),
+    (
+        "evaluation/functional/run_e2_slow_scope_update.py",
+        "0f3c3c8fb1e2a472f3a30c596d6f63f43ac8f30bfc734914c6b16ec68cab09cb",
+        "0f3c3c8fb1e2a472f3a30c596d6f63f43ac8f30bfc734914c6b16ec68cab09cb",
+    ),
+    (
+        "evaluation/functional/run_e2_warm_vs_cold_recipe_search.py",
+        "ffd53275210039483c297452a891db104e6c30621eb05cfdb288d937371c80b7",
+        "ffd53275210039483c297452a891db104e6c30621eb05cfdb288d937371c80b7",
+    ),
+    (
+        "evaluation/functional/run_v1_kdd2018_natural_slow_update.py",
+        "7bcb165dd881b8995739f99f87b13ffcb35fa784deb88b35c0513c867e7c35cb",
+        "7bcb165dd881b8995739f99f87b13ffcb35fa784deb88b35c0513c867e7c35cb",
+    ),
+    (
+        "evaluation/functional/task_episode_harness/e1.py",
+        # carried at its V9 after_t5 value: #41 closeout _is_local_skill_id
+        # move, already registered; nothing moves in #41b-lite.
+        "e5501fe94ad7efd777ed9c67e30dfc6d7eed7df4b0ab2616f7857fe45341097f",
+        "e5501fe94ad7efd777ed9c67e30dfc6d7eed7df4b0ab2616f7857fe45341097f",
+    ),
+    (
+        "evaluation/functional/task_episode_harness/runner.py",
+        "11ec71a1946e9727215626eb87dd13b64d1898e387b255aef818df64b7562586",
+        "11ec71a1946e9727215626eb87dd13b64d1898e387b255aef818df64b7562586",
+    ),
+    (
+        "evaluation/minipipe/config/m0_rules.json",
+        "5c6fe7b69462ae4cd6be8b862814041f529d53fe108530003b1d4dc87b37ce63",
+        "5c6fe7b69462ae4cd6be8b862814041f529d53fe108530003b1d4dc87b37ce63",
+    ),
+    (
+        "evaluation/minipipe/feedback/fault_routes.json",
+        "00900bb483f569ca6d40f09d1a624935eaa40781dcee50a46562e82955db74c2",
+        "00900bb483f569ca6d40f09d1a624935eaa40781dcee50a46562e82955db74c2",
+    ),
+    (
+        "evaluation/minipipe/feedback/first_fault.py",
+        "09a22100995a0571afb8ddb07d1e743f19f9e8cbc3df1b01b7c8ba360d6a0cdc",
+        "09a22100995a0571afb8ddb07d1e743f19f9e8cbc3df1b01b7c8ba360d6a0cdc",
+    ),
+    (
+        "evaluation/minipipe/feedback/router.py",
+        "dcc2c8bdbcc40994c30a014e54d059d755e0d1036ad15e10e7301eb2ef8e84fd",
+        "dcc2c8bdbcc40994c30a014e54d059d755e0d1036ad15e10e7301eb2ef8e84fd",
+    ),
+    (
+        "evaluation/minipipe/replay/edit_controller.py",
+        "14597c758febab68262d644f68ff7fbd11eda46e88b0412f330ebc5dad3c7100",
+        "14597c758febab68262d644f68ff7fbd11eda46e88b0412f330ebc5dad3c7100",
+    ),
+    (
+        "methods/ttha/experience_memory.py",
+        # NEW V10 member (#41b-lite): Memory coverage via manifest
+        # membership; the file itself did not move at inclusion, so both
+        # sides carry the same working-tree hash.
+        "d479bf4a5d71fa892168134d53d95d42c1102cfbc7d1036a538296537c3b3740",
+        "d479bf4a5d71fa892168134d53d95d42c1102cfbc7d1036a538296537c3b3740",
+    ),
+    (
+        "methods/ttha/harness/compiler.py",
+        "78e6772ea874b79b55b26ffe35c229de6a7bc371abab5505175bc70fdefc7e09",
+        "78e6772ea874b79b55b26ffe35c229de6a7bc371abab5505175bc70fdefc7e09",
+    ),
+    (
+        "methods/ttha/harness/h0/snapshot.lock.json",
+        "b7a61852393c4b5d880ee6defc3bdb92420f70c449e7c0a722f79d57a9df9759",
+        "b7a61852393c4b5d880ee6defc3bdb92420f70c449e7c0a722f79d57a9df9759",
+    ),
+    (
+        "methods/ttha/harness/h0/verification.json",
+        "0dfa07bdd4a955e5346f591793648b818dfed2edc1fdc481806e78945f86d614",
+        "0dfa07bdd4a955e5346f591793648b818dfed2edc1fdc481806e78945f86d614",
+    ),
+    (
+        "methods/ttha/harness/harness_surfaces.json",
+        "e222daff89026ded3a111141a056ba3cd86c21a64bc32b350483ef11b5882824",
+        "e222daff89026ded3a111141a056ba3cd86c21a64bc32b350483ef11b5882824",
+    ),
+    (
+        "methods/ttha/method.py",
+        # carried at its V9 after_t5 value: #41 A4/A5 + the
+        # fast_winner_skill_id() closeout, already registered; nothing moves
+        # in #41b-lite.
+        "ccf2b837cbbee6a00cba4da61aa1a2c4e32cb70e68c3e7303d147dbda49a4fa3",
+        "ccf2b837cbbee6a00cba4da61aa1a2c4e32cb70e68c3e7303d147dbda49a4fa3",
+    ),
+    (
+        "methods/ttha/retrieval.py",
+        "785d6994e5d05de14653b31f59956404fa519c8fee7d91f132f840d131b25243",
+        "785d6994e5d05de14653b31f59956404fa519c8fee7d91f132f840d131b25243",
+    ),
+    (
+        "methods/ttha/schema_contracts.py",
+        "4ec56a613d4e5e06dab07126e290ab6e32f7836b32f27ddda257644a897bc408",
+        "4ec56a613d4e5e06dab07126e290ab6e32f7836b32f27ddda257644a897bc408",
+    ),
+    (
+        "runtime/agent_backend.py",
+        "a551f39b0c3a2b147e44939220fa41899d05278b30477a4b0a16146f54de0b50",
+        "a551f39b0c3a2b147e44939220fa41899d05278b30477a4b0a16146f54de0b50",
+    ),
 )
 A1_DOWNSTREAM_TOUCHED: tuple[dict[str, str], ...] = (
     {
@@ -518,7 +792,7 @@ class Blocked(RuntimeError):
 
 def _freeze() -> dict[str, str]:
     frozen: dict[str, str] = {}
-    for name in sorted(set(FROZEN_SURFACE_V9)):
+    for name in sorted(set(FROZEN_SURFACE_V10)):
         path = PROJECT_ROOT / name
         if not path.is_file():
             raise SystemExit("frozen surface member is missing: %s" % name)

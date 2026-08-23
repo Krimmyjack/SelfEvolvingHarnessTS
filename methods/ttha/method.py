@@ -1491,4 +1491,15 @@ class TTHAMethod:
         return ev
 
 
-__all__ = ["TTHAMethod"]
+def fast_winner_skill_id(episode: object) -> str:
+    """The Fast-winner Skill id for this Episode -- the public spelling.
+
+    T5 (#41 A5) made this id task-scoped, and every caller that had its own
+    ``f"fast_winner_{signature}"`` copy silently stopped agreeing with the
+    manifest the method layer writes.  There is one rule and it lives here;
+    call this instead of rebuilding the string.
+    """
+    return _fast_winner_skill_id(episode)
+
+
+__all__ = ["TTHAMethod", "fast_winner_skill_id"]

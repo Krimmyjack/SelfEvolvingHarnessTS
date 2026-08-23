@@ -77,6 +77,7 @@ from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
 from SelfEvolvingHarnessTS.methods.ttha.method import (
     TTHAMethod,
     _applicability_is_wide,
+    fast_winner_skill_id,
 )
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import (
     evaluate_applicability,
@@ -779,7 +780,10 @@ def _run_e0_attempt(
         record["retryable_llm_failure"] = False
         return record
 
-    skill_id_final = f"fast_winner_{workflow_signature}"
+    # One rule, one place: the Fast-winner Skill id is task-scoped since T5
+    # (#41 A5), and a local f-string copy of it stops matching the manifest
+    # the method layer actually wrote.
+    skill_id_final = fast_winner_skill_id(episode)
     pending_receipt = method._pending_update["receipt"]
     candidate_snapshot = pending_receipt.candidate_snapshot.snapshot
     pending_steps = _skill_steps_from_snapshot(candidate_snapshot, skill_id_final)

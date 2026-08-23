@@ -550,7 +550,7 @@ def test_same_structure_and_binding_source_reuses_across_tasks():
             "region_start_fraction": 0.0013818027210884354}},
     ]
     snapshot = SimpleNamespace(
-        skills=(_skill("fast_winner_e1v2_outlier_mad_repair_level_shift", task22),)
+        skills=(_skill("fast_winner_forecast_ridge_smase_e1v2_outlier_mad_repair_level_shift", task22),)
     )
     current = [(s["op"], s["params"]) for s in task23]
     assert e1._existing_local_skill(snapshot, current) is not None
@@ -570,7 +570,7 @@ def test_different_structure_or_constant_is_never_merged():
             "region_start_fraction": 0.001}},
     ]
     snapshot = SimpleNamespace(
-        skills=(_skill("fast_winner_e1v2_outlier_mad_repair_level_shift", stored),)
+        skills=(_skill("fast_winner_forecast_ridge_smase_e1v2_outlier_mad_repair_level_shift", stored),)
     )
     # different operator structure
     assert e1._existing_local_skill(
@@ -666,8 +666,8 @@ def test_next_task_reuses_instead_of_colliding(monkeypatch, tmp_path):
     assert row2["winner"]["delayed_gain"] is not None
     # no duplicate Skill entry was created
     local = [s.skill_id for s in state.active_snapshot.skills
-             if s.skill_id.startswith(e1._LOCAL_SKILL_PREFIX)]
-    assert local == ["fast_winner_e1v2_repair_level_shift"], local
+             if e1._is_local_skill_id(s.skill_id)]
+    assert local == ["fast_winner_forecast_ridge_smase_e1v2_repair_level_shift"], local
 
 
 # ------------------------------- Runtime-grounded clause view (autonomy test)

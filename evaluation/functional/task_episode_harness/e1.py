@@ -126,7 +126,28 @@ K1_SERIES = {
 # same HORIZON=48 non-overlap rule.
 _CALIBRATION_ORIGINS = (1248, 1296, 1344)
 _LOCAL_SKILL_PREFIX = "fast_winner_e1v2_"
+_LOCAL_SKILL_MARKER = "e1v2_"
 _LOCAL_SKILL_RE = re.compile(r"[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*")
+
+
+def _is_local_skill_id(skill_id: str) -> bool:
+    """Is this an arm-local Skill this instrument machine-added?
+
+    It used to be a literal prefix test against ``fast_winner_e1v2_``.  T5
+    (#41 A5) made the Fast-winner Skill id task-scoped --
+    ``fast_winner_{task_type}_{model_class}_{metric}_{workflow_signature}`` --
+    so the arm's own ``e1v2_`` marker moved out from directly behind
+    ``fast_winner_`` and into the signature segment.  A prefix test therefore
+    stopped recognising this arm's own Skills: the reuse path was skipped and
+    the re-ADD hit the ABSENT precondition instead of being recorded as a
+    reuse.  Match the marker wherever the task scope puts it, and keep the
+    legacy spelling working so stores written before the rename still read.
+    """
+    text = str(skill_id or "")
+    if not text.startswith("fast_winner_"):
+        return False
+    return text.startswith(_LOCAL_SKILL_PREFIX) or (
+        ("_" + _LOCAL_SKILL_MARKER) in text)
 
 
 def _v2_workflow_signature(
@@ -525,7 +546,7 @@ def _retrieve_target_local_skills(
     rows: list[dict[str, Any]] = []
     for skill in getattr(snapshot, "skills", ()) or ():
         skill_id = str(getattr(skill, "skill_id", "") or "")
-        if not skill_id.startswith(_LOCAL_SKILL_PREFIX):
+        if not _is_local_skill_id(skill_id):
             continue
         # ``resolve_harness_view`` already drops a disconfirmed Skill, but
         # this is a second, independent read of the same snapshot, and the
@@ -665,7 +686,7 @@ def _existing_local_skill(
     target = _binding_free_signature(steps)
     for skill in getattr(snapshot, "skills", ()) or ():
         skill_id = str(getattr(skill, "skill_id", "") or "")
-        if not skill_id.startswith(_LOCAL_SKILL_PREFIX):
+        if not _is_local_skill_id(skill_id):
             continue
         if _is_restricted(skill):
             continue
@@ -681,7 +702,7 @@ def _skill_ids(snapshot: Any, *, local_only: bool = False) -> list[str]:
     ids = []
     for skill in getattr(snapshot, "skills", ()) or ():
         skill_id = str(getattr(skill, "skill_id", "") or "")
-        if not local_only or skill_id.startswith(_LOCAL_SKILL_PREFIX):
+        if not local_only or _is_local_skill_id(skill_id):
             ids.append(skill_id)
     return ids
 
@@ -1105,7 +1126,7 @@ def _restricted_local_skill(
     target = _binding_free_signature(steps)
     for skill in getattr(snapshot, "skills", ()) or ():
         skill_id = str(getattr(skill, "skill_id", "") or "")
-        if not skill_id.startswith(_LOCAL_SKILL_PREFIX) or not _is_restricted(skill):
+        if not _is_local_skill_id(skill_id) or not _is_restricted(skill):
             continue
         frozen = _parse_frozen_steps(str(getattr(skill, "body", "") or ""))
         if frozen is None:

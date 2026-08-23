@@ -60,7 +60,10 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
 )
 from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import compile_snapshot
 from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
-from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod
+from SelfEvolvingHarnessTS.methods.ttha.method import (
+    TTHAMethod,
+    fast_winner_skill_id,
+)
 
 PROTOCOL_VERSION = "e0b_single_context_source_skill_supply_v1"
 PROTOCOL_VERSION_AFTER_C1 = "e0b_source_skill_supply_after_c1_v1"
@@ -991,9 +994,11 @@ def run_e0b_source_skill_supply_after_c1(
         if delayed_event.get("stage") == "approved":
             active = method._active_snapshot()
             store.set_active(active.runtime_bundle_sha)
+            # same one rule as the method layer's manifest (T5 #41 A5:
+            # task-scoped ids); a local f-string copy stops matching
+            _sid = fast_winner_skill_id(episode)
             skill = next(
-                entry for entry in active.skills
-                if entry.skill_id == f"fast_winner_{workflow_signature}"
+                entry for entry in active.skills if entry.skill_id == _sid
             )
             active_card = {
                 "skill_id": str(skill.skill_id),
