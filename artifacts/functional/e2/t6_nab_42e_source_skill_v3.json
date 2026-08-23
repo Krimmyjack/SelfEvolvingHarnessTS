@@ -1,0 +1,472 @@
+{
+  "protocol_version": "t6_nab_42e_source_skill_v3",
+  "skill_id": "source_investigation_ad_v3",
+  "v1_skill_id": "source_investigation_ad_v1",
+  "v2_skill_id": "source_investigation_ad_v2",
+  "v1_status": "superseded",
+  "v2_status": "superseded",
+  "v1_not_deleted": true,
+  "v2_not_deleted": true,
+  "v1_not_in_h0s_v3": true,
+  "v2_not_in_h0s_v3": true,
+  "authorized_try_operators": [],
+  "risk_authorized_operators": [
+    "hampel_filter",
+    "outlier_iqr",
+    "outlier_mad"
+  ],
+  "llm_api_call_count": 1,
+  "llm_cap": 8,
+  "target_outcome_read": false,
+  "counts_as_capability_evidence": false,
+  "attempts": [
+    {
+      "attempt": 1,
+      "decision": "ADD",
+      "slow_response": {
+        "decision": "ADD",
+        "sections": {
+          "WHEN": "Apply only when task_kind is anomaly_detection.",
+          "OBSERVE": "Confirm that the current Workspace identifies task_kind as anomaly_detection before using this guidance.",
+          "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+          "RISK": "Lower proposal priority for hampel_filter, outlier_iqr, and outlier_mad by default. Under strong public Pattern evidence, each may still be a restricted probe candidate.",
+          "VERIFY": "Current Target Support relation POSITIVE forms a Draft; later delayed relation POSITIVE approves or keeps Active.",
+          "FALLBACK": "If task_kind is not anomaly_detection or is not established, do not apply this entry and retain the current approach."
+        },
+        "reason": "No active recommendation is authorized, while repeated harm supports default deprioritization of the authorized risk operators without imposing a hard ban."
+      },
+      "audit": {
+        "pass": true,
+        "containment": {
+          "pass": true,
+          "checks": {
+            "all_six_sections_present": true,
+            "no_extra_sections": true,
+            "no_invented_operator": true,
+            "no_invented_observable_feature": true,
+            "no_numeric_threshold": true,
+            "no_source_cohort_identity_leaked": true,
+            "try_clause_within_authorization": true
+          },
+          "missing_sections": [],
+          "extra_sections": [],
+          "invented_operators": [],
+          "invented_observable_features": [],
+          "numeric_literals": [],
+          "leaked_cohort_tokens": [],
+          "operators_named_in_try": [],
+          "unauthorized_operators_in_try": [],
+          "authorized_try_operators": [],
+          "try_abstained": true
+        },
+        "temporal": {
+          "pass": true,
+          "checks": {
+            "observe_when_proposal_time_only": true,
+            "risk_names_hampel": true,
+            "risk_is_deprioritization": true,
+            "risk_allows_restricted_probe": true,
+            "verify_support_positive_forms_draft": true,
+            "verify_delayed_positive_approves_active": true,
+            "no_distinct_task_requirement": true
+          },
+          "forbidden_in_observe_when": [],
+          "distinct_task_hits": [],
+          "risk_hard_ban": false
+        }
+      }
+    }
+  ],
+  "slow_payload": {
+    "skill_id": "source_investigation_ad_v3",
+    "applicability": {
+      "feature": "task_kind",
+      "op": "==",
+      "value": "anomaly_detection"
+    },
+    "authorized_try_operators": [],
+    "risk_authorized_operators": [
+      "hampel_filter",
+      "outlier_iqr",
+      "outlier_mad"
+    ],
+    "authorization": {
+      "min_distinct_cohorts": 2,
+      "same_scope_required": true,
+      "harm_definition": "delayed_relation in {NEGATIVE, CONFLICT}",
+      "harm_definition_strict": "delayed_relation == NEGATIVE",
+      "legal_scope_features": [],
+      "used_unconditional_pool": true,
+      "try_authorized": [],
+      "risk_authorized": [
+        "hampel_filter",
+        "outlier_iqr",
+        "outlier_mad"
+      ],
+      "authorization_scopes": {
+        "hampel_filter": [
+          "unconditional_4_cohort_pool"
+        ],
+        "outlier_iqr": [
+          "unconditional_4_cohort_pool"
+        ],
+        "outlier_mad": [
+          "unconditional_4_cohort_pool"
+        ]
+      },
+      "signed_summary_unconditional": [
+        {
+          "scope": "unconditional_4_cohort_pool",
+          "program": "hampel_filter",
+          "positive_cohorts": [],
+          "negative_cohorts": [
+            "source_aws_cloudwatch",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "conflict_cohorts": [
+            "source_known_cause"
+          ],
+          "immaterial_cohorts": [
+            "source_aws_cloudwatch",
+            "source_known_cause"
+          ],
+          "strict_harm_cohorts": [
+            "source_aws_cloudwatch",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "extended_harm_cohorts": [
+            "source_aws_cloudwatch",
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "authorization": "RISK"
+        },
+        {
+          "scope": "unconditional_4_cohort_pool",
+          "program": "outlier_iqr",
+          "positive_cohorts": [],
+          "negative_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "conflict_cohorts": [
+            "source_real_tweets"
+          ],
+          "immaterial_cohorts": [
+            "source_aws_cloudwatch",
+            "source_known_cause"
+          ],
+          "strict_harm_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "extended_harm_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "authorization": "RISK"
+        },
+        {
+          "scope": "unconditional_4_cohort_pool",
+          "program": "outlier_mad",
+          "positive_cohorts": [],
+          "negative_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "conflict_cohorts": [],
+          "immaterial_cohorts": [
+            "source_aws_cloudwatch",
+            "source_known_cause",
+            "source_real_tweets"
+          ],
+          "strict_harm_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "extended_harm_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "authorization": "RISK"
+        },
+        {
+          "scope": "unconditional_4_cohort_pool",
+          "program": "winsorize",
+          "positive_cohorts": [
+            "source_aws_cloudwatch"
+          ],
+          "negative_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "conflict_cohorts": [],
+          "immaterial_cohorts": [
+            "source_known_cause",
+            "source_real_tweets"
+          ],
+          "strict_harm_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "extended_harm_cohorts": [
+            "source_known_cause",
+            "source_real_traffic",
+            "source_real_tweets"
+          ],
+          "authorization": null
+        }
+      ],
+      "signed_summary_legal_scope_cells": []
+    },
+    "signed_summary": [
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "hampel_filter",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_aws_cloudwatch",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [
+          "source_known_cause"
+        ],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_aws_cloudwatch",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": "RISK"
+      },
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "outlier_iqr",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [
+          "source_real_tweets"
+        ],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": "RISK"
+      },
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "outlier_mad",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause",
+          "source_real_tweets"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": "RISK"
+      },
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "winsorize",
+        "positive_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "negative_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_known_cause",
+          "source_real_tweets"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": null
+      }
+    ],
+    "legal_scope_cells": [],
+    "known_limits": [
+      "plan_v2 20 cards were read from the committed artifact and not recomputed",
+      "TRY/RISK votes stay inside one legal Scope cell; no stitching",
+      "pss remains forbidden as Scope",
+      "new cohorts are OPENED_AS_SOURCE and may never be fresh Target"
+    ],
+    "required_sections": [
+      "WHEN",
+      "OBSERVE",
+      "TRY",
+      "RISK",
+      "VERIFY",
+      "FALLBACK"
+    ],
+    "try_abstain_literal": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+    "v1_status": "superseded",
+    "v2_status": "superseded",
+    "one_entry_only": true,
+    "temporal_rules": "OBSERVE/WHEN proposal-time public Context only; RISK is the census default deprioritization of each authorized risk operator and must say a strong public Pattern may still keep it a restricted probe candidate; VERIFY is the live two-stage Support POSITIVE then delayed POSITIVE gate; no distinct-task requirement",
+    "target_domain": "a different domain from the census; write what to observe and what would have to hold, not what happened in a named cohort"
+  },
+  "skill_written": true,
+  "entry": {
+    "schema_version": "skill-entry/1",
+    "skill_id": "source_investigation_ad_v3",
+    "skill_kind": "capability",
+    "revision": 1,
+    "body": "WHEN: Apply only when task_kind is anomaly_detection.\nOBSERVE: Confirm that the current Workspace identifies task_kind as anomaly_detection before using this guidance.\nTRY: NO_AUTHORIZED_ACTIVE_RECOMMENDATION\nRISK: Lower proposal priority for hampel_filter, outlier_iqr, and outlier_mad by default. Under strong public Pattern evidence, each may still be a restricted probe candidate.\nVERIFY: Current Target Support relation POSITIVE forms a Draft; later delayed relation POSITIVE approves or keeps Active.\nFALLBACK: If task_kind is not anomaly_detection or is not established, do not apply this entry and retain the current approach.",
+    "observable_applicability": {
+      "feature": "task_kind",
+      "op": "==",
+      "value": "anomaly_detection"
+    },
+    "allowed_tools": [],
+    "risk_guards": {
+      "carrier": "source_derived_general_skill",
+      "advises_the_proposal_stage_only": true,
+      "never_supplies_a_candidate": true,
+      "requires_target_support": true,
+      "sections": {
+        "WHEN": "Apply only when task_kind is anomaly_detection.",
+        "OBSERVE": "Confirm that the current Workspace identifies task_kind as anomaly_detection before using this guidance.",
+        "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+        "RISK": "Lower proposal priority for hampel_filter, outlier_iqr, and outlier_mad by default. Under strong public Pattern evidence, each may still be a restricted probe candidate.",
+        "VERIFY": "Current Target Support relation POSITIVE forms a Draft; later delayed relation POSITIVE approves or keeps Active.",
+        "FALLBACK": "If task_kind is not anomaly_detection or is not established, do not apply this entry and retain the current approach."
+      }
+    }
+  },
+  "sections": {
+    "WHEN": "Apply only when task_kind is anomaly_detection.",
+    "OBSERVE": "Confirm that the current Workspace identifies task_kind as anomaly_detection before using this guidance.",
+    "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+    "RISK": "Lower proposal priority for hampel_filter, outlier_iqr, and outlier_mad by default. Under strong public Pattern evidence, each may still be a restricted probe candidate.",
+    "VERIFY": "Current Target Support relation POSITIVE forms a Draft; later delayed relation POSITIVE approves or keeps Active.",
+    "FALLBACK": "If task_kind is not anomaly_detection or is not established, do not apply this entry and retain the current approach."
+  },
+  "audit": {
+    "pass": true,
+    "containment": {
+      "pass": true,
+      "checks": {
+        "all_six_sections_present": true,
+        "no_extra_sections": true,
+        "no_invented_operator": true,
+        "no_invented_observable_feature": true,
+        "no_numeric_threshold": true,
+        "no_source_cohort_identity_leaked": true,
+        "try_clause_within_authorization": true
+      },
+      "missing_sections": [],
+      "extra_sections": [],
+      "invented_operators": [],
+      "invented_observable_features": [],
+      "numeric_literals": [],
+      "leaked_cohort_tokens": [],
+      "operators_named_in_try": [],
+      "unauthorized_operators_in_try": [],
+      "authorized_try_operators": [],
+      "try_abstained": true
+    },
+    "temporal": {
+      "pass": true,
+      "checks": {
+        "observe_when_proposal_time_only": true,
+        "risk_names_hampel": true,
+        "risk_is_deprioritization": true,
+        "risk_allows_restricted_probe": true,
+        "verify_support_positive_forms_draft": true,
+        "verify_delayed_positive_approves_active": true,
+        "no_distinct_task_requirement": true
+      },
+      "forbidden_in_observe_when": [],
+      "distinct_task_hits": [],
+      "risk_hard_ban": false
+    }
+  },
+  "accepted_attempt": 1,
+  "h0s_v3_runtime_bundle_sha": "f2054da1d18e2059457ed62282b7f7ff972ae219aedf98b39204ba2009bd7914",
+  "h0_runtime_bundle_sha": "9039093eef624a3230fcc2d32fc6b515e8ceb86182362ff3363dc7bac71e9f80",
+  "skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_ad_v3"
+  ],
+  "delivery_assert": {
+    "a5_retrieves_v3": true,
+    "a3_does_not_retrieve_v3": true,
+    "a5_memory_empty": true,
+    "a3_memory_empty": true,
+    "a5_view_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify",
+      "source_investigation_ad_v3"
+    ],
+    "a3_view_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ],
+    "pass": true
+  }
+}

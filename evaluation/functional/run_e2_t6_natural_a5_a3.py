@@ -225,6 +225,38 @@ REPLAY_V2_LOCK = E2 / "t6_nab_42e0_skill_v2_replay.lock"
 REPLAY_V2_SKILL_ID = "source_investigation_ad_v2"
 REPLAY_V2_LLM_BUDGET = 32
 REPLAY_V2_AD_FIT_BUDGET = 24
+# #42e r1: Source expansion.  New cohorts only; Target keys stay sealed.
+OUT_CENSUS_V3 = E2 / "t6_nab_42e_census_v3.json"
+OUT_CENSUS_V3_MD = E2 / "t6_nab_42e_census_v3.md"
+OUT_SKILL_V3 = E2 / "t6_nab_42e_source_skill_v3.json"
+OUT_SKILL_V3_MD = E2 / "t6_nab_42e_source_skill_v3.md"
+OUT_EXPANSION_V3 = E2 / "t6_nab_42e_source_expansion_v3.json"
+EXPANSION_V3_LOCK = E2 / "t6_nab_42e_source_expansion.lock"
+SOURCE_SKILL_ID_V3 = "source_investigation_ad_v3"
+EXPANSION_LLM_CAP = 8
+EXPANSION_AD_FIT_CAP = 240
+EXPANSION_COHORTS: dict[str, tuple[str, tuple[str, ...]]] = {
+    "source_real_traffic": ("realTraffic", (
+        "TravelTime_387.csv", "TravelTime_451.csv",
+        "occupancy_6005.csv", "occupancy_t4013.csv",
+        "speed_6005.csv", "speed_7578.csv", "speed_t4013.csv",
+    )),
+    "source_real_tweets": ("realTweets", (
+        "Twitter_volume_AAPL.csv", "Twitter_volume_AMZN.csv",
+        "Twitter_volume_CRM.csv", "Twitter_volume_CVS.csv",
+        "Twitter_volume_FB.csv", "Twitter_volume_GOOG.csv",
+        "Twitter_volume_IBM.csv", "Twitter_volume_KO.csv",
+        "Twitter_volume_PFE.csv", "Twitter_volume_UPS.csv",
+    )),
+}
+EXPANSION_COHORT_TOKENS: tuple[str, ...] = (
+    "realtraffic", "realtweets", "real_traffic", "real_tweets",
+    "source_real_traffic", "source_real_tweets",
+    "twitter_volume", "traveltime", "occupancy_6005", "occupancy_t4013",
+    "speed_6005", "speed_7578", "speed_t4013",
+)
+TRIGGERABLE_FROM_DEV = ("outlier_mad", "outlier_iqr")
+UNTRIGGERABLE_FROM_DEV = ("hampel_filter",)
 # Part B: the smoke stands Source cohorts in the Target cell positions.  The
 # frozen order, arms and rounds are untouched; only where a cell's rows come
 # from is parameterized, and only the first two series of each stand-in
@@ -3198,8 +3230,912 @@ def replay_skill_v2() -> int:
     return 0 if verdict["verdict"] != "V2_DELIVERY_FAILED" else 1
 
 
+def _fetch_expansion_files() -> dict[str, Any]:
+    """Pinned NAB commit only.  Missing any of the 17 → DATA_MISSING."""
+    import urllib.error
+    import urllib.request
+
+    expected = []
+    for cohort, (directory, names) in EXPANSION_COHORTS.items():
+        for name in names:
+            expected.append((cohort, directory, name))
+    exposure = {
+        "before_download_context": "AGGREGATE_SEEN",
+        "after_value_load_context": "INSTANCE_SEEN",
+        "after_source_label_use_outcome": "OPENED_AS_SOURCE",
+        "never_fresh_or_virgin_target": True,
+        "upstream_commit": NAB_COMMIT,
+    }
+    fetched: list[dict[str, Any]] = []
+    missing: list[str] = []
+    for cohort, directory, name in expected:
+        dest = DATA_ROOT / directory / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        url = "%s/data/%s/%s" % (NAB_RAW_BASE, directory, name)
+        status = "present"
+        if not dest.is_file() or dest.stat().st_size <= 0:
+            try:
+                urllib.request.urlretrieve(url, dest)
+                status = "downloaded"
+            except (urllib.error.URLError, OSError) as exc:
+                missing.append("%s/%s:%s" % (directory, name, type(exc).__name__))
+                status = "missing"
+                if dest.exists():
+                    dest.unlink()
+        fetched.append({
+            "cohort": cohort, "directory": directory, "file": name,
+            "path": _repo_rel(dest), "bytes": (
+                dest.stat().st_size if dest.is_file() else 0),
+            "status": status, "url": url,
+        })
+    return {
+        "exposure": exposure,
+        "expected": 17,
+        "fetched": fetched,
+        "missing": missing,
+        "ok": not missing and len(fetched) == 17,
+    }
+
+
+def _gate_expansion_files() -> dict[str, Any]:
+    """v2 row-order contract on the 17 new Source files only.  No Target."""
+    rows: list[dict[str, Any]] = []
+    reads: dict[str, Any] = {}
+    kept: dict[str, list[Path]] = {}
+    dropped: dict[str, list[dict[str, Any]]] = {}
+    for cohort, (directory, names) in EXPANSION_COHORTS.items():
+        kept[cohort] = []
+        dropped[cohort] = []
+        for name in names:
+            path = DATA_ROOT / directory / name
+            read = _read_series(path, row_order_contract=True)
+            reads["%s/%s" % (directory, name)] = read
+            row = {
+                "role": "source", "cohort": cohort, "file": name,
+                "nab_key": "%s/%s" % (directory, name),
+                "ok": bool(read["ok"] and read.get("rows_preserved")),
+                "failures": list(read["failures"] or []),
+                "length": read.get("length"),
+                "ordering_violation_count": read.get("ordering_violation_count"),
+                "duplicate_timestamp_count": read.get("duplicate_timestamp_count"),
+                "backward_transition_count": read.get("backward_transition_count"),
+                "physical_rows_before": read.get("physical_rows_before"),
+                "physical_rows_after": read.get("physical_rows_after"),
+                "rows_preserved": read.get("rows_preserved"),
+                "values_sha256": read.get("values_sha256"),
+            }
+            if not row["ok"] or not row["rows_preserved"]:
+                if not row["failures"] and not row["rows_preserved"]:
+                    row["failures"] = ["row_sequence_not_preserved"]
+                dropped[cohort].append(row)
+            else:
+                kept[cohort].append(path)
+            rows.append(row)
+    usable: dict[str, list[Path]] = {}
+    abandoned: list[dict[str, Any]] = []
+    for cohort, paths in kept.items():
+        if len(paths) < 4:
+            abandoned.append({
+                "cohort": cohort,
+                "kept": [p.name for p in paths],
+                "dropped": dropped[cohort],
+                "reason": "kept %d files, need >=4" % len(paths),
+            })
+        else:
+            usable[cohort] = paths
+    return {
+        "rows": rows,
+        "reads": reads,
+        "kept": {c: [p.name for p in ps] for c, ps in kept.items()},
+        "dropped": dropped,
+        "usable": {c: [p.name for p in ps] for c, ps in usable.items()},
+        "abandoned_cohorts": abandoned,
+        "all_new_cohorts_usable": (
+            set(usable) == set(EXPANSION_COHORTS) and not abandoned),
+    }
+
+
+def _expansion_universe(gate: Mapping[str, Any]) -> dict[str, Any]:
+    reads = gate["reads"]
+    source: dict[str, Any] = {}
+    for cohort, (directory, _names) in EXPANSION_COHORTS.items():
+        if cohort not in gate["usable"]:
+            continue
+        source[cohort] = {}
+        for name in gate["usable"][cohort]:
+            key = "%s/%s" % (directory, name)
+            read = reads[key]
+            source[cohort][name] = {
+                "values": read["values"],
+                "timestamps": read["timestamps"],
+                "length": read["length"],
+                "nab_key": key,
+                "windows": _window_plan(read["length"]),
+            }
+    return {"source": source, "target": {}, "gate": gate["rows"]}
+
+
+def _v3_proxy_audit(
+    episodes: Sequence[Mapping[str, Any]],
+    rows_by_id: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    from run_e2_t6_42d_consolidation import (
+        BOOLEAN_FEATURES, FORBIDDEN_SCOPE_FEATURES, _cohort_of,
+    )
+
+    out: list[dict[str, Any]] = []
+    for feature in BOOLEAN_FEATURES:
+        by_value: dict[str, set[str]] = {}
+        by_cohort: dict[str, set[str]] = {}
+        for episode in episodes:
+            eid = str(episode["episode_id"])
+            row = rows_by_id.get(eid)
+            cohort = _cohort_of(episode, row)
+            value = ((episode.get("context_summary") or {})
+                     .get("local_pattern") or {}).get(feature)
+            by_value.setdefault(str(value), set()).add(cohort)
+            by_cohort.setdefault(cohort, set()).add(str(value))
+        values = {k: sorted(v) for k, v in sorted(by_value.items())}
+        sides = {
+            key: by_value.get(key, set())
+            for key in ("True", "False")
+        }
+        single_indicator = any(len(cs) == 1 for cs in by_value.values())
+        complete_partition = (
+            all(len(cs) == 1 for cs in by_value.values())
+            and all(len(vs) == 1 for vs in by_cohort.values())
+            and len(by_value) == len(by_cohort)
+        )
+        both_present = bool(sides["True"]) and bool(sides["False"])
+        both_ge2 = all(len(cs) >= 2 for cs in sides.values())
+        constant = len(by_value) == 1
+        forbidden = feature in FORBIDDEN_SCOPE_FEATURES
+        usable = (
+            not forbidden and not constant and not single_indicator
+            and not complete_partition and both_present and both_ge2
+        )
+        out.append({
+            "feature": feature,
+            "values_to_cohorts": values,
+            "constant": constant,
+            "single_cohort_indicator": single_indicator,
+            "complete_cohort_partition_replica": complete_partition,
+            "both_boolean_sides_present": both_present,
+            "both_boolean_sides_ge2_cohorts": both_ge2,
+            "forbidden": forbidden,
+            "usable_as_scope": usable,
+            "note": (
+                "pss forbidden" if forbidden else
+                "no resolving power" if constant else
+                "single-cohort indicator; proxy" if single_indicator else
+                "complete cohort partition replica; proxy"
+                if complete_partition else
+                "boolean sides do not each cover >=2 cohorts"
+                if not (both_present and both_ge2) else
+                "legal boolean scope"
+            ),
+        })
+    return out
+
+
+def _v3_authorize(
+    episodes: Sequence[Mapping[str, Any]],
+    rows: Sequence[Mapping[str, Any]],
+    proxy: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    from run_e2_t6_42d_consolidation import (
+        BOOLEAN_FEATURES, IDENTITY, MIN_DISTINCT_COHORTS,
+        _cohort_of, _delayed_relation, _vote_bucket,
+    )
+
+    rows_by_id = {str(r["episode_id"]): r for r in rows}
+
+    def _bags(subset: Sequence[Mapping[str, Any]]
+              ) -> dict[str, dict[str, set[str]]]:
+        pool: dict[str, dict[str, set[str]]] = {}
+        for episode in subset:
+            eid = str(episode["episode_id"])
+            row = rows_by_id.get(eid, {})
+            program = str(row.get("program") or episode.get("workflow_signature"))
+            relation = _delayed_relation(episode, row)
+            bucket = _vote_bucket(relation, program)
+            if bucket is None:
+                continue
+            cell = pool.setdefault(program, {
+                "positive": set(), "negative": set(), "conflict": set(),
+                "immaterial": set(),
+            })
+            cell[bucket].add(_cohort_of(episode, row))
+        return pool
+
+    def _decide(program: str, bags: Mapping[str, set[str]]) -> str | None:
+        if program == IDENTITY:
+            return None
+        pos = bags["positive"]
+        harm = bags["negative"] | bags["conflict"]
+        if len(pos) >= MIN_DISTINCT_COHORTS and not harm:
+            return "TRY"
+        if len(harm) >= MIN_DISTINCT_COHORTS and not pos:
+            return "RISK"
+        return None
+
+    unconditional = _bags(list(episodes))
+    signed = []
+    for program, bags in sorted(unconditional.items()):
+        signed.append({
+            "scope": "unconditional_4_cohort_pool",
+            "program": program,
+            "positive_cohorts": sorted(bags["positive"]),
+            "negative_cohorts": sorted(bags["negative"]),
+            "conflict_cohorts": sorted(bags["conflict"]),
+            "immaterial_cohorts": sorted(bags["immaterial"]),
+            "strict_harm_cohorts": sorted(bags["negative"]),
+            "extended_harm_cohorts": sorted(
+                bags["negative"] | bags["conflict"]),
+            "authorization": _decide(program, bags),
+        })
+
+    legal = [p["feature"] for p in proxy if p["usable_as_scope"]]
+    scoped_rows: list[dict[str, Any]] = []
+    for feature in legal:
+        for value in (True, False):
+            subset = [
+                ep for ep in episodes
+                if bool(((ep.get("context_summary") or {})
+                         .get("local_pattern") or {}).get(feature)) is value
+            ]
+            bags = _bags(subset)
+            for program, cell in sorted(bags.items()):
+                scoped_rows.append({
+                    "scope": "%s==%s" % (feature, value),
+                    "feature": feature,
+                    "value": value,
+                    "program": program,
+                    "positive_cohorts": sorted(cell["positive"]),
+                    "negative_cohorts": sorted(cell["negative"]),
+                    "conflict_cohorts": sorted(cell["conflict"]),
+                    "immaterial_cohorts": sorted(cell["immaterial"]),
+                    "authorization": _decide(program, cell),
+                    "note": "votes stay inside this Scope cell; no stitching",
+                })
+
+    try_ops: list[str] = []
+    risk_ops: list[str] = []
+    sources: dict[str, list[str]] = {}
+    for row in signed + scoped_rows:
+        program = row["program"]
+        kind = row["authorization"]
+        if kind == "TRY" and program not in try_ops:
+            try_ops.append(program)
+            sources.setdefault(program, []).append(row["scope"])
+        elif kind == "RISK" and program not in risk_ops and program not in try_ops:
+            risk_ops.append(program)
+            sources.setdefault(program, []).append(row["scope"])
+    # a program authorized as TRY in one legal cell is not also RISK
+    risk_ops = [p for p in risk_ops if p not in try_ops]
+    return {
+        "min_distinct_cohorts": MIN_DISTINCT_COHORTS,
+        "same_scope_required": True,
+        "harm_definition": "delayed_relation in {NEGATIVE, CONFLICT}",
+        "harm_definition_strict": "delayed_relation == NEGATIVE",
+        "legal_scope_features": legal,
+        "used_unconditional_pool": True,
+        "try_authorized": try_ops,
+        "risk_authorized": risk_ops,
+        "authorization_scopes": sources,
+        "signed_summary_unconditional": signed,
+        "signed_summary_legal_scope_cells": scoped_rows,
+    }
+
+
+def _dev_proposal_frequency() -> dict[str, Any]:
+    """#42d 8-cell + #42e0 8-cell proposal mentions.  Not new evidence."""
+    counts = {name: 0 for name in (
+        "hampel_filter", "outlier_mad", "outlier_iqr", "winsorize")}
+    cells_read = 0
+    for path in (E2 / "t6_nab_42d_paired_replay.json", OUT_REPLAY_V2):
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        cells = (doc.get("run") or {}).get("cells") or doc.get("cells") or []
+        for cell in cells:
+            cells_read += 1
+            pool = [str(x) for x in (cell.get("pool") or [])]
+            blob = " ".join(pool).lower()
+            if "hampel" in blob:
+                counts["hampel_filter"] += 1
+            if "mad" in blob:
+                counts["outlier_mad"] += 1
+            if "iqr" in blob:
+                counts["outlier_iqr"] += 1
+            if "winsor" in blob:
+                counts["winsorize"] += 1
+    return {"cells_read": cells_read, "proposal_cell_counts": counts}
+
+
+def _census_for_v3_audit(authorization: Mapping[str, Any]
+                         ) -> list[dict[str, Any]]:
+    from run_e2_t6_42d_consolidation import BOOLEAN_FEATURES
+
+    out: list[dict[str, Any]] = []
+    for row in authorization["signed_summary_unconditional"]:
+        for relation, key in (
+            ("POSITIVE", "positive_cohorts"),
+            ("NEGATIVE", "negative_cohorts"),
+            ("CONFLICT", "conflict_cohorts"),
+            ("NEUTRAL", "immaterial_cohorts"),
+        ):
+            cohorts = list(row[key])
+            if not cohorts:
+                continue
+            item = {
+                "canonical_program": [row["program"]],
+                "support_relation": relation,
+                "distinct_task_count": len(cohorts),
+                "distinct_task_episode_ids": cohorts,
+            }
+            for feature in BOOLEAN_FEATURES:
+                item[feature] = True
+            out.append(item)
+    return out
+
+
+def _issue_skill_v3(
+    *,
+    authorization: Mapping[str, Any],
+    census_doc: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Compose frozen primitives.  Does not call issue_v2()."""
+    from SelfEvolvingHarnessTS.contracts.observables import OBSERVABLE_FEATURES
+    from SelfEvolvingHarnessTS.operators.registry import OPERATOR_NAMES
+    from evaluation.functional.task_episode_harness.agentic import (
+        ad_source_skill as ad,
+    )
+    from evaluation.functional.task_episode_harness.e1 import _FastAgentStub
+    from SelfEvolvingHarnessTS.methods.ttha.method import TTHAMethod
+    from SelfEvolvingHarnessTS.methods.ttha.retrieval import resolve_harness_view
+
+    authorized_try = list(authorization["try_authorized"])
+    authorized_risk = list(authorization["risk_authorized"])
+    audit_census = _census_for_v3_audit(authorization)
+    tokens = list(ad.SOURCE_COHORT_TOKENS) + list(EXPANSION_COHORT_TOKENS)
+    payload = {
+        "skill_id": SOURCE_SKILL_ID_V3,
+        "applicability": dict(ad.SOURCE_APPLICABILITY),
+        "authorized_try_operators": authorized_try,
+        "risk_authorized_operators": authorized_risk,
+        "authorization": authorization,
+        "signed_summary": authorization["signed_summary_unconditional"],
+        "legal_scope_cells": authorization["signed_summary_legal_scope_cells"],
+        "known_limits": census_doc.get("known_limits"),
+        "required_sections": list(ad.SECTIONS),
+        "try_abstain_literal": ad.TRY_ABSTAIN,
+        "v1_status": "superseded",
+        "v2_status": "superseded",
+        "one_entry_only": True,
+        "temporal_rules": (
+            "OBSERVE/WHEN proposal-time public Context only; "
+            "RISK is the census default deprioritization of each authorized "
+            "risk operator and must say a strong public Pattern may still "
+            "keep it a restricted probe candidate; VERIFY is the live "
+            "two-stage Support POSITIVE then delayed POSITIVE gate; "
+            "no distinct-task requirement"
+        ),
+        "target_domain": (
+            "a different domain from the census; write what to observe "
+            "and what would have to hold, not what happened in a named cohort"
+        ),
+    }
+    appendix = (
+        " Temporal rules for this AD v3 call, in addition to the frozen "
+        "containment audit. OBSERVE and WHEN may name only proposal-time "
+        "public Context: task_kind and the census observation-feature names. "
+        "They must not name support_relation, delayed_relation, approval, "
+        "or Skill-status words. RISK is the Source-census default "
+        "deprioritization of every authorized risk operator: lower its "
+        "proposal priority, but you must say that under strong public "
+        "Pattern evidence it may still be a restricted probe candidate. "
+        "RISK is not a hard ban. If the authorized risk list names "
+        "hampel_filter, that name must appear in RISK. VERIFY must state "
+        "the live two-stage gate in words, with no digits: current Target "
+        "Support relation POSITIVE forms a Draft; later delayed relation "
+        "POSITIVE approves or keeps Active. Do not require distinct tasks "
+        "anywhere. If authorized_try_operators is empty, TRY must be exactly "
+        + ad.TRY_ABSTAIN + "; otherwise TRY may name only those operators."
+    )
+    system = ad.slow_system(
+        authorized_try, skill_id=SOURCE_SKILL_ID_V3) + appendix
+    attempts: list[dict[str, Any]] = []
+    accepted: dict[str, Any] | None = None
+    for attempt in (1, 2):
+        try:
+            response = ad._slow_call([
+                {"role": "system", "content": system},
+                {"role": "user",
+                 "content": json.dumps(payload, ensure_ascii=False)},
+            ])
+        except (RuntimeError, ValueError) as exc:
+            attempts.append({
+                "attempt": attempt,
+                "error": "%s: %s" % (type(exc).__name__, exc),
+            })
+            continue
+        decision = str(response.get("decision") or "").upper()
+        sections = response.get("sections")
+        row: dict[str, Any] = {
+            "attempt": attempt, "decision": decision,
+            "slow_response": response,
+        }
+        if decision == "ABSTAIN":
+            row["audit"] = {"pass": True, "reason": "ABSTAIN"}
+            attempts.append(row)
+            accepted = {"decision": "ABSTAIN", "attempt": attempt,
+                        "slow_response": response}
+            break
+        if decision != "ADD" or not isinstance(sections, Mapping):
+            row["audit"] = {"pass": False, "reason": "malformed"}
+            attempts.append(row)
+            continue
+        contain = ad.audit_sections(
+            sections, audit_census,
+            operator_names=list(OPERATOR_NAMES),
+            observable_features=list(OBSERVABLE_FEATURES) + [
+                "level_only_post_shift_support_sufficient",
+                "post_shift_support_sufficient",
+                "period_repair_available",
+            ],
+            source_cohort_tokens=tokens,
+            authorized_try=authorized_try,
+        )
+        timing = ad.temporal_audit(sections)
+        audit = {
+            "pass": bool(contain["pass"] and timing["pass"]),
+            "containment": contain,
+            "temporal": timing,
+        }
+        row["audit"] = audit
+        attempts.append(row)
+        if audit["pass"]:
+            accepted = {
+                "decision": "ADD", "sections": dict(sections),
+                "audit": audit, "slow_response": response,
+                "attempt": attempt,
+            }
+            break
+    result: dict[str, Any] = {
+        "protocol_version": "t6_nab_42e_source_skill_v3",
+        "skill_id": SOURCE_SKILL_ID_V3,
+        "v1_skill_id": ad.SOURCE_SKILL_ID,
+        "v2_skill_id": ad.SOURCE_SKILL_ID_V2,
+        "v1_status": "superseded",
+        "v2_status": "superseded",
+        "v1_not_deleted": True,
+        "v2_not_deleted": True,
+        "v1_not_in_h0s_v3": True,
+        "v2_not_in_h0s_v3": True,
+        "authorized_try_operators": authorized_try,
+        "risk_authorized_operators": authorized_risk,
+        "llm_api_call_count": len(attempts),
+        "llm_cap": EXPANSION_LLM_CAP,
+        "target_outcome_read": False,
+        "counts_as_capability_evidence": False,
+        "attempts": attempts,
+        "slow_payload": payload,
+    }
+    if accepted is None:
+        result.update({
+            "verdict": "SLOW_CONSOLIDATION_UNREADABLE",
+            "skill_written": False,
+            "reason": "both Slow attempts failed the combined audit",
+        })
+        return result
+    if accepted.get("decision") == "ABSTAIN":
+        result.update({
+            "verdict": "SLOW_ABSTAIN",
+            "skill_written": False,
+            "accepted_attempt": accepted["attempt"],
+        })
+        return result
+
+    entry = ad.build_skill_payload(
+        accepted["sections"], skill_id=SOURCE_SKILL_ID_V3)
+    h0, snapshot = _materialize_named_skill(SOURCE_SKILL_ID_V3, entry)
+    a5_method = TTHAMethod(_FastAgentStub(), snapshot, ())
+    a3_method = TTHAMethod(_FastAgentStub(), h0, ())
+    a5_view = resolve_harness_view(
+        snapshot, {"task_kind": "anomaly_detection"}, role="fast")
+    a3_view = resolve_harness_view(
+        h0, {"task_kind": "anomaly_detection"}, role="fast")
+    a5_ids = [s.skill_id for s in a5_view.skills]
+    a3_ids = [s.skill_id for s in a3_view.skills]
+    delivery = {
+        "a5_retrieves_v3": SOURCE_SKILL_ID_V3 in a5_ids,
+        "a3_does_not_retrieve_v3": SOURCE_SKILL_ID_V3 not in a3_ids,
+        "a5_memory_empty": list(
+            getattr(a5_method, "experience_episodes", ()) or ()) == [],
+        "a3_memory_empty": list(
+            getattr(a3_method, "experience_episodes", ()) or ()) == [],
+        "a5_view_skill_ids": a5_ids,
+        "a3_view_skill_ids": a3_ids,
+    }
+    delivery["pass"] = all((
+        delivery["a5_retrieves_v3"],
+        delivery["a3_does_not_retrieve_v3"],
+        delivery["a5_memory_empty"],
+        delivery["a3_memory_empty"],
+    ))
+    result.update({
+        "skill_written": True,
+        "entry": entry,
+        "sections": accepted["sections"],
+        "audit": accepted["audit"],
+        "accepted_attempt": accepted["attempt"],
+        "h0s_v3_runtime_bundle_sha": snapshot.runtime_bundle_sha,
+        "h0_runtime_bundle_sha": h0.runtime_bundle_sha,
+        "skill_ids": [s.skill_id for s in snapshot.skills],
+        "delivery_assert": delivery,
+    })
+    return result
+
+
+def _materialize_named_skill(skill_id: str, entry: Mapping[str, Any]):
+    from SelfEvolvingHarnessTS.contracts.harness import (
+        EditManifest, EditOperation,
+    )
+    from SelfEvolvingHarnessTS.evaluation.minipipe.replay.edit_controller import (
+        EditController, FaultRouter, SurfaceRegistry,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.harness.store import SnapshotStore
+    from SelfEvolvingHarnessTS.methods.ttha.slow_agent import (
+        _resolve_apply_manifest,
+    )
+
+    h0 = compile_snapshot(
+        PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+        verify_lock=False)
+    store_root = Path(tempfile.gettempdir()) / ("t6e_%s" % skill_id)
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    store = SnapshotStore(store_root / "snapshots")
+    store.materialize(h0)
+    store.set_active(h0.runtime_bundle_sha)
+    controller = EditController(
+        store, surfaces=SurfaceRegistry(), router=FaultRouter())
+    manifest = EditManifest(
+        edit_id=skill_id,
+        base_harness_sha=h0.harness_content_sha,
+        target_pattern_id="t6-42e-source-derived-ad-skill-v3",
+        target_surface_id="skill_library.entries/" + skill_id,
+        operation=EditOperation.ADD,
+        surface_precondition={"kind": "ABSENT"},
+        dependency_precondition_shas={},
+        new_value=dict(entry),
+        observable_applicability=dict(
+            entry.get("observable_applicability") or {}),
+        predicted_agent_behavior_change=("retrieve_skill:" + skill_id,),
+        predicted_data_effect=("safer_proposal_stage",),
+        automatically_selected_risk_cases=(),
+        falsification_condition=("no_improvement",),
+        patch_id=None,
+    )
+    parent = store.materialize(h0)
+    receipt = controller.apply_to_fork(
+        parent,
+        _resolve_apply_manifest(manifest, h0),
+        confirmed_cause="SKILL_LIBRARY_GAP",
+    )
+    snapshot = receipt.candidate_snapshot.snapshot
+    store.set_active(snapshot.runtime_bundle_sha)
+    return h0, snapshot
+
+
+def _v3_verdict(
+    *,
+    fetch: Mapping[str, Any],
+    gate: Mapping[str, Any],
+    authorization: Mapping[str, Any] | None,
+    skill: Mapping[str, Any] | None,
+    trigger: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    if not fetch.get("ok"):
+        return {"verdict": "DATA_MISSING", "missing": fetch.get("missing")}
+    if not gate.get("all_new_cohorts_usable"):
+        return {
+            "verdict": "SHAPE_GATE_FAILED_COHORT_DROPPED",
+            "abandoned_cohorts": gate.get("abandoned_cohorts"),
+            "dropped": gate.get("dropped"),
+        }
+    if authorization is None:
+        return {"verdict": "CENSUS_UNREADABLE"}
+    try_ops = list(authorization.get("try_authorized") or [])
+    risk_ops = list(authorization.get("risk_authorized") or [])
+    freq = (trigger or {}).get("proposal_cell_counts") or {}
+    triggerable_risk = [
+        op for op in risk_ops
+        if int(freq.get(op) or 0) > 0 or any(
+            token in op for token in TRIGGERABLE_FROM_DEV)
+    ]
+    untriggerable_only = bool(risk_ops) and not triggerable_risk and all(
+        op in UNTRIGGERABLE_FROM_DEV or "hampel" in op for op in risk_ops)
+    if skill and skill.get("verdict") == "SLOW_CONSOLIDATION_UNREADABLE":
+        return {"verdict": "SLOW_CONSOLIDATION_UNREADABLE",
+                "skill": {"llm": skill.get("llm_api_call_count")}}
+    if try_ops and skill and skill.get("skill_written"):
+        return {
+            "verdict": "SOURCE_TRY_SKILL_FROZEN",
+            "try_authorized": try_ops,
+            "risk_authorized": risk_ops,
+            "h0s_v3_runtime_bundle_sha": skill.get("h0s_v3_runtime_bundle_sha"),
+        }
+    if (not try_ops) and triggerable_risk and skill and skill.get("skill_written"):
+        return {
+            "verdict": "SOURCE_RISK_ONLY_TRIGGERABLE",
+            "risk_authorized": risk_ops,
+            "triggerable_risk": triggerable_risk,
+            "h0s_v3_runtime_bundle_sha": skill.get("h0s_v3_runtime_bundle_sha"),
+        }
+    if not try_ops and (untriggerable_only or not risk_ops):
+        return {
+            "verdict": "SOURCE_EVIDENCE_INSUFFICIENT_FOR_ACTIONABLE_TRANSFER",
+            "try_authorized": try_ops,
+            "risk_authorized": risk_ops,
+            "h0s_v3_produced": False,
+        }
+    if skill and not skill.get("skill_written"):
+        return {
+            "verdict": "SOURCE_EVIDENCE_INSUFFICIENT_FOR_ACTIONABLE_TRANSFER",
+            "reason": skill.get("verdict") or "skill not written",
+            "h0s_v3_produced": False,
+        }
+    return {"verdict": "CENSUS_UNREADABLE",
+            "reason": "authorization present but no ladder match"}
+
+
+def source_expansion_v3() -> int:
+    """#42e r1: 17-file Source expansion, census v3, optional one Skill v3."""
+    leftover = [
+        line for line in os.popen("ps -ef").read().splitlines()
+        if "run_e2_t6_natural_a5_a3.py" in line
+        and "--source-expansion-v3" in line
+        and str(os.getpid()) not in line
+    ]
+    if leftover:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": leftover}, indent=1))
+        return 2
+    EXPANSION_V3_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        lock_fd = os.open(str(EXPANSION_V3_LOCK),
+                          os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        print(json.dumps({"verdict": "CONCURRENT_RUN_BLOCKED",
+                          "reason": "lock held"}, indent=1))
+        return 2
+    os.write(lock_fd, str(os.getpid()).encode("ascii"))
+    os.close(lock_fd)
+    run_id = datetime.now().strftime("%Y%m%dT%H%M%SZ")
+    fetch = _fetch_expansion_files()
+    if not fetch["ok"]:
+        payload = {
+            "protocol_version": "t6_nab_42e_source_expansion_v3",
+            "run_id": run_id,
+            "fetch": fetch,
+            "verdict": _v3_verdict(
+                fetch=fetch, gate={}, authorization=None,
+                skill=None, trigger=None),
+        }
+        OUT_EXPANSION_V3.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+    gate = _gate_expansion_files()
+    if not gate["all_new_cohorts_usable"]:
+        payload = {
+            "protocol_version": "t6_nab_42e_source_expansion_v3",
+            "run_id": run_id,
+            "fetch": {k: v for k, v in fetch.items() if k != "fetched"} | {
+                "files": fetch["fetched"]},
+            "shape_gate": gate["rows"],
+            "abandoned_cohorts": gate["abandoned_cohorts"],
+            "verdict": _v3_verdict(
+                fetch=fetch, gate=gate, authorization=None,
+                skill=None, trigger=None),
+        }
+        OUT_CENSUS_V3.write_text(_json_text({
+            "protocol_version": "t6_nab_42e_census_v3",
+            "shape_gate": gate["rows"],
+            "abandoned_cohorts": gate["abandoned_cohorts"],
+            "verdict": payload["verdict"],
+        }), encoding="utf-8")
+        OUT_EXPANSION_V3.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    wall = LabelWall(released=False)
+    consumer = _load_consumer()
+    universe = _expansion_universe(gate)
+    budget = FitBudget(EXPANSION_AD_FIT_CAP)
+    bank = _build_source_bank(
+        consumer=consumer, universe=universe, wall=wall, budget=budget)
+    runtime = _write_bank_through_runtime(bank["episodes"])
+    plan = json.loads(OUT_JSON_V2.read_text(encoding="utf-8"))
+    old_rows = list((plan.get("source_bank") or {}).get("rows") or ())
+    old_eps = list((plan.get("source_bank") or {}).get("episodes_to_dict") or ())
+    new_rows = list(bank["rows"])
+    new_eps = list(runtime["to_dict"])
+    rows = old_rows + new_rows
+    episodes = old_eps + new_eps
+    rows_by_id = {str(r["episode_id"]): r for r in rows}
+    if len(rows) != len(rows_by_id) or len(episodes) != len(rows):
+        census_doc = {
+            "protocol_version": "t6_nab_42e_census_v3",
+            "verdict": "CENSUS_UNREADABLE",
+            "reason": "merged card ids collided or row/episode count mismatch",
+            "old_cards": len(old_rows), "new_cards": len(new_rows),
+        }
+        OUT_CENSUS_V3.write_text(_json_text(census_doc), encoding="utf-8")
+        print(json.dumps({"verdict": "CENSUS_UNREADABLE"}, indent=1))
+        return 1
+
+    from run_e2_t6_42d_consolidation import _unguided_assertion
+
+    proxy = _v3_proxy_audit(episodes, rows_by_id)
+    authorization = _v3_authorize(episodes, rows, proxy)
+    trigger = _dev_proposal_frequency()
+    cohorts = sorted({str(r.get("cohort")) for r in rows})
+    census_doc = {
+        "protocol_version": "t6_nab_42e_census_v3",
+        "evidence_grade": "NATURAL",
+        "evidence_standing": "provisional",
+        "counts_as_capability_claim": False,
+        "vote_unit_for_authorization": "distinct Source cohort inside one Scope cell",
+        "relation_layer": "delayed_relation",
+        "old_plan_cards": len(old_rows),
+        "new_cards": len(new_rows),
+        "episode_count": len(episodes),
+        "cohorts": cohorts,
+        "unguided_old_plan": _unguided_assertion(plan),
+        "feature_proxy_audit": proxy,
+        "authorization": authorization,
+        "development_proposal_frequency": trigger,
+        "shape_gate": gate["rows"],
+        "label_mapping": bank["label_mapping"],
+        "label_wall": wall.audit(),
+        "new_bank_rows": new_rows,
+        "merged_rows": [{
+            "episode_id": r["episode_id"], "cohort": r["cohort"],
+            "round": r["round"], "program": r["program"],
+            "delayed_relation": r["delayed_relation"],
+            "support_relation": r["support_relation"],
+        } for r in rows],
+        "known_limits": [
+            "plan_v2 20 cards were read from the committed artifact and not recomputed",
+            "TRY/RISK votes stay inside one legal Scope cell; no stitching",
+            "pss remains forbidden as Scope",
+            "new cohorts are OPENED_AS_SOURCE and may never be fresh Target",
+        ],
+        "cost": {
+            "llm": 0, "ad_fits": budget.used,
+            "ad_fit_cap": EXPANSION_AD_FIT_CAP,
+            "forecast_retrains": 0,
+        },
+    }
+    try_ops = list(authorization["try_authorized"])
+    risk_ops = list(authorization["risk_authorized"])
+    freq = trigger["proposal_cell_counts"]
+    triggerable_risk = [
+        op for op in risk_ops
+        if int(freq.get(op) or 0) > 0
+        or any(token in op for token in TRIGGERABLE_FROM_DEV)
+    ]
+    should_issue = bool(try_ops or triggerable_risk)
+    skill: dict[str, Any] | None = None
+    if should_issue:
+        skill = _issue_skill_v3(
+            authorization=authorization, census_doc=census_doc)
+        census_doc["cost"]["llm"] = int(skill.get("llm_api_call_count") or 0)
+        OUT_SKILL_V3.write_text(_json_text(skill), encoding="utf-8")
+        if skill.get("skill_written"):
+            sections = skill.get("sections") or {}
+            OUT_SKILL_V3_MD.write_text(
+                "# AD Skill v3\n\nverdict pending Part D\n\n"
+                "skill_id: `%s`\n\nh0s_v3: `%s`\n\n## sections\n\n%s\n"
+                % (SOURCE_SKILL_ID_V3,
+                   skill.get("h0s_v3_runtime_bundle_sha"),
+                   "\n".join("### %s\n\n%s\n" % (n, sections[n])
+                             for n in sections)),
+                encoding="utf-8")
+    verdict = _v3_verdict(
+        fetch=fetch, gate=gate, authorization=authorization,
+        skill=skill, trigger=trigger)
+    census_doc["verdict"] = verdict
+    OUT_CENSUS_V3.write_text(_json_text(census_doc), encoding="utf-8")
+    lines = [
+        "# #42e census v3",
+        "",
+        "verdict: **%s**" % verdict["verdict"],
+        "cohorts: %s" % ", ".join(cohorts),
+        "cards: %d old + %d new = %d" % (
+            len(old_rows), len(new_rows), len(rows)),
+        "TRY: %s" % try_ops,
+        "RISK: %s" % risk_ops,
+        "legal scopes: %s" % authorization["legal_scope_features"],
+        "LLM %s / %s; AD fit %s / %s" % (
+            census_doc["cost"]["llm"], EXPANSION_LLM_CAP,
+            budget.used, EXPANSION_AD_FIT_CAP),
+        "",
+        "## per-file gate",
+        "",
+        "| file | cohort | ok | length | failures |",
+        "|---|---|---|---|---|",
+    ]
+    for row in gate["rows"]:
+        lines.append("| %s | %s | %s | %s | %s |" % (
+            row["file"], row["cohort"], row["ok"], row["length"],
+            row["failures"] or ""))
+    lines.extend([
+        "",
+        "## proxy audit",
+        "",
+        json.dumps(proxy, ensure_ascii=False, indent=2),
+        "",
+        "## unconditional signed summary",
+        "",
+        json.dumps(authorization["signed_summary_unconditional"],
+                   ensure_ascii=False, indent=2),
+    ])
+    OUT_CENSUS_V3_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if skill and skill.get("skill_written"):
+        OUT_SKILL_V3_MD.write_text(
+            "# AD Skill v3\n\nverdict: **%s**\n\n"
+            "skill_id: `%s`\n\nh0s_v3: `%s`\n\n"
+            "delivery: %s\n\n## sections\n\n%s\n"
+            % (
+                verdict["verdict"], SOURCE_SKILL_ID_V3,
+                skill.get("h0s_v3_runtime_bundle_sha"),
+                (skill.get("delivery_assert") or {}).get("pass"),
+                "\n".join("### %s\n\n%s\n" % (n, skill["sections"][n])
+                          for n in skill["sections"]),
+            ),
+            encoding="utf-8")
+    payload = {
+        "protocol_version": "t6_nab_42e_source_expansion_v3",
+        "entry": "--source-expansion-v3",
+        "run_id": run_id,
+        "evidence_grade": "NATURAL",
+        "evidence_standing": "provisional",
+        "counts_as_capability_claim": False,
+        "fetch": {"ok": fetch["ok"], "missing": fetch["missing"],
+                  "exposure": fetch["exposure"]},
+        "shape_gate_kept": gate["usable"],
+        "cost": census_doc["cost"],
+        "authorization": {
+            "try": try_ops, "risk": risk_ops,
+            "scopes": authorization["authorization_scopes"],
+        },
+        "verdict": verdict,
+        "label_wall_breached": wall.audit()["breached"],
+        "target_key_requests": wall.audit()["target_key_requests"],
+    }
+    OUT_EXPANSION_V3.write_text(_json_text(payload), encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict["verdict"],
+        "try": try_ops,
+        "risk": risk_ops,
+        "llm": census_doc["cost"]["llm"],
+        "ad_fits": budget.used,
+        "sha": verdict.get("h0s_v3_runtime_bundle_sha"),
+        "wall": wall.audit()["breached"],
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_CENSUS_V3)
+    print("wrote", OUT_CENSUS_V3_MD)
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
+    if "--source-expansion-v3" in argv:
+        return source_expansion_v3()
     if "--replay-skill-v2" in argv:
         return replay_skill_v2()
     if "--evaluate-lifecycle-fixture" in argv:
@@ -3223,7 +4159,8 @@ def main() -> int:
     if "--plan" in argv:
         return plan()
     print("usage: --plan | --plan-v2 | --evaluate | --evaluate-smoke "
-          "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2")
+          "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2 "
+          "| --source-expansion-v3")
     return 2
 
 

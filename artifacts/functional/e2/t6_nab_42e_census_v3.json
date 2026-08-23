@@ -1,0 +1,1582 @@
+{
+  "protocol_version": "t6_nab_42e_census_v3",
+  "evidence_grade": "NATURAL",
+  "evidence_standing": "provisional",
+  "counts_as_capability_claim": false,
+  "vote_unit_for_authorization": "distinct Source cohort inside one Scope cell",
+  "relation_layer": "delayed_relation",
+  "old_plan_cards": 20,
+  "new_cards": 20,
+  "episode_count": 40,
+  "cohorts": [
+    "source_aws_cloudwatch",
+    "source_known_cause",
+    "source_real_traffic",
+    "source_real_tweets"
+  ],
+  "unguided_old_plan": {
+    "all_evidence_unguided": true,
+    "forbidden_literals_in_bank": [],
+    "construction_path": "evaluation/functional/run_e2_t6_natural_a5_a3.py::_build_source_bank",
+    "note": "UNGUIDED if the Source bank artifact carries no Fast-winner Skill id; conditioned otherwise (source_skill conservative default)"
+  },
+  "feature_proxy_audit": [
+    {
+      "feature": "level_only_post_shift_support_sufficient",
+      "values_to_cohorts": {
+        "True": [
+          "source_aws_cloudwatch",
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ]
+      },
+      "constant": true,
+      "single_cohort_indicator": false,
+      "complete_cohort_partition_replica": false,
+      "both_boolean_sides_present": false,
+      "both_boolean_sides_ge2_cohorts": false,
+      "forbidden": false,
+      "usable_as_scope": false,
+      "note": "no resolving power"
+    },
+    {
+      "feature": "post_shift_support_sufficient",
+      "values_to_cohorts": {
+        "False": [
+          "source_aws_cloudwatch",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "True": [
+          "source_known_cause"
+        ]
+      },
+      "constant": false,
+      "single_cohort_indicator": true,
+      "complete_cohort_partition_replica": false,
+      "both_boolean_sides_present": true,
+      "both_boolean_sides_ge2_cohorts": false,
+      "forbidden": true,
+      "usable_as_scope": false,
+      "note": "pss forbidden"
+    },
+    {
+      "feature": "period_repair_available",
+      "values_to_cohorts": {
+        "False": [
+          "source_aws_cloudwatch",
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ]
+      },
+      "constant": true,
+      "single_cohort_indicator": false,
+      "complete_cohort_partition_replica": false,
+      "both_boolean_sides_present": false,
+      "both_boolean_sides_ge2_cohorts": false,
+      "forbidden": false,
+      "usable_as_scope": false,
+      "note": "no resolving power"
+    }
+  ],
+  "authorization": {
+    "min_distinct_cohorts": 2,
+    "same_scope_required": true,
+    "harm_definition": "delayed_relation in {NEGATIVE, CONFLICT}",
+    "harm_definition_strict": "delayed_relation == NEGATIVE",
+    "legal_scope_features": [],
+    "used_unconditional_pool": true,
+    "try_authorized": [],
+    "risk_authorized": [
+      "hampel_filter",
+      "outlier_iqr",
+      "outlier_mad"
+    ],
+    "authorization_scopes": {
+      "hampel_filter": [
+        "unconditional_4_cohort_pool"
+      ],
+      "outlier_iqr": [
+        "unconditional_4_cohort_pool"
+      ],
+      "outlier_mad": [
+        "unconditional_4_cohort_pool"
+      ]
+    },
+    "signed_summary_unconditional": [
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "hampel_filter",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_aws_cloudwatch",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [
+          "source_known_cause"
+        ],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_aws_cloudwatch",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": "RISK"
+      },
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "outlier_iqr",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [
+          "source_real_tweets"
+        ],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": "RISK"
+      },
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "outlier_mad",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause",
+          "source_real_tweets"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": "RISK"
+      },
+      {
+        "scope": "unconditional_4_cohort_pool",
+        "program": "winsorize",
+        "positive_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "negative_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_known_cause",
+          "source_real_tweets"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause",
+          "source_real_traffic",
+          "source_real_tweets"
+        ],
+        "authorization": null
+      }
+    ],
+    "signed_summary_legal_scope_cells": []
+  },
+  "development_proposal_frequency": {
+    "cells_read": 16,
+    "proposal_cell_counts": {
+      "hampel_filter": 0,
+      "outlier_mad": 4,
+      "outlier_iqr": 2,
+      "winsorize": 0
+    }
+  },
+  "shape_gate": [
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "TravelTime_387.csv",
+      "nab_key": "realTraffic/TravelTime_387.csv",
+      "ok": true,
+      "failures": [],
+      "length": 2500,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 2500,
+      "physical_rows_after": 2500,
+      "rows_preserved": true,
+      "values_sha256": "599cc135b8c84cf5fe71316ca9cbb6bf1b32a0c476422a3bf3e8ac07680328c4"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "TravelTime_451.csv",
+      "nab_key": "realTraffic/TravelTime_451.csv",
+      "ok": true,
+      "failures": [],
+      "length": 2162,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 2162,
+      "physical_rows_after": 2162,
+      "rows_preserved": true,
+      "values_sha256": "b52f7a115709691b084583194ef3369fc0df9aa52b8086b148de02b8a24042be"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "occupancy_6005.csv",
+      "nab_key": "realTraffic/occupancy_6005.csv",
+      "ok": true,
+      "failures": [],
+      "length": 2380,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 2380,
+      "physical_rows_after": 2380,
+      "rows_preserved": true,
+      "values_sha256": "ffefee549f3419ea349691186fbf8d7e21da91f1a209ff4263ec353b174ddb79"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "occupancy_t4013.csv",
+      "nab_key": "realTraffic/occupancy_t4013.csv",
+      "ok": true,
+      "failures": [],
+      "length": 2500,
+      "ordering_violation_count": 1,
+      "duplicate_timestamp_count": 1,
+      "backward_transition_count": 0,
+      "physical_rows_before": 2500,
+      "physical_rows_after": 2500,
+      "rows_preserved": true,
+      "values_sha256": "c812e33db0a1062dee0d9f730890f7a0ab39122ebb736e891f3b769dc2fb698d"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "speed_6005.csv",
+      "nab_key": "realTraffic/speed_6005.csv",
+      "ok": true,
+      "failures": [],
+      "length": 2500,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 2500,
+      "physical_rows_after": 2500,
+      "rows_preserved": true,
+      "values_sha256": "346740d4afb23ff36c5fa45bbc5a2cd526d120cfd6eb0c436218a401c8b9da48"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "speed_7578.csv",
+      "nab_key": "realTraffic/speed_7578.csv",
+      "ok": true,
+      "failures": [],
+      "length": 1127,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 1127,
+      "physical_rows_after": 1127,
+      "rows_preserved": true,
+      "values_sha256": "dfe06b160c2e2f263daa892de1234000ab5c82348c7f759f3c0b6685080deddf"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_traffic",
+      "file": "speed_t4013.csv",
+      "nab_key": "realTraffic/speed_t4013.csv",
+      "ok": true,
+      "failures": [],
+      "length": 2495,
+      "ordering_violation_count": 1,
+      "duplicate_timestamp_count": 1,
+      "backward_transition_count": 0,
+      "physical_rows_before": 2495,
+      "physical_rows_after": 2495,
+      "rows_preserved": true,
+      "values_sha256": "a65e670736d4383db3370391da3ab7e2573372ebd2d78e9f1958b5cd69d1c30b"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_AAPL.csv",
+      "nab_key": "realTweets/Twitter_volume_AAPL.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15902,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15902,
+      "physical_rows_after": 15902,
+      "rows_preserved": true,
+      "values_sha256": "5c6402bdd2ed8943cf1b2654af014fc66270abbec5555e1bc41d248829287548"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_AMZN.csv",
+      "nab_key": "realTweets/Twitter_volume_AMZN.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15831,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15831,
+      "physical_rows_after": 15831,
+      "rows_preserved": true,
+      "values_sha256": "bd695b3d4c233b7d2e8760d1d8390f552bbf1edd1608f033ca0f32c47a26e9a5"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_CRM.csv",
+      "nab_key": "realTweets/Twitter_volume_CRM.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15902,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15902,
+      "physical_rows_after": 15902,
+      "rows_preserved": true,
+      "values_sha256": "97e850da637ae7896349fb33b57608a15986ccee03ce0bb2d1f189ad5e772a86"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_CVS.csv",
+      "nab_key": "realTweets/Twitter_volume_CVS.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15853,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15853,
+      "physical_rows_after": 15853,
+      "rows_preserved": true,
+      "values_sha256": "e014293721ab6669db73b4163a0f6c4c0241f74714f3dbcfe7c311ccce0dd0b2"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_FB.csv",
+      "nab_key": "realTweets/Twitter_volume_FB.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15833,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15833,
+      "physical_rows_after": 15833,
+      "rows_preserved": true,
+      "values_sha256": "a135ad7989875e8407ddc9d808090a35a1389b00d5237a5b8433de5fe86cc5d1"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_GOOG.csv",
+      "nab_key": "realTweets/Twitter_volume_GOOG.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15842,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15842,
+      "physical_rows_after": 15842,
+      "rows_preserved": true,
+      "values_sha256": "fcfe07105b955edab2aa5ba0a33638fc4c33de405b2af1c8a11558d01aa88a0e"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_IBM.csv",
+      "nab_key": "realTweets/Twitter_volume_IBM.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15893,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15893,
+      "physical_rows_after": 15893,
+      "rows_preserved": true,
+      "values_sha256": "9c253821c31c7944a794cf97b13efaf79d82766f4947eace4c304ce82951a9a6"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_KO.csv",
+      "nab_key": "realTweets/Twitter_volume_KO.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15851,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15851,
+      "physical_rows_after": 15851,
+      "rows_preserved": true,
+      "values_sha256": "7cf99287c3efd76fc0361767117928bafdf81dddfb5ed83e628a17b3c5d1c59a"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_PFE.csv",
+      "nab_key": "realTweets/Twitter_volume_PFE.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15858,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15858,
+      "physical_rows_after": 15858,
+      "rows_preserved": true,
+      "values_sha256": "bce40e23c770f6b81010e6a4d730ec999547b465c9eeed216a6c70535874a8cf"
+    },
+    {
+      "role": "source",
+      "cohort": "source_real_tweets",
+      "file": "Twitter_volume_UPS.csv",
+      "nab_key": "realTweets/Twitter_volume_UPS.csv",
+      "ok": true,
+      "failures": [],
+      "length": 15866,
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "physical_rows_before": 15866,
+      "physical_rows_after": 15866,
+      "rows_preserved": true,
+      "values_sha256": "c087d1a32e5eb1a830ace308c1c09b462eeba67808fd66c944c05a283fd75685"
+    }
+  ],
+  "label_mapping": {
+    "TravelTime_387.csv": {
+      "official_window_count": 3,
+      "mapped_window_count": 3,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 249
+    },
+    "TravelTime_451.csv": {
+      "official_window_count": 1,
+      "mapped_window_count": 1,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 217
+    },
+    "occupancy_6005.csv": {
+      "official_window_count": 1,
+      "mapped_window_count": 1,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 239
+    },
+    "occupancy_t4013.csv": {
+      "official_window_count": 2,
+      "mapped_window_count": 2,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 250
+    },
+    "speed_6005.csv": {
+      "official_window_count": 1,
+      "mapped_window_count": 1,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 239
+    },
+    "speed_7578.csv": {
+      "official_window_count": 4,
+      "mapped_window_count": 4,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 116
+    },
+    "speed_t4013.csv": {
+      "official_window_count": 2,
+      "mapped_window_count": 2,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 250
+    },
+    "Twitter_volume_AAPL.csv": {
+      "official_window_count": 4,
+      "mapped_window_count": 4,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1588
+    },
+    "Twitter_volume_AMZN.csv": {
+      "official_window_count": 4,
+      "mapped_window_count": 4,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1580
+    },
+    "Twitter_volume_CRM.csv": {
+      "official_window_count": 3,
+      "mapped_window_count": 3,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1593
+    },
+    "Twitter_volume_CVS.csv": {
+      "official_window_count": 3,
+      "mapped_window_count": 3,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1526
+    },
+    "Twitter_volume_FB.csv": {
+      "official_window_count": 2,
+      "mapped_window_count": 2,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1582
+    },
+    "Twitter_volume_GOOG.csv": {
+      "official_window_count": 3,
+      "mapped_window_count": 3,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1432
+    },
+    "Twitter_volume_IBM.csv": {
+      "official_window_count": 2,
+      "mapped_window_count": 2,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1590
+    },
+    "Twitter_volume_KO.csv": {
+      "official_window_count": 3,
+      "mapped_window_count": 3,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1587
+    },
+    "Twitter_volume_PFE.csv": {
+      "official_window_count": 4,
+      "mapped_window_count": 4,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1588
+    },
+    "Twitter_volume_UPS.csv": {
+      "official_window_count": 5,
+      "mapped_window_count": 5,
+      "unmapped_windows": [],
+      "unmapped_window_count": 0,
+      "labelled_rows": 1585
+    }
+  },
+  "label_wall": {
+    "released": false,
+    "target_values_retained_in_memory": false,
+    "key_presence_discloses_nothing": "all six Target files carry an entry in combined_windows.json, so the presence of a key says nothing about which series is the clean one; only the window list would, and it is dropped",
+    "target_keys_walled": [
+      "realAdExchange/exchange-2_cpc_results.csv",
+      "realAdExchange/exchange-2_cpm_results.csv",
+      "realAdExchange/exchange-3_cpc_results.csv",
+      "realAdExchange/exchange-3_cpm_results.csv",
+      "realAdExchange/exchange-4_cpc_results.csv",
+      "realAdExchange/exchange-4_cpm_results.csv"
+    ],
+    "target_key_requests": [],
+    "breached": false
+  },
+  "new_bank_rows": [
+    {
+      "episode_id": "t6_source_real_traffic_r1_identity",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "identity",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "ABSTAIN",
+      "delayed_relation": "ABSTAIN",
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "support_harmed": 0,
+      "delayed_harmed": 0,
+      "support_worst_series": 0.0,
+      "delayed_worst_series": 0.0,
+      "series_read": 7,
+      "support_macro_f1": 0.2857142857142857,
+      "delayed_macro_f1": 0.4126984126984127,
+      "classification_basis": "identity: the batch was left as it is, so there is no effect to judge",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 0,
+        "TravelTime_451.csv": 0,
+        "occupancy_6005.csv": 0,
+        "occupancy_t4013.csv": 0,
+        "speed_6005.csv": 0,
+        "speed_7578.csv": 0,
+        "speed_t4013.csv": 0
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_outlier_iqr",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "outlier_iqr",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.14285714285714285,
+      "delayed_aggregate_gain": -0.2147392290249433,
+      "support_harmed": 1,
+      "delayed_harmed": 3,
+      "support_worst_series": -1.0,
+      "delayed_worst_series": -1.0,
+      "series_read": 7,
+      "support_macro_f1": 0.14285714285714285,
+      "delayed_macro_f1": 0.19795918367346937,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 97,
+        "TravelTime_451.csv": 113,
+        "occupancy_6005.csv": 22,
+        "occupancy_t4013.csv": 11,
+        "speed_6005.csv": 10,
+        "speed_7578.csv": 20,
+        "speed_t4013.csv": 48
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_outlier_mad",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "outlier_mad",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.14285714285714285,
+      "delayed_aggregate_gain": -0.21603793032364463,
+      "support_harmed": 1,
+      "delayed_harmed": 3,
+      "support_worst_series": -1.0,
+      "delayed_worst_series": -1.0,
+      "series_read": 7,
+      "support_macro_f1": 0.14285714285714285,
+      "delayed_macro_f1": 0.19666048237476805,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 93,
+        "TravelTime_451.csv": 106,
+        "occupancy_6005.csv": 11,
+        "occupancy_t4013.csv": 4,
+        "speed_6005.csv": 2,
+        "speed_7578.csv": 18,
+        "speed_t4013.csv": 29
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_hampel_filter",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "hampel_filter",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.14285714285714285,
+      "delayed_aggregate_gain": -0.20238095238095236,
+      "support_harmed": 1,
+      "delayed_harmed": 2,
+      "support_worst_series": -1.0,
+      "delayed_worst_series": -1.0,
+      "series_read": 7,
+      "support_macro_f1": 0.14285714285714285,
+      "delayed_macro_f1": 0.21031746031746032,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 102,
+        "TravelTime_451.csv": 81,
+        "occupancy_6005.csv": 60,
+        "occupancy_t4013.csv": 52,
+        "speed_6005.csv": 49,
+        "speed_7578.csv": 18,
+        "speed_t4013.csv": 42
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_winsorize",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "winsorize",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.14285714285714285,
+      "delayed_aggregate_gain": -0.1984126984126984,
+      "support_harmed": 1,
+      "delayed_harmed": 3,
+      "support_worst_series": -1.0,
+      "delayed_worst_series": -1.0,
+      "series_read": 7,
+      "support_macro_f1": 0.14285714285714285,
+      "delayed_macro_f1": 0.21428571428571427,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 100,
+        "TravelTime_451.csv": 87,
+        "occupancy_6005.csv": 91,
+        "occupancy_t4013.csv": 97,
+        "speed_6005.csv": 92,
+        "speed_7578.csv": 39,
+        "speed_t4013.csv": 77
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_identity",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "identity",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "ABSTAIN",
+      "delayed_relation": "ABSTAIN",
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "support_harmed": 0,
+      "delayed_harmed": 0,
+      "support_worst_series": 0.0,
+      "delayed_worst_series": 0.0,
+      "series_read": 7,
+      "support_macro_f1": 0.4251700680272109,
+      "delayed_macro_f1": 0.3336385836385837,
+      "classification_basis": "identity: the batch was left as it is, so there is no effect to judge",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 0,
+        "TravelTime_451.csv": 0,
+        "occupancy_6005.csv": 0,
+        "occupancy_t4013.csv": 0,
+        "speed_6005.csv": 0,
+        "speed_7578.csv": 0,
+        "speed_t4013.csv": 0
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_outlier_iqr",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "outlier_iqr",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.09546485260770982,
+      "delayed_aggregate_gain": -0.14996511425082856,
+      "support_harmed": 2,
+      "delayed_harmed": 4,
+      "support_worst_series": -0.6,
+      "delayed_worst_series": -1.0,
+      "series_read": 7,
+      "support_macro_f1": 0.3297052154195011,
+      "delayed_macro_f1": 0.1836734693877551,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 147,
+        "TravelTime_451.csv": 171,
+        "occupancy_6005.csv": 34,
+        "occupancy_t4013.csv": 17,
+        "speed_6005.csv": 14,
+        "speed_7578.csv": 40,
+        "speed_t4013.csv": 73
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_outlier_mad",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "outlier_mad",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.010204081632653128,
+      "delayed_aggregate_gain": -0.16266352694924127,
+      "support_harmed": 1,
+      "delayed_harmed": 4,
+      "support_worst_series": -0.4285714285714285,
+      "delayed_worst_series": -1.0,
+      "series_read": 7,
+      "support_macro_f1": 0.4149659863945578,
+      "delayed_macro_f1": 0.1709750566893424,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 136,
+        "TravelTime_451.csv": 162,
+        "occupancy_6005.csv": 15,
+        "occupancy_t4013.csv": 7,
+        "speed_6005.csv": 2,
+        "speed_7578.csv": 32,
+        "speed_t4013.csv": 46
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_hampel_filter",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "hampel_filter",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.08276643990929711,
+      "delayed_aggregate_gain": -0.07536193964765397,
+      "support_harmed": 3,
+      "delayed_harmed": 4,
+      "support_worst_series": -0.5,
+      "delayed_worst_series": -0.15873015873015878,
+      "series_read": 7,
+      "support_macro_f1": 0.3424036281179138,
+      "delayed_macro_f1": 0.2582766439909297,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 157,
+        "TravelTime_451.csv": 151,
+        "occupancy_6005.csv": 99,
+        "occupancy_t4013.csv": 104,
+        "speed_6005.csv": 80,
+        "speed_7578.csv": 33,
+        "speed_t4013.csv": 68
+      }
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_winsorize",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "winsorize",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.11292517006802727,
+      "delayed_aggregate_gain": -0.0547270190127333,
+      "support_harmed": 3,
+      "delayed_harmed": 4,
+      "support_worst_series": -0.6,
+      "delayed_worst_series": -0.11721611721611722,
+      "series_read": 7,
+      "support_macro_f1": 0.31224489795918364,
+      "delayed_macro_f1": 0.27891156462585037,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "TravelTime_387.csv": 176,
+        "TravelTime_451.csv": 152,
+        "occupancy_6005.csv": 159,
+        "occupancy_t4013.csv": 172,
+        "speed_6005.csv": 161,
+        "speed_7578.csv": 78,
+        "speed_t4013.csv": 135
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_identity",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "identity",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "ABSTAIN",
+      "delayed_relation": "ABSTAIN",
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "support_harmed": 0,
+      "delayed_harmed": 0,
+      "support_worst_series": 0.0,
+      "delayed_worst_series": 0.0,
+      "series_read": 10,
+      "support_macro_f1": 0.058278985507246375,
+      "delayed_macro_f1": 0.07093588950731808,
+      "classification_basis": "identity: the batch was left as it is, so there is no effect to judge",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 0,
+        "Twitter_volume_AMZN.csv": 0,
+        "Twitter_volume_CRM.csv": 0,
+        "Twitter_volume_CVS.csv": 0,
+        "Twitter_volume_FB.csv": 0,
+        "Twitter_volume_GOOG.csv": 0,
+        "Twitter_volume_IBM.csv": 0,
+        "Twitter_volume_KO.csv": 0,
+        "Twitter_volume_PFE.csv": 0,
+        "Twitter_volume_UPS.csv": 0
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_outlier_iqr",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "outlier_iqr",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "CONFLICT",
+      "support_aggregate_gain": -0.020664007892268757,
+      "delayed_aggregate_gain": 0.06711157027927214,
+      "support_harmed": 4,
+      "delayed_harmed": 3,
+      "support_worst_series": -0.11904761904761907,
+      "delayed_worst_series": -0.19047619047619047,
+      "series_read": 10,
+      "support_macro_f1": 0.03761497761497762,
+      "delayed_macro_f1": 0.13804745978659022,
+      "classification_basis": "aggregate >= +0.005 but 3 per-series reading(s) < -0.005",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 504,
+        "Twitter_volume_AMZN.csv": 118,
+        "Twitter_volume_CRM.csv": 450,
+        "Twitter_volume_CVS.csv": 1328,
+        "Twitter_volume_FB.csv": 347,
+        "Twitter_volume_GOOG.csv": 275,
+        "Twitter_volume_IBM.csv": 192,
+        "Twitter_volume_KO.csv": 332,
+        "Twitter_volume_PFE.csv": 690,
+        "Twitter_volume_UPS.csv": 391
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_outlier_mad",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "outlier_mad",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEUTRAL",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.003014435242696116,
+      "delayed_aggregate_gain": -0.02923931853443132,
+      "support_harmed": 2,
+      "delayed_harmed": 2,
+      "support_worst_series": -0.035714285714285754,
+      "delayed_worst_series": -0.20238095238095238,
+      "series_read": 10,
+      "support_macro_f1": 0.05526455026455026,
+      "delayed_macro_f1": 0.04169657097288676,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 463,
+        "Twitter_volume_AMZN.csv": 69,
+        "Twitter_volume_CRM.csv": 118,
+        "Twitter_volume_CVS.csv": 0,
+        "Twitter_volume_FB.csv": 294,
+        "Twitter_volume_GOOG.csv": 199,
+        "Twitter_volume_IBM.csv": 192,
+        "Twitter_volume_KO.csv": 388,
+        "Twitter_volume_PFE.csv": 0,
+        "Twitter_volume_UPS.csv": 344
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_hampel_filter",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "hampel_filter",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.009621069349330214,
+      "delayed_aggregate_gain": -0.01895521429815898,
+      "support_harmed": 5,
+      "delayed_harmed": 3,
+      "support_worst_series": -0.036956521739130443,
+      "delayed_worst_series": -0.13526570048309178,
+      "series_read": 10,
+      "support_macro_f1": 0.04865791615791616,
+      "delayed_macro_f1": 0.0519806752091591,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 498,
+        "Twitter_volume_AMZN.csv": 400,
+        "Twitter_volume_CRM.csv": 147,
+        "Twitter_volume_CVS.csv": 6,
+        "Twitter_volume_FB.csv": 377,
+        "Twitter_volume_GOOG.csv": 363,
+        "Twitter_volume_IBM.csv": 182,
+        "Twitter_volume_KO.csv": 321,
+        "Twitter_volume_PFE.csv": 34,
+        "Twitter_volume_UPS.csv": 117
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_winsorize",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "winsorize",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.008885809239070112,
+      "delayed_aggregate_gain": -0.026094730759384413,
+      "support_harmed": 3,
+      "delayed_harmed": 2,
+      "support_worst_series": -0.06349206349206352,
+      "delayed_worst_series": -0.18045112781954886,
+      "series_read": 10,
+      "support_macro_f1": 0.04939317626817626,
+      "delayed_macro_f1": 0.044841158747933665,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 579,
+        "Twitter_volume_AMZN.csv": 591,
+        "Twitter_volume_CRM.csv": 233,
+        "Twitter_volume_CVS.csv": 103,
+        "Twitter_volume_FB.csv": 494,
+        "Twitter_volume_GOOG.csv": 610,
+        "Twitter_volume_IBM.csv": 257,
+        "Twitter_volume_KO.csv": 431,
+        "Twitter_volume_PFE.csv": 202,
+        "Twitter_volume_UPS.csv": 317
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_identity",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "identity",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "ABSTAIN",
+      "delayed_relation": "ABSTAIN",
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "support_harmed": 0,
+      "delayed_harmed": 0,
+      "support_worst_series": 0.0,
+      "delayed_worst_series": 0.0,
+      "series_read": 10,
+      "support_macro_f1": 0.03531080369624022,
+      "delayed_macro_f1": 0.016218384789813363,
+      "classification_basis": "identity: the batch was left as it is, so there is no effect to judge",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 0,
+        "Twitter_volume_AMZN.csv": 0,
+        "Twitter_volume_CRM.csv": 0,
+        "Twitter_volume_CVS.csv": 0,
+        "Twitter_volume_FB.csv": 0,
+        "Twitter_volume_GOOG.csv": 0,
+        "Twitter_volume_IBM.csv": 0,
+        "Twitter_volume_KO.csv": 0,
+        "Twitter_volume_PFE.csv": 0,
+        "Twitter_volume_UPS.csv": 0
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_outlier_iqr",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "outlier_iqr",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEUTRAL",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.003400865808041456,
+      "delayed_aggregate_gain": -0.005004867124682795,
+      "support_harmed": 1,
+      "delayed_harmed": 2,
+      "support_worst_series": -0.03278688524590164,
+      "delayed_worst_series": -0.04081632653061225,
+      "series_read": 10,
+      "support_macro_f1": 0.031909937888198764,
+      "delayed_macro_f1": 0.011213517665130568,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 852,
+        "Twitter_volume_AMZN.csv": 262,
+        "Twitter_volume_CRM.csv": 457,
+        "Twitter_volume_CVS.csv": 2427,
+        "Twitter_volume_FB.csv": 597,
+        "Twitter_volume_GOOG.csv": 690,
+        "Twitter_volume_IBM.csv": 377,
+        "Twitter_volume_KO.csv": 615,
+        "Twitter_volume_PFE.csv": 1072,
+        "Twitter_volume_UPS.csv": 592
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_outlier_mad",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "outlier_mad",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEUTRAL",
+      "delayed_relation": "NEUTRAL",
+      "support_aggregate_gain": 0.00170995670995671,
+      "delayed_aggregate_gain": 0.003945119208277101,
+      "support_harmed": 0,
+      "delayed_harmed": 0,
+      "support_worst_series": 0.0,
+      "delayed_worst_series": 0.0,
+      "series_read": 10,
+      "support_macro_f1": 0.03702076040619693,
+      "delayed_macro_f1": 0.020163503998090464,
+      "classification_basis": "aggregate within +/-0.005 of zero",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 794,
+        "Twitter_volume_AMZN.csv": 131,
+        "Twitter_volume_CRM.csv": 367,
+        "Twitter_volume_CVS.csv": 0,
+        "Twitter_volume_FB.csv": 493,
+        "Twitter_volume_GOOG.csv": 480,
+        "Twitter_volume_IBM.csv": 377,
+        "Twitter_volume_KO.csv": 535,
+        "Twitter_volume_PFE.csv": 0,
+        "Twitter_volume_UPS.csv": 502
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_hampel_filter",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "hampel_filter",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEGATIVE",
+      "delayed_relation": "NEGATIVE",
+      "support_aggregate_gain": -0.005333051503787337,
+      "delayed_aggregate_gain": -0.005188564056488586,
+      "support_harmed": 2,
+      "delayed_harmed": 2,
+      "support_worst_series": -0.036821705426356585,
+      "delayed_worst_series": -0.03610675039246468,
+      "series_read": 10,
+      "support_macro_f1": 0.029977752192452883,
+      "delayed_macro_f1": 0.011029820733324777,
+      "classification_basis": "aggregate < -0.005",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 835,
+        "Twitter_volume_AMZN.csv": 706,
+        "Twitter_volume_CRM.csv": 259,
+        "Twitter_volume_CVS.csv": 12,
+        "Twitter_volume_FB.csv": 634,
+        "Twitter_volume_GOOG.csv": 710,
+        "Twitter_volume_IBM.csv": 305,
+        "Twitter_volume_KO.csv": 593,
+        "Twitter_volume_PFE.csv": 45,
+        "Twitter_volume_UPS.csv": 193
+      }
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_winsorize",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "winsorize",
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "support_relation": "NEUTRAL",
+      "delayed_relation": "NEUTRAL",
+      "support_aggregate_gain": 4.643462811919352e-05,
+      "delayed_aggregate_gain": -0.0013052334250490977,
+      "support_harmed": 1,
+      "delayed_harmed": 2,
+      "support_worst_series": -0.014367816091954033,
+      "delayed_worst_series": -0.012406947890818865,
+      "series_read": 10,
+      "support_macro_f1": 0.035357238324359413,
+      "delayed_macro_f1": 0.014913151364764265,
+      "classification_basis": "aggregate within +/-0.005 of zero",
+      "changed_points_by_series": {
+        "Twitter_volume_AAPL.csv": 1091,
+        "Twitter_volume_AMZN.csv": 1029,
+        "Twitter_volume_CRM.csv": 457,
+        "Twitter_volume_CVS.csv": 252,
+        "Twitter_volume_FB.csv": 859,
+        "Twitter_volume_GOOG.csv": 952,
+        "Twitter_volume_IBM.csv": 476,
+        "Twitter_volume_KO.csv": 709,
+        "Twitter_volume_PFE.csv": 309,
+        "Twitter_volume_UPS.csv": 542
+      }
+    }
+  ],
+  "merged_rows": [
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r1_identity",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r1",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r1_outlier_iqr",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r1",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r1_outlier_mad",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r1",
+      "program": "outlier_mad",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r1_hampel_filter",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r1",
+      "program": "hampel_filter",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r1_winsorize",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r1",
+      "program": "winsorize",
+      "delayed_relation": "POSITIVE",
+      "support_relation": "CONFLICT"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r2_identity",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r2",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r2_outlier_iqr",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r2",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "POSITIVE"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r2_outlier_mad",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r2",
+      "program": "outlier_mad",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r2_hampel_filter",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r2",
+      "program": "hampel_filter",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_aws_cloudwatch_r2_winsorize",
+      "cohort": "source_aws_cloudwatch",
+      "round": "r2",
+      "program": "winsorize",
+      "delayed_relation": "POSITIVE",
+      "support_relation": "POSITIVE"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r1_identity",
+      "cohort": "source_known_cause",
+      "round": "r1",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r1_outlier_iqr",
+      "cohort": "source_known_cause",
+      "round": "r1",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "CONFLICT"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r1_outlier_mad",
+      "cohort": "source_known_cause",
+      "round": "r1",
+      "program": "outlier_mad",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r1_hampel_filter",
+      "cohort": "source_known_cause",
+      "round": "r1",
+      "program": "hampel_filter",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "CONFLICT"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r1_winsorize",
+      "cohort": "source_known_cause",
+      "round": "r1",
+      "program": "winsorize",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "CONFLICT"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r2_identity",
+      "cohort": "source_known_cause",
+      "round": "r2",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r2_outlier_iqr",
+      "cohort": "source_known_cause",
+      "round": "r2",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r2_outlier_mad",
+      "cohort": "source_known_cause",
+      "round": "r2",
+      "program": "outlier_mad",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r2_hampel_filter",
+      "cohort": "source_known_cause",
+      "round": "r2",
+      "program": "hampel_filter",
+      "delayed_relation": "CONFLICT",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_known_cause_r2_winsorize",
+      "cohort": "source_known_cause",
+      "round": "r2",
+      "program": "winsorize",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_identity",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_outlier_iqr",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_outlier_mad",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "outlier_mad",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_hampel_filter",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "hampel_filter",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r1_winsorize",
+      "cohort": "source_real_traffic",
+      "round": "r1",
+      "program": "winsorize",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_identity",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_outlier_iqr",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_outlier_mad",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "outlier_mad",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_hampel_filter",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "hampel_filter",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_traffic_r2_winsorize",
+      "cohort": "source_real_traffic",
+      "round": "r2",
+      "program": "winsorize",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_identity",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_outlier_iqr",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "outlier_iqr",
+      "delayed_relation": "CONFLICT",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_outlier_mad",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "outlier_mad",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_hampel_filter",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "hampel_filter",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r1_winsorize",
+      "cohort": "source_real_tweets",
+      "round": "r1",
+      "program": "winsorize",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_identity",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "identity",
+      "delayed_relation": "ABSTAIN",
+      "support_relation": "ABSTAIN"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_outlier_iqr",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "outlier_iqr",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_outlier_mad",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "outlier_mad",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEUTRAL"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_hampel_filter",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "hampel_filter",
+      "delayed_relation": "NEGATIVE",
+      "support_relation": "NEGATIVE"
+    },
+    {
+      "episode_id": "t6_source_real_tweets_r2_winsorize",
+      "cohort": "source_real_tweets",
+      "round": "r2",
+      "program": "winsorize",
+      "delayed_relation": "NEUTRAL",
+      "support_relation": "NEUTRAL"
+    }
+  ],
+  "known_limits": [
+    "plan_v2 20 cards were read from the committed artifact and not recomputed",
+    "TRY/RISK votes stay inside one legal Scope cell; no stitching",
+    "pss remains forbidden as Scope",
+    "new cohorts are OPENED_AS_SOURCE and may never be fresh Target"
+  ],
+  "cost": {
+    "llm": 1,
+    "ad_fits": 170,
+    "ad_fit_cap": 240,
+    "forecast_retrains": 0
+  },
+  "verdict": {
+    "verdict": "SOURCE_RISK_ONLY_TRIGGERABLE",
+    "risk_authorized": [
+      "hampel_filter",
+      "outlier_iqr",
+      "outlier_mad"
+    ],
+    "triggerable_risk": [
+      "outlier_iqr",
+      "outlier_mad"
+    ],
+    "h0s_v3_runtime_bundle_sha": "f2054da1d18e2059457ed62282b7f7ff972ae219aedf98b39204ba2009bd7914"
+  }
+}

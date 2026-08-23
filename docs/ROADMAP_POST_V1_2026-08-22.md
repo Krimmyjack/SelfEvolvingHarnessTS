@@ -149,6 +149,36 @@ NOAA 新区域不得冒充第三域。v2 为已冻结正资产,随新域到来�
 Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命题;forecasting 线
 的全部已入账证据只覆盖一个 family。
 
+**主张架构 v2(2026-08-23,用户 + sol 会审采纳;取代"A5 在陌生域更快找到
+正解"式单条总主张,台账同日节为准)**:总主张 = 构建面向多 Task、多
+Consumer、多 Domain 的时序数据质量适应 Harness——依据部署时可观察的局部
+时序 Pattern、候选 Program 的作用几何与 Task/Consumer 的质量语义,在新域
+held-in 上自主生成/验证/更新 Target-local Workflow Skill,在同域 held-out
+上验收效用与风险;当 Source 与 Target 共享可观察决策 Context 时,冻结
+Source-derived Skill 进一步减少适应成本与负迁移。四层主张与主比较:
+- L1 核心适应性:新域 held-in 适应 → 冻结 → held-out 终态(A3 vs 静态
+  默认;无条件承重,不依赖任何 Source 先验);
+- L2 Source 先验价值:同 held-in 预算下 A5 vs A3,同一 held-out 验收
+  (FRESH_A5_DELIVERS −43.9% 为其预测线首个有界正例);
+- L3 Pattern 机制:完整 Context vs 去 Pattern/错配——收益须来自
+  Pattern × Program 几何 × Task/Consumer 匹配,非 dataset 记忆
+  (消融臂只跑已曝光域);
+- L4 载体条件化:同一处理随 Task/Consumer 反号且 Harness 随之改变行为
+  (M0/M1;T1b 注入正控为先例)。
+旧 A4(少/零 probe Shared Capability)= 远期可选目标,非成立前提。
+L1/L4 不依赖 Source 迁移成败;L2/L3 为更强迁移贡献。
+**最小可辩护闭环 = #42g L1 + M0 + M1**(2026-08-23 sol 修正:M0 仅证
+"反号现象存在"的正控,载体条件化的能力主张须 M1 坐实"Harness 读取
+Consumer Context 并安全改变适配行为";主线"L1+M0 即保底"表述收回)。
+**承重读数纪律**:能力对比以冻结终态在 held-out 的效用与安全承重
+(utility / harmed series / worst-series gain / abstention / 方向一致率);
+首正成本、试验数、feedback 消耗为解释性辅读数,不得单独支撑能力主张。
+held-in 预算由已曝光 development 轨迹预先冻结,禁挑选"刚好让 A5 赢"的
+紧预算;保留适应过程曲线;宽预算下终态打平而 A5 更快仍记有效加速;
+处女 held-out 只被冻结态触碰。**独有性声称前置**:相关工作检索(载体
+条件化与 Pattern 机制在既有 harness 进化文献中的存在性)完成前,
+不得声称"独有",入 #46 前债。
+
 **阶段图**:
 - **Phase T — Task-conditioned quality**(当前主线):同一单变量 Pattern 下
   forecasting 与 anomaly detection 双 Consumer 的方向翻转与条件化适配。
@@ -276,16 +306,46 @@ Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命�
   h0s_v3 则 #42e1 行为重放 → 才谈 fresh Target;
   排期编号后移:#42e = Source 扩充(realTraffic/realTweets,
   TRY 解锁唯一路径)→ #42f = 新域 census(Yahoo S5 优先)→
-  #42g = 正式 A5vsA3 v2(禁用惰性 h0s 消耗处女域)。
+  #42g = 正式 A5vsA3 v2(禁用惰性 h0s 消耗处女域);
+  主张架构 v2 落位(2026-08-23,全文见本节首):#42e r1 重定位 =
+  当前 Source 表示下的 actionability census,停止判词改名
+  NO_ACTIONABLE_SOURCE_SKILL + 强制 first-fault 三分
+  (Observation 不足 / Program 无重复 headroom / Source family
+  不适配),家族封顶禁新下载;新增 #42e2 = winsorize 反号最小
+  Observation 判别(严格在 #42e 之后——2-cohort 库上完美分离
+  特征即 cohort 代理,合法性按 census v3 代理判据审;0 新数据);
+  #42g 重塑两层协议(L1 A3 vs 静态默认无条件,L2 A5 vs A3
+  条件开,承重 = held-out 终态,首正成本降辅读数);Pattern
+  insight 重定义 = 可观察 Pattern × Program 几何 × Task/Consumer
+  → Action-Response,检索单位禁 dataset 名。
+  **#42e 已跑完 = C22 SOURCE_RISK_ONLY_TRIGGERABLE**(主线读工件
+  核验:4 cohort / 40 卡,17 新文件门全过;TRY=[],RISK=[hampel,
+  iqr, mad](严格伤害 3/3/3,hampel 扩展 4,全部零正例);winsorize
+  aws 唯一正例 + 3 cohort 伤害 = 无授权;合法 Scope=0(pss 降
+  single-cohort indicator 仍禁,另两特征恒常);skill v3 =
+  source_investigation_ad_v3,h0s_v3 f2054da1…,v1/v2 superseded
+  不入;v3 首次可触发(v2 只降权 hampel 历史 0 提案;v3 纳入
+  mad/iqr 历史提案 4/2 次);LLM 1/8、fit 170/240;r1 增补页因
+  执行交叉降为事后解释规则,family 已封顶禁新下载);排序更正:
+  **#42e1(v3 一次性行为验收,书已发)先于 #42e2**;#42g L2 仅当
+  #42e1 = RISK_PRIOR_BEHAVIOR_EFFECTIVE 才开;#45 重定位 =
+  forecasting 复现/回归验证(NOAA 2025 已开不得再称 fresh);
+  距离改按能力门计:底座成 + forecasting 纵向切片成,缺 AD 纵向
+  切片(#42g L1)与载体条件化切片(M0+M1),主体两场 = #42g L1
+  与 M1,增强线不得拖住。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
   监督型事件分类器 vs 重构型检测器(TimesNet/AE 族,本地 AegisTS 有源码)
   ——重构族把训练异常当污染、清洗预期帮它,监督族预期反号,天然的
   模型条件化翻转正控。
-- **Phase X — 跨域 fresh 确认**:各 family 内 A5 vs A3(forecasting 线的
-  candidate v2 在此复活;AD family 同构重走)。跨任务经验只作对照/冲突证据,
-  不自动获得执行权。
+- **Phase X — 跨域确认(#45 重定位,2026-08-23)**:原"fresh 确认"改称
+  **既有 forecasting 能力复现/回归验证**——NOAA 2025 outcome 已于
+  2026-08-21(FRESH_A5_DELIVERS)一次性打开,只能 replay/development/
+  回归引用,不得再称 fresh;两台 ID 修复后的证据 Runner(recall /
+  fresh_confirmation)在此服役。新的 forecasting fresh 证据需另一
+  outcome=SEALED 域(是否获取 = 用户决策点)。candidate v2 在此复活;
+  AD family 同构重走;跨任务经验只作对照/冲突证据,不自动获得执行权。
 - Phase S 状态:停车封存,资产 = candidate v2(两域证据+双向 LODO 4/4+4/4)。
   SMD 排除理由(改判,2026-08-22):多变量机器遥测的**形态不匹配**,非任务
   窄化;JUDGE_UNREADABLE 系数据-仪器形态错配,非方法失败。
