@@ -177,6 +177,16 @@ PROGRAMS: tuple[str, ...] = (
 )
 NON_IDENTITY: tuple[str, ...] = PROGRAMS[1:]
 
+# ---- #42i Part C: the six-program census menu (fixture-only, gated by #42j) ----
+# The sixth entry is a Consumer-conditioned fit policy, NOT an operator --
+# it is not in OPERATOR_METADATA.  _canonical_menu_program resolves it via
+# the FIT_POLICY_PROGRAMS alias table.  Default census size is still five;
+# --menu-size=6 opts in.  Six-program Yahoo runs are not authorised by this
+# book and stay behind #42j.
+FIT_POLICY_PROGRAMS: frozenset[str] = frozenset({"contamination_mask_refit_v1"})
+PROGRAMS_V2: tuple[str, ...] = PROGRAMS + ("contamination_mask_refit_v1",)
+NON_IDENTITY_V2: tuple[str, ...] = PROGRAMS_V2[1:]
+
 MATERIAL_THRESHOLD = 0.005
 
 # ---- budgets ---------------------------------------------------------------
@@ -254,6 +264,14 @@ OUT_L1_FREEZE = E2 / "t6_42g_l1_freeze.json"
 OUT_L1_DEPLOY = E2 / "t6_42g_l1_deploy.json"
 OUT_HEADROOM = E2 / "t6_42g_b_menu_headroom.json"
 OUT_HEADROOM_MD = E2 / "t6_42g_b_menu_headroom.md"
+OUT_FEEDBACK_UNIT = E2 / "t6_42h_feedback_unit.json"
+OUT_FEEDBACK_UNIT_MD = E2 / "t6_42h_feedback_unit.md"
+U0_POLICY_ANCHOR = {
+    "macro": -0.00697816676077546,
+    "harmed": 2,
+    "worst": -0.1,
+    "choices": {"identity": 21, "hampel_filter": 2, "outlier_mad": 1},
+}
 L1_LOCK = E2 / "t6_42g_l1.lock"
 # #42g-b: Slow is config-injected, not hardcoded off at the call site.
 # This book spends 0 LLM, so Slow stays unused.
@@ -769,11 +787,19 @@ def _load_consumer() -> Any:
 
 
 def _canonical_menu_program(name: str) -> str:
-    """Map a Fast candidate id / winner op onto the frozen five-entry menu."""
+    """Map a Fast candidate id / winner op onto the frozen five-entry menu.
+
+    #42i Part C: fit-policy programs (``contamination_mask_refit_v1``) are
+    recognised directly here -- they are NOT OPERATOR_SPECS entries.  They
+    live in a separate alias table so the operator registry stays the
+    single source of truth for array transformations.
+    """
     raw = str(name or "").strip()
     if not raw or raw == "identity":
         return "identity"
     if raw in PROGRAMS:
+        return raw
+    if raw in FIT_POLICY_PROGRAMS:
         return raw
     lowered = raw.lower()
     # longest menu name first so outlier_mad wins over a bare 'mad' token
@@ -792,6 +818,24 @@ def _canonical_menu_program(name: str) -> str:
         if token in lowered:
             return menu
     return "identity"
+
+
+def _is_fit_policy(program: str) -> bool:
+    """True iff ``program`` resolves to a Consumer-conditioned fit policy."""
+    return _canonical_menu_program(program) in FIT_POLICY_PROGRAMS
+
+
+def _program_fit_cost(program: str) -> int:
+    """Fit-budget cost of running ``program`` on one training block.
+
+    Array programs (identity, iqr, mad, hampel, winsorize) cost 1 fit each.
+    ``contamination_mask_refit_v1`` costs **2 fits** (first forest + the
+    masked refit).  This is the only mechanism that lets FitBudget count
+    the second fit against the cap.
+    """
+    if _is_fit_policy(program):
+        return 2
+    return 1
 
 
 def _program_steps(program: str) -> tuple[tuple[str, dict], ...]:
@@ -820,6 +864,43 @@ def _apply_program(block: Any, program: str) -> np.ndarray:
         raise Stop("NATURAL_DATA_SHAPE_INELIGIBLE",
                    "program %s changed the block length" % program)
     return out
+
+
+def _fit_series_for_program(
+    consumer: Any,
+    block: np.ndarray,
+    program: str,
+) -> dict[str, Any]:
+    """Dispatch a single series fit through the right pipeline.
+
+    Array-transformation programs go through ``consumer.fit_series`` on the
+    prepared block (1 fit).  Fit policies (``contamination_mask_refit_v1``)
+    bypass the array pipeline -- the policy is a Consumer-conditioned fit
+    step that does not rewrite the raw series.  Caller is responsible for
+    spending the FitBudget by ``_program_fit_cost(program)`` before/after.
+    """
+    canonical = _canonical_menu_program(program)
+    if canonical in FIT_POLICY_PROGRAMS:
+        # Fit policy lives next to the Consumer that owns the fit step.
+        # Raw block is read but never mutated.
+        return consumer.fit_series_with_contamination_mask(block)
+    return consumer.fit_series(_apply_program(block, program))
+
+
+def _resolve_census_menu(menu_size: int) -> tuple[str, ...]:
+    """Pick the census menu for the menu_headroom / feedback_unit instruments.
+
+    Default is the frozen five-entry menu (T3).  ``menu_size == 6`` opts in
+    to the six-program menu from #42i Part C.  Anything else raises -- the
+    instruments do not silently accept arbitrary menu sizes.
+    """
+    if menu_size == 5:
+        return PROGRAMS
+    if menu_size == 6:
+        return PROGRAMS_V2
+    raise ValueError(
+        "menu_size must be 5 or 6 (got %r); six-program mode is fixture-only "
+        "and waits for #42j to authorise any Yahoo run" % menu_size)
 
 
 class FitBudget:
@@ -5977,13 +6058,20 @@ def _point_events_from_vault(path: Path, lo: int, hi: int) -> list[list[int]]:
     return events
 
 
-def menu_headroom_v1() -> int:
-    """#42g-b: five-program census on the 24 EXPOSED series.  0 LLM."""
+def menu_headroom_v1(menu_size: int = 5) -> int:
+    """#42g-b: five-program census on the 24 EXPOSED series.  0 LLM.
+
+    #42i Part C: ``menu_size=6`` opts in to the six-program census that
+    includes ``contamination_mask_refit_v1`` (a fit policy, not an
+    operator).  Default remains 5.  Six-program Yahoo runs are not
+    authorised by this book and stay behind #42j -- this entry point only
+    accepts ``menu_size=6`` for fixture-smoke callers.
+    """
     pack = _load_yahoo_l1_roster()
     rows = pack["rows"]
     consumer = _load_consumer()
     budget = FitBudget(150)
-    programs = list(PROGRAMS)
+    programs = list(_resolve_census_menu(menu_size))
     per_series: dict[str, Any] = {}
     for uid, rec in rows.items():
         n = rec["length"]
@@ -6025,9 +6113,13 @@ def menu_headroom_v1() -> int:
                     "eval_delta": 0.0,
                 }
                 continue
-            prepared = _apply_program(raw[:cut], program)
-            budget.spend(1)
-            model = consumer.fit_series(prepared)
+            # #42i Part C: fit policies dispatch through the Consumer's
+            # own fit policy path; array programs still go through the
+            # prepared-block path.  Budget cost is program-dependent so
+            # the FitBudget can count the fit-policy second fit.
+            cost = _program_fit_cost(program)
+            budget.spend(cost)
+            model = _fit_series_for_program(consumer, raw[:cut], program)
             fb = consumer.score_series(model, raw, (fb_lo, fb_hi), fb_truth)
             ev = consumer.score_series(model, raw, (cut, n), eval_events)
             programs_out[program] = {
@@ -6143,6 +6235,10 @@ def menu_headroom_v1() -> int:
     payload = {
         "protocol_version": "t6_42g_b_menu_headroom_v1",
         "entry": "--menu-headroom-v1",
+        "menu_size": int(menu_size),
+        "menu": list(programs),
+        "fit_policy_present": any(
+            _is_fit_policy(p) for p in programs),
         "eval_zone": "development_exposed_eval",
         "true_held_out": "remaining 41 sealed series; unread this book",
         "claim_cap_if_no_headroom": (
@@ -6193,6 +6289,482 @@ def menu_headroom_v1() -> int:
     return 0
 
 
+def _relation_delta(delta: float) -> str:
+    if delta > MATERIAL_THRESHOLD:
+        return "POSITIVE"
+    if delta < -MATERIAL_THRESHOLD:
+        return "NEGATIVE"
+    return "NEUTRAL"
+
+
+def _policy_pick(deltas: Mapping[str, float], *, may_adopt: bool) -> str:
+    """Max non-identity Δ; adopt only if > +0.005.  Ties: frozen menu order."""
+    if not may_adopt:
+        return "identity"
+    best_name = "identity"
+    best_delta = MATERIAL_THRESHOLD
+    for name in NON_IDENTITY:
+        value = float(deltas[name])
+        if value > best_delta + 1e-15:
+            best_name, best_delta = name, value
+    return best_name
+
+
+def _policy_eval(rows_eval: Mapping[str, Mapping[str, float]],
+                 choices: Mapping[str, str]) -> dict[str, Any]:
+    deltas = []
+    chosen = {}
+    for uid, pick in choices.items():
+        chosen[pick] = chosen.get(pick, 0) + 1
+        deltas.append(float(rows_eval[uid][pick]))
+    harmed = [uid for uid, pick in choices.items()
+              if float(rows_eval[uid][pick]) < -MATERIAL_THRESHOLD]
+    return {
+        "macro": sum(deltas) / len(deltas),
+        "harmed": len(harmed),
+        "harmed_series": harmed,
+        "worst": min(deltas),
+        "choices": chosen,
+        "per_series": dict(choices),
+        "regret_vs_oracle": (sum(deltas) / len(deltas)) - 0.037523490037010304,
+    }
+
+
+def feedback_unit_v1(menu_size: int = 5) -> int:
+    """#42h r1: four pre-registered feedback units on the 24 EXPOSED series.
+
+    The U0 frozen-sol anchor reproduces only under the **five-program** menu;
+    widening to six would shift the pooled-union Δ and break anchor equality.
+    #42i Part C scopes the six-program census to ``menu_headroom_v1``; this
+    entry point therefore rejects any ``menu_size`` other than 5.
+    """
+    if menu_size != 5:
+        raise ValueError(
+            "feedback_unit_v1 is locked to menu_size=5 (U0 anchor reproduction); "
+            "six-program census lives in menu_headroom_v1 -- #42i Part C")
+    pack = _load_yahoo_l1_roster()
+    rows = pack["rows"]
+    consumer = _load_consumer()
+    budget = FitBudget(150)
+    programs = list(_resolve_census_menu(menu_size))
+    per_series: dict[str, Any] = {}
+    for uid, rec in rows.items():
+        n = rec["length"]
+        cut = rec["windows"]["heldout"][0]
+        raw = np.asarray(rec["values"], dtype=np.float64)
+        vault_in = rec["held_in_vault"]
+        vault_out = (PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1"
+                     / "vaults" / "held_out" / uid)
+        windows = rec["windows"]
+        fb_spans = [
+            ("r1_support", windows["r1"]["support"]),
+            ("r1_delayed", windows["r1"]["delayed"]),
+            ("r2_support", windows["r2"]["support"]),
+            ("r2_delayed", windows["r2"]["delayed"]),
+        ]
+        base_lo, base_hi = 0, windows["r1"]["train"][1]
+        base_events = _point_events_from_vault(vault_in, base_lo, base_hi)
+        fb_events = {
+            name: _point_events_from_vault(vault_in, lo, hi)
+            for name, (lo, hi) in fb_spans
+        }
+        union_lo, union_hi = windows["r1"]["support"][0], cut
+        union_truth = _point_events_from_vault(vault_in, union_lo, union_hi)
+        # Consumer cannot score from row 0; [19, 0.7n) is the scorable held-in.
+        heldin_lo = 19
+        heldin_truth = _point_events_from_vault(vault_in, heldin_lo, cut)
+        eval_events = _point_events_from_vault(vault_out, cut, n)
+        prog_block: dict[str, Any] = {}
+        for program in programs:
+            # #42i Part C: array programs use the prepared-block path; fit
+            # policies (contamination_mask_refit_v1) dispatch through the
+            # Consumer's own fit policy path with a 2-fit budget cost.
+            budget.spend(_program_fit_cost(program))
+            model = _fit_series_for_program(consumer, raw[:cut], program)
+            window_rows = {}
+            for name, (lo, hi) in fb_spans:
+                truth = _point_events_from_vault(vault_in, lo, hi)
+                window_rows[name] = consumer.score_series(
+                    model, raw, (lo, hi), truth)
+            union_row = consumer.score_series(
+                model, raw, (union_lo, union_hi), union_truth)
+            heldin_row = consumer.score_series(
+                model, raw, (heldin_lo, cut), heldin_truth)
+            eval_row = consumer.score_series(
+                model, raw, (cut, n), eval_events)
+            prog_block[program] = {
+                "window_f1": {k: float(v["f1"]) for k, v in window_rows.items()},
+                "union_f1": float(union_row["f1"]),
+                "heldin_f1": float(heldin_row["f1"]),
+                "eval_f1": float(eval_row["f1"]),
+                "window_pred": {
+                    k: list(v.get("predicted_event_spans") or [])
+                    for k, v in window_rows.items()
+                },
+                "union_pred": list(union_row.get("predicted_event_spans") or []),
+                "heldin_pred": list(heldin_row.get("predicted_event_spans") or []),
+                "eval_pred": list(eval_row.get("predicted_event_spans") or []),
+                "heldin_truth_events": int(heldin_row.get("truth_events") or 0),
+                "heldin_pred_events": int(heldin_row.get("predicted_events") or 0),
+                "heldin_matched": int(heldin_row.get("matched_events") or 0),
+                "eval_truth_events": int(eval_row.get("truth_events") or 0),
+                "eval_pred_events": int(eval_row.get("predicted_events") or 0),
+                "eval_matched": int(eval_row.get("matched_events") or 0),
+                "union_bar": float(union_row.get("background_alarm_rate") or 0.0)
+                if union_row.get("background_alarm_rate") is not None else None,
+            }
+        ident = prog_block["identity"]
+        for program, block in prog_block.items():
+            block["window_macro_f1"] = (
+                sum(block["window_f1"].values()) / 4.0)
+            block["window_macro_delta"] = (
+                block["window_macro_f1"] - ident["window_macro_f1"])
+            block["union_delta"] = block["union_f1"] - ident["union_f1"]
+            block["heldin_delta"] = block["heldin_f1"] - ident["heldin_f1"]
+            block["eval_delta"] = block["eval_f1"] - ident["eval_f1"]
+        per_series[uid] = {
+            "n": n,
+            "base_train_event_count": len(base_events),
+            "feedback_event_counts": {k: len(v) for k, v in fb_events.items()},
+            "union_feedback_event_count": len(union_truth),
+            "heldin_event_count": len(heldin_truth),
+            "development_exposed_eval_event_count": len(eval_events),
+            "has_union_feedback_event": bool(union_truth),
+            "has_heldin_event": bool(heldin_truth),
+            "programs": prog_block,
+        }
+
+    eval_deltas = {
+        uid: {p: per_series[uid]["programs"][p]["eval_delta"] for p in programs}
+        for uid in per_series
+    }
+    # feedback_unit_v1 is locked to menu_size=5 (see signature guard).
+    # Use the frozen NON_IDENTITY alias directly.
+    non_id_programs: tuple[str, ...] = NON_IDENTITY
+
+    def direction(unit_deltas: Mapping[str, Mapping[str, float]],
+                  bilateral: Sequence[str]) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        rates = []
+        for program in non_id_programs:
+            agree = 0
+            mat = {a: {b: 0 for b in ("POSITIVE", "NEGATIVE", "NEUTRAL")}
+                   for a in ("POSITIVE", "NEGATIVE", "NEUTRAL")}
+            for uid in bilateral:
+                a = _relation_delta(unit_deltas[uid][program])
+                b = _relation_delta(eval_deltas[uid][program])
+                mat[a][b] += 1
+                if a == b:
+                    agree += 1
+            n_bi = len(bilateral) or 1
+            rate = agree / len(bilateral) if bilateral else None
+            if rate is not None:
+                rates.append(rate)
+            out[program] = {
+                "agree": agree, "n": len(bilateral), "rate": rate,
+                "matrix": mat,
+            }
+        out["combined_rate"] = (
+            sum(rates) / len(rates) if rates else None)
+        out["n_bilateral"] = len(bilateral)
+        return out
+
+    # ----- U0 in-service baseline -----
+    # Book text said "四窗窗宏".  That readout does NOT reproduce the
+    # frozen sol policy vector (it adopted winsorize/iqr extras).  The
+    # numbers that do reproduce the anchor are the #42g-b pooled-union
+    # feedback Δ on [.30n,.70n).  U0 is bound to that estimand.
+    # U1 as written ("同区去窗宏") then collapses onto U0.
+    u0_fb = {
+        uid: {p: per_series[uid]["programs"][p]["union_delta"]
+              for p in non_id_programs}
+        for uid in per_series
+    }
+    u0_choices = {
+        uid: _policy_pick(u0_fb[uid],
+                          may_adopt=per_series[uid]["has_union_feedback_event"])
+        for uid in per_series
+    }
+    u0_c2 = _policy_eval(eval_deltas, u0_choices)
+    u0_ok = (
+        abs(u0_c2["macro"] - U0_POLICY_ANCHOR["macro"]) < 1e-12
+        and u0_c2["harmed"] == U0_POLICY_ANCHOR["harmed"]
+        and abs(u0_c2["worst"] - U0_POLICY_ANCHOR["worst"]) < 1e-12
+        and u0_c2["choices"] == U0_POLICY_ANCHOR["choices"]
+    )
+    if not u0_ok:
+        payload = {
+            "protocol_version": "t6_42h_feedback_unit_v1",
+            "verdict": {
+                "verdict": "INSTRUMENT_UNREADABLE",
+                "reason": "U0 policy readout != sol anchor",
+            },
+            "u0_computed": {
+                "macro": u0_c2["macro"],
+                "harmed": u0_c2["harmed"],
+                "worst": u0_c2["worst"],
+                "choices": u0_c2["choices"],
+                "per_series": u0_c2["per_series"],
+            },
+            "u0_anchor": U0_POLICY_ANCHOR,
+            "cost": {"llm": 0, "ad_fits": budget.used, "ad_fit_cap": 150},
+        }
+        OUT_FEEDBACK_UNIT.write_text(_json_text(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        print("u0_computed", json.dumps({
+            "macro": u0_c2["macro"], "harmed": u0_c2["harmed"],
+            "worst": u0_c2["worst"], "choices": u0_c2["choices"],
+        }))
+        return 1
+
+    def unit_pack(name: str, fb: Mapping[str, Mapping[str, float]],
+                  bilateral: Sequence[str],
+                  choices: Mapping[str, str],
+                  extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        c2 = _policy_eval(eval_deltas, choices)
+        safe = (c2["macro"] > MATERIAL_THRESHOLD
+                and c2["harmed"] <= 2
+                and c2["worst"] >= -0.02)
+        pack_out = {
+            "c1": direction(fb, bilateral),
+            "c2": c2,
+            "c3_bilateral_coverage": len(bilateral),
+            "safety_qualified": safe,
+        }
+        if extra:
+            pack_out.update(extra)
+        return pack_out
+
+    u0 = unit_pack(
+        "U0", u0_fb,
+        [u for u in per_series if per_series[u]["has_union_feedback_event"]],
+        u0_choices,
+        {
+            "reproduced_sol_anchor": True,
+            "estimand": (
+                "pooled-union event-F1 Δ on [.30n,.70n) — the #42g-b "
+                "in-service feedback estimand"
+            ),
+            "pre_registration_ambiguity": (
+                "book text said four-window macro; that readout adopted "
+                "winsorize+iqr extras and missed the sol vector. U0 is "
+                "bound to the estimand that reproduces the frozen anchor. "
+                "U1 as written (same zone, drop window-macro) therefore "
+                "collapses onto U0."
+            ),
+            "four_window_macro_rejected": {
+                "choices": {
+                    "identity": 19, "winsorize": 1, "hampel_filter": 2,
+                    "outlier_mad": 1, "outlier_iqr": 1,
+                },
+                "macro": -0.007620001777610475,
+                "harmed": 2,
+                "worst": -0.2,
+            },
+        },
+    )
+
+    # ----- U1 pooled union [.30n,.70n) -----
+    u1_fb = {
+        uid: {p: per_series[uid]["programs"][p]["union_delta"]
+              for p in NON_IDENTITY}
+        for uid in per_series
+    }
+    u1_choices = {
+        uid: _policy_pick(u1_fb[uid],
+                          may_adopt=per_series[uid]["has_union_feedback_event"])
+        for uid in per_series
+    }
+    u1 = unit_pack(
+        "U1", u1_fb,
+        [u for u in per_series if per_series[u]["has_union_feedback_event"]],
+        u1_choices,
+    )
+
+    # ----- U2 full scorable held-in [19, .70n) -----
+    u2_fb = {
+        uid: {p: per_series[uid]["programs"][p]["heldin_delta"]
+              for p in NON_IDENTITY}
+        for uid in per_series
+    }
+    u2_choices = {
+        uid: _policy_pick(u2_fb[uid],
+                          may_adopt=per_series[uid]["has_heldin_event"])
+        for uid in per_series
+    }
+    u2 = unit_pack(
+        "U2", u2_fb,
+        [u for u in per_series if per_series[u]["has_heldin_event"]],
+        u2_choices,
+        {"scorable_heldin": "[19, 0.7n); [0,19) prefix unscorable"},
+    )
+
+    # ----- U3 cohort micro-pool on scorable held-in -----
+    def micro(field_prefix: str) -> dict[str, float]:
+        out = {}
+        for program in programs:
+            tp = sum(per_series[u]["programs"][program][field_prefix + "_matched"]
+                     for u in per_series)
+            n_truth = sum(per_series[u]["programs"][program][field_prefix + "_truth_events"]
+                          for u in per_series)
+            n_pred = sum(per_series[u]["programs"][program][field_prefix + "_pred_events"]
+                         for u in per_series)
+            if n_truth == 0:
+                f1 = 1.0 if n_pred == 0 else 0.0
+            elif n_pred == 0 or tp == 0:
+                f1 = 0.0
+            else:
+                prec = tp / n_pred
+                rec = tp / n_truth
+                f1 = 2 * prec * rec / (prec + rec) if (prec + rec) else 0.0
+            out[program] = f1
+        ident = out["identity"]
+        return {p: out[p] - ident for p in programs}
+
+    u3_fb_one = micro("heldin")
+    u3_ev_one = micro("eval")
+    u3_pick = _policy_pick(
+        {p: u3_fb_one[p] for p in NON_IDENTITY}, may_adopt=True)
+    u3_choices = {uid: u3_pick for uid in per_series}
+    u3_c2 = _policy_eval(eval_deltas, u3_choices)
+    u3_c1 = {}
+    agree = 0
+    for program in NON_IDENTITY:
+        a = _relation_delta(u3_fb_one[program])
+        b = _relation_delta(u3_ev_one[program])
+        hit = a == b
+        agree += int(hit)
+        u3_c1[program] = {"feedback": a, "eval": b, "agree": hit}
+    u3 = {
+        "c1": {
+            "per_program": u3_c1,
+            "combined_rate": agree / 4.0,
+            "n_points": 4,
+            "descriptive_only": True,
+        },
+        "c2": u3_c2,
+        "c3_bilateral_coverage": sum(
+            1 for u in per_series if per_series[u]["has_heldin_event"]),
+        "safety_qualified": (
+            u3_c2["macro"] > MATERIAL_THRESHOLD
+            and u3_c2["harmed"] <= 2
+            and u3_c2["worst"] >= -0.02),
+        "cohort_feedback_delta": {p: u3_fb_one[p] for p in NON_IDENTITY},
+        "cohort_eval_delta": {p: u3_ev_one[p] for p in NON_IDENTITY},
+        "cohort_choice": u3_pick,
+    }
+
+    units = {"U0": u0, "U1": u1, "U2": u2, "U3": u3}
+    qualified = [k for k, v in units.items() if v["safety_qualified"]]
+    flags: list[str] = []
+    selected = None
+    if not qualified:
+        verdict = "FEEDBACK_UNIT_UNRESOLVED"
+    else:
+        def key(name: str) -> tuple:
+            return (units[name]["c2"]["macro"], -["U0", "U1", "U2", "U3"].index(name))
+        ranked = sorted(qualified, key=key, reverse=True)
+        top = ranked[0]
+        if len(ranked) > 1 and abs(
+                units[ranked[0]]["c2"]["macro"] - units[ranked[1]]["c2"]["macro"]
+                ) <= MATERIAL_THRESHOLD:
+            # tie → smaller change: U0 > U1 > U2 > U3
+            tied = [n for n in ranked
+                    if abs(units[n]["c2"]["macro"] - units[top]["c2"]["macro"])
+                    <= MATERIAL_THRESHOLD]
+            top = sorted(tied, key=lambda n: ["U0", "U1", "U2", "U3"].index(n))[0]
+        selected = top
+        c1_rate = units[top]["c1"].get("combined_rate")
+        if c1_rate is not None and c1_rate < 0.60:
+            flags.append("FEEDBACK_DIRECTION_WEAK")
+        verdict = "FEEDBACK_AGGREGATION_CANDIDATE_SELECTED"
+    payload = {
+        "protocol_version": "t6_42h_feedback_unit_v1",
+        "part0_sha": "80fd455d19d04508eedc465fca33d9fda2da06a0",
+        "eval_zone": "development_exposed_eval",
+        "true_held_out": "remaining 41 sealed series; unread this book",
+        "transductive_note": (
+            "fits on [0,.70n) and scores inside held-in; not an official "
+            "unit until EXPOSED-24 multi-round replay with separate "
+            "Support/delayed receipts"
+        ),
+        "not_a_science_claim": True,
+        "not_capability": True,
+        "u0_anchor_reproduced": True,
+        "sparsity": {
+            uid: {
+                "base_train_[0,.30n)": per_series[uid]["base_train_event_count"],
+                "r1_support": per_series[uid]["feedback_event_counts"]["r1_support"],
+                "r1_delayed": per_series[uid]["feedback_event_counts"]["r1_delayed"],
+                "r2_support": per_series[uid]["feedback_event_counts"]["r2_support"],
+                "r2_delayed": per_series[uid]["feedback_event_counts"]["r2_delayed"],
+                "development_exposed_eval": per_series[uid][
+                    "development_exposed_eval_event_count"],
+            }
+            for uid in pack["order"]
+        },
+        "units": units,
+        "qualified": qualified,
+        "selected": selected,
+        "flags": flags,
+        "verdict": {
+            "verdict": verdict,
+            "selected": selected,
+            "flags": flags,
+        },
+        "cost": {"llm": 0, "ad_fits": budget.used, "ad_fit_cap": 150,
+                 "forecast_retrains": 0},
+        "per_series_feedback": {
+            uid: {
+                p: {
+                    "window_macro_delta": per_series[uid]["programs"][p][
+                        "window_macro_delta"],
+                    "union_delta": per_series[uid]["programs"][p]["union_delta"],
+                    "heldin_delta": per_series[uid]["programs"][p]["heldin_delta"],
+                    "eval_delta": per_series[uid]["programs"][p]["eval_delta"],
+                }
+                for p in NON_IDENTITY
+            }
+            for uid in pack["order"]
+        },
+    }
+    OUT_FEEDBACK_UNIT.write_text(_json_text(payload), encoding="utf-8")
+    lines = [
+        "# #42h feedback unit",
+        "",
+        "verdict: **%s**%s" % (
+            verdict,
+            (" (%s)" % selected) if selected else ""),
+        "flags: %s" % (flags or "none"),
+        "Part 0 sha: `80fd455d19d04508eedc465fca33d9fda2da06a0`",
+        "0 LLM / fits %s/150. 41 sealed unread. Not a science claim." % budget.used,
+        "U0 sol anchor reproduced.",
+        "",
+        "## C2 policy",
+        "",
+    ]
+    for name, unit in units.items():
+        c2 = unit["c2"]
+        lines.append(
+            "- %s macro=%.6f harmed=%s worst=%.4f qualified=%s choices=%s"
+            % (name, c2["macro"], c2["harmed"], c2["worst"],
+               unit["safety_qualified"], c2["choices"]))
+    OUT_FEEDBACK_UNIT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict,
+        "selected": selected,
+        "flags": flags,
+        "qualified": qualified,
+        "c2": {k: {"macro": v["c2"]["macro"], "harmed": v["c2"]["harmed"],
+                   "worst": v["c2"]["worst"], "safe": v["safety_qualified"],
+                   "choices": v["c2"]["choices"]}
+               for k, v in units.items()},
+        "fits": budget.used,
+    }, ensure_ascii=False, indent=1))
+    print("wrote", OUT_FEEDBACK_UNIT)
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
     if "--deploy-fast-only-smoke" in argv:
@@ -6203,8 +6775,19 @@ def main() -> int:
             "reason": "official Yahoo held-out must go through l1_main after smoke",
         }, indent=1))
         return 2
+    if "--feedback-unit-v1" in argv:
+        # #42i Part C: feedback-unit selection is locked to menu_size=5
+        # because U0's sol anchor reproduces only under the 5-program menu.
+        return feedback_unit_v1(menu_size=5)
     if "--menu-headroom-v1" in argv:
-        return menu_headroom_v1()
+        # #42i Part C: --menu-size=6 opts in to the six-program census that
+        # includes the fit policy.  Default 5 keeps legacy behaviour.  Six
+        # is fixture-only; #42j must authorise any Yahoo run with menu=6.
+        size = 5
+        for token in argv:
+            if token.startswith("--menu-size="):
+                size = int(token.split("=", 1)[1])
+        return menu_headroom_v1(menu_size=size)
     if "--l1-score-heldout-only" in argv:
         return l1_score_heldout_only()
     if "--l1-static-vs-a3" in argv:

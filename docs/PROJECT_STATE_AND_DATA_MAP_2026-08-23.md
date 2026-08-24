@@ -135,3 +135,39 @@ M0 必须保持 Task、数据/split、窗口、Program 作用字节、预算、M
 “跨域积累”从完整 Harness 中删除，也不能把项目重新收缩成 Router、固定清洗器或
 实验仪器集合。下一轮应回到最早阻塞的 Observation、Program headroom、Scope/Risk
 或反馈分辨率，而不是把完整系统永久改成 A3-only。
+
+## #42i（2026-08-24）—— 契约 wiring + AD-native 程序注册（纯代码）
+
+**CODE_LANDED（纯代码书，不跑行为实验）**
+
+- **Part A — `anomaly_background_model_quality_contract_v1`**
+  - 在 `contracts/task.py` 增加 `anomaly_background_model_quality_contract_v1()` 与
+    `anomaly_task_context_v1()`；`PRESERVATION_VOCABULARY` 新增 `normal_boundary_fidelity`；
+    `HARM_VOCABULARY` 新增 `normal_boundary_shrinkage`、`false_alarm_amplification`；
+    `anomaly_events` 词汇常量的注释已固定为“指保护 downstream event discrimination
+    所需证据，不表示训练区内任何疑似异常点都禁止删除”。
+  - `contracts/schemas/task_quality_contract_v1.json` 与
+    `contracts/schemas/task_context_v1.json` 同步三个新词到 enum。
+  - **红线**：契约 `to_dict()` 中零 Pattern→Program 字段。
+- **Part B（r1 修订）—— `contamination_mask_refit_v1` 不注册为 Operator**
+  - 实现为 `aegists_iforest_v1` 的 Consumer-conditioned fit policy：
+    `evaluation/functional/consumers/aegists_iforest_v1.py` 新增
+    `fit_series_with_contamination_mask` 与 `consumer_id_for(program)`；
+    `MASK_REFIT_FRACTION=0.01`、`CONTAMINATION_MASK_REFIT_ID` 已固定。
+  - 遮罩单位固定为训练窗口；初次 fit → 排除 anomaly score 最高的 ≤1% 窗口 →
+    refit；v1 不做点级反投影、邻域延伸、NaN 或删行；原始数据与 Query 不改；
+    一次执行计 2 fits；标准化常数跨两次 fit 字节一致。
+  - `operators/registry.py` 未触碰；Fast Agent 菜单未扩展。
+- **Part C —— 六程序 census 仪器**
+  - `evaluation/functional/run_e2_t6_natural_a5_a3.py` 新增
+    `PROGRAMS_V2 = PROGRAMS + ("contamination_mask_refit_v1",)` 与
+    `NON_IDENTITY_V2`；`menu_headroom_v1(menu_size=5)` 与
+    `feedback_unit_v1(menu_size=5)` 仪器参数化（U0 锚定 `feedback_unit_v1`
+    锁在 `menu_size=5`，拒绝其它 size）；六程序模式仅 fixture 烟测，
+    Yahoo 六程序仍由 #42j 守门。
+  - `methods/`（Fast/Slow/Skill 生命周期）零改动。
+
+**门**：#42j 证明六程序 Yahoo 安全 headroom 后方可正式注册为 Operator 或纳入 Fast 菜单；
+失败不得改称弃权能力正结果。
+
+**交付**：代码 + 测试已 commit（本书例外于“交付不 commit”）。
