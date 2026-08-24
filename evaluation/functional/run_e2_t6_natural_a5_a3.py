@@ -267,6 +267,22 @@ OUT_HEADROOM = E2 / "t6_42g_b_menu_headroom.json"
 OUT_HEADROOM_MD = E2 / "t6_42g_b_menu_headroom.md"
 OUT_FEEDBACK_UNIT = E2 / "t6_42h_feedback_unit.json"
 OUT_FEEDBACK_UNIT_MD = E2 / "t6_42h_feedback_unit.md"
+# ---- #43 M0-C: the three-Consumer processing-utility response matrix -------
+# Same data, same roster, same split, same five programs, same acting bytes,
+# same metric.  Only the Consumer protocol changes, and the three protocols
+# genuinely differ in more than model structure (per-series unlabeled fits vs
+# a pooled labelled fit), so the claim this instrument can carry is
+# "processing utility responds to the Consumer protocol", never "only the
+# model structure changed".
+OUT_M0C = E2 / "t6_m0c_consumer_flip.json"
+OUT_M0C_MD = E2 / "t6_m0c_consumer_flip.md"
+OUT_M0C_SMOKE = E2 / "t6_m0c_consumer_flip_smoke.json"
+M0C_FIT_CAP = 280            # 245 planned + fixture headroom
+M0C_FLIP_BAR = 0.005         # C1: one side >= +bar while the other <= -bar
+M0C_SAFE_MACRO = 0.005       # C2 safety gate: macro delta strictly above
+M0C_SAFE_HARMED = 2          # C2 safety gate: at most this many harmed series
+M0C_SAFE_WORST = -0.02       # C2 safety gate: worst series delta at least this
+M0C_ANCHOR_TOLERANCE = 1e-12
 U0_POLICY_ANCHOR = {
     "macro": -0.00697816676077546,
     "harmed": 2,
@@ -6811,6 +6827,648 @@ def feedback_unit_v1(menu_size: int = 5) -> int:
     return 0
 
 
+def _m0c_point_set(path: Path, lo: int, hi: int) -> set[int]:
+    return {int(i) for event in _point_events_from_vault(path, lo, hi)
+            for i in event}
+
+
+def _m0c_event_reading(
+    shared: Any,
+    indices: Any,
+    flags: Any,
+    region: tuple[int, int],
+    truth_windows: Sequence[Sequence[int]],
+) -> dict[str, Any]:
+    """Event F1 from externally produced flags, on the shared scoring layer.
+
+    The supervised Consumer owns its feature path and its decision rule but
+    not the event arithmetic: merging, matching and F1 come from the
+    in-service Consumer's own functions so all three arms of the matrix are
+    scored under one semantics.
+    """
+    lo, hi = int(region[0]), int(region[1])
+    predicted = shared.merge_events(indices, flags)
+    truth = [[int(r) for r in rows if lo <= int(r) < hi]
+             for rows in truth_windows]
+    truth = [rows for rows in truth if rows]
+    row = dict(shared.event_f1(truth, predicted))
+    row.update({
+        "region": [lo, hi],
+        "predicted_event_spans": [[int(s), int(e)] for s, e in predicted],
+        "flagged_points": int(np.count_nonzero(np.asarray(flags, dtype=bool))),
+    })
+    return row
+
+
+def _m0c_supervised_pooled_fit(
+    adt: Any,
+    rows: Mapping[str, Any],
+    order: Sequence[str],
+    program: str,
+    budget: FitBudget,
+) -> dict[str, Any]:
+    """C-b: one pooled fit per program over all 24 held-in substrates.
+
+    The T1b protocol, moved onto this roster: every series contributes the
+    z-feature rows of its own prepared held-in block with the held-in vault
+    labels attached, the rows are stacked, and the ridge head is fitted once.
+    Undefined-z rows never enter the fit.
+    """
+    features: list[np.ndarray] = []
+    targets: list[np.ndarray] = []
+    contributions: dict[str, Any] = {}
+    for uid in order:
+        rec = rows[uid]
+        cut = int(rec["windows"]["heldout"][0])
+        raw = np.asarray(rec["values"], dtype=np.float64)
+        block = _apply_program(raw[:cut], program)
+        feats = adt.block_features(block)
+        z = np.asarray(feats["z"], dtype=np.float64)
+        positives = _m0c_point_set(rec["held_in_vault"], 0, cut)
+        y = np.fromiter(
+            (1.0 if t in positives else 0.0 for t in range(cut)),
+            dtype=np.float64, count=cut)
+        finite = np.isfinite(z)
+        features.append(z[finite, None])
+        targets.append(y[finite])
+        contributions[uid] = {
+            "rows_offered": int(cut),
+            "rows_entering_fit": int(np.count_nonzero(finite)),
+            "positive_rows_entering_fit": int(
+                np.count_nonzero(y[finite] > 0.5)),
+            "undefined_attribution": dict(feats["counts"]),
+        }
+    design = np.concatenate(features, axis=0)
+    target = np.concatenate(targets, axis=0)
+    budget.spend(1)
+    try:
+        model = adt.fit(design, target)
+    except ValueError as exc:
+        # A pooled labelled fit needs both classes among the held-in rows.
+        # On a truncated roster that can genuinely fail; it is an instrument
+        # stop, not something to work around by moving the split.
+        raise Stop(
+            "INSTRUMENT_UNREADABLE",
+            "the pooled supervised fit for %s could not be built over %d "
+            "series (%d positive rows): %s"
+            % (program, len(order),
+               int(np.count_nonzero(target > 0.5)), exc)) from exc
+    return {
+        "model": model,
+        "training_rows": int(design.shape[0]),
+        "training_positives": int(model["n_pos"]),
+        "training_negatives": int(model["n_neg"]),
+        "positive_class_weight": float(model["positive_weight"]),
+        "per_series_contribution": contributions,
+    }
+
+
+def _m0c_supervised_score(
+    adt: Any,
+    shared: Any,
+    model: Mapping[str, Any],
+    raw: np.ndarray,
+    region: tuple[int, int],
+    truth_windows: Sequence[Sequence[int]],
+) -> dict[str, Any]:
+    """C-b scoring on one series' eval region.  Query bytes stay raw."""
+    lo, hi = int(region[0]), int(region[1])
+    feats = adt.query_features(raw, lo, hi)
+    z = np.asarray(feats["z"], dtype=np.float64)
+    indices = feats["indices"]
+    finite = np.isfinite(z)
+    scores = np.full(z.size, np.nan, dtype=np.float64)
+    if int(np.count_nonzero(finite)):
+        scores[finite] = adt.score(model, z[finite, None])
+    flags = np.zeros(z.size, dtype=bool)
+    flags[finite] = scores[finite] > float(adt.DECISION_THRESHOLD)
+    row = _m0c_event_reading(shared, indices, flags, (lo, hi), truth_windows)
+    row.update({
+        "scored_points": int(np.count_nonzero(finite)),
+        "undefined_points": int(np.count_nonzero(~finite)),
+        "undefined_attribution": dict(feats["counts"]),
+    })
+    return row
+
+
+def _m0c_aggregate(
+    per_series: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    programs: Sequence[str],
+) -> dict[str, Any]:
+    """Per program: macro delta, harmed count, worst, improved, recall side."""
+    out: dict[str, Any] = {}
+    uids = list(per_series)
+    for program in programs:
+        deltas = [float(per_series[u][program]["eval_delta"]) for u in uids]
+        recall_deltas = [
+            float(per_series[u][program]["recall"])
+            - float(per_series[u]["identity"]["recall"]) for u in uids]
+        precision_deltas = [
+            float(per_series[u][program]["precision"])
+            - float(per_series[u]["identity"]["precision"]) for u in uids]
+        harmed = [u for u, d in zip(uids, deltas) if d < -MATERIAL_THRESHOLD]
+        improved = [u for u, d in zip(uids, deltas) if d > MATERIAL_THRESHOLD]
+        out[program] = {
+            "macro_eval_f1": sum(
+                float(per_series[u][program]["f1"]) for u in uids) / len(uids),
+            "macro_eval_delta": sum(deltas) / len(deltas),
+            "macro_recall_delta": sum(recall_deltas) / len(recall_deltas),
+            "macro_precision_delta": (
+                sum(precision_deltas) / len(precision_deltas)),
+            "harmed": len(harmed),
+            "harmed_series": harmed,
+            "improved": len(improved),
+            "improved_series": improved,
+            "worst": min(deltas),
+            "best": max(deltas),
+        }
+    return out
+
+
+def m0c_consumer_flip_v1(limit: int = L1_ROSTER_N) -> int:
+    """#43 M0-C: does processing utility change sign with the Consumer?
+
+    Held fixed: the Yahoo S5 A1 EXPOSED-24 roster, the [0, .7n) / [.7n, n)
+    split, the five-program menu, the bytes each program acts on (the
+    training substrate only), the event-F1 metric and its matching rule, and
+    a zero-LLM budget.  Varied: the Consumer protocol -- an unlabeled
+    per-series IsolationForest, a pooled labelled ridge head on the
+    task-native robust-z, and an unlabeled per-series rank-3 reconstruction.
+
+    Claim discipline: the three protocols differ in fit protocol as well as
+    in model structure, so a confirmed flip is evidence that processing
+    utility responds to the *Consumer protocol*.  It is not evidence about
+    model structure alone, and the C-c arm speaks only for the deterministic
+    low-rank reconstruction family.
+    """
+    smoke = int(limit) < L1_ROSTER_N
+    pack = _load_yahoo_l1_roster()
+    rows = pack["rows"]
+    order = list(pack["order"])[:int(limit)]
+    programs = list(PROGRAMS)
+    cleaning = [p for p in programs if p != "identity"]
+
+    iforest = _load_consumer()
+    try:
+        from consumers import pca_reconstruction_v1 as pca
+    except Exception as exc:  # noqa: BLE001
+        raise Stop("CONSUMER_DEPENDENCY_UNAVAILABLE",
+                   "the M0-C reconstruction Consumer could not be imported: "
+                   "%s: %s" % (type(exc).__name__, exc)) from exc
+    try:
+        from consumers import anomaly_detection_trainable_v3 as adt
+    except Exception as exc:  # noqa: BLE001
+        raise Stop("CONSUMER_DEPENDENCY_UNAVAILABLE",
+                   "the M0-C supervised Consumer could not be imported: "
+                   "%s: %s" % (type(exc).__name__, exc)) from exc
+
+    budget = FitBudget(M0C_FIT_CAP)
+    fits = {"c_a_iforest": 0, "c_b_supervised": 0, "c_c_pca": 0}
+
+    # ---- the shared per-series facts, read once ---------------------------
+    facts: dict[str, Any] = {}
+    for uid in order:
+        rec = rows[uid]
+        n = int(rec["length"])
+        cut = int(rec["windows"]["heldout"][0])
+        vault_out = (PROJECT_ROOT / "data" / "benchmark_yahoo_s5_v1"
+                     / "vaults" / "held_out" / uid)
+        facts[uid] = {
+            "n": n,
+            "cut": cut,
+            "raw": np.asarray(rec["values"], dtype=np.float64),
+            "eval_events": _point_events_from_vault(vault_out, cut, n),
+            "held_in_events": _point_events_from_vault(
+                rec["held_in_vault"], 0, cut),
+        }
+
+    # ---- C-a: the in-service IForest, one unlabeled fit per (series, program)
+    c_a: dict[str, Any] = {}
+    for uid in order:
+        fact = facts[uid]
+        readings: dict[str, Any] = {}
+        for program in programs:
+            budget.spend(1)
+            fits["c_a_iforest"] += 1
+            model = _fit_series_for_program(
+                iforest, fact["raw"][:fact["cut"]], program)
+            readings[program] = iforest.score_series(
+                model, fact["raw"], (fact["cut"], fact["n"]),
+                fact["eval_events"])
+        base = float(readings["identity"]["f1"])
+        for program in programs:
+            readings[program]["eval_delta"] = (
+                float(readings[program]["f1"]) - base)
+        c_a[uid] = readings
+
+    # ---- C-c: the rank-3 reconstruction, one unlabeled fit per cell -------
+    c_c: dict[str, Any] = {}
+    for uid in order:
+        fact = facts[uid]
+        readings = {}
+        for program in programs:
+            budget.spend(1)
+            fits["c_c_pca"] += 1
+            model = pca.fit_series(
+                _apply_program(fact["raw"][:fact["cut"]], program))
+            readings[program] = pca.score_series(
+                model, fact["raw"], (fact["cut"], fact["n"]),
+                fact["eval_events"])
+        base = float(readings["identity"]["f1"])
+        for program in programs:
+            readings[program]["eval_delta"] = (
+                float(readings[program]["f1"]) - base)
+        c_c[uid] = readings
+
+    # ---- C-b: the supervised head, one pooled fit per program -------------
+    c_b: dict[str, Any] = {uid: {} for uid in order}
+    c_b_fits: dict[str, Any] = {}
+    for program in programs:
+        pooled = _m0c_supervised_pooled_fit(adt, rows, order, program, budget)
+        fits["c_b_supervised"] += 1
+        for uid in order:
+            fact = facts[uid]
+            c_b[uid][program] = _m0c_supervised_score(
+                adt, iforest, pooled["model"], fact["raw"],
+                (fact["cut"], fact["n"]), fact["eval_events"])
+        c_b_fits[program] = {
+            k: v for k, v in pooled.items() if k != "model"}
+    for uid in order:
+        base = float(c_b[uid]["identity"]["f1"])
+        for program in programs:
+            c_b[uid][program]["eval_delta"] = (
+                float(c_b[uid][program]["f1"]) - base)
+
+    matrix = {"c_a_iforest": c_a, "c_b_supervised": c_b, "c_c_pca": c_c}
+    aggregate = {name: _m0c_aggregate(cells, programs)
+                 for name, cells in matrix.items()}
+
+    # ---- anchor reproduction obligation (#42g-b, C-a five programs) -------
+    anchor: dict[str, Any] = {"status": "SKIPPED_SMOKE" if smoke else None}
+    if not smoke:
+        if not OUT_HEADROOM.exists():
+            anchor = {"status": "ANCHOR_ARTIFACT_MISSING",
+                      "path": str(OUT_HEADROOM)}
+        else:
+            landed = json.loads(OUT_HEADROOM.read_text(encoding="utf-8"))
+            pairs = 0
+            exact = 0
+            worst_gap = 0.0
+            mismatches: list[dict[str, Any]] = []
+            for uid in order:
+                for program in programs:
+                    want = landed["per_series"][uid]["programs"][program]
+                    for key, got in (
+                        ("eval_f1", float(c_a[uid][program]["f1"])),
+                        ("eval_delta", float(c_a[uid][program]["eval_delta"])),
+                    ):
+                        reference = float(want[key])
+                        gap = abs(got - reference)
+                        pairs += 1
+                        if got == reference:
+                            exact += 1
+                        worst_gap = max(worst_gap, gap)
+                        if gap > M0C_ANCHOR_TOLERANCE:
+                            mismatches.append({
+                                "uid": uid, "program": program, "field": key,
+                                "landed": reference, "reproduced": got})
+            anchor = {
+                "status": ("REPRODUCED" if not mismatches
+                           else "ANCHOR_MISMATCH"),
+                "artifact": OUT_HEADROOM.name,
+                "pairs_compared": pairs,
+                "pairs_bitwise_equal": exact,
+                "max_abs_gap": worst_gap,
+                "tolerance": M0C_ANCHOR_TOLERANCE,
+                "mismatches": mismatches[:20],
+            }
+
+    # ---- C1: the flip judgment, iforest vs pca ----------------------------
+    flip_rows: list[dict[str, Any]] = []
+    for program in cleaning:
+        a = float(aggregate["c_a_iforest"][program]["macro_eval_delta"])
+        c = float(aggregate["c_c_pca"][program]["macro_eval_delta"])
+        flipped = ((a >= M0C_FLIP_BAR and c <= -M0C_FLIP_BAR)
+                   or (c >= M0C_FLIP_BAR and a <= -M0C_FLIP_BAR))
+        flip_rows.append({
+            "program": program,
+            "iforest_macro_delta": a,
+            "pca_macro_delta": c,
+            "supervised_macro_delta": float(
+                aggregate["c_b_supervised"][program]["macro_eval_delta"]),
+            "flip": bool(flipped),
+        })
+    flipped_programs = [r["program"] for r in flip_rows if r["flip"]]
+    c1 = ("CONSUMER_UTILITY_FLIP_CONFIRMED" if flipped_programs
+          else "CONSUMER_UTILITY_FLIP_NOT_CONFIRMED")
+
+    # ---- C2: reconstruction headroom, judged independently of C1 ----------
+    safety_rows: list[dict[str, Any]] = []
+    for program in cleaning:
+        row = aggregate["c_c_pca"][program]
+        qualified = (float(row["macro_eval_delta"]) > M0C_SAFE_MACRO
+                     and int(row["harmed"]) <= M0C_SAFE_HARMED
+                     and float(row["worst"]) >= M0C_SAFE_WORST)
+        safety_rows.append({
+            "program": program,
+            "macro_eval_delta": float(row["macro_eval_delta"]),
+            "harmed": int(row["harmed"]),
+            "worst": float(row["worst"]),
+            "qualified": bool(qualified),
+        })
+    qualified_programs = [r["program"] for r in safety_rows if r["qualified"]]
+    c2 = ("RECONSTRUCTION_HEADROOM_QUALIFIED" if qualified_programs
+          else "RECONSTRUCTION_HEADROOM_NOT_QUALIFIED")
+
+    # ---- side flag: did cleaning cost the supervised arm its positives? ---
+    supervised_damage = [
+        {"program": p,
+         "macro_recall_delta": float(
+             aggregate["c_b_supervised"][p]["macro_recall_delta"]),
+         "macro_eval_delta": float(
+             aggregate["c_b_supervised"][p]["macro_eval_delta"])}
+        for p in cleaning]
+    recall_hits = [r["program"] for r in supervised_damage
+                   if r["macro_recall_delta"] <= -MATERIAL_THRESHOLD]
+    side_flag = ("SUPERVISED_EVIDENCE_PRESERVATION_CONFIRMED" if recall_hits
+                 else "SUPERVISED_EVIDENCE_PRESERVATION_NOT_CONFIRMED")
+
+    # ---- pre-registered predictions, scored against what landed ----------
+    predictions = [
+        {
+            "arm": "c_a_iforest",
+            "prediction": "cleaning programs are macro-negative",
+            "held": all(
+                float(aggregate["c_a_iforest"][p]["macro_eval_delta"]) < 0.0
+                for p in cleaning),
+        },
+        {
+            "arm": "c_b_supervised",
+            "prediction": "cleaning damages the positive class (recall drops)",
+            "held": bool(recall_hits),
+        },
+        {
+            "arm": "c_c_pca",
+            "prediction": "cleaning is macro-positive (literature prior)",
+            "held": all(
+                float(aggregate["c_c_pca"][p]["macro_eval_delta"]) > 0.0
+                for p in cleaning),
+        },
+    ]
+
+    if anchor.get("status") == "ANCHOR_MISMATCH":
+        verdict = "INSTRUMENT_UNREADABLE"
+    elif smoke:
+        verdict = "SMOKE_ONLY"
+    else:
+        verdict = c1
+
+    payload = {
+        "protocol_version": "t6_m0c_consumer_flip_v1",
+        "entry": "--m0c-consumer-flip",
+        "book": "#43 M0-C consumer-flip",
+        "evidence_class": "MECHANISM",
+        "development_only": True,
+        "smoke": smoke,
+        "claim_scope": (
+            "processing utility responds to the Consumer protocol; the three "
+            "protocols differ in fit protocol as well as model structure, so "
+            "this is NOT a 'only the model structure changed' reading, and "
+            "the C-c arm speaks only for the deterministic low-rank "
+            "reconstruction family (no AE / TimesNet extrapolation)"
+        ),
+        "held_fixed": {
+            "roster": order,
+            "split": "held-in [0, int(0.7n)) / eval [int(0.7n), n)",
+            "menu": programs,
+            "acting_bytes": "the training substrate only; Query bytes raw",
+            "metric": "event F1 on the eval region, zero-tolerance overlap "
+                      "matching, merge_events point mapping",
+            "scoring_layer": "consumers.aegists_iforest_v1, shared by all "
+                             "three arms",
+        },
+        "consumers": {
+            "c_a_iforest": {
+                "module": "consumers/aegists_iforest_v1.py",
+                "protocol": "per series, unlabeled, window 20, "
+                            "one fit per (series, program)",
+                "spec": iforest.spec(),
+            },
+            "c_b_supervised": {
+                "module": "consumers/anomaly_detection_trainable_v3.py",
+                "protocol": "pooled over the roster, labelled held-in rows, "
+                            "feature window 49, one fit per program",
+                "spec": adt.spec(),
+            },
+            "c_c_pca": {
+                "module": "consumers/pca_reconstruction_v1.py",
+                "protocol": "per series, unlabeled, window 20, "
+                            "one fit per (series, program)",
+                "spec": pca.spec(),
+            },
+        },
+        "eval_zone": "development_exposed_eval",
+        "true_held_out": "remaining 41 sealed series; unread this book",
+        "per_series": {
+            uid: {
+                arm: {
+                    program: {
+                        "f1": float(cells[uid][program]["f1"]),
+                        "precision": float(cells[uid][program]["precision"]),
+                        "recall": float(cells[uid][program]["recall"]),
+                        "eval_delta": float(cells[uid][program]["eval_delta"]),
+                        "truth_events": int(
+                            cells[uid][program]["truth_events"]),
+                        "predicted_events": int(
+                            cells[uid][program]["predicted_events"]),
+                        "matched_events": int(
+                            cells[uid][program]["matched_events"]),
+                        "flagged_points": int(
+                            cells[uid][program]["flagged_points"]),
+                    }
+                    for program in programs
+                }
+                for arm, cells in matrix.items()
+            }
+            for uid in order
+        },
+        "per_series_reconstruction_diagnostics": {
+            uid: {
+                program: {
+                    "rank": int(c_c[uid][program]["rank"]),
+                    "explained_variance_ratio": float(
+                        c_c[uid][program]["explained_variance_ratio"]),
+                    "threshold": float(c_c[uid][program]["threshold"]),
+                }
+                for program in programs
+            }
+            for uid in order
+        },
+        "aggregate": aggregate,
+        "supervised_pooled_fits": c_b_fits,
+        "anchor_reproduction": anchor,
+        "c1": {
+            "verdict": c1,
+            "bar": M0C_FLIP_BAR,
+            "rule": "some program p with one of (iforest, pca) macro delta "
+                    ">= +bar and the other <= -bar",
+            "flipped_programs": flipped_programs,
+            "rows": flip_rows,
+        },
+        "c2": {
+            "verdict": c2,
+            "gate": {"macro_gt": M0C_SAFE_MACRO,
+                     "harmed_le": M0C_SAFE_HARMED,
+                     "worst_ge": M0C_SAFE_WORST},
+            "qualified_programs": qualified_programs,
+            "rows": safety_rows,
+        },
+        "side_flag": {
+            "flag": side_flag,
+            "rule": "some cleaning program drops the supervised macro recall "
+                    "by at least %s" % MATERIAL_THRESHOLD,
+            "programs": recall_hits,
+            "rows": supervised_damage,
+        },
+        "preregistered_predictions": predictions,
+        "verdict": {"verdict": verdict, "c1": c1, "c2": c2,
+                    "side_flag": side_flag},
+        "cost": {
+            "llm": 0,
+            "ad_fits": budget.used,
+            "ad_fit_cap": M0C_FIT_CAP,
+            "ad_fits_by_consumer": fits,
+            "forecast_retrains": 0,
+            "mask_fit_policy": "not run this book; #42j artifact read only",
+        },
+    }
+    target = OUT_M0C_SMOKE if smoke else OUT_M0C
+    target.write_text(_json_text(payload), encoding="utf-8")
+    if not smoke:
+        OUT_M0C_MD.write_text(_m0c_markdown(payload), encoding="utf-8")
+    print(json.dumps({
+        "verdict": verdict,
+        "c1": c1,
+        "c2": c2,
+        "side_flag": side_flag,
+        "flipped_programs": flipped_programs,
+        "qualified_programs": qualified_programs,
+        "anchor": anchor.get("status"),
+        "fits": budget.used,
+        "fits_by_consumer": fits,
+    }, ensure_ascii=False, indent=1))
+    print("wrote", target)
+    return 0
+
+
+def _m0c_markdown(payload: Mapping[str, Any]) -> str:
+    programs = list(payload["held_fixed"]["menu"])
+    cleaning = [p for p in programs if p != "identity"]
+    aggregate = payload["aggregate"]
+    arms = [("c_a_iforest", "C-a IForest (per-series, unlabeled, w20)"),
+            ("c_b_supervised", "C-b supervised v3 (pooled, labelled, w49)"),
+            ("c_c_pca", "C-c PCA rank-3 (per-series, unlabeled, w20)")]
+    lines = [
+        "# #43 M0-C -- three-Consumer processing-utility response matrix",
+        "",
+        "evidence class: MECHANISM (development, EXPOSED 24). "
+        "41 sealed series unread.",
+        "",
+        "## Verdicts",
+        "",
+        "- C1 **%s** (flipped programs: %s)" % (
+            payload["c1"]["verdict"],
+            payload["c1"]["flipped_programs"] or "none"),
+        "- C2 **%s** (qualified programs: %s)" % (
+            payload["c2"]["verdict"],
+            payload["c2"]["qualified_programs"] or "none"),
+        "- side flag **%s** (programs: %s)" % (
+            payload["side_flag"]["flag"],
+            payload["side_flag"]["programs"] or "none"),
+        "",
+        "Claim scope: %s" % payload["claim_scope"],
+        "",
+        "## Aggregate by Consumer",
+        "",
+    ]
+    for arm, title in arms:
+        lines.extend([
+            "### %s" % title,
+            "",
+            "| program | macro F1 | macro Δ | macro recall Δ | harmed | "
+            "improved | worst |",
+            "|---|---|---|---|---|---|---|",
+        ])
+        for program in programs:
+            row = aggregate[arm][program]
+            lines.append("| %s | %.6f | %+.6f | %+.6f | %d | %d | %+.6f |" % (
+                program, row["macro_eval_f1"], row["macro_eval_delta"],
+                row["macro_recall_delta"], row["harmed"], row["improved"],
+                row["worst"]))
+        lines.append("")
+    lines.extend([
+        "## Per-program flip contrast (C1)",
+        "",
+        "| program | C-a IForest macro Δ | C-c PCA macro Δ | "
+        "C-b supervised macro Δ | flip |",
+        "|---|---|---|---|---|",
+    ])
+    for row in payload["c1"]["rows"]:
+        lines.append("| %s | %+.6f | %+.6f | %+.6f | %s |" % (
+            row["program"], row["iforest_macro_delta"],
+            row["pca_macro_delta"], row["supervised_macro_delta"],
+            "YES" if row["flip"] else "no"))
+    lines.extend([
+        "",
+        "## Reconstruction safety gate (C2)",
+        "",
+        "| program | macro Δ | harmed /%d | worst | qualified |" % len(
+            payload["held_fixed"]["roster"]),
+        "|---|---|---|---|---|",
+    ])
+    for row in payload["c2"]["rows"]:
+        lines.append("| %s | %+.6f | %d | %+.6f | %s |" % (
+            row["program"], row["macro_eval_delta"], row["harmed"],
+            row["worst"], "YES" if row["qualified"] else "no"))
+    anchor = payload["anchor_reproduction"]
+    lines.extend([
+        "",
+        "## Anchor reproduction (#42g-b C-a)",
+        "",
+        "- status: **%s**" % anchor.get("status"),
+        "- pairs compared: %s, bitwise equal: %s, max abs gap: %s" % (
+            anchor.get("pairs_compared"), anchor.get("pairs_bitwise_equal"),
+            anchor.get("max_abs_gap")),
+        "",
+        "## Pre-registered predictions",
+        "",
+        "| arm | prediction | held |",
+        "|---|---|---|",
+    ])
+    for row in payload["preregistered_predictions"]:
+        lines.append("| %s | %s | %s |" % (
+            row["arm"], row["prediction"], "YES" if row["held"] else "NO"))
+    cost = payload["cost"]
+    lines.extend([
+        "",
+        "## Budget",
+        "",
+        "- LLM: %d; forecasting retrains: %d" % (
+            cost["llm"], cost["forecast_retrains"]),
+        "- AD fits: %d / %d -- %s" % (
+            cost["ad_fits"], cost["ad_fit_cap"],
+            ", ".join("%s=%d" % (k, v)
+                      for k, v in cost["ad_fits_by_consumer"].items())),
+        "- mask fit policy: %s" % cost["mask_fit_policy"],
+        "",
+        "## Cleaning programs read",
+        "",
+        "menu: %s (cleaning: %s)" % (programs, cleaning),
+        "",
+    ])
+    return "\n".join(lines) + "\n"
+
+
 def main() -> int:
     argv = sys.argv[1:]
     if "--deploy-fast-only-smoke" in argv:
@@ -6825,6 +7483,14 @@ def main() -> int:
         # #42i Part C: feedback-unit selection is locked to menu_size=5
         # because U0's sol anchor reproduces only under the 5-program menu.
         return feedback_unit_v1(menu_size=5)
+    if "--m0c-consumer-flip" in argv:
+        # #43 M0-C.  --m0c-limit=N restricts the roster for the smoke run
+        # and writes to the smoke artifact; the full run is N = 24.
+        roster_n = L1_ROSTER_N
+        for token in argv:
+            if token.startswith("--m0c-limit="):
+                roster_n = int(token.split("=", 1)[1])
+        return m0c_consumer_flip_v1(limit=roster_n)
     if "--menu-headroom-v1" in argv:
         # #42i Part C: --menu-size=6 opts in to the six-program census that
         # includes the fit policy.  Default 5 keeps legacy behaviour.  Six
@@ -6870,7 +7536,7 @@ def main() -> int:
           "[--fit-cap=N] | --evaluate-lifecycle-fixture | --replay-skill-v2 "
           "| --source-expansion-v3 | --accept-skill-v3 "
           "| --pattern-discriminator-v1 | --deploy-fast-only-smoke "
-          "| --l1-static-vs-a3")
+          "| --l1-static-vs-a3 | --m0c-consumer-flip [--m0c-limit=N]")
     return 2
 
 
