@@ -804,6 +804,30 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **主线自我更正 + #44a-r2 发出**:先前否 Yahoo 注入的理由("held-in 事件稀")仅适用 Support 窗,不适用 eval 读出——**r2 = 正控场搬回 Yahoo 几何**:EXPOSED 24 held-in 注入已知点尖峰(per-series 6×MAD,率 {1%,3%},seed 固定,拷贝走 _scratch run-id,原件零触),三臂 natural / +inject / +inject+oracle-mask(复用 mask fit-policy 机械),读出 = development_exposed_eval 真实事件 F1(配对消真实异常底噪);邻接几何 + 已验 Consumer + 同终考判官;B1 同安全门;B2(若过)Support 信号用注入已知位置 + 反馈窗真标签(事件饥饿因注入自解);非饱和预门(clean 臂旗标率中位 <30% 断言)。fit ≤180、0 LLM。**#44b 设计随之改良**:双侧考可单场化——同 Yahoo 域内"注入序列该动 / 干净序列该停",同一 Consumer 同一契约,纯底物条件化对照,科学上更紧。
 
+### 主线重定向裁定(用户 + sol,主线自认偏移):正向迁移 = 主线,弃权 = 约束与副读数;#44a 升格为 AD 最后资格门并补法定程序臂;M1a/M1b/41 终考冻结待门;分类切片启动设计(2026-08-25 00:1x,主线)
+
+**偏移自认**:M0-C 双阴性后,主线把"弃权结局"从保险升格为实际路线(M1a/M1b/41 终考全按弃权框架预冻结)——用户质询成立,sol 裁定采纳:**安全是正向能力的约束(有效适配收益 + harm 不超限 + 不适用时 abstain),不是主线替代品**;"没有有效适配 → 把 abstain 升格为主要成果"不可承担有效迁移主张。AD 负结果保留为边界案例;弃权保留为副能力。
+
+**#44a 升格为 AD 最后资格门(sol 三链条件采纳)**:必须依次证明 (i) 注入缺陷伤害真实 delayed utility;(ii) **Agent 可执行的合法 Workflow**(非 oracle)能恢复 utility——oracle-mask 仅证机制,evaluator 独知位置的修复不算,缺法定动作仍 = Program Supply gap;(iii) held-in Support 预测独立 delayed 恢复方向。**在跑的 #44a-r2 收口时补法定程序臂**(iqr/mad 于注入底物,≈96 fits 附录;预注册预测:点尖峰注入正是此二算子的机制对题——若转正,现役菜单在"真污染场"即有法定正解,无需第七算子)。**硬分流**:三链全过 → AD 保留为正向能力切片(注入开发场上做 Target-local Skill → A5/A3);oracle 有效而法定无效 → 只许设计**一个**机制不同的 AD-native Workflow,禁批量扩菜单;效应/反馈不过 → **暂停当前 AD family**,分类切片接主线。**M1a/M1b 与 Yahoo-41 终考冻结待门**:缺正向 Program headroom 时不得继续(弃权主线支出停止);41 条继续封存。
+
+**主线恢复图(sol 版采纳)**:核心 = **A5 vs A3 正向迁移**——多 Source 产 Positive/Negative/Conflict Episode → Slow 整合为带 Context 边界的 Skill → 新 Target 上 A3(空)vs A5(带审计 Skill)同预算对决;承重读数 = 首个有效 Target-local Skill 试错成本 / LLM+fit 消耗 / delayed utility / harm / held-out 终态(预测线 FRESH_A5_DELIVERS 69 vs 123 为既有正证)。**分类切片启动设计**(与 #44a 收口并行,设计零支出):一个 Consumer × 一个可读缺陷 × identity + 1–2 个 Workflow;先证 Workflow 真改善下游,再进 Harness;资格门 = 有可读质量缺陷(禁干净 z-norm UCR);候选形态 = 任务内双契约翻转 + Impute4TSC 式缺测正控。**扩算子纪律重申**:找有效算子是对的(无 headroom 时修 Program Supply 属正当),错的是在已曝光 24 条上迭代加算子;正确路径 = 冻结缺陷 → 机制匹配族 → identity+至多两候选 → 无 Agent 确认 headroom → Support 可预测 → Harness 学习 → 未参与选择的数据验收。
+
+### #44a-r2 收口 = C34:INVERTED_EFFECT(注入抬分;机制 = contamination 分位阈值,已直接测量);**既有 AD 读数获竞争解释**;阈值审计探针提案;今夜停(2026-08-25 00:2x,主线)
+
+**判定采纳**:PROGRAM_CONSUMER_LAYER_FAULT_CONFIRMED + 副判 INVERTED_EFFECT_OBSERVED;执行者**拒绝沿用该分支预注册理由**("iforest 读不出污染"被证伪——Consumer 读得极好,只是反号响应)的处理追认为范例(分支名成立、理由证伪必须自报,禁静默复用)。仪器全绿:非饱和预门过(eval 旗标率中位 0.134 vs NOAA 0.877)、natural 臂与 #42g-b 锚 48/48 逐位同、四次完整执行读数全同、eval 零注入零处理、24 份 work CSV SHA 不变、预算 130/180、两率全报。
+
+**核心事实**:注入 6×MAD 尖峰使 eval 宏 F1 0.3227→0.4467(1%)/0.5694(3%),剂量单调;oracle 遮罩还原(0.3252/0.3259)。**机制已直接测量非推断**:masked 与 injected 臂共享标准化常数,森林 offset_ 隔离拟合矩阵贡献——injected 臂阈值 23/24 序列更严(+0.0369→+0.0486 随剂量),遮罩后回 natural 0.005 内;`IsolationForest(contamination=0.1)` 把阈值定为训练分数 10% 分位,训练块近净时该分位落在正常窗之间 → Query 撕碎(natural 臂 1.6 真事件报 10.7,精度 0.2525/召回 0.8347)。注入非"好数据":injected 臂召回反降(0.83→0.72),得分升纯因误报塌。**在此 Consumer 上,任何改变训练离群率的训练侧操作首先是阈值旋钮,其次才关数据质量。**
+
+**竞争解释入册(载重,决策相关)**:M0-C 五程序全部**移除**训练离群点、四清洗全负;本书**添加**离群点、读正且剂量单调——符号恰为阈值机制所预测。"五清洗对该 Consumer 有害" vs "五清洗把失准阈值推向坏方向"**观测上不可区分**,仅后者关乎数据质量。波及范围:本线 Yahoo cohort 全部 AD 效用读数(#42g-b/#42h/#42j/M0-C)均透过该失准取得;**PCA 臂同类伪影候选**(其阈值 = 训练重构残差分位,清洗压残差散布 → 阈紧 → 误报升,同向机制);**监督臂不受波及**(正例行侵蚀 369→184 系独立测得的数据侧机制,任务级条件化主张经此臂仍立)。M0-C 数字不被推翻(逐位可复现),被质疑的是**它们测的是什么**;"identity = 本 cohort 就绪正解"的停止裁定获竞争解释——可能仍成立,但须审计后重述。`contamination=0.1` = 无人审计的自由参数,杠杆(+0.247)三倍于全菜单最大效应(−0.092)。
+
+**阈值审计探针提案(待 sol/用户,今夜不派)**:对已有响应矩阵做**阈值无关重读**——AUPRC/排序质量读数(只需分数不需阈值)重算 iforest 与 PCA 两臂五程序 × 24(≤240 fits,确定性 0 LLM):若阈值无关读数下清洗转中性 → M0-C 负读数系阈值伪影,claim 重写("清洗移动失准阈值",方法论贡献);若仍负 → 数据质量伤害独立成立,原 claim 保留并加固。**定位 = 证据完整性审计**(审计判官,非探 headroom),不违停止探针令与主线重定向;它决定 #46 的 AD 证据链怎么写,优先级最高。**书外发现入册**:役中 mask fit-policy 不修标准化(常数取自整块);r03 遮罩达训练窗 48%(点污染需点级修复原语,窗级遮罩钝);real_1/real_28 在邻接几何下仍饱和(旗标率至 0.984);Consumer 失准(精度 0.25)系本线 Yahoo 几何上的普适事实,比 #44a 饱和发现更重。代码 d7b3b1e;Part 0 = ae8821b;r2 报告未 commit(下书 Part 0 收)。**今夜停机**:审计探针 + 分流重裁 + 分类切片设计,明早连同 C34 一并交 sol。
+
+### sol 七点主线方向采纳定序;三线并发派发(2026-08-25 00:5x,主线)
+
+**七点全采纳**:(1) AD family 收口冻结——只许最小 AUPRC/阈值混杂证据审计;禁弃权主线复活、禁扩菜单、禁读 Yahoo 41;(2) 下一步 = 本地已曝光 Forecasting 数据上当前代码形态的 **A5 vs A3 development replay**(held-in 总预算内多轮;freeze 后 held-out Fast-only 一次计分;验证 Source Skill → Target 校准 → Target-local Skill → frozen deployment 完整正向链;禁下载/重选数据/扩仪器);(3) replay 过后启动 Classification 正向切片,先 Grok 限时调研 + 只盘点既有 40 UCR zip 与 controlled classification 资产,不下载;(4) 分类先无 Agent 资格门(一 Consumer × 一缺陷 × identity+≤2 Workflow;须证合法 Program headroom + Support→delayed 方向可读);(5) 资格过后才 Source Episode→Skill→Target A5/A3 同预算→freeze→held-out(主读数:首正成本/LLM+fit/delayed utility/harm/held-out 终态);(6) 安全弃权仅约束;禁新 SHA 体系/复杂 Gate/Schema/Runner 平台/全仓清债;(7) 三个用户检查点 = Forecasting 主链无法复现 / Classification 无合法 headroom / 需换 Task-Consumer-缺陷 family 时停报,其余主线自主。**模型路由(用户令)**:多数任务 grok 4.6 fast 提速,攻坚才 Opus;遇问题可用 subagent 调研 Agent 文件夹内其他任务做法与领域论文。
+
+**三线并发派发**:(A) **#44-audit AD 证据审计**(grok):iforest+PCA 两臂五程序 × 24 阈值无关重读(eval 区 AUPRC/平均精度,只需分数不需阈值),≤280 fits、0 LLM;判定 THRESHOLD_ARTIFACT_CONFIRMED(清洗 AUPRC 宏 Δ 全落 ±0.005 内)/ DATA_HARM_CONFIRMED(仍 ≤−0.005)/ MIXED / INSTRUMENT_UNREADABLE;监督臂不重跑(机制独立)。(B) **#45-Frep Forecasting A5/A3 开发 replay**(Opus):复刻 FRESH_A5_DELIVERS 配置于已曝光开发数据 + 当前 HEAD;A3 = 空 Source h0,A5 = +冻结 Source Skill,同预算;判定 CHAIN_REPRODUCED / CHAIN_BROKEN(stage)(= 用户检查点①停报)/ A5_NO_ADVANTAGE / INSTRUMENT_UNREADABLE。(C) **CLS-survey 分类调研**(grok,限时零仓写,提前并行——纯研究不违序):分类 TS 数据质量/反馈信号文献 + 40 UCR zip 名录级盘点(禁开内容)。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
