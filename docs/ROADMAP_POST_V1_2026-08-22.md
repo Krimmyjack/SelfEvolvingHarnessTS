@@ -3,22 +3,23 @@
 本文件是 V1 里程碑(v7 九环闭合)之后的总体安排,供主线、执行 Agent 与外审共同使用。
 逐轮台账见 `docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md`(canonical,遇冲突以台账为准)。
 当前系统形态、证据切面与数据曝光的短表见
-`docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`。
+`docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`；Task/Consumer 相对的数据质量与
+反馈语义见 `docs/DATA_QUALITY_AND_FEEDBACK_MODEL.md`。
 
 ## 当前活动路线（2026-08-24；覆盖下方旧“立即待办/Phase S 下一步”措辞）
 
-- #42j 已以 C31 `FIT_POLICY_NOT_QUALIFIED` 收口：mask fit-policy 未过安全三门，
-  `f1_pooled` 只保留为未授权的 development 线索；当前 IForest × 六候选/既测反馈
-  切片停止扩建，不新增第七程序或 U4/U5。
-- #42k/#42k-b 已完成最小多任务接线、fail-closed、H0 lock 和 Runner 键兼容修复。
-  当前 M0 前置门为 #42l：修正合法弃权被旧测试/旧信封错报为失败的仪器语义；
-  该门不构成方法进展。
-- #42l 后进入 M0：固定 AD 数据、split、Program 与 Judge，只改变 Consumer
-  （IForest 参照、AE/重构族、监督事件分类族）测效用反号；M0 证现象，M1 才考
-  同一 Harness 能否读取 Consumer Context 并改变 Workflow。
-- 对 M0 中有可用 headroom 的 Consumer，先在已曝光 24 条上完成 Target-local
-  多轮生命周期正控与 replay，再冻结管线打开 Yahoo 剩余 41 条；报告 Static/A3，
-  且只有具备合格累积知识时才加入 A5，最终系统仍以 A5 为产品形态。
+- #42j/#42l 已收口，#43 M0-C = C32：Yahoo 已曝光 24 条 × 三个 AD Consumer ×
+  当前五清洗程序的 12 个宏效用均为负，IForest/PCA 预注册翻转未确认，PCA 无安全
+  headroom。该结果只关闭这一数据/Consumer/菜单组合的继续探针；不新增第四
+  Consumer、第七程序或 U4/U5，也不得外推为 AD 无优化空间。
+- 当前下一门为 #44a AD held-in 反馈正控：固定一个 Consumer，只注入一种已知训练
+  污染，先分别验证污染造成 delayed 伤害与 repair 恢复真实任务效用，再验证
+  Support 是否预测该恢复。它是 development 正控，不构成自然 Yahoo 能力证据。
+- #44a 通过后按单假设定序：#44b 只考 correct/neutral/shuffled 合同的 Context
+  因果；M1b 在正确合同下考双侧多轮生命周期（可修时形成正 Skill、不该动时
+  abstain），随后才可冻结管线打开 Yahoo 剩余 41 条。
+- 终考报告 Static/A3；只有存在经审计且确实改变行为的积累知识时才加入 A5。
+  A5 仍是产品形态，A3 与 Static 只是归因消融。
 - 下方 #26/#27、Phase S 和 C23 状态段保留作历史，不得用于签发当前任务。
 
 ## 0. 已入账状态(带工件指针,不得复述超出其口径)
@@ -570,6 +571,29 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   **#42k/#42k-b = CODE_LANDED**(四修复零回归;lock 重生成
   内容 SHA 未变;两 runner 键铸造;树 689P/14F/0E,44 项
   lock 掩盖失败清零,揭出弃权错判族 = pre-M0 阻断)。
+  **#42l 系列收口**(6 根因全测试侧,弃权语义无恙;解释器
+  伪影更正后有效树况 696P/7F/0E;LOCALIZATION 集成路由
+  结构性死亡 → xfail 封存记债)。**#43 M0-C = C32 双阴性**:
+  12 读数全宏负(最正 −0.00306),翻转与 PCA 可行动性均否;
+  文献先验(重构族清洗正)证伪;锚复现逐位零差。条件化
+  证据重定位:任务级翻转(forecast 益 vs AD 三族害)已立;
+  AD 内条件化显形于机制(边界变形/训练证据侵蚀/重构失真)。
+  **停止正效应探针**(第四 Consumer 与第七程序同禁)——
+  identity = 本 cohort × 本菜单就绪正解,预冻结弃权分支
+  生效:**M1a 合同因果 → M1b replay → 41 条弃权框架终考**。
+  **sol 文档审读修正(2026-08-24 23:0x)**:原序缺"反馈有效性
+  门"——插入 **#44a AD 反馈正控**(0 LLM 确定性:held-in 注入
+  一种已知污染 → identity vs 已知 repair → 先证 delayed
+  event-F1 真升 → 再查 Support 信号预测力;底物候选 T1 注入
+  基建优先;四层分流树定 first-fault)。**总序定稿:#44a →
+  #44b 合同/Context 因果考(correct/neutral/shuffled,不与生命周期混刀)
+  → M1b Agent 双侧多轮 replay(正控场该动会动 + Yahoo development
+  场该停会停;Memory 能表达并保留 Positive/Negative/Conflict/Abstain,
+  但禁为填类别强造自然结果)→
+  41 条 sealed 终考**。弃权 = Risk 能力非唯一故事;短正典
+  docs/DATA_QUALITY_AND_FEEDBACK_MODEL.md 建立;
+  Data_Quality_Disgussion.md 定位研究档案;AGENTS.md 状态
+  陈旧提请 sol 更新。
   **#42l 在飞**(弃权错判族修复;门 = 点名失败全绿 + 零新增
   + 方法代码零非预期变化)。**sol M0 审核采纳,总序定稿**:
   #42l → **#43 M0-C consumer-flip**(0 LLM,EXPOSED 24,
