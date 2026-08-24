@@ -5,6 +5,22 @@
 当前系统形态、证据切面与数据曝光的短表见
 `docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`。
 
+## 当前活动路线（2026-08-24；覆盖下方旧“立即待办/Phase S 下一步”措辞）
+
+- #42j 已以 C31 `FIT_POLICY_NOT_QUALIFIED` 收口：mask fit-policy 未过安全三门，
+  `f1_pooled` 只保留为未授权的 development 线索；当前 IForest × 六候选/既测反馈
+  切片停止扩建，不新增第七程序或 U4/U5。
+- #42k/#42k-b 已完成最小多任务接线、fail-closed、H0 lock 和 Runner 键兼容修复。
+  当前 M0 前置门为 #42l：修正合法弃权被旧测试/旧信封错报为失败的仪器语义；
+  该门不构成方法进展。
+- #42l 后进入 M0：固定 AD 数据、split、Program 与 Judge，只改变 Consumer
+  （IForest 参照、AE/重构族、监督事件分类族）测效用反号；M0 证现象，M1 才考
+  同一 Harness 能否读取 Consumer Context 并改变 Workflow。
+- 对 M0 中有可用 headroom 的 Consumer，先在已曝光 24 条上完成 Target-local
+  多轮生命周期正控与 replay，再冻结管线打开 Yahoo 剩余 41 条；报告 Static/A3，
+  且只有具备合格累积知识时才加入 A5，最终系统仍以 A5 为产品形态。
+- 下方 #26/#27、Phase S 和 C23 状态段保留作历史，不得用于签发当前任务。
+
 ## 0. 已入账状态(带工件指针,不得复述超出其口径)
 
 | 结论 | 口径上限 | 工件 |
@@ -147,9 +163,11 @@ NOAA 新区域不得冒充第三域。v2 为已冻结正资产,随新域到来�
 
 ## 3.5 范围锁定与 Phase T/M/X(2026-08-22,取代上文 Phase S 的"下一步"地位)
 
-**项目范围(用户裁定)**:数据形态限定单变量;Task/Consumer、模型、Domain、
-Pattern 全部可变。质量标准随任务/模型/模式变化是第一性命题;forecasting 线
-的全部已入账证据只覆盖一个 family。
+**项目范围(用户裁定)**:当前 Phase T/M 的自然验证切片限定单变量，避免在同一轮
+同时引入多变量 Adapter；这不是最终 Harness 的永久数据形态边界。多变量支持在
+当前单变量纵向链路跑通后再做最小适配。Task/Consumer、模型、Domain、Pattern
+全部可变；质量标准随任务/模型/模式变化是第一性命题，forecasting 线的全部已
+入账证据只覆盖一个 family。
 
 **主张架构 v2(2026-08-23,用户 + sol 会审采纳;取代"A5 在陌生域更快找到
 正解"式单条总主张,台账同日节为准)**:总主张 = 构建面向多 Task、多
@@ -221,7 +239,7 @@ sol 核);claim 须显式报告反馈窗份额。#42g 现行 = 70/30 外墙
 第一版组件实验(反馈窗份额 40%),不中途改;后续选项 = 剩余
 41 条 sealed 序列预注册更小份额(sol 20% 方案备案)确认,或
 下一新域冻结三分协议;已开标签 24 条不得换比例重称 fresh。
-**当前执行锁(C23 后,2026-08-23)**:#42e1 已以
+**历史执行锁(C23 后,2026-08-23；已由文件顶部当前活动路线取代)**:#42e1 已以
 `RISK_PRIOR_EFFECT_AMBIGUOUS` 收口,v3 归档,当前 #42g 的 AD L2
 关闭且不得通过修改 v3、重抽 AdExchange 或追加 Source cohort 重开。该裁定只
 关闭 v3 进入本次考场的资格,不关闭完整系统中的 A5/累积知识角色。下一组件门
@@ -549,6 +567,21 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   经审计弃权候选)。**#42k 接线修复书直派 Opus 5**(候选帽
   v2 + fail-closed 三处 + T6 context 携带 + 过时测试对齐);
   其后 = M0 三 Consumer 设计书。41 条不动。
+  **#42k/#42k-b = CODE_LANDED**(四修复零回归;lock 重生成
+  内容 SHA 未变;两 runner 键铸造;树 689P/14F/0E,44 项
+  lock 掩盖失败清零,揭出弃权错判族 = pre-M0 阻断)。
+  **#42l 在飞**(弃权错判族修复;门 = 点名失败全绿 + 零新增
+  + 方法代码零非预期变化)。**sol M0 审核采纳,总序定稿**:
+  #42l → **#43 M0-C consumer-flip**(0 LLM,EXPOSED 24,
+  fit≤280:PCA 仪器门[窗20/full-SVD/固定rank/训练残差阈值/
+  fixture 先行] + 三 Consumer 响应矩阵[iforest 每序列 120 /
+  监督 v3 pooled 5 / PCA 每序列 120];主对比 iforest vs PCA,
+  监督系辅助;双独立判定 FLIP_CONFIRMED 与 RECONSTRUCTION_
+  HEADROOM_QUALIFIED,仅后者解锁 M1)→ M1a Context 因果
+  (correct/neutral/shuffled)→ M1b 多轮生命周期 replay →
+  41 条 sealed Static/A3/(合格时 A5)。Phase M 两线分工:
+  本线 = M0-C,另线 = M0-Obs(a/b),M0-C 禁改 public_features
+  等四处;主张口径 = "处理效用随 Consumer protocol 改变"。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下

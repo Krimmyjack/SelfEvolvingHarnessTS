@@ -730,6 +730,48 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **路由裁定**:形式状态 = mask 未过 + 无信号获授权 → **sol 双无效停止规则生效:不在 IForest 上造第七程序/U4,转 M0**。iforest 线收束为"经审计弃权候选",待 41 条终考设计(弃权四条件适用:须检索引用合法 Scope 知识、改变行为、省试错、消融受伤)。**#42k 最小接线修复书直派**(五件:Part 0 提交 #42j 交付 + t6_42h 侧效应 + docs;anomaly context 候选帽 v2[适应期 2];fail-closed 三处[method:239 畸形即 raise、online_loop:339/354 直读 task_type、:584 group card 从 TaskSpec 生成];T6 行为路径 context 携带;过时测试对齐文档语义,三分 Receipt 记延迟债;H0 lock 不动、拒跑才报)。**工作流变更首录**:用户授权主线直接分发子代理执行——难度低 → grok 4.6,难度高 → Opus 5,长任务同 session 复用缓存;#42k 系 methods/ 窄修有生命周期破坏风险 → Opus 5。执行方零 spawn 纪律不变。
 
+### #42k 收口裁定:四修复落地零回归;INSTRUMENT_UNREADABLE 归因既有 H0 lock 债 → 授权一次机械重生成;t6_42h stub 覆盖 = 证据损失裁恢复 HEAD;B1 阻断修 runner 不放宽(2026-08-24 16:2x,主线)
+
+**执行事实**:Part 0 = a26f1e7(#42j 交付 + docs,4 文件 +2120);代码 = c44dea0(8 文件 +184/−22):候选帽 v2(maximum_candidates=2,constraint_id anomaly-fixed-aegists-iforest-v2,全仓无 v1 残留)、B1 畸形键 raise INVALID_TASK_SCOPE(None 走文档化默认)、B2 两处直读 task_type、B3 group card task_kind 从 request.task_spec 闭包生成、Part C 三处 PreparationRequest 全携带单例 anomaly_task_context_v1 + SHA 断言 + 3 新测试、Part D 过时测试对齐文档语义 + 注释。全仓 pytest:改动后 645P/49F vs HEAD 基线 641P/50F,**新增回归 0,修复既有失败 1**;目标窄跑 80P。0 LLM / 零数据读取 / 41 未触 / methods/ 仅书内三处。
+
+**判定裁定**:执行者报 INSTRUMENT_UNREADABLE(pytest 中 "snapshot lock mismatch" 100 次)——归因核实为**既有仪器债**(h0 目录相对 HEAD 干净,基线同败),非本书引入;sol 站规"仅在现役 Runtime 拒跑时机械重生成一次"触发条件已到,**授权重生成**(须验证 harness_content_sha 与旧 lock 一致 = 内容未变仅 bundle 漂移;重生成后判定翻 CODE_LANDED)。
+
+**t6_42h 侧效应改判(证据损失)**:#42j 执行者"内容 byte-exact 仅时间戳/格式差"的自查**对 .md 不成立**——工作副本系 14 行 runner 自动 stub,HEAD(9983e5f)是 89 行完整报告(含 U0 锚、U1 塌缩自报、稀疏表、四单元对照);json 仅 1e-16 浮点重排,承重读数不变。#42k 执行者提交前 diff 复核抓住,未提交、未回滚,处置正确。**裁定:两文件恢复 HEAD 版本;站规新增——runner 重生成工件时禁止覆盖已提交报告路径(重跑输出须走 run-id 隔离路径),锚复现类操作产生的副本一律另存**。
+
+**B1 阻断裁定:修 runner,不放宽闸门**。run_e2_fresh_confirmation.py(:1764-1769,:1858)与 run_e2_local_skill_recall.py(:784-792,:389)把 experience_memory 的 2 段 cell_key 灌进任务硬键字段,违 experience_memory.py:72-76"两键分立不可互换"——正是 fail-closed 要抓的方言病;修法 = 两处改用 task_consumer_key(task_spec) 铸 3 段键。在线主链(online_loop:165)不受影响。**书外发现处置**:online_loop:370 `_scope_now["task"]` 同型 getattr-forecast 隐患,授权按 B2 同法修;methods/h_ref_v02 未跟踪残留使三条架构测试红 + 另线 test_skill_revocation.py 语法错(Python 3.12+ f-string)——均属另一执行线遗留,主线不动,报用户协调;仓根 SelfEvolvingHarnessTS/ 系 Windows Junction(同一文件双路径)注记在案。**续派同一执行者 session(缓存复用):恢复 t6_42h、重生成 lock、修两 runner 键铸造、修 :370,全绿(除另线既有项)后翻 CODE_LANDED。**
+
+### #42k-b 收口 = CODE_LANDED 追认;lock 漂移归因清白;树况 689P/14F/0E;揭出弃权错判族 = pre-M0 阻断项;#42l 诊断书续派(2026-08-24 17:3x,主线)
+
+**CODE_LANDED 追认**(29bed7e lock 重生成 + 93a68ce 三文件 +20/−6)。**F2 lock 归因清白**:harness_content_sha 新旧同值(53b1c803…654f),漂移仅 8 个依赖 SHA,其中 3 个归因 #42k(candidate_verification 注释/task_contract/method)、4 个归因 #42i 及更早(双 schema/operator bundle/registry/fast_agent)——解释了 HEAD 即失配;符合"内容未变仅 bundle 漂移"的放行条件。**F3 亮点**:两 runner 改用 ssi 现役工厂 `_runtime_task_consumer_key`(不新造方言),实测 3 段键正确解析、旧 2 段键仍被 INVALID_TASK_SCOPE 拒绝(B1 未放宽),cohort 信息保留本职字段;F1 恢复经 blob sha 逐字节核验(CRLF/LF stat 假阳性识别正确);F4 :370 已修。**全仓 pytest:645P/49F/9E → 689P/14F/0E,零回归,44 项 lock 失败清零**;耗时 219s→2645s 属预期(58 项测试首次真正执行测试体)。
+
+**剩余 14 项 worktree 隔离归因(零项归因 #42k/#42k-b)**:8 项系**此前被 lock 掩盖的既有缺陷首次可见**——其中 6 项同族(tests/methods/test_ttha_agent 5 项 + minipipe 1 项):`AgentProtocolError: stage_result names the wrong stage`,使本应 ABSTAINED 的路径错判 FAILED;另 2 项 test_f1_forecast_pilot / test_m0_release 断言待诊。3 项架构测试既有;1 项系 methods/h_ref_v02 未跟踪残留(另线);2 项系另线未跟踪测试文件。**主线裁定:弃权错判族 = pre-M0 阻断项**——AD 弃权终考与 M0 行为实验的读数都依赖 ABSTAINED/FAILED 正确区分,**#42l 诊断修复书续派**(同 session):定位 stage 信封错名根因,最小修复 + 零回归,协议语义有歧义即停报。**另线遗留报用户协调**:h_ref_v02 使 1 条架构测试红;test_skill_revocation.py 语法错使无 --ignore 的整仓收集中断;docs 台账文件存在 CRLF stat 假阳性注记。
+
+### sol M0 计划审核全采纳:主张改口径;主/辅对比拆分;双独立判定;M1 拆 a/b;#43 M0-C 命名与两线边界;#42l 门改稳健口径(2026-08-24 18:4x,主线)
+
+**四修全采纳**:(1) 三臂拟合协议不同(iforest 每序列无标签窗 20 / 监督 v3 有标签跨序列 pooled 窗 49 / PCA 每序列无标签窗 20),主张改为**"数据处理效用随 Consumer protocol 改变"**,禁称"只换模型结构";**主对比 = iforest vs PCA**(同 label-free,检验归纳偏置翻转),监督 v3 = 辅助对比(检验监督语义下事件证据必须保留)。(2) 监督 v3 禁逐序列拟合(单序列 held-in 常无正类):沿 T1b 方式,每程序 pooled fit 一次逐序列评分;预算 = iforest 120 + 监督 5 + PCA 120 = 245,帽 280;mask-refit 不再跑,引 #42j 侧道读数。(3) **双独立判定**:CONSUMER_UTILITY_FLIP_CONFIRMED(同程序材料级反号,主判限 iforest vs PCA 对)与 RECONSTRUCTION_HEADROOM_QUALIFIED(PCA ≥1 程序过安全门宏/受害/worst)拆开;仅后者通过才解锁 C-c 生命周期/M1;可能出现"翻转成立但无安全可行动 Workflow"。(4) **M1 拆两问**:M1a Consumer Context 因果(correct/neutral/shuffled → 提案按语义改变)先行,M1b 多轮生命周期 replay(Support→Draft→delayed→Active/撤权→freeze)在后;可共 Runner,禁合成一个判词。
+
+**三问裁定采纳**:① C-c = 确定性窗口 PCA,最小定义冻结——窗 20 与 iforest 几何一致;标准化只用训练底物;full SVD 禁 randomized;固定 rank 禁 Yahoo 扫描;阈值只由训练重构残差定;Query 原始字节不处理;合成 fixture 先行验证(污染移动重构边界 / Query 零接触 / 确定性),不过即 INSTRUMENT_UNREADABLE,禁现场换 rank/阈值;语义只代表"确定性低秩重构族",禁外推 AE/TimesNet。② M0 = EXPOSED 24 上 0 LLM development 机制测量,不留封存确认,41 条零消耗。③ **Phase M 两线分工**:新实验命名 **#43 M0-C(consumer-flip)**,另线记 M0-Obs(a/b)(Observation 几何侧);M0-C 禁改 runtime/public_features.py、test_public_feature_calibration.py、run_e2_m0a_*、另线未跟踪 run_t233_supply_obs_ab.py;M0-C 只新增一个重构 Consumer、一个逻辑 Runner、一份主报告——两线零概念冲突零文件撞车。
+
+**#42l 门改稳健口径**(另线工作树影响剩余失败数):弃"14F→≤6F"数字门,改为**"#42l 点名的失败全部转绿;无新增失败;Runtime/方法代码零非预期变化"**。**总序定稿**:#42l → #43 M0-C(PCA 仪器门 + 三 Consumer 响应矩阵)→ 翻转判定 + PCA actionability 判定 → M1a Context 因果 → M1b 多轮 replay → 41 条 sealed Static/A3/(合格时 A5)。M0-C 书主线已冻结备发,#42l 落地即派。
+
+### #42l 收口:PROTOCOL_AMBIGUITY_STOP 采纳;"同族"前提更正(6 根因全测试侧)= 弃权语义无恙,pre-M0 阻断解除;#7 裁测试侧;#8 押考古;Chronos 缓存环境阻断;#42l-b 续派(2026-08-24 19:4x,主线)
+
+**前提更正(主线自我修正)**:"6 项同族 stage 错名"判断错误——8 项实为 **6 个互不相同根因**,全部为被 lock 染红期间(2026-08-08 空池跳 select、2026-08-13 NaN 填补裁定、2026-08-19 2799d0f repair_level_shift 参数收权、actionability 探测)有意协议变更后**测试未同步**,零代码侧缺陷;"wrong stage" 系 canned 响应错位的次生症状。**载重结论:runtime ABSTAINED/FAILED 语义从未破——弃权错判威胁解除,M0 读数此轴可信。** 2799d0f 自述"51 failures before and after"与 lock 染红互证:**协议变更在红树期落地 = 测试同步盲区**,系 lock 卫生第二笔学费。
+
+**6 修追认**(7254195,+107/−19,全测试侧,零校验放宽);**+10.0 幅度重接空心断言的自报处理追认为范例**(逐点实测算子灵敏度 + 引"无命中→恒等"文档契约 + 断言换 call_count 轴——非放宽,是把空心断言接回被测机制)。树况 694P/9F/0E,本书零回归(stash 隔离法证明);另线并发改动工作区(AGENTS.md/README/4 docs,1 项架构测试自行转绿)注记。
+
+**#7 裁定 = 测试侧**:冻结发布工件系历史证据——姊妹测试明断 runtime_bundle_sha != EXPECTED 为正常,AGENTS.md §7 历史 SHA 保留不迁移;修法 = 断言对齐工件内记录的历史常量(自洽性),内容兼容性由姊妹测试的 content sha 断言继续承担;**冻结发布工件禁改写**。**#8 押考古后裁**:两读法均有档案支撑(SKILL_CONTENT_GAP 与 LOCALIZATION_PROCEDURE_GAP 系 fault_routes.json 并存合法类、LOCALIZATION 分支仍在),缺"翻转时点"——先 git 考古找出植入场景 cause_code 何时/因何提交翻转,再裁测试过时 vs 归类回归,防洗白。**Chronos 环境阻断**:FrozenModelUnavailable(chronos-bolt-small@772f3d25,local_files_only)——主线实查:**钉定 revision 快照目录在默认 HF 缓存中存在**,故非模型丢失,疑快照内文件缺损(同 session OMP libiomp5md 崩溃殃及)或加载路径差异;triage 入 #42l-b(先诊断快照完整性与精确报错;若确缺损,授权按钉定 revision 772f3d25 重取——模型权重系仪器非 outcome 数据)。**cycle.py:1521/1539 静默默认记债**(伪造 no_authorized_minimal_edit,与 getattr-forecast 同型;本轮两条经核系 fixture 真实返回)。repair_level_shift 宽度非单调灵敏度特征登记。**序:#42l-b(小书:#7 修 + #8 考古 + Chronos triage)→ #43 M0-C(书已冻结)。**
+
+### 用户站规:验证经济学(2026-08-24 21:0x,用户裁定,主线记录)
+
+**验证分级,关注承重点,不为每个小修跑全仓**:(1) 小修(测试对齐/单点修复类)只验目标测试与直接受影响模块;(2) 全仓 pytest 只在**相关修改批次结束后**统一跑,最多一两次,不逐书跑;(3) 涉及 production 代码(如 first-fault 路由)的修改仍须跑相关模块 + 下一实验的 smoke;(4) 简单执行类任务(Part 0 提交、文档提交、机械小修)派 grok 4.6 提速,复杂/协议承重任务仍走 Opus 5。适用即刻生效(#42l-b 已按旧规完成,不受影响);#7 目标测试过即可;#8 考古必须完成——若仅旧测试,局部验证即结;若需改 production 路由,相关模块 + M0-C smoke。
+
+### #42l-b 收口 = CODE_LANDED;解释器伪影更正(有效树况 696P/7F/0E);#8 裁 fixture 侧修;两站规;#42l-c 派 grok、#43 M0-C 派 Opus(2026-08-24 21:1x,主线)
+
+**CODE_LANDED 追认**(f612183,+25/−1):#7 按读法一修——断言对齐工件历史常量,且补 `f1_runtime_bundle_sha != historical_m0_runtime_bundle_sha`(更贴工件真实主张:"F1 重绑 runtime 而 authoring content 未动");冻结工件零改写(提交后复验);内容兼容性由姊妹断言继续承担未削弱。**解释器伪影更正(执行者自报)**:#42l 的全仓计数(694P/9F)与"Chronos 缓存失效"归因**作废**——网络中断重启丢 conda activate,pytest 跑在 base Anaconda(无 chronos-forecasting,torch/transformers 版本偏离 manifest);**有效数字 = 696P/7F/0E vs 基线 689P/14F,零回归**;Chronos 快照从未缺失(config 1121B + safetensors 182MB 俱在,HF 环境变量全净),模型未重取(授权前置"文件缺损"不成立,处置正确);OMP 冲突同源 base 环境。**站规二条**:(1) 每次 pytest/脚本运行打印并核验解释器路径;(2) chronos.py:140 宽 `except Exception` 包装记债——ImportError/ModuleNotFoundError 应透出原文,否则环境漂移一律误报成模型问题。
+
+**#8 裁定 = fixture 侧修(保路由覆盖)**:考古采信——翻转提交 2799d0f(worktree 二分实跑:父提交 1 passed / 该提交 1 failed 与今日逐字同;规则侧 git -S 证 first_fault.py 自引入未动、fault_routes 未动、该提交文件清单零 feedback/router;产出侧 failure_patterns 证植入的错误区域仍在生效、localization 仍 miss,但候选在 intrinsic 语义下于该 fixture 退化 no-op → CANDIDATE_SUPPLY_GAP 抢先,归因链走不到 LOCALIZATION)。**裁定理由**:该测试的目的是覆盖 LOCALIZATION_PROCEDURE_GAP → bootstrap PATCH 这条**仍在役**的路由;对齐期望 = 静默丢覆盖。修法 = fixture 场景改为在 intrinsic 语义下产生真实修改(参照 #42l +10.0 幅度范例),使 localization miss 重归 first fault;production 零改动;按用户验证经济学局部验证即结。**2799d0f 教训入册**:红树期行为性变更有未记账影响面(提交信息只记 actionable pool 6→7,实际静默改变 minipipe first-fault 归属并断 3 处测试)。worktree prune(仅清失效元数据)透明记录。**派发**:#42l-c → grok 4.6(fixture 修 + 局部验证 + docs 提交);#43 M0-C → Opus 5 新 session(书已冻结:PCA 仪器门 + 三 Consumer 响应矩阵,fit≤280,0 LLM,验证按经济学限 fixture 门 + 自身矩阵 + 新模块单测)。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
