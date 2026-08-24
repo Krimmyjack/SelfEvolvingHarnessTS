@@ -26,7 +26,10 @@ def test_canonical_task_sha_and_semantics():
 #   * the anomaly_events vocabulary constant carries its pinning comment
 #   * anomaly_task_context_v1 wires spec + contract + deployment_constraints
 #   * deployment_constraints pin a single Consumer (fixed:aegists_iforest_v1)
-#     with maximum_candidates=1 and maximum_modified_fraction <= 0.20
+#     with maximum_candidates=2 (#42k Part A: the held-in adaptation window
+#     explores at most two non-identity probes; the frozen single Workflow in
+#     held-out deployment is a protocol fact, not a candidate cap) and
+#     maximum_modified_fraction <= 0.20
 #   * the context round-trips through to_dict and survives parse_json_document
 #   * both JSON schemas accept the three new vocabulary tokens
 #   * red line: the contract's to_dict has zero Pattern->Program fields
@@ -118,7 +121,8 @@ def test_anomaly_task_context_wires_spec_contract_deployment():
     assert ctx.quality_contract.objective == "preserve_anomaly_evidence"
     assert ctx.deployment_constraints.model_policy == "fixed"
     assert ctx.deployment_constraints.fixed_downstream_model_id == "fixed:aegists_iforest_v1"
-    assert ctx.deployment_constraints.maximum_candidates == 1
+    assert ctx.deployment_constraints.constraint_id == "anomaly-fixed-aegists-iforest-v2"
+    assert ctx.deployment_constraints.maximum_candidates == 2
     assert ctx.deployment_constraints.maximum_modified_fraction <= 0.20
 
 
@@ -229,15 +233,16 @@ def test_anomaly_contract_red_line_holds_under_dict_walk():
 
 def test_anomaly_deployment_constraints_pin_a_single_consumer():
     dc = deployment_constraints_v1(
-        constraint_id="anomaly-fixed-aegists-iforest-v1",
+        constraint_id="anomaly-fixed-aegists-iforest-v2",
         fixed_downstream_model_id="fixed:aegists_iforest_v1",
-        maximum_candidates=1,
+        maximum_candidates=2,
         maximum_modified_fraction=0.20,
     )
     assert dc.model_policy == "fixed"
     assert dc.fixed_downstream_model_id == "fixed:aegists_iforest_v1"
-    assert dc.maximum_candidates == 1
+    assert dc.maximum_candidates == 2
     assert 0.0 <= dc.maximum_modified_fraction <= 1.0
+    assert dc == anomaly_task_context_v1().deployment_constraints
 
 
 def test_anomaly_context_keeps_vocabulary_exposed_in_module():

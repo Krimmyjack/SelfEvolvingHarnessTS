@@ -230,13 +230,21 @@ def _task_scope_of_episode(episode: object) -> tuple[str, str, str]:
     """T5 #41 A5：Skill 命名用的任务范围三元组。
 
     取自 Episode 的任务硬键（task_type|downstream_model_class|metric.name）
-    ——与 Memory 检索键同源，不另铸第四种方言。缺键时回落到历史默认，
-    使旧 fixture 的命名保持可预测。"""
+    ——与 Memory 检索键同源，不另铸第四种方言。
+
+    #42k Part B1（多任务 fail-closed）：键**缺失/空**时才回落到历史默认，
+    使旧 fixture 的命名保持可预测；键**非空但畸形**（段数≠3 或有空段）则
+    硬失败——把一条读不懂的键静默记成 forecast 会让异常检测轮次的 Skill
+    命名撞进预测命名空间，属不可观察的串线。"""
     key = str(getattr(episode, "task_consumer_key", "") or "")
+    if not key:
+        return ("forecast", "ridge", "sMASE")
     parts = key.split("|")
     if len(parts) == 3 and all(parts):
         return (parts[0], parts[1], parts[2])
-    return ("forecast", "ridge", "sMASE")
+    raise ValueError(
+        "INVALID_TASK_SCOPE: task_consumer_key %r is not "
+        "task_type|downstream_model_class|metric" % (key,))
 
 
 def _series_uids_of_episode(episode: object) -> tuple[str, ...]:

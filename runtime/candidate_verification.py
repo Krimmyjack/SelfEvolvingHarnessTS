@@ -279,6 +279,7 @@ def verify_candidate(
         return CandidateExecutionArtifact(candidate, receipt, output, trace)
 
     modified = _modified_indices(raw, output)
+    # 只计已观测值改写；缺失填补不计入（cap 语义 = 保护已观测数据）。
     modified_fraction = len(modified) / max(raw.size, 1)
     normalized_regions = _region_fractions(_contiguous_regions(modified), raw.size)
     targeting_modes = {

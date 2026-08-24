@@ -335,9 +335,11 @@ def run_online_round(
     series0 = np_values(request, values)
     # 1. prepare 一次（E2.5-A：runtime_prior_slot 透传——真实 LLM +
     # Runtime-owned 双槽）
+    # #42k Part B2：直读 task_spec.task_type——PreparationRequest 的
+    # __post_init__ 已保证 task_spec 是 TaskSpec，"forecast" 默认分支永远
+    # 不会命中，只会在字段真的读不到时把异常检测轮次静默当预测轮跑。
     method.bind_round_data(series0[:origin],
-                           task_kind=getattr(request.task_spec, "task_type",
-                                             "forecast"))
+                           task_kind=request.task_spec.task_type)
     method.prepare(request, runtime_prior_slot=runtime_prior_slot)
     trace = method.last_trace
     steps_map = dict(trace.candidate_program_steps or {})
@@ -351,7 +353,7 @@ def run_online_round(
 
     _route_features = extract_public_features(
         series0[:origin],
-        task_kind=getattr(request.task_spec, "task_type", "forecast"))
+        task_kind=request.task_spec.task_type)
     _route_view = resolve_harness_view(
         method._active_snapshot(), _route_features, role="fast")
     result.memory_resolution_status = str(
@@ -576,12 +578,17 @@ def run_online_round(
                     for op in sorted({
                         op for steps in steps_map.values()
                         for op, _p in steps}))
+                # #42k Part B3：缺省组卡的 task_kind 取本轮 request 的
+                # task_spec.task_type——硬编码 "forecast" 会让异常检测轮次
+                # 的组级 Slow 卡带着预测的可观察签名落库。
+                _group_task_kind = str(request.task_spec.task_type)
                 _gb = (group_card_builder if group_card_builder is not None
                        else lambda g, cap: {"pattern_id": "group-fault",
                                             "failure_family":
                                                 "workflow_component_negative",
                                             "observable_signature":
-                                                {"task_kind": "forecast"},
+                                                {"task_kind":
+                                                 _group_task_kind},
                                             "workflow": {"steps": [
                                                 {"op": str(g.get("workflow")),
                                                  "params": {}}]},

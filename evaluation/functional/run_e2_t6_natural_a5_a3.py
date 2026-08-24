@@ -81,6 +81,7 @@ from SelfEvolvingHarnessTS.methods.ttha.scope_executor import (  # noqa: E402
 )
 from SelfEvolvingHarnessTS.contracts.task import (  # noqa: E402
     MetricSpec,
+    anomaly_task_context_v1,
     anomaly_task_spec_v1,
 )
 from SelfEvolvingHarnessTS.methods.ttha.experience_memory import (  # noqa: E402
@@ -1687,6 +1688,46 @@ def _target_task_spec() -> Any:
     return _source_task_spec()
 
 
+_TASK_CONTEXT: dict[str, Any] = {}
+
+
+def _target_task_context() -> Any:
+    """#42k Part C -- the single TaskContext every behaviour path carries.
+
+    One object for the whole run, on purpose.  The quality contract and the
+    deployment constraints are protocol facts that do not vary by cohort, arm
+    or round, so a per-request context would only create the opportunity for
+    two of them to drift apart; a shared object makes the sha check below a
+    real invariant instead of a restatement.
+
+    The spec is the runner's live anomaly spec (``_target_task_spec``), which
+    is what PreparationRequest compares against, so the deployment constraint
+    the Harness reads is bound to the same Consumer that actually scores.
+    """
+    ctx = _TASK_CONTEXT.get("ctx")
+    if ctx is None:
+        ctx = anomaly_task_context_v1(task_spec=_target_task_spec())
+        _TASK_CONTEXT["ctx"] = ctx
+    return ctx
+
+
+def _assert_behaviour_context(request: Any) -> None:
+    """Behaviour-path entry check: the context is present and it is *the* one.
+
+    Static/census scoring does not build a PreparationRequest and is not
+    checked here.  For the paths that do, a missing context means the Harness
+    silently falls back to snapshot-only candidate policy, which is exactly
+    the wiring defect this book closes.
+    """
+    ctx = getattr(request, "task_context", None)
+    assert ctx is not None, (
+        "behaviour-path PreparationRequest must carry a task_context")
+    expected = _target_task_context().sha()
+    assert ctx.sha() == expected, (
+        "behaviour-path requests must share one TaskContext: %s != %s"
+        % (ctx.sha(), expected))
+
+
 def _retrieved_source_cards(method: Any, features: Mapping[str, Any],
                             task_key: str) -> dict[str, Any]:
     """Which Source cards the round's retrieval would surface, and whether
@@ -1852,7 +1893,8 @@ def _run_cells(
             observed["bound_period"] = float(PERIOD_HINT)
             request = PreparationRequest(
                 "t6-%s" % cohort, series0[:support_origin], spec,
-                dict(observed))
+                dict(observed), task_context=_target_task_context())
+            _assert_behaviour_context(request)
             features = dict(extract_public_features(
                 series0[:support_origin], task_kind="anomaly_detection"))
             retrieval = _retrieved_source_cards(
@@ -5298,7 +5340,9 @@ def _deploy_fast_only(
     observed = dict(resolver.window_context(values, origin, PERIOD_HINT))
     observed["bound_period"] = float(PERIOD_HINT)
     request = PreparationRequest(
-        "t6-deploy", series0[:origin], spec, dict(observed))
+        "t6-deploy", series0[:origin], spec, dict(observed),
+        task_context=_target_task_context())
+    _assert_behaviour_context(request)
     method.bind_round_data(series0[:origin], task_kind="anomaly_detection")
     method.prepare(request, runtime_prior_slot=False)
     trace = method.last_trace
@@ -5797,7 +5841,9 @@ def l1_static_vs_a3() -> int:
                 values, support_origin, PERIOD_HINT))
             observed["bound_period"] = float(PERIOD_HINT)
             request = PreparationRequest(
-                "t6-l1-yahoo", series0[:support_origin], spec, dict(observed))
+                "t6-l1-yahoo", series0[:support_origin], spec, dict(observed),
+                task_context=_target_task_context())
+            _assert_behaviour_context(request)
             features = dict(extract_public_features(
                 series0[:support_origin], task_kind="anomaly_detection"))
             method.bind_round_data(

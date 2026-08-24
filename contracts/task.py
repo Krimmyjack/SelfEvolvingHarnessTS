@@ -676,10 +676,18 @@ def anomaly_task_context_v1(
     """#42i Part A — bundle the AD spec + quality contract + deployment limits.
 
     Deployment constraints stay frozen for the AD line: fixed Consumer,
-    maximum_candidates = 1 (a single program per series in deployment;
-    the menu is for offline headroom only), maximum_modified_fraction =
-    0.20 (a tighter cap than forecast's 0.35 — AD tolerates less mass
-    rewrite because the Consumer reads raw values directly).
+    maximum_candidates = 2 (the held-in adaptation protocol explores at
+    most two non-identity probe candidates per round; the identity control
+    is kept by the runtime and is not charged against this cap),
+    maximum_modified_fraction = 0.20 (a tighter cap than forecast's 0.35 —
+    AD tolerates less mass rewrite because the Consumer reads raw values
+    directly).
+
+    #42k Part A: the cap is an *adaptation-window* exploration limit, not a
+    restatement of the deployment protocol.  "One frozen Workflow per series
+    in held-out deployment" is guaranteed by the protocol (freeze → Fast-only,
+    zero feedback), not by a candidate cap; writing it as maximum_candidates=1
+    silently truncated the held-in probe pool that fast_agent really consumes.
     """
     resolved_task = task_spec or anomaly_task_spec_v1(
         downstream_model_class="aegists_iforest_v1",
@@ -700,9 +708,9 @@ def anomaly_task_context_v1(
         quality_contract=resolved_quality,
         deployment_constraints=deployment_constraints
         or deployment_constraints_v1(
-            constraint_id="anomaly-fixed-aegists-iforest-v1",
+            constraint_id="anomaly-fixed-aegists-iforest-v2",
             fixed_downstream_model_id="fixed:aegists_iforest_v1",
-            maximum_candidates=1,
+            maximum_candidates=2,
             maximum_modified_fraction=0.20,
         ),
     )
