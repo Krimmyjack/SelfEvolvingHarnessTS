@@ -787,9 +787,15 @@ def _experience(record: Mapping[str, Any]) -> dict[str, Any] | None:
             str(record["arm"]).lower(),
             TASK_ID,
         ),
-        task_consumer_key="batch:%s|consumer:%s" % (
-            record["cohort"], record["consumer_variant"]
-        ),
+        # #42k-b F3: the task hard key is task_type|downstream_model_class|
+        # metric, minted by experience_memory.task_consumer_key over this
+        # line's live TaskSpec (this runner is the lifecycle continuation of
+        # skill_store_integration_v1, so ssi owns the mint).  cell_key's
+        # ``batch:<cohort>|consumer:<variant>`` is a different key with a
+        # different arity; cohort stays in domain_namespace and
+        # context_summary.cohort.
+        task_consumer_key=ssi._runtime_task_consumer_key(
+            str(record["consumer_variant"])),
         domain_namespace=str(record["cohort"]),
         context_summary={
             "task_episode_id": TASK_ID,

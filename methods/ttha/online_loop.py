@@ -367,7 +367,8 @@ def run_online_round(
     #     无卡 / scope 不匹配 → probe_order 原样通过（默认行为不变）。
     result.probe_order_before_card = list(probe_order)
     _scope_now = {
-        "task": str(getattr(request.task_spec, "task_type", "forecast")),
+        # #42k-b F4: same fix as Part B2 -- direct read, no "forecast" default.
+        "task": str(request.task_spec.task_type),
         "domain": str(domain),
         "downstream_model_class": str(
             getattr(request.task_spec, "downstream_model_class", "")),

@@ -1765,8 +1765,15 @@ def _build_local_episode(
         episode_id="fc_%s_%s_%s" % (
             str(target["consumer_variant"]), arm.lower(), record["task"],
         ),
-        task_consumer_key="batch:%s|consumer:%s"
-        % (target["cohort"], target["consumer_variant"]),
+        # #42k-b F3: the task hard key is task_type|downstream_model_class|
+        # metric, minted by experience_memory.task_consumer_key over this
+        # line's live TaskSpec.  It used to carry cell_key's
+        # ``batch:<cohort>|consumer:<variant>``, which is a different key with
+        # a different arity -- _task_scope_of_episode now rejects it rather
+        # than reading it as forecast.  cohort stays where it belongs:
+        # domain_namespace plus context_summary.cohort.
+        task_consumer_key=ssi._runtime_task_consumer_key(
+            str(target["consumer_variant"])),
         domain_namespace=str(target["cohort"]),
         context_summary={
             "task_episode_id": str(record["window_id"]),
