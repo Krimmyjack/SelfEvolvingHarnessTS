@@ -796,6 +796,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **sol 复审边界补丁**:#44a 先分开验证两项必要对照——污染相对 clean reference 确实造成 delayed 伤害、repair 相对 contaminated identity 确实恢复效用;clean 未经读数不得预称 upper bound。注入位置/clean reference 只归 evaluator,不得进入 Agent Observation 或 Support 特征;两个冻结污染率逐率完整报告,不得择优率授权。#44b 不把合同扰动与双场生命周期合并,避免同时改变合同与数据 Context 后无法归因。四类 Memory 是表示/保留能力与机制覆盖义务,不是每次自然运行的配额。
 
+### #44a 收口 = C33:PROGRAM_CONSUMER_LAYER_FAULT,细定位 = 判官饱和(远距几何);新 scope 条件入册;主线更正 Yahoo 注入判断;#44a-r2 发出(2026-08-24 23:5x,主线)
+
+**判定采纳,归因细化**:两率 B1 均 EFFECT_NOT_CONFIRMED,B2 按规未跑。但非注入失败——注入进拟合(尺度抬高 1.02x/1.13x,尖峰 4.5σ)、oracle 遮罩还原拟合(0.1% 内)、全程确定性。**真 first fault = 判官饱和**:iforest fit [120,900) 计分 Qcal [2600,3060)(跨约 1700 小时季节漂移),clean 臂即对 Qcal 中位 88% 点报警(11/12 站 ≥50%,一站 100%),merge_events 塌段后 event-F1 由旗标断点决定;逐站噪声 ±0.17~0.37 = 效应(±0.03)十倍。**r05 伤害 −0.0331 可读、修复找回 26%(宏 +0.0087 过宏门,安全两门败);r15 三倍剂量零伤害(+0.0005)且 6/12 站宏 F1 反升(尺度膨胀→报警减少→精度偶升)——剂量-反应非单调 = 噪声主导估计量,饱和态 AD 效用读数一律不可信**。执行者自查注入前缀排序缺陷(靠 1/120 反常自抓,修正后 r05 由 +0.016 翻 −0.033,r15 逐位不变)——范例级自查入册。预算 74/100;Qf 未开;T1 冻结拷贝零触;Part 0 = d69bce1(M0-C 工件 + docs 三件),代码 3e5d777。
+
+**三项入册**:(1) **新 scope 条件**:aegists_iforest_v1 的效用读数仅在"eval 区邻接训练区"几何有效(Yahoo 属此);远距跨漂移几何饱和——附着于既有全部 iforest 读数。(2) NaN 弃权适配(执行者按 T0/v3 正典补在适配器层,未改役中 Consumer)追认;记债:任何非 Yahoo 真实数据使用前升为 Consumer 一等特性并配门。(3) "重议 Consumer 选择而非注入"的教训采纳,但**不违停止探针令**:停止令针对 Yahoo 24 的 headroom 探针;正控场的判官选择是仪器资格问题,不是能力探针。
+
+**主线自我更正 + #44a-r2 发出**:先前否 Yahoo 注入的理由("held-in 事件稀")仅适用 Support 窗,不适用 eval 读出——**r2 = 正控场搬回 Yahoo 几何**:EXPOSED 24 held-in 注入已知点尖峰(per-series 6×MAD,率 {1%,3%},seed 固定,拷贝走 _scratch run-id,原件零触),三臂 natural / +inject / +inject+oracle-mask(复用 mask fit-policy 机械),读出 = development_exposed_eval 真实事件 F1(配对消真实异常底噪);邻接几何 + 已验 Consumer + 同终考判官;B1 同安全门;B2(若过)Support 信号用注入已知位置 + 反馈窗真标签(事件饥饿因注入自解);非饱和预门(clean 臂旗标率中位 <30% 断言)。fit ≤180、0 LLM。**#44b 设计随之改良**:双侧考可单场化——同 Yahoo 域内"注入序列该动 / 干净序列该停",同一 Consumer 同一契约,纯底物条件化对照,科学上更紧。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
