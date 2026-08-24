@@ -522,6 +522,33 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   **#42j 已发**(六程序 census + 四 Support 信号仪器研究;
   U0 锚复现义务;fit≤200;Stage C 解锁 = ≥1 信号 policy
   过安全门)。
+  **外部复审五断言核实(2026-08-24)**:TaskContext 未进主
+  runner(预期态);树上 1 失败测试实证;M0b 特征系另线
+  已落地(union 污染修复,共享受益)。provenance 权限原则
+  采纳(outlier_iqr +6/−0 断言待验)。
+  **sol 排程审核全采纳(2026-08-24 15:2x)**:#42j r1 收紧
+  (单主判 FIT_POLICY_QUALIFIED;一遍 168 fits,锚同批复算;
+  四信号降 development 诊断,仅 AUPRC 预注册候选);卫生书
+  解散 → 最小接线修复(context 携带 + max_candidates 适应期
+  =2 修正 + 禁静默回退 + group card 从 TaskSpec)全分支必做,
+  其余按 #42j 单分支(信号 → ConsumerFeedbackContract + 五
+  程序正控;mask → 类型提升接线;双无效 → 转 M0);
+  modified_fraction = 测试过时,对齐文档语义,三分记延迟债;
+  H0 lock 仅拒跑时重生成;shuffled 合同诊断归 M1;弃权四
+  条件(检索引用/改变行为/省试错/消融受伤)方可归因;replay
+  双钉(Outcome 不重复计证;机制正控 ≠ 能力读数);41 条
+  主张帽 = EXPOSED 24 先验只算"同域跨 series 积累";M0 三
+  Consumer 设计,mask 不承担跨 Consumer 反号主张。41 条不动。
+  **#42j r1 收口 = C31 FIT_POLICY_NOT_QUALIFIED**(三门全败
+  +0.001375/8 伤/−0.167;预登记文献预测命中;Δ_oracle_6
+  +0.0478,mask 系高方差局部算子)。f1_pooled 诊断 +0.0059/
+  0 伤(零事件排除+保守门的结构功劳)距门 +0.0009 处分辨率
+  边缘,不授权、不支撑 iforest Stage C;三件套(零事件排除/
+  保守门/全策略晋升)入 ConsumerFeedbackContract 设计库。
+  **路由:双无效 → 转 M0**(sol 停止规则;iforest 线收束为
+  经审计弃权候选)。**#42k 接线修复书直派 Opus 5**(候选帽
+  v2 + fail-closed 三处 + T6 context 携带 + 过时测试对齐);
+  其后 = M0 三 Consumer 设计书。41 条不动。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下

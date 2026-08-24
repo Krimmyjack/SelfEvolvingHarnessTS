@@ -1,0 +1,2010 @@
+{
+  "protocol_version": "t6_42j_census_signal_v1",
+  "book": "#42j",
+  "r1_binding": "Part A/B merged into one 168-fit flow: old five loaded from #42g-b/#42h (not recomputed); only mask-policy fitted fresh (24x2=48). Identity baseline re-fit (10 fits) only for series with feedback-region AUPRC (needed for Support signal deltas). Book total 120+48+10=178 <= 200.",
+  "menu_size": 6,
+  "menu": [
+    "identity",
+    "outlier_iqr",
+    "outlier_mad",
+    "hampel_filter",
+    "winsorize",
+    "contamination_mask_refit_v1"
+  ],
+  "fit_policy_present": true,
+  "eval_zone": "development_exposed_eval (24 EXPOSED). 41 sealed unread.",
+  "u0_anchor": {
+    "reproduced_by_part_a": true,
+    "u0_macro": -0.00697816676077546,
+    "source_artifact": "t6_42h_feedback_unit.json"
+  },
+  "old_five_source": "t6_42g_b_menu_headroom.json (committed #42g-b)",
+  "c1_main_verdict": {
+    "verdict": "FIT_POLICY_NOT_QUALIFIED",
+    "mask_eval_macro": 0.0013745136969549627,
+    "mask_harmed": 8,
+    "mask_harmed_series": [
+      "real_10.csv",
+      "real_12.csv",
+      "real_16.csv",
+      "real_20.csv",
+      "real_21.csv",
+      "real_23.csv",
+      "real_27.csv",
+      "real_30.csv"
+    ],
+    "mask_worst": -0.16666666666666669,
+    "gate": {
+      "eval_macro_gt": 0.005,
+      "harmed_le": 2,
+      "worst_ge": -0.02
+    }
+  },
+  "c2_support_signals": {
+    "f1_pooled_delta": {
+      "direction_consistency_rate": 0.4166666666666667,
+      "n_valid": 24,
+      "policy_sim_macro": 0.0059006211180124175,
+      "policy_sim_harmed": 0,
+      "policy_sim_worst": -0.0036231884057971175,
+      "policy_sim_qualified": true,
+      "verdict": "SUPPORT_SIGNAL_FOUND"
+    },
+    "auprc_delta": {
+      "direction_consistency_rate": 0.4,
+      "n_valid": 10,
+      "policy_sim_macro": 0.003089774557165862,
+      "policy_sim_harmed": 0,
+      "policy_sim_worst": -0.0036231884057971175,
+      "policy_sim_qualified": false,
+      "verdict": "SUPPORT_SIGNAL_NONE"
+    },
+    "score_margin_delta": {
+      "direction_consistency_rate": 0.4,
+      "n_valid": 10,
+      "policy_sim_macro": 0.003968253968253964,
+      "policy_sim_harmed": 0,
+      "policy_sim_worst": 0.0,
+      "policy_sim_qualified": false,
+      "verdict": "SUPPORT_SIGNAL_NONE"
+    },
+    "flag_rate_delta": {
+      "direction_consistency_rate": 0.5,
+      "n_valid": 10,
+      "policy_sim_macro": -0.00021710374971245158,
+      "policy_sim_harmed": 2,
+      "policy_sim_worst": -0.16666666666666669,
+      "policy_sim_qualified": false,
+      "verdict": "SUPPORT_SIGNAL_NONE"
+    }
+  },
+  "c2_note": "Four Support signals are descriptive only.  This book does NOT select from them or freeze a feedback definition.  margin + flag-rate do NOT participate in authorization.  Tiebreak order F1-pooled > AUPRC > margin > flag-rate is for reporting only.",
+  "six_program_oracle": {
+    "delta_oracle_6": 0.04781794598364016,
+    "delta_oracle_5": 0.037523490037010304,
+    "oracle_5_target": 0.037523490037010304,
+    "diff_6_minus_5": 0.010294455946629859,
+    "choice_counts_6": {
+      "outlier_mad": 2,
+      "winsorize": 2,
+      "identity": 8,
+      "contamination_mask_refit_v1": 5,
+      "outlier_iqr": 2,
+      "hampel_filter": 5
+    },
+    "per_series_choices_6": {
+      "real_1.csv": "outlier_mad",
+      "real_10.csv": "winsorize",
+      "real_11.csv": "identity",
+      "real_12.csv": "identity",
+      "real_13.csv": "contamination_mask_refit_v1",
+      "real_14.csv": "identity",
+      "real_15.csv": "contamination_mask_refit_v1",
+      "real_16.csv": "outlier_iqr",
+      "real_17.csv": "outlier_mad",
+      "real_18.csv": "identity",
+      "real_19.csv": "contamination_mask_refit_v1",
+      "real_2.csv": "hampel_filter",
+      "real_20.csv": "winsorize",
+      "real_21.csv": "hampel_filter",
+      "real_22.csv": "identity",
+      "real_23.csv": "identity",
+      "real_24.csv": "contamination_mask_refit_v1",
+      "real_25.csv": "identity",
+      "real_26.csv": "contamination_mask_refit_v1",
+      "real_27.csv": "identity",
+      "real_28.csv": "hampel_filter",
+      "real_29.csv": "hampel_filter",
+      "real_3.csv": "outlier_iqr",
+      "real_30.csv": "hampel_filter"
+    }
+  },
+  "b1_global": {
+    "outlier_iqr": {
+      "macro_eval_delta": -0.029756867117488723,
+      "harmed": 5,
+      "pass": false
+    },
+    "outlier_mad": {
+      "macro_eval_delta": -0.060229186208312996,
+      "harmed": 7,
+      "pass": false
+    },
+    "hampel_filter": {
+      "macro_eval_delta": -0.05718385451572406,
+      "harmed": 12,
+      "pass": false
+    },
+    "winsorize": {
+      "macro_eval_delta": -0.09194948318096348,
+      "harmed": 14,
+      "pass": false
+    },
+    "contamination_mask_refit_v1": {
+      "macro_eval_delta": 0.0013745136969549627,
+      "harmed": 8,
+      "pass": false
+    }
+  },
+  "b2_local": {
+    "outlier_iqr": {
+      "n_improved": 6,
+      "series": [
+        "real_10.csv",
+        "real_16.csv",
+        "real_24.csv",
+        "real_29.csv",
+        "real_3.csv",
+        "real_30.csv"
+      ],
+      "pass": true
+    },
+    "outlier_mad": {
+      "n_improved": 5,
+      "series": [
+        "real_1.csv",
+        "real_17.csv",
+        "real_2.csv",
+        "real_24.csv",
+        "real_26.csv"
+      ],
+      "pass": true
+    },
+    "hampel_filter": {
+      "n_improved": 7,
+      "series": [
+        "real_15.csv",
+        "real_17.csv",
+        "real_2.csv",
+        "real_21.csv",
+        "real_28.csv",
+        "real_29.csv",
+        "real_30.csv"
+      ],
+      "pass": true
+    },
+    "winsorize": {
+      "n_improved": 4,
+      "series": [
+        "real_10.csv",
+        "real_17.csv",
+        "real_20.csv",
+        "real_29.csv"
+      ],
+      "pass": false
+    },
+    "contamination_mask_refit_v1": {
+      "n_improved": 7,
+      "series": [
+        "real_13.csv",
+        "real_15.csv",
+        "real_19.csv",
+        "real_2.csv",
+        "real_24.csv",
+        "real_26.csv",
+        "real_3.csv"
+      ],
+      "pass": true
+    }
+  },
+  "b3": {
+    "all_series_feedback_macro_delta": {
+      "outlier_iqr": -0.05673285048285048,
+      "outlier_mad": -0.05190781440781441,
+      "hampel_filter": -0.05406450883424568,
+      "winsorize": -0.07309743633273044,
+      "contamination_mask_refit_v1": -0.006339031339031333
+    },
+    "event_bearing_feedback_macro_delta": {
+      "outlier_iqr": -0.03615884115884115,
+      "outlier_mad": -0.02457875457875458,
+      "hampel_filter": -0.02975482120218962,
+      "winsorize": -0.07543384719855308,
+      "contamination_mask_refit_v1": -0.015213675213675198
+    },
+    "zero_event_feedback_macro_delta": {
+      "outlier_iqr": -0.07142857142857142,
+      "outlier_mad": -0.07142857142857142,
+      "hampel_filter": -0.07142857142857142,
+      "winsorize": -0.07142857142857142,
+      "contamination_mask_refit_v1": 0.0
+    },
+    "n_all": 24,
+    "n_event_bearing": 10,
+    "n_zero_event": 14
+  },
+  "roster": [
+    "real_1.csv",
+    "real_10.csv",
+    "real_11.csv",
+    "real_12.csv",
+    "real_13.csv",
+    "real_14.csv",
+    "real_15.csv",
+    "real_16.csv",
+    "real_17.csv",
+    "real_18.csv",
+    "real_19.csv",
+    "real_2.csv",
+    "real_20.csv",
+    "real_21.csv",
+    "real_22.csv",
+    "real_23.csv",
+    "real_24.csv",
+    "real_25.csv",
+    "real_26.csv",
+    "real_27.csv",
+    "real_28.csv",
+    "real_29.csv",
+    "real_3.csv",
+    "real_30.csv"
+  ],
+  "per_series": {
+    "real_1.csv": {
+      "n": 1420,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 4.506247275551346,
+        "estimated_region_start_fraction": 0.6626384692849949,
+        "estimated_region_end_fraction": 0.730110775427996,
+        "level_region_fraction": 0.06747230614300101,
+        "level_region_end_fraction": 0.730110775427996,
+        "outlier_region_end_fraction": 0.7150050352467271,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 3.0713009436171905,
+        "estimated_level_offset": 0.035641716075745,
+        "period_change_score": 0.3333333333333333,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09523809523809525,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09523809523809525,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.10526315789473684,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.01002506265664159
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.08695652173913042,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.008281573498964828
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.07407407407407407,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.021164021164021177
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09523809523809525,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.03807562396745472,
+            "mask_feedback_flag_rate": 0.14462081128747795,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_10.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 3.830483453950524,
+        "estimated_region_start_fraction": 0.05263157894736842,
+        "estimated_region_end_fraction": 0.09235352532274081,
+        "level_region_fraction": 0.039721946375372394,
+        "level_region_end_fraction": 0.09235352532274081,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 2.999562719086453,
+        "estimated_level_offset": 0.3982456584508256,
+        "period_change_score": 6.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.2857142857142857,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0357142857142857
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.02777777777777779
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.10526315789473684,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.14473684210526316
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.33333333333333337,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.08333333333333337
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.19999999999999998,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.05000000000000002,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.05244384384838032,
+            "mask_feedback_flag_rate": 0.11979166666666667,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_11.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 6.35490167376697,
+        "estimated_region_start_fraction": 0.0019860973187686196,
+        "estimated_region_end_fraction": 0.19960278053624628,
+        "level_region_fraction": 0.0407149950347567,
+        "level_region_end_fraction": 0.19960278053624628,
+        "outlier_region_end_fraction": 0.19563058589870905,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 3.1073848380892954,
+        "estimated_level_offset": 4476.75,
+        "period_change_score": 0.10416666666666667,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 1.0,
+          "eval_f1": 1.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 1.0,
+          "eval_f1": 1.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 1.0,
+          "eval_f1": 0.33333333333333337,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.6666666666666666
+        },
+        "hampel_filter": {
+          "feedback_f1": 1.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.75
+        },
+        "winsorize": {
+          "feedback_f1": 1.0,
+          "eval_f1": 0.2857142857142857,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.7142857142857143
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 1.0,
+          "eval_f1": 1.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.14292627385722204,
+            "mask_feedback_flag_rate": 0.0,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_12.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 9.013649240278136,
+        "estimated_region_start_fraction": 0.010923535253227408,
+        "estimated_region_end_fraction": 0.7994041708043694,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.7994041708043694,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.33333333333333337,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.33333333333333337
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.33333333333333337
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.08333333333333337
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.33333333333333337
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.08333333333333337,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.041604942078741845,
+            "mask_feedback_flag_rate": 0.07118055555555555,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_13.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 2.6625884026156355,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.5,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.10526315789473684,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": -0.11695906432748537,
+          "eval_delta": 0.0
+        },
+        "winsorize": {
+          "feedback_f1": 0.15384615384615385,
+          "eval_f1": 0.0,
+          "feedback_delta": -0.06837606837606836,
+          "eval_delta": -0.2222222222222222
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.14285714285714288,
+          "eval_f1": 0.25,
+          "feedback_delta": -0.07936507936507933,
+          "eval_delta": 0.02777777777777779,
+          "support_signals": {
+            "f1_pooled_delta": -0.07936507936507933,
+            "auprc_delta": 0.2991587482989285,
+            "score_margin_delta": -0.0030954181767139308,
+            "flag_rate_delta": 0.008680555555555566,
+            "mask_feedback_auprc": 0.36004704301075263,
+            "mask_feedback_margin": -0.041351759310327404,
+            "mask_feedback_flag_rate": 0.07291666666666667,
+            "ident_feedback_auprc": 0.06088829471182412,
+            "ident_feedback_margin": -0.038256341133613474,
+            "ident_feedback_flag_rate": 0.0642361111111111
+          }
+        }
+      }
+    },
+    "real_14.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 25.69834867611756,
+        "estimated_region_start_fraction": 0.022840119165839126,
+        "estimated_region_end_fraction": 0.9572989076464746,
+        "level_region_fraction": 0.06653426017874876,
+        "level_region_end_fraction": 0.0903674280039722,
+        "outlier_region_end_fraction": 0.9572989076464746,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": false,
+        "level_excursion_score": 6.702281784687506,
+        "estimated_level_offset": 907.5,
+        "period_change_score": 11.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": false,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.07930458205519621,
+            "mask_feedback_flag_rate": 0.006944444444444444,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_15.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 2.588400027781006,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.5,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.18181818181818182,
+          "eval_f1": 0.19999999999999998,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.18181818181818182,
+          "eval_f1": 0.19999999999999998,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.18181818181818182,
+          "eval_f1": 0.19999999999999998,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.125,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": -0.05681818181818182,
+          "eval_delta": 0.022222222222222227
+        },
+        "winsorize": {
+          "feedback_f1": 0.14285714285714288,
+          "eval_f1": 0.0,
+          "feedback_delta": -0.038961038961038946,
+          "eval_delta": -0.19999999999999998
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.19999999999999998,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.01818181818181816,
+          "eval_delta": 0.05000000000000002,
+          "support_signals": {
+            "f1_pooled_delta": 0.01818181818181816,
+            "auprc_delta": 0.06249987310288817,
+            "score_margin_delta": -0.0006173303708549849,
+            "flag_rate_delta": 0.010416666666666671,
+            "mask_feedback_auprc": 0.12946957007258514,
+            "mask_feedback_margin": -0.04082241380485685,
+            "mask_feedback_flag_rate": 0.07465277777777778,
+            "ident_feedback_auprc": 0.06696969696969697,
+            "ident_feedback_margin": -0.040205083434001865,
+            "ident_feedback_flag_rate": 0.0642361111111111
+          }
+        }
+      }
+    },
+    "real_16.csv": {
+      "n": 1461,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 2.7665000021765884,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 1.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.13333333333333333,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.14285714285714288,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.009523809523809545
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.13333333333333333,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0689655172413793,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.06436781609195404
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.033333333333333326
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.11764705882352941,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.01568627450980392,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.036873650145320236,
+            "mask_feedback_flag_rate": 0.11643835616438356,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_17.csv": {
+      "n": 1424,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 17.03771456018914,
+        "estimated_region_start_fraction": 0.7690763052208835,
+        "estimated_region_end_fraction": 0.8875502008032129,
+        "level_region_fraction": 0.0963855421686747,
+        "level_region_end_fraction": 0.8744979919678715,
+        "outlier_region_end_fraction": 0.8875502008032129,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 25.011520925978346,
+        "estimated_level_offset": 5381.75,
+        "period_change_score": 0.6956521739130435,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.2857142857142857,
+          "eval_f1": 0.5714285714285715,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.18181818181818182,
+          "eval_f1": 0.5714285714285715,
+          "feedback_delta": -0.10389610389610388,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.19999999999999998,
+          "eval_f1": 0.8,
+          "feedback_delta": -0.08571428571428572,
+          "eval_delta": 0.22857142857142854
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.6666666666666666,
+          "feedback_delta": -0.06349206349206349,
+          "eval_delta": 0.09523809523809512
+        },
+        "winsorize": {
+          "feedback_f1": 0.19999999999999998,
+          "eval_f1": 0.6666666666666666,
+          "feedback_delta": -0.08571428571428572,
+          "eval_delta": 0.09523809523809512
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.33333333333333337,
+          "eval_f1": 0.5714285714285715,
+          "feedback_delta": 0.04761904761904767,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.04761904761904767,
+            "auprc_delta": 0.030916991944515027,
+            "score_margin_delta": 0.0072666205093439296,
+            "flag_rate_delta": 0.014059753954305781,
+            "mask_feedback_auprc": 0.9259618520097684,
+            "mask_feedback_margin": -0.16708900513242542,
+            "mask_feedback_flag_rate": 0.18629173989455183,
+            "ident_feedback_auprc": 0.8950448600652534,
+            "ident_feedback_margin": -0.17435562564176935,
+            "ident_feedback_flag_rate": 0.17223198594024605
+          }
+        }
+      }
+    },
+    "real_18.csv": {
+      "n": 1461,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 3.2425829058066578,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.5,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": false,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.02732120240313947,
+            "mask_feedback_flag_rate": 0.08047945205479452,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_19.csv": {
+      "n": 1424,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 36.33818966680157,
+        "estimated_region_start_fraction": 0.007028112449799197,
+        "estimated_region_end_fraction": 0.9528112449799196,
+        "level_region_fraction": 0.09738955823293173,
+        "level_region_end_fraction": 0.8755020080321285,
+        "outlier_region_end_fraction": 0.9528112449799196,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": false,
+        "level_excursion_score": 31.743221367867264,
+        "estimated_level_offset": 129.25,
+        "period_change_score": 0.8823529411764706,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.25,
+          "eval_f1": 0.5714285714285715,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.13333333333333333,
+          "eval_f1": 0.5714285714285715,
+          "feedback_delta": -0.11666666666666667,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.1,
+          "eval_f1": 0.28571428571428575,
+          "feedback_delta": -0.15,
+          "eval_delta": -0.28571428571428575
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.33333333333333337,
+          "eval_f1": 0.5,
+          "feedback_delta": 0.08333333333333337,
+          "eval_delta": -0.07142857142857151
+        },
+        "winsorize": {
+          "feedback_f1": 0.16666666666666669,
+          "eval_f1": 0.4444444444444445,
+          "feedback_delta": -0.08333333333333331,
+          "eval_delta": -0.12698412698412703
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.4,
+          "eval_f1": 0.6666666666666666,
+          "feedback_delta": 0.15000000000000002,
+          "eval_delta": 0.09523809523809512,
+          "support_signals": {
+            "f1_pooled_delta": 0.15000000000000002,
+            "auprc_delta": -0.0014047890206899671,
+            "score_margin_delta": 0.009866589450241353,
+            "flag_rate_delta": 0.014059753954305781,
+            "mask_feedback_auprc": 0.7670371705071327,
+            "mask_feedback_margin": -0.14185268413887417,
+            "mask_feedback_flag_rate": 0.18629173989455183,
+            "ident_feedback_auprc": 0.7684419595278227,
+            "ident_feedback_margin": -0.15171927358911552,
+            "ident_feedback_flag_rate": 0.17223198594024605
+          }
+        }
+      }
+    },
+    "real_2.csv": {
+      "n": 1439,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 6.314808310914687,
+        "estimated_region_start_fraction": 0.76266137040715,
+        "estimated_region_end_fraction": 0.9354518371400199,
+        "level_region_fraction": 0.039721946375372394,
+        "level_region_end_fraction": 0.9354518371400199,
+        "outlier_region_end_fraction": 0.9314796425024826,
+        "level_only_post_shift_support_sufficient": false,
+        "post_shift_support_sufficient": false,
+        "level_excursion_score": 9.780858843643534,
+        "estimated_level_offset": -4718.0,
+        "period_change_score": 0.8333333333333334,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1818181818181818,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1818181818181818,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.23529411764705882,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.053475935828877025
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0681818181818182
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.15384615384615385,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.02797202797202794
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0681818181818182,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.06111531321189859,
+            "mask_feedback_flag_rate": 0.1857638888888889,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_20.csv": {
+      "n": 1422,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 2.231007896730276,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.5,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.6666666666666666,
+          "eval_f1": 0.28571428571428575,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.6666666666666666,
+          "eval_f1": 0.28571428571428575,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.6666666666666666,
+          "eval_f1": 0.28571428571428575,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.6666666666666666,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.28571428571428575
+        },
+        "winsorize": {
+          "feedback_f1": 0.4,
+          "eval_f1": 0.3333333333333333,
+          "feedback_delta": -0.2666666666666666,
+          "eval_delta": 0.04761904761904756
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.4,
+          "eval_f1": 0.25,
+          "feedback_delta": -0.2666666666666666,
+          "eval_delta": -0.035714285714285754,
+          "support_signals": {
+            "f1_pooled_delta": -0.2666666666666666,
+            "auprc_delta": -0.02842320494326822,
+            "score_margin_delta": -0.005896178696877558,
+            "flag_rate_delta": 0.012302284710017576,
+            "mask_feedback_auprc": 0.7931000760954265,
+            "mask_feedback_margin": -0.0894842836681214,
+            "mask_feedback_flag_rate": 0.0351493848857645,
+            "ident_feedback_auprc": 0.8215232810386948,
+            "ident_feedback_margin": -0.08358810497124385,
+            "ident_feedback_flag_rate": 0.022847100175746926
+          }
+        }
+      }
+    },
+    "real_21.csv": {
+      "n": 1420,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 3.7321822024371603,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.9583333333333334,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09756097560975609,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.08333333333333333,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.014227642276422758
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09523809523809523,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.0023228803716608543
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.10256410256410257,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.005003126954346487
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0024390243902439185
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.07843137254901959,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.019129603060736494,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.027047334024305338,
+            "mask_feedback_flag_rate": 0.15167548500881833,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_22.csv": {
+      "n": 1420,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 27.787746666361237,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.5186304128902316,
+        "level_region_fraction": 0.06747230614300101,
+        "level_region_end_fraction": 0.21852970795568982,
+        "outlier_region_end_fraction": 0.5186304128902316,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 3.825030733871399,
+        "estimated_level_offset": 381.75,
+        "period_change_score": 0.45454545454545453,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 1.0,
+          "eval_f1": 1.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 1.0,
+          "feedback_delta": -1.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 1.0,
+          "feedback_delta": -1.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 1.0,
+          "feedback_delta": -1.0,
+          "eval_delta": 0.0
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 1.0,
+          "feedback_delta": -1.0,
+          "eval_delta": 0.0
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 1.0,
+          "eval_f1": 1.0,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.12225121393229149,
+            "mask_feedback_flag_rate": 0.0,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_23.csv": {
+      "n": 1420,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 11.879551360318187,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.9758308157099698,
+        "level_region_fraction": 0.0513595166163142,
+        "level_region_end_fraction": 0.1299093655589124,
+        "outlier_region_end_fraction": 0.9758308157099698,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": false,
+        "level_excursion_score": 3.579057904397517,
+        "estimated_level_offset": -0.10684116397193999,
+        "period_change_score": 0.5555555555555556,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.3076923076923077,
+          "eval_f1": 0.5,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.25000000000000006,
+          "eval_f1": 0.3333333333333333,
+          "feedback_delta": -0.057692307692307654,
+          "eval_delta": -0.16666666666666669
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.2857142857142857,
+          "eval_f1": 0.28571428571428575,
+          "feedback_delta": -0.02197802197802201,
+          "eval_delta": -0.21428571428571425
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.3157894736842105,
+          "eval_f1": 0.4,
+          "feedback_delta": 0.0080971659919028,
+          "eval_delta": -0.09999999999999998
+        },
+        "winsorize": {
+          "feedback_f1": 0.23529411764705882,
+          "eval_f1": 0.5,
+          "feedback_delta": -0.07239819004524889,
+          "eval_delta": 0.0
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.26666666666666666,
+          "eval_f1": 0.3333333333333333,
+          "feedback_delta": -0.041025641025641046,
+          "eval_delta": -0.16666666666666669,
+          "support_signals": {
+            "f1_pooled_delta": -0.041025641025641046,
+            "auprc_delta": -0.02278588253748977,
+            "score_margin_delta": 0.003809819151523397,
+            "flag_rate_delta": 0.014109347442680775,
+            "mask_feedback_auprc": 0.1043136845620773,
+            "mask_feedback_margin": -0.06327249133312236,
+            "mask_feedback_flag_rate": 0.09347442680776014,
+            "ident_feedback_auprc": 0.12709956709956707,
+            "ident_feedback_margin": -0.06708231048464576,
+            "ident_feedback_flag_rate": 0.07936507936507936
+          }
+        }
+      }
+    },
+    "real_24.csv": {
+      "n": 1461,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 6.5029842158662845,
+        "estimated_region_start_fraction": 0.34344422700587085,
+        "estimated_region_end_fraction": 0.4178082191780822,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.4178082191780822,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 1.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1111111111111111,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.14285714285714285,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.031746031746031744
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.14285714285714285,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.031746031746031744
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09999999999999999,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.011111111111111113
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.06896551724137931,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.042145593869731796
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.16666666666666669,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.05555555555555558,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.036452184008632316,
+            "mask_feedback_flag_rate": 0.0976027397260274,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_25.csv": {
+      "n": 1435,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 12.140833670578713,
+        "estimated_region_start_fraction": 0.19123505976095617,
+        "estimated_region_end_fraction": 0.9332669322709163,
+        "level_region_fraction": 0.0398406374501992,
+        "level_region_end_fraction": 0.3715139442231076,
+        "outlier_region_end_fraction": 0.9332669322709163,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": false,
+        "level_excursion_score": 3.541076487252125,
+        "estimated_level_offset": 3.0,
+        "period_change_score": 0.17391304347826086,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.6666666666666666,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.4,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.2666666666666666
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.4,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.2666666666666666
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.4,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.2666666666666666
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.4,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.2666666666666666
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.6666666666666666,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.08719920131797819,
+            "mask_feedback_flag_rate": 0.06968641114982578,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_26.csv": {
+      "n": 1435,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 8.759948738702281,
+        "estimated_region_start_fraction": 0.0099601593625498,
+        "estimated_region_end_fraction": 0.8575697211155379,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.8575697211155379,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.9583333333333334,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1818181818181818,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.11764705882352941,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.06417112299465239
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.2608695652173913,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0790513833992095
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.12500000000000003,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.05681818181818177
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.1818181818181818
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.3333333333333333,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.15151515151515152,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.049925119834146076,
+            "mask_feedback_flag_rate": 0.09059233449477352,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_27.csv": {
+      "n": 1427,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 2.3705057826459757,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": false,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1081081081081081,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1081081081081081,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1081081081081081,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.008108108108108095
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1081081081081081,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.06896551724137931,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.03914259086672879,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": null,
+            "score_margin_delta": null,
+            "flag_rate_delta": null,
+            "mask_feedback_auprc": null,
+            "mask_feedback_margin": -0.023672195318805583,
+            "mask_feedback_flag_rate": 0.11929824561403508,
+            "ident_feedback_auprc": null,
+            "ident_feedback_margin": null,
+            "ident_feedback_flag_rate": null
+          }
+        }
+      }
+    },
+    "real_28.csv": {
+      "n": 1441,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 2.0356353577322466,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.8333333333333334,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.8,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.8,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.2222222222222222,
+          "eval_f1": 0.8,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.15384615384615385,
+          "eval_f1": 1.0,
+          "feedback_delta": -0.06837606837606836,
+          "eval_delta": 0.19999999999999996
+        },
+        "winsorize": {
+          "feedback_f1": 0.16666666666666669,
+          "eval_f1": 0.6666666666666666,
+          "feedback_delta": -0.055555555555555525,
+          "eval_delta": -0.13333333333333341
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.18181818181818182,
+          "eval_f1": 0.8,
+          "feedback_delta": -0.04040404040404039,
+          "eval_delta": 0.0,
+          "support_signals": {
+            "f1_pooled_delta": -0.04040404040404039,
+            "auprc_delta": 0.029707000866983968,
+            "score_margin_delta": 0.0017853880733870661,
+            "flag_rate_delta": 0.010416666666666685,
+            "mask_feedback_auprc": 0.47627370655191165,
+            "mask_feedback_margin": -0.03414009941261266,
+            "mask_feedback_flag_rate": 0.16145833333333334,
+            "ident_feedback_auprc": 0.4465667056849277,
+            "ident_feedback_margin": -0.035925487485999726,
+            "ident_feedback_flag_rate": 0.15104166666666666
+          }
+        }
+      }
+    },
+    "real_29.csv": {
+      "n": 1441,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 6.1974251875258535,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.7757936507936508,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.7757936507936508,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.8260869565217391,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.08333333333333333,
+          "eval_f1": 0.08695652173913045,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09523809523809525,
+          "feedback_delta": -0.08333333333333333,
+          "eval_delta": 0.0082815734989648
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.09523809523809523,
+          "eval_f1": 0.09090909090909091,
+          "feedback_delta": 0.011904761904761904,
+          "eval_delta": 0.003952569169960465
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.11764705882352941,
+          "feedback_delta": -0.08333333333333333,
+          "eval_delta": 0.030690537084398964
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1,
+          "feedback_delta": -0.08333333333333333,
+          "eval_delta": 0.01304347826086956
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.14285714285714288,
+          "eval_f1": 0.08333333333333333,
+          "feedback_delta": 0.05952380952380955,
+          "eval_delta": -0.0036231884057971175,
+          "support_signals": {
+            "f1_pooled_delta": 0.05952380952380955,
+            "auprc_delta": 0.006180543729110994,
+            "score_margin_delta": 0.001198485036976324,
+            "flag_rate_delta": 0.013888888888888895,
+            "mask_feedback_auprc": 0.01655719759168035,
+            "mask_feedback_margin": -0.03688772093647237,
+            "mask_feedback_flag_rate": 0.17881944444444445,
+            "ident_feedback_auprc": 0.010376653862569356,
+            "ident_feedback_margin": -0.038086205973448695,
+            "ident_feedback_flag_rate": 0.16493055555555555
+          }
+        }
+      }
+    },
+    "real_3.csv": {
+      "n": 1461,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 3.557688835948686,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.02777777777777779
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.16666666666666669,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.055555555555555525
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.2222222222222222,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.0909090909090909,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.13131313131313133
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.25,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.02777777777777779,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": -0.005047276153302601,
+            "score_margin_delta": 0.0017527485132808052,
+            "flag_rate_delta": 0.008561643835616431,
+            "mask_feedback_auprc": 0.0038022813688212928,
+            "mask_feedback_margin": -0.02786230364535338,
+            "mask_feedback_flag_rate": 0.11986301369863013,
+            "ident_feedback_auprc": 0.008849557522123894,
+            "ident_feedback_margin": -0.029615052158634185,
+            "ident_feedback_flag_rate": 0.1113013698630137
+          }
+        }
+      }
+    },
+    "real_30.csv": {
+      "n": 1461,
+      "public_features": {
+        "missing_fraction": 0.0,
+        "longest_missing_run_fraction": 0.0,
+        "local_robust_z_peak": 3.1229763774341213,
+        "estimated_region_start_fraction": 0.0,
+        "estimated_region_end_fraction": 0.0,
+        "level_region_fraction": 0.0,
+        "level_region_end_fraction": 0.0,
+        "outlier_region_end_fraction": 0.0,
+        "level_only_post_shift_support_sufficient": true,
+        "post_shift_support_sufficient": true,
+        "level_excursion_score": 0.0,
+        "estimated_level_offset": 0.0,
+        "period_change_score": 0.0,
+        "period_reliability": 1.0,
+        "period_repair_available": false
+      },
+      "has_any_feedback_event": true,
+      "has_eval_event": true,
+      "programs": {
+        "identity": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.125,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "outlier_iqr": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.14285714285714288,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.017857142857142877
+        },
+        "outlier_mad": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.125,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.0
+        },
+        "hampel_filter": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.18181818181818182,
+          "feedback_delta": 0.0,
+          "eval_delta": 0.05681818181818182
+        },
+        "winsorize": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.1111111111111111,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.013888888888888895
+        },
+        "contamination_mask_refit_v1": {
+          "feedback_f1": 0.0,
+          "eval_f1": 0.09523809523809523,
+          "feedback_delta": 0.0,
+          "eval_delta": -0.029761904761904767,
+          "support_signals": {
+            "f1_pooled_delta": 0.0,
+            "auprc_delta": -0.003952444191488016,
+            "score_margin_delta": 0.00014592887761714218,
+            "flag_rate_delta": -0.00684931506849315,
+            "mask_feedback_auprc": 0.00398406374501992,
+            "mask_feedback_margin": -0.03003897813156464,
+            "mask_feedback_flag_rate": 0.0821917808219178,
+            "ident_feedback_auprc": 0.007936507936507936,
+            "ident_feedback_margin": -0.03018490700918178,
+            "ident_feedback_flag_rate": 0.08904109589041095
+          }
+        }
+      }
+    }
+  },
+  "cost": {
+    "llm": 0,
+    "ad_fits_part_b": 58,
+    "ad_fits_part_a": 120,
+    "ad_fits_book_total": 178,
+    "ad_fit_cap": 200,
+    "forecast_retrains": 0
+  },
+  "not_a_science_claim": true,
+  "verdict": {
+    "verdict": "FIT_POLICY_NOT_QUALIFIED",
+    "support_signals_descriptive": {
+      "f1_pooled_delta": "SUPPORT_SIGNAL_FOUND",
+      "auprc_delta": "SUPPORT_SIGNAL_NONE",
+      "score_margin_delta": "SUPPORT_SIGNAL_NONE",
+      "flag_rate_delta": "SUPPORT_SIGNAL_NONE"
+    }
+  }
+}
