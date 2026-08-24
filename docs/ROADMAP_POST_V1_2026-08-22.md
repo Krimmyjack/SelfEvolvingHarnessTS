@@ -482,10 +482,46 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   A3 新载重 = 三程序赢家两两 ≤2、三交 ∅、并集 14 →
   "单一可清洗子群"证伪,Scope 线须程序条件化 Observation;
   hampel = 全局最害(12/24)且 oracle 最大贡献者(+0.383/6 条)
-  = 高方差算子,series 条件化最强单点证据。**#42h 反馈单元
+  = 高方差算子,series 条件化最强单点证据。  **#42h 反馈单元
   书已发**(四候选 U0–U3 预注册;主判据 C2 policy 模拟;
   选定即冻结,41 条只用不调);序:#42h → 契约 wiring →
   Scope 线 → EXPOSED 闭合 → #42g-c 三臂终考。
+  **#42h 收口 = C29 FEEDBACK_UNIT_UNRESOLVED**:四单元全败
+  安全门(U2 全区池化 +0.005 仍 worst −0.071);U0 锚字节
+  复现;U0/U1 因预注册歧义塌缩(锚复现义务立功)。裁定:
+  五菜单"操作性枯竭"(headroom 存在但无合法反馈机制可安全
+  收割),P3 解锁 → **Supply 线:一个 AD-native 程序
+  contamination_mask_refit_v1(检测评分遮罩重拟合,值不
+  改写)**。序改:#42i 纯代码(契约 wiring + 程序注册 +
+  仪器扩展)→ #42j census(六程序,同安全门)→ 合格则
+  多轮 replay → #42g-c;不合格则弃权框架 #42g-c(A5 正确
+  弃权 vs 强采纳消融受伤)。两结局均良定义;41 条不动。
+  **文献调研(grok)采纳为设计输入**:三范式表(无监督统计
+  /重构一类/监督事件)与实证链互证;M0 配对获文献先验
+  (iforest 清洗负 vs AE 族清洗正 = 预期反号翻转),预注册;
+  pre-#42j 预期 = held-in 污染轻 + iforest 稳健,mask-refit
+  headroom 可能薄,不合格属文献一致结局;Yahoo 病理 caveat
+  (Wu&Keogh 四病;稀疏表 38 vs 14 即位置偏置显形)附着
+  所有 Yahoo 结论;TSB 资格门进未来选数流程(41 条禁预跑);
+  引证核验入 #46 相关工作债。
+  **外部静态审查采纳(2026-08-24)**:C29"操作性枯竭"收窄为
+  "事件 F1 读出族枯竭"(量化台阶批评成立;连续 Support 信号
+  未测,AUPRC 代码已录)→ iforest 现役菜单 capability 路径
+  重开。**#42j 重塑 = 六程序 census + Support 信号仪器研究**
+  (连续信号只作 Support 排序,判官/晋升保持 event-F1+安全门);
+  其后 pre-M0 卫生书(TaskEvaluationContract 缓冻结 + 三泄漏
+  fail-closed:online_loop:584/:339/:354、method:239);信号
+  可用 → Stage C 局部生命周期正控(EXPOSED 24)→ replay →
+  #42g-c capability;全哑 → M0 AE 主场 + 弃权框架。AD 观测
+  扩展守标签合法性红线(score margin/flag 率合法;事件密度/
+  calibration 含异常等标签项仅 post-hoc)。M0 必做不变。
+  **#42i = CODE_LANDED @ 9983e5f**:契约 v0r1 全 wired(15/15
+  测试);mask 落地为 consumer fit policy(sol r1,追认优于
+  注册表方案;16/16 测试);census 菜单参数化(6-程序 Yahoo
+  须 #42j 授权);consumer 文件 provenance 缺口自报闭合。
+  **#42j 已发**(六程序 census + 四 Support 信号仪器研究;
+  U0 锚复现义务;fit≤200;Stage C 解锁 = ≥1 信号 policy
+  过安全门)。
 - **Phase M — Model-conditioned quality**:T 闭合后,固定任务与数据,只变
   模型结构,考同一处理的 Gain/Harm 翻转与模型感知适配(M0 正控 → M1 闭环)。
   M0 配对候选(2026-08-22 由 T1b 裁定派生,届时再定稿):同一 AD 任务下
