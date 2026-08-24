@@ -7216,6 +7216,96 @@ def m0c_consumer_flip_v1(limit: int = L1_ROSTER_N) -> int:
         },
     ]
 
+    # ---- descriptive readings, explicitly not part of either judgment -----
+    sign_cells = [
+        {"uid": uid, "program": program,
+         "iforest_delta": float(c_a[uid][program]["eval_delta"]),
+         "pca_delta": float(c_c[uid][program]["eval_delta"])}
+        for uid in order for program in cleaning
+        if ((float(c_a[uid][program]["eval_delta"]) >= MATERIAL_THRESHOLD
+             and float(c_c[uid][program]["eval_delta"]) <= -MATERIAL_THRESHOLD)
+            or (float(c_c[uid][program]["eval_delta"]) >= MATERIAL_THRESHOLD
+                and float(c_a[uid][program]["eval_delta"])
+                <= -MATERIAL_THRESHOLD))]
+    cell_contrast = {
+        "status": "POST_HOC_DESCRIPTIVE",
+        "not_a_judgment": (
+            "C1 is judged on the pre-registered macro bar only; this "
+            "per-cell count was not pre-registered, opens nothing and "
+            "closes nothing"
+        ),
+        "cells_examined": len(order) * len(cleaning),
+        "cells_with_opposite_material_sign": len(sign_cells),
+        "cells": sign_cells,
+    }
+
+    ratios = sorted(float(c_c[uid][program]["explained_variance_ratio"])
+                    for uid in order for program in programs)
+    frozen_basis = {
+        "rank": int(pca.RANK),
+        "rank_basis": pca.CONSUMER_SPEC["rank_basis"],
+        "rank_fixture_floor": 0.90,
+        "threshold_quantile": float(pca.THRESHOLD_QUANTILE),
+        "threshold_basis": pca.CONSUMER_SPEC["threshold_basis"],
+        "scanned_on_yahoo": False,
+        "realized_explained_variance_ratio": {
+            "n_fits": len(ratios),
+            "min": ratios[0],
+            "median": ratios[len(ratios) // 2],
+            "max": ratios[-1],
+            "share_below_fixture_floor": sum(
+                1 for v in ratios if v < 0.90) / len(ratios),
+            "reading": (
+                "reported as a diagnostic only; the rank stays 3 and is "
+                "not re-picked from these numbers"
+            ),
+        },
+    }
+
+    identity_positives = int(c_b_fits["identity"]["training_positives"])
+    supervised_training_evidence = {
+        "status": "POST_HOC_DESCRIPTIVE",
+        "not_the_preregistered_flag": (
+            "the pre-registered side flag reads eval-side macro recall; "
+            "this is the training-side positive-row census and was not "
+            "pre-registered"
+        ),
+        "per_program": {
+            program: {
+                "rows_entering_fit": int(c_b_fits[program]["training_rows"]),
+                "positive_rows": int(c_b_fits[program]["training_positives"]),
+                "positive_rows_delta_vs_identity": int(
+                    c_b_fits[program]["training_positives"])
+                - identity_positives,
+            }
+            for program in programs
+        },
+    }
+
+    obligations = {
+        "llm_calls": 0,
+        "forecast_retrains": 0,
+        "roster_size": len(order),
+        "sealed_series_read": 0,
+        "sealed_series_note": (
+            "the roster is the first %d files of the frozen Yahoo list in "
+            "lexicographic order; the remaining 41 are never opened here"
+            % len(order)
+        ),
+        "noaa_nab_smd_beyond_17520_reads": 0,
+        "fit_budget_respected": bool(budget.used <= M0C_FIT_CAP),
+        "fit_budget_used": int(budget.used),
+        "fit_budget_cap": int(M0C_FIT_CAP),
+        "anchor_reproduction": anchor.get("status"),
+        "preregistered_predictions_scored": len(predictions),
+        "preregistered_predictions_missed": [
+            row["arm"] for row in predictions if not row["held"]],
+        "frozen_before_yahoo": ["pca rank", "pca threshold quantile"],
+        "rescanned_on_yahoo": False,
+        "methods_package_touched": False,
+        "mask_fit_policy_run": False,
+    }
+
     if anchor.get("status") == "ANCHOR_MISMATCH":
         verdict = "INSTRUMENT_UNREADABLE"
     elif smoke:
@@ -7331,6 +7421,10 @@ def m0c_consumer_flip_v1(limit: int = L1_ROSTER_N) -> int:
             "rows": supervised_damage,
         },
         "preregistered_predictions": predictions,
+        "frozen_parameter_basis": frozen_basis,
+        "cell_level_sign_contrast": cell_contrast,
+        "supervised_training_evidence": supervised_training_evidence,
+        "obligations": obligations,
         "verdict": {"verdict": verdict, "c1": c1, "c2": c2,
                     "side_flag": side_flag},
         "cost": {
@@ -7448,7 +7542,69 @@ def _m0c_markdown(payload: Mapping[str, Any]) -> str:
     for row in payload["preregistered_predictions"]:
         lines.append("| %s | %s | %s |" % (
             row["arm"], row["prediction"], "YES" if row["held"] else "NO"))
+
+    roster = list(payload["held_fixed"]["roster"])
+    per_series = payload["per_series"]
+    lines.extend(["", "## Full per-series matrix", ""])
+    for arm, title in arms:
+        lines.extend([
+            "### %s" % title,
+            "",
+            "| series | identity F1 | %s |" % " | ".join(
+                "%s Δ" % p for p in cleaning),
+            "|---|---|%s" % ("---|" * len(cleaning)),
+        ])
+        for uid in roster:
+            cells = per_series[uid][arm]
+            lines.append("| %s | %.4f | %s |" % (
+                uid, cells["identity"]["f1"],
+                " | ".join("%+.4f" % cells[p]["eval_delta"]
+                           for p in cleaning)))
+        lines.append("")
+
+    basis = payload["frozen_parameter_basis"]
+    realized = basis["realized_explained_variance_ratio"]
+    lines.extend([
+        "## Frozen reconstruction parameters and their basis",
+        "",
+        "- rank = %s. %s" % (basis["rank"], basis["rank_basis"]),
+        "- threshold quantile = %s. %s" % (
+            basis["threshold_quantile"], basis["threshold_basis"]),
+        "- scanned on Yahoo: %s" % basis["scanned_on_yahoo"],
+        "- realized explained-variance ratio over %d fits: min %.4f, "
+        "median %.4f, max %.4f; %.1f%% of fits sit below the 0.90 fixture "
+        "floor.  %s" % (
+            realized["n_fits"], realized["min"], realized["median"],
+            realized["max"], 100.0 * realized["share_below_fixture_floor"],
+            realized["reading"]),
+        "",
+        "## Descriptive readings (not judgments)",
+        "",
+    ])
+    contrast = payload["cell_level_sign_contrast"]
+    lines.extend([
+        "- per-cell sign contrast (%s): %d of %d (series, cleaning program) "
+        "cells put the IForest and the reconstruction Consumer on materially "
+        "opposite sides.  %s" % (
+            contrast["status"], contrast["cells_with_opposite_material_sign"],
+            contrast["cells_examined"], contrast["not_a_judgment"]),
+        "",
+        "- supervised training-evidence census (%s): %s" % (
+            payload["supervised_training_evidence"]["status"],
+            payload["supervised_training_evidence"][
+                "not_the_preregistered_flag"]),
+        "",
+        "| program | rows entering pooled fit | positive rows | Δ vs identity |",
+        "|---|---|---|---|",
+    ])
+    for program, row in payload["supervised_training_evidence"][
+            "per_program"].items():
+        lines.append("| %s | %d | %d | %+d |" % (
+            program, row["rows_entering_fit"], row["positive_rows"],
+            row["positive_rows_delta_vs_identity"]))
+
     cost = payload["cost"]
+    obligations = payload["obligations"]
     lines.extend([
         "",
         "## Budget",
@@ -7461,7 +7617,14 @@ def _m0c_markdown(payload: Mapping[str, Any]) -> str:
                       for k, v in cost["ad_fits_by_consumer"].items())),
         "- mask fit policy: %s" % cost["mask_fit_policy"],
         "",
-        "## Cleaning programs read",
+        "## Obligation self-report",
+        "",
+    ])
+    for key in sorted(obligations):
+        lines.append("- %s: %s" % (key, obligations[key]))
+    lines.extend([
+        "",
+        "## Menu",
         "",
         "menu: %s (cleaning: %s)" % (programs, cleaning),
         "",

@@ -133,7 +133,7 @@ CONSUMER_SPEC: dict[str, Any] = {
     ),
     "threshold_basis": (
         "parity with the in-service IForest Consumer's contamination = 0.1: "
-        "both Consumers carry the same 10%% frozen training-time alarm "
+        "both Consumers carry the same 10% frozen training-time alarm "
         "budget, so a delta between them is not an alarm-rate artefact"
     ),
     "query_rule": "residual > frozen threshold; the Query bytes are never written",
