@@ -16,6 +16,9 @@ F1_BINDING = (
 )
 EXPECTED_CONTENT_SHA = "8f3845b09322109c878892d88d79810d07d303841574b1df10b3b94e33fca35e"
 EXPECTED_RUNTIME_SHA = "7035aef5d57499e21a58b0dc44124255fdfd833eb744815ba63c7befef44f709"
+# The runtime bundle F1 was bound to when the compatibility record was written.
+# It is a historical constant, not a prediction about later runtimes.
+EXPECTED_F1_RUNTIME_SHA = "7cb9fa3370cd2e579563d39273af4eae39d765214a953a11ed5756d5d7aae7ea"
 
 
 def test_m0_h2_release_keeps_historical_lock_and_recompiles_compatibly() -> None:
@@ -72,6 +75,21 @@ def test_m0_release_manifest_and_capability_ledger_match_snapshot() -> None:
 
 
 def test_f1_runtime_binding_reuses_h2_content_without_claiming_an_edit() -> None:
+    """The compatibility record claims content reuse, not a frozen runtime.
+
+    #42l-b: the recorded ``f1_runtime_bundle_sha`` is historical evidence of
+    the runtime F1 bound to, so it is checked against the constant the record
+    carries rather than against a fresh recompile.  Runtime bundle drift is
+    normal and is pinned as such by
+    ``test_m0_h2_release_keeps_historical_lock_and_recompiles_compatibly``,
+    which asserts ``snapshot.runtime_bundle_sha != EXPECTED_RUNTIME_SHA``;
+    comparing a frozen record against today's recompile made this assertion
+    fail as soon as any runtime source moved.  What the record actually claims
+    -- authoring content unchanged -- is still checked live, through
+    ``harness_content_sha`` and ``compile_compatible_snapshot``.  The record
+    itself is not rewritten (AGENTS.md §7: historical SHAs and artifacts are
+    preserved).
+    """
     binding = parse_json_document(F1_BINDING.read_bytes())
     snapshot = compile_compatible_snapshot(
         RELEASE_ROOT,
@@ -82,4 +100,10 @@ def test_f1_runtime_binding_reuses_h2_content_without_claiming_an_edit() -> None
     assert binding["content_identity_verified"] is True
     assert binding["harness_content_sha"] == snapshot.harness_content_sha
     assert binding["historical_m0_runtime_bundle_sha"] == EXPECTED_RUNTIME_SHA
-    assert binding["f1_runtime_bundle_sha"] == snapshot.runtime_bundle_sha
+    assert binding["f1_runtime_bundle_sha"] == EXPECTED_F1_RUNTIME_SHA
+    # The record exists because F1 rebound the runtime: the two runtime shas it
+    # carries must differ, while the authoring content sha does not move.
+    assert (
+        binding["f1_runtime_bundle_sha"]
+        != binding["historical_m0_runtime_bundle_sha"]
+    )
