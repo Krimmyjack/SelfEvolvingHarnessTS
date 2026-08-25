@@ -870,6 +870,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **主线承重口径(sol 点 6)在预测线三项全立(development 级 caveat:已曝光数据、单次配对跑方向 only、per_channel 平局 = 该 cell 积累无边际作用)**:A5 更快(−31.7% 首正成本)、held-out 更好(+0.276)、伤害更少(1 vs 4)。**G1-G5 入册**:G1 fc.stage_4 缺陷仍在役(他调用方继承,债);G2 #45-Frep 工件终态列作废(链与 held-in 读数仍有效,终态只准引 frep-b 工件);G3 FreshSearch 构造器 3 次决策无关 identity 基线 fit 触 held-out support 起点(对称无用,役中修出范围);G4 **held-in 正向方案 held-out 4/4 伤 = Scope/过拟合行素材**(A3 教训 = 未来 Scope 线证据);G5 per_channel 无边际。两披露采纳(两遍部署 13 读数字节同验证;03b07bf 已含 Frep 工件更正)。Part 0 = 098ec40(7 文件)。**Forecasting 线收口;按 sol 点 4 CLS-replay 发车**(controlled classification dynamic-binding 于 HEAD 重放,第二任务正向生命周期验证)。
 
+### CLS-replay 收口 = C38:REPLAY_REPRODUCED(第二任务生命周期 HEAD 验活);X4 与 Frep-G4 同源主题入册;CLS-2 值损坏资格门发车(2026-08-25 10:5x,主线)
+
+**判定采纳**:受控分类 dynamic-binding 能力在 HEAD 精确复现——plan/evaluate/罐装 fast-path 三腿 canonical SHA 逐字节同(全链无 RNG 零 LLM);live-LLM 腿协议零失败(schema/合同/禁字段/未晋升技能全 0,五 context 决策/能力 ID/步骤逐字同),波动仅自由文本与 token 计。守卫逐段复现:H1 精确绑定 6/6、H0 失配 6/6、event_erasure_guard 六触发全 ABSTAIN_KEEP_INCUMBENT 伤害恒 0;两个非平凡回执(ToeSegmentation1 零增益回滚弃 +0.0526 真实收益、SonyAIBO 平局倒向 H0 失 0.178)逐字复现。TaskContext 走 runner 级 legacy typed 路径(classification-local-event-quality-v1),未接 T6 inlet,如实记录未顺手接线。执行者 base 解释器事故当场自抓、作废重跑,零污染。Part 0 = 84aabd1。sol 点 4 门过。
+
+**X 系发现入册**:**X4 载重——A5−A4 = −0.01576,零反馈 source-only 臂反超完整 A5**(根因即两个保守回执;冻结门只测 A5>A3 从不测 A5>A4);**与 #45-Frep G4(held-in 正向方案 held-out 全伤)同源主题:held-in 反馈可误导——预测线上选中不泛化方案,分类线上保守规则丢真实收益**。裁定:第二任务不得读成"A5 占优";"A5 vs A4"缺口列 #46 前必答问题(哪些场景反馈净增值、哪些场景先验已足);该主题升格为**跨任务重复观测**,#46 细化主张素材。X1(live fast-path 静默覆写历史 plan 证据,§7 抵触)记债——证据保全修复列下一工程窗;X2 零回归测试保护、X3 材料指纹缺口、X5 provider token 口径注记。TEST 打开 6 条系原书已 EXPOSED 材料 development 重放,合规。
+
+**CLS-2 值损坏资格门发车(sol 点 5;train-only missingness family 正式关闭)**:缺陷 = **单一连续段噪声爆发**(每灾行 1 段,段长 15–20% 行长,幅度 4–6× 行 std,50% 行受灾分层保类平衡,seed 固定)——与 W43 点脉冲族机制区分(连续段 vs 孤立点);identity 无法丢行逃逸(值损坏无 NaN 标记),直接拟合于损坏特征 = 伤害通道;菜单 = identity + hampel_filter + 执行者从注册表侦察的第二合法段修复候选(≤2,机制匹配,无则单 Workflow 并报);门沿 r2(伤害 ≤ −0.05/恢复 ≥50%/类 recall 守卫/Support 方向);底物 GunPoint/ECG200 二选一(选 clean acc 更有下落空间者);0 LLM,fit ≤50。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
