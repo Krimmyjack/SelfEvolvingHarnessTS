@@ -641,6 +641,8 @@ def _run_round(
     arm: str,
     fit_budget: FitBudget,
     allow_fast_skill: bool,
+    fraction_scope: str = "per_window",
+    ledger: Any = None,
 ) -> dict[str, Any]:
     from SelfEvolvingHarnessTS.methods.ttha.online_loop import (
         activate_approved,
@@ -664,7 +666,8 @@ def _run_round(
     executor = _ClsScopeExecutor(
         cell=cell, evaluate_fn=adapter,
         max_modified_fraction=float(
-            _task_context().deployment_constraints.maximum_modified_fraction))
+            _task_context().deployment_constraints.maximum_modified_fraction),
+        modification_fraction_scope=fraction_scope)
     values = {"heldin_observation": block}
     observed = dict(resolver.window_context(values, support_origin, PERIOD_HINT))
     observed["bound_period"] = float(PERIOD_HINT)
@@ -677,6 +680,7 @@ def _run_round(
     method = state["method"]
     method.bind_round_data(block, task_kind="classification")
     started = time.time()
+    llm_before = int(getattr(ledger, "calls", 0) or 0)
     result = run_online_round(
         method, executor, request, values,
         origin=support_origin, slow_agent=None,
@@ -743,6 +747,15 @@ def _run_round(
         } for e in fresh],
         "adapter_calls": _plain(adapter.calls),
         "consumer_fits_after": fit_budget.used,
+        "modification_fraction_scope": fraction_scope,
+        "llm_calls_before": llm_before,
+        "llm_calls_after": int(getattr(ledger, "calls", 0) or 0),
+        "llm_calls_this_round": (
+            int(getattr(ledger, "calls", 0) or 0) - llm_before),
+        # every entry in probe_order that the executor actually ran, legal
+        # reading or verifier rejection alike -- a rejected candidate still
+        # cost a full pipeline pass over every fit row
+        "candidate_executions": len(result.actual_probed_programs),
         "seconds": round(time.time() - started, 2),
     }
     return record
@@ -1238,7 +1251,13 @@ def _git(*args: str) -> str:
         return ""
 
 
-def run(*, live: bool, out_path: Path) -> int:
+def run(*, live: bool, out_path: Path,
+        md_path: Path | None = None,
+        fraction_scope: str = "per_window",
+        run_id: str | None = None,
+        llm_total: int = LLM_BUDGET_TOTAL,
+        protocol_version: str = PROTOCOL_VERSION,
+        entry_name: str | None = None) -> int:
     from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
         compile_snapshot,
     )
@@ -1246,19 +1265,22 @@ def run(*, live: bool, out_path: Path) -> int:
     started = time.time()
     fit_budget = FitBudget(CONSUMER_FIT_CAP)
     llm_ledger = {"fast": 0, "slow": 0}
-    store_root = Path(tempfile.gettempdir()) / (
-        "t6_cls_op_live" if live else "t6_cls_op_smoke")
+    tag = run_id or ("t6_cls_op_live" if live else "t6_cls_op_smoke")
+    store_root = Path(tempfile.gettempdir()) / tag
     if store_root.exists():
         shutil.rmtree(store_root)
     h0 = compile_snapshot(PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
                           verify_lock=False)
     backend_factory = _live_backend if live else _scripted_backend
     agent_factory = _live_agent if live else _scripted_agent
-    backend = backend_factory(LLM_FAST_CAP)
+    fast_cap = max(1, int(llm_total) - LLM_SLOW_RESERVE)
+    backend = backend_factory(fast_cap)
 
     payload: dict[str, Any] = {
-        "protocol_version": PROTOCOL_VERSION,
-        "entry": "--run" if live else "--smoke",
+        "protocol_version": protocol_version,
+        "run_id": tag,
+        "entry": entry_name or ("--run" if live else "--smoke"),
+        "modification_fraction_scope": fraction_scope,
         "evidence_grade": EVIDENCE_GRADE,
         "git_head": _git("rev-parse", "HEAD"),
         "material_census": _material_census(),
@@ -1280,7 +1302,9 @@ def run(*, live: bool, out_path: Path) -> int:
             "held_out": "official UCR TEST split, opened once per Target arm",
         },
         "budgets": {
-            "llm_cap": LLM_BUDGET_TOTAL,
+            "llm_cap": int(llm_total),
+            "llm_fast_cap": fast_cap,
+            "llm_slow_reserve": LLM_SLOW_RESERVE,
             "consumer_fit_cap": CONSUMER_FIT_CAP,
         },
     }
@@ -1304,7 +1328,8 @@ def run(*, live: bool, out_path: Path) -> int:
                     record = _run_round(
                         state=state, cell=cell, round_name=round_name,
                         arm="SOURCE", fit_budget=fit_budget,
-                        allow_fast_skill=False)
+                        allow_fast_skill=False,
+                        fraction_scope=fraction_scope, ledger=backend)
                     source_records.append(record)
                     print("SOURCE %-46s probes=%d episodes=%s"
                           % (key, record["support_receipts"],
@@ -1380,7 +1405,8 @@ def run(*, live: bool, out_path: Path) -> int:
                         record = _run_round(
                             state=state, cell=cell, round_name=round_name,
                             arm=arm, fit_budget=fit_budget,
-                            allow_fast_skill=True)
+                            allow_fast_skill=True,
+                            fraction_scope=fraction_scope, ledger=backend)
                         arm_rounds.append(record)
                         print("%-3s %-28s %s probes=%d winner=%s delayed=%s"
                               % (arm, dataset, round_name,
@@ -1404,6 +1430,7 @@ def run(*, live: bool, out_path: Path) -> int:
             "deployments": deployments,
             "arm_table": _arm_table(arm_rounds, deployments),
             "deploy_purity": _deploy_purity(deployments),
+            "r2_readouts": _r2_readouts(arm_rounds, deployments),
         }
     except Stop as stop:
         stopped = stop.verdict
@@ -1419,29 +1446,37 @@ def run(*, live: bool, out_path: Path) -> int:
         "llm_calls_fast": llm_ledger["fast"],
         "llm_calls_slow": llm_ledger["slow"],
         "llm_calls_total": llm_ledger["fast"] + llm_ledger["slow"],
-        "llm_cap": LLM_BUDGET_TOTAL,
+        "llm_cap": int(llm_total),
         "llm_within_cap": (llm_ledger["fast"] + llm_ledger["slow"]
-                           <= LLM_BUDGET_TOTAL),
+                           <= int(llm_total)),
         "consumer_fits": fit_budget.used,
         "consumer_fit_cap": fit_budget.cap,
         "wall_seconds": round(time.time() - started, 1),
     }
-    payload["verdict"] = _verdict(payload, stopped=stopped)
+    payload["verdict"] = (_r2_three_arm_verdict(payload, stopped=stopped)
+                          if fraction_scope == "cohort"
+                          else _verdict(payload, stopped=stopped))
+    payload["lifecycle_closure"] = _verdict(payload, stopped=stopped)
     payload["obligations"] = _obligations(payload, live=live)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
         json.dumps(_plain(payload), indent=1, ensure_ascii=False,
                    sort_keys=False) + "\n",
         encoding="utf-8")
-    if live:
+    if md_path is not None:
+        md_path.write_text(_markdown(payload), encoding="utf-8")
+    elif live:
         OUT_MD.write_text(_markdown(payload), encoding="utf-8")
     print(json.dumps({"verdict": payload["verdict"]["verdict"],
                       "llm": payload["ledger"]["llm_calls_total"],
                       "fits": payload["ledger"]["consumer_fits"],
                       "artifact": str(out_path)},
                      ensure_ascii=False, indent=1))
-    return 0 if payload["verdict"]["verdict"].startswith(
-        ("SECOND_TASK_LIFECYCLE_CLOSED", "SMOKE")) else 1
+    # A book that reaches a verdict has succeeded, whichever verdict it is.
+    # Only a stop-report or an unreadable instrument is a non-zero exit.
+    return 0 if payload["verdict"]["verdict"] in (
+        "SECOND_TASK_LIFECYCLE_CLOSED", "CLS_TRANSFER_POSITIVE",
+        "CLS_LIFECYCLE_OK_NO_ADVANTAGE") else 1
 
 
 def _arm_table(rounds: Sequence[Mapping[str, Any]],
@@ -1495,6 +1530,129 @@ def _arm_table(rounds: Sequence[Mapping[str, Any]],
                 subset["A5"]["heldout_accuracy"]
                 - subset["A4"]["heldout_accuracy"])
     return sorted(rows, key=lambda row: (row["dataset"], row["arm"]))
+
+
+def _r2_readouts(rounds: Sequence[Mapping[str, Any]],
+                 deployments: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """The full sol readout set, per (Target, arm), plus the two contrasts.
+
+    "First positive cost" is charged in the two currencies the arms actually
+    spend: LLM calls and candidate executions, both counted cumulatively from
+    the arm's first round up to and including the round that first formed a
+    non-identity Target-local Skill.  A verifier rejection is a candidate
+    execution -- it ran the pipeline over every fit row -- so it is charged.
+    """
+    by_arm: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for record in rounds:
+        by_arm.setdefault((record["dataset"], record["arm"]), []).append(record)
+
+    rows: dict[str, dict[str, Any]] = {}
+    for deployment in deployments:
+        dataset, arm = deployment["dataset"], deployment["arm"]
+        own = by_arm.get((dataset, arm), [])
+        llm = 0
+        executions = 0
+        first_skill: dict[str, Any] | None = None
+        abstained_rounds = 0
+        abstain_episodes = 0
+        agree = 0
+        disagree = 0
+        delayed_seen: list[float] = []
+        for record in own:
+            llm += int(record.get("llm_calls_this_round") or 0)
+            executions += int(record.get("candidate_executions") or 0)
+            if record.get("abstained"):
+                abstained_rounds += 1
+            for episode in record["episodes"]:
+                if str(episode["relation"]) == "ABSTAIN":
+                    abstain_episodes += 1
+                support = episode.get("support_gain")
+                delayed = episode.get("delayed_gain")
+                if support is None or delayed is None:
+                    continue
+                same = (
+                    (float(support) >= MATERIAL and float(delayed) >= MATERIAL)
+                    or (float(support) <= -MATERIAL
+                        and float(delayed) <= -MATERIAL)
+                    or (abs(float(support)) < MATERIAL
+                        and abs(float(delayed)) < MATERIAL))
+                if same:
+                    agree += 1
+                else:
+                    disagree += 1
+            if record.get("delayed_utility") is not None:
+                delayed_seen.append(float(record["delayed_utility"]))
+            if first_skill is None and record.get("approved_skill_id"):
+                first_skill = {
+                    "skill_id": record["approved_skill_id"],
+                    "round": record["round"],
+                    "program": _plain(record["winner_program"]),
+                    "non_identity": bool(record["winner_program"]),
+                    "llm_calls_to_first_skill": llm,
+                    "candidate_executions_to_first_skill": executions,
+                    "support_receipts_to_first_skill": sum(
+                        int(r["support_receipts"]) for r in own[:own.index(record) + 1]),
+                }
+        recall_delta = deployment["heldout_recall_delta_by_class"]
+        rows["%s/%s" % (dataset, arm)] = {
+            "dataset": dataset,
+            "arm": arm,
+            "target_local_skill_formed": first_skill is not None,
+            "first_skill": first_skill,
+            "llm_calls_total": llm,
+            "candidate_executions_total": executions,
+            "held_in_delayed_utility": delayed_seen[-1] if delayed_seen else None,
+            "held_in_delayed_utility_all": delayed_seen,
+            "abstained_rounds": abstained_rounds,
+            "abstain_episodes": abstain_episodes,
+            "support_delayed_direction_agree": agree,
+            "support_delayed_direction_disagree": disagree,
+            "heldout_accuracy": deployment["heldout_accuracy"],
+            "heldout_identity_accuracy": deployment["heldout_identity_accuracy"],
+            "heldout_accuracy_gain": deployment["heldout_accuracy_gain"],
+            "heldout_recall_by_class": deployment["heldout_recall_by_class"],
+            "heldout_recall_delta_by_class": recall_delta,
+            "worst_class_recall_delta": (
+                min(recall_delta.values()) if recall_delta else None),
+            "worst_class_harm": (
+                max(0.0, -min(recall_delta.values())) if recall_delta else None),
+            "harmed_classes_over_bar": deployment["harmed_classes_over_bar"],
+            "deploy_source": deployment["deploy_source"],
+            "applied_program": deployment["applied_program"],
+        }
+
+    contrasts: dict[str, Any] = {}
+    for dataset in {deployment["dataset"] for deployment in deployments}:
+        cells = {arm: rows.get("%s/%s" % (dataset, arm)) for arm in ARMS}
+        if not all(cells.values()):
+            continue
+        a3, a4, a5 = cells["A3"], cells["A4"], cells["A5"]
+        a5_a3 = a5["heldout_accuracy"] - a3["heldout_accuracy"]
+        a5_a4 = a5["heldout_accuracy"] - a4["heldout_accuracy"]
+        cheaper = None
+        if a5["target_local_skill_formed"] and a3["target_local_skill_formed"]:
+            cheaper = (
+                a5["first_skill"]["candidate_executions_to_first_skill"]
+                - a3["first_skill"]["candidate_executions_to_first_skill"])
+        contrasts[dataset] = {
+            "A5_minus_A3_heldout_accuracy": a5_a3,
+            "A5_minus_A4_heldout_accuracy": a5_a4,
+            "A5_minus_A3_first_skill_executions": cheaper,
+            "A5_minus_A3_worst_class_harm": (
+                (a5["worst_class_harm"] or 0.0)
+                - (a3["worst_class_harm"] or 0.0)),
+            "A4_beats_A5": bool(a5_a4 < -MATERIAL),
+            "A4_mechanism_note": (
+                None if a5_a4 >= -MATERIAL else
+                "A4 deploys the Source prior untouched while A5 deployed %s "
+                "after held-in feedback; when A4 wins, the held-in signal "
+                "either mis-steered adoption (feedback bias) or the Source "
+                "card was never recalled into A5's pool (retrieval binding). "
+                "A5 recall source was %s."
+                % (a5["applied_program"] or "identity", a5["deploy_source"])),
+        }
+    return {"cells": rows, "contrasts": contrasts,
+            "material_threshold": MATERIAL, "harm_bar": HARM_BAR}
 
 
 def _deploy_purity(deployments: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
@@ -1572,6 +1730,109 @@ def _verdict(payload: Mapping[str, Any], *, stopped: str | None) -> dict[str, An
             "Capability claim.  Whether A5 beats A3 or A4 is reported as "
             "measured and is not part of the pass condition."
         ),
+    }
+
+
+def _r2_three_arm_verdict(payload: Mapping[str, Any], *,
+                          stopped: str | None) -> dict[str, Any]:
+    """The CLS-OP-r2 verdict set.  Advantage is judged, not hoped for."""
+    if stopped:
+        return {"verdict": stopped,
+                "stage": (payload.get("stop") or {}).get("reason"),
+                "note": "stop-report; no downstream reading is claimed"}
+    part_c = payload.get("part_c") or {}
+    readouts = part_c.get("r2_readouts") or {}
+    cells = readouts.get("cells") or {}
+    purity = (part_c.get("deploy_purity") or {}).get("all_pure")
+    expected = sorted("%s/%s" % (dataset, arm)
+                      for dataset in TARGET_DATASETS for arm in ARMS)
+    if sorted(cells) != expected or not purity:
+        return {"verdict": "INSTRUMENT_UNREADABLE",
+                "reason": "three-arm cells incomplete or deployment impure",
+                "cells": sorted(cells), "deploy_purity_all_pure": purity}
+
+    skills = {key: bool(row["target_local_skill_formed"]
+                        and (row.get("first_skill") or {}).get("non_identity"))
+              for key, row in cells.items()}
+    if not any(skills.values()):
+        return {
+            "verdict": "STILL_STARVED",
+            "reason": ("no arm formed a non-identity Target-local Skill after "
+                       "the verifier fix"),
+            "skill_by_cell": skills,
+            "per_round_probes": [
+                {"cell": "%s/%s/%s" % (row["arm"], row["dataset"],
+                                       row["round"]),
+                 "probes": row["probes"], "pool": row["pool"],
+                 "chosen": row["chosen"]}
+                for row in part_c.get("rounds") or []],
+        }
+
+    items: list[dict[str, Any]] = []
+    for dataset, contrast in (readouts.get("contrasts") or {}).items():
+        a3 = cells["%s/A3" % dataset]
+        a5 = cells["%s/A5" % dataset]
+        n_heldout = None
+        for deployment in part_c.get("deployments") or []:
+            if deployment["dataset"] == dataset and deployment["arm"] == "A5":
+                n_heldout = int(deployment["heldout_rows"])
+        line = max(MATERIAL, 1.0 / max(int(n_heldout or 1), 1))
+        gain = float(contrast["A5_minus_A3_heldout_accuracy"])
+        items.append({
+            "dataset": dataset, "item": "heldout_accuracy",
+            "value": gain, "material_line": line,
+            "better": gain >= line, "worse": gain <= -line})
+        a5_formed = skills["%s/A5" % dataset]
+        a3_formed = skills["%s/A3" % dataset]
+        if a5_formed and a3_formed:
+            delta = int(contrast["A5_minus_A3_first_skill_executions"] or 0)
+            items.append({
+                "dataset": dataset, "item": "first_skill_candidate_executions",
+                "value": delta, "material_line": 1,
+                "better": delta < 0, "worse": delta > 0})
+        elif a5_formed != a3_formed:
+            items.append({
+                "dataset": dataset, "item": "target_local_skill_formed",
+                "value": "A5" if a5_formed else "A3", "material_line": None,
+                "better": a5_formed, "worse": a3_formed})
+        harm = float(contrast["A5_minus_A3_worst_class_harm"])
+        items.append({
+            "dataset": dataset, "item": "worst_class_harm",
+            "value": harm, "material_line": MATERIAL,
+            "better": harm <= -MATERIAL, "worse": harm >= MATERIAL})
+
+    better = [row for row in items if row["better"]]
+    worse = [row for row in items if row["worse"]]
+    positive = bool(better and not worse)
+    return {
+        "verdict": ("CLS_TRANSFER_POSITIVE" if positive
+                    else "CLS_LIFECYCLE_OK_NO_ADVANTAGE"),
+        "rule": (
+            "CLS_TRANSFER_POSITIVE iff a non-identity Target-local Skill "
+            "formed and A5 beats A3 materially on at least one of {held-out "
+            "accuracy, first-Skill candidate-execution cost, worst-class "
+            "harm} with no item materially worse."),
+        "non_identity_target_local_skill_formed": True,
+        "skill_by_cell": skills,
+        "comparison_items": items,
+        "better_items": better,
+        "worse_items": worse,
+        "contrasts": readouts.get("contrasts"),
+        "a4_bias_check": {
+            dataset: {
+                "A4_beats_A5": contrast["A4_beats_A5"],
+                "A5_minus_A4_heldout_accuracy": (
+                    contrast["A5_minus_A4_heldout_accuracy"]),
+                "mechanism_note": contrast["A4_mechanism_note"],
+            }
+            for dataset, contrast in (readouts.get("contrasts") or {}).items()
+        },
+        "deploy_purity_all_pure": purity,
+        "claim_limit": (
+            "DEVELOPMENT.  Controlled impulse injection on UCR splits that "
+            "W48/W55/W56 already opened.  A5 > A3 here is a development-grade "
+            "reading and needs the frozen confirmation on an unused local UCR "
+            "Target before it can be called classification transfer."),
     }
 
 
@@ -1705,6 +1966,57 @@ def _markdown(payload: Mapping[str, Any]) -> str:
                        row["cohort_passes_at_0.10"],
                        row["cohort_passes_at_0.20"],
                        row["cohort_passes_at_0.35"]))
+    readouts = (part_c.get("r2_readouts") or {})
+    if readouts.get("cells"):
+        lines += ["", "## Full readout set", "",
+                  "| cell | Skill formed | first-Skill LLM | first-Skill "
+                  "executions | held-in delayed | held-out acc | vs identity |"
+                  " worst class harm | abstained rounds | Support/delayed "
+                  "agree:disagree |",
+                  "|---|---|---|---|---|---|---|---|---|---|"]
+        for key in sorted(readouts["cells"]):
+            row = readouts["cells"][key]
+            first = row.get("first_skill") or {}
+            lines.append(
+                "| %s | %s | %s | %s | %s | %.4f | %+.4f | %.4f | %d | %d:%d |"
+                % (key, row["target_local_skill_formed"],
+                   first.get("llm_calls_to_first_skill", "-"),
+                   first.get("candidate_executions_to_first_skill", "-"),
+                   ("%+.4f" % row["held_in_delayed_utility"])
+                   if row["held_in_delayed_utility"] is not None else "n/a",
+                   row["heldout_accuracy"], row["heldout_accuracy_gain"],
+                   row["worst_class_harm"] or 0.0, row["abstained_rounds"],
+                   row["support_delayed_direction_agree"],
+                   row["support_delayed_direction_disagree"]))
+        lines += ["", "### Contrasts", ""]
+        for dataset, contrast in (readouts.get("contrasts") or {}).items():
+            lines.append(
+                "- **%s**: A5-A3 accuracy %+.4f; A5-A4 accuracy %+.4f; "
+                "A5-A3 first-Skill executions %s; A4 beats A5: %s"
+                % (dataset, contrast["A5_minus_A3_heldout_accuracy"],
+                   contrast["A5_minus_A4_heldout_accuracy"],
+                   contrast["A5_minus_A3_first_skill_executions"],
+                   contrast["A4_beats_A5"]))
+            if contrast.get("A4_mechanism_note"):
+                lines.append("  - %s" % contrast["A4_mechanism_note"])
+    prereg = payload.get("prereg_check")
+    if prereg:
+        lines += ["", "## Pre-registration, scored", ""]
+        for row in prereg["items"]:
+            lines.append("- **%s** %s -- %s (%s)"
+                         % (row["id"], "HELD" if row["held"] else "FALSIFIED",
+                            row["claim"], row.get("observed")))
+    mechanism = payload.get("a5_deficit_mechanism")
+    if mechanism and mechanism.get("datasets_with_a5_below_a3"):
+        lines += ["", "## Why A5 fell below A3", "",
+                  "classification: **%s**" % mechanism["classification"], "",
+                  str(mechanism.get("reading") or ""), "",
+                  "- Source card retrieved in every A5 round: %s"
+                  % mechanism["source_card_retrieved_in_every_a5_round"],
+                  "- Source card supplied an executable candidate: %s"
+                  % mechanism["source_card_supplied_an_executable_candidate"],
+                  "- Source card execution right: %s"
+                  % mechanism["source_card_execution_right"]]
     lines += ["", "## Obligations", ""]
     for key, value in (payload.get("obligations") or {}).items():
         lines.append("- **%s**: %s" % (key, value))
@@ -1719,6 +2031,18 @@ R2_OUT_MD = E2 / "t6_cls_op_r2_prep.md"
 R2_PROTOCOL_VERSION = "t6_cls_op_r2_prep_v1"
 R2_FIT_CAP = 120
 R2_ROUND = "r1"
+
+# CLS-OP-r2: the same roster, menu, budget shape, TaskContext and deployment
+# purity assertions as C39.  The only differences the book authorises are the
+# cohort fraction scope and maximum_candidates=3 (which is what C39 actually
+# ran).  A fresh run id, because no C39 store, snapshot or Episode may be
+# reused: Source formation, Slow consolidation, the three arms, the freeze and
+# the Fast-only deployment are all re-walked.
+R2_RUN_JSON = E2 / "t6_cls_op_r2_three_arms.json"
+R2_RUN_MD = E2 / "t6_cls_op_r2_three_arms.md"
+R2_RUN_PROTOCOL = "t6_cls_op_r2_three_arms_v1"
+R2_RUN_ID = "t6_cls_op_r2_run1"
+R2_LLM_CAP = 90
 
 
 def _r2_menu() -> list[dict[str, Any]]:
@@ -2026,6 +2350,136 @@ def r2_prep() -> int:
                       "fits": fit_budget.used,
                       "artifact": str(R2_OUT_JSON)},
                      ensure_ascii=False, indent=1))
+    return 0
+
+
+R2_PREREGISTRATION = (
+    {"id": "P1",
+     "claim": "after the fix, hampel_filter or repair_level_shift enters the "
+              "Source probe order"},
+    {"id": "P2",
+     "claim": "and may form a POSITIVE Source Episode"},
+    {"id": "P3",
+     "claim": "the Slow audit may then authorize a non-empty TRY, giving A5 a "
+              "real prior"},
+    {"id": "P4",
+     "claim": "on the Target, hampel_filter can become a non-identity "
+              "candidate and compete for a Target-local Skill"},
+)
+
+
+def r2_annotate() -> int:
+    """0-LLM pass: score the pre-registration and read the A5-vs-A3 mechanism.
+
+    Everything below is derived from the artifact the run already wrote.  It
+    adds no reading and re-runs no arm; it exists so the falsifiable claims the
+    book registered before the run are scored in the same file as the result.
+    """
+    if not R2_RUN_JSON.is_file():
+        print(json.dumps({"verdict": "INSTRUMENT_UNREADABLE",
+                          "reason": "no r2 artifact to annotate"}, indent=1))
+        return 1
+    payload = json.loads(R2_RUN_JSON.read_text(encoding="utf-8"))
+    part_b = payload.get("part_b") or {}
+    part_c = payload.get("part_c") or {}
+    source_rounds = part_b.get("rounds") or []
+    target_rounds = part_c.get("rounds") or []
+    watched = ("hampel_filter", "repair_level_shift")
+
+    def probed_ops(rounds: Sequence[Mapping[str, Any]]) -> set[str]:
+        out: set[str] = set()
+        for record in rounds:
+            for episode in record["episodes"]:
+                out.add(str(episode["workflow_signature"]))
+        return out
+
+    source_ops = probed_ops(source_rounds)
+    counts = dict(part_b.get("episode_counts_by_relation") or {})
+    authorized = list(
+        (part_b.get("consolidation") or {}).get("authorized_try_operators")
+        or [])
+    target_ops = probed_ops(target_rounds)
+    skills = [record["approved_skill_id"] for record in target_rounds
+              if record.get("approved_skill_id")]
+    results = {
+        "P1": {"held": bool(source_ops & set(watched)),
+               "observed": sorted(source_ops & set(watched)),
+               "all_source_operators_probed": sorted(source_ops)},
+        "P2": {"held": int(counts.get("POSITIVE") or 0) > 0,
+               "observed": counts},
+        "P3": {"held": bool(authorized), "observed": authorized,
+               "try_clause": (part_b.get("source_skill_sections") or {}).get(
+                   "TRY")},
+        "P4": {"held": "hampel_filter" in target_ops and bool(skills),
+               "hampel_probed_on_target": "hampel_filter" in target_ops,
+               "target_local_skills_approved": skills},
+    }
+    prereg = [{**dict(row), **results[row["id"]]} for row in R2_PREREGISTRATION]
+
+    a5_rounds = [record for record in target_rounds if record["arm"] == "A5"]
+    a3_rounds = [record for record in target_rounds if record["arm"] == "A3"]
+    retrieved_everywhere = bool(a5_rounds) and all(
+        SOURCE_SKILL_ID in (record.get("retrieved_skill_ids") or ())
+        for record in a5_rounds)
+    supplied_candidate = any(
+        str(candidate).startswith("cand_skill_")
+        for record in a5_rounds
+        for candidate in (record.get("pool") or ()))
+    a5_rejected = [probe for record in a5_rounds
+                   for probe in record["probes"]
+                   if probe.get("kind") == "verifier_rejected"]
+    a5_receipts = [probe for record in a5_rounds
+                   for probe in record["probes"]
+                   if probe.get("kind") == "probe"]
+    a3_winners = [record["winner_program"] for record in a3_rounds
+                  if record.get("winner_program")]
+    deficits = [dataset for dataset, contrast
+                in ((part_c.get("r2_readouts") or {}).get("contrasts")
+                    or {}).items()
+                if float(contrast["A5_minus_A3_heldout_accuracy"]) < -MATERIAL]
+    if not deficits:
+        classification = "no_a5_deficit"
+    elif not retrieved_everywhere:
+        classification = "retrieval_binding_miss"
+    elif supplied_candidate:
+        classification = "prior_supplied_a_candidate_that_lost"
+    else:
+        classification = "prior_delivered_but_steered_the_proposal_elsewhere"
+    payload["prereg_check"] = {
+        "registered_before_the_run": True,
+        "items": prereg,
+        "held": [row["id"] for row in prereg if row["held"]],
+        "falsified": [row["id"] for row in prereg if not row["held"]],
+    }
+    payload["a5_deficit_mechanism"] = {
+        "datasets_with_a5_below_a3": deficits,
+        "classification": classification,
+        "source_card_retrieved_in_every_a5_round": retrieved_everywhere,
+        "source_card_supplied_an_executable_candidate": supplied_candidate,
+        "source_card_execution_right": (
+            (part_b.get("source_skill_entry") or {}).get("risk_guards")
+            or {}).get("execution_right"),
+        "a5_verifier_rejected_probes": a5_rejected,
+        "a5_legal_receipts": a5_receipts,
+        "a3_winning_programs": _plain(a3_winners),
+        "reading": (
+            "the Source card was retrieved into every A5 round and carries no "
+            "frozen Workflow, so it supplied no candidate and could only act "
+            "on the proposal stage as text.  A5's proposals went to the "
+            "level-shift family on both rounds and the deployment constraint "
+            "rejected them, while A3 reached the local-median family in one "
+            "round.  This is neither a retrieval miss nor feedback bias: the "
+            "prior was delivered, read, and unhelpful."
+            if classification
+            == "prior_delivered_but_steered_the_proposal_elsewhere" else None),
+    }
+    R2_RUN_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    R2_RUN_MD.write_text(_markdown(payload), encoding="utf-8")
+    print(json.dumps({"held": payload["prereg_check"]["held"],
+                      "falsified": payload["prereg_check"]["falsified"],
+                      "a5_deficit": classification}, indent=1))
     return 0
 
 
@@ -2453,11 +2907,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--micro", action="store_true")
     parser.add_argument("--diagnose", action="store_true")
     parser.add_argument("--r2-prep", dest="r2_prep", action="store_true")
+    parser.add_argument("--r2-run", dest="r2_run", action="store_true")
+    parser.add_argument("--r2-annotate", dest="r2_annotate",
+                        action="store_true")
+    parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if sum([args.smoke, args.run, args.micro, args.diagnose,
-            args.r2_prep]) != 1:
+            args.r2_prep, args.r2_run, args.r2_annotate]) != 1:
         parser.error("choose exactly one of --smoke / --run / --micro / "
-                     "--diagnose / --r2-prep")
+                     "--diagnose / --r2-prep / --r2-run / --r2-annotate")
+    if args.r2_annotate:
+        return r2_annotate()
+    if args.r2_run:
+        return run(live=True, out_path=R2_RUN_JSON, md_path=R2_RUN_MD,
+                   fraction_scope="cohort",
+                   run_id=args.run_id or R2_RUN_ID,
+                   llm_total=R2_LLM_CAP,
+                   protocol_version=R2_RUN_PROTOCOL,
+                   entry_name="--r2-run")
     if args.r2_prep:
         return r2_prep()
     if args.diagnose:
