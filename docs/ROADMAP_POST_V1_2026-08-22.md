@@ -594,6 +594,17 @@ harness 进化文献中的存在性)完成前,不得声称"独有",入 #46 前�
   docs/DATA_QUALITY_AND_FEEDBACK_MODEL.md 建立;
   Data_Quality_Disgussion.md 定位研究档案;AGENTS.md 状态
   陈旧提请 sol 更新。
+  **主线重定向(2026-08-25 00:1x,用户+sol 裁定)**:主线自认
+  偏移(弃权保险被升格为路线)。改钉:**正向迁移 = 主线
+  (A5 vs A3 同预算对决,承重读数 = 首个有效 Skill 成本/
+  消耗/delayed/harm/held-out),弃权 = 约束与副读数**。
+  #44a(-r2)= AD 最后资格门,收口补**法定程序臂**(iqr/mad
+  于注入底物;oracle 修复不算 Agent 能力)。硬分流:三链
+  (真伤害/法定恢复/Support 可预测)全过 → AD 正向切片续;
+  法定无效 → 至多一个机制不同 AD-native Workflow;不过 →
+  **暂停 AD family,分类切片接主线**(一 Consumer × 一可读
+  缺陷 × identity+1~2 Workflow;禁干净 UCR)。**M1a/M1b 与
+  41 终考冻结待门,弃权主线支出停止**;41 条继续封存。
   **#42l 在飞**(弃权错判族修复;门 = 点名失败全绿 + 零新增
   + 方法代码零非预期变化)。**sol M0 审核采纳,总序定稿**:
   #42l → **#43 M0-C consumer-flip**(0 LLM,EXPOSED 24,

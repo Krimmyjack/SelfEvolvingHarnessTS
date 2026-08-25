@@ -846,6 +846,24 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **债三笔**:(1) **原 FRESH_A5_DELIVERS 考古注记义务**——其 held-out 数字是否同经违规 delayed 门取得,#46 前须查明并注记(首正成本主张 69 vs 123 系 held-in 侧,不受波及);(2) F2 部署协议缺陷:未来任何 A5/A3 终态对比前必须修部署对称性(无技能臂不得在计分块搜索);(3) F4:该路径 compile_snapshot(verify_lock=False) 绕锁,lock 已在 #42k-b 修复,此路径应回 True(小修,记债)。F3(19 冻结文件中 5 个已移动,兼容)注记。**过夜三线合并结论**:CLS-survey 定资格门设计 + #44-audit 定 AD claim 措辞(iforest 真伤加固/PCA 脚注)+ #45-Frep 定主链健康(活,带三笔债)——**sol 七点序的门全部满足,CLS-1 分类资格门书发车(grok,0 LLM 确定性)**。
 
+### CLS-1 收口 = INSTRUMENT_UNREADABLE(主线书面设计缺陷自认);CLS-1-r2 改注入形态续派(2026-08-25 01:4x,主线)
+
+**判定采纳,归因 = 主线设计缺陷**:书面「各行 15% 点 MCAR」×「identity=丢含 NaN 训练行」结构碰撞——L=150 时 P(整行完整)=0.85^150≈2.6e-11,identity fit 区 35/35 全丢,B1 无定义;非用户检查点②。执行侧干净:Observation 缺测信号成立(coverage 0.853/max_run 5,_MISSING_ONLY_OPS 不会跳过插补——结构前提已验);clean delayed acc 0.820;两 impute 臂可拟合(0.793);两跑 BITWISE_IDENTICAL;TEST/zip SHA 不变;fit 3/50;底物选 GunPoint(理由在册)。**预警入册**:插补后 vs clean 仅 −0.0267(< 0.05 伤害门)——散点 MCAR + 平滑序列 + 线性插补太易恢复,注入形态须换。Part 0 = 03b07bf(过夜交付 6 文件;#45-Frep runner 未在 allowlist 仍未跟踪,记下书收)。
+
+**CLS-1-r2 改形态(续派)**:注入改**行子集 + 连续段**——held-in 50% 行受灾(seed 固定),灾行内 2 段连续缺测 × 10–15 点(≈13–20% 行长);identity=丢灾行(余 50% 完好行可拟合,伤害通道 = 训练数据损失);连续段更伤 raw‖diff 特征且区分 linear vs EMA。门不变(伤害 ≤ −0.05;恢复 ≥50% 且类 recall 不恶化 >0.05;Support 方向可读)。**底物阶梯预注册**:GunPoint 先行;若 INJURY_NOT_READABLE 则 ECG200 一次(唯一换底物机会,非扫描);再不可读 → 停报(缺陷 family 需与 sol 重议,接近检查点②性质)。其余(seed/Support 切分/TEST 零触/fit 帽 50/0 LLM)沿用。
+
+### CLS-1-r2 收口 = INJURY_NOT_READABLE_BOTH(预注册停报);结构洞见:训练侧缺测对干净 TEST 的分类是弱通道;三候选重设计待 sol(2026-08-25 01:5x,主线)
+
+**判定采纳**:仪器已修好(identity 有定义:GunPoint 17/35 行、ECG200 36/70 行;Observation 缺测信号两边成立 max_run=15;两跑 BITWISE_IDENTICAL;16/50 fits;TEST/zip SHA 不变),但两底物均读不出 ≥0.05 伤害——GunPoint 丢 18/35 灾行 delayed Δacc = **0.000**(ridge 在 17 行 = 35 行,训练数据高度冗余);ECG200 丢 34/70 行 **+0.020 反号**(多数类 recall 升 0.797→0.922,少数类降);两 impute 臂相对 clean 各约 −0.03。按预注册阶梯停报,非检查点②(headroom 未及测,伤害先造不出来)。
+
+**主线结构洞见(晨议核心)**:文献(Rhodes 2025 等)的插补效应在 train+test **都缺**的设定下取得——插补质量主要在**推断时**咬合;我们的协议墙(TEST 零触且干净)恰好关掉了这条主通道。**对分类任务,训练侧-only 的缺测是弱伤害通道**(ridge 对训练行损失/轻噪声高度稳健,任务边界宽)——这与预测/AD 不同(那两者的 Consumer 本体就是训练产物)。资格门若要开,伤害通道必须换。**三候选重设计(待 sol 裁)**:(A) identity 语义改"零填充最小默认"(而非丢行)→ 可全行受灾,零填充真实扭曲 raw‖diff 特征,伤害可读性高;识别风险 = 零填充是否算诚实 identity(Consumer 侧文档化最小策略,类比 AD adapter 弃权正典)。(B) 缺陷族换**值损坏**(段平坦化/噪声爆发,非 NaN)→ identity 无法用丢行逃逸,特征真实受损;风险 = 与 W43 impulse 族部分重叠,须机制区分(段级 vs 点级)。(C) 缩小训练集(fit 行 ≤10)使每行都承重 → 行损失通道复活;风险 = 量化台阶变粗(n 小)。**另可考虑(D):承认分类切片按此协议墙难产正效应,回 sol 重议切片选择**——但 (A)/(B) 未试前不宜下此结论。今夜停机;CLS-1/r2 两报告由下书 Part 0 收。
+
+### sol 晨间六点裁定采纳;#45-Frep-b 部署修复书发车(2026-08-25 09:4x,主线)
+
+**六点全采纳**:(1) AD 探索冻结——AUPRC 审计保留为负向边界,不追加实验/Consumer/Program/弃权路线,Yahoo 41 不读,AD 不作当前核心 Capability 贡献;(2) 下一书**只修** Frep 两协议缺陷:held-out 零反馈零搜索;A5/A3 对称只用冻结状态;优先从既有快照重新部署,禁顺带修历史债或扩仪器;(3) 修后重裁 A5/A3(首正成本/LLM+fit/held-out 终态/harm),**不得为得正结果继续调协议**;(4) Forecasting 收口后,当前 HEAD 重放既有 controlled classification dynamic-binding capability,验证第二 Task 正向生命周期与 A5/A3;(5) 其后关闭 train-only missingness family,分类新缺陷 = **单一连续段值损坏**(主线候选 B 获准),identity + ≤2 Workflow,本地 UCR,先过无 Agent 资格门;(6) 安全/abstain 仅约束;主线承重 = A5 比 A3 更快更少试错形成有效 Target-local Skill 且 held-out 不差或更好。
+
+**#45-Frep-b 发车(Frep session 续派)**:范围 = 仅部署与计分段重做——(a) 修 F1:部署阶段零 delayed 打开、零 held-out 反馈;(b) 修 F2:两臂对称,只从冻结快照部署(有 ACTIVE 技能臂 Fast-only 召回;无技能臂部署其冻结态既定 incumbent/identity,禁计分块搜索);(c) 优先复用 Frep 四臂既有字节稳定快照与 held-in 读数,只重跑部署+计分;快照不可用即停报。读数 = sol 点 3 四项;判定 = A5A3_TERMINAL_READJUDICATED / SNAPSHOT_UNAVAILABLE / INSTRUMENT_UNREADABLE;预期 0 LLM、重训 ≤100。**排队(不派)**:点 4 分类受控能力重放书(Frep-b 收口后设计);点 5 值损坏资格门(重放后)。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
