@@ -934,6 +934,46 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **执行质量**:Part 0b 锁重生成 content sha 一致(cb03eb6);fresh run-id,C39 状态零复用(Source 快照 sha 异);Source Episode 4→9(6N/2C/1NEG,6/6 cell 有回执);LLM 69/90、fit 41/600;纯度 6/6;中断恢复自证(无残件,LLM 0 起算);未为正结果动任何门。**发现四则**:AddTargetExistsError 生命周期缺口(同步骤新 id 候选不识别为重部署,二轮确认证据未入 Skill 记录——债);0-LLM 预检有真实预测力(census 预测与实测逐项符,建议固化为标准前置——采纳为站规);headroom 尺与生命周期 POSITIVE 尺分开报(站规);单候选轮放大先验影响。**排程**:CLS-CONF 发车(sol 步 5:未用 UCR Target 机械选一,同注入模板同预算,A3+identity 两臂,验 +0.2690 非孤例);**OBSERVE 指名规则假设呈 sol**(单面:"TRY 为空时 OBSERVE 不得指名算子",同账本重跑 A5 臂可证伪——先验误导的治理修复,与契约红线同宗)。
 
+### CLS-CONF-r2 停摆:PREDICTION_GATE_FAILED——字面 token 规则下合格集空,与预注册 8 件/Computers 不符;0 LLM 收工(2026-08-25 20:3x,执行方)
+
+**判定**:**PREDICTION_GATE_FAILED**(停摆类)。选中 Target = **None**。机器重算合格集 `[]`,预注册 8 件(Computers / FreezerRegularTrain / GunPointMaleVersusFemale / GunPointOldVersusYoung / PowerCons / SemgHandGenderCh2 / WormsTwoClass / Yoga)全部因认领 runner 文件文本含 `fit_only_artifact` 或 `stable_task_event` 出局。按书:不得消耗 LLM、不得现场放宽或收紧规则。Part B 两臂未开。
+
+**选靶归属摘要(40 zip, r1 census 缓存复用)**:其余排除条件未动——不可载入 2(DodgerLoopWeekend、KeplerLightCurves);TRAIN 行数不在 [40,400] 的照旧出局;无非二分类。收窄后的"未使用"=认领 `evaluation/functional/run_*` 文件不含两条件 token。在行数合格且可载入的二分类里,预测 8 件与 Earthquakes/Ham/Herring/Wine/ECG200/GunPoint/GunPointAgeSpan/HouseTwenty/Lightning2/ToeSegmentation1 等一律命中 token。
+
+**Earthquakes 排除证明**:认领方仅 `run_e2_action_credit_candidate_ordering.py`;该文件文本同时含 `fit_only_artifact` 与 `stable_task_event`。与主线预注册一致。
+
+**预测 8 件为何全灭(书外发现,规则未改)**:主线预算把"只被 integrated_context / source_prior 认领"当成"未在 impulse 条件对下使用"。字面 grep 否证——(1) `run_e2_integrated_context_harness_evolution.py` 的 `TARGET_DATASETS` 含 Computers/PowerCons/Yoga/SemgHandGenderCh2/WormsTwoClass,且 `CONDITIONS = ("fit_only_artifact", "stable_task_event")`,这五件**确实在该条件对下跑过**,不是 token 误伤;(2) `run_e2_source_prior_evidence_fusion.py` 文本含 `stable_task_event`(读 W56 planned scope 字段),FreezerRegularTrain / GPMvF / GPOvY 因此过度排除——它们可能从未在该条件对下计分,但书规定"宁可过度排除",执行方未改成语义"对该数据集跑过该条件"。本地池在此字面规则下为空。
+
+**两臂**:未跑。无 held-in 轨迹、无 Skill/冻结、无 held-out accuracy/逐类 recall。cohort 校验器与 `maximum_candidates=3` 已在既有 runner 落地,未改 `methods/`。
+
+**成本**:LLM 0/40;Consumer fit 0/200;墙钟 2.1 s(选靶干跑);下载 0。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
+
+**提交**:Part 0 r1 停摆件 `2d055ea`(内容未改);本书 runner + r2 隔离工件 `t6_cls_conf_r2_unused_target.json/.md`(未覆写 r1) + 本节。义务自报:规则未放宽/未收紧;LLM 0;fit 0;下载 0;`methods/` 零改动;他线文件(`AGENTS.md`/`README.md`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`)未碰。
+
+### sol 批准 CLS-CONF 口径①(Computers)+ Scope 归纳规则冻结 v1 + CLS-CONF-r2 发车(2026-08-25 20:1x,主线)
+
+**sol 裁定**:当前非实验失败,系"发车前发现确认数据集不够独立,正在修正选靶"。Earthquakes 剔除确认;机器重算后 8 件合格,预注册字典序选 **Computers**——它在其他类型实验用过,但从未在本 impulse 缺陷-修复条件对下看过结果,**可承担 development 级独立确认**。条件树:Computers 复现 → GunPointAgeSpan+Computers 构成两独立正例 → 按冻结规则归纳候选 Scope → **下载真正未用的新分类 Target 做终局同预算 A5 vs A3**;不复现 → 不得强行生成 Shared Skill,GunPoint hampel 只保留为 Target-local。census/junction/坏链修复定性为**实验准备红利,非方法成果**。一句话定位:分类正向能力已有单域正例,现在准备第二独立域确认;确认后才有资格进入真正跨域 A5 vs A3 主考。
+
+**Scope 归纳规则 v1(冻结于 2026-08-25 20:1x,先于主线见到 CLS-CONF-r2 任何逐 Episode Observation 细节;GunPointAgeSpan 侧细节虽已见,本规则只定轴名,值由数据交集机械产生,不含任何 GunPoint 特化值)**:Source-derived candidate 的机器 Scope = 五轴合取:(1) task_kind,(2) consumer_id,(3) metric,(4) 部署可见局部 Pattern 标签(仅取 Episode 当时已记录的 observation/public_features 字段,禁止事后重构),(5) Program 作用几何类。各轴取值 = **全部 n≥2 支持正例 Episode 已录字段的交集**;任一必轴交集为空 → 不生成 Shared candidate,各正例保留 Target-local;dataset 名不得作为轴。生成的 candidate 进入新 Target 时仍受 Target Support 门与 delayed 批准约束(三分可见性策略第三档)。
+
+### CLS-CONF 停摆:INSTRUMENT_UNREADABLE(候选池空)+ 分类数据预算耗尽事实 + 主线裁定建议(2026-08-25 18:2x,主线)
+
+**判定**:CLS-CONF 未开跑即停——预注册候选池为空。全仓 census(修复两仪器缺陷后:自指 junction 使 `os.walk` 重入、计数乘 2 的幂,按 realpath 去重+跳 reparse point 修复,扫描 25-30min→约 1min;`data/tsquality` 坏链接使 `rglob` 抛 OSError,改 `os.walk` 剪枝)证实 `data/ucr_task_context` 全部 40 个数据集均系 20 个既有分类 runner 的 roster 成员;唯二偶然提及者(DodgerLoopWeekend 非有限值+20 行、KeplerLightCurves 打包缺 TRAIN)独立失格。执行者未事后放宽规则(0 LLM/0 fit),纪律正确。**C40 +0.2690 是否孤例仍未回答**。Part 0 提交 9cf4ceb/9fbdf64(r2 工件+h0 锁重生成后 40F→2F,38 条 lock mismatch 清零,残留 2F 归另线);runner 改动 324e8fc;conf 工件未 commit(停摆件)。**主线复核纠错**:执行者"可放行"名单含 Earthquakes 系笔误——工件 `claiming_runners` 显示其属 `action_credit_candidate_ordering`,恰是其书外发现 4 点名的同注入条件对(fit_only_artifact/stable_task_event)前线,选项 1 下必须排除。**结构性事实(建议固化进 PROJECT_STATE_AND_DATA_MAP)**:本地分类数据预算已尽——20 runner 瓜分 40 数据集;census 表为首份完整归属清单;两条早期 runner(action_credit_candidate_ordering、task_risk_confirmation_adaptation_curve)用过与 C38 相同条件对。**三选项与主线建议**:①"未使用"收窄为"未在 impulse 条件对族下使用"(outcome-blind:看过的只是各线用了哪些数据集,未见任何候选在本注入模板下的读数,不构成拿答案挑确认集;放行 8 件=Computers 250/FreezerRegularTrain 150/GPMvF 135/GPOvY 136/PowerCons 180/SemgHGC2 300/WormsTwoClass 181/Yoga 300,字典序机械选靶落 Computers,非 GunPoint 近亲,证词不弱化;排除名单须由 runner 机器化重算——grep 各认领 runner 的条件 token,不得手抄)②切分级确认(弱,不答底物泛化,仅作 ① 不可行的退路)③授权下载(现纪律禁;**建议保留给步 ④ 终局 A5 vs A3**——头条实验值得真处女数据,且本地预算已尽,步 ④ 迟早需要)。**主线推荐 ①+③ 组合**:CLS-CONF 用 ①(Computers),步 ④ 提前规划密封下载批。待 sol 裁定后发车;发车书按模型分层归 grok(机械重算+重跑,零方法设计)。
+
+### 常备纪律:执行方模型分层(用户指示,2026-08-25 17:41,主线)
+
+**委派模型路由**:低中难度、边界清晰的任务(跑既定 runner/replay、报告誊写与格式核对、文件整理、allowlist 内小修、按明确规格的机械改动)→ **grok 4.6 fast**(cursor-grok-4.6-xhigh-fast)提速;高难度攻坚(方法级设计、跨多文件手术、复杂归因调试、共享 Harness 核心代码改动)→ **opus**(耗时长,适合攻坚)。每次发书前先判难度定模型,默认能用 grok 就不占 opus;主线(根 Agent)始终负责任务书设计、裁定与整合,不外包。
+
+### C40 裁定三处再修正(sol 终版,主线独立核后全采):根因改写为"惰性失效缺位";禁事后补 Scope;三分可见性策略(2026-08-25 17:35,主线)
+
+**修正一(根因改写,覆盖下条目的原因排序)**:"Source 零 POSITIVE"降为输入条件,非根因——反事实下若治理正确,零正例只预测 A5≈A3(冷启动等价),不预测 A5<A3;−0.269 的差值只能由"无行动资格知识未惰性失效"(无可行动证据→仍生成 capability 卡→Scope 仅 classification→进 Fast 改提案)制造。系统在执行层已做对(verifier 拒供应),漏在影响层;完整不变量:**无行动资格知识须在所有影响行为的层上惰性(执行层+提案可见层)**。C40 重放即验此不变量,判读用机制级标准(提案不再被 level-shift 固定、能获合法 Support 回执),不用端点 accuracy 相等(LLM 方差)。**修正二(禁事后补 Scope)**:GunPoint hampel Skill 不得手工按已见结果挑 Pattern 条件(n=1 Scope 归纳不可辨识,任何特征合取都"符合"=拿结果选条件)。正确路径:旧 Skill 保留为 GunPoint Target-local → 按**事先冻结的编译规则**从当时已录合法 Observation 生成新 scoped candidate → 独立 Source/Target 验证;历史 Episode 若未录足部署可见 Pattern,诚实停留本域,不得凭描述补成 Shared Capability。**主线追加收紧:编译规则须在查看 CLS-CONF 逐 Episode Observation 细节前冻结**(结论级成败可知,字段级规则不依赖看数据即可写,如"Scope=Task×Consumer×Metric+pattern_view+Program 几何,取 n≥2 支持 Episode 交集"),否则泄漏在规则层复发。**修正三(不建权限状态机)**:工程上仅三分:无授权 TRY 且无重复 scoped RISK→Slow-only;有重复 scoped 害证→Fast 仅得**结构化** avoid/downweight guard(非自由文本——C40 卡 RISK 恰是自由文本+算子名);有重复 scoped 正证→Fast 可得 TRY/候选仍受 Target Support 门。现有字段够用。当前 repair_level_shift 负例 n=1,连 guard 不够格,整卡 Slow-only。**修订后排程**:CLS-CONF 收口 → 可见性单面修复 → C40 development replay(验不变量,非 capability)→ 冻结最小 Scope 编译规则(先于看 CLS-CONF Observation 细节)→ 仅当 CLS-CONF 与 GunPoint 构成两个独立同 Consumer 同可观察 Pattern 同 Program 几何正例时生成 Source-derived candidate → 第三个未用 Target(**看 Outcome 前机械确定**)同预算 A5 vs A3;若不复现或无共同可观察 Context,不得强并 Shared Skill。**工作纪律入册(第二次治理漂移后)**:每项治理工序必须能指出其解锁正向迁移主线哪一步,否则不排期;主线仍=有 Scope 的正向 A5→Target 迁移,治理是可信度保障非主体。
+
+### C40 归因深挖裁定(用户+sol):first-fault = Scope 编译丢失 + 无权卡 Fast 可见;主线四处受纠;晋升路径教义;四步修复序(2026-08-25 17:3x,主线)【原因排序与"补 Scope"表述被上条 17:35 修正覆盖】
+
+**归因定稿(sol 排序采纳)**:−0.269 系"负迁移机会损失"非直接数据伤害(A5=identity=0.5823,A3=0.8513)。原因排序:根因 = Source 无真实正向先验(9 Episode 零 POSITIVE,TRY 空);行为 first-fault = **无授权文本仍影响提案**(具体点名 repair_level_shift 者系 **RISK 段**——执行者报告称 OBSERVE 与工件不符,段级归因不可靠,恰证按段立规是打地鼠);放大因 = 单候选轮(实为每轮 1 候选非"四发");本轮排除 = 反馈不可靠(A3 三面同向)与菜单无算子(hampel +0.269)。**更早根因 = Episode→Skill 编译丢 Scope**:Episode 检索严(Task×Consumer×Metric+pattern,experience_memory:277),编译后机器 applicability 仅 task_kind==classification(工件 :1648,runner :157)——"comparable context_condition"未成机器条件,整卡向全分类广播;检索(retrieval:145)只按 applicability 匹配数排序,Skill ID 里的 Consumer 名不是条件。**连带警示:GunPointAgeSpan 正向 hampel Skill 同样仅 task_kind Scope(runner :530)——本域冻结部署有效,升跨域 Source 前必须补合格 Scope**。
+
+**主线四处受纠(自认)**:(1) OBSERVE 段规则押错段;(2) "宽 WHEN 配有执行权卡"方向反——正确 = **权力越大 Scope 越窄**(宽 Scope 只配算子中立程序性指导;算子相关 TRY/RISK 须窄机器 Scope;无授权 TRY 且无重复授权 RISK → 整卡留 Slow 不进 Fast);(3) 双遍提案否决(破同预算 + 人为保 A5 不输,押后二阶段);(4) "先验与反馈都需治理"降为次级洞见,主线仍 = A5 更快更好形成有效 Target-local Skill。**晋升路径教义入册**(无权卡的三个合法出口):同域 Target-local(Support+delayed 批准,限本域)/ 跨域正向 Capability(多相似机器可识别 Context 重复正向 → Slow 新 revision:明确 Scope+授权 TRY,先 probe)/ 跨域风险 Skill(重复害证 → 授权 RISK,可降权避用弃权,不得越权荐他算子);旧卡不悄扩权,新证据产新版。**四步修复序(sol)**:①修 Fast 可见性(无授权 TRY/RISK 的 Source 卡只留 Slow)→ ②C40 已曝光账本单面重放 A5(机制测试非 capability:看 A5 是否恢复正常探索)→ ③修 Skill Scope 编译(Target-local 限本域;跨域绑 Task/Consumer/Metric+部署可见 Pattern+Program 几何;dataset 名不作跨域依据)→ ④真 A5 vs A3 正向迁移(需真实 Positive Source 池:CLS-CONF 正例 + GunPointAgeSpan hampel Episode 转 Source → 第三个未用 Target)。**排程**:CLS-CONF 在飞;落地后按 ①+② 一书发车(同 session);③ 随后;④ 待正例池成。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。

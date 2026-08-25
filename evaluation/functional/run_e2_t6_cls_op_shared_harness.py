@@ -2394,6 +2394,26 @@ CONF_CENSUS_CACHE = PROJECT_ROOT / "_scratch" / "_conf_name_census.json"
 # which datasets an *experiment* used.  Declared before the rule was applied.
 CONF_INVENTORY_MIN_DISTINCT = 30
 
+# CLS-CONF r2 -- same confirmation, narrowed "unused" definition.  Isolated
+# artifact paths so a rerun cannot overwrite the r1 stall record.
+CONF_R2_OUT_JSON = E2 / "t6_cls_conf_r2_unused_target.json"
+CONF_R2_OUT_MD = E2 / "t6_cls_conf_r2_unused_target.md"
+CONF_R2_PROTOCOL = "t6_cls_conf_unused_target_v2"
+CONF_R2_RUN_ID = "t6_cls_conf_run2"
+CONF_IMPULSE_TOKENS = ("fit_only_artifact", "stable_task_event")
+# Pre-registered prediction for the r2 selection gate, frozen before this
+# machine recount.  Not a roster and not an input to eligibility.
+CONF_R2_PREDICTED_ELIGIBLE = (
+    "Computers",
+    "FreezerRegularTrain",
+    "GunPointMaleVersusFemale",
+    "GunPointOldVersusYoung",
+    "PowerCons",
+    "SemgHandGenderCh2",
+    "WormsTwoClass",
+    "Yoga",
+)
+
 
 def _conf_name_census(names: Sequence[str]) -> dict[str, Any]:
     """One pass over the repository, counting every dataset name at once.
@@ -2625,6 +2645,177 @@ def conf_select() -> int:
     return 0
 
 
+def _conf_impulse_hits(claiming_runners: Sequence[str]) -> list[dict[str, Any]]:
+    """Read each claiming runner; record which impulse-condition tokens it holds.
+
+    Over-exclusion is the safe direction: an unreadable claiming runner is
+    treated as a hit, because we cannot prove it never used the pair.
+    """
+    hits: list[dict[str, Any]] = []
+    for relative in claiming_runners:
+        path = PROJECT_ROOT / relative
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError as exc:
+            hits.append({"runner": relative, "tokens": list(CONF_IMPULSE_TOKENS),
+                         "unreadable": "%s: %s" % (type(exc).__name__, exc)})
+            continue
+        tokens = [token for token in CONF_IMPULSE_TOKENS if token in text]
+        if tokens:
+            hits.append({"runner": relative, "tokens": tokens})
+    return hits
+
+
+def _conf_r2_candidate_census() -> dict[str, Any]:
+    """r1 census plus the narrowed unused rule: impulse-condition token scan."""
+    base = _conf_candidate_census()
+    rows: list[dict[str, Any]] = []
+    for row in base["candidates"]:
+        reasons = [reason for reason in row["excluded_because"]
+                   if reason != "name_already_appears_in_the_repository"]
+        impulse_hits = _conf_impulse_hits(row["claiming_runners"])
+        if impulse_hits:
+            reasons.append("claiming_runner_used_impulse_condition_pair")
+        new_row = dict(row)
+        new_row["impulse_condition_hits"] = impulse_hits
+        new_row["excluded_because"] = reasons
+        new_row["eligible"] = not reasons
+        rows.append(new_row)
+    eligible = sorted(row["dataset"] for row in rows if row["eligible"])
+    predicted = list(CONF_R2_PREDICTED_ELIGIBLE)
+    selected = eligible[0] if eligible else None
+    predicted_selected = predicted[0] if predicted else None
+    gate = {
+        "predicted_eligible": predicted,
+        "predicted_selected": predicted_selected,
+        "actual_eligible": eligible,
+        "actual_selected": selected,
+        "eligible_match": eligible == predicted,
+        "selected_match": selected == predicted_selected,
+        "passed": eligible == predicted and selected == predicted_selected,
+        "rule": (
+            "stop before any LLM if the machine recount of eligible or "
+            "selected disagrees with the pre-registered prediction; do not "
+            "relax or tighten the exclusion rule"),
+    }
+    return {
+        "rule": (
+            "r2 unused = never used under the impulse defect-repair condition "
+            "pair: if any claiming runner file contains %s or %s, the dataset "
+            "is out (over-exclude). Keep the binary ones whose official TRAIN "
+            "row count is in [%d, %d]; take the lexicographically first. "
+            "Name-appearance is no longer an exclusion.  Fixed before the "
+            "rule was applied and independent of any outcome."
+            % (CONF_IMPULSE_TOKENS[0], CONF_IMPULSE_TOKENS[1],
+               CONF_TRAIN_ROWS_MIN, CONF_TRAIN_ROWS_MAX)),
+        "protocol_version": CONF_R2_PROTOCOL,
+        "named_rosters_excluded_by_construction": CONF_KNOWN_ROSTERS,
+        "census_method": base["census_method"],
+        "census_files_scanned": base["census_files_scanned"],
+        "census_files_skipped": base["census_files_skipped"],
+        "census_skipped_directories": base["census_skipped_directories"],
+        "pool_inventory_files": base["pool_inventory_files"],
+        "inventory_min_distinct": base["inventory_min_distinct"],
+        "pool_size": len(rows),
+        "impulse_condition_tokens": list(CONF_IMPULSE_TOKENS),
+        "r1_name_census_reused": True,
+        "candidates": rows,
+        "eligible": eligible,
+        "selected": selected,
+        "selection_basis": (
+            "lexicographically first of %d eligible" % len(eligible)
+            if eligible else "no eligible dataset"),
+        "prediction_gate": gate,
+    }
+
+
+def _conf_r2_write(payload: Mapping[str, Any]) -> None:
+    CONF_R2_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    CONF_R2_OUT_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    CONF_R2_OUT_MD.write_text(_conf_markdown(payload), encoding="utf-8")
+
+
+def conf_r2_select() -> int:
+    """Part A r2: recount the unused Target under the narrowed rule.  0 LLM."""
+    started = time.time()
+    census = _conf_r2_candidate_census()
+    gate = census["prediction_gate"]
+    print("CLS-CONF r2 selection  protocol=%s  cache_reused=%s"
+          % (CONF_R2_PROTOCOL, census["r1_name_census_reused"]), flush=True)
+    print("impulse tokens: %s" % ", ".join(CONF_IMPULSE_TOKENS), flush=True)
+    print(flush=True)
+    print("%-32s rows=%-5s cls=%-3s runners  impulse_hits  status"
+          % ("dataset", "n", "k"), flush=True)
+    for row in census["candidates"]:
+        hits = row.get("impulse_condition_hits") or ()
+        hit_text = ";".join(
+            "%s[%s]" % (Path(item["runner"]).name, ",".join(item["tokens"]))
+            for item in hits) or "-"
+        runners = ",".join(Path(path).name
+                           for path in row.get("claiming_runners") or ()) or "-"
+        print("%-32s rows=%-5s cls=%-3s %s | %s | %s"
+              % (row["dataset"], row.get("train_rows"), row.get("class_count"),
+                 runners, hit_text,
+                 ",".join(row["excluded_because"]) or "ELIGIBLE"),
+              flush=True)
+    print(flush=True)
+    print("eligible (%d):" % len(census["eligible"]), flush=True)
+    for row in census["candidates"]:
+        if not row["eligible"]:
+            continue
+        print("   %-32s rows=%s cls=%s claiming=%s"
+              % (row["dataset"], row.get("train_rows"), row.get("class_count"),
+                 ",".join(Path(path).name
+                          for path in row.get("claiming_runners") or ())
+                 or "-"),
+              flush=True)
+    print("selected: %s (%s)" % (census["selected"], census["selection_basis"]),
+          flush=True)
+    print(json.dumps({"prediction_gate": gate}, ensure_ascii=False, indent=1),
+          flush=True)
+    payload: dict[str, Any] = {
+        "protocol_version": CONF_R2_PROTOCOL,
+        "run_id": CONF_R2_RUN_ID,
+        "entry": "--conf-r2-select",
+        "evidence_grade": EVIDENCE_GRADE,
+        "git_head": _git("rev-parse", "HEAD"),
+        "selection": census,
+        "target": census["selected"],
+        "condition": CONF_CONDITION,
+        "arms": list(CONF_ARMS),
+        "prediction_gate": gate,
+        "verdict": (
+            {"verdict": "PREDICTION_GATE_PASSED",
+             "selected": census["selected"]}
+            if gate["passed"] else
+            {"verdict": "PREDICTION_GATE_FAILED",
+             "reason": (
+                 "machine recount of eligible/selected disagrees with the "
+                 "pre-registered prediction; stopped before any LLM; the "
+                 "exclusion rule was not relaxed or tightened"),
+             "predicted_eligible": gate["predicted_eligible"],
+             "actual_eligible": gate["actual_eligible"],
+             "predicted_selected": gate["predicted_selected"],
+             "actual_selected": gate["actual_selected"]}),
+        "ledger": {"llm_calls": 0, "llm_cap": CONF_LLM_CAP,
+                   "consumer_fits": 0, "consumer_fit_cap": CONF_FIT_CAP,
+                   "wall_seconds": round(time.time() - started, 1)},
+        "obligations": {
+            "selection_rule_not_relaxed": True,
+            "selection_rule_not_tightened": True,
+            "llm_spent": 0,
+            "downloads": 0,
+            "methods_package_unmodified": True,
+            "r1_artifacts_not_overwritten": True,
+        },
+    }
+    _conf_r2_write(payload)
+    print("wrote %s" % CONF_R2_OUT_JSON, flush=True)
+    return 0 if gate["passed"] else 1
+
+
 def _conf_verdict(payload: Mapping[str, Any], *,
                   stopped: str | None) -> dict[str, Any]:
     """CLS_CHAIN_CONFIRMED needs a Skill *and* a clean held-out gain."""
@@ -2720,12 +2911,66 @@ def _conf_difference_read(cell: Mapping[str, Any], rounds: Sequence[Mapping[str,
     }
 
 
-def conf_run(*, run_id: str = CONF_RUN_ID) -> int:
+def conf_r2_run(*, run_id: str = CONF_R2_RUN_ID) -> int:
+    """CLS-CONF r2: same two-arm run, r2 census and isolated artifacts."""
+    census = _conf_r2_candidate_census()
+    if not census["prediction_gate"]["passed"]:
+        started = time.time()
+        payload: dict[str, Any] = {
+            "protocol_version": CONF_R2_PROTOCOL,
+            "run_id": run_id,
+            "entry": "--conf-r2-run",
+            "evidence_grade": EVIDENCE_GRADE,
+            "git_head": _git("rev-parse", "HEAD"),
+            "selection": census,
+            "target": census["selected"],
+            "condition": CONF_CONDITION,
+            "arms": list(CONF_ARMS),
+            "prediction_gate": census["prediction_gate"],
+            "verdict": {
+                "verdict": "PREDICTION_GATE_FAILED",
+                "reason": (
+                    "machine recount of eligible/selected disagrees with the "
+                    "pre-registered prediction; stopped before any LLM"),
+                "predicted_eligible": census["prediction_gate"][
+                    "predicted_eligible"],
+                "actual_eligible": census["prediction_gate"]["actual_eligible"],
+            },
+            "ledger": {"llm_calls": 0, "llm_cap": CONF_LLM_CAP,
+                       "consumer_fits": 0, "consumer_fit_cap": CONF_FIT_CAP,
+                       "wall_seconds": round(time.time() - started, 1)},
+            "obligations": {
+                "selection_rule_not_relaxed": True,
+                "selection_rule_not_tightened": True,
+                "llm_spent": 0,
+                "downloads": 0,
+                "methods_package_unmodified": True,
+                "r1_artifacts_not_overwritten": True,
+            },
+        }
+        _conf_r2_write(payload)
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+    return conf_run(run_id=run_id, protocol=CONF_R2_PROTOCOL,
+                    out_json=CONF_R2_OUT_JSON, out_md=CONF_R2_OUT_MD,
+                    census_fn=_conf_r2_candidate_census,
+                    entry="--conf-r2-run")
+
+
+def conf_run(*, run_id: str = CONF_RUN_ID,
+             protocol: str = CONF_PROTOCOL,
+             out_json: Path | None = None,
+             out_md: Path | None = None,
+             census_fn: Any = None,
+             entry: str = "--conf-run") -> int:
     """CLS-CONF: A3 against Static identity on the mechanically chosen Target."""
     from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
         compile_snapshot,
     )
 
+    out_json = out_json or CONF_OUT_JSON
+    out_md = out_md or CONF_OUT_MD
+    census_fn = census_fn or _conf_candidate_census
     started = time.time()
     fit_budget = FitBudget(CONF_FIT_CAP)
     store_root = Path(tempfile.gettempdir()) / run_id
@@ -2735,11 +2980,11 @@ def conf_run(*, run_id: str = CONF_RUN_ID) -> int:
                           verify_lock=False)
     backend = _live_backend(CONF_LLM_CAP)
 
-    census = _conf_candidate_census()
+    census = census_fn()
     payload: dict[str, Any] = {
-        "protocol_version": CONF_PROTOCOL,
+        "protocol_version": protocol,
         "run_id": run_id,
-        "entry": "--conf-run",
+        "entry": entry,
         "evidence_grade": EVIDENCE_GRADE,
         "git_head": _git("rev-parse", "HEAD"),
         "selection": census,
@@ -2772,6 +3017,7 @@ def conf_run(*, run_id: str = CONF_RUN_ID) -> int:
                 "selection.  There is no RNG to seed, so a fresh seed would "
                 "be a fiction; the run is bit-reproducible instead."),
         },
+        "prediction_gate": census.get("prediction_gate"),
     }
     if census["selected"] is None:
         claimed: dict[str, list[str]] = {}
@@ -2837,11 +3083,11 @@ def conf_run(*, run_id: str = CONF_RUN_ID) -> int:
             "methods_package_unmodified": True,
             "artifact_not_committed": True,
         }
-        CONF_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
-        CONF_OUT_JSON.write_text(
+        out_json.parent.mkdir(parents=True, exist_ok=True)
+        out_json.write_text(
             json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
             encoding="utf-8")
-        CONF_OUT_MD.write_text(_conf_markdown(payload), encoding="utf-8")
+        out_md.write_text(_conf_markdown(payload), encoding="utf-8")
         print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
         return 1
 
@@ -2923,16 +3169,16 @@ def conf_run(*, run_id: str = CONF_RUN_ID) -> int:
         "artifact_not_committed": True,
         "difference_read_ran_after_the_freeze": True,
     }
-    CONF_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
-    CONF_OUT_JSON.write_text(
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(
         json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
         encoding="utf-8")
-    CONF_OUT_MD.write_text(_conf_markdown(payload), encoding="utf-8")
+    out_md.write_text(_conf_markdown(payload), encoding="utf-8")
     print(json.dumps({"verdict": payload["verdict"]["verdict"],
                       "target": dataset,
                       "llm": payload["ledger"]["llm_calls"],
                       "fits": payload["ledger"]["consumer_fits"],
-                      "artifact": str(CONF_OUT_JSON)},
+                      "artifact": str(out_json)},
                      ensure_ascii=False, indent=1))
     return 0 if payload["verdict"]["verdict"] in (
         "CLS_CHAIN_CONFIRMED", "CLS_CHAIN_NOT_REPLICATED") else 1
@@ -2953,7 +3199,7 @@ def _conf_markdown(payload: Mapping[str, Any]) -> str:
         "",
         "**%s**" % verdict.get("verdict"),
         "",
-        str(verdict.get("rule", "")),
+        str(verdict.get("rule") or verdict.get("reason") or ""),
         "",
         "- non-identity Target-local Skill formed: %s"
         % verdict.get("non_identity_target_local_skill_formed"),
@@ -2987,6 +3233,28 @@ def _conf_markdown(payload: Mapping[str, Any]) -> str:
                         runners or "(none)",
                         row.get("train_rows"), row.get("class_count"),
                         ", ".join(row["excluded_because"]) or "**ELIGIBLE**"))
+    gate = payload.get("prediction_gate") or selection.get("prediction_gate")
+    if gate:
+        lines += ["", "### Prediction gate", "",
+                  "- predicted eligible: %s" % gate.get("predicted_eligible"),
+                  "- actual eligible: %s" % gate.get("actual_eligible"),
+                  "- predicted selected: **%s**" % gate.get("predicted_selected"),
+                  "- actual selected: **%s**" % gate.get("actual_selected"),
+                  "- passed: **%s**" % gate.get("passed"),
+                  ""]
+    impulse_rows = [row for row in selection.get("candidates") or []
+                    if row.get("impulse_condition_hits")]
+    if impulse_rows:
+        lines += ["### Impulse-condition token hits on claiming runners", ""]
+        for row in impulse_rows:
+            for hit in row["impulse_condition_hits"]:
+                lines.append("- **%s**: `%s` tokens=%s%s"
+                             % (row["dataset"],
+                                Path(hit["runner"]).name,
+                                ",".join(hit.get("tokens") or ()),
+                                (" unreadable=%s" % hit["unreadable"]
+                                 if hit.get("unreadable") else "")))
+        lines.append("")
     exhaustion = payload.get("exhaustion_analysis")
     if exhaustion:
         lines += ["", "### Pool exhausted", "", exhaustion["statement"], "",
@@ -3607,12 +3875,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--conf-select", dest="conf_select",
                         action="store_true")
     parser.add_argument("--conf-run", dest="conf_run", action="store_true")
+    parser.add_argument("--conf-r2-select", dest="conf_r2_select",
+                        action="store_true")
+    parser.add_argument("--conf-r2-run", dest="conf_r2_run",
+                        action="store_true")
     parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if sum([args.smoke, args.run, args.micro, args.diagnose,
             args.r2_prep, args.r2_run, args.r2_annotate,
-            args.conf_select, args.conf_run]) != 1:
+            args.conf_select, args.conf_run,
+            args.conf_r2_select, args.conf_r2_run]) != 1:
         parser.error("choose exactly one entry point")
+    if args.conf_r2_select:
+        return conf_r2_select()
+    if args.conf_r2_run:
+        return conf_r2_run(run_id=args.run_id or CONF_R2_RUN_ID)
     if args.conf_select:
         return conf_select()
     if args.conf_run:
