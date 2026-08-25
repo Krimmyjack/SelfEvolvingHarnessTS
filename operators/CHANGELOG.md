@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-08-25 — CLS-4：`repair_burst_segment`（连续高偏差段修复）
+
+菜单枯竭由 CLS-3 八臂证明：`hampel_filter` 对 15–20% 连续段是 delayed 恒等，
+`outlier_mad` 反伤。本算子是唯一新增，机制与两者及 `repair_level_shift`（台阶几何）
+可区分：系列级 median/MAD 稳健 z（滚动窗的全局简化）检出 |z|>3.5 且连续 run≥8
+的段，用两端完好点线性插值替换；无检出段恒等。两参数冻结，禁扫。
+`allowed_tasks = ("classification",)` 单任务起步。无 alias。纯 numpy。
+
+---
+
 ## 2026-07-14 — E-3.3 R1–R3、R5：动作空间扩充（4 个新算子 + menu v2）
 
 ### 为什么现在做

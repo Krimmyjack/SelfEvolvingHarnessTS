@@ -27,7 +27,16 @@ from __future__ import annotations
 
 from typing import Callable, Dict
 
-from . import s1_impute, s1_denoise, s1_outlier, s1_decompose, s1_structural, s2_align, s3_shape
+from . import (
+    s1_burst,
+    s1_impute,
+    s1_denoise,
+    s1_outlier,
+    s1_decompose,
+    s1_structural,
+    s2_align,
+    s3_shape,
+)
 from ._common import BOUNDARY_MODES  # noqa: F401（S0.7-8 边界语义指纹，随 registry 一并落 provenance）
 from ._provenance import record as _prov_record
 
@@ -185,6 +194,20 @@ OPERATOR_SPECS = [
              "properties": {},
          },
      )),      # 纯 numpy（无 ruptures 依赖）
+    # —— CLS-4：连续高偏差段修复（点式 hampel/mad 与台阶 repair_level_shift 都不是此几何）——
+    # |robust-z|>3.5 且连续 run≥8（两参冻结禁扫）→ 段两端线性插值。无检出段恒等。
+    # allowed_tasks 单任务起步 classification；扩域须另开证据。
+    ("repair_burst_segment", "structural", "s1", ["destructive"], s1_burst.repair_burst_segment, False,
+     _c(
+         allowed_tasks=("classification",),
+         destructive=True,
+         targeting_mode="intrinsic",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {},
+         },
+     )),
     ("stl_decompose", "decompose", "s1", [], s1_decompose.stl_decompose, False,
      _c(allowed_tasks=_NON_ANOMALY, requires_dependency="statsmodels",
         dependency_policy="recorded_fallback",
