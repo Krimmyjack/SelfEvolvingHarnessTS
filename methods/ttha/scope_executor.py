@@ -39,6 +39,26 @@ from SelfEvolvingHarnessTS.runtime.candidate_verification import verify_candidat
 HORIZON = 48
 CONTEXT_LENGTH = 192
 
+# C39-r2（sol 校验器裁定 2026-08-25）：max_modified_fraction 的**判定口径**。
+#
+#   per_window —— 历史语义：任一窗口的 modified_fraction 超限即整候选被拒。
+#   cohort     —— 聚合语义：总修改点数 / 总点数 ≤ 上限；逐窗分布照常产出，
+#                 但不再单独持否决权。
+#
+# 数字（0.35 / 0.20 / 0.10 等 deployment_constraints 给出的值）一律不动；改的
+# 只是"这个数字约束的是哪一个量"。契约本意是限制修改质量的**总量**，而
+# per_window 在预测/AD 的十余窗几何下与 cohort 近似等价；分类几何是"每个 fit
+# 行一个窗口"（42–1260 窗），此时"至少一窗超限"几乎必然发生，per_window 语义
+# 退化成必拒（C39 first fault：9/14 held-in 轮零合法 Support receipt）。
+#
+# 默认保持 per_window，所以既有预测/AD/minipipe 调用方逐字节不变；需要聚合
+# 口径的调用方显式选入。
+FRACTION_SCOPE_PER_WINDOW = "per_window"
+FRACTION_SCOPE_COHORT = "cohort"
+FRACTION_SCOPES = (FRACTION_SCOPE_PER_WINDOW, FRACTION_SCOPE_COHORT)
+COHORT_FRACTION_REJECTION_CODE = "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+COHORT_ROW_KEY = "__cohort__"
+
 
 @dataclass
 class WindowVerification:
@@ -49,6 +69,11 @@ class WindowVerification:
       零 Outcome——不比较 downstream utility）；
     - ``window_modified_flags``：每窗是否至少修改一个已有观测；
     - ``window_identity_equivalent_flags``：每窗是否与 identity 字节等价。
+
+    C39-r2 新增字段是**诊断**，不设否决：``window_modified_fractions`` 保留
+    逐窗分布（这正是 per_window 语义下唯一被看见的东西），``cohort_*`` 给出
+    聚合口径实际判定的那个比值。两者永远同时产出，无论 scope 选哪个——
+    换口径不该让另一侧的读数消失。
     """
     passed: bool
     checked_windows: int
@@ -56,6 +81,12 @@ class WindowVerification:
     window_behavior_hashes: tuple[str, ...] = ()
     window_modified_flags: tuple[bool, ...] = ()
     window_identity_equivalent_flags: tuple[bool, ...] = ()
+    modification_fraction_scope: str = FRACTION_SCOPE_PER_WINDOW
+    maximum_modified_fraction: float = 1.0
+    window_modified_fractions: tuple[float, ...] = ()
+    cohort_modified_points: int = 0
+    cohort_total_points: int = 0
+    cohort_modified_fraction: float = 0.0
 
     @property
     def modified_windows(self) -> int:
@@ -64,6 +95,12 @@ class WindowVerification:
     @property
     def identity_equivalent_windows(self) -> int:
         return sum(1 for flag in self.window_identity_equivalent_flags if flag)
+
+    @property
+    def windows_over_maximum_fraction(self) -> int:
+        """诊断：逐窗口径下**本会**否决的窗口数。cohort 下不产生否决。"""
+        return sum(1 for value in self.window_modified_fractions
+                   if value > self.maximum_modified_fraction)
 
 
 @dataclass
@@ -94,13 +131,19 @@ class ScopeExecutor:
         evaluate_fn: Any | None = None,
         max_modified_fraction: float = 0.35,
         preserve_outside: bool = True,
+        modification_fraction_scope: str = FRACTION_SCOPE_PER_WINDOW,
     ) -> None:
+        if modification_fraction_scope not in FRACTION_SCOPES:
+            raise ValueError(
+                "modification_fraction_scope must be one of %s, got %r"
+                % (FRACTION_SCOPES, modification_fraction_scope))
         self.roster = list(roster)
         self.values = values
         self.config = dict(config)
         self._evaluate_impl = evaluate_fn
         self.max_modified_fraction = float(max_modified_fraction)
         self.preserve_outside = bool(preserve_outside)
+        self.modification_fraction_scope = str(modification_fraction_scope)
         self._baseline_cache: dict[int, float] = {}
         self._per_view_cache: dict[int, list[float]] = {}
 
@@ -154,21 +197,38 @@ class ScopeExecutor:
                origin: int) -> WindowVerification:
         """对**实际将执行的每个训练窗口**独立 verify_candidate；保持 H0
         max_modified_fraction（0.35）。窗口即候选作用区域：inspected_regions
-        覆盖整个窗口，窗口外修改不在此协议内（Workflow 只在窗口上执行）。"""
+        覆盖整个窗口，窗口外修改不在此协议内（Workflow 只在窗口上执行）。
+
+        C39-r2（sol 裁定）：``modification_fraction_scope`` 只改 fraction 这一
+        道门判定的量，其余每一道门（operator legality / execution / shape /
+        finite / outside-scope）仍然逐窗口独立否决，一票即拒。cohort 口径下把
+        fraction 上限传成 1.0 交给 verify_candidate——这不是放行，而是把该门的
+        判定从窗口层挪到 cohort 层，随后由本方法用总修改点数 / 总点数判一次。
+
+        注意 inspected_regions 覆盖整窗，因此 OUTSIDE_SCOPE_MODIFICATION 在本
+        执行器里结构上不可能触发；把 fraction 门下放不会让 verify_candidate 的
+        rejection_code 优先级链改判成另一个码。单测锁住这一点。
+        """
         candidate = self._candidate(steps)
         allowed = self._operator_names(steps)
+        cohort_scope = (
+            self.modification_fraction_scope == FRACTION_SCOPE_COHORT)
+        window_cap = 1.0 if cohort_scope else self.max_modified_fraction
         rejected: list[dict[str, Any]] = []
         checked = 0
         behavior_hashes: list[str] = []
         modified_flags: list[bool] = []
         identity_equivalent_flags: list[bool] = []
+        window_fractions: list[float] = []
+        modified_points = 0
+        total_points = 0
         for uid, anchor, window in self.training_windows(origin):
             checked += 1
             artifact = verify_candidate(
                 candidate, window,
                 allowed_operators=allowed,
                 inspected_regions=((0, int(window.size)),),
-                maximum_modified_fraction=self.max_modified_fraction,
+                maximum_modified_fraction=window_cap,
                 preserve_outside_inspected_region=self.preserve_outside,
                 require_finite_output=False,
             )
@@ -181,12 +241,24 @@ class ScopeExecutor:
             identity_equivalent_flags.append(
                 artifact.receipt.effect_equivalent_to_identity
             )
+            window_fractions.append(float(artifact.receipt.modified_fraction))
+            modified_points += len(artifact.modified_indices)
+            total_points += int(window.size)
             if not artifact.selectable:
                 rejected.append({
                     "series_uid": uid,
                     "anchor": anchor,
                     "rejection_code": artifact.receipt.rejection_code,
                 })
+        cohort_fraction = modified_points / max(total_points, 1)
+        if cohort_scope and cohort_fraction > self.max_modified_fraction:
+            rejected.append({
+                "series_uid": COHORT_ROW_KEY,
+                "anchor": None,
+                "rejection_code": COHORT_FRACTION_REJECTION_CODE,
+                "cohort_modified_fraction": cohort_fraction,
+                "maximum_modified_fraction": self.max_modified_fraction,
+            })
         return WindowVerification(
             passed=not rejected,
             checked_windows=checked,
@@ -194,6 +266,12 @@ class ScopeExecutor:
             window_behavior_hashes=tuple(behavior_hashes),
             window_modified_flags=tuple(modified_flags),
             window_identity_equivalent_flags=tuple(identity_equivalent_flags),
+            modification_fraction_scope=self.modification_fraction_scope,
+            maximum_modified_fraction=self.max_modified_fraction,
+            window_modified_fractions=tuple(window_fractions),
+            cohort_modified_points=modified_points,
+            cohort_total_points=total_points,
+            cohort_modified_fraction=cohort_fraction,
         )
 
     # -- 评估（v6._evaluate 协议：逐窗口执行 + cohort Ridge）------------------
