@@ -864,6 +864,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **#45-Frep-b 发车(Frep session 续派)**:范围 = 仅部署与计分段重做——(a) 修 F1:部署阶段零 delayed 打开、零 held-out 反馈;(b) 修 F2:两臂对称,只从冻结快照部署(有 ACTIVE 技能臂 Fast-only 召回;无技能臂部署其冻结态既定 incumbent/identity,禁计分块搜索);(c) 优先复用 Frep 四臂既有字节稳定快照与 held-in 读数,只重跑部署+计分;快照不可用即停报。读数 = sol 点 3 四项;判定 = A5A3_TERMINAL_READJUDICATED / SNAPSHOT_UNAVAILABLE / INSTRUMENT_UNREADABLE;预期 0 LLM、重训 ≤100。**排队(不派)**:点 4 分类受控能力重放书(Frep-b 收口后设计);点 5 值损坏资格门(重放后)。
 
+### #45-Frep-b 收口 = C37:A5A3_TERMINAL_READJUDICATED——修复后 pooled 终点翻向 A5(+0.276 差);主线承重三项全立(development 级);CLS-replay 发车(2026-08-25 10:2x,主线)
+
+**判定采纳**:F1/F2 修复(driver 局部,行号在册:DEPLOY_RULE :302-345 / 冻结态两源 :346-412 / 零 outcome 读部署 :413-449 / 纯度回执 :564-612;役中 fc.stage_4 零改动,methods/ 零改动)后四臂部署纯度证明——各臂 1 次 delayed 打开(均为评分器一次性计分,0 用于采纳)、0 候选评估、0 LLM、部署成本全同(9 重训,spread 0);四快照重编译 SHA 自复现且与 #45-Frep 发布值一致,部署后字节不变。**重裁四读数(pooled)**:首正成本 84 vs 123(不变);held-out 终态 **A5 +0.059385(伤 1)vs A3 −0.216513(伤 4/4),差 +0.275898**,对照作废读数 −0.152549;per_channel 精确平局(同 applied 字节,迁移边界照旧)。敏感性钉:改"无技能⇒identity"规则 A3 pooled = 0,A5 仍高于材料带——方向稳健,幅度不稳健。**机制陈述(载重)**:非"A5 同方案打分更高"——A3 冻结 incumbent repair_level_shift 系 held-in delayed 正向(+0.162837)而尾段崩(−0.216513,4/4 伤);A5 的 outlier_iqr held-in 较弱(+0.066941)而泛化(+0.059385)。**= held-in 反馈单独可选中不泛化方案,Source 先验引导的收敛泛化了——积累价值的机制级可视化**;旧协议以 held-out 重搜(0.369 泄漏量)遮蔽此事。
+
+**主线承重口径(sol 点 6)在预测线三项全立(development 级 caveat:已曝光数据、单次配对跑方向 only、per_channel 平局 = 该 cell 积累无边际作用)**:A5 更快(−31.7% 首正成本)、held-out 更好(+0.276)、伤害更少(1 vs 4)。**G1-G5 入册**:G1 fc.stage_4 缺陷仍在役(他调用方继承,债);G2 #45-Frep 工件终态列作废(链与 held-in 读数仍有效,终态只准引 frep-b 工件);G3 FreshSearch 构造器 3 次决策无关 identity 基线 fit 触 held-out support 起点(对称无用,役中修出范围);G4 **held-in 正向方案 held-out 4/4 伤 = Scope/过拟合行素材**(A3 教训 = 未来 Scope 线证据);G5 per_channel 无边际。两披露采纳(两遍部署 13 读数字节同验证;03b07bf 已含 Frep 工件更正)。Part 0 = 098ec40(7 文件)。**Forecasting 线收口;按 sol 点 4 CLS-replay 发车**(controlled classification dynamic-binding 于 HEAD 重放,第二任务正向生命周期验证)。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。

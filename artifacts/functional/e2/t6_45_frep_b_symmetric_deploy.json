@@ -1,0 +1,1710 @@
+{
+  "protocol_version": "t6_45_frep_b_symmetric_deploy_v1",
+  "task_book": "#45-Frep-b",
+  "role": "repair the two self-reported deployment defects F1 and F2 and re-adjudicate the A5 vs A3 held-out terminal utility on the #45-Frep frozen snapshots; held-in is not re-run",
+  "generated_at_wall": "2026-08-25T09:51:05",
+  "python_executable": "D:\\Anaconda_envs\\envs\\project\\python.exe",
+  "scope_pin": {
+    "fixes_in_scope": [
+      "F1",
+      "F2"
+    ],
+    "held_in_re_run": false,
+    "in_service_runner_edited": false,
+    "fix_location": "evaluation/functional/run_e2_t6_45_frep_a5a3_replay.py, the deployment path only",
+    "no_other_debt_touched": true
+  },
+  "deploy_rule": {
+    "name": "symmetric_frozen_state_fast_only_deployment",
+    "decision_inputs": [
+      "the frozen Harness snapshot recompiled from disk",
+      "deployment-visible public features of the training series on their own public prefix, cut at the first held-out support origin",
+      "the frozen held-in ledger of the same arm"
+    ],
+    "decision_reads_no_outcome": true,
+    "arm_rule": {
+      "has_applicable_active_skill": "Fast-only recall: deploy the Workflow the frozen Skill governs, read off risk_guards.frozen_plan / frozen_steps",
+      "no_applicable_active_skill": "deploy the standing incumbent of the frozen ledger, i.e. the final_plan of the last held-in round; identity if that is identity or absent"
+    },
+    "forbidden_on_the_scored_block": [
+      "shortlist or any LLM call",
+      "candidate evaluation, full-batch Support evaluation, mask round",
+      "Support confirmation used as an adoption gate",
+      "the v2 adoption ladder and its delayed bar/confirmation reads",
+      "any adoption driven by a reading taken on the scored block",
+      "Skill formation, approval, limitation or revocation"
+    ],
+    "scoring": "one delayed_gate opening of the already-fixed applied bytes, on the three held-out delayed origins, sMASE gain against the identity baseline; this is the external evaluator's one-shot read and feeds nothing back",
+    "cost_symmetry_claim": "every arm pays the instrument's identity baselines plus one scoring read; no arm pays a search"
+  },
+  "frep_a_source": {
+    "artifact": "artifacts/functional/e2/t6_45_frep_a5a3_replay.json",
+    "protocol_version": "t6_45_frep_a5a3_replay_v1",
+    "chain_verdict": "CHAIN_REPRODUCED",
+    "run_id": "frep45_r1",
+    "held_in_llm_calls": 11
+  },
+  "frozen_snapshot_verification": {
+    "store_root": "_scratch/skill_store/t6_45_frep/frep45_r1",
+    "checks": {
+      "a5_pooled": {
+        "slot": "a5_pooled",
+        "expected_runtime_bundle_sha": "f66c8e323937a33b58ce25a3c795d91eb2b6c2ddc9f95b5282185b5f35ce658f",
+        "expected_skill_ids": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+          "fresh_batch_guidance_pooled_v1",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "active_runtime_bundle_sha": "f66c8e323937a33b58ce25a3c795d91eb2b6c2ddc9f95b5282185b5f35ce658f",
+        "recompiled_runtime_bundle_sha": "f66c8e323937a33b58ce25a3c795d91eb2b6c2ddc9f95b5282185b5f35ce658f",
+        "recompiled_harness_content_sha": "d26621d98ecc8e4c70c7a5dabede775ce61b35a644e63245bcf605c082673a9b",
+        "recompiled_skill_ids": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+          "fresh_batch_guidance_pooled_v1",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "recompile_reproduces_active_sha": true,
+        "active_matches_frep_report": true,
+        "skill_ids_match_frep_report": true,
+        "ok": true
+      },
+      "a3_pooled": {
+        "slot": "a3_pooled",
+        "expected_runtime_bundle_sha": "836d5e768f6f79cc32180d4a7d7d01d3ae2fbc813e02c9c653dbba9e042759fd",
+        "expected_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "active_runtime_bundle_sha": "836d5e768f6f79cc32180d4a7d7d01d3ae2fbc813e02c9c653dbba9e042759fd",
+        "recompiled_runtime_bundle_sha": "836d5e768f6f79cc32180d4a7d7d01d3ae2fbc813e02c9c653dbba9e042759fd",
+        "recompiled_harness_content_sha": "53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f",
+        "recompiled_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "recompile_reproduces_active_sha": true,
+        "active_matches_frep_report": true,
+        "skill_ids_match_frep_report": true,
+        "ok": true
+      },
+      "a5_per_channel": {
+        "slot": "a5_per_channel",
+        "expected_runtime_bundle_sha": "39af15db974c8b29fceb490b1fc7243424450189a5c2e34a47a76ad00431ec93",
+        "expected_skill_ids": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+          "fresh_batch_guidance_per_channel_v1",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "active_runtime_bundle_sha": "39af15db974c8b29fceb490b1fc7243424450189a5c2e34a47a76ad00431ec93",
+        "recompiled_runtime_bundle_sha": "39af15db974c8b29fceb490b1fc7243424450189a5c2e34a47a76ad00431ec93",
+        "recompiled_harness_content_sha": "d24d1fb6618ecf4af4c498ae721aaaccaec6b681d41fd5b2992c86f66f0b8e72",
+        "recompiled_skill_ids": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+          "fresh_batch_guidance_per_channel_v1",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "recompile_reproduces_active_sha": true,
+        "active_matches_frep_report": true,
+        "skill_ids_match_frep_report": true,
+        "ok": true
+      },
+      "a3_per_channel": {
+        "slot": "a3_per_channel",
+        "expected_runtime_bundle_sha": "f70abc9d8bf4b16f490368ac52a630412d8009737251529160f2509f29efc7c2",
+        "expected_skill_ids": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "active_runtime_bundle_sha": "f70abc9d8bf4b16f490368ac52a630412d8009737251529160f2509f29efc7c2",
+        "recompiled_runtime_bundle_sha": "f70abc9d8bf4b16f490368ac52a630412d8009737251529160f2509f29efc7c2",
+        "recompiled_harness_content_sha": "1836511fae51d9784ad034b0af422ece6330e5fb9734c31044ab6e175dccf60d",
+        "recompiled_skill_ids": [
+          "build_contrastive_candidates",
+          "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "recompile_reproduces_active_sha": true,
+        "active_matches_frep_report": true,
+        "skill_ids_match_frep_report": true,
+        "ok": true
+      }
+    },
+    "all_ok": true,
+    "method": "each arm's active bundle is recompiled from its materialized tree and must reproduce its own runtime_bundle_sha, match the sha the #45-Frep report published, and carry the same Skill ids"
+  },
+  "held_out": {
+    "window": {
+      "window_id": "frep45_held_out",
+      "start": 8472,
+      "support_origins": [
+        8472,
+        8520,
+        8568
+      ],
+      "delayed_origins": [
+        8616,
+        8664,
+        8712
+      ],
+      "horizon": 48,
+      "farthest_index": 8760,
+      "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48",
+      "note": "held-out tail inside the exposed 2024 development partition"
+    },
+    "same_window_as_frep": "frep45_held_out",
+    "missing_gate": {
+      "window_id": "frep45_held_out",
+      "cap": {
+        "max_missing_rate": 0.3424657534246575,
+        "min_finite_fraction": 0.6575342465753424,
+        "derived_from": "artifacts/functional/e2/noaa_health_check_v1.json pre_registered.criteria.min_series_length = 5760, applied as a finite-point minimum on the constructed 8760-hour development slice",
+        "structural_sub_guards": [
+          "each eval context window carries at least 2 finite points, which is what v6._linear_integrity requires",
+          "each eval future window carries at least 1 finite point, which is what bch._evaluate_assignment requires"
+        ],
+        "reads": "the finiteness mask only; no value is compared or reported"
+      },
+      "per_series": [
+        {
+          "series_uid": "99999903062",
+          "span": [
+            8280,
+            8760
+          ],
+          "finite_points": 480,
+          "span_points": 480,
+          "finite_fraction": 1.0,
+          "min_context_finite": 192,
+          "min_future_finite": 48,
+          "rate_ok": true,
+          "context_ok": true,
+          "future_ok": true,
+          "pass": true
+        },
+        {
+          "series_uid": "99999904140",
+          "span": [
+            8280,
+            8760
+          ],
+          "finite_points": 480,
+          "span_points": 480,
+          "finite_fraction": 1.0,
+          "min_context_finite": 192,
+          "min_future_finite": 48,
+          "rate_ok": true,
+          "context_ok": true,
+          "future_ok": true,
+          "pass": true
+        },
+        {
+          "series_uid": "99999923908",
+          "span": [
+            8280,
+            8760
+          ],
+          "finite_points": 480,
+          "span_points": 480,
+          "finite_fraction": 1.0,
+          "min_context_finite": 192,
+          "min_future_finite": 48,
+          "rate_ok": true,
+          "context_ok": true,
+          "future_ok": true,
+          "pass": true
+        },
+        {
+          "series_uid": "99999963862",
+          "span": [
+            8280,
+            8760
+          ],
+          "finite_points": 480,
+          "span_points": 480,
+          "finite_fraction": 1.0,
+          "min_context_finite": 192,
+          "min_future_finite": 48,
+          "rate_ok": true,
+          "context_ok": true,
+          "future_ok": true,
+          "pass": true
+        }
+      ],
+      "failing": [],
+      "pass": true,
+      "values_read": 0,
+      "note": "computed from np.isfinite only; no value entered any number here"
+    },
+    "stays_inside_2024": true,
+    "confirmation_2025_read": false,
+    "beyond_17520_read": false,
+    "scoring": "three delayed origins, sMASE gain against the identity baseline -- the original readout unit, unchanged"
+  },
+  "held_in_ledger_reused": {
+    "source": "artifacts/functional/e2/t6_45_frep_a5a3_replay.json",
+    "reused_unchanged": true,
+    "slots": {
+      "a5_pooled": {
+        "arm": "A5",
+        "consumer_variant": "pooled",
+        "held_in_trace_rows": 3,
+        "first_positive_published": {
+          "reached": true,
+          "at_step": "task_A",
+          "cumulative_consumer_retrains": 84,
+          "delayed_aggregate_gain": 0.06694086622735516
+        },
+        "first_positive_from_held_in_only": {
+          "reached": true,
+          "at_step": "task_A",
+          "cumulative_consumer_retrains": 84,
+          "delayed_aggregate_gain": 0.06694086622735516
+        },
+        "unchanged_by_dropping_the_voided_deploy_row": true,
+        "held_in_consumer_retrains": 99,
+        "held_in_llm_calls": 2,
+        "first_positive_llm_calls": 2,
+        "held_in_delayed_utility": 0.06694086622735516,
+        "held_in_harm_count": 1,
+        "target_local_skill": "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+        "promoted": true
+      },
+      "a3_pooled": {
+        "arm": "A3",
+        "consumer_variant": "pooled",
+        "held_in_trace_rows": 3,
+        "first_positive_published": {
+          "reached": true,
+          "at_step": "task_B",
+          "cumulative_consumer_retrains": 123,
+          "delayed_aggregate_gain": 0.16283721043489244
+        },
+        "first_positive_from_held_in_only": {
+          "reached": true,
+          "at_step": "task_B",
+          "cumulative_consumer_retrains": 123,
+          "delayed_aggregate_gain": 0.16283721043489244
+        },
+        "unchanged_by_dropping_the_voided_deploy_row": true,
+        "held_in_consumer_retrains": 123,
+        "held_in_llm_calls": 5,
+        "first_positive_llm_calls": 5,
+        "held_in_delayed_utility": 0.16283721043489244,
+        "held_in_harm_count": 1,
+        "target_local_skill": null,
+        "promoted": false
+      },
+      "a5_per_channel": {
+        "arm": "A5",
+        "consumer_variant": "per_channel",
+        "held_in_trace_rows": 3,
+        "first_positive_published": {
+          "reached": true,
+          "at_step": "task_A",
+          "cumulative_consumer_retrains": 75,
+          "delayed_aggregate_gain": 0.04629769572305611
+        },
+        "first_positive_from_held_in_only": {
+          "reached": true,
+          "at_step": "task_A",
+          "cumulative_consumer_retrains": 75,
+          "delayed_aggregate_gain": 0.04629769572305611
+        },
+        "unchanged_by_dropping_the_voided_deploy_row": true,
+        "held_in_consumer_retrains": 93,
+        "held_in_llm_calls": 2,
+        "first_positive_llm_calls": 2,
+        "held_in_delayed_utility": 0.04629769572305611,
+        "held_in_harm_count": 0,
+        "target_local_skill": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+        "promoted": true
+      },
+      "a3_per_channel": {
+        "arm": "A3",
+        "consumer_variant": "per_channel",
+        "held_in_trace_rows": 3,
+        "first_positive_published": {
+          "reached": true,
+          "at_step": "task_A",
+          "cumulative_consumer_retrains": 75,
+          "delayed_aggregate_gain": 0.04629769572305611
+        },
+        "first_positive_from_held_in_only": {
+          "reached": true,
+          "at_step": "task_A",
+          "cumulative_consumer_retrains": 75,
+          "delayed_aggregate_gain": 0.04629769572305611
+        },
+        "unchanged_by_dropping_the_voided_deploy_row": true,
+        "held_in_consumer_retrains": 93,
+        "held_in_llm_calls": 2,
+        "first_positive_llm_calls": 2,
+        "held_in_delayed_utility": 0.04629769572305611,
+        "held_in_harm_count": 0,
+        "target_local_skill": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+        "promoted": true
+      }
+    },
+    "all_first_positive_invariant": true,
+    "why_invariant": "every arm reached its first delayed-positive adoption inside held-in, so the voided deployment row never entered the first-positive cost in the first place"
+  },
+  "symmetric_deployment": {
+    "ran": true,
+    "rule": {
+      "name": "symmetric_frozen_state_fast_only_deployment",
+      "decision_inputs": [
+        "the frozen Harness snapshot recompiled from disk",
+        "deployment-visible public features of the training series on their own public prefix, cut at the first held-out support origin",
+        "the frozen held-in ledger of the same arm"
+      ],
+      "decision_reads_no_outcome": true,
+      "arm_rule": {
+        "has_applicable_active_skill": "Fast-only recall: deploy the Workflow the frozen Skill governs, read off risk_guards.frozen_plan / frozen_steps",
+        "no_applicable_active_skill": "deploy the standing incumbent of the frozen ledger, i.e. the final_plan of the last held-in round; identity if that is identity or absent"
+      },
+      "forbidden_on_the_scored_block": [
+        "shortlist or any LLM call",
+        "candidate evaluation, full-batch Support evaluation, mask round",
+        "Support confirmation used as an adoption gate",
+        "the v2 adoption ladder and its delayed bar/confirmation reads",
+        "any adoption driven by a reading taken on the scored block",
+        "Skill formation, approval, limitation or revocation"
+      ],
+      "scoring": "one delayed_gate opening of the already-fixed applied bytes, on the three held-out delayed origins, sMASE gain against the identity baseline; this is the external evaluator's one-shot read and feeds nothing back",
+      "cost_symmetry_claim": "every arm pays the instrument's identity baselines plus one scoring read; no arm pays a search"
+    },
+    "window": {
+      "window_id": "frep45_held_out",
+      "start": 8472,
+      "support_origins": [
+        8472,
+        8520,
+        8568
+      ],
+      "delayed_origins": [
+        8616,
+        8664,
+        8712
+      ],
+      "horizon": 48,
+      "farthest_index": 8760,
+      "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48",
+      "note": "held-out tail inside the exposed 2024 development partition"
+    },
+    "slow_agent": "off",
+    "cells": {
+      "a5_pooled": {
+        "consumer_variant": "pooled",
+        "arm": "A5",
+        "record": {
+          "episode_id": "deploy_pooled_A5",
+          "arm": "A5",
+          "consumer_variant": "pooled",
+          "target_id": "FRESH_pooled",
+          "window_id": "frep45_held_out",
+          "support_origins": [
+            8472,
+            8520,
+            8568
+          ],
+          "delayed_origins": [
+            8616,
+            8664,
+            8712
+          ],
+          "store_slot": "a5_pooled",
+          "frozen_runtime_bundle_sha": "f66c8e323937a33b58ce25a3c795d91eb2b6c2ddc9f95b5282185b5f35ce658f",
+          "mode": "FROZEN_FAST_ONLY_DEPLOY",
+          "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+          "deploy_why": "Fast-only recall of the frozen ACTIVE Target-local Skill",
+          "active_skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+          "recall_hit": true,
+          "recall_miss": false,
+          "incumbent_from_round": null,
+          "lifecycle_at_recall": {
+            "local_status": "LOCAL_ACTIVE",
+            "evidence_level": "DELAYED",
+            "activation_probe_window": "fresh_probe",
+            "activation_probe_gain": 0.02666526990770854
+          },
+          "retrieval": {
+            "resolved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify",
+              "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+              "fresh_batch_guidance_pooled_v1"
+            ],
+            "resolved_memory_ids": [],
+            "effective_harness_view_sha": "16130d1e6f7eae3f45f13198767443eb19771f820142205d9b9c565f57947152",
+            "expected_skill_id": "fresh_batch_guidance_pooled_v1",
+            "hit": true,
+            "capability_top_k": {
+              "kind": "rule_lexical",
+              "top_k": 2
+            },
+            "served_card": {
+              "skill_id": "fresh_batch_guidance_pooled_v1",
+              "skill_kind": "capability",
+              "allowed_tools": [],
+              "clause_ids": [
+                "R1-1",
+                "R1-2",
+                "R1-3",
+                "R3-1"
+              ],
+              "body_sha256": "57f4c878f3b3c1ce4daa9ec3b688ae28fcae4bb2174b6c3151d1859d3cde8da9",
+              "body": "WHEN: A batch of forecast training series processed as one unit under the pooled Consumer structure, where a data-processing program is chosen for the whole batch before the Consumer is retrained. Every record behind this card was measured on other cohorts; everything measured on this one was withheld.\nOBSERVE: Read the per-series public table already on this Workspace and the Consumer structure named in the target block. [R3-1] Do not reuse a historical exclusion mask. Across the leave-one-cohort-out cells only 1 of 6 kept their mask across windows (share 0.1667, at or below the 0.3333 threshold), so a mask has to be re-searched on the window in front of you.\nTRY: [R1-1] Try `outlier_mad` early on this Consumer structure: it holds a delayed-positive record on 2 cohorts (electricity, traffic), cross-cohort mean delayed +0.480164. [R1-2] Try `outlier_iqr` early on this Consumer structure: it holds a delayed-positive record on 3 cohorts (T233, electricity, traffic), cross-cohort mean delayed +0.370585. [R1-3] Try `winsorize` early on this Consumer structure: it holds a delayed-positive record on 2 cohorts (T233, electricity), cross-cohort mean delayed +0.098648.\nRISK: No risk clause was compiled. The source corpus records a delayed number only for the plan each cell adopted, so a program that loses on delayed in two other cohorts almost never appears; read the absence as missing evidence, not as safety.\nVERIFY: Believe nothing here until this batch's own Support evaluation has been spent on it, and the delayed gate has cleared the plan you name. A clause is guidance and authorizes no execution.\nFALLBACK: If the public observation does not support the clauses, shortlist on the observation instead, and keep identity: it is always available and is the incumbent the gate measures against.",
+              "observable_applicability": {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            },
+            "expected_local_skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+            "local_skill_hit": true,
+            "local_skill": {
+              "skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+              "body": "Frozen program steps: [{\"op\": \"outlier_iqr\", \"params\": {}}]",
+              "risk_guards": {
+                "activation_probe_gain": 0.02666526990770854,
+                "activation_probe_gain_over_se": 0.2984388042798737,
+                "activation_probe_origins": [
+                  1440,
+                  1488,
+                  1536
+                ],
+                "activation_probe_se_block": 0.08934920501390982,
+                "activation_probe_took_part_in_selection": false,
+                "activation_probe_window": "fresh_probe",
+                "current_task_support_confirmation_required": true,
+                "evidence_level": "DELAYED",
+                "evidence_refs": [
+                  "artifacts/functional/e2/fresh_confirmation_v1.json"
+                ],
+                "explicit_choice_required": true,
+                "frozen_plan": {
+                  "excluded_series": [],
+                  "program": "outlier_iqr"
+                },
+                "local_status": "LOCAL_ACTIVE",
+                "observable_applicability_only": true,
+                "preserve_outside_candidate_region": true,
+                "provenance": "target_local_skill",
+                "requires_target_support": true,
+                "single_surface_only": true,
+                "source_episode_id": "fc_pooled_a5_task_A"
+              },
+              "frozen_steps": [
+                {
+                  "op": "outlier_iqr",
+                  "params": {}
+                }
+              ]
+            },
+            "context": {
+              "observation_cutoff": 8472,
+              "series_count": 12,
+              "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+              "features": {
+                "clipping_probe_direction": "unknown",
+                "denoising_probe_direction": "unknown",
+                "estimated_level_offset": 0.0,
+                "estimated_region_end_fraction": 0.7810434372049103,
+                "estimated_region_start_fraction": 0.23778328611898017,
+                "imputation_probe_direction": "unknown",
+                "level_excursion_score": 0.0,
+                "level_only_post_shift_support_sufficient": true,
+                "level_probe_direction": "unknown",
+                "level_region_end_fraction": 0.0,
+                "level_region_fraction": 0.0,
+                "local_robust_z_peak": 3.1678942039120113,
+                "longest_missing_run_fraction": 0.00041312559017941453,
+                "missing_fraction": 0.0009442870632672333,
+                "outlier_region_end_fraction": 0.0,
+                "period_change_score": 0.0,
+                "period_evidence_status": "OK",
+                "period_reliability": 1.0,
+                "period_repair_available": false,
+                "post_shift_support_sufficient": false,
+                "task_kind": "forecast"
+              }
+            }
+          },
+          "applied_plan": {
+            "program": "outlier_iqr",
+            "excluded_series": []
+          },
+          "final_plan": {
+            "program": "outlier_iqr",
+            "excluded_series": []
+          },
+          "delayed": {
+            "aggregate_gain": 0.05938503028036097,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.18713824568826953,
+            "harmed_eval_series": [
+              "99999903062"
+            ],
+            "per_eval_series_gain": {
+              "99999903062": -0.18713824568826953,
+              "99999904140": 0.13116939930621482,
+              "99999923908": 0.07273251511929509,
+              "99999963862": 0.22077645238420351
+            }
+          },
+          "support": null,
+          "support_note": "not measured: a Support reading on the scored block would be a feedback read, and nothing here needs one",
+          "pre_scoring_purity": {
+            "reads_logged_before_scoring": 0,
+            "charged_support_evaluations": 0,
+            "instrument_internal_evaluations": 0,
+            "consumer_retrains_before_scoring": 6,
+            "identity_baseline_retrains": 6,
+            "decision_read_nothing_on_the_scored_block": true
+          },
+          "delayed_openings": 1,
+          "llm_calls": 0,
+          "new_skill_formed": false,
+          "slow_agent": "off",
+          "instrument": {
+            "full_batch_support_evaluations_charged": 0,
+            "budget": 2,
+            "instrument_internal_evaluations_not_charged": 0,
+            "log": [
+              {
+                "kind": "delayed_gate",
+                "program": "outlier_iqr",
+                "charged": false,
+                "excluded_series": [],
+                "aggregate_gain": 0.05938503028036097
+              }
+            ],
+            "budget_source": "recipe_skill_bridge_v1",
+            "consumer_retrains_total": 9,
+            "consumer_retrain_log": [
+              {
+                "what": "identity baselines",
+                "retrains": 6
+              },
+              {
+                "what": "masked(outlier_iqr, minus nothing)",
+                "retrains": 3
+              }
+            ],
+            "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+          },
+          "consumer_retrains_total": 9
+        },
+        "consumer_retrains": 9,
+        "llm_calls": 0
+      },
+      "a3_pooled": {
+        "consumer_variant": "pooled",
+        "arm": "A3",
+        "record": {
+          "episode_id": "deploy_pooled_A3",
+          "arm": "A3",
+          "consumer_variant": "pooled",
+          "target_id": "FRESH_pooled",
+          "window_id": "frep45_held_out",
+          "support_origins": [
+            8472,
+            8520,
+            8568
+          ],
+          "delayed_origins": [
+            8616,
+            8664,
+            8712
+          ],
+          "store_slot": "a3_pooled",
+          "frozen_runtime_bundle_sha": "836d5e768f6f79cc32180d4a7d7d01d3ae2fbc813e02c9c653dbba9e042759fd",
+          "mode": "FROZEN_FAST_ONLY_DEPLOY",
+          "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+          "deploy_why": "the last held-in round adopted this Workflow, so it is the standing incumbent of the frozen state",
+          "active_skill_id": null,
+          "recall_hit": null,
+          "recall_miss": false,
+          "incumbent_from_round": "task_B",
+          "lifecycle_at_recall": null,
+          "retrieval": {
+            "resolved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "resolved_memory_ids": [],
+            "effective_harness_view_sha": "95be1f62050790b4784e47d6b3270c9a3511b2001ebfb6e57c3b77ebb03039d6",
+            "expected_skill_id": null,
+            "hit": null,
+            "capability_top_k": {
+              "kind": "rule_lexical",
+              "top_k": 2
+            },
+            "served_card": null,
+            "expected_local_skill_id": null,
+            "local_skill_hit": null,
+            "local_skill": null,
+            "context": {
+              "observation_cutoff": 8472,
+              "series_count": 12,
+              "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+              "features": {
+                "clipping_probe_direction": "unknown",
+                "denoising_probe_direction": "unknown",
+                "estimated_level_offset": 0.0,
+                "estimated_region_end_fraction": 0.7810434372049103,
+                "estimated_region_start_fraction": 0.23778328611898017,
+                "imputation_probe_direction": "unknown",
+                "level_excursion_score": 0.0,
+                "level_only_post_shift_support_sufficient": true,
+                "level_probe_direction": "unknown",
+                "level_region_end_fraction": 0.0,
+                "level_region_fraction": 0.0,
+                "local_robust_z_peak": 3.1678942039120113,
+                "longest_missing_run_fraction": 0.00041312559017941453,
+                "missing_fraction": 0.0009442870632672333,
+                "outlier_region_end_fraction": 0.0,
+                "period_change_score": 0.0,
+                "period_evidence_status": "OK",
+                "period_reliability": 1.0,
+                "period_repair_available": false,
+                "post_shift_support_sufficient": false,
+                "task_kind": "forecast"
+              }
+            }
+          },
+          "applied_plan": {
+            "program": "repair_level_shift",
+            "excluded_series": []
+          },
+          "final_plan": {
+            "program": "repair_level_shift",
+            "excluded_series": []
+          },
+          "delayed": {
+            "aggregate_gain": -0.21651319924404663,
+            "harmed_eval_series_count": 4,
+            "harmed_eval_series_total_harm": 0.8660527969761865,
+            "harmed_eval_series": [
+              "99999903062",
+              "99999904140",
+              "99999923908",
+              "99999963862"
+            ],
+            "per_eval_series_gain": {
+              "99999903062": -0.1382741992656146,
+              "99999904140": -0.3542921976875674,
+              "99999923908": -0.015234785203980028,
+              "99999963862": -0.35825161481902446
+            }
+          },
+          "support": null,
+          "support_note": "not measured: a Support reading on the scored block would be a feedback read, and nothing here needs one",
+          "pre_scoring_purity": {
+            "reads_logged_before_scoring": 0,
+            "charged_support_evaluations": 0,
+            "instrument_internal_evaluations": 0,
+            "consumer_retrains_before_scoring": 6,
+            "identity_baseline_retrains": 6,
+            "decision_read_nothing_on_the_scored_block": true
+          },
+          "delayed_openings": 1,
+          "llm_calls": 0,
+          "new_skill_formed": false,
+          "slow_agent": "off",
+          "instrument": {
+            "full_batch_support_evaluations_charged": 0,
+            "budget": 2,
+            "instrument_internal_evaluations_not_charged": 0,
+            "log": [
+              {
+                "kind": "delayed_gate",
+                "program": "repair_level_shift",
+                "charged": false,
+                "excluded_series": [],
+                "aggregate_gain": -0.21651319924404663
+              }
+            ],
+            "budget_source": "recipe_skill_bridge_v1",
+            "consumer_retrains_total": 9,
+            "consumer_retrain_log": [
+              {
+                "what": "identity baselines",
+                "retrains": 6
+              },
+              {
+                "what": "masked(repair_level_shift, minus nothing)",
+                "retrains": 3
+              }
+            ],
+            "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+          },
+          "consumer_retrains_total": 9
+        },
+        "consumer_retrains": 9,
+        "llm_calls": 0
+      },
+      "a5_per_channel": {
+        "consumer_variant": "per_channel",
+        "arm": "A5",
+        "record": {
+          "episode_id": "deploy_per_channel_A5",
+          "arm": "A5",
+          "consumer_variant": "per_channel",
+          "target_id": "FRESH_per_channel",
+          "window_id": "frep45_held_out",
+          "support_origins": [
+            8472,
+            8520,
+            8568
+          ],
+          "delayed_origins": [
+            8616,
+            8664,
+            8712
+          ],
+          "store_slot": "a5_per_channel",
+          "frozen_runtime_bundle_sha": "39af15db974c8b29fceb490b1fc7243424450189a5c2e34a47a76ad00431ec93",
+          "mode": "FROZEN_FAST_ONLY_DEPLOY",
+          "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+          "deploy_why": "Fast-only recall of the frozen ACTIVE Target-local Skill",
+          "active_skill_id": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+          "recall_hit": true,
+          "recall_miss": false,
+          "incumbent_from_round": null,
+          "lifecycle_at_recall": {
+            "local_status": "LOCAL_ACTIVE",
+            "evidence_level": "DELAYED",
+            "activation_probe_window": "fresh_probe",
+            "activation_probe_gain": 0.023846465199050707
+          },
+          "retrieval": {
+            "resolved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify",
+              "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+              "fresh_batch_guidance_per_channel_v1"
+            ],
+            "resolved_memory_ids": [],
+            "effective_harness_view_sha": "f84a290103cf032d2439c38fda3521cc7db5cdf762cb783d4eac10c01eef2d45",
+            "expected_skill_id": "fresh_batch_guidance_per_channel_v1",
+            "hit": true,
+            "capability_top_k": {
+              "kind": "rule_lexical",
+              "top_k": 2
+            },
+            "served_card": {
+              "skill_id": "fresh_batch_guidance_per_channel_v1",
+              "skill_kind": "capability",
+              "allowed_tools": [],
+              "clause_ids": [
+                "R1-1",
+                "R1-2",
+                "R3-1"
+              ],
+              "body_sha256": "737dbdee7769c392776bf54913fa2ac63291b5cb0341ba8f9d7528f0ffde31d8",
+              "body": "WHEN: A batch of forecast training series processed as one unit under the per_channel Consumer structure, where a data-processing program is chosen for the whole batch before the Consumer is retrained. Every record behind this card was measured on other cohorts; everything measured on this one was withheld.\nOBSERVE: Read the per-series public table already on this Workspace and the Consumer structure named in the target block. [R3-1] Do not reuse a historical exclusion mask. Across the leave-one-cohort-out cells only 1 of 6 kept their mask across windows (share 0.1667, at or below the 0.3333 threshold), so a mask has to be re-searched on the window in front of you.\nTRY: [R1-1] Try `outlier_iqr` early on this Consumer structure: it holds a delayed-positive record on 2 cohorts (T233, traffic), cross-cohort mean delayed +0.216691. [R1-2] Try `winsorize` early on this Consumer structure: it holds a delayed-positive record on 2 cohorts (T233, traffic), cross-cohort mean delayed +0.213245.\nRISK: No risk clause was compiled. The source corpus records a delayed number only for the plan each cell adopted, so a program that loses on delayed in two other cohorts almost never appears; read the absence as missing evidence, not as safety.\nVERIFY: Believe nothing here until this batch's own Support evaluation has been spent on it, and the delayed gate has cleared the plan you name. A clause is guidance and authorizes no execution.\nFALLBACK: If the public observation does not support the clauses, shortlist on the observation instead, and keep identity: it is always available and is the incumbent the gate measures against.",
+              "observable_applicability": {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            },
+            "expected_local_skill_id": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+            "local_skill_hit": true,
+            "local_skill": {
+              "skill_id": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+              "body": "Frozen program steps: [{\"op\": \"repair_level_shift\", \"params\": {}}]",
+              "risk_guards": {
+                "activation_probe_gain": 0.023846465199050707,
+                "activation_probe_gain_over_se": 0.2943171824509066,
+                "activation_probe_origins": [
+                  1440,
+                  1488,
+                  1536
+                ],
+                "activation_probe_se_block": 0.08102301401661591,
+                "activation_probe_took_part_in_selection": false,
+                "activation_probe_window": "fresh_probe",
+                "current_task_support_confirmation_required": true,
+                "evidence_level": "DELAYED",
+                "evidence_refs": [
+                  "artifacts/functional/e2/fresh_confirmation_v1.json"
+                ],
+                "explicit_choice_required": true,
+                "frozen_plan": {
+                  "excluded_series": [],
+                  "program": "repair_level_shift"
+                },
+                "local_status": "LOCAL_ACTIVE",
+                "observable_applicability_only": true,
+                "preserve_outside_candidate_region": true,
+                "provenance": "target_local_skill",
+                "requires_target_support": true,
+                "single_surface_only": true,
+                "source_episode_id": "fc_per_channel_a5_task_A"
+              },
+              "frozen_steps": [
+                {
+                  "op": "repair_level_shift",
+                  "params": {}
+                }
+              ]
+            },
+            "context": {
+              "observation_cutoff": 8472,
+              "series_count": 12,
+              "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+              "features": {
+                "clipping_probe_direction": "unknown",
+                "denoising_probe_direction": "unknown",
+                "estimated_level_offset": 0.0,
+                "estimated_region_end_fraction": 0.7810434372049103,
+                "estimated_region_start_fraction": 0.23778328611898017,
+                "imputation_probe_direction": "unknown",
+                "level_excursion_score": 0.0,
+                "level_only_post_shift_support_sufficient": true,
+                "level_probe_direction": "unknown",
+                "level_region_end_fraction": 0.0,
+                "level_region_fraction": 0.0,
+                "local_robust_z_peak": 3.1678942039120113,
+                "longest_missing_run_fraction": 0.00041312559017941453,
+                "missing_fraction": 0.0009442870632672333,
+                "outlier_region_end_fraction": 0.0,
+                "period_change_score": 0.0,
+                "period_evidence_status": "OK",
+                "period_reliability": 1.0,
+                "period_repair_available": false,
+                "post_shift_support_sufficient": false,
+                "task_kind": "forecast"
+              }
+            }
+          },
+          "applied_plan": {
+            "program": "repair_level_shift",
+            "excluded_series": []
+          },
+          "final_plan": {
+            "program": "repair_level_shift",
+            "excluded_series": []
+          },
+          "delayed": {
+            "aggregate_gain": 0.09649629236648409,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.038647595711403915,
+            "harmed_eval_series": [
+              "99999904140"
+            ],
+            "per_eval_series_gain": {
+              "99999903062": 0.061528675888676686,
+              "99999904140": -0.038647595711403915,
+              "99999923908": 0.11824624081585582,
+              "99999963862": 0.2448578484728077
+            }
+          },
+          "support": null,
+          "support_note": "not measured: a Support reading on the scored block would be a feedback read, and nothing here needs one",
+          "pre_scoring_purity": {
+            "reads_logged_before_scoring": 0,
+            "charged_support_evaluations": 0,
+            "instrument_internal_evaluations": 0,
+            "consumer_retrains_before_scoring": 6,
+            "identity_baseline_retrains": 6,
+            "decision_read_nothing_on_the_scored_block": true
+          },
+          "delayed_openings": 1,
+          "llm_calls": 0,
+          "new_skill_formed": false,
+          "slow_agent": "off",
+          "instrument": {
+            "full_batch_support_evaluations_charged": 0,
+            "budget": 2,
+            "instrument_internal_evaluations_not_charged": 0,
+            "log": [
+              {
+                "kind": "delayed_gate",
+                "program": "repair_level_shift",
+                "charged": false,
+                "excluded_series": [],
+                "aggregate_gain": 0.09649629236648409
+              }
+            ],
+            "budget_source": "recipe_skill_bridge_v1",
+            "consumer_retrains_total": 9,
+            "consumer_retrain_log": [
+              {
+                "what": "identity baselines",
+                "retrains": 6
+              },
+              {
+                "what": "masked(repair_level_shift, minus nothing)",
+                "retrains": 3
+              }
+            ],
+            "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+          },
+          "consumer_retrains_total": 9
+        },
+        "consumer_retrains": 9,
+        "llm_calls": 0
+      },
+      "a3_per_channel": {
+        "consumer_variant": "per_channel",
+        "arm": "A3",
+        "record": {
+          "episode_id": "deploy_per_channel_A3",
+          "arm": "A3",
+          "consumer_variant": "per_channel",
+          "target_id": "FRESH_per_channel",
+          "window_id": "frep45_held_out",
+          "support_origins": [
+            8472,
+            8520,
+            8568
+          ],
+          "delayed_origins": [
+            8616,
+            8664,
+            8712
+          ],
+          "store_slot": "a3_per_channel",
+          "frozen_runtime_bundle_sha": "f70abc9d8bf4b16f490368ac52a630412d8009737251529160f2509f29efc7c2",
+          "mode": "FROZEN_FAST_ONLY_DEPLOY",
+          "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+          "deploy_why": "Fast-only recall of the frozen ACTIVE Target-local Skill",
+          "active_skill_id": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+          "recall_hit": true,
+          "recall_miss": false,
+          "incumbent_from_round": null,
+          "lifecycle_at_recall": {
+            "local_status": "LOCAL_ACTIVE",
+            "evidence_level": "DELAYED",
+            "activation_probe_window": "fresh_probe",
+            "activation_probe_gain": 0.023846465199050707
+          },
+          "retrieval": {
+            "resolved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify",
+              "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift"
+            ],
+            "resolved_memory_ids": [],
+            "effective_harness_view_sha": "fb0c2433f73ca6ea650c330ad65d28bedcaac31b43c6cbfbfa11cf33acb2ce06",
+            "expected_skill_id": null,
+            "hit": null,
+            "capability_top_k": {
+              "kind": "rule_lexical",
+              "top_k": 2
+            },
+            "served_card": null,
+            "expected_local_skill_id": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+            "local_skill_hit": true,
+            "local_skill": {
+              "skill_id": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+              "body": "Frozen program steps: [{\"op\": \"repair_level_shift\", \"params\": {}}]",
+              "risk_guards": {
+                "activation_probe_gain": 0.023846465199050707,
+                "activation_probe_gain_over_se": 0.2943171824509066,
+                "activation_probe_origins": [
+                  1440,
+                  1488,
+                  1536
+                ],
+                "activation_probe_se_block": 0.08102301401661591,
+                "activation_probe_took_part_in_selection": false,
+                "activation_probe_window": "fresh_probe",
+                "current_task_support_confirmation_required": true,
+                "evidence_level": "DELAYED",
+                "evidence_refs": [
+                  "artifacts/functional/e2/fresh_confirmation_v1.json"
+                ],
+                "explicit_choice_required": true,
+                "frozen_plan": {
+                  "excluded_series": [],
+                  "program": "repair_level_shift"
+                },
+                "local_status": "LOCAL_ACTIVE",
+                "observable_applicability_only": true,
+                "preserve_outside_candidate_region": true,
+                "provenance": "target_local_skill",
+                "requires_target_support": true,
+                "single_surface_only": true,
+                "source_episode_id": "fc_per_channel_a3_task_A"
+              },
+              "frozen_steps": [
+                {
+                  "op": "repair_level_shift",
+                  "params": {}
+                }
+              ]
+            },
+            "context": {
+              "observation_cutoff": 8472,
+              "series_count": 12,
+              "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+              "features": {
+                "clipping_probe_direction": "unknown",
+                "denoising_probe_direction": "unknown",
+                "estimated_level_offset": 0.0,
+                "estimated_region_end_fraction": 0.7810434372049103,
+                "estimated_region_start_fraction": 0.23778328611898017,
+                "imputation_probe_direction": "unknown",
+                "level_excursion_score": 0.0,
+                "level_only_post_shift_support_sufficient": true,
+                "level_probe_direction": "unknown",
+                "level_region_end_fraction": 0.0,
+                "level_region_fraction": 0.0,
+                "local_robust_z_peak": 3.1678942039120113,
+                "longest_missing_run_fraction": 0.00041312559017941453,
+                "missing_fraction": 0.0009442870632672333,
+                "outlier_region_end_fraction": 0.0,
+                "period_change_score": 0.0,
+                "period_evidence_status": "OK",
+                "period_reliability": 1.0,
+                "period_repair_available": false,
+                "post_shift_support_sufficient": false,
+                "task_kind": "forecast"
+              }
+            }
+          },
+          "applied_plan": {
+            "program": "repair_level_shift",
+            "excluded_series": []
+          },
+          "final_plan": {
+            "program": "repair_level_shift",
+            "excluded_series": []
+          },
+          "delayed": {
+            "aggregate_gain": 0.09649629236648409,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.038647595711403915,
+            "harmed_eval_series": [
+              "99999904140"
+            ],
+            "per_eval_series_gain": {
+              "99999903062": 0.061528675888676686,
+              "99999904140": -0.038647595711403915,
+              "99999923908": 0.11824624081585582,
+              "99999963862": 0.2448578484728077
+            }
+          },
+          "support": null,
+          "support_note": "not measured: a Support reading on the scored block would be a feedback read, and nothing here needs one",
+          "pre_scoring_purity": {
+            "reads_logged_before_scoring": 0,
+            "charged_support_evaluations": 0,
+            "instrument_internal_evaluations": 0,
+            "consumer_retrains_before_scoring": 6,
+            "identity_baseline_retrains": 6,
+            "decision_read_nothing_on_the_scored_block": true
+          },
+          "delayed_openings": 1,
+          "llm_calls": 0,
+          "new_skill_formed": false,
+          "slow_agent": "off",
+          "instrument": {
+            "full_batch_support_evaluations_charged": 0,
+            "budget": 2,
+            "instrument_internal_evaluations_not_charged": 0,
+            "log": [
+              {
+                "kind": "delayed_gate",
+                "program": "repair_level_shift",
+                "charged": false,
+                "excluded_series": [],
+                "aggregate_gain": 0.09649629236648409
+              }
+            ],
+            "budget_source": "recipe_skill_bridge_v1",
+            "consumer_retrains_total": 9,
+            "consumer_retrain_log": [
+              {
+                "what": "identity baselines",
+                "retrains": 6
+              },
+              {
+                "what": "masked(repair_level_shift, minus nothing)",
+                "retrains": 3
+              }
+            ],
+            "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+          },
+          "consumer_retrains_total": 9
+        },
+        "consumer_retrains": 9,
+        "llm_calls": 0
+      }
+    },
+    "consumer_retrains": 36,
+    "llm_calls": 0
+  },
+  "deploy_purity_F1_F2": {
+    "slots": {
+      "a5_pooled": {
+        "arm": "A5",
+        "consumer_variant": "pooled",
+        "F1_decision_read_no_outcome": true,
+        "F1_delayed_openings_total": 1,
+        "F1_delayed_openings_used_for_adoption": 0,
+        "F2_charged_support_evaluations": 0,
+        "F2_candidate_evaluations": 0,
+        "F2_llm_calls": 0,
+        "F2_deploy_consumer_retrains": 9,
+        "new_skill_formed": false,
+        "ok": true
+      },
+      "a3_pooled": {
+        "arm": "A3",
+        "consumer_variant": "pooled",
+        "F1_decision_read_no_outcome": true,
+        "F1_delayed_openings_total": 1,
+        "F1_delayed_openings_used_for_adoption": 0,
+        "F2_charged_support_evaluations": 0,
+        "F2_candidate_evaluations": 0,
+        "F2_llm_calls": 0,
+        "F2_deploy_consumer_retrains": 9,
+        "new_skill_formed": false,
+        "ok": true
+      },
+      "a5_per_channel": {
+        "arm": "A5",
+        "consumer_variant": "per_channel",
+        "F1_decision_read_no_outcome": true,
+        "F1_delayed_openings_total": 1,
+        "F1_delayed_openings_used_for_adoption": 0,
+        "F2_charged_support_evaluations": 0,
+        "F2_candidate_evaluations": 0,
+        "F2_llm_calls": 0,
+        "F2_deploy_consumer_retrains": 9,
+        "new_skill_formed": false,
+        "ok": true
+      },
+      "a3_per_channel": {
+        "arm": "A3",
+        "consumer_variant": "per_channel",
+        "F1_decision_read_no_outcome": true,
+        "F1_delayed_openings_total": 1,
+        "F1_delayed_openings_used_for_adoption": 0,
+        "F2_charged_support_evaluations": 0,
+        "F2_candidate_evaluations": 0,
+        "F2_llm_calls": 0,
+        "F2_deploy_consumer_retrains": 9,
+        "new_skill_formed": false,
+        "ok": true
+      }
+    },
+    "all_pure": true,
+    "deploy_cost_values": [
+      9
+    ],
+    "deploy_cost_identical_across_arms": true,
+    "deploy_cost_spread": 0,
+    "cost_symmetry_note": "each arm pays 3 identity support-baseline retrains + 3 identity delayed-baseline retrains, both computed by the instrument's own constructor and used by no decision, plus 3 retrains for the one scoring read of a non-identity applied plan (0 for identity, which reuses the cached identity baseline)"
+  },
+  "deploy_binding_assertion_0b": {
+    "slots": {
+      "a5_pooled": {
+        "arm": "A5",
+        "consumer_variant": "pooled",
+        "mode": "FROZEN_FAST_ONLY_DEPLOY",
+        "applied_program": "outlier_iqr",
+        "applied_excluded_series": [],
+        "scored_delayed_aggregate_gain": 0.05938503028036097,
+        "delayed_gate_reads_on_applied_bytes": 1,
+        "delayed_gate_reads_matching_scored_value": 1,
+        "new_skill_formed": false,
+        "llm_calls": 0,
+        "ok": true
+      },
+      "a3_pooled": {
+        "arm": "A3",
+        "consumer_variant": "pooled",
+        "mode": "FROZEN_FAST_ONLY_DEPLOY",
+        "applied_program": "repair_level_shift",
+        "applied_excluded_series": [],
+        "scored_delayed_aggregate_gain": -0.21651319924404663,
+        "delayed_gate_reads_on_applied_bytes": 1,
+        "delayed_gate_reads_matching_scored_value": 1,
+        "new_skill_formed": false,
+        "llm_calls": 0,
+        "ok": true
+      },
+      "a5_per_channel": {
+        "arm": "A5",
+        "consumer_variant": "per_channel",
+        "mode": "FROZEN_FAST_ONLY_DEPLOY",
+        "applied_program": "repair_level_shift",
+        "applied_excluded_series": [],
+        "scored_delayed_aggregate_gain": 0.09649629236648409,
+        "delayed_gate_reads_on_applied_bytes": 1,
+        "delayed_gate_reads_matching_scored_value": 1,
+        "new_skill_formed": false,
+        "llm_calls": 0,
+        "ok": true
+      },
+      "a3_per_channel": {
+        "arm": "A3",
+        "consumer_variant": "per_channel",
+        "mode": "FROZEN_FAST_ONLY_DEPLOY",
+        "applied_program": "repair_level_shift",
+        "applied_excluded_series": [],
+        "scored_delayed_aggregate_gain": 0.09649629236648409,
+        "delayed_gate_reads_on_applied_bytes": 1,
+        "delayed_gate_reads_matching_scored_value": 1,
+        "new_skill_formed": false,
+        "llm_calls": 0,
+        "ok": true
+      }
+    },
+    "all_bound": true,
+    "assertion": "scored_program == deploy.applied_program and the scored aggregate is the delayed_gate reading of exactly those bytes; no Skill was formed by the scored episode",
+    "cost": "0 extra Consumer retrains; read off the search's own log"
+  },
+  "freeze_unchanged_after_deploy": {
+    "slots": {
+      "a5_pooled": {
+        "active_pointer_unchanged": true,
+        "runtime_bundle_sha_unchanged": true,
+        "skill_ids_unchanged": true,
+        "runtime_bundle_sha_after": "f66c8e323937a33b58ce25a3c795d91eb2b6c2ddc9f95b5282185b5f35ce658f",
+        "ok": true
+      },
+      "a3_pooled": {
+        "active_pointer_unchanged": true,
+        "runtime_bundle_sha_unchanged": true,
+        "skill_ids_unchanged": true,
+        "runtime_bundle_sha_after": "836d5e768f6f79cc32180d4a7d7d01d3ae2fbc813e02c9c653dbba9e042759fd",
+        "ok": true
+      },
+      "a5_per_channel": {
+        "active_pointer_unchanged": true,
+        "runtime_bundle_sha_unchanged": true,
+        "skill_ids_unchanged": true,
+        "runtime_bundle_sha_after": "39af15db974c8b29fceb490b1fc7243424450189a5c2e34a47a76ad00431ec93",
+        "ok": true
+      },
+      "a3_per_channel": {
+        "active_pointer_unchanged": true,
+        "runtime_bundle_sha_unchanged": true,
+        "skill_ids_unchanged": true,
+        "runtime_bundle_sha_after": "f70abc9d8bf4b16f490368ac52a630412d8009737251529160f2509f29efc7c2",
+        "ok": true
+      }
+    },
+    "all_unchanged": true,
+    "method": "recompiled from the on-disk tree after deployment",
+    "rule": "held-out deployment adds, modifies, approves, limits or revokes no Skill, so every sha and pointer must be identical afterwards"
+  },
+  "cells": {
+    "pooled": {
+      "consumer_variant": "pooled",
+      "A5": {
+        "arm": "A5",
+        "consumer_variant": "pooled",
+        "first_positive_cost_consumer_retrains": 84,
+        "first_positive_at_step": "task_A",
+        "first_positive_llm_calls": 2,
+        "held_in_consumer_retrains": 99,
+        "held_in_llm_calls": 2,
+        "held_in_delayed_utility": 0.06694086622735516,
+        "held_in_harm_count": 1,
+        "deploy_consumer_retrains": 9,
+        "deploy_llm_calls": 0,
+        "total_consumer_retrains": 108,
+        "total_llm_calls": 2,
+        "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+        "held_out_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "held_out_terminal_utility": 0.05938503028036097,
+        "held_out_harm_count": 1,
+        "held_out_harm_series": [
+          "99999903062"
+        ],
+        "held_out_harm_total": 0.18713824568826953,
+        "target_local_skill": "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+        "promoted": true
+      },
+      "A3": {
+        "arm": "A3",
+        "consumer_variant": "pooled",
+        "first_positive_cost_consumer_retrains": 123,
+        "first_positive_at_step": "task_B",
+        "first_positive_llm_calls": 5,
+        "held_in_consumer_retrains": 123,
+        "held_in_llm_calls": 5,
+        "held_in_delayed_utility": 0.16283721043489244,
+        "held_in_harm_count": 1,
+        "deploy_consumer_retrains": 9,
+        "deploy_llm_calls": 0,
+        "total_consumer_retrains": 132,
+        "total_llm_calls": 5,
+        "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+        "held_out_plan": {
+          "program": "repair_level_shift",
+          "excluded_series": []
+        },
+        "held_out_terminal_utility": -0.21651319924404663,
+        "held_out_harm_count": 4,
+        "held_out_harm_series": [
+          "99999903062",
+          "99999904140",
+          "99999923908",
+          "99999963862"
+        ],
+        "held_out_harm_total": 0.8660527969761865,
+        "target_local_skill": null,
+        "promoted": false
+      },
+      "held_out_terminal_difference": 0.2758982295244076,
+      "held_out_terminal_direction": "A5_HIGHER",
+      "material_threshold": 0.005,
+      "first_positive_cost": {
+        "A5": 84,
+        "A3": 123,
+        "A5_cheaper": true
+      },
+      "harm": {
+        "A5": 1,
+        "A3": 4
+      },
+      "same_applied_workflow": false,
+      "voided_frep_reading": {
+        "held_out_delayed_difference": -0.15254881198057976,
+        "A5_terminal": 0.0,
+        "A3_terminal": 0.15254881198057976,
+        "A5_deploy_mode": "DIRECT_RECALL",
+        "A3_deploy_mode": "FULL_PRICE_SEARCH",
+        "A5_deploy_retrains": 9,
+        "A3_deploy_retrains": 69,
+        "raw_cell_verdict": "A5_LOSES",
+        "voided_because": "F1: the voided deployment took 2 delayed reading(s) of the scored block while choosing what to deploy; F2: the two arms were not given the same deployment treatment (DIRECT_RECALL at 9 retrains vs FULL_PRICE_SEARCH at 69 retrains)",
+        "F1_applies": true,
+        "F2_applies": true,
+        "voided_delayed_reads_on_scored_block": 2
+      }
+    },
+    "per_channel": {
+      "consumer_variant": "per_channel",
+      "A5": {
+        "arm": "A5",
+        "consumer_variant": "per_channel",
+        "first_positive_cost_consumer_retrains": 75,
+        "first_positive_at_step": "task_A",
+        "first_positive_llm_calls": 2,
+        "held_in_consumer_retrains": 93,
+        "held_in_llm_calls": 2,
+        "held_in_delayed_utility": 0.04629769572305611,
+        "held_in_harm_count": 0,
+        "deploy_consumer_retrains": 9,
+        "deploy_llm_calls": 0,
+        "total_consumer_retrains": 102,
+        "total_llm_calls": 2,
+        "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+        "held_out_plan": {
+          "program": "repair_level_shift",
+          "excluded_series": []
+        },
+        "held_out_terminal_utility": 0.09649629236648409,
+        "held_out_harm_count": 1,
+        "held_out_harm_series": [
+          "99999904140"
+        ],
+        "held_out_harm_total": 0.038647595711403915,
+        "target_local_skill": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+        "promoted": true
+      },
+      "A3": {
+        "arm": "A3",
+        "consumer_variant": "per_channel",
+        "first_positive_cost_consumer_retrains": 75,
+        "first_positive_at_step": "task_A",
+        "first_positive_llm_calls": 2,
+        "held_in_consumer_retrains": 93,
+        "held_in_llm_calls": 2,
+        "held_in_delayed_utility": 0.04629769572305611,
+        "held_in_harm_count": 0,
+        "deploy_consumer_retrains": 9,
+        "deploy_llm_calls": 0,
+        "total_consumer_retrains": 102,
+        "total_llm_calls": 2,
+        "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+        "held_out_plan": {
+          "program": "repair_level_shift",
+          "excluded_series": []
+        },
+        "held_out_terminal_utility": 0.09649629236648409,
+        "held_out_harm_count": 1,
+        "held_out_harm_series": [
+          "99999904140"
+        ],
+        "held_out_harm_total": 0.038647595711403915,
+        "target_local_skill": "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift",
+        "promoted": true
+      },
+      "held_out_terminal_difference": 0.0,
+      "held_out_terminal_direction": "WITHIN_MATERIAL_BAND",
+      "material_threshold": 0.005,
+      "first_positive_cost": {
+        "A5": 75,
+        "A3": 75,
+        "A5_cheaper": false
+      },
+      "harm": {
+        "A5": 1,
+        "A3": 1
+      },
+      "same_applied_workflow": true,
+      "voided_frep_reading": {
+        "held_out_delayed_difference": 0.0,
+        "A5_terminal": 0.09649629236648409,
+        "A3_terminal": 0.09649629236648409,
+        "A5_deploy_mode": "DIRECT_RECALL",
+        "A3_deploy_mode": "DIRECT_RECALL",
+        "A5_deploy_retrains": 15,
+        "A3_deploy_retrains": 15,
+        "raw_cell_verdict": "A5_TIE_TRANSFER_BOUNDARY",
+        "voided_because": "F1: the voided deployment took 4 delayed reading(s) of the scored block while choosing what to deploy",
+        "F1_applies": true,
+        "F2_applies": false,
+        "voided_delayed_reads_on_scored_block": 4
+      }
+    }
+  },
+  "paired_readouts": [
+    {
+      "consumer_variant": "pooled",
+      "arm": "A5",
+      "first_positive_cost_consumer_retrains": 84,
+      "first_positive_llm_calls": 2,
+      "total_consumer_retrains": 108,
+      "total_llm_calls": 2,
+      "deploy_consumer_retrains": 9,
+      "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+      "held_out_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "held_out_terminal_utility": 0.05938503028036097,
+      "held_out_harm_count": 1
+    },
+    {
+      "consumer_variant": "pooled",
+      "arm": "A3",
+      "first_positive_cost_consumer_retrains": 123,
+      "first_positive_llm_calls": 5,
+      "total_consumer_retrains": 132,
+      "total_llm_calls": 5,
+      "deploy_consumer_retrains": 9,
+      "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+      "held_out_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": []
+      },
+      "held_out_terminal_utility": -0.21651319924404663,
+      "held_out_harm_count": 4
+    },
+    {
+      "consumer_variant": "per_channel",
+      "arm": "A5",
+      "first_positive_cost_consumer_retrains": 75,
+      "first_positive_llm_calls": 2,
+      "total_consumer_retrains": 102,
+      "total_llm_calls": 2,
+      "deploy_consumer_retrains": 9,
+      "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+      "held_out_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": []
+      },
+      "held_out_terminal_utility": 0.09649629236648409,
+      "held_out_harm_count": 1
+    },
+    {
+      "consumer_variant": "per_channel",
+      "arm": "A3",
+      "first_positive_cost_consumer_retrains": 75,
+      "first_positive_llm_calls": 2,
+      "total_consumer_retrains": 102,
+      "total_llm_calls": 2,
+      "deploy_consumer_retrains": 9,
+      "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+      "held_out_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": []
+      },
+      "held_out_terminal_utility": 0.09649629236648409,
+      "held_out_harm_count": 1
+    }
+  ],
+  "verdict": {
+    "verdict": "A5A3_TERMINAL_READJUDICATED",
+    "reason": "both arms deployed from frozen state only, with zero delayed openings used for adoption, zero candidate evaluations and identical deployment cost (9 retrains each). On the primary pooled cell the held-out terminal utility is A5 +0.059385 vs A3 -0.216513 (difference +0.275898, A5_HIGHER); first-positive cost 84 vs 123 is carried over from the #45-Frep held-in ledger unchanged.",
+    "primary_cell": "pooled",
+    "per_cell": {
+      "pooled": {
+        "held_out_terminal_difference": 0.2758982295244076,
+        "held_out_terminal_direction": "A5_HIGHER",
+        "same_applied_workflow": false,
+        "first_positive_cost_A5_cheaper": true,
+        "harm": {
+          "A5": 1,
+          "A3": 4
+        }
+      },
+      "per_channel": {
+        "held_out_terminal_difference": 0.0,
+        "held_out_terminal_direction": "WITHIN_MATERIAL_BAND",
+        "same_applied_workflow": true,
+        "first_positive_cost_A5_cheaper": false,
+        "harm": {
+          "A5": 1,
+          "A3": 1
+        }
+      }
+    },
+    "first_positive_cost_invariant": true,
+    "no_positive_bar_was_imposed": true,
+    "evidence_class": "INFRASTRUCTURE/MECHANISM.  Development data, already-exposed outcomes, one paired draw: this re-adjudicates the #45-Frep terminal comparison under a clean deployment protocol and closes nothing about capability."
+  },
+  "budget_ledger": {
+    "this_book_llm_calls": 0,
+    "this_book_llm_note": "the repaired deployment is recall-only, so it spends no LLM call at all; the increment over #45-Frep is exactly 0",
+    "this_book_consumer_retrains": 36,
+    "this_book_consumer_retrains_by_arm": {
+      "A5": 18,
+      "A3": 18
+    },
+    "carried_over_held_in_llm_calls": 11,
+    "carried_over_held_in_consumer_retrains": 408,
+    "downloads": 0,
+    "sealed_reads": 0,
+    "held_in_re_runs": 0
+  },
+  "exposure_ledger": {
+    "cohort": "noaa_global_hourly_fresh_v1",
+    "roster": {
+      "train": [
+        "72203812897",
+        "72259003927",
+        "72329003935",
+        "72422093820",
+        "72435653866",
+        "72438093819",
+        "72511654737",
+        "72529014768",
+        "72605654791",
+        "72654014936",
+        "72793494248",
+        "74486514719"
+      ],
+      "eval": [
+        "99999903062",
+        "99999904140",
+        "99999923908",
+        "99999963862"
+      ]
+    },
+    "development_2024": "already EXPOSED before #45-Frep; this book re-read the same 2024 tail block and nothing else",
+    "confirmation_2025": "zero bytes read by this book",
+    "beyond_17520": "zero bytes read by this book",
+    "yahoo_s5_a1": "zero bytes read by this book"
+  },
+  "wall_seconds": 4.777243600052316,
+  "post_run_annotation": {
+    "written": "after the run, by a 0-evaluation deterministic pass",
+    "changes_no_measured_number": true,
+    "method": "reads the already-written artifact only; no Consumer fit, no LLM call, no data read, no re-score",
+    "readings": [
+      {
+        "title": "What the repair changed, mechanically",
+        "text": "Under the repaired protocol every arm's deployed Workflow was fixed before a single outcome of the scored block was touched, and every arm paid exactly the same 9 Consumer retrains and 0 LLM calls to deploy. The instrument's own counters carry the proof: 1 delayed opening per arm, 0 of them used for adoption, 0 charged Support evaluations, 0 candidate evaluations. Under the voided protocol the pooled cell had 9 retrains on one arm against 69 plus 2 LLM calls on the other, and the deployed program on that second arm was chosen by reading the scored block."
+      },
+      {
+        "title": "The re-adjudicated terminal reading",
+        "text": "Primary pooled cell: A5 +0.059385 against A3 -0.216513, difference +0.275898, direction A5_HIGHER. per_channel: both arms deployed the identical Workflow from identical frozen Skills and scored +0.096496 each, difference +0.000000 -- a clean tie inside the 0.005 material band, so the transfer boundary the original adjudication recorded on this Consumer still stands. The voided #45-Frep pooled difference was -0.152549, i.e. the direction of the pooled terminal comparison flips once the two defects are removed."
+      },
+      {
+        "title": "Why the pooled arms separated, stated plainly",
+        "text": "This is not A5 scoring better with the same Workflow. The two arms deployed different Workflows and one of them failed to carry to the tail block. A3's frozen incumbent repair_level_shift was delayed-POSITIVE inside held-in (+0.162837 on task_B) and turns to -0.216513 on the held-out tail, harming all 4 of 4 evaluation series for a total harm of 0.866053. A5's frozen Skill outlier_iqr was the weaker held-in performer (+0.066941) and holds at +0.059385 with 1 harmed series and 0.187138 total harm. So the pooled reading says the Source-primed arm converged on a Workflow that generalised while the cold arm's standing incumbent did not -- and it says nothing about A5 being better at the same Workflow."
+      },
+      {
+        "title": "How much the voided protocol was actually leaking",
+        "text": "The two defects are now quantified rather than asserted. Given a free search on the scored block, and permitted to read that block's delayed outcomes while choosing, the A3 pooled arm replaced a -0.216513 incumbent with a +0.152549 fresh find. That 0.369062 swing is the size of the leak the voided reading was carrying, and it is larger than either arm's honest terminal utility."
+      },
+      {
+        "title": "Sensitivity of the A3 reading to the incumbent rule",
+        "text": "The incumbent rule was pinned before scoring as 'the final plan of the last held-in round'. The one arm it governs, a3_pooled, therefore deployed repair_level_shift. Under the looser reading 'an arm with no ACTIVE Skill deploys identity', a3_pooled would have scored exactly +0.000000, because the gain metric is defined against the identity baseline -- no new measurement is needed to state that. The pooled difference would then be +0.059385 instead of +0.275898, still above the 0.005 material band and still A5_HIGHER. The direction of the pooled re-adjudication is therefore robust to that protocol choice; only its magnitude is not."
+      },
+      {
+        "title": "Claim ceiling for this artifact",
+        "text": "Development data, already-exposed outcomes, one paired draw, two Consumers, 16 series. This may be cited as INFRASTRUCTURE/MECHANISM evidence that the forecasting held-out deployment can be run with zero feedback and symmetric arm cost, and that under that clean protocol the #45-Frep pooled terminal comparison reads A5_HIGHER rather than A5_LOSES. It may not be cited as fresh evidence, as generalisation, as a replication of FRESH_A5_DELIVERS, or as settled evidence that accumulated knowledge improves final held-out quality: a single development block with one LLM draw cannot support that, and the per_channel cell shows no marginal contribution at all."
+      }
+    ],
+    "out_of_book_findings": [
+      {
+        "id": "G1 -- fc.stage_4 still carries both defects",
+        "text": "The repair is driver-local, as the scope pin required. evaluation/functional/run_e2_fresh_confirmation.py::stage_4 is unmodified and still runs the delayed adoption ladder and the asymmetric full-price fallback. Any other caller of that entry inherits F1 and F2. Reported, not fixed."
+      },
+      {
+        "id": "G2 -- the #45-Frep artifact still shows the voided numbers",
+        "text": "t6_45_frep_a5a3_replay.json/.md were not edited and still carry the voided held-out terminal columns and the A5_LOSES / FRESH_A5_FAILS raw verdicts in their own tables. They remain valid for the chain and held-in readouts only. Anyone quoting a terminal number must quote this artifact instead."
+      },
+      {
+        "id": "G3 -- 3 decision-free Support-block fits per arm remain",
+        "text": "fc.FreshSearch.__init__ computes identity baselines on both the support and the delayed origins of whatever window it is given, so each arm pays 3 Consumer fits on the held-out support origins that no decision reads. It is identical across arms and feeds nothing, but it is not literally zero contact with the scored block. Removing it needs an edit to the in-service constructor, which is outside this book's scope pin. Reported, not fixed."
+      },
+      {
+        "id": "G4 -- a held-in-positive Workflow harmed 4 of 4 series",
+        "text": "repair_level_shift was delayed-positive on held-in task_B and harmed every evaluation series on the tail block. This is a concrete instance of held-in delayed feedback failing to predict held-out safety, which is the risk the Scope/Risk and abstain machinery exists for. It is a development-block observation on one draw, not a measured Scope defect, and it belongs to the Scope/overfitting row of the first-fault table rather than to this book. Reported, not investigated."
+      },
+      {
+        "id": "G5 -- per_channel gives accumulation no marginal role",
+        "text": "a3_per_channel promoted the same Skill id as a5_per_channel during held-in, so both arms deploy identical bytes and the cell is an exact tie. On this Consumer the Target held-in feedback alone reached the same place the Source-primed arm reached, which is the transfer boundary the original adjudication already recorded. It is not evidence against accumulation; it is one Consumer where accumulation bought nothing measurable."
+      }
+    ],
+    "obligation_self_report": {
+      "conda_env_project_and_interpreter_printed": true,
+      "interpreter": "D:\\Anaconda_envs\\envs\\project\\python.exe",
+      "subagents_spawned": 0,
+      "scope_pin_respected": "only F1 and F2 were repaired; no historical debt was fixed and no instrument was extended",
+      "fix_location": "evaluation/functional/run_e2_t6_45_frep_a5a3_replay.py deployment path only",
+      "methods_modified": false,
+      "in_service_runner_lines_edited": 0,
+      "held_in_re_run": false,
+      "frozen_snapshots_reused_and_verified": true,
+      "downloads": 0,
+      "noaa_2025_read": false,
+      "beyond_17520_read": false,
+      "yahoo_read": false,
+      "other_line_files_touched": "none; AGENTS.md, README, PROJECT_STATE_AND_DATA_MAP and SUCCESSOR_BRIEF were neither edited nor committed",
+      "frep_a_artifacts_modified": false,
+      "this_book_llm_calls": 0,
+      "this_book_consumer_retrains": 36,
+      "scored_runs": 2,
+      "second_run_disclosed": "the deployment is recall-only and fully deterministic, so it was re-run once after a per-cell correction to the 'voided because' attribution text; every measured number was verified byte-identical across the two passes before and after that change, so no draw was selected",
+      "positive_bar_imposed": false,
+      "artifacts_committed": false,
+      "code_committed": true
+    }
+  }
+}
