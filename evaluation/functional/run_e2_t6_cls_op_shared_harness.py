@@ -2353,6 +2353,700 @@ def r2_prep() -> int:
     return 0
 
 
+# =========================================================================== #
+# CLS-CONF -- the frozen confirmation on a UCR Target no classification
+# experiment in this repository has ever touched
+# =========================================================================== #
+CONF_OUT_JSON = E2 / "t6_cls_conf_unused_target.json"
+CONF_OUT_MD = E2 / "t6_cls_conf_unused_target.md"
+CONF_PROTOCOL = "t6_cls_conf_unused_target_v1"
+CONF_RUN_ID = "t6_cls_conf_run1"
+CONF_LLM_CAP = 40
+CONF_FIT_CAP = 200
+CONF_ARMS = ("A3", "STATIC")
+CONF_TRAIN_ROWS_MIN = 40
+CONF_TRAIN_ROWS_MAX = 400
+CONF_CONDITION = "fit_only_artifact"
+# The census walks the repository itself rather than trusting a hand-kept list,
+# but these are the rosters the reader will want named: anything here is
+# excluded by construction and the name census must agree.
+CONF_KNOWN_ROSTERS = {
+    "W48_source": ["Coffee", "ECG200", "FordA", "GunPoint"],
+    "W49_target": ["Wafer", "ECGFiveDays", "TwoLeadECG", "BeetleFly"],
+    "W55_admission": list(W55_SOURCE_ROSTER),
+    "W56_transfer": list(W56_TARGET_ROSTER),
+    "cls1_cls2_cls3_cls4": ["GunPoint", "ECG200"],
+}
+# Directories whose contents are the data itself or this line's own scratch,
+# and therefore say nothing about whether an experiment used a dataset.
+CONF_CENSUS_SKIP_DIRS = frozenset({
+    ".git", "data", "_scratch", "__pycache__", ".pytest_cache", ".ruff_cache",
+    "node_modules",
+})
+CONF_CENSUS_SKIP_SUFFIXES = frozenset({
+    ".zip", ".npy", ".npz", ".pyc", ".png", ".jpg", ".jpeg", ".pdf", ".gz",
+    ".xz", ".so", ".dll", ".pyd", ".parquet",
+})
+CONF_CENSUS_MAX_BYTES = 64 * 1024 * 1024
+CONF_CENSUS_CACHE = PROJECT_ROOT / "_scratch" / "_conf_name_census.json"
+# A file that names almost the whole pool is a data inventory -- a download
+# script, a roster dump, a census artifact -- and inventories say nothing about
+# which datasets an *experiment* used.  Declared before the rule was applied.
+CONF_INVENTORY_MIN_DISTINCT = 30
+
+
+def _conf_name_census(names: Sequence[str]) -> dict[str, Any]:
+    """One pass over the repository, counting every dataset name at once.
+
+    ripgrep is not on PATH in this environment, and a per-name subprocess would
+    be 40 passes anyway, so the scan is done here: walk once, and for each
+    readable text file count every candidate name in it.  Directories that hold
+    the data itself or this line's own scratch are skipped, because a zip
+    filename says nothing about whether an experiment used the dataset.
+
+    Substring collisions are deliberately left in.  Counting "GunPoint" also
+    counts "GunPointAgeSpan" mentions, which over-excludes GunPoint --- and
+    over-excluding is the safe direction when the whole point is a Target
+    nothing has touched.
+    """
+    import re as _re
+
+    if CONF_CENSUS_CACHE.is_file():
+        cached = json.loads(CONF_CENSUS_CACHE.read_text(encoding="utf-8"))
+        if sorted(cached.get("names") or ()) == sorted(names):
+            return cached
+    # longest name first, so a GunPointAgeSpan mention counts as itself rather
+    # than also as a GunPoint mention
+    pattern = _re.compile("|".join(
+        _re.escape(name) for name in sorted(names, key=len, reverse=True)))
+    per_file: list[dict[str, Any]] = []
+    scanned = 0
+    skipped = 0
+    unreadable: list[str] = []
+    seen_dirs: set[str] = set()
+    seen_files: set[str] = set()
+    root_text = str(PROJECT_ROOT)
+    # os.walk with in-place pruning, not rglob: the data directory holds an
+    # unreadable link (data/tsquality) that rglob stats before any filter can
+    # skip it.  The repository also contains a directory link back to itself,
+    # which os.walk follows on Windows because a junction is not an os.path
+    # symlink -- so every real path is visited at most once by realpath.
+    for directory, subdirectories, filenames in os.walk(PROJECT_ROOT):
+        directory_real = os.path.realpath(directory)
+        if directory_real in seen_dirs:
+            subdirectories[:] = []
+            continue
+        seen_dirs.add(directory_real)
+        keep: list[str] = []
+        for name in subdirectories:
+            if name in CONF_CENSUS_SKIP_DIRS:
+                continue
+            child = os.path.join(directory, name)
+            child_real = os.path.realpath(child)
+            if child_real in seen_dirs or not child_real.startswith(root_text):
+                continue
+            if os.path.islink(child):
+                continue
+            try:
+                attributes = os.stat(child, follow_symlinks=False)
+                if getattr(attributes, "st_file_attributes", 0) & 0x400:
+                    continue  # FILE_ATTRIBUTE_REPARSE_POINT: junction
+            except OSError:
+                continue
+            keep.append(name)
+        subdirectories[:] = keep
+        for filename in filenames:
+            path = Path(directory) / filename
+            relative = path.relative_to(PROJECT_ROOT)
+            if path.suffix.lower() in CONF_CENSUS_SKIP_SUFFIXES:
+                skipped += 1
+                continue
+            try:
+                file_real = os.path.realpath(path)
+                if file_real in seen_files:
+                    skipped += 1
+                    continue
+                seen_files.add(file_real)
+                if path.stat().st_size > CONF_CENSUS_MAX_BYTES:
+                    skipped += 1
+                    continue
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                skipped += 1
+                unreadable.append(relative.as_posix())
+                continue
+            scanned += 1
+            counts: dict[str, int] = {}
+            for match in pattern.finditer(text):
+                token = match.group(0)
+                counts[token] = counts.get(token, 0) + 1
+            if counts:
+                per_file.append({"path": relative.as_posix(),
+                                 "counts": counts,
+                                 "distinct": len(counts)})
+    census = {"tool": "in-process single pass, longest-name-first alternation",
+              "names": sorted(names),
+              "files_scanned": scanned, "files_skipped": skipped,
+              "unreadable": unreadable[:8], "per_file": per_file}
+    CONF_CENSUS_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    CONF_CENSUS_CACHE.write_text(
+        json.dumps(census, indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    return census
+
+
+def _conf_usage_from_census(census: Mapping[str, Any],
+                            names: Sequence[str]) -> dict[str, Any]:
+    """Split mentions into pool inventory and actual experimental usage."""
+    usage: dict[str, int] = {name: 0 for name in names}
+    inventory: dict[str, int] = {name: 0 for name in names}
+    usage_files: dict[str, list[dict[str, Any]]] = {name: [] for name in names}
+    inventories: list[dict[str, Any]] = []
+    for row in census.get("per_file") or ():
+        is_inventory = int(row["distinct"]) >= CONF_INVENTORY_MIN_DISTINCT
+        if is_inventory:
+            inventories.append({"path": row["path"],
+                                "distinct_datasets": row["distinct"]})
+        for name, count in row["counts"].items():
+            if name not in usage:
+                continue
+            if is_inventory:
+                inventory[name] += int(count)
+            else:
+                usage[name] += int(count)
+                usage_files[name].append({"path": row["path"],
+                                          "hits": int(count)})
+    for name in names:
+        usage_files[name].sort(key=lambda item: (-item["hits"], item["path"]))
+    return {"usage_hits": usage, "inventory_hits": inventory,
+            "usage_files": usage_files,
+            "pool_inventory_files": sorted(
+                inventories, key=lambda item: item["path"]),
+            "inventory_min_distinct": CONF_INVENTORY_MIN_DISTINCT}
+
+
+def _conf_candidate_census() -> dict[str, Any]:
+    """The whole pool, every exclusion reason, and the mechanical pick."""
+    _ctx, helpers = _legacy_helpers()
+    paths = sorted((PROJECT_ROOT / DATA_DIR).glob("*.zip"))
+    names = [path.stem for path in paths]
+    census = _conf_name_census(names)
+    usage = _conf_usage_from_census(census, names)
+    rows: list[dict[str, Any]] = []
+    for path in paths:
+        name = path.stem
+        row: dict[str, Any] = {
+            "dataset": name,
+            "repo_name_hits": usage["usage_hits"][name],
+            "pool_inventory_hits": usage["inventory_hits"][name],
+            "repo_name_hit_files": usage["usage_files"][name][:8],
+            "repo_name_hit_file_count": len(usage["usage_files"][name]),
+            "in_named_roster": sorted({
+                key for key, members in CONF_KNOWN_ROSTERS.items()
+                if name in members}),
+        }
+        try:
+            values, labels = helpers["load"](np, path, name, "TRAIN")
+            row["train_rows"] = int(values.shape[0])
+            row["series_length"] = int(values.shape[1])
+            row["class_count"] = int(len(set(np.asarray(labels).tolist())))
+            row["loadable"] = True
+        except Exception as exc:  # noqa: BLE001
+            row["loadable"] = False
+            row["load_error"] = "%s: %s" % (type(exc).__name__, exc)
+        reasons: list[str] = []
+        if not row.get("loadable"):
+            reasons.append("not_loadable_as_binary_ucr")
+        else:
+            if row["class_count"] != 2:
+                reasons.append("not_binary")
+            if not (CONF_TRAIN_ROWS_MIN <= row["train_rows"]
+                    <= CONF_TRAIN_ROWS_MAX):
+                reasons.append("train_rows_outside_%d_%d"
+                               % (CONF_TRAIN_ROWS_MIN, CONF_TRAIN_ROWS_MAX))
+        if row["repo_name_hits"] is None:
+            reasons.append("name_census_unavailable")
+        elif row["repo_name_hits"] > 0:
+            reasons.append("name_already_appears_in_the_repository")
+        row["claiming_runners"] = sorted({
+            hit["path"] for hit in usage["usage_files"][name]
+            if hit["path"].startswith("evaluation/functional/run_")})
+        row["excluded_because"] = reasons
+        row["eligible"] = not reasons
+        rows.append(row)
+    eligible = sorted(row["dataset"] for row in rows if row["eligible"])
+    return {
+        "rule": (
+            "candidate pool = every zip in %s whose name no non-inventory file "
+            "in the repository mentions; keep the binary ones whose official "
+            "TRAIN row count is in [%d, %d]; take the lexicographically first. "
+            "A file naming >= %d of the pool is a data inventory, not an "
+            "experiment roster, and its mentions are not usage.  Fixed before "
+            "the rule was applied and independent of any outcome."
+            % (DATA_DIR, CONF_TRAIN_ROWS_MIN, CONF_TRAIN_ROWS_MAX,
+               CONF_INVENTORY_MIN_DISTINCT)),
+        "named_rosters_excluded_by_construction": CONF_KNOWN_ROSTERS,
+        "census_method": census["tool"],
+        "census_files_scanned": census["files_scanned"],
+        "census_files_skipped": census["files_skipped"],
+        "census_skipped_directories": sorted(CONF_CENSUS_SKIP_DIRS),
+        "pool_inventory_files": usage["pool_inventory_files"],
+        "inventory_min_distinct": CONF_INVENTORY_MIN_DISTINCT,
+        "pool_size": len(rows),
+        "candidates": rows,
+        "eligible": eligible,
+        "selected": eligible[0] if eligible else None,
+        "selection_basis": (
+            "lexicographically first of %d eligible" % len(eligible)
+            if eligible else "no eligible dataset"),
+    }
+
+
+def conf_select() -> int:
+    """Part A on its own, so the pick can be inspected before any LLM spend."""
+    census = _conf_candidate_census()
+    print("pool inventory files (mentions not counted as usage):")
+    for row in census["pool_inventory_files"]:
+        print("   %-70s distinct=%d" % (row["path"], row["distinct_datasets"]))
+    print()
+    for row in census["candidates"]:
+        print("%-32s usage=%-6s inv=%-6s rows=%-5s cls=%-3s %s"
+              % (row["dataset"], row["repo_name_hits"],
+                 row["pool_inventory_hits"],
+                 row.get("train_rows"), row.get("class_count"),
+                 ",".join(row["excluded_because"]) or "ELIGIBLE"),
+              flush=True)
+        if row["eligible"] or (row["repo_name_hits"] or 0) <= 4:
+            for hit in row["repo_name_hit_files"][:4]:
+                print("        %-70s %d" % (hit["path"], hit["hits"]))
+    print(json.dumps({"eligible": census["eligible"],
+                      "selected": census["selected"]},
+                     ensure_ascii=False, indent=1))
+    return 0
+
+
+def _conf_verdict(payload: Mapping[str, Any], *,
+                  stopped: str | None) -> dict[str, Any]:
+    """CLS_CHAIN_CONFIRMED needs a Skill *and* a clean held-out gain."""
+    if stopped:
+        return {"verdict": stopped,
+                "stage": (payload.get("stop") or {}).get("reason"),
+                "note": "stop-report; no downstream reading is claimed"}
+    readouts = (payload.get("readouts") or {}).get("cells") or {}
+    purity = (payload.get("deploy_purity") or {}).get("all_pure")
+    dataset = payload.get("target")
+    expected = sorted("%s/%s" % (dataset, arm) for arm in CONF_ARMS)
+    if sorted(readouts) != expected or not purity:
+        return {"verdict": "INSTRUMENT_UNREADABLE",
+                "reason": "two-arm cells incomplete or deployment impure",
+                "cells": sorted(readouts),
+                "deploy_purity_all_pure": purity}
+    a3 = readouts["%s/A3" % dataset]
+    static = readouts["%s/STATIC" % dataset]
+    first = a3.get("first_skill") or {}
+    skill = bool(a3["target_local_skill_formed"] and first.get("non_identity"))
+    heldout_rows = None
+    for deployment in payload.get("deployments") or []:
+        if deployment["arm"] == "A3":
+            heldout_rows = int(deployment["heldout_rows"])
+    line = max(MATERIAL, 1.0 / max(int(heldout_rows or 1), 1))
+    gain = float(a3["heldout_accuracy"]) - float(static["heldout_accuracy"])
+    recall_delta = a3["heldout_recall_delta_by_class"]
+    worst = min(recall_delta.values()) if recall_delta else 0.0
+    material_positive = gain >= line
+    zero_class_harm = worst >= -MATERIAL
+    confirmed = bool(skill and material_positive and zero_class_harm)
+    return {
+        "verdict": ("CLS_CHAIN_CONFIRMED" if confirmed
+                    else "CLS_CHAIN_NOT_REPLICATED"),
+        "rule": (
+            "CLS_CHAIN_CONFIRMED iff a non-identity Target-local Skill formed "
+            "and the frozen Fast-only deployment beats Static identity by at "
+            "least max(0.005, 1/n) on held-out accuracy with no per-class "
+            "recall falling more than 0.005."),
+        "non_identity_target_local_skill_formed": skill,
+        "a3_minus_static_heldout_accuracy": gain,
+        "material_line": line,
+        "material_positive": material_positive,
+        "worst_class_recall_delta": worst,
+        "zero_class_harm": zero_class_harm,
+        "harm_bar_view": {
+            "harm_bar": HARM_BAR,
+            "classes_over_bar": a3["harmed_classes_over_bar"]},
+        "deploy_purity_all_pure": purity,
+        "claim_limit": (
+            "DEVELOPMENT.  The impulse is a controlled injection on a UCR "
+            "background; this confirms the Harness chain reproduces on a "
+            "Target it had never seen, not that natural classification data "
+            "carries the same defect."),
+    }
+
+
+def _conf_difference_read(cell: Mapping[str, Any], rounds: Sequence[Mapping[str, Any]],
+                          *, fit_budget: FitBudget) -> dict[str, Any]:
+    """Why this Target behaved as it did, against GunPointAgeSpan's profile.
+
+    Run after the arms are frozen and scored, so it can inform the reading
+    without having been able to steer the protocol.  Zero LLM; it opens no
+    TEST split and reuses the held-in surfaces the arms already saw.
+    """
+    census = _r2_cell_pass(cell, fit_budget=fit_budget)
+    probed = sorted({str(episode["workflow_signature"])
+                     for record in rounds for episode in record["episodes"]})
+    relations = {}
+    for record in rounds:
+        for episode in record["episodes"]:
+            relations.setdefault(str(episode["relation"]), 0)
+            relations[str(episode["relation"])] += 1
+    hampel = next((row for row in census["programs"]
+                   if row["program"] == "hampel_filter"), None)
+    return {
+        "note": ("post-freeze diagnostic; the arms were already scored when "
+                 "this ran, so it could not have selected anything"),
+        "operators_that_reached_a_legal_receipt": probed,
+        "episode_relations": relations,
+        "menu_survivors": census["survivors"],
+        "menu_numeric_no_ops": census["numeric_no_ops"],
+        "menu_verifier_rejected": census["verifier_rejected"],
+        "hampel_filter_on_this_target": hampel,
+        "gunpointagespan_reference": {
+            "survivors": ["outlier_iqr", "hampel_filter"],
+            "hampel_support_delta_accuracy": 0.5,
+            "hampel_delayed_delta_accuracy": 0.3,
+            "hampel_worst_class_recall_delta": 0.4,
+            "source": "t6_cls_op_r2_prep.json / t6_cls_op_r2_three_arms.json",
+        },
+        "consumer_fits_after": fit_budget.used,
+    }
+
+
+def conf_run(*, run_id: str = CONF_RUN_ID) -> int:
+    """CLS-CONF: A3 against Static identity on the mechanically chosen Target."""
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+
+    started = time.time()
+    fit_budget = FitBudget(CONF_FIT_CAP)
+    store_root = Path(tempfile.gettempdir()) / run_id
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    h0 = compile_snapshot(PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+                          verify_lock=False)
+    backend = _live_backend(CONF_LLM_CAP)
+
+    census = _conf_candidate_census()
+    payload: dict[str, Any] = {
+        "protocol_version": CONF_PROTOCOL,
+        "run_id": run_id,
+        "entry": "--conf-run",
+        "evidence_grade": EVIDENCE_GRADE,
+        "git_head": _git("rev-parse", "HEAD"),
+        "selection": census,
+        "target": census["selected"],
+        "condition": CONF_CONDITION,
+        "arms": list(CONF_ARMS),
+        "protocol": {
+            "modification_fraction_scope": "cohort",
+            "maximum_modified_fraction": float(
+                _task_context().deployment_constraints.maximum_modified_fraction),
+            "maximum_candidates": (
+                _task_context().deployment_constraints.maximum_candidates),
+            "held_in_rounds": list(HELD_IN_ROUNDS),
+            "support_trial_budget_per_round": SUPPORT_TRIAL_BUDGET,
+            "task_context_sha": _task_context().sha(),
+            "new_surfaces_opened": "none; every gate is r2's",
+            "static_arm": (
+                "same store, same snapshot, zero held-in rounds, deploy from "
+                "frozen state -- which is identity, because a Harness that "
+                "never adapted has no incumbent"),
+        },
+        "injection": {
+            "template": "C38 class-conditioned impulse, unchanged",
+            "amplitude": "SPIKE_AMPLITUDE = 16.0 row standard deviations",
+            "fractions": [0.08, 0.20, 0.80, 0.92],
+            "seed_ledger": (
+                "the family's injection is seed-free: _inject writes a fixed "
+                "signed template at positions derived from the series length, "
+                "and the fit/support split is deterministic evenly-spaced "
+                "selection.  There is no RNG to seed, so a fresh seed would "
+                "be a fiction; the run is bit-reproducible instead."),
+        },
+    }
+    if census["selected"] is None:
+        claimed: dict[str, list[str]] = {}
+        for row in census["candidates"]:
+            for runner in row["claiming_runners"]:
+                claimed.setdefault(runner, []).append(row["dataset"])
+        unusable = [row["dataset"] for row in census["candidates"]
+                    if not row.get("loadable")]
+        payload["exhaustion_analysis"] = {
+            "statement": (
+                "the local UCR inventory is exhausted with respect to this "
+                "book's own selection rule: every one of the %d datasets in "
+                "%s is already a roster member of some prior classification "
+                "experiment in this repository, and the only two whose sole "
+                "mention is incidental cannot be loaded as binary UCR at all."
+                % (census["pool_size"], DATA_DIR)),
+            "datasets_claimed_by_prior_runners": {
+                runner: sorted(names) for runner, names in sorted(
+                    claimed.items())},
+            "datasets_the_loader_rejects": unusable,
+            "loader_rejection_detail": {
+                "DodgerLoopWeekend": (
+                    "binary labels but the table is not finite (the series "
+                    "carry missing values), and 20 TRAIN rows is below the "
+                    "row floor anyway"),
+                "KeplerLightCurves": (
+                    "the archive contains no <name>_TRAIN.txt member; it is "
+                    "packaged differently from the rest of the pool"),
+            },
+            "not_done_here": (
+                "no rule was relaxed to manufacture a Target.  Widening "
+                "'unused' after seeing that the strict pool is empty would be "
+                "choosing the confirmation set with the answer in view."),
+            "options_for_the_mainline": [
+                "narrow 'unused' to 'never used under the C38 impulse "
+                "family', which would admit the six datasets whose only prior "
+                "use was run_e2_integrated_context_harness_evolution and the "
+                "three from run_e2_source_prior_evidence_fusion -- weaker "
+                "than a virgin Target but still outside the impulse line",
+                "confirm on a frozen split of an already-used dataset that "
+                "the impulse line never scored, and say plainly that it is a "
+                "split-level rather than dataset-level confirmation",
+                "authorise one download, which the current discipline forbids",
+            ],
+        }
+        payload["verdict"] = {
+            "verdict": "INSTRUMENT_UNREADABLE",
+            "reason": ("the pre-registered candidate pool is empty; no unused "
+                       "local UCR Target exists to confirm on"),
+            "pool_size": census["pool_size"],
+            "eligible": [],
+            "llm_spent": 0,
+            "arms_run": 0,
+        }
+        payload["ledger"] = {"llm_calls": 0, "llm_cap": CONF_LLM_CAP,
+                             "consumer_fits": 0,
+                             "consumer_fit_cap": CONF_FIT_CAP,
+                             "wall_seconds": round(time.time() - started, 1)}
+        payload["obligations"] = {
+            "selection_rule_not_relaxed": True,
+            "llm_spent_before_stopping": 0,
+            "downloads": 0,
+            "methods_package_unmodified": True,
+            "artifact_not_committed": True,
+        }
+        CONF_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+        CONF_OUT_JSON.write_text(
+            json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+            encoding="utf-8")
+        CONF_OUT_MD.write_text(_conf_markdown(payload), encoding="utf-8")
+        print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+        return 1
+
+    dataset = str(census["selected"])
+    stopped: str | None = None
+    rounds: list[dict[str, Any]] = []
+    deployments: list[dict[str, Any]] = []
+    cell: Mapping[str, Any] | None = None
+    try:
+        cell = _build_cell(dataset, CONF_CONDITION)
+        payload["cell"] = {key: value for key, value in cell.items()
+                           if key not in ("fit_values", "fit_labels",
+                                          "surfaces", "observation_block")}
+        for arm in CONF_ARMS:
+            state = _new_arm_state(
+                snapshot=h0,
+                agent=_live_agent(cell["observation_block"],
+                                  backend.new_arm_backend()),
+                store_root=store_root, tag="conf_%s_%s" % (dataset, arm))
+            if arm == "A3":
+                for round_name in HELD_IN_ROUNDS:
+                    record = _run_round(
+                        state=state, cell=cell, round_name=round_name,
+                        arm=arm, fit_budget=fit_budget, allow_fast_skill=True,
+                        fraction_scope="cohort", ledger=backend)
+                    rounds.append(record)
+                    print("%-6s %-28s %s probes=%d winner=%s delayed=%s"
+                          % (arm, dataset, round_name,
+                             record["support_receipts"],
+                             record["winner_program"],
+                             record["delayed_utility"]), flush=True)
+            deployment = _deploy_and_score(
+                state=state, cell=cell, arm=arm, fit_budget=fit_budget)
+            deployments.append(deployment)
+            print("DEPLOY %-6s %-28s %-34s heldout_acc=%.4f gain=%+.4f"
+                  % (arm, dataset, deployment["deploy_source"],
+                     deployment["heldout_accuracy"],
+                     deployment["heldout_accuracy_gain"]), flush=True)
+    except Stop as stop:
+        stopped = stop.verdict
+        payload["stop"] = {"verdict": stop.verdict, "reason": stop.reason}
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        stopped = "INSTRUMENT_UNREADABLE"
+        payload["stop"] = {"verdict": stopped,
+                           "reason": "%s: %s" % (type(exc).__name__, exc),
+                           "traceback": traceback.format_exc()}
+
+    payload["rounds"] = rounds
+    payload["deployments"] = deployments
+    payload["readouts"] = _r2_readouts(rounds, deployments)
+    payload["deploy_purity"] = _deploy_purity(deployments)
+    payload["verdict"] = _conf_verdict(payload, stopped=stopped)
+    if cell is not None and not stopped:
+        try:
+            payload["difference_read"] = _conf_difference_read(
+                cell, rounds, fit_budget=fit_budget)
+        except Stop as stop:
+            payload["difference_read"] = {"error": stop.reason}
+    payload["ledger"] = {
+        "llm_calls": int(backend.calls),
+        "llm_cap": CONF_LLM_CAP,
+        "llm_within_cap": int(backend.calls) <= CONF_LLM_CAP,
+        "consumer_fits": fit_budget.used,
+        "consumer_fit_cap": fit_budget.cap,
+        "wall_seconds": round(time.time() - started, 1),
+    }
+    payload["obligations"] = {
+        "methods_package_unmodified": True,
+        "new_gates_opened": "none; cohort scope and maximum_candidates=3 are "
+                            "exactly r2's",
+        "target_never_used_before": (
+            "selected by a repository-wide name census, not by a hand-kept "
+            "list; the census table is in this artifact"),
+        "downloads": 0,
+        "forbidden_data_untouched": (
+            "no Yahoo, NOAA, NAB or SMD path is opened; the only data root is "
+            + DATA_DIR),
+        "artifact_not_committed": True,
+        "difference_read_ran_after_the_freeze": True,
+    }
+    CONF_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    CONF_OUT_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    CONF_OUT_MD.write_text(_conf_markdown(payload), encoding="utf-8")
+    print(json.dumps({"verdict": payload["verdict"]["verdict"],
+                      "target": dataset,
+                      "llm": payload["ledger"]["llm_calls"],
+                      "fits": payload["ledger"]["consumer_fits"],
+                      "artifact": str(CONF_OUT_JSON)},
+                     ensure_ascii=False, indent=1))
+    return 0 if payload["verdict"]["verdict"] in (
+        "CLS_CHAIN_CONFIRMED", "CLS_CHAIN_NOT_REPLICATED") else 1
+
+
+def _conf_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload.get("verdict") or {}
+    ledger = payload.get("ledger") or {}
+    selection = payload.get("selection") or {}
+    lines = [
+        "# CLS-CONF -- frozen confirmation on an unused UCR Target",
+        "",
+        "protocol: `%s`  target: **%s**  evidence grade: **%s**"
+        % (payload.get("protocol_version"), payload.get("target"),
+           payload.get("evidence_grade")),
+        "",
+        "## Verdict",
+        "",
+        "**%s**" % verdict.get("verdict"),
+        "",
+        str(verdict.get("rule", "")),
+        "",
+        "- non-identity Target-local Skill formed: %s"
+        % verdict.get("non_identity_target_local_skill_formed"),
+        "- A3 minus Static held-out accuracy: %s (material line %s)"
+        % (verdict.get("a3_minus_static_heldout_accuracy"),
+           verdict.get("material_line")),
+        "- worst per-class recall delta: %s (zero class harm: %s)"
+        % (verdict.get("worst_class_recall_delta"),
+           verdict.get("zero_class_harm")),
+        "- deployment purity: %s" % verdict.get("deploy_purity_all_pure"),
+        "",
+        str(verdict.get("claim_limit", "")),
+        "",
+        "## Part A -- how the Target was chosen",
+        "",
+        str(selection.get("rule", "")),
+        "",
+        "- pool: %s zips; eligible: %s; selected: **%s** (%s)"
+        % (selection.get("pool_size"), selection.get("eligible"),
+           selection.get("selected"), selection.get("selection_basis")),
+        "",
+        "| dataset | usage hits | claiming runner(s) | train rows | classes | "
+        "excluded because |",
+        "|---|---|---|---|---|---|",
+    ]
+    for row in selection.get("candidates") or []:
+        runners = ", ".join(
+            path.rsplit("/", 1)[-1] for path in row.get("claiming_runners") or ())
+        lines.append("| %s | %s | %s | %s | %s | %s |"
+                     % (row["dataset"], row["repo_name_hits"],
+                        runners or "(none)",
+                        row.get("train_rows"), row.get("class_count"),
+                        ", ".join(row["excluded_because"]) or "**ELIGIBLE**"))
+    exhaustion = payload.get("exhaustion_analysis")
+    if exhaustion:
+        lines += ["", "### Pool exhausted", "", exhaustion["statement"], "",
+                  "Datasets claimed by prior runners:", ""]
+        for runner, names in exhaustion[
+                "datasets_claimed_by_prior_runners"].items():
+            lines.append("- `%s`: %s" % (runner, ", ".join(names)))
+        lines += ["", "Loader rejects: %s"
+                  % ", ".join(exhaustion["datasets_the_loader_rejects"]), ""]
+        for name, why in exhaustion["loader_rejection_detail"].items():
+            lines.append("- **%s**: %s" % (name, why))
+        lines += ["", exhaustion["not_done_here"], "",
+                  "Options for the mainline:", ""]
+        for option in exhaustion["options_for_the_mainline"]:
+            lines.append("- %s" % option)
+    cells = (payload.get("readouts") or {}).get("cells") or {}
+    lines += ["", "## Part B -- two arms", "",
+              "| arm | Skill formed | first-Skill LLM | first-Skill "
+              "executions | held-in delayed | held-out acc | vs identity | "
+              "worst class recall d | abstained rounds | Support/delayed "
+              "agree:disagree |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
+    for key in sorted(cells):
+        row = cells[key]
+        first = row.get("first_skill") or {}
+        lines.append(
+            "| %s | %s | %s | %s | %s | %.4f | %+.4f | %+.4f | %d | %d:%d |"
+            % (row["arm"], row["target_local_skill_formed"],
+               first.get("llm_calls_to_first_skill", "-"),
+               first.get("candidate_executions_to_first_skill", "-"),
+               ("%+.4f" % row["held_in_delayed_utility"])
+               if row["held_in_delayed_utility"] is not None else "n/a",
+               row["heldout_accuracy"], row["heldout_accuracy_gain"],
+               row["worst_class_recall_delta"] or 0.0,
+               row["abstained_rounds"],
+               row["support_delayed_direction_agree"],
+               row["support_delayed_direction_disagree"]))
+    difference = payload.get("difference_read")
+    if difference and "menu_survivors" in difference:
+        lines += ["", "## Difference read against GunPointAgeSpan", "",
+                  "- operators that reached a legal receipt: %s"
+                  % difference["operators_that_reached_a_legal_receipt"],
+                  "- Episode relations: %s" % difference["episode_relations"],
+                  "- menu survivors on this Target: %s"
+                  % difference["menu_survivors"],
+                  "- hampel_filter here: %s"
+                  % json.dumps(difference["hampel_filter_on_this_target"],
+                               ensure_ascii=False)]
+    lines += ["", "## Budget", "",
+              "- LLM: %s of %s" % (ledger.get("llm_calls"),
+                                   ledger.get("llm_cap")),
+              "- Consumer fits: %s of %s" % (ledger.get("consumer_fits"),
+                                             ledger.get("consumer_fit_cap")),
+              "- wall clock: %s s" % ledger.get("wall_seconds"),
+              "", "## Obligations", ""]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
 R2_PREREGISTRATION = (
     {"id": "P1",
      "claim": "after the fix, hampel_filter or repair_level_shift enters the "
@@ -2910,12 +3604,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--r2-run", dest="r2_run", action="store_true")
     parser.add_argument("--r2-annotate", dest="r2_annotate",
                         action="store_true")
+    parser.add_argument("--conf-select", dest="conf_select",
+                        action="store_true")
+    parser.add_argument("--conf-run", dest="conf_run", action="store_true")
     parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if sum([args.smoke, args.run, args.micro, args.diagnose,
-            args.r2_prep, args.r2_run, args.r2_annotate]) != 1:
-        parser.error("choose exactly one of --smoke / --run / --micro / "
-                     "--diagnose / --r2-prep / --r2-run / --r2-annotate")
+            args.r2_prep, args.r2_run, args.r2_annotate,
+            args.conf_select, args.conf_run]) != 1:
+        parser.error("choose exactly one entry point")
+    if args.conf_select:
+        return conf_select()
+    if args.conf_run:
+        return conf_run(run_id=args.run_id or CONF_RUN_ID)
     if args.r2_annotate:
         return r2_annotate()
     if args.r2_run:
