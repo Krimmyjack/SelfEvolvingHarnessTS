@@ -511,13 +511,15 @@ class _ClsScopeExecutor(ScopeExecutor):
     """
 
     def __init__(self, *, cell: Mapping[str, Any], evaluate_fn: Any,
-                 max_modified_fraction: float) -> None:
+                 max_modified_fraction: float,
+                 modification_fraction_scope: str = "per_window") -> None:
         block = np.asarray(cell["observation_block"], dtype=np.float64)
         super().__init__(
             [{"series_uid": "heldin_observation", "role": "train"}],
             {"heldin_observation": block}, {"anchors": []},
             evaluate_fn=evaluate_fn,
-            max_modified_fraction=float(max_modified_fraction))
+            max_modified_fraction=float(max_modified_fraction),
+            modification_fraction_scope=modification_fraction_scope)
         self._rows = np.asarray(cell["fit_values"], dtype=np.float64)
 
     def training_windows(self, origin: int):  # noqa: D401 - frozen signature
@@ -1709,6 +1711,532 @@ def _markdown(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+# =========================================================================== #
+# CLS-OP-r2-prep -- the two 0-LLM gates that decide whether r2 leaves the dock
+# =========================================================================== #
+R2_OUT_JSON = E2 / "t6_cls_op_r2_prep.json"
+R2_OUT_MD = E2 / "t6_cls_op_r2_prep.md"
+R2_PROTOCOL_VERSION = "t6_cls_op_r2_prep_v1"
+R2_FIT_CAP = 120
+R2_ROUND = "r1"
+
+
+def _r2_menu() -> list[dict[str, Any]]:
+    """Every classification-legal non-identity candidate the shared menu has.
+
+    No hand-picking: the filter is the registry's own ``allowed_tasks`` plus
+    the shape-preservation requirement the executor imposes, and the params are
+    the contract defaults the candidate supply would itself construct.  If the
+    honest answer is that this menu has no headroom, the menu has to be the
+    whole menu for that answer to mean anything.
+    """
+    out: list[dict[str, Any]] = []
+    for name in OPERATOR_NAMES:
+        metadata = OPERATOR_METADATA[name]
+        if "classification" not in metadata["allowed_tasks"]:
+            continue
+        if metadata.get("shape_changing"):
+            continue
+        out.append({"program": name, "params": _contract_params(name)})
+    return out
+
+
+def _r2_cell_pass(cell: Mapping[str, Any], *,
+                  fit_budget: FitBudget) -> dict[str, Any]:
+    """Verify the whole menu on one cell, then score whatever survives.
+
+    Two gates, in the order the Harness applies them.  The window verifier runs
+    first under the new cohort scope; only candidates that are both legal and
+    not byte-identical to identity are worth a Consumer fit, which is also what
+    keeps this inside the fit cap.
+    """
+    block = np.asarray(cell["observation_block"], dtype=np.float64)
+    support_origin = int(block.size)
+    delayed_origin = support_origin + 1
+    heldout_origin = support_origin + 2
+    surfaces = {
+        SUPPORT: cell["surfaces"]["%s_support" % R2_ROUND],
+        DELAYED: cell["surfaces"]["%s_delayed" % R2_ROUND],
+    }
+    adapter = ClassificationConsumerAdapter(
+        fit_values=cell["fit_values"], fit_labels=cell["fit_labels"],
+        surfaces=surfaces, delayed_origin=delayed_origin,
+        heldout_origin=heldout_origin, budget=fit_budget,
+        ridge_alpha=RIDGE_ALPHA, allowed_surfaces=(SUPPORT, DELAYED))
+    cap = float(
+        _task_context().deployment_constraints.maximum_modified_fraction)
+    executor = _ClsScopeExecutor(
+        cell=cell, evaluate_fn=adapter, max_modified_fraction=cap,
+        modification_fraction_scope="cohort")
+    # The same cells under the old scope, so Part B can state the difference
+    # instead of asserting it.  Verification only -- this executor is never
+    # asked to evaluate, so it costs no Consumer fit.
+    old_executor = _ClsScopeExecutor(
+        cell=cell, evaluate_fn=None, max_modified_fraction=cap,
+        modification_fraction_scope="per_window")
+
+    surface_rows = {
+        name: int(np.asarray(labels).size)
+        for name, (_values, labels) in surfaces.items()
+    }
+    material_lines = {
+        name: max(MATERIAL, 1.0 / max(rows, 1))
+        for name, rows in surface_rows.items()
+    }
+
+    rows: list[dict[str, Any]] = []
+    exhausted = False
+    for entry in _r2_menu():
+        steps = ((entry["program"], dict(entry["params"])),)
+        verification = executor.verify(steps, support_origin)
+        old_verification = old_executor.verify(steps, support_origin)
+        no_op = bool(
+            verification.checked_windows
+            and verification.identity_equivalent_windows
+            == verification.checked_windows)
+        record: dict[str, Any] = {
+            "program": entry["program"],
+            "params": entry["params"],
+            "verifier_passed": bool(verification.passed),
+            "verifier_passed_per_window_scope": bool(old_verification.passed),
+            "unblocked_by_the_fix": bool(
+                verification.passed and not old_verification.passed),
+            "cohort_modified_fraction": verification.cohort_modified_fraction,
+            "cohort_modified_points": verification.cohort_modified_points,
+            "cohort_total_points": verification.cohort_total_points,
+            "windows_over_per_window_cap": (
+                verification.windows_over_maximum_fraction),
+            "checked_windows": verification.checked_windows,
+            "rejection_codes": sorted({
+                str(row["rejection_code"])
+                for row in verification.rejected_windows}),
+            "numeric_no_op": no_op,
+            "survives": bool(verification.passed and not no_op),
+        }
+        if record["survives"] and not exhausted:
+            needed = 2 * (1 + len(surfaces))  # baselines are cached per origin
+            if fit_budget.used + needed > fit_budget.cap:
+                exhausted = True
+                record["scored"] = False
+                record["skip_reason"] = "R2_FIT_CAP_REACHED"
+            else:
+                readings: dict[str, Any] = {}
+                for name, origin in ((SUPPORT, support_origin),
+                                     (DELAYED, delayed_origin)):
+                    receipt = executor.evaluate(steps, origin)
+                    delta = (float(receipt.gain)
+                             if receipt.gain is not None else None)
+                    recalls = [float(value) for value in receipt.per_view_gain]
+                    readings[name] = {
+                        "rows": surface_rows[name],
+                        "material_line": material_lines[name],
+                        "delta_accuracy": delta,
+                        "per_class_recall_delta": recalls,
+                        "worst_class_recall_delta": (
+                            min(recalls) if recalls else None),
+                        "material_positive": bool(
+                            delta is not None
+                            and delta >= material_lines[name]),
+                        "class_guard_pass": bool(
+                            recalls and min(recalls) >= -HARM_BAR),
+                        "verifier_passed": bool(receipt.verification.passed),
+                        "error": receipt.error,
+                    }
+                record["scored"] = True
+                record["readings"] = readings
+                record["headroom_here"] = bool(any(
+                    row["material_positive"] and row["class_guard_pass"]
+                    for row in readings.values()))
+        else:
+            record.setdefault("scored", False)
+        rows.append(record)
+
+    return {
+        "dataset": cell["dataset"],
+        "condition": cell["condition"],
+        "fit_rows": cell["fit_rows"],
+        "series_length": cell["series_length"],
+        "surface_rows": surface_rows,
+        "material_lines": material_lines,
+        "maximum_modified_fraction": cap,
+        "modification_fraction_scope": "cohort",
+        "menu_size": len(rows),
+        "survivors": [row["program"] for row in rows if row["survives"]],
+        "survivors_under_per_window_scope": [
+            row["program"] for row in rows
+            if row["verifier_passed_per_window_scope"]
+            and not row["numeric_no_op"]],
+        "unblocked_by_the_fix": [row["program"] for row in rows
+                                 if row["unblocked_by_the_fix"]
+                                 and not row["numeric_no_op"]],
+        "numeric_no_ops": [row["program"] for row in rows
+                           if row["numeric_no_op"]],
+        "verifier_rejected": [row["program"] for row in rows
+                              if not row["verifier_passed"]],
+        "fit_cap_truncated": exhausted,
+        "programs": rows,
+        "consumer_fits_after": fit_budget.used,
+    }
+
+
+def _r2_verdict(source: Sequence[Mapping[str, Any]],
+                target: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    hits: list[dict[str, Any]] = []
+    for cell in target:
+        for row in cell["programs"]:
+            for name, reading in (row.get("readings") or {}).items():
+                if reading["material_positive"] and reading["class_guard_pass"]:
+                    hits.append({
+                        "dataset": cell["dataset"], "surface": name,
+                        "program": row["program"],
+                        "delta_accuracy": reading["delta_accuracy"],
+                        "material_line": reading["material_line"],
+                        "worst_class_recall_delta": (
+                            reading["worst_class_recall_delta"]),
+                    })
+    truncated = any(cell["fit_cap_truncated"] for cell in (*source, *target))
+    any_survivor = any(cell["survivors"] for cell in (*source, *target))
+    if hits:
+        verdict = "HEADROOM_EXISTS"
+    elif truncated:
+        verdict = "INSTRUMENT_UNREADABLE"
+    else:
+        verdict = "NO_MENU_HEADROOM"
+    return {
+        "verdict": verdict,
+        "target_headroom_hits": hits,
+        "any_candidate_survives_the_verifier": any_survivor,
+        "fit_cap_truncated_any_cell": truncated,
+        "rule": (
+            "HEADROOM_EXISTS iff at least one shared-menu candidate is "
+            "materially positive on at least one Target held-in surface "
+            "(delta accuracy >= max(0.005, 1/n) for that surface's own n) "
+            "while no per-class recall falls more than %.2f.  Source cells "
+            "are reported for context and cannot carry the verdict."
+            % HARM_BAR),
+        "next": (
+            "r2 three-arm launch condition met" if verdict == "HEADROOM_EXISTS"
+            else "wire the C38 center-excluded local median as a Typed "
+                 "Workflow and re-ask headroom" if verdict == "NO_MENU_HEADROOM"
+            else "raise the fit cap or narrow the menu and re-run"),
+    }
+
+
+def r2_prep() -> int:
+    """Part A proof + Part B smoke + Part C headroom census.  Zero LLM."""
+    from SelfEvolvingHarnessTS.methods.ttha.scope_executor import (
+        FRACTION_SCOPE_COHORT,
+        FRACTION_SCOPE_PER_WINDOW,
+    )
+
+    started = time.time()
+    fit_budget = FitBudget(R2_FIT_CAP)
+    source_cells: list[dict[str, Any]] = []
+    target_cells: list[dict[str, Any]] = []
+    stopped: str | None = None
+    payload: dict[str, Any] = {
+        "protocol_version": R2_PROTOCOL_VERSION,
+        "entry": "--r2-prep",
+        "evidence_grade": EVIDENCE_GRADE,
+        "git_head": _git("rev-parse", "HEAD"),
+        "llm_calls": 0,
+        "verifier_fix": _r2_fix_report(),
+        "binding": {
+            "source_cells": ["%s/%s" % (dataset, "fit_only_artifact")
+                             for dataset in SOURCE_DATASETS],
+            "target_cells": ["%s/%s" % (dataset, TARGET_CONDITION)
+                             for dataset in TARGET_DATASETS],
+            "round": R2_ROUND,
+            "surfaces": [SUPPORT, DELAYED],
+            "scope": FRACTION_SCOPE_COHORT,
+            "default_scope_elsewhere": FRACTION_SCOPE_PER_WINDOW,
+            "maximum_candidates": 1 + SUPPORT_TRIAL_BUDGET,
+            "unchanged_gates": (
+                "maximum_modified_fraction stays 0.10; maximum_candidates "
+                "stays at the value C39 actually ran (3); selectable "
+                "semantics and effect distinctness are untouched"),
+        },
+        "menu": _r2_menu(),
+    }
+    try:
+        for dataset in SOURCE_DATASETS:
+            cell = _build_cell(dataset, "fit_only_artifact")
+            row = _r2_cell_pass(cell, fit_budget=fit_budget)
+            source_cells.append(row)
+            print("SOURCE %-30s survivors=%s" % (dataset, row["survivors"]),
+                  flush=True)
+        for dataset in TARGET_DATASETS:
+            cell = _build_cell(dataset, TARGET_CONDITION)
+            row = _r2_cell_pass(cell, fit_budget=fit_budget)
+            target_cells.append(row)
+            print("TARGET %-30s survivors=%s" % (dataset, row["survivors"]),
+                  flush=True)
+    except Stop as stop:
+        stopped = stop.verdict
+        payload["stop"] = {"verdict": stop.verdict, "reason": stop.reason}
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        stopped = "INSTRUMENT_UNREADABLE"
+        payload["stop"] = {"verdict": stopped,
+                           "reason": "%s: %s" % (type(exc).__name__, exc),
+                           "traceback": traceback.format_exc()}
+
+    payload["part_b_smoke"] = {
+        "question": (
+            "after the fix, can a non-identity candidate obtain a legal, "
+            "non-no-op Support receipt on the same material?"),
+        "no_op_rule": (
+            "a candidate is a numeric no-op when every window's prepared "
+            "bytes are identity-equivalent to the raw bytes; such a candidate "
+            "is excluded from the survivor list and never fitted"),
+        "cells": [{
+            "cell": "%s/%s" % (cell["dataset"], cell["condition"]),
+            "menu_size": cell["menu_size"],
+            "survivors": cell["survivors"],
+            "survivor_count": len(cell["survivors"]),
+            "survivors_under_per_window_scope": (
+                cell["survivors_under_per_window_scope"]),
+            "unblocked_by_the_fix": cell["unblocked_by_the_fix"],
+            "numeric_no_ops": cell["numeric_no_ops"],
+            "verifier_rejected": cell["verifier_rejected"],
+        } for cell in (*source_cells, *target_cells)],
+    }
+    payload["part_c_headroom"] = {
+        "source_cells": source_cells,
+        "target_cells": target_cells,
+    }
+    payload["ledger"] = {
+        "llm_calls": 0,
+        "consumer_fits": fit_budget.used,
+        "consumer_fit_cap": fit_budget.cap,
+        "wall_seconds": round(time.time() - started, 1),
+    }
+    if stopped:
+        payload["verdict"] = {"verdict": stopped,
+                              "stage": (payload.get("stop") or {}).get("reason")}
+    else:
+        payload["verdict"] = _r2_verdict(source_cells, target_cells)
+    payload["obligations"] = _r2_obligations()
+    R2_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    R2_OUT_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    R2_OUT_MD.write_text(_r2_markdown(payload), encoding="utf-8")
+    print(json.dumps({"verdict": payload["verdict"]["verdict"],
+                      "fits": fit_budget.used,
+                      "artifact": str(R2_OUT_JSON)},
+                     ensure_ascii=False, indent=1))
+    return 0
+
+
+def _r2_fix_report() -> dict[str, Any]:
+    return {
+        "file": "methods/ttha/scope_executor.py",
+        "before": {
+            "where": "ScopeExecutor.verify, HEAD 1ba923c lines 153-197",
+            "semantics": (
+                "verify_candidate is called per training window with "
+                "maximum_modified_fraction; any window whose own "
+                "modified_fraction exceeds the cap sets "
+                "MODIFICATION_FRACTION_EXCEEDED, and passed = not rejected, so "
+                "one window vetoes the candidate for the whole cohort"),
+        },
+        "after": {
+            "where": "ScopeExecutor.verify + WindowVerification + __init__",
+            "semantics": (
+                "modification_fraction_scope='cohort' passes 1.0 as the "
+                "per-window cap so the fraction gate cannot fire per window, "
+                "accumulates len(modified_indices) and window.size over every "
+                "window, and rejects once if the ratio exceeds the cap.  Every "
+                "other gate still vetoes per window."),
+            "diagnostics_kept": [
+                "window_modified_fractions", "windows_over_maximum_fraction",
+                "cohort_modified_points", "cohort_total_points",
+                "cohort_modified_fraction"],
+            "switch": (
+                "modification_fraction_scope defaults to 'per_window', so "
+                "forecasting, AD and minipipe callers are unchanged; only "
+                "this book's executor opts in"),
+            "number_unchanged": "maximum_modified_fraction is still 0.10 here",
+        },
+        "why_not_a_number_change": (
+            "0.20 and 'share of rows over the line' were both suggested by "
+            "the CLS-OP diagnostic table, so adopting either would import a "
+            "result-derived constant.  Changing which quantity the existing "
+            "constant measures imports nothing."),
+        "geometry_argument": (
+            "the contract limits how much of the data a preparation may "
+            "rewrite.  With a dozen windows per cohort the per-window and "
+            "cohort readings are close; with one window per fit row (42-1260 "
+            "here) the per-window rule is dominated by the single worst row."),
+        "regression_subset": {
+            "selected": [
+                "tests/runtime (verify_candidate itself, the shared gate whose "
+                "argument this change re-aims)",
+                "tests/methods (ScopeExecutor's own package; two files "
+                "construct WindowVerification directly)",
+                "tests/integration (p4 runner binding + minipipe cycles, the "
+                "deployment-constraint consumers)",
+                "tests/functional/test_p2_online_route_abstain.py and "
+                "tests/functional/test_ordering_card.py (the functional tests "
+                "that reach ScopeExecutor.verify on forecast geometry)",
+            ],
+            "excluded": [
+                "the rest of tests/functional and tests/contracts: grep shows "
+                "no path to ScopeExecutor.verify or verify_candidate",
+                "tests/functional/test_skill_revocation.py: untracked and does "
+                "not parse on this interpreter (f-string spanning lines, "
+                "line 166) -- a pre-existing collection error, not this change",
+            ],
+            "before": "40 failed, 170 passed, 3 skipped, 1 xfailed",
+            "after": "40 failed, 170 passed, 3 skipped, 1 xfailed",
+            "failure_set_identical": True,
+            "failure_list_sha256_16": "9947c9ed623279f4",
+            "pre_existing_cause": (
+                "38 of the 40 are ValueError 'snapshot lock mismatch; run "
+                "compiler with --write-lock' from "
+                "methods/ttha/harness/compiler.py; the h0 lock was last "
+                "regenerated at 29bed7e (2026-08-24 16:27) and "
+                "operators/registry.py changed at 5ef9726 (2026-08-25 11:55), "
+                "after it.  The lock carries an operator_bundle_sha, so the "
+                "CLS-4 operator commit is the likely origin.  Not repaired "
+                "here: it is another line's surface and this book is "
+                "single-face."),
+            "method": (
+                "the same subset was run twice with only "
+                "methods/ttha/scope_executor.py swapped between its HEAD bytes "
+                "and the fixed bytes; nothing was stashed, so the other line's "
+                "in-flight files were never touched"),
+        },
+        "new_unit_tests": {
+            "file": "tests/methods/test_scope_executor_cohort_fraction.py",
+            "count": 8,
+            "result": "8 passed",
+            "covers": [
+                "default scope is still per_window",
+                "unknown scope raises at construction",
+                "the one divergence case: per_window rejects what cohort admits",
+                "cohort rejects when the aggregate is over",
+                "the two scopes agree above every per-window fraction",
+                "non-fraction gates still veto per window under cohort scope",
+                "diagnostics are produced under both scopes",
+                "windows_over_maximum_fraction has no veto power",
+            ],
+        },
+        "commit": "1402b08",
+    }
+
+
+def _r2_obligations() -> dict[str, Any]:
+    return {
+        "llm_calls": 0,
+        "downloads": 0,
+        "forbidden_data_untouched": (
+            "no Yahoo, NOAA 2025, beyond_17520, NAB or SMD path is opened; "
+            "the only data root is data/ucr_task_context"),
+        "single_face": (
+            "maximum_modified_fraction stays 0.10, maximum_candidates stays "
+            "3, selectable semantics and effect distinctness are untouched; "
+            "the verifier is modified once and only in the fraction scope"),
+        "no_new_runner": (
+            "Part B and Part C are entries on the CLS-OP runner, which "
+            "already owns the cell builder, the executor subclass and the "
+            "Consumer adapter; a second runner would be a second dialect"),
+        "artifact_not_committed": True,
+        "known_debts_not_paid_here": [
+            "verify_candidate.selectable still does not require effect "
+            "distinctness, so a numeric no-op is still 'actionable' to the "
+            "candidate supply; this book only excludes no-ops from its own "
+            "survivor list",
+            "run_online_round still records a verifier rejection without its "
+            "rejection code",
+        ],
+    }
+
+
+def _r2_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload.get("verdict") or {}
+    ledger = payload.get("ledger") or {}
+    fix = payload.get("verifier_fix") or {}
+    lines = [
+        "# CLS-OP-r2-prep -- verifier fix, smoke, Program headroom",
+        "",
+        "protocol: `%s`  evidence grade: **%s**  LLM: 0"
+        % (payload.get("protocol_version"), payload.get("evidence_grade")),
+        "",
+        "## Verdict",
+        "",
+        "**%s**" % verdict.get("verdict"),
+        "",
+        str(verdict.get("rule", "")),
+        "",
+        "next: %s" % verdict.get("next", ""),
+        "",
+        "## Part A -- verifier fix",
+        "",
+        "- before: %s" % (fix.get("before") or {}).get("semantics"),
+        "- after: %s" % (fix.get("after") or {}).get("semantics"),
+        "- switch: %s" % (fix.get("after") or {}).get("switch"),
+        "- why not a number change: %s" % fix.get("why_not_a_number_change"),
+        "",
+        "### Zero regression",
+        "",
+        "- before: %s" % (fix.get("regression_subset") or {}).get("before"),
+        "- after: %s" % (fix.get("regression_subset") or {}).get("after"),
+        "- identical failure set: %s (sha %s)"
+        % ((fix.get("regression_subset") or {}).get("failure_set_identical"),
+           (fix.get("regression_subset") or {}).get("failure_list_sha256_16")),
+        "- pre-existing cause: %s"
+        % (fix.get("regression_subset") or {}).get("pre_existing_cause"),
+        "- new unit tests: %s"
+        % (fix.get("new_unit_tests") or {}).get("result"),
+        "",
+        "## Part B -- smoke: what survives the fixed verifier",
+        "",
+        "| cell | menu | survivors after fix | survivors before fix | "
+        "unblocked by the fix | numeric no-ops | verifier-rejected |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for cell in (payload.get("part_b_smoke") or {}).get("cells") or []:
+        lines.append("| %s | %d | %s | %s | %s | %d | %d |"
+                     % (cell["cell"], cell["menu_size"],
+                        ", ".join(cell["survivors"]) or "(none)",
+                        ", ".join(cell["survivors_under_per_window_scope"])
+                        or "(none)",
+                        ", ".join(cell["unblocked_by_the_fix"]) or "(none)",
+                        len(cell["numeric_no_ops"]),
+                        len(cell["verifier_rejected"])))
+    lines += ["", "## Part C -- Program headroom census", "",
+              "| cell | surface | n | material line | program | d accuracy | "
+              "worst class recall d | material+ | guard |",
+              "|---|---|---|---|---|---|---|---|---|"]
+    census = payload.get("part_c_headroom") or {}
+    for cell in (census.get("source_cells") or []) + (
+            census.get("target_cells") or []):
+        for row in cell["programs"]:
+            for surface, reading in (row.get("readings") or {}).items():
+                lines.append(
+                    "| %s | %s | %d | %.4f | %s | %s | %s | %s | %s |"
+                    % (cell["dataset"], surface, reading["rows"],
+                       reading["material_line"], row["program"],
+                       ("%+.4f" % reading["delta_accuracy"])
+                       if reading["delta_accuracy"] is not None else "n/a",
+                       ("%+.4f" % reading["worst_class_recall_delta"])
+                       if reading["worst_class_recall_delta"] is not None
+                       else "n/a",
+                       reading["material_positive"],
+                       reading["class_guard_pass"]))
+    lines += ["", "## Budget", "",
+              "- LLM: 0",
+              "- Consumer fits: %s of %s"
+              % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap")),
+              "- wall clock: %s s" % ledger.get("wall_seconds"),
+              "", "## Obligations", ""]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
 DIAGNOSE_OPERATORS = (
     "winsorize", "outlier_iqr", "outlier_mad", "hampel_filter",
     "denoise_median", "repair_level_shift", "repair_burst_segment",
@@ -1924,10 +2452,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--micro", action="store_true")
     parser.add_argument("--diagnose", action="store_true")
+    parser.add_argument("--r2-prep", dest="r2_prep", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else None)
-    if sum([args.smoke, args.run, args.micro, args.diagnose]) != 1:
-        parser.error(
-            "choose exactly one of --smoke / --run / --micro / --diagnose")
+    if sum([args.smoke, args.run, args.micro, args.diagnose,
+            args.r2_prep]) != 1:
+        parser.error("choose exactly one of --smoke / --run / --micro / "
+                     "--diagnose / --r2-prep")
+    if args.r2_prep:
+        return r2_prep()
     if args.diagnose:
         return diagnose()
     if args.micro:
