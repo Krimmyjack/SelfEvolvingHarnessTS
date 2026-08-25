@@ -950,7 +950,23 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:Part 0 r1 停摆件 `2d055ea`(内容未改);本书 runner + r2 隔离工件 `t6_cls_conf_r2_unused_target.json/.md`(未覆写 r1) + 本节。义务自报:规则未放宽/未收紧;LLM 0;fit 0;下载 0;`methods/` 零改动;他线文件(`AGENTS.md`/`README.md`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`)未碰。
 
-### sol 批准 CLS-CONF 口径①(Computers)+ Scope 归纳规则冻结 v1 + CLS-CONF-r2 发车(2026-08-25 20:1x,主线)
+### CLS-CONF-r2 PREDICTION_GATE_FAILED:主线预测被机器否证,Computers 出局;r3a 语义审计发车(2026-08-25 20:3x,主线)
+
+**门判**:r2 按字面 token 规则重算,合格集为空 ≠ 预注册 8 件/Computers,零 LLM 停手(2.1s 干跑;Part 0 提交 2d055ea=r1 停摆件,3673366=r2 选靶记录)。**这次错在主线**:预测把"仅被 integrated_context/source_prior 认领"当成"未在 impulse 条件对下用过"——机器证据显示 `run_e2_integrated_context_harness_evolution.py` 的 TARGET_DATASETS+CONDITIONS 证明 Computers/PowerCons/Yoga/SemgHandGenderCh2/WormsTwoClass **五件真在该条件对下跑过**(语义出局,**sol 批准 Computers 的前提失效**);`run_e2_source_prior_evidence_fusion.py` 仅含 stable_task_event 作 W56 planned scope 字段名读取(token 碰撞,FreezerRegularTrain/GPMvF/GPOvY 三件系字面过度排除,语义上大概率合格)。执行者纪律正确:未现场改规则,停在门上。**站规强化(两轮连续手推名单出错后:r1 执行者 Earthquakes、r2 主线 integrated_context)**:候选池每条排除/放行必须携带引用到 file:line 的机器证据,禁止任何一方手推名单入书。**r3a 发车(grok,审计 only,零 LLM)**:对全部 20 个认领 runner 逐个分类 EXECUTES_CONDITION_PAIR / INCIDENTAL_TOKEN / NO_TOKEN,每判引用证据行;按审计结果机械重算 40 件资格表(条件对未用 ∧ 二分类 ∧ [40,400] ∧ 可载入),字典序选靶;**无论结果停给主线复核,两臂留 r3b**;若选中者为 GunPoint* 近亲须特别标出(独立性弱化,呈 sol)。语义规则本身系 sol 已批口径("没在本次 impulse 缺陷-修复条件对下看过结果"),r3a 属正确执行而非改规则;全程 outcome-blind(仍无任何候选的注入读数)。预测(仅供门用,不入规则):至少 FreezerRegularTrain 150 行合格且字典序居首。
+
+### CLS-CONF-r3a 停在选靶:CANDIDATE_POOL_EMPTY——语义审计后合格集仍空;source_prior 经调用链实为 EXECUTES;0 LLM 收工(2026-08-25 20:4x,执行方)
+
+**判定**:**CANDIDATE_POOL_EMPTY**(审计停点,两臂未开)。选中 Target = **None**。20 个认领 runner 分类 = EXECUTES_CONDITION_PAIR 10 / INCIDENTAL_TOKEN 0 / NO_TOKEN 10。机械重算:condition_pair_used = 认领方被判 EXECUTES 且数据集在其**实际 roster**(常量/调用,非文件名提及);合格 = 未用条件对 ∧ 二分类 ∧ TRAIN∈[40,400] ∧ 可载入。40 件无一同时满足。GunPoint 同族警示未触发(无选中者)。
+
+**20-runner 一行证据**(详表见 `artifacts/functional/e2/t6_cls_conf_r3_selection.md`):action_credit `TARGET_DATASETS`+`ARTIFACT`/`EVENT`+`_condition_inputs`(:34/:40/:275);curvature 存疑归严(报告字段读 + TRAIN fit-only `_inject` :202);integrated `TARGET_DATASETS`+`CONDITIONS`+evaluate 循环注入(:38/:46/:392);pattern_mass NO_TOKEN(:28);program_binding 双条件 `_condition_inputs`(:199/:223);promoted 复用 W55 planner + `condition="fit_only_artifact"`(:113/:330);s0_census NO_TOKEN(仅注释提及);source_outlier NO_TOKEN(roster=monash/metr_la,Ham 系 Hampel 子串误认领);**source_prior EXECUTES**(evaluate 复用 W56/W55 planner 双条件注入 + `_prepare_train_execution` 再注入 fit_only_artifact 后打开 TEST,:123/:354/:409——否证 r2/发车书"仅字段名读取");cls1/cls1_r2/cls2/cls3/cls4 NO_TOKEN(MCAR/burst,非本条件对);cls_op EXECUTES 实际 roster 仅 SOURCE+TARGET 五件(:132/:134/:1316);impulse_repair NO_TOKEN(monash/fred);W48 witness / W49 transfer / W50b confirmation 均为 EXECUTES;temporary_excursion NO_TOKEN。
+
+**资格表摘要**:可载入二分类 38;不可载入 2(DodgerLoopWeekend 非有限值、KeplerLightCurves 缺 TRAIN)。TRAIN∈[40,400] 且可载入的 18 件(Computers 250 / Earthquakes 322 / ECG200 100 / FreezerRegularTrain 150 / GunPoint 50 / GunPointAgeSpan 135 / GPMvF 135 / GPOvY 136 / Ham 109 / Herring 64 / HouseTwenty 40 / Lightning2 60 / PowerCons 180 / SemgHandGenderCh2 300 / ToeSegmentation1 40 / Wine 57 / WormsTwoClass 181 / Yoga 300)全部 `condition_pair_used`。r2 预测 8 件出局链:Computers/PowerCons/Yoga/Semg/Worms ← integrated :38+:46+:392;FreezerRegularTrain/GPMvF/GPOvY ← source_prior 调用链 :38+:123+:409。主线门用预测"FreezerRegularTrain 字典序居首"被否证。
+
+**两臂**:未跑。无 held-in、无 Skill/冻结、无 held-out。未改 `methods/`/`runtime/`/`contracts/`/`operators/`;未覆写 r1/r2 工件。census 缓存名单与 40 zip stem 一致,未重扫。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
+
+**提交**:隔离工件 `t6_cls_conf_r3_selection.json/.md`(未覆写 r1/r2)+本节(连同主线未提交的 r3a 发车条)。义务自报:LLM 0;fit 0;下载 0;`methods/` 零改动;他线文件(`AGENTS.md`/`README.md`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`)未碰;存疑归严仅 curvature 1 条。
+
+### sol 批准 CLS-CONF 口径①(Computers)+ Scope 归纳规则冻结 v1 + CLS-CONF-r2 发车(2026-08-25 20:1x,主线)【Computers 前提已被 r2 机器证据否证,见上条】
 
 **sol 裁定**:当前非实验失败,系"发车前发现确认数据集不够独立,正在修正选靶"。Earthquakes 剔除确认;机器重算后 8 件合格,预注册字典序选 **Computers**——它在其他类型实验用过,但从未在本 impulse 缺陷-修复条件对下看过结果,**可承担 development 级独立确认**。条件树:Computers 复现 → GunPointAgeSpan+Computers 构成两独立正例 → 按冻结规则归纳候选 Scope → **下载真正未用的新分类 Target 做终局同预算 A5 vs A3**;不复现 → 不得强行生成 Shared Skill,GunPoint hampel 只保留为 Target-local。census/junction/坏链修复定性为**实验准备红利,非方法成果**。一句话定位:分类正向能力已有单域正例,现在准备第二独立域确认;确认后才有资格进入真正跨域 A5 vs A3 主考。
 
