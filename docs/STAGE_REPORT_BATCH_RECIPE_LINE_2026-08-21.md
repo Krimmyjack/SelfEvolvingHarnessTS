@@ -922,6 +922,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **CLS-OP-r2-prep 发车(Opus 续派,0 LLM)**:Part A 校验器语义修复(实现于 ScopeExecutor.verify 路径,聚合口径;跑受影响测试子集证预测/AD 线零回归——若聚合语义改变既有线行为,如实报字节证据停裁);Part B smoke(修后非恒等候选在 CLS-OP 同材料上获合法回执,排除 no-op);Part C headroom census(共享菜单全部 classification 合法非恒等候选 × Source cells + Target held-in 面,确定性 Δacc 表,材料线判有无正向候选);判定 = HEADROOM_EXISTS(→ r2 发车)/ NO_MENU_HEADROOM(→ C38 Workflow 接入书)/ VERIFIER_FIX_REGRESSES(停)/ INSTRUMENT_UNREADABLE。
 
+### CLS-OP-r2-prep 收口 = HEADROOM_EXISTS;校验器修复零回归落地;CLS-OP-r2 三臂发车(2026-08-25 15:5x,主线)
+
+**判定采纳**:双门全过。**Part A 修复范例级**——scope 开关实现(默认 per_window,全部既有调用方字节不变,仅本执行器选入 cohort 聚合;0.10 不动;非 fraction 门仍逐窗否决;两口径诊断都产出),零回归证明用"只换单文件字节跑两遍"法(避 stash 殃及另线),40 失败集合逐条相同(sha 相等;38 条系 h0 锁失效先在);新单测 8 项含"唯一分歧案例"与"超线窗计数无否决权"。**Part B**:修复解锁 hampel/repair_level_shift 于 4/5 cell(GunPointAgeSpan 0→2 非恒等存活),非普遍放松(全局平滑族 cohort 比值 0.86-1.00 仍全拒;Lightning2 outlier 族仍拒);no-op 判据按 prepared 字节恒等,10 no-op 零 fit 支出。**Part C**:GunPointAgeSpan hampel Support +0.5000/worst Δrecall +0.4000、delayed +0.3000/+0.2000(材料线 0.1000,n=10 粒度粗注记在案);Phalanges hampel +0.0222 与 repair_level_shift 双面过 guard。fit 46/120、0 LLM。
+
+**债与注记**:h0 锁再失效(CLS-4 的 5ef9726 改 operator_bundle_sha 所致——并行竞态站规的实证第二笔),38 测试红,机械重生成条件触发 → r2 Part 0b 执行;effect-distinctness 债升格(修复前 GunPointAgeSpan 唯一供给全是 no-op,r2 后优先偿);repair_level_shift 分歧注记(Lightning2 Source 拒 vs Phalanges Target 喜——r2 Memory 将见此分歧,真实 CONFLICT 素材);GunPointAgeSpan n=10 粒度 → sol 第 5 步未用 Target 确认因此必要。**CLS-OP-r2 发车**:全链重跑(Source 形成 + Slow 整合 + 三臂 + freeze + Fast-only)于修复后校验器,同 roster 同菜单同预算,maximum_candidates=3,fresh run-id 禁复用 C39 冻结态;预注册预期(可证伪):Source 段 hampel 存活或产 POSITIVE Episode → Slow 或授权 TRY → A5 获真实先验;须真实形成非恒等 Target-local Skill;报首正成本/delayed/harm/abstention/A4 带偏判。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
