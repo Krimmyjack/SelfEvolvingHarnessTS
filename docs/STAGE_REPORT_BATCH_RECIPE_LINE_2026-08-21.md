@@ -890,6 +890,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **两步序采纳并双线发车**:**第一步 CLS-OP(Opus)**= 用 C38 已知正向 dynamic-binding family 做共享 T6 Harness 的最小 operational replay——Source Positive/Negative/Conflict **真实 Episode 入 experience_memory**(禁预编译答案旁路)→ A3 空 / A4 Source 直用 / A5 Source+适应,同 held-in 预算 → Target-local Skill → freeze → Fast-only;复用现有 Observer 与 center-excluded local median Workflow;不找新缺陷;允许且仅允许一个薄 classification evaluate_fn 适配器(循 ad_scope_adapter 先例);development 级。通过 = 第二 Task 真正进同一 Harness。**第二步 CLS-3(grok,并行,设计全由 sol 钉死零开放决策)**= 配对 Consumer 资格:GunPoint + 复用 CLS-2 注入账本;ridge 与 kNN(k=3 欧氏 uniform 冻结);菜单 identity+hampel+MAD 禁增;0 LLM 禁扫描(k/距离/强度/数据集);过门五条件(kNN 伤达线/≥1 合法修复/类 recall 守卫/Support 预测/ridge 保持钝感成差异);四出口表(伤且修 → Context-conditioned Agent 实验;伤不修 → Program Supply gap 不跑 Agent;不伤 → 关闭连续段族;Support 不预测 → Feedback first-fault)。
 
+### CLS-3 收口 = KNN_INJURED_NO_REPAIR;配对 Consumer 差异证据到手;反馈误导第三例入册;CLS-4 段修复补给发车(2026-08-25 11:5x,主线)
+
+**判定采纳(sol 预登记出口对号)**:五条件 1/5(kNN 伤 −0.120 过线 ✔)、5(ridge 钝 −0.0133 ✔)成立,2/3/4 败——hampel 在 kNN delayed 上逐字节等于 identity(局部窗修不动 15-20% 连续段),outlier_mad 继续伤(kNN 类 1 recall 0.689→0.203)且 Support 反抬(0.60→0.73)。**配对差异成立:kNN − ridge injury = −0.107**——"同一可观察质量问题对不同 Consumer 重要性不同"的分类版证据到手(Observation 可见 + ridge 免伤 + kNN 受伤)。出口 = Program Supply gap,**不跑 Agent;连续段族不关闭**;下一步 = 补给,禁扫 k/换底物。执行干净:CLS-2 账本零重抽回放(SHA 同),ridge 四臂与 CLS-2 逐字节复现,8/30 fit,0 LLM,两跑逐位。
+
+**反馈误导第三例(载重,跨任务主题加固)**:Support 序 clean>mad>hampel>identity vs delayed 序 clean=hampel>identity>mad——**Support 会选中 delayed 最差臂**。与预测线 G4(held-in 正向方案 held-out 全伤)、分类 X4(A5<A4,保守回执丢真实收益)并列为第三例:**"held-in/Support 反馈在三个不同场景下系统性误导"= #46 候选头条主题之一**(它同时论证:晋升必须走独立 delayed、Support 只许起草——我们的三层反馈模型不是过度设计,是被三次实证救回来的)。
+
+**CLS-4 段修复补给发车(解锁条件满足:八臂矩阵证菜单对该缺陷枯竭;一个机制匹配算子)**:新算子 repair_burst_segment(intrinsic):滚动 robust-z 检测连续高偏差段(|z|>3.5 且 run ≥8,参数冻结禁扫)→ 段两端线性插值替换;allowed_tasks = classification 单任务起步(扩域需证据);注册表契约字段如实填(destructive=yes/值改写);配单测(确定性/边界/无段时恒等)。落地后同账本重跑资格:identity + hampel(阴性对照)+ repair_burst_segment,双 Consumer 十臂,同五条件判(2/3/4 重判,1/5 沿用已证)。出口沿 sol 四格表。0 LLM,fit ≤30。
+
 ### #41b-lite 执行与最小 V10(2026-08-23,执行方报告)
 
 **Part 0 检查点(0 LLM / 0 重训 / 0 AD 评估)**:`git update-index --really-refresh` 后 `git status` 实测 8 件修改(六收尾文件 + 两 docs;刷新前 stat 缓存确实吞改——载重运维发现兑现),逐文件 add、全程未用 `git add -A`。轮始发现 t5_lifecycle_v1.json/.md 为上一次复跑烟测的 CRLF 覆写(未还原),从 687af6e 逐字节还原并核符(处置同 #41 追认先例;本轮自测覆写一次后再次还原)。核验:V9 登记回读——method.py `after_t5` = ccf2b837…a4fa3、e1.py `after_t5` = e5501fe9…1097f,两者恰等于各自收尾后工作树哈希(登记语义 = #41 全程终态)。三份既有 untracked 测试(closeout 时间戳三件 = `test_e1_v2_protocol_repair.py` / `test_skill_evolution_e0.py` / `test_skill_revocation.py`)只跑不入库、不删除;MKL/Savgol 崩溃保持挂账(`test_f1_forecast_pilot` 原样不动,零 skip 标记写入)。
