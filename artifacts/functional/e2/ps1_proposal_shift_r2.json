@@ -1,0 +1,231 @@
+{
+ "protocol_version": "ps1_proposal_shift_v2_pilot",
+ "evidence_grade": "development-mechanism (pilot)",
+ "git_head": "94cf58eb5bef6ad27c3f1392d1d2ae2f22c20b86",
+ "python": "3.13.5",
+ "exam_unit": "GunPointOldVersusYoung__impulse_v2",
+ "ps0_source": "artifacts/functional/e2/ps0_reearn_sources.json",
+ "part0_reverify": {
+  "sources_earned": [
+   "source_A_prime"
+  ],
+  "sources_missed": [
+   "source_B_prime"
+  ],
+  "per_source": [
+   {
+    "scene": "source_A_prime",
+    "unit_id": "GunPointAgeSpan__impulse_v2",
+    "run_id": "ps0_srcA_1",
+    "task_kind": "classification",
+    "consumer_id": "ridge-raw-plus-difference-v1",
+    "metric": "accuracy",
+    "program_geometry": "hampel_filter",
+    "pattern_leaves": {
+     "clipping_probe_direction": "unknown",
+     "denoising_probe_direction": "unknown",
+     "estimated_level_offset": "low",
+     "estimated_region_end_fraction": "high",
+     "estimated_region_start_fraction": "very_low",
+     "imputation_probe_direction": "unknown",
+     "level_excursion_score": "high",
+     "level_only_post_shift_support_sufficient": true,
+     "level_probe_direction": "unknown",
+     "level_region_end_fraction": "very_low",
+     "level_region_fraction": "very_low",
+     "local_robust_z_peak": "high",
+     "longest_missing_run_fraction": "zero",
+     "missing_fraction": "zero",
+     "outlier_region_end_fraction": "very_low",
+     "period_change_score": "zero",
+     "period_evidence_status": "OK",
+     "period_reliability": "high",
+     "period_repair_available": false,
+     "post_shift_support_sufficient": false,
+     "task_kind": "classification"
+    }
+   }
+  ],
+  "pass": false,
+  "verdict": "PS1_SOURCES_NOT_REEARNED",
+  "reason": "only 1 of 2 scenes re-earned the target family; a two-source hypothesis needs both"
+ },
+ "run_plan": [
+  {
+   "run_id": "ps1_run1",
+   "arm": "A3",
+   "replicate": 1
+  },
+  {
+   "run_id": "ps1_run2",
+   "arm": "A5-neutral",
+   "replicate": 1
+  },
+  {
+   "run_id": "ps1_run3",
+   "arm": "A5-scoped",
+   "replicate": 1
+  },
+  {
+   "run_id": "ps1_run4",
+   "arm": "A3",
+   "replicate": 2
+  },
+  {
+   "run_id": "ps1_run5",
+   "arm": "A5-neutral",
+   "replicate": 2
+  },
+  {
+   "run_id": "ps1_run6",
+   "arm": "A5-scoped",
+   "replicate": 2
+  },
+  {
+   "run_id": "ps1_run7",
+   "arm": "A3",
+   "replicate": 3
+  },
+  {
+   "run_id": "ps1_run8",
+   "arm": "A5-neutral",
+   "replicate": 3
+  },
+  {
+   "run_id": "ps1_run9",
+   "arm": "A5-scoped",
+   "replicate": 3
+  },
+  {
+   "run_id": "ps1_run10",
+   "arm": "A3",
+   "replicate": 4
+  },
+  {
+   "run_id": "ps1_run11",
+   "arm": "A5-neutral",
+   "replicate": 4
+  },
+  {
+   "run_id": "ps1_run12",
+   "arm": "A5-scoped",
+   "replicate": 4
+  }
+ ],
+ "arms": {
+  "A3": "no Source Skill",
+  "A5-neutral": "same SkillEntry shape, no operator name, no Program family, every authority flag false",
+  "A5-scoped": "same shape, Scope matched, supplies_candidates true and grants_execution false"
+ },
+ "experimental_prior_slot": true,
+ "prior_slot_implementation": "the runner places the SkillEntry on the arm's own snapshot via the frozen EditController path, without a Slow authorization audit.  Everything after that is production: resolve_harness_view decides visibility from observable_applicability and agent_core renders the card through the ordinary _skill_prompt.  No file under methods/, runtime/, contracts/ or operators/ is modified.",
+ "verdict": {
+  "verdict": "PS1_SOURCES_NOT_REEARNED",
+  "reason": "only 1 of 2 scenes re-earned the target family; a two-source hypothesis needs both"
+ },
+ "miss_analysis": {
+  "per_run": [
+   {
+    "scene": "source_A_prime",
+    "run_id": "ps0_srcA_1",
+    "earned": true,
+    "funnel": {
+     "proposed": true,
+     "selected_by_agent": false,
+     "passed_verifier": true,
+     "support_material_positive": true,
+     "delayed_approved": true
+    },
+    "broke_at": null,
+    "families_proposed": [
+     "hampel",
+     "level_shift",
+     "outlier_threshold"
+    ],
+    "target_family_reads": [
+     {
+      "round": "r2",
+      "relation": "POSITIVE",
+      "support_gain": 0.4,
+      "delayed_gain": 0.4
+     }
+    ],
+    "rounds_in_which_target_was_proposed": [
+     "r2"
+    ]
+   },
+   {
+    "scene": "source_B_prime",
+    "run_id": "ps0_srcB_1",
+    "earned": false,
+    "funnel": {
+     "proposed": false,
+     "selected_by_agent": false,
+     "passed_verifier": false,
+     "support_material_positive": false,
+     "delayed_approved": false
+    },
+    "broke_at": "proposed",
+    "families_proposed": [
+     "level_shift"
+    ],
+    "target_family_reads": [],
+    "rounds_in_which_target_was_proposed": []
+   },
+   {
+    "scene": "source_B_prime",
+    "run_id": "ps0_srcB_2",
+    "earned": false,
+    "funnel": {
+     "proposed": true,
+     "selected_by_agent": false,
+     "passed_verifier": true,
+     "support_material_positive": false,
+     "delayed_approved": false
+    },
+    "broke_at": "support_material_positive",
+    "families_proposed": [
+     "hampel",
+     "level_shift",
+     "outlier_threshold"
+    ],
+    "target_family_reads": [
+     {
+      "round": "r2",
+      "relation": "NEUTRAL",
+      "support_gain": 0.0,
+      "delayed_gain": null
+     }
+    ],
+    "rounds_in_which_target_was_proposed": [
+     "r2"
+    ]
+   }
+  ],
+  "runs_where_the_family_was_never_proposed": [
+   "ps0_srcB_1"
+  ],
+  "runs_where_it_was_proposed_but_support_refused": [
+   "ps0_srcB_2"
+  ],
+  "selection_is_not_on_the_critical_path": "source A' earned without the agent ever choosing the family: it chose a level-shift candidate, that candidate was refused by the verifier, and the Support budget reached the second entry in probe_order, which was the hampel one.  Selection is reported but a run is not counted as broken there.",
+  "reading": "the two misses do not share a bottleneck.  One never named the family at all, which is the discovery failure S1c described.  The other named it, probed it, and the Target's own Support read exactly 0.0 -- a confirmation failure, not a discovery failure.  A hypothesis card can only address the first kind."
+ },
+ "ledger": {
+  "llm": 0,
+  "llm_cap": 220,
+  "fit": 0,
+  "fit_cap": 200,
+  "wall_seconds": 0.0,
+  "wall_seconds_cap": 10800
+ },
+ "obligations": {
+  "arms_run": 0,
+  "cards_compiled": false,
+  "why_no_card": "Part 3 is conditional on both scenes re-earning; compiling a card from one source would make it a single-domain claim, which is the thing the two-source rule exists to prevent",
+  "llm_calls": 0,
+  "methods_package_unmodified": true,
+  "production_governance_unmodified": true,
+  "stage_report_not_written": true
+ }
+}

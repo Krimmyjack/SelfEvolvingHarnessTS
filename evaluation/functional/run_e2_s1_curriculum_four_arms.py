@@ -354,6 +354,76 @@ def _ops_in(text: Any) -> list[str]:
     return found
 
 
+# The frozen family map.  Family is derived from the operator names a
+# proposal actually compiles to, never from the free-text candidate id: PS-0
+# found that S1c tagged every probe with an empty operator list because the
+# ids the Fast Agent invents ("intrinsic_extreme_deviation_filter") contain no
+# operator name at all.
+PROGRAM_FAMILIES: dict[str, tuple[str, ...]] = {
+    "hampel": ("hampel_filter",),
+    "outlier_threshold": ("outlier_iqr", "outlier_mad", "winsorize"),
+    "level_shift": ("repair_level_shift",),
+    "burst": ("repair_burst_segment",),
+    "impute": ("impute_linear", "impute_fft", "impute_ema", "impute_ssm",
+               "impute_ar", "period_complete", "period_median_complete"),
+    "denoise": ("denoise_median", "denoise_savgol", "denoise_wavelet",
+                "denoise_stl", "smooth_ma", "smooth_ema"),
+    "decompose": ("stl_decompose", "fft_decompose"),
+    "normalize": ("znorm", "minmax_norm"),
+    "resample": ("resample_uniform",),
+}
+_FAMILY_OF_OP = {op: family for family, ops in PROGRAM_FAMILIES.items()
+                 for op in ops}
+
+
+def _family_of(operators: Sequence[str]) -> str:
+    if not operators:
+        return "identity"
+    families = sorted({_FAMILY_OF_OP.get(str(op), "other") for op in operators})
+    return "+".join(families)
+
+
+def _steps_operators(steps: Any) -> list[str]:
+    """Operator names out of a candidate's compiled steps, either shape."""
+    out: list[str] = []
+    for step in (steps or ()):
+        if isinstance(step, Mapping):
+            op = step.get("op")
+        elif isinstance(step, (list, tuple)) and step:
+            op = step[0]
+        else:
+            op = None
+        if op:
+            out.append(str(op))
+    return out
+
+
+def _binned_contract_leaves(features: Mapping[str, Any]) -> dict[str, Any]:
+    """Project the *agent's own* feature dict onto the observable contract.
+
+    This takes the very mapping handed to ``run_online_round`` as
+    ``fast_features`` rather than recomputing from the block, so what the
+    record stores is what the Fast path saw.  Numeric leaves are binned with
+    the contract's own binner, which is what an applicability leaf compares
+    against.
+    """
+    from SelfEvolvingHarnessTS.contracts.observables import (
+        OBSERVABLE_FEATURES, observable_numeric_bin,
+    )
+
+    out: dict[str, Any] = {}
+    for key, value in dict(features).items():
+        if key not in OBSERVABLE_FEATURES:
+            continue
+        kind = OBSERVABLE_FEATURES[key]
+        if kind == "number" and isinstance(value, (int, float)) \
+                and not isinstance(value, bool):
+            out[str(key)] = observable_numeric_bin(str(key), float(value))
+        else:
+            out[str(key)] = value
+    return dict(sorted(out.items()))
+
+
 def _pattern_view_of(cell: Mapping[str, Any]) -> dict[str, Any]:
     """Deployment-visible binned Pattern view.  No oracle, no dataset name."""
     block = np.asarray(cell["observation_block"], dtype=np.float64)
@@ -1213,14 +1283,56 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
     for skill_id in minted:
         state.setdefault("domain_stamp", {})[skill_id] = unit_id
 
+    # PS-0 Part 1: the full proposal ledger, compiled from the steps the
+    # proposal stage actually produced.  Every candidate the agent named is
+    # here -- the one it chose, the ones selection dropped, the ones the
+    # verifier refused and the ones the Support budget never reached.
+    steps_map = dict(getattr(trace, "candidate_program_steps", None) or {})
+    candidate_ids = [str(item) for item
+                     in (getattr(trace, "candidate_ids", ()) or ())]
+    chosen_id = getattr(trace, "chosen_candidate_id", None)
+    probed_by_id: dict[str, Mapping[str, Any]] = {}
+    for probe in result.actual_probed_programs:
+        probed_by_id.setdefault(str(probe.get("candidate_id")), probe)
+    proposals: list[dict[str, Any]] = []
+    for candidate_id in candidate_ids:
+        steps = steps_map.get(candidate_id)
+        operators = _steps_operators(steps)
+        probe = probed_by_id.get(candidate_id)
+        if probe is not None:
+            outcome = str(probe.get("kind"))
+        elif candidate_id not in steps_map:
+            outcome = "dropped_before_probe_no_compiled_steps"
+        elif candidate_id == "identity":
+            outcome = "identity_baseline"
+        else:
+            outcome = "not_reached_support_budget_exhausted"
+        proposals.append({
+            "candidate_id": candidate_id,
+            "operators": operators,
+            "family": _family_of(operators),
+            "steps": _plain(steps) if steps is not None else None,
+            "compiled": candidate_id in steps_map,
+            "chosen_by_select": candidate_id == chosen_id,
+            "outcome": outcome,
+            "gain": (probe or {}).get("gain"),
+            "verifier_passed": (probe or {}).get("passed"),
+        })
     probes = []
     for probe in result.actual_probed_programs:
+        candidate_id = str(probe.get("candidate_id"))
+        operators = _steps_operators(steps_map.get(candidate_id))
         probes.append({
             "candidate_id": probe.get("candidate_id"),
             "kind": probe.get("kind"),
             "gain": probe.get("gain"),
             "passed": probe.get("passed"),
-            "operators": _ops_in(probe.get("candidate_id")),
+            # kept for continuity with earlier artifacts; the id-derived tag is
+            # empty whenever the agent names a candidate without an operator
+            # word in it, which is why `operators` now comes from the steps
+            "operators": operators or _ops_in(candidate_id),
+            "operators_from_candidate_id": _ops_in(candidate_id),
+            "family": _family_of(operators),
         })
     retrieved = [str(item) for item in
                  (getattr(trace, "retrieved_skill_ids", ()) or ())]
@@ -1244,6 +1356,22 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
         "memory_resolution": getattr(trace, "memory_resolution_status", None),
         "proposal_count": result.proposal_count,
         "support_receipts": result.target_support_receipts_used,
+        # PS-0 Part 1 (1): the binned observable-contract projection of the
+        # exact feature mapping this round handed to the Fast path, so a later
+        # card compiler can take its WHEN clause off the round record.
+        "fast_features_binned": _binned_contract_leaves(features),
+        "fast_features_raw_keys": sorted(str(key) for key in features),
+        # PS-0 Part 1 (2): every raw proposal, family-tagged from its steps.
+        "proposals": proposals,
+        "proposal_families": sorted({row["family"] for row in proposals
+                                     if row["family"] != "identity"}),
+        "probe_order_before_card": [
+            str(item) for item
+            in (getattr(result, "probe_order_before_card", ()) or ())],
+        "probe_order_after_card": [
+            str(item) for item
+            in (getattr(result, "probe_order_after_card", ()) or ())],
+        "ordering_card_id": getattr(result, "ordering_card_id", None),
         "probes": probes,
         "winner_program": _plain(result.winner_program),
         "abstained": bool(result.abstained),
