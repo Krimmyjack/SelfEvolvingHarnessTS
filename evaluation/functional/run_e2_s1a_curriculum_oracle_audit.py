@@ -1,4 +1,4 @@
-"""S1a curriculum oracle + S1a-r2 legal-treatment reaggregation.
+"""S1a curriculum oracle + r2 legal reaggregation + r3 pool census.
 
 Independent runner.  Reuses the Wine-precheck enumeration (cohort 0.10 cap,
 full shared classification menu, ridge, fit_only_artifact) without modifying
@@ -7,11 +7,17 @@ enter any arm's prompt, store, or retrieval view.
 
   python evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py --run
   python evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py --legal-r2
+  python evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py --census-r3
 
 ``--legal-r2`` is 0-LLM / 0-fit: it only re-aggregates sealed ``s1_oracle``
 JSON and walks live approval / retrieval code.  It writes
 ``s1a_r2_legal_treatment_audit.json/.md`` and never overwrites r1 artifacts
 or the sealed oracles.
+
+``--census-r3`` is the one-shot remaining-pool census (0 LLM).  It
+pre-declares every remaining local binary substrate × {impulse-v2, burst},
+scores the dual-layer oracle once, and exits POOL_EXHAUSTED or
+LEGAL_CURRICULUM_CONSTRUCTIBLE.  There is no r4.
 
 Zero Fast LLM.  Slow rehearsal is off unless --slow-rehearse is passed and
 the code path cannot confirm a compiled card shape.  No A3/A5 adaptation.
@@ -24,10 +30,12 @@ import subprocess
 import sys
 import time
 from collections.abc import Mapping, Sequence
+from io import BytesIO
 from itertools import combinations
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+from zipfile import ZipFile
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 for _path in (
@@ -137,9 +145,32 @@ R2_PROTOCOL_VERSION = "s1a_r2_legal_treatment_audit_v1"
 R2_RUN_ID = "s1a_r2_legal_treatment_audit1"
 R2_JSON = E2 / "s1a_r2_legal_treatment_audit.json"
 R2_MD = E2 / "s1a_r2_legal_treatment_audit.md"
+R3_PROTOCOL_VERSION = "s1a_r3_pool_census_v1"
+R3_RUN_ID = "s1a_r3_pool_census1"
+R3_JSON = E2 / "s1a_r3_pool_census.json"
+R3_MD = E2 / "s1a_r3_pool_census.md"
+R3_FIT_CAP = 600
+R3_TRAIN_POINT_CAP = 100000
 R1_COMMIT = "837b537"
+R2_COMMIT = "e74c021"
 MIN_DISTINCT_TASKS = 2  # cls harness :168; source_skill LOO floor
 GUNPOINT_FAMILY = ("GunPoint", "GunPointAgeSpan")
+R1_TESTED_DATASETS = frozenset(IMPULSE_DATASETS)
+R1_TESTED_UNIT_IDS = frozenset(
+    ["%s__impulse_v2" % name for name in IMPULSE_DATASETS]
+    + ["%s__%s" % (BURST_DATASET, BURST_INJECTION)]
+)
+# Longest-prefix first.  Phalanx/Phalanges is an infix rule, not a prefix.
+R3_FAMILY_PREFIXES = (
+    ("GunPoint", "GunPointFamily"),
+    ("Freezer", "FreezerFamily"),
+    ("SemgHand", "SemgHandFamily"),
+    ("DodgerLoop", "DodgerLoopFamily"),
+    ("SonyAIBO", "SonyAIBOFamily"),
+    ("ToeSegmentation", "ToeSegmentationFamily"),
+    ("Ford", "FordFamily"),
+    ("ECG", "ECGFamily"),
+)
 
 EPISODE_SOURCES = (
     E2 / "t6_cls_op_shared_harness.json",
@@ -557,7 +588,8 @@ def _oracle_one_unit(*, spec: Mapping[str, Any], cell: Mapping[str, Any],
     }
 
 
-def _write_sealed_oracle(unit: Mapping[str, Any]) -> None:
+def _write_sealed_oracle(unit: Mapping[str, Any],
+                         extra: Mapping[str, Any] | None = None) -> None:
     path = ORACLE_DIR / ("%s.json" % unit["unit_id"])
     payload = {
         "isolation_banner": ORACLE_BANNER,
@@ -569,6 +601,8 @@ def _write_sealed_oracle(unit: Mapping[str, Any]) -> None:
         **{key: value for key, value in unit.items()
            if key != "cell" or True},
     }
+    if extra:
+        payload.update(dict(extra))
     _dump(path, payload)
 
 
@@ -2542,6 +2576,1020 @@ def run_legal_r2() -> int:
     return 0
 
 
+# =========================================================================== #
+# S1a-r3 -- one-shot remaining-pool census (0 LLM)
+# =========================================================================== #
+
+def _r3_name_family(dataset: str) -> str:
+    """Mechanical name-prefix family.  Citations: task book prefix list.
+
+    Phalanx/Phalanges is an infix/stem rule (Distal/Middle/ProximalPhalanx*,
+    Phalanges*).  Remaining names are their own family until pattern_view
+    byte-equality merges them.
+    """
+    name = str(dataset)
+    if "Phalanx" in name or name.startswith("Phalanges"):
+        return "PhalanxFamily"
+    for prefix, key in R3_FAMILY_PREFIXES:
+        if name.startswith(prefix):
+            return key
+    return name
+
+
+def _r3_pattern_fingerprint(pattern: Mapping[str, Any]) -> str:
+    return json.dumps(dict(pattern or {}), sort_keys=True, ensure_ascii=True)
+
+
+def _r3_union_find(keys: Sequence[str]):
+    parent: dict[str, str] = {key: key for key in keys}
+
+    def _find(key: str) -> str:
+        while parent[key] != key:
+            parent[key] = parent[parent[key]]
+            key = parent[key]
+        return key
+
+    def _union(left: str, right: str) -> None:
+        if left not in parent or right not in parent:
+            return
+        root_l, root_r = _find(left), _find(right)
+        if root_l == root_r:
+            return
+        keep, drop = ((root_l, root_r) if root_l <= root_r
+                      else (root_r, root_l))
+        parent[drop] = keep
+
+    return parent, _find, _union
+
+
+def _r3_independence_keys(
+    members: Sequence[Mapping[str, Any]],
+) -> dict[str, str]:
+    """Independent-family keys among THESE members only.
+
+    Same name-prefix family, or byte-equal pattern_view.  Identity /
+    construction-failed units must not participate -- otherwise an
+    identity BeetleFly row can glue GunPointFamily to PowerCons through
+    a shared impulse fingerprint.
+    """
+    ids = [str(row["unit_id"]) for row in members]
+    if not ids:
+        return {}
+    parent, find, union = _r3_union_find(ids)
+    by_name: dict[str, list[str]] = {}
+    by_fp: dict[str, list[str]] = {}
+    for row in members:
+        uid = str(row["unit_id"])
+        by_name.setdefault(str(row.get("name_family") or uid), []).append(uid)
+        pattern = row.get("pattern_view") or {}
+        if pattern:
+            by_fp.setdefault(_r3_pattern_fingerprint(pattern), []).append(uid)
+    for group in list(by_name.values()) + list(by_fp.values()):
+        first = group[0]
+        for other in group[1:]:
+            union(first, other)
+    root_label: dict[str, str] = {}
+    for row in members:
+        uid = str(row["unit_id"])
+        root = find(uid)
+        label = str(row.get("name_family") or uid)
+        prev = root_label.get(root)
+        if prev is None or label < prev:
+            root_label[root] = label
+    return {uid: root_label[find(uid)] for uid in ids}
+
+
+def _r3_raw_train_meta(path: Path, name: str) -> dict[str, Any]:
+    """Official TRAIN shape without the binary-only loader side effects."""
+    with ZipFile(path) as archive:
+        members = list(archive.namelist())
+        key = "%s_TRAIN.txt" % name
+        if key not in members:
+            return {"loadable": False, "zip_members": members,
+                    "excluded_reason": "no_TRAIN_member"}
+        table = np.loadtxt(BytesIO(archive.read(key)), dtype=np.float64)
+    if table.ndim != 2:
+        return {"loadable": False, "excluded_reason": "not_2d_table"}
+    rows = int(table.shape[0])
+    length = int(table.shape[1] - 1)
+    finite = bool(np.isfinite(table).all())
+    classes = int(len({float(value) for value in np.unique(table[:, 0])}))
+    return {
+        "loadable": True,
+        "train_rows": rows,
+        "series_length": length,
+        "train_points": int(rows * length),
+        "finite": finite,
+        "class_count": classes,
+        "zip_members": members,
+    }
+
+
+def _r3_enumerate_substrates() -> dict[str, Any]:
+    """Freeze the remaining-substrate list before any oracle is scored."""
+    data_dir = PROJECT_ROOT / DATA_DIR
+    paths = sorted(data_dir.glob("*.zip"))
+    included: list[dict[str, Any]] = []
+    excluded: list[dict[str, Any]] = []
+    for path in paths:
+        name = path.stem
+        row: dict[str, Any] = {
+            "dataset": name,
+            "zip_bytes": int(path.stat().st_size),
+            "archive": "%s/%s.zip" % (DATA_DIR, name),
+        }
+        reasons: list[str] = []
+        try:
+            meta = _r3_raw_train_meta(path, name)
+        except Exception as exc:  # noqa: BLE001
+            meta = {"loadable": False,
+                    "load_error": "%s: %s" % (type(exc).__name__, exc),
+                    "excluded_reason": "not_loadable"}
+        row.update({key: value for key, value in meta.items()
+                    if key != "excluded_reason"})
+        if not meta.get("loadable"):
+            reasons.append(str(meta.get("excluded_reason") or "not_loadable"))
+        else:
+            if not meta.get("finite", True):
+                reasons.append("not_finite")
+            if int(meta.get("class_count") or 0) != 2:
+                reasons.append("not_binary")
+            if int(meta.get("train_points") or 0) > R3_TRAIN_POINT_CAP:
+                reasons.append("train_points_over_%d" % R3_TRAIN_POINT_CAP)
+            if int(meta.get("series_length") or 0) < 7:
+                reasons.append("series_too_short_for_ucr_loader")
+        if name in R1_TESTED_DATASETS:
+            reasons.append("in_r1_tested_units")
+        row["excluded_because"] = reasons
+        row["eligible"] = not reasons
+        row["name_family"] = _r3_name_family(name)
+        (included if row["eligible"] else excluded).append(row)
+    units: list[dict[str, Any]] = []
+    for substrate in included:
+        for injection, suffix in (("impulse_v2", "impulse_v2"),
+                                  (BURST_INJECTION, BURST_INJECTION)):
+            unit_id = "%s__%s" % (substrate["dataset"], suffix)
+            units.append({
+                "unit_id": unit_id,
+                "dataset": substrate["dataset"],
+                "injection": injection,
+                "condition": CONDITION,
+                "consumer": CONSUMER_ID,
+                "name_family": substrate["name_family"],
+                "train_rows": substrate.get("train_rows"),
+                "series_length": substrate.get("series_length"),
+                "train_points": substrate.get("train_points"),
+            })
+    colliding = [row["unit_id"] for row in units
+                 if row["unit_id"] in R1_TESTED_UNIT_IDS]
+    if colliding:
+        raise cls.Stop("INSTRUMENT_UNREADABLE",
+                       "r3 unit ids collide with r1: %s" % colliding)
+    return {
+        "rule": (
+            "every zip in data/ucr_task_context; keep iff binary AND "
+            "loadable AND official TRAIN rows*length <= %d AND dataset "
+            "not among the 8 substrates that appear in the r1 9 units.  "
+            "Each kept substrate x {impulse_v2, burst_cls2}.  Roster is "
+            "frozen before the first oracle score."
+            % R3_TRAIN_POINT_CAP
+        ),
+        "zip_count": len(paths),
+        "included_substrates": included,
+        "excluded_substrates": excluded,
+        "n_included": len(included),
+        "n_excluded": len(excluded),
+        "declared_units": units,
+        "n_declared_units": len(units),
+        "r1_excluded_datasets": sorted(R1_TESTED_DATASETS),
+        "r1_excluded_unit_ids": sorted(R1_TESTED_UNIT_IDS),
+        "pool_frozen": True,
+    }
+
+
+def _r3_v2_construction_reason(length: int) -> str | None:
+    """Why the frozen v2 template cannot be applied.  No param change."""
+    segment = int(round(1.0 / 150.0 * int(length)))
+    if segment <= 0:
+        return "v2_segment_length_zero_at_L=%d" % length
+    try:
+        positions = tuple(int(p) for p in
+                          cls._legacy_helpers()[1]["positions"](length))
+    except Exception as exc:  # noqa: BLE001
+        return "v2_positions_rejected:%s" % exc
+    for position in positions:
+        if int(position) + segment > int(length):
+            return "v2_segment_overflow_at_pos_%d_L=%d" % (position, length)
+    return None
+
+
+def _r3_burst_construction_reason(length: int) -> str | None:
+    from run_e2_t6_cls2_value_corruption_gate import (
+        SEG_FRAC_MAX,
+        SEG_FRAC_MIN,
+    )
+    length_lo = int(np.ceil(SEG_FRAC_MIN * length))
+    length_hi = int(np.floor(SEG_FRAC_MAX * length))
+    if length_lo < 1 or length_hi < length_lo or length_hi >= length:
+        return "burst_cannot_host_15_20pct_at_L=%d" % length
+    return None
+
+
+def _r3_build_cell(spec: Mapping[str, Any]) -> tuple[dict[str, Any] | None, str]:
+    dataset = str(spec["dataset"])
+    injection = str(spec["injection"])
+    length = spec.get("series_length")
+    if injection == "impulse_v2":
+        if length is not None:
+            reason = _r3_v2_construction_reason(int(length))
+            if reason:
+                return None, reason
+        try:
+            cell = cls._build_cell(
+                dataset, CONDITION, data_dir=DATA_DIR,
+                injection_template=cls.INJECTION_TEMPLATE_V2)
+        except Exception as exc:  # noqa: BLE001
+            return None, "impulse_v2_build_failed:%s: %s" % (
+                type(exc).__name__, exc)
+        return cell, ""
+    if length is not None:
+        reason = _r3_burst_construction_reason(int(length))
+        if reason:
+            return None, reason
+    try:
+        cell = _build_burst_cell(dataset)
+    except Exception as exc:  # noqa: BLE001
+        return None, "burst_build_failed:%s: %s" % (type(exc).__name__, exc)
+    return cell, ""
+
+
+def _r3_operator_table(unit: Mapping[str, Any]) -> list[dict[str, Any]]:
+    oracle_set = [str(item) for item in (unit.get("oracle_set") or [])]
+    judged = [item for item in oracle_set if item != "identity"]
+    if not judged:
+        judged = ["identity"]
+    rows: list[dict[str, Any]] = []
+    for program in judged:
+        raw = _program_row(unit, program)
+        facts = _heldin_facts(raw)
+        label = _learnability_label(program, facts, oracle_set)
+        rows.append({
+            "program": program,
+            "learnability": label,
+            **facts,
+            "oracle_json": (
+                "artifacts/functional/e2/s1_oracle/%s.json" % unit["unit_id"]
+            ),
+        })
+    return rows
+
+
+def _r3_summarize_unit(unit: Mapping[str, Any], *,
+                       name_family: str,
+                       source: str,
+                       construction_error: str = "") -> dict[str, Any]:
+    operators = _r3_operator_table(unit) if unit.get("programs") else []
+    primary = operators[0] if operators else {}
+    return {
+        "unit_id": unit.get("unit_id"),
+        "dataset": unit.get("dataset"),
+        "injection": unit.get("injection"),
+        "source": source,
+        "name_family": name_family,
+        "family_key": name_family,
+        "family_merged_from_pattern_view": False,
+        "construction_error": construction_error or None,
+        "scored": bool(unit.get("programs")),
+        "n_heldin": unit.get("n_heldin"),
+        "n_heldout": unit.get("n_heldout"),
+        "oracle_set": list(unit.get("oracle_set") or []),
+        "oracle_set_empty": bool(unit.get("oracle_set_empty")),
+        "positive_unit": bool(unit.get("positive_unit")),
+        "menu_oracle_program": unit.get("menu_oracle_program"),
+        "menu_oracle_heldout_utility": unit.get("menu_oracle_heldout_utility"),
+        "identity_residual_to_upper_bound": unit.get(
+            "identity_residual_to_upper_bound"),
+        "menu_best_residual_to_upper_bound": unit.get(
+            "menu_best_residual_to_upper_bound"),
+        "pattern_view": dict(unit.get("pattern_view") or {}),
+        "learnability": primary.get("learnability") or "N/A",
+        "oracle_program": primary.get("program"),
+        "heldin_headroom": primary.get("heldin_headroom"),
+        "heldin_relation": primary.get("relation"),
+        "heldout_utility": primary.get("heldout_utility"),
+        "operators": operators,
+        "approval_threshold": CLASSIFICATION_MATERIAL_THRESHOLD,
+        "learnability_citations": {
+            "classify_relation": (
+                "methods/ttha/experience_memory.py:411-451 "
+                "(agg >= +t and min per-view >= -t -> POSITIVE; "
+                "t = CLASSIFICATION_MATERIAL_THRESHOLD = 0.005)"
+            ),
+            "support_draft": "methods/ttha/method.py:742-757",
+            "delayed_approve": "methods/ttha/method.py:1466-1492",
+            "same_as_r2": True,
+        },
+    }
+
+
+def _r3_program_members(rows: Sequence[Mapping[str, Any]],
+                        program: str) -> list[dict[str, Any]]:
+    members: list[dict[str, Any]] = []
+    for row in rows:
+        op = next((item for item in (row.get("operators") or [])
+                   if item.get("program") == program), None)
+        if op is None:
+            continue
+        members.append({
+            "unit_id": row["unit_id"],
+            "dataset": row["dataset"],
+            "injection": row.get("injection"),
+            "source": row.get("source"),
+            "name_family": row["name_family"],
+            "family_key": row["family_key"],
+            "learnability": op.get("learnability") or "N/A",
+            "heldin_headroom": op.get("heldin_headroom"),
+            "heldin_relation": op.get("relation"),
+            "heldout_utility": op.get("heldout_utility"),
+            "pattern_view": dict(row.get("pattern_view") or {}),
+        })
+    return members
+
+
+def _r3_clusters(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    programs: set[str] = set()
+    for row in rows:
+        programs.update(p for p in (row.get("oracle_set") or [])
+                        if p != "identity")
+    clusters: list[dict[str, Any]] = []
+    for program in sorted(programs):
+        members = _r3_program_members(rows, program)
+        learnable = [m for m in members if m["learnability"] == "LEARNABLE"]
+        heldout_only = [m for m in members
+                        if m["learnability"] == "HELDOUT_ONLY"]
+        indep_map = _r3_independence_keys(learnable)
+        for member in learnable:
+            member["independence_key"] = indep_map.get(
+                member["unit_id"], member["name_family"])
+        independent = sorted(set(indep_map.values()))
+        name_families = sorted({m["name_family"] for m in learnable})
+        scope_all = _intersect_maps([m["pattern_view"] for m in learnable])
+        clusters.append({
+            "program": program,
+            "n_oracle_members": len(members),
+            "n_learnable": len(learnable),
+            "n_heldout_only": len(heldout_only),
+            "n_independent_learnable_families": len(independent),
+            "independent_families": independent,
+            "n_learnable_name_families": len(name_families),
+            "learnable_name_families": name_families,
+            "learnable_unit_ids": [m["unit_id"] for m in learnable],
+            "heldout_only_unit_ids": [m["unit_id"] for m in heldout_only],
+            "scope_of_all_learnable": scope_all,
+            "scope_of_all_learnable_nonempty": bool(scope_all),
+            "members": members,
+        })
+    clusters.sort(key=lambda row: (-int(row["n_learnable"]),
+                                   -int(row["n_independent_learnable_families"]),
+                                   row["program"]))
+    return clusters
+
+
+def _r3_search_constructible(
+    rows: Sequence[Mapping[str, Any]],
+    clusters: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """3 independent-family LEARNABLE + 1 extra LEARNABLE matching field."""
+    by_id = {row["unit_id"]: row for row in rows}
+    identities = [
+        row for row in rows
+        if row.get("scored")
+        and (row.get("learnability") == "N/A"
+             or row.get("oracle_program") in (None, "identity")
+             or not row.get("positive_unit"))
+    ]
+    bursts = [row for row in rows
+              if row.get("injection") == BURST_INJECTION and row.get("scored")]
+    hits: list[dict[str, Any]] = []
+    closest: list[dict[str, Any]] = []
+
+    for cluster in clusters:
+        program = str(cluster["program"])
+        learnable = [m for m in cluster["members"]
+                     if m["learnability"] == "LEARNABLE"]
+        indep_map = _r3_independence_keys(learnable)
+        by_family: dict[str, list[dict[str, Any]]] = {}
+        for member in learnable:
+            key = indep_map.get(member["unit_id"], member["name_family"])
+            member["independence_key"] = key
+            by_family.setdefault(key, []).append(member)
+        families = sorted(by_family)
+        trial = {
+            "program": program,
+            "n_learnable": len(learnable),
+            "n_independent_learnable_families": len(families),
+            "independent_families": families,
+            "n_identities_available": len(identities),
+            "blocked_because": [],
+            "closest_note": "",
+        }
+        if len(learnable) < 4:
+            trial["blocked_because"].append(
+                "fewer_than_4_learnable_units_need_3_plus_exam_field")
+        if len(families) < 3:
+            trial["blocked_because"].append(
+                "fewer_than_3_independent_learnable_families")
+            trial["closest_note"] = (
+                "independent LEARNABLE families=%d (need 3); "
+                "LEARNABLE units=%d (need >=4).  Short by %d famil%s "
+                "and/or %d learnable unit(s)."
+                % (len(families), len(learnable),
+                   max(0, 3 - len(families)),
+                   "y" if (3 - len(families)) == 1 else "ies",
+                   max(0, 4 - len(learnable)))
+            )
+
+        trio_hits: list[dict[str, Any]] = []
+        if len(families) >= 3:
+            family_picks = []
+            for fam in families:
+                family_picks.append(by_family[fam])
+            for fam_triple in combinations(families, 3):
+                lists = [by_family[fam] for fam in fam_triple]
+                for a in lists[0]:
+                    for b in lists[1]:
+                        for c in lists[2]:
+                            trio = (a, b, c)
+                            scope = _intersect_maps(
+                                [m["pattern_view"] for m in trio])
+                            if not scope:
+                                continue
+                            used = {m["unit_id"] for m in trio}
+                            fields = [
+                                m for m in learnable
+                                if m["unit_id"] not in used
+                                and _pattern_matches(m["pattern_view"], scope)
+                            ]
+                            if not fields:
+                                continue
+                            trio_hits.append({
+                                "sources": [m["unit_id"] for m in trio],
+                                "source_families": list(fam_triple),
+                                "scope": scope,
+                                "field_ids": [m["unit_id"] for m in fields],
+                            })
+        trial["n_valid_3plus1"] = len(trio_hits)
+        if families and len(families) >= 3 and not trio_hits:
+            trial["blocked_because"].append(
+                "no_3_independent_families_with_nonempty_scope_and_exam_field"
+            )
+            if not trial["closest_note"]:
+                trial["closest_note"] = (
+                    "have %d independent LEARNABLE families but no trio "
+                    "has a non-empty Scope-v1 pattern intersection plus a "
+                    "fourth LEARNABLE matching field."
+                    % len(families)
+                )
+        if trio_hits and len(identities) < 2:
+            trial["blocked_because"].append(
+                "fewer_than_2_identity_units_for_6_to_8_draft")
+        if trio_hits:
+            chosen = trio_hits[0]
+            drafts = _r3_draft_courses(
+                chosen, identities, bursts, by_id, program)
+            hits.append({
+                "status": "pending_arbitration",
+                "program": program,
+                "sources": chosen["sources"],
+                "source_families": chosen["source_families"],
+                "field_ids": chosen["field_ids"],
+                "front_scope": chosen["scope"],
+                "drafts": drafts,
+                "n_alternative_trios": len(trio_hits),
+                "note": (
+                    "mechanical 3+1 hit under Scope v1 / r3 census.  "
+                    "Not an approved curriculum.  待仲裁批准."
+                ),
+            })
+            trial["blocked_because"] = []
+            trial["closest_note"] = "constructible"
+        closest.append(trial)
+
+    closest.sort(key=lambda row: (
+        0 if row.get("n_valid_3plus1") else 1,
+        -int(row["n_independent_learnable_families"]),
+        -int(row["n_learnable"]),
+        row["program"],
+    ))
+    return {
+        "search_rule": (
+            "combined r1 9 units + r3 declared units.  A Program cluster "
+            "is constructible iff some 3 LEARNABLE oracle-set members from "
+            "3 distinct families have a non-empty Scope-v1 pattern "
+            "intersection and a fourth LEARNABLE unit matches that "
+            "intersection.  Family keys = name prefix plus pattern_view "
+            "byte-equality merge.  Learnability is the r2 predicate "
+            "(classify_relation == POSITIVE on the sealed held-in pool)."
+        ),
+        "n_hits": len(hits),
+        "hits": hits,
+        "closest_per_program": closest,
+    }
+
+
+def _r3_draft_courses(
+    hit: Mapping[str, Any],
+    identities: Sequence[Mapping[str, Any]],
+    bursts: Sequence[Mapping[str, Any]],
+    by_id: Mapping[str, Mapping[str, Any]],
+    program: str,
+) -> dict[str, Any]:
+    sources = list(hit["sources"])
+    field = str(hit["field_ids"][0])
+    used = set(sources) | {field}
+    id_ids = [row["unit_id"] for row in identities
+              if row["unit_id"] not in used][:4]
+    burst_id = next((row["unit_id"] for row in bursts
+                     if row["unit_id"] not in used), None)
+    # 3 authorizing positives first, then identities, exam field, optional burst
+    forward = list(sources)
+    if len(id_ids) >= 2:
+        forward.append(id_ids[0])
+        forward.append(field)
+        forward.append(id_ids[1])
+    else:
+        forward.append(field)
+        forward.extend(id_ids)
+    if burst_id and len(forward) < 8:
+        forward.append(burst_id)
+    extra = [uid for uid in id_ids[2:] if uid not in forward]
+    while extra and len(forward) < 8:
+        forward.append(extra.pop(0))
+    if len(forward) > 8:
+        forward = forward[:8]
+    reverse = list(reversed(forward))
+    return {
+        "forward_order": forward,
+        "reverse_order": reverse,
+        "n_units": len(forward),
+        "authorizing_positives": sources,
+        "exam_field": field,
+        "identity_unit_ids": [uid for uid in forward if uid in id_ids],
+        "burst_unit_id": burst_id if burst_id in forward else None,
+        "program": program,
+        "status": "pending_arbitration",
+        "label": "待仲裁批准",
+        "assembly_rule": (
+            "3 unguided LEARNABLE positives first; >=1 LEARNABLE exam "
+            "field after; >=2 identity fillers; optional burst stretch.  "
+            "Reverse is the exact reverse.  6-8 units."
+        ),
+    }
+
+
+def _r3_markdown(payload: Mapping[str, Any]) -> str:
+    census = payload.get("pool_census") or {}
+    units = payload.get("units") or []
+    clusters = payload.get("clusters") or []
+    search = payload.get("constructible_search") or {}
+    ledger = payload.get("ledger") or {}
+    lines = [
+        "# S1a-r3 remaining-pool census",
+        "",
+        "protocol: `%s`  parent r1: `%s`  parent r2: `%s`  "
+        "evidence grade: **development**"
+        % (payload.get("protocol_version"), R1_COMMIT, R2_COMMIT),
+        "",
+        "0 LLM.  One-shot take-what-comes.  No r4.  Sealed oracles for "
+        "new units only; r1/r2 artifacts not overwritten.",
+        "",
+        "## Isolation",
+        "",
+        ORACLE_BANNER,
+        "",
+        "## 1. Pool enumeration (frozen before scoring)",
+        "",
+        census.get("rule") or "",
+        "",
+        "zip count=%s; included substrates=%s; excluded=%s; "
+        "declared units=%s"
+        % (census.get("zip_count"), census.get("n_included"),
+           census.get("n_excluded"), census.get("n_declared_units")),
+        "",
+        "### Included substrates",
+        "",
+        "| dataset | family | TRAIN rows | L | points |",
+        "|---|---|---|---|---|",
+    ]
+    for row in census.get("included_substrates") or []:
+        lines.append(
+            "| %s | %s | %s | %s | %s |"
+            % (row["dataset"], row.get("name_family"),
+               row.get("train_rows"), row.get("series_length"),
+               row.get("train_points"))
+        )
+    lines += [
+        "",
+        "### Excluded substrates",
+        "",
+        "| dataset | reason | rows | L | points |",
+        "|---|---|---|---|---|",
+    ]
+    for row in census.get("excluded_substrates") or []:
+        lines.append(
+            "| %s | %s | %s | %s | %s |"
+            % (row["dataset"], ",".join(row.get("excluded_because") or []),
+               row.get("train_rows"), row.get("series_length"),
+               row.get("train_points"))
+        )
+    lines += [
+        "",
+        "## 2. Unit oracle + learnability + family",
+        "",
+        "Learnability = r2 predicate on the sealed held-in pool "
+        "(`classify_relation == POSITIVE`; "
+        "experience_memory.py:411-451; method.py:742-757 / 1466-1492).  "
+        "Family = name prefix + pattern_view byte-equality merge.",
+        "",
+        "| unit | src | family | oracle set | learnability | held-in | "
+        "held-out | construction |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for row in units:
+        lines.append(
+            "| %s | %s | %s | %s | **%s** | %s | %s | %s |"
+            % (row.get("unit_id"), row.get("source"),
+               row.get("name_family"),
+               ",".join(row.get("oracle_set") or []) or "—",
+               row.get("learnability"),
+               row.get("heldin_headroom"),
+               row.get("heldout_utility"),
+               row.get("construction_error") or "")
+        )
+    lines += [
+        "",
+        "## 3. Program clusters (oracle operator + Scope v1)",
+        "",
+    ]
+    for cluster in clusters:
+        lines += [
+            "### `%s`" % cluster["program"],
+            "",
+            "- LEARNABLE **%s** / oracle-members %s; HELDOUT_ONLY %s; "
+            "independent families **%s** (%s); name-prefix families %s (%s)"
+            % (cluster["n_learnable"], cluster["n_oracle_members"],
+               cluster["n_heldout_only"],
+               cluster["n_independent_learnable_families"],
+               ", ".join(cluster.get("independent_families") or []) or "—",
+               cluster.get("n_learnable_name_families"),
+               ", ".join(cluster.get("learnable_name_families") or []) or "—"),
+            "- all-learnable Scope-v1 intersection nonempty: **%s**"
+            % cluster.get("scope_of_all_learnable_nonempty"),
+            "- learnable: %s"
+            % (", ".join(cluster.get("learnable_unit_ids") or []) or "—"),
+            "- held-out only: %s"
+            % (", ".join(cluster.get("heldout_only_unit_ids") or []) or "—"),
+            "",
+        ]
+    lines += [
+        "## 4. Verdict",
+        "",
+        "**%s**" % payload.get("verdict"),
+        "",
+        payload.get("verdict_reason") or "",
+        "",
+        "### Closest miss per program",
+        "",
+        "| program | LEARNABLE | families | 3+1 hits | blocked | note |",
+        "|---|---|---|---|---|---|",
+    ]
+    for trial in search.get("closest_per_program") or []:
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s |"
+            % (trial.get("program"), trial.get("n_learnable"),
+               trial.get("n_independent_learnable_families"),
+               trial.get("n_valid_3plus1"),
+               ";".join(trial.get("blocked_because") or []) or "—",
+               trial.get("closest_note") or "")
+        )
+    lines.append("")
+    hits = search.get("hits") or []
+    if hits:
+        lines += ["", "### Candidate drafts (待仲裁批准)", ""]
+        for hit in hits:
+            drafts = hit.get("drafts") or {}
+            lines += [
+                "- program `%s` sources %s field %s"
+                % (hit.get("program"), hit.get("sources"),
+                   (hit.get("field_ids") or [None])[0]),
+                "- forward: %s" % drafts.get("forward_order"),
+                "- reverse: %s" % drafts.get("reverse_order"),
+                "",
+            ]
+    lines += [
+        "## Cost",
+        "",
+        "- Fast LLM: %s" % ledger.get("fast_llm"),
+        "- Slow LLM: %s" % ledger.get("slow_llm"),
+        "- Consumer fits: %s / %s (this pass %s)"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap"),
+           ledger.get("consumer_fits_this_pass")),
+        "- wall clock: %s s / %s s"
+        % (ledger.get("wall_seconds"), ledger.get("wall_cap")),
+        "- downloads: 0",
+        "- units scored / declared: %s / %s"
+        % (ledger.get("units_scored"), ledger.get("units_declared")),
+        "",
+        "## Obligations",
+        "",
+    ]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    extra = payload.get("outside_book") or []
+    if extra:
+        lines += ["", "## Outside the book", ""]
+        for item in extra:
+            lines.append("- %s" % item)
+    return "\n".join(lines) + "\n"
+
+
+def _r3_finalize(*, census: Mapping[str, Any],
+                 rows: Sequence[dict[str, Any]],
+                 started: float, fit_budget: cls.FitBudget,
+                 stop_verdict: str | None,
+                 stop_detail: str,
+                 invariance: Mapping[str, Any],
+                 extra_notes: Sequence[str]) -> int:
+    clusters = _r3_clusters(rows)
+    search = _r3_search_constructible(rows, clusters)
+    wall = round(time.time() - started, 2)
+    if stop_verdict:
+        verdict = stop_verdict
+        reason = stop_detail
+    elif search["n_hits"]:
+        verdict = "LEGAL_CURRICULUM_CONSTRUCTIBLE"
+        programs = sorted({hit["program"] for hit in search["hits"]})
+        reason = (
+            "at least one Program cluster has >=3 independent-family "
+            "LEARNABLE positives plus a later LEARNABLE matching field "
+            "under Scope v1.  Programs: %s.  Drafts are 待仲裁批准."
+            % programs
+        )
+    else:
+        verdict = "POOL_EXHAUSTED_FOR_TRY_CHANNEL"
+        closest = (search.get("closest_per_program") or [{}])[0]
+        reason = (
+            "the pre-declared local pool is exhausted.  No Program "
+            "cluster has 3 independent-family LEARNABLE positives plus "
+            "a fourth LEARNABLE matching field.  Closest: program=%s "
+            "LEARNABLE=%s families=%s.  %s"
+            % (closest.get("program"), closest.get("n_learnable"),
+               closest.get("n_independent_learnable_families"),
+               closest.get("closest_note") or "")
+        )
+    scored = sum(1 for row in rows if row.get("scored")
+                 and row.get("source") != "r1_sealed")
+    r1_reused = sum(1 for row in rows if row.get("source") == "r1_sealed")
+    failed = [row["unit_id"] for row in rows if row.get("construction_error")]
+    prior_fits = 0
+    prior_wall = 0.0
+    if R3_JSON.is_file():
+        try:
+            prior = json.loads(R3_JSON.read_text(encoding="utf-8"))
+            prior_fits = int((prior.get("ledger") or {}).get("consumer_fits") or 0)
+            prior_wall = float((prior.get("ledger") or {}).get("wall_seconds") or 0)
+        except Exception:  # noqa: BLE001
+            prior_fits = 0
+            prior_wall = 0.0
+    fits_total = fit_budget.used if fit_budget.used else prior_fits
+    wall_total = wall if fit_budget.used else round(prior_wall + wall, 2)
+    payload = {
+        "protocol_version": R3_PROTOCOL_VERSION,
+        "run_id": R3_RUN_ID,
+        "curriculum_name": CURRICULUM_NAME,
+        "evidence_grade": EVIDENCE_GRADE,
+        "isolation_banner": ORACLE_BANNER,
+        "git_head": _git("rev-parse", "HEAD"),
+        "python": sys.executable,
+        "parent_r1": {"commit": R1_COMMIT},
+        "parent_r2": {"commit": R2_COMMIT,
+                      "verdict": "HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH"},
+        "v2_invariance_at_150": invariance,
+        "pool_census": census,
+        "units": rows,
+        "clusters": [
+            {key: value for key, value in cluster.items()
+             if key != "members"} | {
+                "members": [
+                    {k: v for k, v in member.items() if k != "pattern_view"}
+                    | {"pattern_view": member.get("pattern_view")}
+                    for member in cluster.get("members") or []
+                ]
+            }
+            for cluster in clusters
+        ],
+        "constructible_search": search,
+        "verdict": verdict,
+        "verdict_reason": reason,
+        "no_r4": True,
+        "ledger": {
+            "fast_llm": 0,
+            "slow_llm": 0,
+            "consumer_fits": fits_total,
+            "consumer_fits_this_pass": fit_budget.used,
+            "consumer_fit_cap": R3_FIT_CAP,
+            "wall_seconds": wall_total,
+            "wall_seconds_this_pass": wall,
+            "wall_cap": WALL_SECONDS_CAP,
+            "downloads": 0,
+            "units_declared": census.get("n_declared_units"),
+            "units_scored_r3": scored,
+            "units_scored": scored,
+            "r1_units_reused": r1_reused,
+            "units_construction_failed": len(failed),
+            "from_oracles": bool(fit_budget.used == 0 and prior_fits),
+        },
+        "obligations": {
+            "methods_package_unmodified": True,
+            "runtime_contracts_operators_unmodified": True,
+            "no_fast_llm": True,
+            "no_slow_llm": True,
+            "no_a3_a5_adaptation_arm": True,
+            "no_injection_scan": True,
+            "no_pool_edit_after_declaration": True,
+            "no_r4": True,
+            "r1_artifacts_not_overwritten": True,
+            "r2_artifacts_not_overwritten": True,
+            "r1_sealed_oracles_not_rewritten": True,
+            "oracle_isolated": True,
+            "downloads": 0,
+            "ucr_conf_downloaded_not_opened": True,
+            "fit_budget_held": (
+                fits_total <= R3_FIT_CAP
+                and verdict != "COMPUTE_BUDGET_EXCEEDED"
+            ),
+            "wall_clock_held": wall <= WALL_SECONDS_CAP,
+            "full_repo_pytest_not_run": True,
+            "learnability_reuses_r2_predicate": True,
+        },
+        "outside_book": list(extra_notes) + [
+            "SonyAIBO L=65/70 makes v2 segment=round(L/150)=0; those "
+            "impulse units are construction failures, not silent drops.",
+            "Independence keys are union-find over LEARNABLE members "
+            "only (name prefix OR byte-equal pattern_view).  A first "
+            "draft that unioned every name-family sharing any unit's "
+            "pattern_view collapsed GunPoint/PowerCons/ECG into "
+            "BeetleFly via identity rows; that merge was rejected "
+            "before the verdict was filed.  Sealed oracle numbers "
+            "were not rescored.",
+            "ECG200 (r1) and ECGFiveDays share name prefix ECG → "
+            "ECGFamily; TwoLeadECG does not.",
+            "Phalanx OutlineCorrect trio is one family; Freezer* is one "
+            "family; GunPoint MaleVersusFemale/OldVersusYoung join the "
+            "existing GunPointFamily and cannot add independence.",
+            "classification online_loop still does not write "
+            "task_episode_id; Fast-guard stays off.  Unchanged from r1/r2.",
+        ],
+    }
+    _dump(R3_JSON, payload)
+    R3_MD.write_text(_r3_markdown(payload), encoding="utf-8")
+    print("VERDICT %s  scored=%d/%d  fits=%d  wall=%.1fs"
+          % (verdict, scored, census.get("n_declared_units") or 0,
+             fit_budget.used, wall), flush=True)
+    print("wrote %s" % R3_JSON, flush=True)
+    return 0 if verdict != "COMPUTE_BUDGET_EXCEEDED" else 1
+
+
+def run_census_r3(*, from_oracles: bool = False) -> int:
+    started = time.time()
+    print("S1a-r3 pool census  protocol=%s" % R3_PROTOCOL_VERSION, flush=True)
+    census = _r3_enumerate_substrates()
+    declared = list(census["declared_units"])
+    print("POOL frozen n_substrates=%d n_units=%d"
+          % (census["n_included"], census["n_declared_units"]), flush=True)
+    print("INCLUDED %s"
+          % [row["dataset"] for row in census["included_substrates"]],
+          flush=True)
+    print("UNITS %s" % [row["unit_id"] for row in declared], flush=True)
+
+    invariance = cls._v2_invariance_at_150()
+    if not invariance["passed"]:
+        raise cls.Stop("INSTRUMENT_UNREADABLE",
+                       "v2 invariance at L=150 failed: %s"
+                       % invariance["checks"])
+
+    r1_units = _load_sealed_units()
+    if len(r1_units) != 9:
+        raise cls.Stop("INSTRUMENT_UNREADABLE",
+                       "r1 sealed pool must remain 9 units")
+    rows: list[dict[str, Any]] = []
+    for unit in r1_units:
+        rows.append(_r3_summarize_unit(
+            unit, name_family=_r3_name_family(str(unit.get("dataset") or "")),
+            source="r1_sealed"))
+
+    fit_budget = cls.FitBudget(R3_FIT_CAP)
+    extra_notes: list[str] = []
+    for spec in declared:
+        elapsed = time.time() - started
+        if elapsed > WALL_SECONDS_CAP:
+            extra_notes.append(
+                "wall cap hit before %s; remaining units not scored"
+                % spec["unit_id"])
+            return _r3_finalize(
+                census=census, rows=rows, started=started,
+                fit_budget=fit_budget,
+                stop_verdict="COMPUTE_BUDGET_EXCEEDED",
+                stop_detail=(
+                    "wall clock cap %ss hit before %s; reporting completed "
+                    "units only.  Pool roster was not edited."
+                    % (WALL_SECONDS_CAP, spec["unit_id"])
+                ),
+                invariance=invariance, extra_notes=extra_notes)
+        path = ORACLE_DIR / ("%s.json" % spec["unit_id"])
+        if from_oracles or path.is_file():
+            if path.is_file():
+                sealed = json.loads(path.read_text(encoding="utf-8"))
+                rows.append(_r3_summarize_unit(
+                    sealed, name_family=spec["name_family"],
+                    source="r3_sealed_reused"))
+                print("REUSE %s" % spec["unit_id"], flush=True)
+                continue
+        print("ORACLE %s ..." % spec["unit_id"], flush=True)
+        cell, error = _r3_build_cell(spec)
+        if cell is None:
+            rows.append({
+                "unit_id": spec["unit_id"],
+                "dataset": spec["dataset"],
+                "injection": spec["injection"],
+                "source": "r3_construction_failed",
+                "name_family": spec["name_family"],
+                "family_key": spec["name_family"],
+                "construction_error": error,
+                "scored": False,
+                "oracle_set": [],
+                "positive_unit": False,
+                "pattern_view": {},
+                "learnability": "N/A",
+                "oracle_program": None,
+                "heldin_headroom": None,
+                "heldin_relation": None,
+                "heldout_utility": None,
+                "operators": [],
+            })
+            print("  CONSTRUCTION_FAIL %s" % error, flush=True)
+            continue
+        try:
+            clean_fit, _labels = _load_clean_fit(spec["dataset"])
+            if clean_fit.shape != np.asarray(cell["fit_values"]).shape:
+                raise cls.Stop(
+                    "INSTRUMENT_UNREADABLE",
+                    "clean fit shape != injected fit for %s" % spec["unit_id"])
+            unit = _oracle_one_unit(
+                spec=spec, cell=cell, clean_fit=clean_fit,
+                fit_budget=fit_budget)
+            unit["v2_invariance_at_150"] = invariance
+            _write_sealed_oracle(unit, extra={"census_round": "s1a-r3"})
+            rows.append(_r3_summarize_unit(
+                unit, name_family=spec["name_family"], source="r3_scored"))
+            print("  legal=%s oracle=%s learnability pending-aggregate"
+                  % (unit["legal_set"], unit["oracle_set"]), flush=True)
+        except cls.Stop as exc:
+            if "BUDGET" in str(exc.verdict):
+                extra_notes.append(
+                    "fit/wall budget stop at %s: %s" % (spec["unit_id"], exc))
+                return _r3_finalize(
+                    census=census, rows=rows, started=started,
+                    fit_budget=fit_budget,
+                    stop_verdict="COMPUTE_BUDGET_EXCEEDED",
+                    stop_detail=(
+                        "budget stop at %s (%s); reporting completed "
+                        "units only.  Pool roster was not edited."
+                        % (spec["unit_id"], exc.verdict)
+                    ),
+                    invariance=invariance, extra_notes=extra_notes)
+            rows.append({
+                "unit_id": spec["unit_id"],
+                "dataset": spec["dataset"],
+                "injection": spec["injection"],
+                "source": "r3_stop",
+                "name_family": spec["name_family"],
+                "family_key": spec["name_family"],
+                "construction_error": "%s: %s" % (exc.verdict, exc),
+                "scored": False,
+                "oracle_set": [],
+                "positive_unit": False,
+                "pattern_view": {},
+                "learnability": "N/A",
+                "operators": [],
+            })
+            print("  STOP %s: %s" % (exc.verdict, exc), flush=True)
+    return _r3_finalize(
+        census=census, rows=rows, started=started, fit_budget=fit_budget,
+        stop_verdict=None, stop_detail="",
+        invariance=invariance, extra_notes=extra_notes)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run", action="store_true")
@@ -2550,12 +3598,20 @@ def main() -> int:
     parser.add_argument("--legal-r2", action="store_true",
                         help="r2 legal-treatment reaggregation; 0 fits; "
                              "does not overwrite r1")
+    parser.add_argument("--census-r3", action="store_true",
+                        help="r3 one-shot remaining-pool census")
     parser.add_argument("--slow-rehearse", action="store_true",
                         help="unused unless card shape cannot be deduced")
     args = parser.parse_args()
     if args.legal_r2:
         try:
             return run_legal_r2()
+        except cls.Stop as exc:
+            print("STOP %s: %s" % (exc.verdict, exc), flush=True)
+            return 1
+    if args.census_r3:
+        try:
+            return run_census_r3(from_oracles=bool(args.from_oracles))
         except cls.Stop as exc:
             print("STOP %s: %s" % (exc.verdict, exc), flush=True)
             return 1

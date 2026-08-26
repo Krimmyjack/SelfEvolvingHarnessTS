@@ -1013,6 +1013,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### S1a-r2 裁定:HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH 定案;三条路呈裁(2026-08-26 16:1x,主线)
+
+**判定**(提交 e74c021,0 LLM/0 fit/0.02s):正反序均无合法 Fast 可见分歧;9 单元池 0 个合法重组排列。**定量根因**:现役 TRY 授权 = LOO 摘一后 ≥2 ⇒ **须 3 个未受引导可学正例**(source_skill.py:217-257,r1 误算 2 够);hampel 簇可学 2/3 且 GPA↔GP pattern_view 字节相等、独立家族=1;burst 簇可学 2/3(ECG200 与 Herring 同为 HELDOUT_ONLY:held-in=0 而 held-out 正——"考官可见学生不可学"单元定型为一类);guard 档管道断裂依旧(三处,r1 已引行)。**非 TREATMENT_EMPTY**:域内可学在,缺跨单元合法通道。可学性判据全部引现役代码行(agg≥+0.005 且逐 view≥−0.005;Support Draft 门;delayed 须 classify_relation==POSITIVE)。**S1b 域绑定三钩子规格入账**(cell 构建打 domain_namespace/跨单元丢异域 Target-local/Source-derived 按 Scope v1 五轴放行;methods 第③步落地后拆 runner 墙)。**三条路呈用户与 sol**:(A) **S1a-r3 一次性扩池普查**(主线荐):全部剩余本地合适底物 × {impulse-v2, burst} 预声明一批、oracle 一轮算完、带可学性与家族独立性列,判"是否存在 ≥3 独立可学正例 + 课后匹配场";判词含 POOL_EXHAUSTED 出口——单批 take-what-comes,与顺序钓鱼有本质区别;(B) **guard 管道三处修复**(canon-vs-code 的 bug 修复:三分策略系已批教义、管道使中档成死码;修后 n≥2 害证可合法入 Fast,identity 单元的处理组激活;methods 手术,opus,修后须 r2 式可达性复审);(C) **晋升门校准问题呈 sol 作协议议题**:"3 个未引导正例"的门是设计校准还是任意常数?r2 审计即证据;实验便利不得作为调门理由,故此路只议不动。主线推荐 A+B 并行不悖(A 零治理改动,B 与 S1 无关也该修);S1b 维持冻结待 A/B 结果。
+
+### S1a-r3 收口:POOL_EXHAUSTED_FOR_TRY_CHANNEL;本地池穷尽无 3+1 TRY 通道;无 r4(2026-08-26 18:xx,执行方)
+
+**判定**:**POOL_EXHAUSTED_FOR_TRY_CHANNEL**(development;不升级课程;无 r4;S1b 仍冻结)。0 LLM;解释器 `D:\Anaconda_envs\envs\project\python.exe`。池先冻结后评分:本地 40 zip → 入选 19 底物 × {impulse-v2, burst}=38 单元;排除 21(8=r1 已测,11=TRAIN 点数>100000 含 HandOutlines,1=非有限 DodgerLoopWeekend,1=无 TRAIN KeplerLightCurves)。合并 r1 9 单元一起算。可学性复用 r2 谓词(`classify_relation==POSITIVE`;experience_memory.py:411-451;method.py:742-757 / 1466-1492)。
+
+**各簇独立可学**(名称前缀 + 仅在 LEARNABLE 成员上的 pattern_view 字节归并):hampel LEARNABLE 6 / 独立家族 **2**(GunPointFamily + PowerCons;PowerCons 是新独立家族,仍差 1 族);repair_burst LEARNABLE 3 / 独立家族 **3**(ToeSegmentation + Lightning2 + ECGFiveDays=ECGFamily)但无第 4 个 LEARNABLE 考场(Toe2 burst 与 ECG200 均为 HELDOUT_ONLY);outlier_iqr 3/2;outlier_mad 3/2(Phalanx+TwoLeadECG);其余 ≤1。最近缺口 = repair_burst:**差 1 个可学考场**,不是差家族。SonyAIBO 两 impulse 因 v2 段长=round(L/150)=0 记 construction fail,未从名单删除。
+
+**成本**:0 LLM / 342 fit / 600;墙钟 435.5 s / 5400 s;下载 0;r3 密封 36 份(2 构造失败无密封件)。**义务**:未跑适应臂;未调注入/扫参;未事后增删池;`methods/`/`runtime/`/`contracts/`/`operators/` 零改;r1/r2 工件与 9 份旧密封未覆写;他线文件未碰;未跑全仓 pytest。
+
+**书外**:独立家族若对全部单元(含 identity)做 pattern 并查,会经 BeetleFly identity 把 GunPoint/PowerCons/ECG 塌成一族;已改为只在 LEARNABLE 成员上归并,密封数值未重算。无课程草案。无 r4。
+
+**提交**:runner `--census-r3`;新密封 `s1_oracle/*`(仅新单元);`s1a_r3_pool_census.json/.md`;本节(含他书未提交的 r2 裁定条,未删改既有正文)。
+
 ### S1a-r1 判词收窄(sol 两点承重批评成立,主线自认失职);S1a-r2 发车;S1b 继续冻结(2026-08-26 15:5x,主线)
 
 **批评一(成立,主线双重失职)**:S1a 时间线的"首次分歧 = GPA Target-local hampel 直接带入 Wine"违反正典(Target-local 限本域,AGENTS.md:170;跨域须 Episode→census→Slow→Source-derived;主线自己入典的 C40 修正案原文在案)——且该通道在代码上可走恰因四步序第③步(Scope 编译修复)未落地、Target-local 卡 applicability 仍仅 task_kind;照此跑 S1b 测到的是宽 Scope bug 而非演化,回落"复制答案"旧单元。主线裁定时未查时间线合法性,失职。**新站规:状态时间线每次转移必须标注放行它的正典条款(合法性列)**。**批评二(成立)**:资格门只查 held-out headroom 未查 held-in 可学性——Herring hampel held-in=0/held-out+0.047,Target 反馈不会批准,系"考官可见、学生不可学"单元。**主线推演的结构后果**:携带禁行+授权证据须未受旧卡引导(防循环授权)下,正序 Source-TRY 卡最早单元 3 后成型、唯一匹配场 Herring 不可学;反序正向在 4/6 位、卡成型即课终——现课程恐判 HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH;repair_burst_segment 簇(3 员)若 held-in 可学,合法课程或需改建于该簇。**S1a-r1 判词收窄为:课程存在菜单 headroom 与条件化响应结构;"A5 拥有合法可学可跨单元生效的处理通道"未证**。**S1a-r2 发车(grok,0 LLM/0 fit,纯重聚合+走码)**:①禁 Target-local 跨单元携带 ②仅 held-in Support/delayed 亦材料级正向的单元计可授权 Source 证据(批准语义引用现役代码行,禁自发明阈值)③仅未受旧 Skill 引导的正例可授权新 Shared TRY ④重画合法状态时间线(Source-derived 何时成型/匹配哪些后续单元/Target 反馈能否批准),每转移标正典条款 ⑤正反序分别重算;附:GunPoint↔GPA 同族域证据独立性弱化注记;给 S1b 的"runner 层执行域绑定"实现规格。判词:LEGAL_EVOLUTION_TREATMENT_QUALIFIED(才批 S1b)/ HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH(换课程结构)/ TREATMENT_EMPTY。
