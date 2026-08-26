@@ -1,4 +1,4 @@
-"""S1a-r1 -- dual-layer 0-LLM oracle + curriculum qualification + reachability.
+"""S1a curriculum oracle + S1a-r2 legal-treatment reaggregation.
 
 Independent runner.  Reuses the Wine-precheck enumeration (cohort 0.10 cap,
 full shared classification menu, ridge, fit_only_artifact) without modifying
@@ -6,6 +6,12 @@ the shared CLS-OP harness.  Writes sealed oracle artifacts that must never
 enter any arm's prompt, store, or retrieval view.
 
   python evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py --run
+  python evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py --legal-r2
+
+``--legal-r2`` is 0-LLM / 0-fit: it only re-aggregates sealed ``s1_oracle``
+JSON and walks live approval / retrieval code.  It writes
+``s1a_r2_legal_treatment_audit.json/.md`` and never overwrites r1 artifacts
+or the sealed oracles.
 
 Zero Fast LLM.  Slow rehearsal is off unless --slow-rehearse is passed and
 the code path cannot confirm a compiled card shape.  No A3/A5 adaptation.
@@ -18,6 +24,7 @@ import subprocess
 import sys
 import time
 from collections.abc import Mapping, Sequence
+from itertools import combinations
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -46,9 +53,16 @@ from SelfEvolvingHarnessTS.contracts.observables import (  # noqa: E402
 from SelfEvolvingHarnessTS.methods.ttha.public_tools import (  # noqa: E402
     extract_public_features,
 )
+from SelfEvolvingHarnessTS.methods.ttha.experience_memory import (  # noqa: E402
+    CLASSIFICATION_MATERIAL_THRESHOLD,
+    classify_relation,
+)
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: E402
     _is_inert_experience_card,
     _scopes_beyond_task_kind,
+)
+from SelfEvolvingHarnessTS.methods.ttha.signed_radius import (  # noqa: E402
+    MATERIAL_THRESHOLD,
 )
 from evaluation.functional.task_episode_harness.agentic import (  # noqa: E402
     risk_skill,
@@ -119,6 +133,13 @@ E2 = PROJECT_ROOT / "artifacts" / "functional" / "e2"
 ORACLE_DIR = E2 / "s1_oracle"
 AUDIT_JSON = E2 / "s1a_curriculum_audit.json"
 AUDIT_MD = E2 / "s1a_curriculum_audit.md"
+R2_PROTOCOL_VERSION = "s1a_r2_legal_treatment_audit_v1"
+R2_RUN_ID = "s1a_r2_legal_treatment_audit1"
+R2_JSON = E2 / "s1a_r2_legal_treatment_audit.json"
+R2_MD = E2 / "s1a_r2_legal_treatment_audit.md"
+R1_COMMIT = "837b537"
+MIN_DISTINCT_TASKS = 2  # cls harness :168; source_skill LOO floor
+GUNPOINT_FAMILY = ("GunPoint", "GunPointAgeSpan")
 
 EPISODE_SOURCES = (
     E2 / "t6_cls_op_shared_harness.json",
@@ -1452,14 +1473,1092 @@ def run(*, slow_rehearse: bool = False, from_oracles: bool = False) -> int:
     return 0
 
 
+# =========================================================================== #
+# S1a-r2 -- legal treatment reaggregation (0 LLM / 0 fit)
+# =========================================================================== #
+
+def _family_key(dataset: str) -> str:
+    if str(dataset).startswith("GunPoint"):
+        return "GunPointFamily"
+    return str(dataset)
+
+
+def _heldin_facts(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Apply live classify_relation to the sealed held-in oracle reading.
+
+    The oracle scored ``_wine_heldin_pool`` (r1_support + r1_delayed +
+    r2_support + r2_delayed) as one SUPPORT surface
+    (run_e2_t6_cls_op_shared_harness.py:5539-5547; adapter allowed_surfaces
+    = SUPPORT+HELDOUT only).  There is no separate delayed slice in the
+    sealed JSON.  The same POSITIVE classifier is the Support Draft gate
+    (method.py:742-757) and the delayed approve gate (method.py:1466-1492).
+    Threshold is the live constant, not the oracle heldin_material_line.
+    """
+    program = str(row.get("program") or "")
+    pcs = row.get("heldin_per_class_recall_delta")
+    per_series = None
+    if isinstance(pcs, Sequence) and not isinstance(pcs, (str, bytes)):
+        per_series = {str(index): float(value)
+                      for index, value in enumerate(pcs)}
+    facts = classify_relation(
+        aggregate_gain=row.get("heldin_headroom"),
+        per_series_gains=per_series,
+        is_identity=(program == "identity"),
+        consumer_id=CONSUMER_ID,
+    )
+    return {
+        "heldin_headroom": row.get("heldin_headroom"),
+        "heldin_worst_class_recall_delta": row.get(
+            "heldin_worst_class_recall_delta"),
+        "heldin_per_class_recall_delta": list(pcs) if pcs else None,
+        "heldout_utility": row.get("heldout_utility"),
+        "heldout_worst_class_recall_delta": row.get(
+            "heldout_worst_class_recall_delta"),
+        "in_oracle_set": bool(row.get("in_oracle_set")),
+        "legal": bool(row.get("legal")),
+        "relation": facts["relation"],
+        "classification_basis": facts["classification_basis"],
+        "material_threshold": facts["material_threshold"],
+        "would_pass_support_draft": facts["relation"] == "POSITIVE",
+        "would_pass_delayed_approve": facts["relation"] == "POSITIVE",
+        "instrument_note": (
+            "single combined held-in pool; Support vs delayed were not "
+            "scored separately; both live gates use classify_relation "
+            "== POSITIVE (method.py:742-757 / 1466-1492; "
+            "experience_memory.py:434-439; threshold "
+            "CLASSIFICATION_MATERIAL_THRESHOLD=%s == MATERIAL_THRESHOLD=%s)"
+            % (CLASSIFICATION_MATERIAL_THRESHOLD, MATERIAL_THRESHOLD)
+        ),
+    }
+
+
+def _learnability_label(program: str, facts: Mapping[str, Any],
+                        oracle_set: Sequence[str]) -> str:
+    if program == "identity" or program not in oracle_set:
+        return "N/A"
+    if facts.get("would_pass_support_draft") and facts.get(
+            "would_pass_delayed_approve"):
+        return "LEARNABLE"
+    return "HELDOUT_ONLY"
+
+
+def _program_row(unit: Mapping[str, Any], program: str) -> dict[str, Any]:
+    for row in unit.get("programs") or []:
+        if row.get("program") == program:
+            return dict(row)
+    return {"program": program, "heldin_headroom": None}
+
+
+def _r2_learnability(units: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    table: list[dict[str, Any]] = []
+    for unit in units:
+        oracle_set = [str(p) for p in (unit.get("oracle_set") or [])]
+        judged = [p for p in oracle_set if p != "identity"]
+        if not judged:
+            judged = ["identity"] if "identity" in oracle_set else []
+        if not judged:
+            judged = ["identity"]
+        rows = []
+        labels = []
+        for program in judged:
+            raw = _program_row(unit, program)
+            facts = _heldin_facts(raw)
+            label = _learnability_label(program, facts, oracle_set)
+            labels.append(label)
+            rows.append({
+                "program": program,
+                "learnability": label,
+                **facts,
+                "oracle_json": (
+                    "artifacts/functional/e2/s1_oracle/%s.json" % unit["unit_id"]
+                ),
+            })
+        primary = rows[0] if rows else {}
+        table.append({
+            "unit_id": unit["unit_id"],
+            "dataset": unit.get("dataset"),
+            "family_key": _family_key(str(unit.get("dataset") or "")),
+            "injection": unit.get("injection"),
+            "n_heldin": unit.get("n_heldin"),
+            "heldin_material_line": unit.get("heldin_material_line"),
+            "heldin_material_line_is_not_the_approval_threshold": True,
+            "approval_threshold": CLASSIFICATION_MATERIAL_THRESHOLD,
+            "oracle_set": oracle_set,
+            "positive_unit_r1": bool(unit.get("positive_unit")),
+            "pattern_view": dict(unit.get("pattern_view") or {}),
+            "learnability": primary.get("learnability") or "N/A",
+            "oracle_program": primary.get("program"),
+            "heldin_headroom": primary.get("heldin_headroom"),
+            "heldin_relation": primary.get("relation"),
+            "heldout_utility": primary.get("heldout_utility"),
+            "operators": rows,
+        })
+    hampel_ids = [
+        "GunPointAgeSpan__impulse_v2",
+        "GunPoint__impulse_v2",
+        "Herring__impulse_v2",
+    ]
+    burst_ids = [
+        "ECG200__impulse_v2",
+        "ToeSegmentation1__impulse_v2",
+        "Lightning2__impulse_v2",
+    ]
+    by_id = {row["unit_id"]: row for row in table}
+
+    def _cluster(name: str, program: str, ids: Sequence[str]) -> dict[str, Any]:
+        members = []
+        for uid in ids:
+            row = by_id[uid]
+            op = next((item for item in row["operators"]
+                       if item["program"] == program), None)
+            members.append({
+                "unit_id": uid,
+                "dataset": row["dataset"],
+                "family_key": row["family_key"],
+                "learnability": (op or {}).get("learnability") or "N/A",
+                "heldin_headroom": (op or {}).get("heldin_headroom"),
+                "heldin_relation": (op or {}).get("relation"),
+                "heldout_utility": (op or {}).get("heldout_utility"),
+                "independence_note": (
+                    "GunPoint family; Scope uses features not names "
+                    "(formally legal) but Source independence is weakened"
+                    if row["family_key"] == "GunPointFamily" else None
+                ),
+            })
+        learnable = [m for m in members if m["learnability"] == "LEARNABLE"]
+        independent = sorted({m["family_key"] for m in learnable})
+        return {
+            "cluster": name,
+            "program": program,
+            "n_members": len(members),
+            "n_learnable": len(learnable),
+            "n_heldout_only": sum(
+                1 for m in members if m["learnability"] == "HELDOUT_ONLY"),
+            "n_independent_learnable_families": len(independent),
+            "learnable_unit_ids": [m["unit_id"] for m in learnable],
+            "heldout_only_unit_ids": [
+                m["unit_id"] for m in members
+                if m["learnability"] == "HELDOUT_ONLY"
+            ],
+            "independent_families": independent,
+            "members": members,
+        }
+
+    return {
+        "threshold_citations": {
+            "classify_relation": (
+                "methods/ttha/experience_memory.py:411-451 "
+                "(agg >= +t and min per-view >= -t -> POSITIVE; "
+                "t = CLASSIFICATION_MATERIAL_THRESHOLD = 0.005)"
+            ),
+            "support_draft": (
+                "methods/ttha/method.py:742-757 handle_fast_winner; "
+                "methods/ttha/online_loop.py:201-204 "
+                "Support POSITIVE only forms Draft"
+            ),
+            "delayed_approve": (
+                "methods/ttha/method.py:1466-1492 "
+                "handle_feedback_delayed: classify_relation == POSITIVE; "
+                "NEUTRAL no longer expands rights (T5 #41 A4)"
+            ),
+            "material_constants_equal": (
+                CLASSIFICATION_MATERIAL_THRESHOLD == MATERIAL_THRESHOLD
+            ),
+            "not_used": (
+                "oracle heldin_material_line = max(0.005, 1/n_heldin) is "
+                "an instrument resolution line, not the approval gate"
+            ),
+        },
+        "units": table,
+        "hampel_cluster": _cluster(
+            "hampel", "hampel_filter", hampel_ids),
+        "repair_burst_cluster": _cluster(
+            "repair_burst_segment", "repair_burst_segment", burst_ids),
+        "gunpoint_family_note": (
+            "GunPointAgeSpan and GunPoint share family_key=GunPointFamily "
+            "and have identical pattern_view (byte-equal).  Scope v1 uses "
+            "features not dataset names, so both may formally count as "
+            "Source evidence; independence is weakened and is reported "
+            "separately as n_independent_learnable_families."
+        ),
+    }
+
+
+def _r2_rules() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": "a_no_target_local_carry",
+            "rule": (
+                "Target-local Skill 禁止跨单元携带进下一单元 Fast 视图。"
+            ),
+            "canon": [
+                "AGENTS.md:174-175 Target-local Skill 在当前 Domain "
+                "held-in Support 上形成，由同域 delayed 更新；冻结后仅同域 "
+                "held-out 使用",
+                "AGENTS.md:76-81 合法通路 = Source Episode → census → "
+                "Slow consolidation → audited Source-derived Skill → Fast",
+                "AGENTS.md:184-191 Fast 禁止读取未匹配当前 Domain 的 "
+                "Source Target-local Card",
+            ],
+            "live_code_gap": (
+                "现行 Target-local 卡由 "
+                "run_e2_t6_cls_op_shared_harness.py:610-613 "
+                "_card_builder 写入 observable_signature = "
+                "{task_kind: classification}；method.py:89-105 "
+                "_applicability_from_card 因此只编译 task_kind 叶；"
+                "retrieval.py:278-282 evaluate_applicability 对所有 "
+                "classification 单元为真。Target-local 卡不是经验卡"
+                "（retrieval.py:158-164），T1 惰性闸口（retrieval.py:274）"
+                "拦不住它。照跑会测到宽 Scope bug，不是合法演化。"
+            ),
+            "audit_applies": (
+                "本审计按正典拦截跨单元 Target-local 携带，不按现行 "
+                "task_kind-only 匹配放行。"
+            ),
+        },
+        {
+            "id": "b_heldin_positive_authorizes",
+            "rule": (
+                "单元计入可授权 Source 证据，须 held-in Support 与 delayed "
+                "均被现役生命周期判为 POSITIVE（材料级正向）。禁止自造阈值。"
+            ),
+            "canon": [
+                "AGENTS.md:174-175 / 139-146 Support 与 delayed 仅 held-in",
+                "AGENTS.md:172-173 Episode 不自动获执行权",
+            ],
+            "live_code": [
+                "experience_memory.py:398-451 classify_relation: "
+                "agg >= +0.005 且逐 view >= -0.005 → POSITIVE；"
+                "cls_scope_adapter.py:31-36 分类 view = 逐类 recall",
+                "method.py:742-757 handle_fast_winner Support != POSITIVE "
+                "→ support_rejected，不形成 Draft",
+                "online_loop.py:201-204 Support = POSITIVE 才 LOCAL_DRAFT",
+                "method.py:1466-1492 handle_feedback_delayed 改为 "
+                "classify_relation == POSITIVE 才 approved；NEUTRAL / "
+                "CONFLICT / NEGATIVE 丢弃 pending（旧门 dg >= -0.005 已废）",
+                "signed_radius.py:40 MATERIAL_THRESHOLD = 0.005",
+            ],
+            "oracle_proxy": (
+                "密封 oracle 只评了拼接 held-in 池一次"
+                "（_wine_heldin_pool）。本审计把该读数送入同一个 "
+                "classify_relation，作为 Support 与 delayed 两道门的代理；"
+                "不发明四分切片，也不改用 heldin_material_line。"
+            ),
+        },
+        {
+            "id": "c_unguided_authorizes_try",
+            "rule": (
+                "仅未受旧 Skill 引导的正例可授权新 Shared TRY。"
+                "未引导 = 该单元 Fast 视图不存在指向同 Program 族的 "
+                "TRY / capability 卡。"
+            ),
+            "canon": [
+                "AGENTS.md:176-177 Shared Capability 需多 Domain 重复正向",
+            ],
+            "live_code": [
+                "source_skill.py:217-257 authorization_audit: 仅 UNGUIDED "
+                "POSITIVE 可授权新 TRY；conditioned 只可确认/反驳/撤回",
+                "source_skill.py:249-256 LOO: 去掉任一 Task 后 UNGUIDED "
+                "POSITIVE 仍须 >= min_distinct_tasks（cls harness :168 "
+                "MIN_DISTINCT_TASKS=2）→ 2 个正例 loo_minimum=1，"
+                "TRY 不授权（does_not_survive_leave_one_out）",
+                "retrieval.py:195-238 / 274 T1: 无授权 TRY 且无重复 "
+                "scoped RISK 的经验卡 Fast 不可见",
+            ],
+        },
+    ]
+
+
+def _pattern_matches(unit_pattern: Mapping[str, Any],
+                     scope: Mapping[str, Any]) -> bool:
+    if not scope:
+        return False
+    return all(unit_pattern.get(key) == value for key, value in scope.items())
+
+
+def _try_audit(program: str, unguided_ids: Sequence[str]) -> dict[str, Any]:
+    probes = [{
+        "program": program,
+        "context_condition": True,
+        "task_episode_id": uid,
+        "relation": "POSITIVE",
+        "conditioned_snapshot": False,
+    } for uid in unguided_ids]
+    rows = ss.authorization_audit(
+        probes, min_distinct_tasks=MIN_DISTINCT_TASKS)
+    hit = next((row for row in rows if row["program"] == program), None)
+    return hit or {
+        "active_try_authorized": False,
+        "leave_one_out_minimum_positive": 0,
+        "unguided_positive": len(unguided_ids),
+        "withheld_because": "no_unguided_positive",
+    }
+
+
+def _legal_timeline(
+    order: Sequence[str],
+    learn: Mapping[str, Any],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    by_id = {row["unit_id"]: row for row in learn["units"]}
+    unguided: dict[str, list[str]] = {}
+    source_cards: dict[str, dict[str, Any]] = {}
+    timeline: list[dict[str, Any]] = []
+    first_fast_diff = None
+
+    for index, uid in enumerate(order, start=1):
+        unit = by_id[uid]
+        program = unit["oracle_program"]
+        learnability = unit["learnability"]
+        legality: list[str] = []
+        events: list[str] = []
+
+        matching_cards = []
+        for prog, card in source_cards.items():
+            if card.get("fast_visible") and _pattern_matches(
+                    unit["pattern_view"], card.get("scope") or {}):
+                matching_cards.append(prog)
+        guided = program in matching_cards and program != "identity"
+        a5_fast = (
+            "Source-derived TRY Fast-visible for %s (Scope v1 match)"
+            % ",".join(matching_cards)
+            if matching_cards else
+            "K0 inert Slow card only; no Target-local carry"
+        )
+        k0_fast = "K0 inert Slow card; in-unit Target-local only, discarded at boundary"
+        if matching_cards and first_fast_diff is None:
+            first_fast_diff = {
+                "unit_index": index,
+                "unit_id": uid,
+                "kind": "source_derived_try_fast_visible",
+                "programs": list(matching_cards),
+                "approvable": bool(
+                    learnability == "LEARNABLE"
+                    and program in matching_cards
+                ),
+            }
+
+        episode_kind = "none"
+        if program == "identity" or learnability == "N/A":
+            episode_kind = "identity_or_empty"
+            events.append(
+                "oracle set is identity/empty.  Episode if any is ABSTAIN "
+                "(classify_relation is_identity; experience_memory.py:428-430)."
+            )
+            legality.append(
+                "L-EP AGENTS.md:172-173 Episode 可记，不获执行权"
+            )
+        elif learnability == "LEARNABLE":
+            episode_kind = "positive_unguided" if not guided else "positive_guided"
+            events.append(
+                "held-in classify_relation=POSITIVE (headroom=%s).  "
+                "Support Draft + delayed approve would both pass "
+                "(method.py:742-757 / 1466-1492)."
+                % unit["heldin_headroom"]
+            )
+            events.append(
+                "Target-local Skill may form in-domain; it is NOT carried "
+                "into the next unit Fast view."
+            )
+            legality.append(
+                "L-TL-FORM AGENTS.md:174-175 + method.py:742-757 + "
+                "online_loop.py:201-204 + method.py:1466-1492"
+            )
+            legality.append(
+                "L-TL-NOCARRY AGENTS.md:174-175,184-191; 不按 "
+                "task_kind-only 宽 Scope 放行"
+            )
+            if guided:
+                events.append(
+                    "Fast already has a same-family TRY/capability card; "
+                    "this POSITIVE is conditioned and cannot authorize a "
+                    "new Shared TRY (source_skill.py:217-221)."
+                )
+                legality.append("L-UNGUIDED source_skill.py:217-221")
+            else:
+                unguided.setdefault(program, []).append(uid)
+                legality.append("L-UNGUIDED 本单元 Fast 无同族 TRY 卡")
+        else:
+            episode_kind = "heldout_only_not_authorizing"
+            events.append(
+                "oracle-set program is HELDOUT_ONLY "
+                "(held-in relation=%s, headroom=%s, held-out utility=%s).  "
+                "Target feedback would not approve; not Source evidence."
+                % (unit["heldin_relation"], unit["heldin_headroom"],
+                   unit["heldout_utility"])
+            )
+            legality.append(
+                "L-APPROVE method.py:1466-1492 relation != POSITIVE → "
+                "delayed_rejected; experience_memory.py:449-451 NEUTRAL "
+                "is |agg| < 0.005"
+            )
+
+        formed = None
+        if program not in (None, "identity") and learnability == "LEARNABLE":
+            ids = list(unguided.get(program) or [])
+            members = [by_id[item] for item in ids]
+            scope = _intersect_maps([m["pattern_view"] for m in members]) if len(
+                members) >= 2 else {}
+            independent = sorted({m["family_key"] for m in members})
+            audit = _try_audit(program, ids)
+            scope_v1_ok = len(members) >= 2 and bool(scope)
+            independent_ok = len(independent) >= 2 and bool(scope)
+            fast_visible = bool(audit.get("active_try_authorized"))
+            later = []
+            for later_uid in order[index:]:
+                later_unit = by_id[later_uid]
+                match = _pattern_matches(later_unit["pattern_view"], scope)
+                later.append({
+                    "unit_id": later_uid,
+                    "pattern_match": match,
+                    "learnability": later_unit["learnability"],
+                    "same_program": later_unit["oracle_program"] == program,
+                    "approvable_field": bool(
+                        match
+                        and later_unit["learnability"] == "LEARNABLE"
+                        and later_unit["oracle_program"] == program
+                    ),
+                })
+            formed = {
+                "program": program,
+                "unguided_learnable_ids": ids,
+                "n_unguided": len(ids),
+                "n_independent_families": len(independent),
+                "independent_families": independent,
+                "scope_v1_can_form_candidate": scope_v1_ok,
+                "independent_enough_for_scope_v1": independent_ok,
+                "scope": scope,
+                "authorization_audit": audit,
+                "fast_visible_try": fast_visible,
+                "later_units": later,
+            }
+            source_cards[program] = {
+                "scope": scope,
+                "fast_visible": fast_visible,
+                "formed_after_unit": uid,
+            }
+            if scope_v1_ok:
+                events.append(
+                    "Slow may write a Source-derived candidate "
+                    "(Scope v1: n=%d formal learnable, intersection %s)."
+                    % (len(ids), "non-empty" if scope else "empty")
+                )
+                legality.append(
+                    "L-SLOW AGENTS.md:76-81; L-SCOPE Scope v1 五轴 "
+                    "(STAGE_REPORT 2026-08-25 20:1x)"
+                )
+            else:
+                events.append(
+                    "Slow cannot form Source-derived Skill yet "
+                    "(unguided learnable=%d, independent_families=%d, "
+                    "intersection=%s)."
+                    % (len(ids), len(independent),
+                       "non-empty" if scope else "empty")
+                )
+                legality.append("L-SCOPE 未满 ≥2 独立可学正例或交为空")
+            if len(independent) < len(ids):
+                events.append(
+                    "independence weakened: formal %d / independent %d "
+                    "(GunPoint family; identical pattern_view)."
+                    % (len(ids), len(independent))
+                )
+            events.append(
+                "authorization_audit TRY authorized=%s loo_min=%s "
+                "withheld=%s (source_skill.py:249-256; "
+                "MIN_DISTINCT_TASKS=%d)."
+                % (audit.get("active_try_authorized"),
+                   audit.get("leave_one_out_minimum_positive"),
+                   audit.get("withheld_because"),
+                   MIN_DISTINCT_TASKS)
+            )
+            legality.append("L-LOO source_skill.py:249-256")
+            if fast_visible:
+                events.append(
+                    "TRY authorized → experience card Fast-visible "
+                    "on subsequent Scope-matching units."
+                )
+                legality.append("L-T1 retrieval.py:274 非 inert，可进 Fast")
+            else:
+                events.append(
+                    "TRY not authorized → T1 inert experience card "
+                    "withheld from Fast (retrieval.py:274).  A5 Fast "
+                    "still equals K0 on this surface."
+                )
+                legality.append("L-T1 retrieval.py:274 inert → Fast 不可见")
+
+        timeline.append({
+            "unit_index": index,
+            "unit_id": uid,
+            "oracle_program": program,
+            "learnability": learnability,
+            "heldin_headroom": unit["heldin_headroom"],
+            "heldin_relation": unit["heldin_relation"],
+            "episode": episode_kind,
+            "guided": guided,
+            "a5_fast": a5_fast,
+            "k0_fast": k0_fast,
+            "slow_integration": formed,
+            "events": events,
+            "legality": legality,
+        })
+
+    approvable = []
+    for row in timeline:
+        formed = row.get("slow_integration") or {}
+        for later in formed.get("later_units") or []:
+            if later.get("approvable_field") and formed.get("fast_visible_try"):
+                approvable.append({
+                    "after_unit": row["unit_id"],
+                    "field": later["unit_id"],
+                    "program": formed.get("program"),
+                })
+
+    return {
+        "label": label,
+        "order": list(order),
+        "timeline": timeline,
+        "first_legal_fast_visible_difference": first_fast_diff,
+        "approvable_transfer_channels": approvable,
+        "has_legal_approvable_channel": bool(approvable),
+    }
+
+
+def _search_reorganization(learn: Mapping[str, Any]) -> dict[str, Any]:
+    """Mechanical 9-unit search: >=2 learnable sources before >=1 field.
+
+    Official learnable = oracle-set program is LEARNABLE.  Scope = pattern
+    intersection of the chosen sources (Scope v1 axis 4).  A field must
+    match that Scope, share the program, and be LEARNABLE.
+    """
+    by_id = {row["unit_id"]: row for row in learn["units"]}
+    pool = list(by_id)
+    programs: dict[str, list[str]] = {}
+    for row in learn["units"]:
+        if row["learnability"] == "LEARNABLE" and row["oracle_program"] not in (
+                None, "identity"):
+            programs.setdefault(row["oracle_program"], []).append(row["unit_id"])
+
+    trials: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
+    for program, sources in sorted(programs.items()):
+        scope_all = _intersect_maps(
+            [by_id[uid]["pattern_view"] for uid in sources])
+        fields = [
+            uid for uid in pool
+            if by_id[uid]["oracle_program"] == program
+            and by_id[uid]["learnability"] == "LEARNABLE"
+            and _pattern_matches(by_id[uid]["pattern_view"], scope_all)
+        ]
+        independent = sorted({by_id[uid]["family_key"] for uid in sources})
+        trial = {
+            "program": program,
+            "learnable_source_ids": sources,
+            "n_learnable": len(sources),
+            "n_independent_families": len(independent),
+            "independent_families": independent,
+            "scope_of_all_learnable": scope_all,
+            "matching_learnable_field_ids": fields,
+            "n_matching_learnable_fields": len(fields),
+            "can_place_2_before_1_after": len(fields) >= 3 or (
+                len(sources) >= 2 and any(
+                    uid not in sources[:2] for uid in fields
+                ) and len(set(sources) | set(fields)) >= 3
+            ),
+            "blocked_because": [],
+        }
+        if len(sources) < 2:
+            trial["blocked_because"].append("fewer_than_2_learnable_sources")
+        if len(independent) < 2:
+            trial["blocked_because"].append(
+                "fewer_than_2_independent_families")
+        if not scope_all:
+            trial["blocked_because"].append("empty_pattern_intersection")
+        if len(set(fields)) < 3 and set(fields) <= set(sources) and len(
+                sources) < 3:
+            trial["blocked_because"].append(
+                "no_external_or_third_learnable_matching_field"
+            )
+        # 2-before-1-after exists iff at least 3 distinct LEARNABLE
+        # matching units for this program+scope, so two can sit in front
+        # and one behind.
+        if len(set(fields) | set(sources)) >= 3 and len(sources) >= 2 and scope_all:
+            # still require the field to match the scope of the *front* pair
+            pair_ok = False
+            for front in combinations(sources, 2):
+                front_scope = _intersect_maps(
+                    [by_id[uid]["pattern_view"] for uid in front])
+                if not front_scope:
+                    continue
+                for field in set(fields) | set(sources):
+                    if field in front:
+                        continue
+                    if by_id[field]["learnability"] != "LEARNABLE":
+                        continue
+                    if by_id[field]["oracle_program"] != program:
+                        continue
+                    if not _pattern_matches(by_id[field]["pattern_view"],
+                                            front_scope):
+                        continue
+                    pair_ok = True
+                    fillers = [
+                        uid for uid in pool
+                        if uid not in front and uid != field
+                    ]
+                    course = list(front) + [field] + fillers
+                    course = course[:6]
+                    if len(course) < 6:
+                        continue
+                    candidates.append({
+                        "status": "pending_arbitration",
+                        "program": program,
+                        "forward_order": course,
+                        "reverse_order": list(reversed(course)),
+                        "sources_in_front": list(front),
+                        "field": field,
+                        "front_scope": front_scope,
+                        "note": (
+                            "mechanical 2+1 hit under Scope v1 / task-book "
+                            "search.  Not an approved curriculum."
+                        ),
+                    })
+            trial["can_place_2_before_1_after"] = pair_ok
+            if not pair_ok and "no_external_or_third_learnable_matching_field" not in trial["blocked_because"]:
+                trial["blocked_because"].append(
+                    "no_front_pair_whose_scope_matches_a_later_learnable_field"
+                )
+        trials.append(trial)
+
+    return {
+        "search_rule": (
+            "over the frozen 9-unit pool, no expansion, no rescoring; "
+            "a 6-unit course is a hit iff some Program has >=2 LEARNABLE "
+            "oracle-set sources whose Scope-v1 pattern intersection is "
+            "non-empty, and a later unit is a LEARNABLE matching field "
+            "for that same Program.  GunPoint family independence is "
+            "reported, not used as a silent veto on the mechanical hit "
+            "test (a hit still carries the independence note)."
+        ),
+        "trials": trials,
+        "candidates_pending_arbitration": candidates,
+        "n_candidates": len(candidates),
+    }
+
+
+def _s1b_spec() -> dict[str, Any]:
+    return {
+        "title": "S1b runner-layer domain binding (text spec, no code this book)",
+        "why_protocol_not_rewriting_the_exam": (
+            "The exam asks whether legal evolution changes Fast behaviour.  "
+            "Current Target-local cards match every classification unit "
+            "(task_kind-only applicability).  Running S1b against that "
+            "matcher measures the wide-Scope bug (copying a frozen winner "
+            "across domains), not Harness evolution.  A runner-layer "
+            "filter implements AGENTS.md:174-191 as already written.  "
+            "It does not change held-in budgets, menus, Consumer, splits, "
+            "or oracle keys."
+        ),
+        "minimal_runner_hooks": [
+            {
+                "when": "cell / unit construction",
+                "do": (
+                    "stamp every newly minted Target-local Skill with "
+                    "domain_namespace = current unit dataset (already on "
+                    "the Episode; copy it onto the Skill entry or a "
+                    "runner-owned side table).  Do not put dataset name "
+                    "into observable_applicability."
+                ),
+            },
+            {
+                "when": "cross-unit snapshot carry into the next Fast view",
+                "do": (
+                    "drop any Target-local capability (frozen program "
+                    "steps; not an experience card — retrieval.py:158-164) "
+                    "whose domain_namespace != current unit.  This is the "
+                    "AGENTS.md:184-191 wall."
+                ),
+            },
+            {
+                "when": "Source-derived experience cards",
+                "do": (
+                    "admit them to Fast only when Scope v1 matches: "
+                    "task_kind × consumer_id × metric × pattern_view "
+                    "intersection × Program geometry.  Dataset name is "
+                    "not an axis.  If methods-layer Scope compile step ③ "
+                    "is not yet live, the runner evaluates this 5-axis "
+                    "predicate as an exam-wall before retrieve."
+                ),
+            },
+        ],
+        "relation_to_methods_step3": (
+            "四步修复序第③步（STAGE_REPORT 2026-08-25 17:3x / 17:35）"
+            "才是 methods 层 Scope 编译：Target-local 限本域；跨域绑 "
+            "Task×Consumer×Metric+部署可见 Pattern+Program 几何。"
+            "本书不改 methods/。理由：单假设纪律；③ 是行为机制变更，"
+            "需要自己的切片、锁与测试；S1b 只需要考试墙与正典对齐，"
+            "避免把宽 Scope bug 当成处理组。③ 落地后删除 runner 墙，"
+            "不得长期叠两道门。"
+        ),
+        "do_not": [
+            "do not patch methods/ttha/method.py _applicability_from_card",
+            "do not invent Pattern thresholds from seen outcomes",
+            "do not put C40 Target-local hampel into K0",
+            "do not treat task_kind-only match as Scope v1",
+        ],
+    }
+
+
+def _r2_markdown(payload: Mapping[str, Any]) -> str:
+    learn = payload.get("learnability") or {}
+    rules = payload.get("rules") or []
+    fwd = payload.get("forward_timeline") or {}
+    rev = payload.get("reverse_timeline") or {}
+    search = payload.get("reorganization_search") or {}
+    ledger = payload.get("ledger") or {}
+    lines = [
+        "# S1a-r2 legal evolution treatment audit",
+        "",
+        "protocol: `%s`  parent r1: `%s`  evidence grade: **development**"
+        % (payload.get("protocol_version"),
+           (payload.get("parent_r1") or {}).get("commit")),
+        "",
+        "0 LLM / 0 fit.  Sealed oracles reused, not rescored.  "
+        "r1 artifacts not overwritten.",
+        "",
+        "## 1. Three legality rules",
+        "",
+    ]
+    for rule in rules:
+        lines += [
+            "### %s" % rule["id"],
+            "",
+            rule["rule"],
+            "",
+        ]
+        for cite in rule.get("canon") or []:
+            lines.append("- canon: %s" % cite)
+        for cite in rule.get("live_code") or []:
+            lines.append("- live: %s" % cite)
+        if rule.get("live_code_gap"):
+            lines.append("- gap: %s" % rule["live_code_gap"])
+        if rule.get("oracle_proxy"):
+            lines.append("- proxy: %s" % rule["oracle_proxy"])
+        if rule.get("audit_applies"):
+            lines.append("- audit: %s" % rule["audit_applies"])
+        lines.append("")
+    lines += [
+        "## 2. Learnability (oracle-set operators only)",
+        "",
+        "Approval proxy = `classify_relation` on the sealed combined "
+        "held-in reading.  Threshold = 0.005 "
+        "(experience_memory.py:408 / signed_radius.py:40).  "
+        "The oracle `heldin_material_line` is **not** used.",
+        "",
+        "| unit | oracle program | held-in | relation | held-out Δacc | label |",
+        "|---|---|---|---|---|---|",
+    ]
+    for row in learn.get("units") or []:
+        lines.append(
+            "| %s | %s | %s | %s | %s | **%s** |"
+            % (row["unit_id"], row.get("oracle_program"),
+               row.get("heldin_headroom"), row.get("heldin_relation"),
+               row.get("heldout_utility"), row.get("learnability"))
+        )
+    hampel = learn.get("hampel_cluster") or {}
+    burst = learn.get("repair_burst_cluster") or {}
+    lines += [
+        "",
+        "### Cluster learnable counts",
+        "",
+        "- hampel (GPA / GunPoint / Herring): LEARNABLE **%s**/3 "
+        "(%s); HELDOUT_ONLY %s; independent families **%s** (%s)."
+        % (hampel.get("n_learnable"), hampel.get("learnable_unit_ids"),
+           hampel.get("heldout_only_unit_ids"),
+           hampel.get("n_independent_learnable_families"),
+           hampel.get("independent_families")),
+        "- repair_burst_segment (ECG200 / Toe / Lightning2): LEARNABLE "
+        "**%s**/3 (%s); HELDOUT_ONLY %s; independent families **%s**."
+        % (burst.get("n_learnable"), burst.get("learnable_unit_ids"),
+           burst.get("heldout_only_unit_ids"),
+           burst.get("n_independent_learnable_families")),
+        "- GunPoint↔GPA: %s" % learn.get("gunpoint_family_note"),
+        "",
+        "## 3. Legal timelines on the r1-frozen 6-unit course",
+        "",
+    ]
+
+    def _emit_timeline(block: Mapping[str, Any], title: str) -> None:
+        lines.append("### %s" % title)
+        lines.append("")
+        lines.append("order: `%s`" % block.get("order"))
+        lines.append("")
+        lines.append(
+            "first legal Fast-visible difference: **%s**"
+            % json.dumps(block.get("first_legal_fast_visible_difference"),
+                         ensure_ascii=False)
+        )
+        lines.append("")
+        lines.append(
+            "approvable transfer channels: **%s**"
+            % json.dumps(block.get("approvable_transfer_channels"),
+                         ensure_ascii=False)
+        )
+        lines.append("")
+        lines.append(
+            "| i | unit | learnability | episode | A5 Fast | legality |"
+        )
+        lines.append("|---|---|---|---|---|---|")
+        for row in block.get("timeline") or []:
+            lines.append(
+                "| %s | %s | %s | %s | %s | %s |"
+                % (row["unit_index"], row["unit_id"], row["learnability"],
+                   row["episode"], row["a5_fast"],
+                   "; ".join(row.get("legality") or []))
+            )
+        lines.append("")
+        for row in block.get("timeline") or []:
+            lines.append("#### unit %s %s" % (row["unit_index"], row["unit_id"]))
+            lines.append("")
+            for event in row.get("events") or []:
+                lines.append("- %s" % event)
+            formed = row.get("slow_integration")
+            if formed:
+                lines.append(
+                    "- Slow: candidate=%s independent=%s TRY=%s loo=%s "
+                    "withheld=%s"
+                    % (formed.get("scope_v1_can_form_candidate"),
+                       formed.get("n_independent_families"),
+                       (formed.get("authorization_audit") or {}).get(
+                           "active_try_authorized"),
+                       (formed.get("authorization_audit") or {}).get(
+                           "leave_one_out_minimum_positive"),
+                       (formed.get("authorization_audit") or {}).get(
+                           "withheld_because"))
+                )
+            lines.append("")
+
+    _emit_timeline(fwd, "Forward")
+    _emit_timeline(rev, "Reverse")
+    lines += [
+        "## 4. Verdict",
+        "",
+        "**%s**" % payload.get("verdict"),
+        "",
+        str(payload.get("verdict_reason") or ""),
+        "",
+        "### Reorganization search (9-unit pool, no expansion)",
+        "",
+        str(search.get("search_rule") or ""),
+        "",
+        "candidates pending arbitration: **%s**"
+        % search.get("n_candidates"),
+        "",
+    ]
+    for trial in search.get("trials") or []:
+        lines.append(
+            "- program `%s`: learnable=%s independent_families=%s "
+            "matching_fields=%s blocked=%s"
+            % (trial.get("program"), trial.get("learnable_source_ids"),
+               trial.get("independent_families"),
+               trial.get("matching_learnable_field_ids"),
+               trial.get("blocked_because"))
+        )
+    if search.get("candidates_pending_arbitration"):
+        lines += ["", "Candidate courses:", ""]
+        for cand in search["candidates_pending_arbitration"]:
+            lines.append("- %s" % json.dumps(cand, ensure_ascii=False))
+    spec = payload.get("s1b_domain_binding_spec") or {}
+    lines += [
+        "",
+        "## 5. S1b domain-binding spec",
+        "",
+        spec.get("why_protocol_not_rewriting_the_exam") or "",
+        "",
+    ]
+    for hook in spec.get("minimal_runner_hooks") or []:
+        lines.append("- **%s**: %s" % (hook.get("when"), hook.get("do")))
+    lines += [
+        "",
+        spec.get("relation_to_methods_step3") or "",
+        "",
+        "## Cost",
+        "",
+        "- Fast LLM: %s" % ledger.get("fast_llm"),
+        "- Slow LLM: %s" % ledger.get("slow_llm"),
+        "- Consumer fits: %s (this pass %s)"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fits_this_pass")),
+        "- wall clock: %s s / %s s"
+        % (ledger.get("wall_seconds"), ledger.get("wall_cap")),
+        "- downloads: 0",
+        "- oracle rescoring: 0",
+        "",
+        "## Obligations",
+        "",
+    ]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    extra = payload.get("outside_book") or []
+    if extra:
+        lines += ["", "## Outside the book", ""]
+        for item in extra:
+            lines.append("- %s" % item)
+    return "\n".join(lines) + "\n"
+
+
+def run_legal_r2() -> int:
+    started = time.time()
+    print("S1a-r2 legal treatment reaggregation  protocol=%s"
+          % R2_PROTOCOL_VERSION, flush=True)
+    units = _load_sealed_units()
+    print("REUSED %d sealed oracle files (0 new fits)" % len(units),
+          flush=True)
+    if len(units) != 9:
+        raise cls.Stop("INSTRUMENT_UNREADABLE",
+                       "r2 pool must be the 9 sealed units")
+
+    learn = _r2_learnability(units)
+    parent = {}
+    if AUDIT_JSON.is_file():
+        parent = json.loads(AUDIT_JSON.read_text(encoding="utf-8"))
+    frozen = ((parent.get("part_b") or {}).get("frozen_curriculum") or {})
+    forward = list(frozen.get("forward_order") or [])
+    reverse = list(frozen.get("reverse_order") or [])
+    if not forward:
+        raise cls.Stop("INSTRUMENT_UNREADABLE",
+                       "r1 frozen curriculum missing; will not invent an order")
+
+    fwd = _legal_timeline(forward, learn, label="forward")
+    rev = _legal_timeline(reverse, learn, label="reverse")
+    search = _search_reorganization(learn)
+
+    if fwd["has_legal_approvable_channel"] or rev["has_legal_approvable_channel"]:
+        verdict = "LEGAL_EVOLUTION_TREATMENT_QUALIFIED"
+        reason = (
+            "at least one frozen order has a Fast-visible authorized TRY "
+            "and a later LEARNABLE matching field that Target can approve."
+        )
+    else:
+        verdict = "HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH"
+        reason = (
+            "the frozen 6-unit course still has LEARNABLE oracle-set "
+            "operators (hampel on GPA and GunPoint; repair_burst on Toe "
+            "and Lightning2), but neither frozen order has a legal, "
+            "unguided, subsequently-approvable transfer channel.  "
+            "Target-local carry is forbidden.  Shared TRY is not "
+            "authorized (LOO needs 3 unguided positives; each cluster "
+            "has only 2 LEARNABLE members; hampel independence is 1 "
+            "family).  T1 therefore withholds any Slow candidate from "
+            "Fast.  Mechanical search over the same 9-unit pool found "
+            "%d pending-arbitration 2+1 rearrangement(s)."
+            % search["n_candidates"]
+        )
+
+    wall = round(time.time() - started, 2)
+    payload = {
+        "protocol_version": R2_PROTOCOL_VERSION,
+        "run_id": R2_RUN_ID,
+        "curriculum_name": CURRICULUM_NAME,
+        "evidence_grade": EVIDENCE_GRADE,
+        "isolation_banner": ORACLE_BANNER,
+        "git_head": _git("rev-parse", "HEAD"),
+        "python": sys.executable,
+        "parent_r1": {
+            "commit": R1_COMMIT,
+            "artifact": "artifacts/functional/e2/s1a_curriculum_audit.json",
+            "r1_verdict": parent.get("total_verdict"),
+            "r1_verdict_narrowed_by_arbitration": True,
+            "frozen_curriculum": frozen,
+        },
+        "rules": _r2_rules(),
+        "learnability": learn,
+        "forward_timeline": fwd,
+        "reverse_timeline": rev,
+        "verdict": verdict,
+        "verdict_reason": reason,
+        "reorganization_search": search,
+        "s1b_domain_binding_spec": _s1b_spec(),
+        "ledger": {
+            "fast_llm": 0,
+            "slow_llm": 0,
+            "consumer_fits": 0,
+            "consumer_fits_this_pass": 0,
+            "consumer_fit_cap": FIT_CAP,
+            "wall_seconds": wall,
+            "wall_seconds_this_pass": wall,
+            "from_oracles": True,
+            "oracle_rescored": False,
+            "wall_cap": WALL_SECONDS_CAP,
+            "downloads": 0,
+        },
+        "obligations": {
+            "methods_package_unmodified": True,
+            "runtime_contracts_operators_unmodified": True,
+            "no_fast_llm": True,
+            "no_slow_llm": True,
+            "no_a3_a5_adaptation_arm": True,
+            "no_oracle_rescore": True,
+            "no_injection_scan": True,
+            "no_pool_expansion": True,
+            "r1_artifacts_not_overwritten": True,
+            "sealed_oracles_not_rewritten": True,
+            "downloads": 0,
+            "this_book_ran_no_adaptation_arm_and_did_not_recompute_oracle_numbers": True,
+            "wall_clock_held": wall <= WALL_SECONDS_CAP,
+            "full_repo_pytest_not_run": True,
+        },
+        "outside_book": [
+            "authorization_audit LOO with min_distinct_tasks=2 requires "
+            "3 unguided positives (loo_minimum after dropping one is "
+            "n-1).  r1 treated 2 cluster positives as enough for TRY.  "
+            "Live code: source_skill.py:249-256.",
+            "ECG200 repair_burst_segment is HELDOUT_ONLY: held-in "
+            "headroom=0 / held-out +0.04 "
+            "(s1_oracle/ECG200__impulse_v2.json programs row).  "
+            "Same failure mode as Herring hampel.  The arbitration "
+            "preview that the burst-repair cluster might host a legal "
+            "course is not supported by the sealed held-in numbers.",
+            "GunPoint burst outlier_iqr is HELDOUT_ONLY (held-in=0 / "
+            "held-out +0.0133).",
+            "ToeSegmentation1 hampel_filter held-in is POSITIVE "
+            "(+0.0833, one row at n=12) but is not in the oracle set "
+            "(held-out utility 0).  Official table does not count it.  "
+            "Even as an extra hampel source it disagrees with GPA/GP "
+            "on period_change_score, so it does not match the GPA∩GP "
+            "Scope; including it as a third source still yields no "
+            "LEARNABLE matching field.",
+            "GPA and GunPoint pattern_view are byte-equal.  A Scope "
+            "built from only those two is the full pattern; no other "
+            "pool unit matches it.",
+            "classification online_loop still does not write "
+            "task_episode_id; source_skill.build_skill_payload still "
+            "does not write evidence_distinct_task_count; Fast-guard "
+            "stays off.  Unchanged from r1 outside-book.",
+        ],
+    }
+    _dump(R2_JSON, payload)
+    R2_MD.write_text(_r2_markdown(payload), encoding="utf-8")
+    print("VERDICT %s  fits=0  wall=%.1fs" % (verdict, wall), flush=True)
+    print("wrote %s" % R2_JSON, flush=True)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--from-oracles", action="store_true",
                         help="reuse sealed s1_oracle files; 0 new fits")
+    parser.add_argument("--legal-r2", action="store_true",
+                        help="r2 legal-treatment reaggregation; 0 fits; "
+                             "does not overwrite r1")
     parser.add_argument("--slow-rehearse", action="store_true",
                         help="unused unless card shape cannot be deduced")
     args = parser.parse_args()
+    if args.legal_r2:
+        try:
+            return run_legal_r2()
+        except cls.Stop as exc:
+            print("STOP %s: %s" % (exc.verdict, exc), flush=True)
+            return 1
     if not args.run:
         parser.print_help()
         return 2

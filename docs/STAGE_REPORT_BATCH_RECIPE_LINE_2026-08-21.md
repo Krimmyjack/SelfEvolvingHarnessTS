@@ -993,6 +993,34 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:runner 最小入口 `--conf-dev-run`(`--dataset` 默认 ECG200);隔离工件 `t6_cls_conf_dev_ecg200.json/.md`;本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;未触 `data/ucr_conf_downloaded/`;他线文件未碰;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
 
+### S1a-r2 收口:HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH;两簇可学均不足通道;9 单元池无 2+1 重组案(2026-08-26 16:xx,执行方)
+
+**判定**:**HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH**(development;不升级课程;S1b 仍冻结)。0 LLM / 0 fit / 0 注入重跑;密封 oracle 只读重聚合;r1 工件未覆写。解释器 `D:\Anaconda_envs\envs\project\python.exe`。提交前 HEAD 将记入工件 `git_head`。
+
+**三条合法性规则(出处)**:(a) Target-local 禁跨单元进 Fast——正典 AGENTS.md:174-175 / 76-81 / 184-191;现役卡 applicability 仅 `task_kind`(shared harness :610-613 → method.py:89-105 → retrieval.py:278-282),T1 惰性闸口拦不住非经验卡,照跑测的是宽 Scope bug。(b) 可授权 Source 证据须 Support 与 delayed 均为 `classify_relation==POSITIVE`(method.py:742-757 / 1466-1492;online_loop.py:201-204;experience_memory.py:434-439;阈值 0.005,禁自造;oracle 仅有拼接 held-in 池,作两门代理)。(c) 仅未引导正例可授权新 Shared TRY(source_skill.py:217-257);未引导=Fast 无同 Program 族 TRY/capability 卡。
+
+**9 单元可学性**(oracle 集算子 × 现役批准语义):GPA hampel LEARNABLE(held-in +0.375);GunPoint hampel LEARNABLE(+0.467);Herring hampel **HELDOUT_ONLY**(held-in 0 / held-out +0.046875,`s1_oracle/Herring__impulse_v2.json:579`);ECG200 repair_burst **HELDOUT_ONLY**(held-in 0 / held-out +0.04);Toe / Lightning2 repair_burst LEARNABLE;Wine/Ham N/A;GunPoint burst iqr HELDOUT_ONLY。**hampel 簇可学 2/3**(独立家族 1=GunPointFamily,GPA↔GP pattern_view 字节相等);**repair_burst 簇可学 2/3**(ECG200 与 Herring 同型:考官可见、学生不可学)。
+
+**正反序合法时间线**:携带禁行后,正序单元 3(GunPoint)后 Slow 可写 Scope-v1 候选(形式 2 正例、交非空)但独立家族=1;authorization_audit LOO min=1<2 → TRY 不授权 → T1 inert → Fast 不可见。反序正向在 4/6,候选成型即课终,同样无 Fast TRY。两序「首次合法 Fast 可见分歧」= **不存在**。每转移合法性列见 `s1a_r2_legal_treatment_audit.md`。
+
+**重组搜索**(现有 9 单元、不扩池):无满足「≥2 可学正例在前、≥1 可学匹配场在后」的 6 单元排列。hampel 匹配场=自身且独立家族 1;burst-repair 可学仅 Toe+L2,Scope 交后无第三可学匹配场。不存在待批重组案。
+
+**S1b 规格**(文字,未写代码):runner 层域绑定——cell 构建给 Target-local 打 domain;跨单元携带过滤异域 Target-local;Source-derived 按 Scope v1 五轴放行。此为协议合规(正典已写,防把宽 Scope bug 当考题),不是改菜单/预算/oracle。methods 第③步仍是长期 Scope 编译;本书不动 methods/;③ 落地后拆 runner 墙。
+
+**成本**:0 LLM / 0 fit / 墙钟 0.02s / 下载 0。**义务**:未跑任何适应臂、未重算 oracle 数值;`methods/`/`runtime/`/`contracts/`/`operators/` 零改;他线文件未碰;未跑全仓 pytest。
+
+**书外**:现役 LOO 要 3 个未引导正例才授权 TRY(r1 把 2 当成够);ECG200 burst-repair 亦 HELDOUT_ONLY,仲裁「改建于该簇」不被密封 held-in 支持;Toe hampel held-in 正但非 oracle 集且 period_change_score 与 GPA/GP 不合。
+
+**提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
+
+### S1a-r1 判词收窄(sol 两点承重批评成立,主线自认失职);S1a-r2 发车;S1b 继续冻结(2026-08-26 15:5x,主线)
+
+**批评一(成立,主线双重失职)**:S1a 时间线的"首次分歧 = GPA Target-local hampel 直接带入 Wine"违反正典(Target-local 限本域,AGENTS.md:170;跨域须 Episode→census→Slow→Source-derived;主线自己入典的 C40 修正案原文在案)——且该通道在代码上可走恰因四步序第③步(Scope 编译修复)未落地、Target-local 卡 applicability 仍仅 task_kind;照此跑 S1b 测到的是宽 Scope bug 而非演化,回落"复制答案"旧单元。主线裁定时未查时间线合法性,失职。**新站规:状态时间线每次转移必须标注放行它的正典条款(合法性列)**。**批评二(成立)**:资格门只查 held-out headroom 未查 held-in 可学性——Herring hampel held-in=0/held-out+0.047,Target 反馈不会批准,系"考官可见、学生不可学"单元。**主线推演的结构后果**:携带禁行+授权证据须未受旧卡引导(防循环授权)下,正序 Source-TRY 卡最早单元 3 后成型、唯一匹配场 Herring 不可学;反序正向在 4/6 位、卡成型即课终——现课程恐判 HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH;repair_burst_segment 簇(3 员)若 held-in 可学,合法课程或需改建于该簇。**S1a-r1 判词收窄为:课程存在菜单 headroom 与条件化响应结构;"A5 拥有合法可学可跨单元生效的处理通道"未证**。**S1a-r2 发车(grok,0 LLM/0 fit,纯重聚合+走码)**:①禁 Target-local 跨单元携带 ②仅 held-in Support/delayed 亦材料级正向的单元计可授权 Source 证据(批准语义引用现役代码行,禁自发明阈值)③仅未受旧 Skill 引导的正例可授权新 Shared TRY ④重画合法状态时间线(Source-derived 何时成型/匹配哪些后续单元/Target 反馈能否批准),每转移标正典条款 ⑤正反序分别重算;附:GunPoint↔GPA 同族域证据独立性弱化注记;给 S1b 的"runner 层执行域绑定"实现规格。判词:LEGAL_EVOLUTION_TREATMENT_QUALIFIED(才批 S1b)/ HEADROOM_WITHOUT_LEGAL_TRANSFER_PATH(换课程结构)/ TREATMENT_EMPTY。
+
+### S1a-r1 裁定:FULL_CURRICULUM_QUALIFIED;guard 档结构性不可达;S1b 按现状放行建议(2026-08-26 15:1x,主线)【判词被上条收窄;"按现状放行 S1b"建议撤回】
+
+**门判**(提交 837b537,0 Fast LLM/0 Slow/69 fit/103s):9 单元双层 oracle 密封;正向 7、identity 2;**hampel 簇过资格门**(GPA+GunPoint+Herring,Pattern 交非空含 local_robust_z_peak=high 类部署可见特征);课程冻结 6 单元 = GPA→Wine→GunPoint→Ham→Herring→GunPoint-burst + 严格反序。**新证据**:repair_burst_segment 在 impulse-v2 下系 ECG200/Toe/Lightning2 的 menu oracle(CLS-4 burst 族中同算子为害)——同算子双命运,条件化再添一证;第二簇入账不进本课。**记录修正**:"ECG200=identity"(上午)被 oracle 层修正为"存在 repair_burst_segment 正解(+0.16 残差可回收)";hampel 被帽拒的三底物命运表不变;Wine/Ham identity 距 clean 上界残差 0.11-0.15 = Program Supply 缺口量化。**结构性发现(处理通道图)**:三分策略 guard 档在分类线不可达——online_loop.py:180-193 不写 task_episode_id(计数塌缩)、source_skill.py:472-478 不写 evidence_distinct_task_count、分类 harness 不调 run_risk_skill_lifecycle;主线"guard 中途解锁"预测在实现层证伪;有效通道 = Target-local capability 携带(单元 2 起首次分歧)+ Slow 授权 Fast-TRY(单元 3 后,LOO min_distinct=2)。**K0 纪律:C40 Target-local hampel 不得入 K0**(否则 K0-fixed 全课漏答案)。**主线放行建议:S1b 按现状跑**(审计时间线按现状算;缺口系过闭非泄漏;修后重跑即 guard 通道价值消融 S1-r2);guard 管道三处修复入具名 backlog。**预测入典(可证伪)**:四臂分歧主现单元 3/5,单元 2/4 近平;单元 6 考 impulse 系 TRY 卡被 Scope 压住不跨族误发(治理读数)。S1b/S1c 未自动衔接,待批。
+
 ### 纲领换轨定案:三段式演化实验(主线自立,sol 六点修订采纳);S1a-r1 发车(2026-08-26 13:2x,主线)
 
 **换轨(用户驱动,主线定稿)**:证明单元从"动作 Skill 跨底物复制"(C38→CLS-CONF 阶梯,被三底物命运表证伪,退役)改为"**整台 Harness 知识状态随经历复利**"。三段式:S1 任务内演化课程(分类)/ S2 跨任务程序性迁移探针(S1 产出算子中立程序知识后;预测 cell 主探,AD 作 Task 卡惰性副守卫)/ S3 受治理 Instruction/策略自修订(**移出关键路径但留 ROADMAP 具名里程碑**;首考靶 = v2 教训自主重发现)。#38-46 的管道工程与能力测绘全部继承为地基。**sol 六点修订全采**:(1) 四臂 = Static(不适应)/ A3-reset(每单元 H0)/ **K0-fixed(同课前知识 K0,单元间禁写回,单元内正常 held-in)**/ A5-online(同 K0 起点,持续整合)——原"A5-冻结"废止(单元 1 特殊化混淆先验与演化);(2) **S1a 先证处理组存在**:每类经验编译终态、Fast 可见时点、Scope 是否来自部署可见特征、A5-online 与 K0-fixed 首次状态分歧单元;`evidence_distinct_task_count≥2` 须核现役编译器实际计数语义(risk_skill.py:246)+ 两害证同 Program/Context/first-fault;主线补:**Wine mad 害证系 0-LLM 预检非 Episode,课前池 mad 害证仅 ECG200 n=1,第二计数单元须课程内产生**;(3) 课程须 ≥2 个独立 Scope 相容正向单元,否则停在 S1a(主线加预注册双出口:FULL_CURRICULUM_QUALIFIED / SAFETY_ONLY_CURRICULUM 带决策件停);防钓鱼 = 候选池一次性预声明 + oracle 一轮算完;(4) **oracle 双层**:menu oracle(现菜单最优,无安全改进则 identity)判决策正确性 + readiness upper bound(clean/exact repair 上界)报残差——Program Supply 缺口不得洗成"数据无需处理";oracle 工件全程隔离于 Harness/Agent/Memory 视野;课程定名 development positive-control curriculum;(5) 门收紧:主读数 = 每单元 regret(menu-oracle 效用−实际冻结部署效用),报累计 regret / held-out 效用与 worst-class harm / 错误晋升 / Target 边际成本(LLM/fit/probe)/ 含 Slow 整合的累计总成本;**A5-online 须在质量与 harm 非劣前提下 regret 或成本至少一项材料级改善**;fit 数改称适应/搜索成本;(6) 单顺序单跑只记 `S1_DEVELOPMENT_EVOLUTION_SIGNAL`,复合措辞需 ≥2 套预冻结反平衡顺序(S1a-r1 一并冻结)。**批准范围:仅 S1a-r1(课程资格 + 双层判分器 + 状态可达性审计),禁自动衔接 S1b/S1c。**
