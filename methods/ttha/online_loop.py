@@ -178,6 +178,15 @@ def _write_target_episode(*, domain: str, op: str,
         task_consumer_key=key,
         domain_namespace=domain,
         context_summary={
+            # B 修 1：Episode 的证据计数单位。risk_skill._task_of 读的就是
+            # 这个键，此前在线回路一处都不写，于是 _task_of 恒得空串，跨单元
+            # 害证在 census 里塌成同一个 Task（分类线两单元 → count=1）。
+            # 取 domain：它就是 domain_namespace 本身，由调用方从 cell /
+            # cohort 标识机械拼出（分类线是 dataset/condition），在一个单元
+            # 内跨探测、跨 r1/r2 恒定，换单元必变；且不含 Outcome、future
+            # 或 delayed 读数——本 Episode 已经带着同一个串了。
+            # 语义与预测线 e1._make_episode:937 同：一个 Task 单元一个串。
+            "task_episode_id": str(domain),
             "cohort": {"series_count": 1, "evaluation_series_count": 0},
             "local_pattern": {"support_gain": support_gain,
                               **(dict(support_context) if support_context else {})},

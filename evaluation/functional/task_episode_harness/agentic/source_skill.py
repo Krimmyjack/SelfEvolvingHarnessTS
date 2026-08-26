@@ -290,6 +290,50 @@ def authorized_try_operators(audit: Sequence[Mapping[str, Any]]) -> set[str]:
     return operators
 
 
+def risk_guard_rows(
+    audit: Sequence[Mapping[str, Any]],
+    *,
+    condition_feature: str,
+) -> list[dict[str, Any]]:
+    """The harm the census can speak about, as structured guard rows.
+
+    A projection, not a second counter and not a second rule.
+    ``pooled_negative`` is already the number of distinct ``task_episode_id``
+    values the harm repeated across -- the same evidence unit
+    ``risk_skill._task_of`` counts in -- so nothing here recomputes it.
+
+    One half of the frozen clause-kind rule is applied, because it decides
+    whether the census may say anything at all here: a cell the census is
+    split on supports neither clause, so it produces no row.  The other half,
+    how many distinct Tasks make a harm repeated, is *not* applied -- the row
+    reports the count it found and leaves the comparison to
+    ``authorization_audit`` and to the retrieval predicate, which already own
+    that number.
+
+    Each row is operator names, the observable Context leaf the cell was
+    counted under, and that count.  No prose: a Fast reader that has to parse
+    a sentence to find out what is deprioritized is exactly what the inert
+    card predicate was written to stop serving.
+    """
+    rows: list[dict[str, Any]] = []
+    for cell in audit:
+        if not int(cell["pooled_negative"]) or int(cell["pooled_positive"]):
+            continue
+        rows.append({
+            "operators": sorted(set(str(cell["program"]).split("+"))),
+            "context_scope": {
+                "feature": str(condition_feature),
+                "op": "==",
+                "value": cell["context_condition"],
+            },
+            "distinct_task_count": int(cell["pooled_negative"]),
+            "deprioritization_authorized": bool(
+                cell["deprioritization_authorized"]),
+        })
+    return sorted(rows, key=lambda row: (row["operators"],
+                                         str(row["context_scope"]["value"])))
+
+
 def census_vocabulary(census: Sequence[Mapping[str, Any]]) -> dict[str, set[str]]:
     """Operators and Context features the census actually mentions.
 
@@ -444,6 +488,7 @@ def build_skill_payload(
     *,
     skill_id: str | None = None,
     applicability: Mapping[str, Any] | None = None,
+    risk_evidence: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """The ``skill-entry/1`` value for the Source-derived General Skill.
 
@@ -457,10 +502,30 @@ def build_skill_payload(
     ``skill_id`` / ``applicability`` default to the frozen forecasting
     constants.  Passing them is how the AD wrapper names its own entry
     without rewriting this module's defaults.
+
+    ``risk_evidence`` carries the deprioritizations the deterministic
+    authorization audit already granted (see :func:`risk_guard_rows`).  The
+    retrieval layer reads ``risk_guards.evidence_distinct_task_count`` to
+    decide whether a card's RISK clause is repeated evidence or free prose;
+    until this argument existed the compiler never wrote that field, so the
+    clause was unreadable there no matter what the census said and every such
+    card resolved as inert.  Passing nothing keeps the pre-existing bytes.
     """
     body = "\n".join(
         "%s: %s" % (name, str(sections[name]).strip()) for name in SECTIONS
     )
+    guards: dict[str, Any] = {
+        "carrier": "source_derived_general_skill",
+        "advises_the_proposal_stage_only": True,
+        "never_supplies_a_candidate": True,
+        "requires_target_support": True,
+        "sections": {name: str(sections[name]).strip() for name in SECTIONS},
+    }
+    rows = [dict(row) for row in (risk_evidence or ())]
+    if rows:
+        guards["deprioritized_scoped_evidence"] = rows
+        guards["evidence_distinct_task_count"] = max(
+            int(row["distinct_task_count"]) for row in rows)
     return {
         "schema_version": "skill-entry/1",
         "skill_id": skill_id or SOURCE_SKILL_ID,
@@ -469,11 +534,5 @@ def build_skill_payload(
         "body": body,
         "observable_applicability": dict(applicability or SOURCE_APPLICABILITY),
         "allowed_tools": [],
-        "risk_guards": {
-            "carrier": "source_derived_general_skill",
-            "advises_the_proposal_stage_only": True,
-            "never_supplies_a_candidate": True,
-            "requires_target_support": True,
-            "sections": {name: str(sections[name]).strip() for name in SECTIONS},
-        },
+        "risk_guards": guards,
     }

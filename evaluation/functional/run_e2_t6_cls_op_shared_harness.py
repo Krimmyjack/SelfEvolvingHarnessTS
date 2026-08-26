@@ -713,6 +713,47 @@ def _plain(value: Any) -> Any:
     return value
 
 
+def _risk_lifecycle(state: Mapping[str, Any], *, arm: str) -> dict[str, Any]:
+    """Compile this arm's own harm Episodes into deprioritization Skills.
+
+    B 修 3：接线，不是新生命周期。The G1 lifecycle
+    (``agentic/runner.run_risk_skill_lifecycle``) is called unchanged, on this
+    arm's own Episodes read back out of the Runtime; the two-distinct-Task
+    rule, the census, the retirement order and the Skill payload all stay
+    where they are.  Until this call existed the classification line wrote
+    harm Episodes that no compiler ever read, so a repeated harm could not
+    become a guard no matter how many units produced it.
+
+    Runs after every round, including rounds that ended without a winner: a
+    round that spent a probe and got nothing is exactly the evidence this is
+    built from.
+    """
+    from evaluation.functional.task_episode_harness.agentic.runner import (
+        run_risk_skill_lifecycle,
+    )
+    from evaluation.functional.task_episode_harness.e1 import _ArmState
+
+    method = state["method"]
+    before = method._active_snapshot()  # noqa: SLF001
+    arm_state = _ArmState(
+        arm=arm, memories=[],
+        episodes=list(method.experience_episodes),
+        store=state["store"], active_snapshot=before, active_skill_ids=[])
+    try:
+        out = run_risk_skill_lifecycle(arm_state)
+    except Exception as exc:  # noqa: BLE001
+        # A failure to write knowledge is not a failure to measure the round.
+        return {"events": [{"stage": "lifecycle_failed",
+                            "error": "%s: %s" % (type(exc).__name__, exc)}],
+                "risk_skill_ids": [], "candidate_families": []}
+    if arm_state.active_snapshot is not before:
+        # _apply_manifest already moved the store's active pointer; the
+        # method holds its own reference, so the next round only sees the
+        # guard if that reference moves too.
+        method._snapshot = arm_state.active_snapshot  # noqa: SLF001
+    return out
+
+
 def _run_round(
     *,
     state: Mapping[str, Any],
@@ -778,6 +819,7 @@ def _run_round(
         activated = activate_approved(result, state["store"])
         if activated:
             state["approved_skill_ids"].append(str(result.approved_skill_id))
+    risk_lifecycle = _risk_lifecycle(state, arm=arm)
 
     trace = method.last_trace
     fresh_ids = set(result.episode_ids)
@@ -811,6 +853,7 @@ def _run_round(
         "delayed_event": _plain(result._delayed_event),
         "approved_skill_id": result.approved_skill_id,
         "activated": activated,
+        "risk_lifecycle": _plain(risk_lifecycle),
         "episodes": [{
             "episode_id": e.episode_id,
             "domain_namespace": e.domain_namespace,
@@ -1061,7 +1104,13 @@ def _source_skill_entry(consolidation: Mapping[str, Any]) -> dict[str, Any] | No
         return None
     entry = ss.build_skill_payload(
         accepted["sections"], skill_id=SOURCE_SKILL_ID,
-        applicability=SOURCE_APPLICABILITY)
+        applicability=SOURCE_APPLICABILITY,
+        # B 修 2：把审计已经算好的去重害证计数带上卡。谓词读的是
+        # risk_guards.evidence_distinct_task_count；不带，RISK 子句在
+        # retrieval 眼里永远是自由散文，卡恒判 inert。
+        risk_evidence=ss.risk_guard_rows(
+            consolidation["authorization_audit"],
+            condition_feature=CENSUS_CONDITION_KEY))
     authorized = list(consolidation["authorized_try_operators"])
     if authorized:
         # Execution right, and only then: the audited TRY operators become a

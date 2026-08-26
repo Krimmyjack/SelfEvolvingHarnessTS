@@ -1,0 +1,214 @@
+{
+ "evidence_grade": "INFRASTRUCTURE",
+ "experience_card_chain": {
+  "as_shipped_scope": {
+   "after_count": 2,
+   "after_inert": true,
+   "audit_pooled_negative": [
+    2
+   ],
+   "before_count": null,
+   "before_inert": true,
+   "deprioritization_authorized": [
+    true
+   ],
+   "guard_rows": [
+    {
+     "context_scope": {
+      "feature": "support_reproduces_fit_signal",
+      "op": "==",
+      "value": false
+     },
+     "deprioritization_authorized": true,
+     "distinct_task_count": 2,
+     "operators": [
+      "outlier_mad"
+     ]
+    }
+   ]
+  },
+  "with_a_scope_finer_than_the_eligibility_gate": {
+   "after_count": 2,
+   "after_inert": false,
+   "audit_pooled_negative": [
+    2
+   ],
+   "before_count": null,
+   "before_inert": true,
+   "deprioritization_authorized": [
+    true
+   ],
+   "guard_rows": [
+    {
+     "context_scope": {
+      "feature": "support_reproduces_fit_signal",
+      "op": "==",
+      "value": false
+     },
+     "deprioritization_authorized": true,
+     "distinct_task_count": 2,
+     "operators": [
+      "outlier_mad"
+     ]
+    }
+   ]
+  }
+ },
+ "generated_by": "tests/functional/test_guard_pipeline_reachability.py",
+ "git_head": "87ee7c186274f7adfade0a86b296ae332d9d7358",
+ "llm_calls": 0,
+ "protocol_version": "b_guard_pipeline_reachability_v1",
+ "python": "3.10.19",
+ "real_episode": {
+  "delayed_effect": null,
+  "delayed_gain": null,
+  "domain_namespace": "ECG200/fit_only_artifact",
+  "episode_id": "ECG200/fit_only_artifact_target_outlier_mad_a3_ECG200_r2_p1",
+  "evidence_level": "SUPPORT",
+  "local_status": "EPISODE_ONLY",
+  "relation": "NEGATIVE",
+  "support_effect": {
+   "aggregate_direction": "degraded",
+   "aggregate_gain": -0.1428571428571429,
+   "classification_basis": "aggregate < -0.005",
+   "consumer_id": "ridge-raw-plus-difference-v1",
+   "harmed_series": [
+    "view_0"
+   ],
+   "harmed_series_count": 1,
+   "material_threshold": 0.005,
+   "min_per_series_gain": -1.0,
+   "relation": "NEGATIVE",
+   "series_read": 2
+  },
+  "support_gain": -0.1428571428571429,
+  "workflow_signature": "outlier_mad"
+ },
+ "real_episode_source": "artifacts/functional/e2/t6_cls_conf_dev_ecg200.json",
+ "repairs": [
+  {
+   "change": "context_summary gains task_episode_id = the `domain` argument, which is the Episode's own domain_namespace",
+   "repair": 1,
+   "site": "methods/ttha/online_loop.py:_write_target_episode",
+   "why_no_leak": "it is the string already stored on the same Episode as domain_namespace, and it carries no Outcome, no delayed reading and no held-out label",
+   "why_stable": "the caller builds it from the cell identity before the round runs (classification: dataset/condition), so it is constant across probes and across r1/r2 inside one unit and changes when the unit changes"
+  },
+  {
+   "change": "risk_guards gains evidence_distinct_task_count and a structured deprioritized_scoped_evidence row (operators + context scope + count); the body is byte-identical and no free text is added",
+   "repair": 2,
+   "site": "evaluation/functional/task_episode_harness/agentic/source_skill.py:risk_guard_rows + build_skill_payload"
+  },
+  {
+   "change": "the existing agentic/runner.run_risk_skill_lifecycle is called on this arm's own Episodes after every round; no new lifecycle, no new census, no new rule",
+   "repair": 3,
+   "site": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:_risk_lifecycle, called from _run_round"
+  }
+ ],
+ "safety_guard_chain": [
+  {
+   "after": [
+    "ECG200/fit_only_artifact",
+    "Wine/fit_only_artifact"
+   ],
+   "before": [
+    "",
+    ""
+   ],
+   "reachable_after": true,
+   "reachable_before": false,
+   "reader": "risk_skill._task_of (risk_skill.py:72-74)",
+   "stage": "1. Episode carries the unit id"
+  },
+  {
+   "after": 2,
+   "before": 1,
+   "reachable_after": true,
+   "reachable_before": false,
+   "reader": "risk_skill.census (risk_skill.py:83-112)",
+   "stage": "2. distinct harm Tasks for the family"
+  },
+  {
+   "after": [
+    "outlier_mad"
+   ],
+   "before": [],
+   "reachable_after": true,
+   "reachable_before": false,
+   "reader": "risk_skill.risk_candidates (risk_skill.py:153-184)",
+   "stage": "3. guard candidate at MIN_DISTINCT=2"
+  },
+  {
+   "after": [
+    "target_risk_outlier_mad"
+   ],
+   "before": "no call site existed",
+   "reachable_after": true,
+   "reachable_before": false,
+   "reader": "run_e2_t6_cls_op_shared_harness._risk_lifecycle -> agentic/runner.run_risk_skill_lifecycle",
+   "stage": "4. classification line compiles it"
+  },
+  {
+   "after": [
+    "target_risk_outlier_mad"
+   ],
+   "before": [],
+   "reachable_after": true,
+   "reachable_before": false,
+   "reader": "retrieval.resolve_harness_view(role='fast')",
+   "stage": "5. served into the Fast view"
+  },
+  {
+   "after": {
+    "allowed_tools": [],
+    "observable_applicability": {
+     "const": true
+    },
+    "risk_guards": {
+     "deprioritize_only": true,
+     "evidence_distinct_task_count": 2,
+     "never_supplies_a_candidate": true,
+     "not_a_prohibition": true,
+     "overridable_by_current_observation": true
+    },
+    "skill_id": "target_risk_outlier_mad",
+    "skill_kind": "safety",
+    "supplies_a_frozen_candidate": false
+   },
+   "before": null,
+   "reachable_after": true,
+   "reachable_before": false,
+   "reader": "risk_skill.risk_skill_payload + fast_agent._skill_frozen_candidates",
+   "stage": "6. form is a structured avoid, not a candidate"
+  }
+ ],
+ "structural_findings": [
+  {
+   "detail": "run_e2_t6_cls_op_shared_harness.SOURCE_APPLICABILITY is task_kind == classification, and retrieval._scopes_beyond_task_kind requires something finer, so repair 2 is necessary but not sufficient for the *experience card* branch of the middle tier. Narrowing that constant is a Scope change and is outside this book.",
+   "finding": "the shipped source card is scoped only to the eligibility gate"
+  },
+  {
+   "detail": "CENSUS_CONDITION_KEY = support_reproduces_fit_signal is absent from contracts/observables.OBSERVABLE_FEATURES, so it cannot appear in observable_applicability at all; the guard row records it inside risk_guards, which is free-form JSON. Giving the middle tier a real Context scope on this line therefore needs an observable-contract addition, not a wiring fix.",
+   "finding": "the classification census condition is not an observable feature"
+  },
+  {
+   "detail": "online_loop._write_target_episode writes no context_summary.task_signature, so risk_skill.applicability_from returns {'const': True} and the minted guard is unconditioned within the arm. The frozen risk_skill rule says that is the correct reading of a family that failed under every observed Context; narrowing it means writing a signature, which is a Scope change and is outside this book.",
+   "finding": "classification Episodes carry no task_signature"
+  },
+  {
+   "detail": "risk_skill.risk_skill_payload renders negative_task_ids into the body ('Tasks: ...'), so with dataset/condition ids a later unit's Fast prompt sees earlier cohort names as provenance. Applicability is still decided by observable_applicability, never by the names. Changing the body is a semantics change and is outside this book.",
+   "finding": "the guard body names the units the harm happened in"
+  },
+  {
+   "detail": "pre-existing: a multi-line f-string expression at line 166 is 3.12+ syntax. Not touched, not caused here.",
+   "finding": "tests/functional/test_skill_revocation.py does not parse on Python 3.10"
+  }
+ ],
+ "synthetic_second_unit": "Wine/fit_only_artifact",
+ "thresholds_unchanged": {
+  "risk_skill.RISK_MIN_DISTINCT_TASKS": 2,
+  "run_e2_t6_cls_op_shared_harness.MATERIAL": 0.005,
+  "run_e2_t6_cls_op_shared_harness.MIN_DISTINCT_TASKS": 2
+ },
+ "verdict": "GUARD_TIER_REACHABLE_AT_TWO_UNITS",
+ "verdict_reason": "Every stage of the safety-guard chain was unreachable before the three repairs and is reachable after them at n=2 distinct units, on one real ECG200 outlier_mad harm Episode plus one synthetic second-unit harm.  The experience-card branch now carries the count the predicate reads, but stays withheld from Fast because the shipped card's Scope is the eligibility gate itself -- a structural finding, not a repair."
+}
