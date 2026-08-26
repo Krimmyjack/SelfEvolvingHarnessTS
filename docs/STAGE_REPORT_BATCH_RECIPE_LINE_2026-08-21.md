@@ -1071,6 +1071,20 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:新 runner、`artifacts/functional/e2/s1_curriculum_frozen.json/.md`、`artifacts/functional/e2/s1_smoke_cell1.json/.md`、本节(含他书未提交台账条目一并入库,未删改既有正文)。封存 oracle 件零改写;未跑全仓 pytest;零下载。
 
+### 部署规则修复落地;S1c 正序全程跑发车(2026-08-26 22:2x,主线)
+
+**修复**(提交 987a13c,0 LLM/19 fit/33s):共享函数 `_incumbent_after_delayed`——winner 仅在 approved_skill_id 置位时上账;拒批不清既往已批 incumbent(r1 批 hampel、r2 拒 winsorize → 站 hampel);无既往则 identity。两轮体同源单定义;三只读审计字段;8 新测 + 12 guard 测全绿;r3 smoke 如预测:三臂 identity、harm 零、regret +0.0103,新增站岗门 no_delayed_rejected_winner_deployed。受影响入口清单在案(run Part C/conf_run/r2_replay/S1 runner)。**记录修正**:r2 的"负 regret=卖类博弈"实例系本 bug 症状(被拒程序上了部署账本),一般原则(regret 配 harm 读)保留。**S1c 发车**(续 grok 会话):冻结课程 r2 正序 7 单元 × 四臂,live 后端(先 probe 核身),帽 LLM≤400/fit≤900/墙钟≤3h 硬;判词封顶 S1_DEVELOPMENT_EVOLUTION_SIGNAL,判读铁律 regret 配 harm/worst-class 非劣;重点观测两个未测环:同名算子害证是否在两害证单元均被采样、guard 入视图后 proposer 是否避开;工件 s1_course_forward_run1 隔离。
+
+### S1c 收口:NEGATIVE_TRANSFER;两未测环均未点亮;单顺序单跑 development(2026-08-26 23:2x,执行方)
+
+**判定**:**NEGATIVE_TRANSFER**(development;单顺序单跑;封顶仍是 S1_DEVELOPMENT_EVOLUTION_SIGNAL,本跑未达)。解释器 `D:\Anaconda_envs\envs\project\python.exe`。后端核身 live:`gpt-5.6-sol` @ `https://api.agicto.cn/v1`,returned_model=`gpt-5.6-sol`;probe 不计入课程帽。课程/预算零改:冻结 r2 正序 7 单元,帽 LLM 199/400、fit 105/900、墙钟 3509s/10800s。
+
+**四臂累计**(regret 必须配 harm/worst-class 读,禁单引):Static / K0-fixed / A5-online 三臂全课程 identity,cum held-out +0.0000,cum regret +0.3859,harm 0。**A3-reset 唯一分离**:单元 3 PowerCons 批准 `hampel_filter`(FROZEN_ACTIVE_SKILL_RECALL,held-out +0.0833,regret +0.0500 vs oracle +0.1333,worst-class +0.0444,harm False),cum held-out +0.0833,cum regret +0.3026。A5 在该单元 0 probe / 1 fit(只部署 identity),故质量劣于冷启动,判 NEGATIVE_TRANSFER。harm 四臂全 0、worst-class 非负。
+
+**两未测环**:①同名算子害证未在两害证单元同时落库——A3/A5 只在 MiddlePhalanx 写到 `repair_level_shift` NEGATIVE,K0 只在 PowerCons 写到 `outlier_iqr`+`repair_level_shift` NEGATIVE,无交集;算术上可成型的 `outlier_iqr` 从未被 A5 采样为害证。②guard 从未进入 A5 Fast 视图(位置 3 后无成型),proposer 尊重问题无物可测。winsorize Support+/delayed− 本跑 0 条(live 未提案 winsorize;与 scripted smoke 不同)。A5 六次单元间 Slow 各 1 LLM,carry 技能始终空。
+
+**提交**:runner `--run-course --order forward`;`s1_course_forward_run1.json/.md`;本节(含他书未提交的 S1c 发车条,未删改既有正文)。**义务**:课程/预算未动;后端身份 gpt-5.6-sol@agicto,未换后端;两未测环读数见上;`methods/`/`runtime/`/`contracts/`/`operators/` 与共享 runner 零改;oracle 隔离墙自检三面 blocked、判分只读 7 课键;密封件未覆写;未跑全仓 pytest;零下载。
+
 ### S1b-r2 收口:仪器解锁 + smoke 抓获两发现;部署规则 canon-vs-code bug 拦停 S1c;修复书发车(2026-08-26 22:0x,主线)
 
 **r2 交付**(提交 4cca785,0 真 LLM/22 fit/34s):新 7 单元课程全底物互异、最小切片 7-45 行、零空切片;降档轨迹全记录(可学组走完 5→4→3 严格阶梯后按声明回到地板 5 允许同族重复,DistalPhalanx burst 具名入选);r1 课程存档未覆写。smoke 八门全绿且拿到**活证**:三适应臂各得 winsorize 的 NEGATIVE Support 回执(slice +0.1333/delayed −0.1111),feedback_surface_evidence_mode=live,S1c 仪器阻塞解除。**规则解释确认(主线)**:必要条件 |读数|≥1/切片只约束害证/可学组;identity/HELDOUT_ONLY 组定义读数为零,地板即可读性要求——解释正确,反事实已记。**发现一(regret 可被卖类游戏)**:三适应臂全冻结 winsorize,裸 held-out +0.1993 越过 menu oracle(+0.0103,类伤约束下),regret −0.1890 与 harm 事件同现——预注册"regret 必须与 harm/worst-class 非劣配对"实战立功;**S1c 判读禁单引 regret,站规**。**发现二(部署规则 canon-vs-code bug,拦停 S1c)**:handle_feedback_delayed 正确拒批(approved_skill_id=none),但 Support 立的 ledger incumbent 未被清除,_frozen_recall 照常部署被拒程序——三级反馈"delayed 才批准"教义在部署环失守;共享 runner 轮体规则,r2 记录未修(正确纪律)。**主线裁定:S1c 前必修**(canon-vs-code,B/T1 同类;污染 harm/regret 读数且系统性利好激进臂);修复 = delayed 拒批时清除/不采信 incumbent,部署回退 identity,配聚焦测试+单元 1 smoke 复跑(期望三臂改部署 identity、harm 事件归零、regret 回正);续 opus 会话执行,sol 异步复核。**发现三**:iqr 在两害证单元均合法可读有害(−0.0944@1/45、−0.1852@1/12),guard 前向位置 3 后原则可成型,实际取决于提案采样。

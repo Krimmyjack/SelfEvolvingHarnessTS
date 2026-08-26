@@ -44,12 +44,16 @@ Entry points::
 
   python evaluation/functional/run_e2_s1_curriculum_four_arms.py --select-curriculum
   python evaluation/functional/run_e2_s1_curriculum_four_arms.py --smoke
+  python evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward
 
 ``--select-curriculum`` reads the sealed census and oracle artifacts, selects
 the seven units by the declared mechanical rules, freezes both orders and
 writes ``s1_curriculum_frozen.json/.md``.  ``--smoke`` runs curriculum unit 1
-only, at a reduced protocol, and writes ``s1_smoke_cell1.json/.md``.  The full
-course is S1c and is deliberately not an entry point here.
+only, at a reduced protocol, and writes ``s1_smoke_cell1.json/.md``.
+``--run-course --order forward`` is the S1c live full-course entry.  It reuses
+``run_unit``, Slow integration, the domain-binding wall and ``judge``; it does
+not change arm, scoring or budget constants.  Reverse is accepted as a flag
+so the frozen reverse order can be named, but this book only runs forward.
 
 Evidence grade: DEVELOPMENT.
 """
@@ -253,6 +257,9 @@ FROZEN_JSON = E2 / "s1_curriculum_frozen.json"
 FROZEN_MD = E2 / "s1_curriculum_frozen.md"
 SMOKE_JSON = E2 / "s1_smoke_cell1.json"
 SMOKE_MD = E2 / "s1_smoke_cell1.md"
+COURSE_RUN_ID = "s1_course_fwd_run1"
+COURSE_JSON = E2 / "s1_course_forward_run1.json"
+COURSE_MD = E2 / "s1_course_forward_run1.md"
 
 ARM_STATIC = "Static"
 ARM_A3 = "A3-reset"
@@ -2977,6 +2984,965 @@ def _smoke_markdown(payload: Mapping[str, Any]) -> str:
 
 
 # =========================================================================== #
+# Part 7 -- S1c full course (live).  Reuses Parts 3-5; no budget/arm change.
+# =========================================================================== #
+def _probe_live_backend() -> dict[str, Any]:
+    """Same locked model/URL the shared runner's ``_live_agent`` uses."""
+    from evaluation.functional.task_episode_harness.e1 import NF_BASE_URL
+
+    identity = {
+        "code_path": {
+            "model": cls.SLOW_MODEL,
+            "base_url": NF_BASE_URL,
+            "agent_constructor": (
+                "_live_agent -> TTHAAgentCore(model=SLOW_MODEL)"),
+        }
+    }
+    probe = cls._probe_locked_backend(identity)
+    probe["expected_model"] = cls.SLOW_MODEL
+    probe["expected_base_url"] = NF_BASE_URL
+    probe["family"] = "shared runner _live_backend / _live_agent"
+    probe["charged_to_course_cap"] = False
+    return probe
+
+
+def _public_unit_result(result: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in result.items()
+            if not str(key).startswith("_")}
+
+
+def _dedup_skill_entries(
+    entries: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    by_id: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        by_id[str(entry["skill_id"])] = dict(entry)
+    return list(by_id.values())
+
+
+def _winsorize_split_events(
+    unit_results: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    for result in unit_results:
+        for record in result.get("rounds") or []:
+            for episode in record.get("episodes") or []:
+                signature = str(episode.get("workflow_signature") or "")
+                if "winsorize" not in signature:
+                    continue
+                support = episode.get("support_gain")
+                delayed = episode.get("delayed_gain")
+                support_pos = support is not None and float(support) > 0
+                delayed_neg = delayed is not None and float(delayed) < 0
+                rows.append({
+                    "arm": result["arm"],
+                    "unit_id": result["unit_id"],
+                    "round": record.get("round"),
+                    "program": signature,
+                    "relation": episode.get("relation"),
+                    "support_gain": support,
+                    "delayed_gain": delayed,
+                    "support_positive_delayed_negative": bool(
+                        support_pos and delayed_neg),
+                })
+    by_arm: dict[str, int] = {}
+    for row in rows:
+        if row["support_positive_delayed_negative"]:
+            by_arm[str(row["arm"])] = by_arm.get(str(row["arm"]), 0) + 1
+    return {
+        "events": rows,
+        "support_positive_delayed_negative_count": sum(by_arm.values()),
+        "by_arm": by_arm,
+        "reading": (
+            "winsorize Support-positive / delayed-negative is the "
+            "cross-unit memory question: does a later unit stop proposing "
+            "the same split after an earlier unit wrote it"
+            if rows else
+            "no winsorize episode was written on this run"),
+    }
+
+
+def _guard_timeline(
+    unit_results: Sequence[Mapping[str, Any]],
+    course: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """The two untested loops: same-operator harm sampling, then respect."""
+    harm_ids = [str(unit["unit_id"]) for unit in course
+                if unit.get("group") == GROUP_HARM]
+    harm_positions = [int(unit.get("forward_position") or 0)
+                      for unit in course if unit.get("group") == GROUP_HARM]
+    expected_after = max(harm_positions) if harm_positions else None
+
+    harm_episodes: list[dict[str, Any]] = []
+    guard_events: list[dict[str, Any]] = []
+    proposals: list[dict[str, Any]] = []
+    for result in unit_results:
+        unit = next((row for row in course
+                     if str(row["unit_id"]) == str(result["unit_id"])), {})
+        position = unit.get("forward_position")
+        for record in result.get("rounds") or []:
+            guarded = list(
+                (record.get("guard_readout") or {}).get(
+                    "guarded_operators_in_fast_view") or [])
+            probed = list(
+                (record.get("guard_readout") or {}).get(
+                    "probed_operators") or [])
+            lifecycle = record.get("risk_lifecycle") or {}
+            minted = list(lifecycle.get("risk_skill_ids") or [])
+            if minted or guarded:
+                guard_events.append({
+                    "arm": result["arm"],
+                    "unit_id": result["unit_id"],
+                    "forward_position": position,
+                    "round": record.get("round"),
+                    "minted_or_active_guards": minted,
+                    "guarded_operators_in_fast_view": guarded,
+                    "probed_operators": probed,
+                    "guarded_but_probed_anyway": list(
+                        (record.get("guard_readout") or {}).get(
+                            "guarded_but_probed_anyway") or []),
+                    "guarded_and_not_probed": list(
+                        (record.get("guard_readout") or {}).get(
+                            "guarded_and_not_probed") or []),
+                })
+            proposals.append({
+                "arm": result["arm"],
+                "unit_id": result["unit_id"],
+                "forward_position": position,
+                "round": record.get("round"),
+                "probed_operators": probed,
+                "guarded_operators_in_fast_view": guarded,
+            })
+            for episode in record.get("episodes") or []:
+                if str(episode.get("relation") or "") != "NEGATIVE":
+                    continue
+                ops = _ops_in(episode.get("workflow_signature"))
+                for op in ops:
+                    harm_episodes.append({
+                        "arm": result["arm"],
+                        "unit_id": result["unit_id"],
+                        "forward_position": position,
+                        "round": record.get("round"),
+                        "operator": op,
+                        "workflow_signature": episode.get(
+                            "workflow_signature"),
+                        "support_gain": episode.get("support_gain"),
+                        "delayed_gain": episode.get("delayed_gain"),
+                    })
+
+    loop1: dict[str, Any] = {"harm_units": harm_ids, "by_arm": {}}
+    for arm in ADAPTIVE_ARMS:
+        per_unit: dict[str, list[str]] = {}
+        for unit_id in harm_ids:
+            ops = sorted({row["operator"] for row in harm_episodes
+                          if row["arm"] == arm and row["unit_id"] == unit_id})
+            per_unit[unit_id] = ops
+        shared = (sorted(set.intersection(
+            *[set(ops) for ops in per_unit.values()]))
+            if per_unit and all(per_unit.values()) else [])
+        loop1["by_arm"][arm] = {
+            "negative_operators_by_harm_unit": per_unit,
+            "same_operator_on_both_harm_units": shared,
+            "sampled": bool(shared),
+        }
+    a5_loop1 = loop1["by_arm"][ARM_A5]["same_operator_on_both_harm_units"]
+    loop1["answer"] = (
+        "yes: A5-online wrote a NEGATIVE Episode for %s on both harm units"
+        % a5_loop1 if a5_loop1 else
+        "no: A5-online did not write a same-operator NEGATIVE Episode on "
+        "both harm units")
+
+    a5_formed = [row for row in guard_events
+                 if row["arm"] == ARM_A5 and row["minted_or_active_guards"]]
+    formed_at = None
+    if a5_formed:
+        formed_at = min(int(row["forward_position"] or 99)
+                        for row in a5_formed)
+    later = [row for row in proposals
+             if row["arm"] == ARM_A5
+             and formed_at is not None
+             and int(row.get("forward_position") or 0) > formed_at]
+    respected = []
+    violated = []
+    for row in later:
+        if row["guarded_operators_in_fast_view"]:
+            if row.get("forward_position") is not None:
+                pass
+        guarded = set(row["guarded_operators_in_fast_view"] or [])
+        probed = set(row["probed_operators"] or [])
+        hit = sorted(guarded & probed)
+        avoided = sorted(guarded - probed)
+        if hit:
+            violated.append({**row, "probed_guarded": hit})
+        elif guarded:
+            respected.append({**row, "avoided": avoided})
+
+    contrast: list[dict[str, Any]] = []
+    if formed_at is not None:
+        later_units = [unit for unit in course
+                       if int(unit.get("forward_position") or 0) > formed_at]
+        for unit in later_units:
+            uid = str(unit["unit_id"])
+            per_arm = {}
+            for arm in ADAPTIVE_ARMS:
+                ops = sorted({
+                    op for row in proposals
+                    if row["arm"] == arm and row["unit_id"] == uid
+                    for op in (row["probed_operators"] or [])})
+                guarded = sorted({
+                    op for row in proposals
+                    if row["arm"] == arm and row["unit_id"] == uid
+                    for op in (row["guarded_operators_in_fast_view"] or [])})
+                per_arm[arm] = {"probed": ops, "guarded_in_view": guarded}
+            contrast.append({"unit_id": uid,
+                             "forward_position": unit.get("forward_position"),
+                             "by_arm": per_arm})
+
+    loop2 = {
+        "expected_earliest_position": expected_after,
+        "a5_guard_formed_at_position": formed_at,
+        "formed_after_second_harm_unit": bool(
+            formed_at is not None and expected_after is not None
+            and formed_at >= expected_after),
+        "later_rounds_that_respected_the_guard": respected,
+        "later_rounds_that_probed_a_guarded_operator": violated,
+        "proposal_contrast_after_formation": contrast,
+        "answer": (
+            "guard never entered the A5-online Fast view"
+            if formed_at is None else
+            ("yes: after position %s the A5 proposer left guarded "
+             "operators unprobed (%d rounds); %d rounds still probed "
+             "a guarded operator"
+             % (formed_at, len(respected), len(violated)))
+        ),
+    }
+    return {
+        "harm_episodes": harm_episodes,
+        "guard_events": guard_events,
+        "loop_1_same_operator_harm_sampled_on_both_harm_units": loop1,
+        "loop_2_guard_respected_by_proposer": loop2,
+        "design_intent": (
+            "forward order places the second harm unit at position %s; "
+            "the guard is compilable after that unit if the same Program "
+            "family was sampled as harmful on both harm units"
+            % expected_after),
+    }
+
+
+def _course_verdict(*, judging: Mapping[str, Any],
+                    timeline: Mapping[str, Any],
+                    ledger: Mapping[str, Any],
+                    stopped: str | None,
+                    n_units_done: int,
+                    n_units: int) -> dict[str, Any]:
+    if stopped:
+        return {
+            "verdict": stopped,
+            "ceiling": PRE_REGISTERED_READOUT[
+                "verdict_ceiling_for_a_single_order_single_run"],
+            "reason": "stopped before a full-course development readout",
+            "units_completed": n_units_done,
+            "units_in_course": n_units,
+        }
+    totals = dict(judging.get("totals_by_arm") or {})
+    material = float(MATERIAL)
+
+    def _arm(name: str) -> dict[str, Any]:
+        return dict(totals.get(name) or {})
+
+    a5, a3, k0, static = (_arm(ARM_A5), _arm(ARM_A3),
+                          _arm(ARM_K0), _arm(ARM_STATIC))
+
+    def _num(row: Mapping[str, Any], key: str) -> float:
+        return float(row.get(key) or 0.0)
+
+    a5_util, a3_util, k0_util = (
+        _num(a5, "cumulative_heldout_utility"),
+        _num(a3, "cumulative_heldout_utility"),
+        _num(k0, "cumulative_heldout_utility"))
+    a5_reg, a3_reg, k0_reg = (
+        _num(a5, "cumulative_regret"),
+        _num(a3, "cumulative_regret"),
+        _num(k0, "cumulative_regret"))
+    a5_harm, a3_harm, k0_harm = (
+        int(a5.get("harm_events") or 0),
+        int(a3.get("harm_events") or 0),
+        int(k0.get("harm_events") or 0))
+    a5_worst, a3_worst, k0_worst = (
+        _num(a5, "worst_class_harm_min"),
+        _num(a3, "worst_class_harm_min"),
+        _num(k0, "worst_class_harm_min"))
+    a5_cost = (int(a5.get("llm") or 0) + int(ledger.get("llm_calls_slow") or 0)
+               + int(a5.get("consumer_fits") or 0))
+    a3_cost = int(a3.get("llm") or 0) + int(a3.get("consumer_fits") or 0)
+    k0_cost = int(k0.get("llm") or 0) + int(k0.get("consumer_fits") or 0)
+
+    quality_noninf = (
+        a5_util + material >= a3_util and a5_util + material >= k0_util)
+    harm_noninf = (
+        a5_harm <= a3_harm and a5_harm <= k0_harm
+        and a5_worst + material >= a3_worst
+        and a5_worst + material >= k0_worst)
+    regret_gain_vs_a3 = a3_reg - a5_reg
+    regret_gain_vs_k0 = k0_reg - a5_reg
+    cost_gain_vs_a3 = a3_cost - a5_cost
+    cost_gain_vs_k0 = k0_cost - a5_cost
+    material_regret = (regret_gain_vs_a3 >= material
+                       or regret_gain_vs_k0 >= material)
+    material_cost = cost_gain_vs_a3 >= 1 or cost_gain_vs_k0 >= 1
+
+    loop1 = (timeline.get(
+        "loop_1_same_operator_harm_sampled_on_both_harm_units") or {})
+    loop2 = timeline.get("loop_2_guard_respected_by_proposer") or {}
+    a5_shared = list((loop1.get("by_arm") or {}).get(ARM_A5, {}).get(
+        "same_operator_on_both_harm_units") or [])
+    formed_at = loop2.get("a5_guard_formed_at_position")
+    respected = list(loop2.get("later_rounds_that_respected_the_guard") or [])
+    violated = list(loop2.get(
+        "later_rounds_that_probed_a_guarded_operator") or [])
+    attributable = bool(
+        a5_shared or formed_at is not None or respected or violated
+        or int(a5.get("llm") or 0) != int(k0.get("llm") or 0)
+        or _num(a5, "cumulative_heldout_utility") != k0_util
+        or _num(a5, "cumulative_regret") != k0_reg)
+
+    comparisons = {
+        "material_threshold": material,
+        "heldout_utility": {"A5": a5_util, "A3": a3_util, "K0": k0_util,
+                            "Static": _num(static, "cumulative_heldout_utility")},
+        "cumulative_regret": {"A5": a5_reg, "A3": a3_reg, "K0": k0_reg,
+                              "Static": _num(static, "cumulative_regret")},
+        "harm_events": {"A5": a5_harm, "A3": a3_harm, "K0": k0_harm,
+                        "Static": int(static.get("harm_events") or 0)},
+        "worst_class_harm_min": {"A5": a5_worst, "A3": a3_worst, "K0": k0_worst},
+        "total_cost_llm_plus_fits": {
+            "A5_includes_slow": a5_cost, "A3": a3_cost, "K0": k0_cost},
+        "quality_noninferior_to_a3_and_k0": quality_noninf,
+        "harm_noninferior_to_a3_and_k0": harm_noninf,
+        "regret_improvement_vs_a3": regret_gain_vs_a3,
+        "regret_improvement_vs_k0": regret_gain_vs_k0,
+        "cost_improvement_vs_a3": cost_gain_vs_a3,
+        "cost_improvement_vs_k0": cost_gain_vs_k0,
+        "attributable_to_cross_unit_integration": attributable,
+        "note": ("regret is never cited alone; quality = cumulative "
+                 "held-out utility; harm = event count + worst-class min; "
+                 "A5 total cost includes Slow integration LLM"),
+    }
+
+    arms_together = (
+        abs(a5_reg - a3_reg) < material
+        and abs(a5_reg - k0_reg) < material
+        and abs(a5_util - a3_util) < material
+        and abs(a5_util - k0_util) < material
+        and a5_harm == a3_harm == k0_harm
+        and not attributable)
+    a5_worse_than_cold = (
+        a5_util + material < a3_util or a5_harm > a3_harm
+        or a5_worst + material < a3_worst)
+    k0_beats_cold = (
+        k0_util - a3_util >= material or a3_reg - k0_reg >= material
+        or k0_harm < a3_harm)
+
+    first_fault = []
+    if not a5_shared:
+        first_fault.append(
+            "loop_1: same-operator harm was not sampled on both harm units, "
+            "so the two-Task guard floor cannot compile from live Episodes")
+    if formed_at is None:
+        first_fault.append("loop_2: no guard entered the A5 Fast view")
+    elif violated and not respected:
+        first_fault.append(
+            "loop_2: a guard was in view but the proposer still probed it")
+    if a5_worse_than_cold:
+        first_fault.append(
+            "A5-online is worse than A3-reset on quality or harm")
+
+    ceiling = PRE_REGISTERED_READOUT[
+        "verdict_ceiling_for_a_single_order_single_run"]
+    if (quality_noninf and harm_noninf
+            and (material_regret or material_cost) and attributable):
+        verdict = "S1_DEVELOPMENT_EVOLUTION_SIGNAL"
+        reason = (
+            "A5-online is non-inferior to A3-reset and K0-fixed on "
+            "held-out quality and harm, improves %s, and differs from "
+            "K0-fixed in a way the carry/guard path can explain"
+            % ("regret" if material_regret else "cost"))
+    elif a5_worse_than_cold:
+        verdict = "NEGATIVE_TRANSFER"
+        reason = (
+            "A5-online is worse than cold-start A3-reset on quality or "
+            "harm.  first-fault: %s"
+            % ("; ".join(first_fault) or "see comparisons"))
+    elif arms_together:
+        verdict = "NO_TRANSFER"
+        reason = (
+            "the four arms do not separate on cumulative regret, "
+            "held-out utility or harm, and A5 shows no attributable "
+            "cross-unit integration difference")
+    elif k0_beats_cold and not (material_regret or material_cost):
+        verdict = "PRIOR_ONLY"
+        reason = (
+            "K0-fixed beats A3-reset, but A5-online does not add a "
+            "material regret or cost improvement over the frozen prior")
+    else:
+        verdict = "NO_TRANSFER"
+        reason = (
+            "A5-online did not meet the pre-registered evolution-signal "
+            "conjunction (non-inferior quality+harm AND material "
+            "regret-or-cost gain AND attributable carry).  Closest "
+            "label is no transfer rather than a signed evolution signal")
+
+    return {
+        "verdict": verdict,
+        "ceiling": ceiling,
+        "reason": reason,
+        "comparisons": comparisons,
+        "first_fault": first_fault,
+        "loop_1_answer": loop1.get("answer"),
+        "loop_2_answer": loop2.get("answer"),
+        "units_completed": n_units_done,
+        "units_in_course": n_units,
+        "single_order_single_run": True,
+        "evidence_grade": EVIDENCE_GRADE,
+    }
+
+
+def _course_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload.get("verdict") or {}
+    ledger = payload.get("ledger") or {}
+    judging = payload.get("judging") or {}
+    timeline = payload.get("guard_timeline") or {}
+    wins = payload.get("winsorize_split_events") or {}
+    lines = [
+        "# S1c -- four-arm evolution course, forward order",
+        "",
+        "protocol: `%s`  run-id: `%s`  entry: `%s`  backend: **%s**  "
+        "returned_model: `%s`  git: `%s`"
+        % (payload.get("protocol_version"), payload.get("run_id"),
+           payload.get("entry"), payload.get("backend"),
+           (payload.get("backend_probe") or {}).get("returned_model"),
+           payload.get("git_head")),
+        "",
+        "**%s**" % verdict.get("verdict"),
+        "",
+        verdict.get("reason") or "",
+        "",
+        "ceiling for a single order / single run: `%s`.  "
+        "Regret is never cited without harm / worst-class."
+        % verdict.get("ceiling"),
+        "",
+        "## Frozen course (r2, forward)",
+        "",
+        "`%s`" % payload.get("forward_order"),
+        "",
+        "## Per-unit per-arm readout",
+        "",
+        "| # | unit | group | arm | deploy | program | held-out | "
+        "oracle | regret | worst-class | harm | wrong promo | "
+        "LLM | fits | probes | wasted | Support=delayed |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for row in judging.get("per_unit_per_arm") or []:
+        directions = row.get("support_delayed_direction") or {}
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s | %+.4f | %+.4f | %+.4f | "
+            "%+.4f | %s | %d | %d | %d | %d | %d | %s/%s |" % (
+                row.get("forward_position"), row.get("unit_id"),
+                row.get("group"), row.get("arm"), row.get("deploy_source"),
+                ",".join(step.get("op") for step in
+                         (row.get("applied_program") or [])) or "identity",
+                float(row.get("heldout_utility") or 0),
+                float(row.get("menu_oracle_heldout_utility") or 0),
+                float(row.get("regret") or 0),
+                float(row.get("worst_class_harm") or 0),
+                row.get("harm_event"),
+                int(row.get("wrong_promotions") or 0),
+                int((row.get("cost") or {}).get("llm") or 0),
+                int((row.get("cost") or {}).get("consumer_fits") or 0),
+                int((row.get("cost") or {}).get("probes") or 0),
+                int(row.get("wasted_probes") or 0),
+                directions.get("same_direction"),
+                directions.get("pairs")))
+    lines += ["", "## Cumulative totals (regret must be read with harm)", "",
+              "| arm | units | cum. regret | cum. held-out | harm events | "
+              "worst-class min | wrong promo | wasted | LLM | fits |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
+    for arm in ARMS:
+        row = (judging.get("totals_by_arm") or {}).get(arm) or {}
+        lines.append(
+            "| %s | %s | %+.4f | %+.4f | %s | %+.4f | %s | %s | %s | %s |"
+            % (arm, row.get("units"),
+               float(row.get("cumulative_regret") or 0),
+               float(row.get("cumulative_heldout_utility") or 0),
+               row.get("harm_events"),
+               float(row.get("worst_class_harm_min") or 0),
+               row.get("wrong_promotions"), row.get("wasted_probes"),
+               row.get("llm"), row.get("consumer_fits")))
+    lines += ["", "A5 Slow integration LLM (included in A5 total cost): "
+              "%s" % ledger.get("llm_calls_slow"), "",
+              "### Cumulative regret curve", "",
+              "| # | unit | Static | A3-reset | K0-fixed | A5-online |",
+              "|---|---|---|---|---|---|"]
+    curves = {arm: {(point.get("unit_id")): point
+                    for point in ((judging.get("totals_by_arm") or {})
+                                  .get(arm) or {}).get("curve") or []}
+              for arm in ARMS}
+    for unit in payload.get("units_run") or []:
+        uid = unit if isinstance(unit, str) else unit.get("unit_id")
+        pos = next((row.get("forward_position")
+                    for row in (payload.get("course") or [])
+                    if row.get("unit_id") == uid), "")
+        cells = []
+        for arm in ARMS:
+            point = (curves.get(arm) or {}).get(uid) or {}
+            cells.append("%+.4f" % float(point.get("cumulative_regret") or 0)
+                         if point else "—")
+        lines.append("| %s | %s | %s |" % (pos, uid, " | ".join(cells)))
+    loop1 = timeline.get(
+        "loop_1_same_operator_harm_sampled_on_both_harm_units") or {}
+    loop2 = timeline.get("loop_2_guard_respected_by_proposer") or {}
+    lines += ["", "## Guard timeline and the two untested loops", "",
+              timeline.get("design_intent") or "", "",
+              "### Loop 1 -- same-operator harm sampled on both harm units?",
+              "",
+              loop1.get("answer") or "", ""]
+    for arm in ADAPTIVE_ARMS:
+        row = (loop1.get("by_arm") or {}).get(arm) or {}
+        lines.append("- **%s**: %s  shared=%s"
+                     % (arm, row.get("negative_operators_by_harm_unit"),
+                        row.get("same_operator_on_both_harm_units") or "none"))
+    lines += ["",
+              "### Loop 2 -- after a guard is in view, does the proposer avoid it?",
+              "",
+              loop2.get("answer") or "",
+              "",
+              "- expected earliest position: %s"
+              % loop2.get("expected_earliest_position"),
+              "- A5 guard formed at position: %s"
+              % loop2.get("a5_guard_formed_at_position"),
+              "- later rounds that respected the guard: %d"
+              % len(loop2.get("later_rounds_that_respected_the_guard") or []),
+              "- later rounds that probed a guarded operator: %d"
+              % len(loop2.get(
+                  "later_rounds_that_probed_a_guarded_operator") or []),
+              "",
+              "## Winsorize Support-positive / delayed-negative",
+              "",
+              wins.get("reading") or "",
+              "",
+              "- count: **%s**  by arm: %s"
+              % (wins.get("support_positive_delayed_negative_count"),
+                 wins.get("by_arm")),
+              ""]
+    if wins.get("events"):
+        lines += ["| arm | unit | round | program | relation | "
+                  "support | delayed | split? |",
+                  "|---|---|---|---|---|---|---|---|"]
+        for row in wins["events"]:
+            lines.append(
+                "| %s | %s | %s | %s | %s | %s | %s | %s |"
+                % (row.get("arm"), row.get("unit_id"), row.get("round"),
+                   row.get("program"), row.get("relation"),
+                   row.get("support_gain"), row.get("delayed_gain"),
+                   row.get("support_positive_delayed_negative")))
+        lines.append("")
+    if payload.get("stop"):
+        lines += ["## Stop", "",
+                  "- %s: %s" % (payload["stop"].get("verdict"),
+                                payload["stop"].get("reason")), ""]
+    probe = payload.get("backend_probe") or {}
+    oracle = payload.get("oracle_isolation") or {}
+    wall = payload.get("oracle_guard_selftest") or {}
+    lines += [
+        "## Backend identity",
+        "",
+        "- family: %s" % probe.get("family"),
+        "- expected: `%s` @ `%s`"
+        % (probe.get("expected_model"), probe.get("expected_base_url")),
+        "- probe ok: **%s**  returned_model: `%s`"
+        % (probe.get("ok"), probe.get("returned_model")),
+        "- probe charged to course cap: %s"
+        % probe.get("charged_to_course_cap"),
+        "",
+        "## Oracle isolation",
+        "",
+        "- arm-phase wall fired: **%s** on `%s`"
+        % (wall.get("fired"), wall.get("target") or wall.get("reason")),
+        "- arm-phase attempts %s, blocked %s, leaks %s"
+        % (oracle.get("arm_phase_attempts"),
+           oracle.get("arm_phase_attempts_blocked"),
+           len(oracle.get("arm_phase_leaks") or [])),
+        "- judge-phase keys read: %s"
+        % (oracle.get("judge_phase_keys_read") or "none"),
+        "",
+        "## Cost",
+        "",
+        "- Fast LLM: %s" % ledger.get("llm_calls_fast"),
+        "- Slow LLM: %s" % ledger.get("llm_calls_slow"),
+        "- total LLM: %s / %s"
+        % (ledger.get("llm_calls_total"), ledger.get("llm_cap")),
+        "- Consumer fits: %s / %s"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap")),
+        "- wall clock: %s s / %s s"
+        % (ledger.get("wall_seconds"), ledger.get("wall_seconds_cap")),
+        "- downloads: 0",
+        "",
+        "## Obligations",
+        "",
+    ]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    extra = payload.get("outside_book") or []
+    if extra:
+        lines += ["", "## Outside the book", ""]
+        for item in extra:
+            lines.append("- %s" % item)
+    return "\n".join(lines) + "\n"
+
+
+def run_course(*, order: str = "forward") -> int:
+    started = time.time()
+    _set_phase(PHASE_SETUP)
+    if order != "forward":
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "S1c runs the frozen forward order only; got %s" % order)
+    if not FROZEN_JSON.is_file():
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "frozen course missing: %s" % FROZEN_JSON)
+    frozen = json.loads(FROZEN_JSON.read_text(encoding="utf-8"))
+    course = list(frozen["units"])
+    if len(course) != 7:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "frozen course must have 7 units, found %d" % len(course))
+
+    probe = _probe_live_backend()
+    print("BACKEND_PROBE ok=%s returned_model=%s"
+          % (probe.get("ok"), probe.get("returned_model")), flush=True)
+    if not probe.get("ok"):
+        payload = {
+            "protocol_version": PROTOCOL_VERSION,
+            "run_id": COURSE_RUN_ID,
+            "entry": "--run-course --order forward",
+            "evidence_grade": EVIDENCE_GRADE,
+            "git_head": _git("rev-parse", "HEAD"),
+            "python": sys.executable,
+            "backend": "live_fast_agent",
+            "backend_probe": probe,
+            "verdict": {"verdict": "BACKEND_UNAVAILABLE",
+                        "reason": probe.get("reason"),
+                        "ceiling": PRE_REGISTERED_READOUT[
+                            "verdict_ceiling_for_a_single_order_single_run"]},
+            "stop": {"verdict": "BACKEND_UNAVAILABLE",
+                     "reason": probe.get("reason")},
+            "ledger": {"llm_calls_fast": 0, "llm_calls_slow": 0,
+                       "llm_calls_total": 0, "llm_cap": LLM_TOTAL_CAP,
+                       "consumer_fits": 0, "consumer_fit_cap": FIT_TOTAL_CAP,
+                       "wall_seconds": round(time.time() - started, 1),
+                       "wall_seconds_cap": WALL_SECONDS_CAP,
+                       "downloads": 0},
+            "obligations": _course_obligations(live=True, course_untouched=True),
+        }
+        _dump(COURSE_JSON, payload)
+        COURSE_MD.write_text(_course_markdown(payload), encoding="utf-8")
+        print("VERDICT BACKEND_UNAVAILABLE  reason=%s" % probe.get("reason"),
+              flush=True)
+        return 1
+
+    store_root = Path(tempfile.gettempdir()) / COURSE_RUN_ID
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    k0 = compile_k0(store_root)
+    backend = cls._live_backend(LLM_TOTAL_CAP)
+    agent_factory = cls._live_agent
+    llm_ledger = {"fast": 0, "slow": 0}
+
+    payload: dict[str, Any] = {
+        "protocol_version": PROTOCOL_VERSION,
+        "run_id": COURSE_RUN_ID,
+        "entry": "--run-course --order forward",
+        "evidence_grade": EVIDENCE_GRADE,
+        "git_head": _git("rev-parse", "HEAD"),
+        "python": sys.executable,
+        "backend": "live_fast_agent",
+        "backend_probe": probe,
+        "curriculum_source": FROZEN_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "curriculum_revision": frozen.get("curriculum_revision", "r2"),
+        "forward_order": frozen.get("forward_order"),
+        "course": course,
+        "units_run": [],
+        "budgets": {
+            "llm_per_unit_per_adaptive_arm": LLM_PER_UNIT_PER_ARM,
+            "fit_per_unit_per_arm": FIT_PER_UNIT_PER_ARM,
+            "llm_per_slow_integration": LLM_PER_SLOW_INTEGRATION,
+            "llm_total_cap": LLM_TOTAL_CAP,
+            "fit_total_cap": FIT_TOTAL_CAP,
+            "wall_seconds_cap": WALL_SECONDS_CAP,
+        },
+        "k0": {
+            "h0_runtime_bundle_sha": k0["h0_sha"],
+            "k0_runtime_bundle_sha": k0["k0_sha"],
+            "purity": k0["purity"],
+            "definition": _k0_definition(),
+        },
+        "partial": True,
+    }
+
+    cells: dict[str, dict[str, Any]] = {}
+    pattern_views: dict[str, dict[str, Any]] = {}
+    unit_results: list[dict[str, Any]] = []
+    a5_snapshot = k0["k0"]
+    a5_episodes: list[Any] = []
+    a5_stamps: dict[str, str] = {}
+    a5_pool: list[dict[str, Any]] = []
+    a5_results: list[dict[str, Any]] = []
+    integrations: list[dict[str, Any]] = []
+    carries: list[dict[str, Any]] = []
+    guard_probe = None
+    stopped: str | None = None
+    fits_used = 0
+
+    def _checkpoint() -> None:
+        payload["arm_results"] = [_public_unit_result(row)
+                                  for row in unit_results]
+        payload["a5_slow_integrations"] = integrations
+        payload["a5_carries"] = [
+            {key: value for key, value in row.items() if key != "snapshot"}
+            for row in carries]
+        payload["ledger"] = {
+            "llm_calls_fast": llm_ledger["fast"],
+            "llm_calls_slow": llm_ledger["slow"],
+            "llm_calls_total": llm_ledger["fast"] + llm_ledger["slow"],
+            "llm_cap": LLM_TOTAL_CAP,
+            "consumer_fits": fits_used,
+            "consumer_fit_cap": FIT_TOTAL_CAP,
+            "wall_seconds": round(time.time() - started, 1),
+            "wall_seconds_cap": WALL_SECONDS_CAP,
+            "downloads": 0,
+        }
+        _dump(COURSE_JSON, payload)
+
+    try:
+        for unit in course:
+            uid = str(unit["unit_id"])
+            elapsed = time.time() - started
+            if elapsed > WALL_SECONDS_CAP:
+                raise Stop("COMPUTE_BUDGET_EXCEEDED",
+                           "wall clock cap %ss hit before %s"
+                           % (WALL_SECONDS_CAP, uid))
+            if llm_ledger["fast"] + llm_ledger["slow"] >= LLM_TOTAL_CAP:
+                raise Stop("COMPUTE_BUDGET_EXCEEDED",
+                           "LLM cap %d hit before %s"
+                           % (LLM_TOTAL_CAP, uid))
+            if fits_used >= FIT_TOTAL_CAP:
+                raise Stop("COMPUTE_BUDGET_EXCEEDED",
+                           "fit cap %d hit before %s"
+                           % (FIT_TOTAL_CAP, uid))
+
+            print("UNIT %s %s ..." % (unit.get("forward_position"), uid),
+                  flush=True)
+            cell = _build_cell(unit)
+            cells[uid] = cell
+            pattern_views[uid] = _pattern_view_of(cell)
+
+            for arm in ARMS:
+                if arm == ARM_STATIC:
+                    base, episodes, stamps = k0["h0"], (), {}
+                elif arm == ARM_A3:
+                    base, episodes, stamps = k0["h0"], (), {}
+                elif arm == ARM_K0:
+                    base, episodes, stamps = k0["k0"], (), {}
+                else:
+                    base, episodes, stamps = (a5_snapshot, a5_episodes,
+                                              a5_stamps)
+                result = run_unit(
+                    unit=unit, cell=cell, arm=arm, base_snapshot=base,
+                    carried_episodes=episodes, agent_factory=agent_factory,
+                    backend=backend, store_root=store_root,
+                    rounds=HELD_IN_ROUNDS, fit_cap=FIT_PER_UNIT_PER_ARM,
+                    carried_stamps=stamps)
+                if guard_probe is None:
+                    guard_probe = _oracle_guard_selftest()
+                unit_results.append(result)
+                fits_used += int(result["consumer_fits"])
+                llm_ledger["fast"] = int(backend.calls)
+                print("  %-10s deploy=%s gain=%+.4f fits=%d llm=%d"
+                      % (arm, result["deployment"]["deploy_source"],
+                         result["deployment"]["heldout_accuracy_gain"],
+                         result["consumer_fits"], result["llm_calls"]),
+                      flush=True)
+                if arm in ADAPTIVE_ARMS and result["llm_calls"] > LLM_PER_UNIT_PER_ARM:
+                    raise Stop("COMPUTE_BUDGET_EXCEEDED",
+                               "%s %s spent %d LLM, cap %d"
+                               % (arm, uid, result["llm_calls"],
+                                  LLM_PER_UNIT_PER_ARM))
+                if fits_used > FIT_TOTAL_CAP:
+                    raise Stop("COMPUTE_BUDGET_EXCEEDED",
+                               "fit cap %d exceeded after %s %s"
+                               % (FIT_TOTAL_CAP, arm, uid))
+                if time.time() - started > WALL_SECONDS_CAP:
+                    raise Stop("COMPUTE_BUDGET_EXCEEDED",
+                               "wall clock cap %ss hit during %s %s"
+                               % (WALL_SECONDS_CAP, arm, uid))
+
+            a5 = next(row for row in unit_results[-4:]
+                      if row["arm"] == ARM_A5)
+            a5_results.append(a5)
+            a5_episodes = list(a5["_episodes"])
+            a5_stamps.update(dict(a5["_state"].get("domain_stamp") or {}))
+            a5_pool = _dedup_skill_entries(
+                a5_pool + list(a5["skills_added_in_unit"]))
+
+            next_unit = None
+            idx = next(i for i, row in enumerate(course)
+                       if str(row["unit_id"]) == uid)
+            if idx + 1 < len(course):
+                next_unit = dict(course[idx + 1])
+                next_id = str(next_unit["unit_id"])
+                if next_id not in cells:
+                    cells[next_id] = _build_cell(next_unit)
+                    pattern_views[next_id] = _pattern_view_of(cells[next_id])
+                _set_phase(PHASE_ARM, unit=uid, arm=ARM_A5)
+                integration = slow_integration(
+                    unit_results=a5_results, cells=cells,
+                    llm_ledger=llm_ledger, live=True,
+                    pattern_views=pattern_views)
+                integrations.append({
+                    "after_unit": uid,
+                    "into_unit": next_id,
+                    **{key: value for key, value in integration.items()
+                       if key != "entry"},
+                    "entry_skill_id": (
+                        (integration.get("entry") or {}).get("skill_id")),
+                })
+                combined = dict(a5)
+                combined["skills_added_in_unit"] = a5_pool
+                carry = carry_into_next_unit(
+                    unit_result=combined, integration=integration,
+                    next_unit_id=next_id,
+                    next_pattern=pattern_views[next_id],
+                    k0=k0["k0"], store_root=store_root,
+                    tag="a5_carry_%s" % next_id)
+                carries.append(carry)
+                a5_snapshot = carry["snapshot"]
+                kept = set(carry.get("carried_skill_ids") or [])
+                a5_pool = [entry for entry in a5_pool
+                           if entry.get("skill_id") in kept]
+                print("  A5-carry into %s skills=%s dropped=%s slow_llm=%s"
+                      % (next_id, carry.get("carried_skill_ids"),
+                         carry.get("dropped_skill_ids"),
+                         integration.get("slow_llm_calls")),
+                      flush=True)
+
+            payload["units_run"].append(uid)
+            payload["oracle_guard_selftest"] = guard_probe
+            _checkpoint()
+
+        payload["partial"] = False
+    except Stop as stop:
+        stopped = stop.verdict
+        payload["stop"] = {"verdict": stop.verdict, "reason": stop.reason}
+        payload["partial"] = True
+    except OracleIsolationBreach as breach:
+        stopped = "ORACLE_ISOLATION_BREACH"
+        payload["stop"] = {"verdict": stopped, "reason": str(breach)}
+        payload["partial"] = True
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        stopped = "INSTRUMENT_UNREADABLE"
+        payload["stop"] = {"verdict": stopped,
+                           "reason": "%s: %s" % (type(exc).__name__, exc),
+                           "traceback": traceback.format_exc()}
+        payload["partial"] = True
+    finally:
+        _set_phase(PHASE_JUDGE)
+
+    llm_ledger["fast"] = int(getattr(backend, "calls", 0) or 0)
+    done_ids = list(payload.get("units_run") or [])
+    done_course = [unit for unit in course
+                   if str(unit["unit_id"]) in set(done_ids)]
+    judging = {}
+    timeline = {}
+    wins = {}
+    if unit_results:
+        judging = judge(unit_results=unit_results, course=done_course or course)
+        timeline = _guard_timeline(unit_results, done_course or course)
+        wins = _winsorize_split_events(unit_results)
+    payload["arm_results"] = [_public_unit_result(row) for row in unit_results]
+    payload["judging"] = judging
+    payload["guard_timeline"] = timeline
+    payload["winsorize_split_events"] = wins
+    payload["oracle_guard_selftest"] = guard_probe
+    payload["oracle_isolation"] = _oracle_isolation_report()
+    payload["a5_slow_integrations"] = integrations
+    payload["a5_carries"] = [
+        {key: value for key, value in row.items() if key != "snapshot"}
+        for row in carries]
+    payload["ledger"] = {
+        "llm_calls_fast": llm_ledger["fast"],
+        "llm_calls_slow": llm_ledger["slow"],
+        "llm_calls_total": llm_ledger["fast"] + llm_ledger["slow"],
+        "llm_cap": LLM_TOTAL_CAP,
+        "consumer_fits": fits_used,
+        "consumer_fit_cap": FIT_TOTAL_CAP,
+        "wall_seconds": round(time.time() - started, 1),
+        "wall_seconds_cap": WALL_SECONDS_CAP,
+        "downloads": 0,
+        "real_llm_spend": llm_ledger["fast"] + llm_ledger["slow"],
+        "backend_probe_charged_to_course_cap": False,
+    }
+    payload["verdict"] = _course_verdict(
+        judging=judging, timeline=timeline, ledger=payload["ledger"],
+        stopped=stopped, n_units_done=len(done_ids), n_units=len(course))
+    payload["obligations"] = _course_obligations(
+        live=True, course_untouched=True)
+    payload["outside_book"] = [
+        "A5 carry rebuilds from K0 plus every skill the wall has admitted "
+        "so far, not only the last unit's additions; otherwise a guard "
+        "minted at position 3 would vanish at position 5.  "
+        "carry_decision / hook 2 / hook 3 are unchanged.",
+        "The Slow-authored source card still uses skill_id "
+        "source_investigation_cls_v1, which is already in K0, so "
+        "carry_into_next_unit drops it (pre-existing).  The tested "
+        "channel is the risk-guard path, not TRY.",
+    ]
+    _dump(COURSE_JSON, payload)
+    COURSE_MD.write_text(_course_markdown(payload), encoding="utf-8")
+    print(json.dumps({"verdict": payload["verdict"]["verdict"],
+                      "llm": payload["ledger"]["llm_calls_total"],
+                      "fits": payload["ledger"]["consumer_fits"],
+                      "seconds": payload["ledger"]["wall_seconds"],
+                      "units": done_ids,
+                      "artifact": str(COURSE_JSON)},
+                     ensure_ascii=False, indent=1), flush=True)
+    return 0 if payload["verdict"]["verdict"] not in {
+        "BACKEND_UNAVAILABLE", "COMPUTE_BUDGET_EXCEEDED",
+        "ORACLE_ISOLATION_BREACH", "INSTRUMENT_UNREADABLE",
+    } else 1
+
+
+def _course_obligations(*, live: bool, course_untouched: bool
+                        ) -> dict[str, Any]:
+    return {
+        "methods_package_unmodified": True,
+        "runtime_contracts_operators_unmodified": True,
+        "shared_runner_unmodified": True,
+        "course_and_budgets_unmodified": course_untouched,
+        "live_llm_backend": live,
+        "backend_identity": (
+            "gpt-5.6-sol @ https://api.agicto.cn/v1 "
+            "(shared runner _live_agent / SLOW_MODEL)"),
+        "no_backend_swap": True,
+        "two_untested_loops_reported": True,
+        "no_a3_a5_adaptation_outside_this_course": True,
+        "no_injection_scan": True,
+        "oracle_isolated": True,
+        "sealed_oracles_not_rewritten": True,
+        "downloads": 0,
+        "full_repo_pytest_not_run": True,
+    }
+
+
+# =========================================================================== #
 # entry points
 # =========================================================================== #
 def select_and_write() -> int:
@@ -3010,6 +3976,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="mechanically select and freeze the seven units")
     parser.add_argument("--smoke", action="store_true",
                         help="four arms on curriculum unit 1, reduced protocol")
+    parser.add_argument("--run-course", action="store_true",
+                        help="S1c: live four-arm full course (frozen budgets)")
+    parser.add_argument("--order", choices=("forward", "reverse"),
+                        default="forward",
+                        help="course order; S1c of this book is forward only")
     parser.add_argument("--live", action="store_true",
                         help="use the live Fast Agent backend in --smoke")
     parser.add_argument("--smoke-suffix", default="",
@@ -3019,6 +3990,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(list(argv) if argv is not None else None)
     if args.select_curriculum:
         return select_and_write()
+    if args.run_course:
+        try:
+            return run_course(order=str(args.order))
+        except Stop as exc:
+            print("STOP %s: %s" % (exc.verdict, exc), flush=True)
+            return 1
     if args.smoke:
         return smoke(live=args.live, suffix=args.smoke_suffix)
     parser.print_help()
