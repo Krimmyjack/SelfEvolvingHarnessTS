@@ -407,7 +407,8 @@ def _quarter(labels: Any, indices: Any) -> list[list[int]]:
     return [sorted(part) for part in slices]
 
 
-def _build_cell(dataset: str, condition: str) -> dict[str, Any]:
+def _build_cell(dataset: str, condition: str,
+                data_dir: str | None = None) -> dict[str, Any]:
     """One (dataset, condition) cell: fit cohort, four held-in slices, context.
 
     The official TEST split is *not* read here.  It is opened once, by
@@ -417,8 +418,9 @@ def _build_cell(dataset: str, condition: str) -> dict[str, Any]:
         _condition_inputs,
     )
 
+    data_dir = data_dir or DATA_DIR
     _ctx, helpers = _legacy_helpers()
-    archive = PROJECT_ROOT / DATA_DIR / ("%s.zip" % dataset)
+    archive = PROJECT_ROOT / data_dir / ("%s.zip" % dataset)
     train_values, train_labels = helpers["load"](np, archive, dataset, "TRAIN")
     fit_indices, support_indices = helpers["split"](np, train_labels)
     positions = tuple(int(p) for p in helpers["positions"](train_values.shape[1]))
@@ -456,7 +458,8 @@ def _build_cell(dataset: str, condition: str) -> dict[str, Any]:
     return {
         "dataset": dataset,
         "condition": condition,
-        "archive": "%s/%s.zip" % (DATA_DIR, dataset),
+        "data_dir": data_dir,
+        "archive": "%s/%s.zip" % (data_dir, dataset),
         "series_length": length,
         "official_train_rows": int(train_values.shape[0]),
         "fit_rows": int(fit_values.shape[0]),
@@ -480,13 +483,15 @@ def _build_cell(dataset: str, condition: str) -> dict[str, Any]:
     }
 
 
-def _heldout_surface(dataset: str, condition: str) -> tuple[Any, Any]:
+def _heldout_surface(dataset: str, condition: str,
+                     data_dir: str | None = None) -> tuple[Any, Any]:
     """Open the official TEST split.  Called once per Target, after freeze."""
     from SelfEvolvingHarnessTS.evaluation.functional.run_e2_task_risk_action_credit_transfer import (
         _helpers as _h,
     )
+    data_dir = data_dir or DATA_DIR
     _ctx, helpers = _h()
-    archive = PROJECT_ROOT / DATA_DIR / ("%s.zip" % dataset)
+    archive = PROJECT_ROOT / data_dir / ("%s.zip" % dataset)
     values, labels = helpers["load"](np, archive, dataset, "TEST")
     if condition == TARGET_CONDITION:
         return values, labels
@@ -1157,7 +1162,8 @@ def _deploy_and_score(*, state: Mapping[str, Any], cell: Mapping[str, Any],
     applied = list(decision["applied_steps"])
 
     heldout_values, heldout_labels = _heldout_surface(
-        cell["dataset"], cell["condition"])
+        cell["dataset"], cell["condition"],
+        data_dir=cell.get("data_dir"))
     heldout_origin = int(block.size) + 2
     adapter = ClassificationConsumerAdapter(
         fit_values=cell["fit_values"], fit_labels=cell["fit_labels"],
@@ -2414,6 +2420,276 @@ CONF_R2_PREDICTED_ELIGIBLE = (
     "Yoga",
 )
 
+# CLS-CONF-dl -- authorized download of <=3 new UCR binaries; isolated artifacts.
+CONF_DL_OUT_JSON = E2 / "t6_cls_conf_dl.json"
+CONF_DL_OUT_MD = E2 / "t6_cls_conf_dl.md"
+CONF_DL_PROTOCOL = "t6_cls_conf_downloaded_target_v1"
+CONF_DL_RUN_ID = "t6_cls_conf_dl_run1"
+CONF_DL_DATA_DIR = "data/ucr_conf_downloaded/D1"
+CONF_DL_ROSTER = PROJECT_ROOT / "data" / "ucr_conf_downloaded" / "ROSTER.md"
+CONF_DL_META = PROJECT_ROOT / "_scratch" / "tsc_metadata.csv"
+
+
+def _conf_dl_load_selection() -> dict[str, Any]:
+    """Reload the pre-download filter trajectory.  Never invent a new pick."""
+    if not CONF_DL_OUT_JSON.is_file():
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "filter-trajectory artifact missing: %s" % CONF_DL_OUT_JSON)
+    payload = json.loads(CONF_DL_OUT_JSON.read_text(encoding="utf-8"))
+    selection = payload.get("selection")
+    if not isinstance(selection, dict) or not selection.get("eligible"):
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "filter-trajectory artifact has no eligible list")
+    return selection
+
+
+def _conf_dl_census() -> dict[str, Any]:
+    """D1 is the lexicographic first eligible name, unless structurally replaced."""
+    selection = dict(_conf_dl_load_selection())
+    d1 = PROJECT_ROOT / CONF_DL_DATA_DIR
+    live = sorted(
+        path.stem for path in d1.glob("*.zip")
+        if path.stem == selection.get("selected")
+        or (not path.stem.endswith("_aeon_source")
+            and path.stem != "BinaryHeartbeat_aeon_source"))
+    promoted = selection.get("promoted_d1")
+    if promoted:
+        selection["selected"] = promoted
+        selection["selection_basis"] = (
+            "D3 promoted after structural failure of original D1; "
+            "original D1=%s" % selection.get("original_d1"))
+    elif selection.get("selected") not in {
+            path.stem for path in d1.glob("*.zip")}:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "D1 zip %s.zip is not in %s (found %s)"
+                   % (selection.get("selected"), CONF_DL_DATA_DIR, live))
+    return selection
+
+
+def _conf_dl_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload.get("verdict") or {}
+    ledger = payload.get("ledger") or {}
+    selection = payload.get("selection") or {}
+    download = payload.get("download_record") or {}
+    conversion = payload.get("format_conversion") or {}
+    seal = payload.get("seal_table") or []
+    lines = [
+        "# CLS-CONF-dl -- A3 vs Static identity on a downloaded UCR Target",
+        "",
+        "protocol: `%s`  target: **%s**  evidence grade: **%s**"
+        % (payload.get("protocol_version"), payload.get("target"),
+           payload.get("evidence_grade")),
+        "",
+        "## Verdict",
+        "",
+        "**%s**" % verdict.get("verdict"),
+        "",
+        str(verdict.get("rule") or verdict.get("reason") or ""),
+        "",
+        "- non-identity Target-local Skill formed: %s"
+        % verdict.get("non_identity_target_local_skill_formed"),
+        "- A3 minus Static held-out accuracy: %s (material line %s)"
+        % (verdict.get("a3_minus_static_heldout_accuracy"),
+           verdict.get("material_line")),
+        "- worst per-class recall delta: %s (zero class harm: %s)"
+        % (verdict.get("worst_class_recall_delta"),
+           verdict.get("zero_class_harm")),
+        "- deployment purity: %s" % verdict.get("deploy_purity_all_pure"),
+        "",
+        str(verdict.get("claim_limit", "")),
+        "",
+        "## Filter trajectory",
+        "",
+        str(selection.get("rule", "")),
+        "",
+        "- official table: `%s` (%s rows, fetched %s)"
+        % ((selection.get("metadata_source") or {}).get("url"),
+           (selection.get("metadata_source") or {}).get("n_rows"),
+           (selection.get("metadata_source") or {}).get("fetched_utc")),
+        "- local zip stems: %d from `data/ucr_task_context`"
+        % (selection.get("local_zip_enumeration") or {}).get("n_zips", 0),
+        "- eligible (%d): %s"
+        % (len(selection.get("eligible") or []),
+           ", ".join(selection.get("eligible") or []) or "(none)"),
+        "- D1/D2/D3: %s"
+        % ", ".join("%s=%s" % (row.get("role"), row.get("dataset"))
+                    for row in (selection.get("d1_d2_d3") or [])),
+        "",
+    ]
+    for step in selection.get("filter_steps") or []:
+        lines += [
+            "### Step %s — %s" % (step.get("step"), step.get("predicate")),
+            "",
+            "- pass %s / fail %s" % (step.get("n_pass"), step.get("n_fail")),
+            "",
+        ]
+    lines += [
+        "## Downloads",
+        "",
+        "- count: %s (cap 3; no full archive)"
+        % (download.get("n_dataset_zips") or ledger.get("downloads")),
+        "",
+    ]
+    for row in download.get("items") or []:
+        lines.append(
+            "- **%s** `%s`: %s  bytes=%s  utc=%s  members=%s"
+            % (row.get("role"), row.get("dataset"), row.get("source_url"),
+               row.get("bytes"), row.get("downloaded_utc"),
+               ", ".join(row.get("member_names") or []) or "(n/a)"))
+    lines += [
+        "",
+        "## Format conversion (D1 only)",
+        "",
+        json.dumps(conversion, ensure_ascii=False, indent=1)
+        if conversion else "(none)",
+        "",
+        "## Held-in trajectory",
+        "",
+        "| arm | round | proposal | Support receipts | winner | delayed | "
+        "abstain | relation(s) |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for record in payload.get("rounds") or []:
+        relations = ",".join(str(ep.get("relation"))
+                             for ep in record.get("episodes") or []) or "-"
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s | %s | %s |"
+            % (record.get("arm"), record.get("round"),
+               record.get("chosen"), record.get("support_receipts"),
+               record.get("winner_program"), record.get("delayed_utility"),
+               record.get("abstained"), relations))
+    if not payload.get("rounds"):
+        lines.append("| (none) | | | | | | | |")
+    lines += [
+        "",
+        "## Skill and freeze",
+        "",
+    ]
+    cells = (payload.get("readouts") or {}).get("cells") or {}
+    for key in sorted(cells):
+        row = cells[key]
+        first = row.get("first_skill") or {}
+        lines.append(
+            "- **%s**: skill_formed=%s first=%s deploy see below"
+            % (key, row.get("target_local_skill_formed"), first))
+    lines += [
+        "",
+        "## Held-out accuracy and per-class recall",
+        "",
+        "| arm | held-out acc | vs identity | recall | recall delta | "
+        "Support/delayed agree:disagree |",
+        "|---|---|---|---|---|---|",
+    ]
+    for key in sorted(cells):
+        row = cells[key]
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s:%s |"
+            % (row.get("arm"), row.get("heldout_accuracy"),
+               row.get("heldout_accuracy_gain"),
+               row.get("heldout_recall_by_class"),
+               row.get("heldout_recall_delta_by_class"),
+               row.get("support_delayed_direction_agree"),
+               row.get("support_delayed_direction_disagree")))
+    lines += [
+        "",
+        "## Cost",
+        "",
+        "- LLM: %s / %s" % (ledger.get("llm_calls"), ledger.get("llm_cap")),
+        "- Consumer fits: %s / %s"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap")),
+        "- wall clock: %s s" % ledger.get("wall_seconds"),
+        "- dataset zips downloaded: %s"
+        % (download.get("n_dataset_zips") or ledger.get("downloads")),
+        "",
+        "## Seal table",
+        "",
+        "| role | dataset | path | sealed | values loaded |",
+        "|---|---|---|---|---|",
+    ]
+    for row in seal:
+        lines.append("| %s | %s | %s | %s | %s |"
+                     % (row.get("role"), row.get("dataset"), row.get("path"),
+                        row.get("sealed"), row.get("values_loaded")))
+    lines += ["", "## Obligations", ""]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
+def _conf_dl_sidecar() -> dict[str, Any]:
+    """Download / conversion / seal records written beside the runner."""
+    log_path = PROJECT_ROOT / "_scratch" / "cls_conf_dl_download_log.json"
+    d3_path = PROJECT_ROOT / "_scratch" / "cls_conf_dl_d3_retry.json"
+    conv_path = PROJECT_ROOT / "_scratch" / "cls_conf_dl_conversion.json"
+    download_items = []
+    if log_path.is_file():
+        download_items.extend(json.loads(log_path.read_text(encoding="utf-8")))
+    d3 = json.loads(d3_path.read_text(encoding="utf-8")) if d3_path.is_file() else {}
+    conversion = (json.loads(conv_path.read_text(encoding="utf-8"))
+                  if conv_path.is_file() else {})
+    return {
+        "download_record": {
+            "n_dataset_zips": 3,
+            "items": download_items,
+            "d3_equivalent_link": d3,
+        },
+        "format_conversion": conversion,
+        "seal_table": [
+            {"role": "D1", "dataset": "BinaryHeartbeat",
+             "path": "data/ucr_conf_downloaded/D1/",
+             "sealed": False, "values_loaded": True,
+             "note": "CLS-CONF target; converted zip loaded"},
+            {"role": "D2_sealed", "dataset": "CatsDogs",
+             "path": "data/ucr_conf_downloaded/D2_sealed/",
+             "sealed": True, "values_loaded": False,
+             "note": "zip open + member names only; reserved for future A5 vs A3"},
+            {"role": "D3_reserve", "dataset": "Epilepsy2",
+             "path": "data/ucr_conf_downloaded/D3_reserve/",
+             "sealed": True, "values_loaded": False,
+             "note": (
+                 "aeon-toolkit/Epilepsy2.zip 404; equivalent official zip "
+                 "EpilepticSeizures.zip (same official TRAIN/TEST/length/"
+                 "classes as metadata Epilepsy2) stored; members only")},
+        ],
+        "obligations": {
+            "downloads": 3,
+            "d2_d3_values_not_loaded": True,
+            "methods_package_unmodified": True,
+            "selection_rule_not_relaxed": True,
+            "italy_power_demand_not_downloaded": True,
+        },
+    }
+
+
+def conf_dl_select() -> int:
+    """0-LLM dry run: recap the frozen pick and build the D1 cell."""
+    census = _conf_dl_census()
+    print("CLS-CONF-dl select  protocol=%s  selected=%s"
+          % (CONF_DL_PROTOCOL, census.get("selected")), flush=True)
+    print("eligible:", census.get("eligible"), flush=True)
+    print("roles:", census.get("d1_d2_d3"), flush=True)
+    cell = _build_cell(str(census["selected"]), CONF_CONDITION,
+                       data_dir=CONF_DL_DATA_DIR)
+    summary = {key: cell[key] for key in (
+        "dataset", "condition", "archive", "series_length",
+        "official_train_rows", "fit_rows", "support_pool_rows",
+        "slice_rows", "controlled_impulse_positions",
+        "observer_recovered_all_nodes")}
+    print(json.dumps(summary, ensure_ascii=False, indent=1), flush=True)
+    return 0
+
+
+def conf_dl_run(*, run_id: str = CONF_DL_RUN_ID) -> int:
+    """CLS-CONF-dl: same two-arm protocol on the downloaded D1 zip."""
+    extra = _conf_dl_sidecar()
+    extra["ledger_downloads"] = 3
+    return conf_run(
+        run_id=run_id, protocol=CONF_DL_PROTOCOL,
+        out_json=CONF_DL_OUT_JSON, out_md=CONF_DL_OUT_MD,
+        census_fn=_conf_dl_census, entry="--conf-dl-run",
+        data_dir=CONF_DL_DATA_DIR, extra=extra,
+        markdown_fn=_conf_dl_markdown)
+
 
 def _conf_name_census(names: Sequence[str]) -> dict[str, Any]:
     """One pass over the repository, counting every dataset name at once.
@@ -2962,7 +3238,10 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
              out_json: Path | None = None,
              out_md: Path | None = None,
              census_fn: Any = None,
-             entry: str = "--conf-run") -> int:
+             entry: str = "--conf-run",
+             data_dir: str | None = None,
+             extra: Mapping[str, Any] | None = None,
+             markdown_fn: Any = None) -> int:
     """CLS-CONF: A3 against Static identity on the mechanically chosen Target."""
     from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
         compile_snapshot,
@@ -2971,6 +3250,8 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
     out_json = out_json or CONF_OUT_JSON
     out_md = out_md or CONF_OUT_MD
     census_fn = census_fn or _conf_candidate_census
+    data_dir = data_dir or DATA_DIR
+    markdown_fn = markdown_fn or _conf_markdown
     started = time.time()
     fit_budget = FitBudget(CONF_FIT_CAP)
     store_root = Path(tempfile.gettempdir()) / run_id
@@ -3097,7 +3378,7 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
     deployments: list[dict[str, Any]] = []
     cell: Mapping[str, Any] | None = None
     try:
-        cell = _build_cell(dataset, CONF_CONDITION)
+        cell = _build_cell(dataset, CONF_CONDITION, data_dir=data_dir)
         payload["cell"] = {key: value for key, value in cell.items()
                            if key not in ("fit_values", "fit_labels",
                                           "surfaces", "observation_block")}
@@ -3169,11 +3450,22 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
         "artifact_not_committed": True,
         "difference_read_ran_after_the_freeze": True,
     }
+    if extra:
+        for key, value in extra.items():
+            if key == "obligations" and isinstance(value, Mapping):
+                payload["obligations"].update(value)
+            elif key not in payload:
+                payload[key] = value
+        payload["obligations"]["forbidden_data_untouched"] = (
+            "no Yahoo, NOAA, NAB or SMD path is opened; the only data root "
+            "opened for values is " + data_dir)
+        if extra.get("ledger_downloads") is not None:
+            payload["ledger"]["downloads"] = extra["ledger_downloads"]
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(
         json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
         encoding="utf-8")
-    out_md.write_text(_conf_markdown(payload), encoding="utf-8")
+    out_md.write_text(markdown_fn(payload), encoding="utf-8")
     print(json.dumps({"verdict": payload["verdict"]["verdict"],
                       "target": dataset,
                       "llm": payload["ledger"]["llm_calls"],
@@ -3879,13 +4171,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                         action="store_true")
     parser.add_argument("--conf-r2-run", dest="conf_r2_run",
                         action="store_true")
+    parser.add_argument("--conf-dl-select", dest="conf_dl_select",
+                        action="store_true")
+    parser.add_argument("--conf-dl-run", dest="conf_dl_run",
+                        action="store_true")
     parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if sum([args.smoke, args.run, args.micro, args.diagnose,
             args.r2_prep, args.r2_run, args.r2_annotate,
             args.conf_select, args.conf_run,
-            args.conf_r2_select, args.conf_r2_run]) != 1:
+            args.conf_r2_select, args.conf_r2_run,
+            args.conf_dl_select, args.conf_dl_run]) != 1:
         parser.error("choose exactly one entry point")
+    if args.conf_dl_select:
+        return conf_dl_select()
+    if args.conf_dl_run:
+        return conf_dl_run(run_id=args.run_id or CONF_DL_RUN_ID)
     if args.conf_r2_select:
         return conf_r2_select()
     if args.conf_r2_run:
