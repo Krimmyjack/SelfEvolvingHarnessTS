@@ -1077,6 +1077,24 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`evaluation/functional/run_e2_s1_cold_policy_map.py`(新诊断 runner,既有 methods/runtime/contracts/operators/课程 runner 零改);`artifacts/functional/e2/s1_cold_policy_map.json/.md`;探针目录;本节。
 
+### PS-0b 收口(提交 346d30c):SECOND_SOURCE_AVAILABLE(hampel 簇存活);burst 簇 LEARNABLE 系拼池假象;PS-0c+PS-1 发车(2026-08-27 01:2x,主线)
+
+**审计**(0 LLM/51 fit/9.6s,29 对单元×算子四分逐片):hampel 簇 ROBUST 6、独立家族 2(GunPointFamily+PowerCons),五轴 Pattern 交 11 叶可用(period_change_score 未入交);**GPA 4/4 余量 3.75×、PowerCons impulse 3/4 余量 2.44×、GPOVY 考场 4/4 余量 4.15×**。burst 簇死:Toe1/L2 仅 1/4 达线(**census LEARNABLE 的拼池假象——pooled vs sliced 的第三课**),ECGFiveDays 3/4 但最粗片 1 行、余量 0.57×。iqr/mad/level-shift/winsorize 零 ROBUST。**分层严谨**:单元级确认面不平反 S1c PowerCons Episode(一行假象维持取消);PS-1 须**新挣** PowerCons live Episode;禁从密封 oracle 编卡。协议变体(对半):ROBUST 7→10、iqr 新增双源、burst 仍死——报告级呈 sol,不采纳。**注记**:重挣尝试与 canonical cell 注入种子不同,切片面逐 run 有波动(srcB_2 读 0.0 与 canonical 3/4 不矛盾),PowerCons 重挣仍 take-what-comes。**PS-0c+PS-1 发车(grok,新中转首用)**:Part 1 重挣 PowerCons(≤2 试,新后端 probe 核身,与源 A'[agicto]跨后端注记——Episode 效度系 consumer 读数不依赖后端,提案采样行为差异由 PS-1 内部对照臂吸收)→ Part 2 挣到即按已提交 PS-1 冻结协议全程(Part 0 复验[新 round record 有持久化 pattern 叶]→ SkillEntry 双卡 → 12 跑 GPOVY → 判词表含 SHIFT_WEAK 无追加)→ 未挣到停报 PS1_SOURCES_NOT_REEARNED_FINAL(hampel 双源 episode 级死,切片协议问题升 sol)。预算 LLM≤180/fit≤160/墙钟≤2.5h。
+
+### PS-0c+PS-1 收口:PowerCons 次试重挣成功;PS-1 判词 NO_PROPOSAL_SHIFT(2026-08-27 03:1x)
+
+**后端**(新中转首用,无旧后端回退):probe 核身 host=`orbit-words-principle-alberta.trycloudflare.com`,请求模型 `cpa-gpt-5.6-sol`,returned_model=`gpt-5.6-sol`。首探 TLS EOF 500,同中转重试后通。源 A'(GPA/`ps0_srcA_1`)仍为 agicto 时代 Episode;效度是 consumer 读数。密钥未入任何工件/提交。
+
+**Part 1**:`PowerCons__impulse_v2` A3-reset 同构重挣。`ps0_srcB_3` 失(族=`level_shift,outlier_threshold`,未提 hampel);`ps0_srcB_4` 挣到(族=`hampel,level_shift`,Support +0.0714, delayed +0.50, delayed 批准并部署)。Part 0 五轴交可用(19 叶超 task_kind;`period_change_score` 仍不入交:GPA=zero vs PowerCons=very_low)。
+
+**Part 2**:GPOVY 三臂×4。卡进 Fast 视野(A5-neutral/A5-scoped 各 4/4 served)。hampel 提案率 **A3 0/4、A5-neutral 0/4、A5-scoped 0/4**。六段漏斗全零。无有效 Skill,harm 0。预算三臂全等(`maximum_candidates=3`,LLM cap 12,fit cap 10)。**判词 `NO_PROPOSAL_SHIFT`**(冻结表,无追加)。pilot;GPOVY 与 GPA 同族——机制隔离,非跨族 capability;引导下正例计零(本场亦无正例)。
+
+**Runner 级修复(如实)**:首编卡被 EditController 拒(`observable_feature_v1.json` 不含 `level_region_*` / `outlier_region_end_fraction` / `level_only_post_shift_support_sufficient`,Python `OBSERVABLE_FEATURES` 有)。机器 AST 只投影 schema 合法 16 叶;body 与 scope_v1 仍带全交。methods/runtime/contracts/operators 未改。inert 卡审计扫到 `hampel_filter`——来自 `risk_guards.scope_v1.program_geometry`,body 无算子名。
+
+**成本**:LLM 81/180;fit 26/160;墙钟 5729s/9000s;下载 0。
+
+**提交**:`evaluation/functional/run_e2_ps0c_ps1.py`;`run_e2_ps1_arms.py`(最小 applicability 投影);`artifacts/functional/e2/ps0c_reearn_powercons.json/.md`+`ps0c_dual_source.json`;`ps1_proposal_shift_r2.json/.md`;`ps1_cards/`;上条 PS-0b 发车段(他书未提交,连同提交)。不提交他线改动的 `AGENTS.md`/`README.md`/`PROJECT_STATE*`/`SUCCESSOR_BRIEF*`。
+
 ### PS-0 收口(提交 bbd5fc5):GPA 复挣成功/PowerCons 源资格取消;瓶颈拆双名;PS-0b 确认面审计发车(2026-08-27 01:0x,主线)
 
 **Part 1**:round record 落盘 fast_features_binned(叶级对拍过)+ 全提案账本;顺带揪出并修复族标注缺口(原靠扫自由文本 id,S1c 全部 probe 算子列表实为空)。**Part 2**:源 A'(GPA)首试复挣(Support+0.40/delayed+0.40/部署+0.2690,**可复现源**;胜路细节:agent 选了 level-shift 被 verifier 拒,Support 预算走到 probe_order 第二项 hampel——**ordering 而非 selection 在关键路径**);源 B'(PowerCons)两试皆失:srcB_1 未提出族(发现失败),srcB_2 提出并探得 Support 恰 0.0(**确认失败,hypothesis 卡不可治**);S1c 的 +0.0714 = 14 行切片 1 行,信号在分辨率地板——**PowerCons 判"一行假象",源资格取消**。**Part 3 未跑**:PS1_SOURCES_NOT_REEARNED,双源规则守住;PS-1 runner 以 sol 统一架构(SkillEntry 四权限字段/inert 中性卡/预算相等断言/SHIFT_WEAK 无追加)已提交待第二源。**教义候选(呈 sol)**:瓶颈双名制——发现失败 vs 确认失败,各配 hypothesis 卡 / 切片分辨率两种疗法;**源资格再生性原则**:授权源须确认面余量 ≥2× 分辨率地板(离线可验),或经复挣存活。**PS-0b 发车(grok,0 LLM,fit≤300)**:全池非 identity oracle 单元的确认面审计——按实际两轮切片逐片重算 oracle 算子读数,分类 ROBUST_LEARNABLE / FRAGILE(一行假象类)/ UNREADABLE;判各簇是否存活独立家族双源(hampel:GPA+?;burst:Toe1/L2/ECGFiveDays[+0.571 大余量]);附"对半 vs 四分"切片协议变体的报告级分析(不采纳,呈 sol);判词 SECOND_SOURCE_AVAILABLE(点名)/ NO_ROBUST_PAIR(切片协议问题呈 sol)。

@@ -112,11 +112,45 @@ AUTHORITY_FIELDS = ("reorders_supplied_candidates", "supplies_candidates",
 # =========================================================================== #
 # Part 1 -- card compilation, mechanical from the Part 0 Scope
 # =========================================================================== #
-def _applicability(scope: Mapping[str, Any]) -> dict[str, Any]:
+def _edit_schema_features() -> frozenset[str]:
+    """Feature names the EditController schema will actually store.
+
+    ``contracts/observables.OBSERVABLE_FEATURES`` is a superset of
+    ``observable_feature_v1.json``.  A leaf that exists only in the Python
+    table (level_region_*, outlier_region_end_fraction,
+    level_only_post_shift_support_sufficient) is a legal Observation but
+    not a legal edit-manifest predicate.  Dumping the raw intersection
+    into SkillEntry.observable_applicability therefore fails shape
+    validation before any arm runs.
+    """
+    schema_path = (PROJECT_ROOT / "contracts" / "schemas"
+                   / "observable_feature_v1.json")
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for option in schema.get("oneOf") or []:
+        feature = (option.get("properties") or {}).get("feature") or {}
+        if "const" in feature:
+            names.add(str(feature["const"]))
+        names.update(str(item) for item in (feature.get("enum") or []))
+    return frozenset(names)
+
+
+def _applicability_leaves(
+        scope: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
+    legal = _edit_schema_features()
     leaves = [{"feature": "task_kind", "op": "==",
                "value": str(scope["task_kind"])}]
+    dropped: list[str] = []
     for key, value in sorted(dict(scope["pattern_intersection"]).items()):
+        if key not in legal:
+            dropped.append(str(key))
+            continue
         leaves.append({"feature": str(key), "op": "==", "value": value})
+    return leaves, dropped
+
+
+def _applicability(scope: Mapping[str, Any]) -> dict[str, Any]:
+    leaves, _dropped = _applicability_leaves(scope)
     return {"all": leaves}
 
 
@@ -263,6 +297,8 @@ def _card_audit(scoped: Mapping[str, Any],
     scoped_tokens = _tokens(scoped["body"])
     neutral_tokens = _tokens(neutral["body"])
     ratio = neutral_tokens / float(scoped_tokens or 1)
+    scope = scoped["risk_guards"]["scope_v1"]
+    machine_leaves, dropped = _applicability_leaves(scope)
     return {
         "scoped_body_tokens": scoped_tokens,
         "neutral_body_tokens": neutral_tokens,
@@ -292,6 +328,9 @@ def _card_audit(scoped: Mapping[str, Any],
         "same_schema_and_kind": (
             scoped["schema_version"] == neutral["schema_version"]
             and scoped["skill_kind"] == neutral["skill_kind"]),
+        "machine_applicability_leaf_count": len(machine_leaves),
+        "pattern_leaves_dropped_as_uncontracted_for_edit_schema": dropped,
+        "dropped_leaves_remain_in_body_and_scope_v1": True,
     }
 
 
