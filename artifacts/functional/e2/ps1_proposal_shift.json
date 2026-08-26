@@ -1,0 +1,521 @@
+{
+ "protocol_version": "ps1_proposal_shift_v1",
+ "evidence_grade": "development-mechanism",
+ "git_head": "258c28d66fb1029b1ab8eaf552c4136368f463c5",
+ "python": "3.13.5",
+ "entry": "--run",
+ "exam_unit": "GunPointOldVersusYoung__impulse_v2",
+ "sources": {
+  "source_A": {
+   "label": "source_A",
+   "artifact": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+   "locator": {
+    "section": "part_c.rounds",
+    "dataset": "GunPointAgeSpan",
+    "arm": "A3",
+    "round": "r1"
+   },
+   "expected_program": "hampel_filter",
+   "family_key": "GunPointFamily"
+  },
+  "source_B": {
+   "label": "source_B",
+   "artifact": "artifacts/functional/e2/s1_course_forward_run1.json",
+   "locator": {
+    "section": "arm_results",
+    "unit_id": "PowerCons__impulse_v2",
+    "arm": "A3-reset",
+    "round": "r1"
+   },
+   "expected_program": "hampel_filter",
+   "family_key": "PowerCons"
+  }
+ },
+ "part0": {
+  "gate": "dual_source_provenance",
+  "pass": false,
+  "checks": [
+   {
+    "item": "0_records_located",
+    "pass": true,
+    "located": [
+     {
+      "source": "source_A",
+      "artifact": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+      "locator": {
+       "section": "part_c.rounds",
+       "dataset": "GunPointAgeSpan",
+       "arm": "A3",
+       "round": "r1"
+      }
+     },
+     {
+      "source": "source_B",
+      "artifact": "artifacts/functional/e2/s1_course_forward_run1.json",
+      "locator": {
+       "section": "arm_results",
+       "unit_id": "PowerCons__impulse_v2",
+       "arm": "A3-reset",
+       "round": "r1"
+      }
+     }
+    ]
+   },
+   {
+    "item": "1_real_executed_episode",
+    "question": "is this a record of an Episode a live arm actually wrote, rather than a row of the oracle census?",
+    "pass": true,
+    "episode_id": "GunPointAgeSpan/fit_only_artifact_target_hampel_filter_a3_GunPointAgeSpan_r1_p1",
+    "evidence_level": "DELAYED",
+    "local_status": "LOCAL_ACTIVE",
+    "cited_fields": [
+     "episodes[].episode_id",
+     "episodes[].evidence_level",
+     "episodes[].local_status"
+    ],
+    "note": "oracle census rows carry no episode_id and no local_status; these do",
+    "source": "source_A"
+   },
+   {
+    "item": "2_unguided",
+    "question": "did this arm's Fast view carry any TRY or capability card of the same Program family when the proposal was made?",
+    "pass": true,
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "beyond_bootstrap": [],
+    "memory_resolution": "no_memory",
+    "arm_started_from": "h0 (A3 is the cold-start ablation arm)",
+    "episodes_at_unit_start": null,
+    "cited_fields": [
+     "retrieved_skill_ids",
+     "memory_resolution",
+     "base_skill_ids",
+     "episodes_at_unit_start"
+    ],
+    "note": "only the three h0 bootstrap procedures were retrieved, so nothing named a Program family",
+    "source": "source_A"
+   },
+   {
+    "item": "3_material_positive_on_support_and_delayed",
+    "question": "did both live gates read materially positive?",
+    "pass": true,
+    "support_gain": 0.5,
+    "delayed_gain": 0.4,
+    "material_threshold": 0.005,
+    "relation": "POSITIVE",
+    "approved_skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter",
+    "activated": true,
+    "cited_fields": [
+     "episodes[].support_gain",
+     "episodes[].delayed_gain",
+     "episodes[].relation",
+     "approved_skill_id",
+     "activated"
+    ],
+    "source": "source_A"
+   },
+   {
+    "item": "1_real_executed_episode",
+    "question": "is this a record of an Episode a live arm actually wrote, rather than a row of the oracle census?",
+    "pass": true,
+    "episode_id": "PowerCons__impulse_v2_target_hampel_filter_a3-reset_PowerCons__impulse_v2_r1_p1",
+    "evidence_level": "DELAYED",
+    "local_status": "LOCAL_ACTIVE",
+    "cited_fields": [
+     "episodes[].episode_id",
+     "episodes[].evidence_level",
+     "episodes[].local_status"
+    ],
+    "note": "oracle census rows carry no episode_id and no local_status; these do",
+    "source": "source_B"
+   },
+   {
+    "item": "2_unguided",
+    "question": "did this arm's Fast view carry any TRY or capability card of the same Program family when the proposal was made?",
+    "pass": true,
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "beyond_bootstrap": [],
+    "memory_resolution": "no_memory",
+    "arm_started_from": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "episodes_at_unit_start": 0,
+    "cited_fields": [
+     "retrieved_skill_ids",
+     "memory_resolution",
+     "base_skill_ids",
+     "episodes_at_unit_start"
+    ],
+    "note": "only the three h0 bootstrap procedures were retrieved, so nothing named a Program family",
+    "source": "source_B"
+   },
+   {
+    "item": "3_material_positive_on_support_and_delayed",
+    "question": "did both live gates read materially positive?",
+    "pass": true,
+    "support_gain": 0.0714285714285714,
+    "delayed_gain": 0.49999999999999994,
+    "material_threshold": 0.005,
+    "relation": "POSITIVE",
+    "approved_skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter",
+    "activated": true,
+    "cited_fields": [
+     "episodes[].support_gain",
+     "episodes[].delayed_gain",
+     "episodes[].relation",
+     "approved_skill_id",
+     "activated"
+    ],
+    "source": "source_B"
+   },
+   {
+    "item": "4_family_independence",
+    "question": "are the two sources independent families?",
+    "pass": true,
+    "families": [
+     "GunPointFamily",
+     "PowerCons"
+    ],
+    "cited_fields": [
+     "s1a_r3_pool_census.json units[].family_key"
+    ],
+    "note": "family_key is the census union-find over name prefix and byte-equal pattern_view; GunPointFamily and PowerCons are distinct keys"
+   },
+   {
+    "item": "5_machine_executable_five_axis_scope",
+    "question": "can a Scope-v1 intersection be computed from the stored fields, and would a machine be able to evaluate it?",
+    "pass": false,
+    "axes": {
+     "task_kind": {
+      "values": [
+       "classification"
+      ],
+      "agree": true,
+      "intersection": "classification",
+      "source": "stored field"
+     },
+     "consumer_id": {
+      "values": [
+       "ridge-raw-plus-difference-v1"
+      ],
+      "agree": true,
+      "intersection": "ridge-raw-plus-difference-v1",
+      "source": "stored field"
+     },
+     "metric": {
+      "values": [
+       "accuracy"
+      ],
+      "agree": true,
+      "intersection": "accuracy",
+      "source": "stored field"
+     },
+     "program_geometry": {
+      "values": [
+       "hampel_filter"
+      ],
+      "agree": true,
+      "intersection": "hampel_filter",
+      "source": "stored field"
+     },
+     "deployment_visible_pattern_intersection": {
+      "leaves_available_in_both_records": [],
+      "intersection": {},
+      "agree": false,
+      "source": "stored field",
+      "why_empty": "neither provenance record persists a single one of the 20 non-task_kind observable-contract leaves.  The only Context the records hold is witness statistics, support_reproduces_fit_signal, observer node positions and slice sizes, and none of those is in contracts/observables.OBSERVABLE_FEATURES, so none can become an applicability leaf that retrieval.evaluate_applicability could ever read."
+     }
+    },
+    "per_source": [
+     {
+      "label": "source_A",
+      "task_kind": "classification",
+      "consumer_id": "ridge-raw-plus-difference-v1",
+      "metric": "accuracy",
+      "program_geometry": "hampel_filter",
+      "pattern_leaves_stored": [],
+      "context_fields_actually_stored": [
+       "controlled_impulse_positions",
+       "fit_rows",
+       "legacy_scope_decision",
+       "legacy_scope_reasons",
+       "observation_rows",
+       "observer_localized_nodes",
+       "observer_recovered_all_nodes",
+       "official_train_rows",
+       "series_length",
+       "slice_rows",
+       "support_pool_rows",
+       "support_reproduces_fit_signal",
+       "witness"
+      ],
+      "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy"
+     },
+     {
+      "label": "source_B",
+      "task_kind": "classification",
+      "consumer_id": "ridge-raw-plus-difference-v1",
+      "metric": "accuracy",
+      "program_geometry": "hampel_filter",
+      "pattern_leaves_stored": [],
+      "context_fields_actually_stored": [
+       "consumer",
+       "family_key",
+       "family_repeat",
+       "forward_position",
+       "group",
+       "harmful_outlier_operators",
+       "injection",
+       "key_heldin_readout",
+       "largest_legal_heldin_magnitude",
+       "learnability",
+       "menu_oracle_program",
+       "metric",
+       "min_slice_rows",
+       "n_heldin",
+       "n_heldout",
+       "official_train_rows",
+       "oracle_set",
+       "series_length",
+       "slice_resolution",
+       "slice_rows",
+       "total_points",
+       "unit_id"
+      ],
+      "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy"
+     }
+    ],
+    "axes_available": [
+     "task_kind",
+     "consumer_id",
+     "metric",
+     "program_geometry"
+    ],
+    "axes_missing": [
+     "deployment_visible_pattern_intersection"
+    ],
+    "observable_contract_leaves": [
+     "clipping_probe_direction",
+     "denoising_probe_direction",
+     "estimated_level_offset",
+     "estimated_region_end_fraction",
+     "estimated_region_start_fraction",
+     "imputation_probe_direction",
+     "level_excursion_score",
+     "level_only_post_shift_support_sufficient",
+     "level_probe_direction",
+     "level_region_end_fraction",
+     "level_region_fraction",
+     "local_robust_z_peak",
+     "longest_missing_run_fraction",
+     "missing_fraction",
+     "outlier_region_end_fraction",
+     "period_change_score",
+     "period_evidence_status",
+     "period_reliability",
+     "period_repair_available",
+     "post_shift_support_sufficient"
+    ],
+    "cited_fields": [
+     "task_consumer_key",
+     "episodes[].workflow_signature",
+     "part_c.cells[]",
+     "course[]"
+    ]
+   }
+  ],
+  "deployment_outcomes": [
+   {
+    "source": "source_A",
+    "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+    "applied_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "heldout_accuracy_gain": 0.2689873417721519
+   },
+   {
+    "source": "source_B",
+    "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+    "applied_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "heldout_accuracy_gain": 0.08333333333333326
+   }
+  ],
+  "scope_rule": "Scope v1: task_kind x consumer_id x metric x deployment_visible_pattern_intersection x program_geometry.  Dataset name is not an axis.",
+  "seconds": 0.01
+ },
+ "gap_report": {
+  "failing_item": "5_machine_executable_five_axis_scope",
+  "axes_available": [
+   "task_kind",
+   "consumer_id",
+   "metric",
+   "program_geometry"
+  ],
+  "axes_missing": [
+   "deployment_visible_pattern_intersection"
+  ],
+  "diagnosis": "the provenance chain for a legal cross-domain hypothesis is broken at the persistence layer, not at the evidence layer.  Both sources are real, unguided, materially positive on both gates and independent by family -- items 1 through 4 all pass.  What neither execution record kept is the deployment-visible Pattern the Scope has to be built out of.",
+  "where_the_pattern_does_exist": [
+   {
+    "location": "artifacts/functional/e2/s1a_r3_pool_census.json units[].pattern_view",
+    "usable": false,
+    "why": "sealed audit artifact.  Its own isolation banner forbids it entering any arm prompt, store or retrieval view, and a hypothesis card is exactly a Fast-visible surface"
+   },
+   {
+    "location": "artifacts/functional/e2/s1_oracle/*.json pattern_view / public_features_binned",
+    "usable": false,
+    "why": "sealed exam key; same banner, stronger reason"
+   },
+   {
+    "location": "recomputation via _build_cell + extract_public_features on the same frozen cell",
+    "usable": false,
+    "why": "deterministic and outcome-free, but the book's rule 5 says to intersect from the fields the records already store and to stop rather than reconstruct.  Not done here; named so the main line can decide"
+   }
+  ],
+  "smallest_thing_that_would_close_it": "persist the binned deployment-visible pattern view on the round or cell record at write time.  The Fast path already computes it every round -- run_e2_s1_curriculum_four_arms._run_round builds `features = extract_public_features(block, task_kind=...)` and hands it to run_online_round as fast_features -- so this is a record-keeping change, not a new computation.  Once a run persists it, this gate passes on that run's own fields and PS-1 proceeds without any reconstruction.",
+  "note_for_the_main_line": "closing it needs one fresh source-B-shaped run, or a re-run of both, with the field persisted.  Source A predates this runner entirely and would have to be re-earned rather than re-read."
+ },
+ "frozen_protocol": {
+  "arms": [
+   "A3",
+   "A5-neutral",
+   "A5-scoped"
+  ],
+  "replicates": 4,
+  "run_ids": [
+   "ps1_run1",
+   "ps1_run2",
+   "ps1_run3",
+   "ps1_run4",
+   "ps1_run5",
+   "ps1_run6",
+   "ps1_run7",
+   "ps1_run8",
+   "ps1_run9",
+   "ps1_run10",
+   "ps1_run11",
+   "ps1_run12"
+  ],
+  "llm_per_run": 12,
+  "fit_per_run": 10,
+  "llm_total_cap": 150,
+  "fit_total_cap": 120,
+  "wall_seconds_cap": 9000,
+  "verdicts": [
+   "PROPOSAL_SHIFT_CONFIRMED",
+   "SHIFT_WITHOUT_CONVERSION",
+   "NO_PROPOSAL_SHIFT",
+   "PLACEBO_EFFECT",
+   "SOURCE_PROVENANCE_INSUFFICIENT",
+   "COMPUTE_BUDGET_EXCEEDED"
+  ],
+  "prior_slot": "runner-layer experiment mechanism: the card is injected as an independent paragraph into the agent's construction-time context.  Production T1, authorization and retrieval are untouched; the slot supplies no frozen candidate and changes no budget; artifacts carry experimental_prior_slot=true",
+  "protocol_isomorphic_to": "the S1c unit protocol: 2 held-in rounds, cohort modification scope, the same maximum_candidates, live gpt-5.6-sol backend identity-probed before the first arm"
+ },
+ "pre_registered_readout": {
+  "per_run": [
+   "every raw proposal each round, tagged with its Program family",
+   "hampel family: proposed / selected / passed the verifier / earned Support / earned delayed / deployed",
+   "probes and wasted probes",
+   "LLM and Consumer-fit cost",
+   "non-hampel proposal diversity (crowding-out check)",
+   "harm events and worst-class recall delta"
+  ],
+  "aggregate_by_arm": [
+   "hampel-family proposal rate at run granularity (how many of the 4 runs proposed it at all)",
+   "conversion funnel proposed -> selected -> verifier -> Support -> delayed -> deployed",
+   "mean cost",
+   "deployed utility distribution"
+  ],
+  "verdicts": {
+   "PROPOSAL_SHIFT_CONFIRMED": "A5-scoped's hampel proposal rate separates from both controls (order of >=3/4 against <=1/4) AND at least one run completes proposal -> Support -> delayed -> deployment AND harm does not rise AND A5-neutral shows no systematic separation from A3",
+   "SHIFT_WITHOUT_CONVERSION": "proposal rate separates but nothing converts; the report names the layer it stopped at",
+   "NO_PROPOSAL_SHIFT": "the three arms' proposal distributions overlap",
+   "PLACEBO_EFFECT": "A5-neutral departs systematically from A3, i.e. the presence of a card changes behaviour on its own and any scoped effect has to be reinterpreted against that baseline",
+   "SOURCE_PROVENANCE_INSUFFICIENT": "the Part 0 gate did not pass; no card was compiled and no arm ran",
+   "COMPUTE_BUDGET_EXCEEDED": "a cap was hit; completed runs are kept and reported"
+  },
+  "statistics": "n=4 per arm is reported as counts and effect sizes.  No p-values.",
+  "scope_caveat": "GunPointOldVersusYoung__impulse_v2 shares GunPointFamily with source A.  This experiment isolates the proposal-shift mechanism and must not be cited as cross-family transfer capability."
+ },
+ "parts_1_to_3": {
+  "status": "not started",
+  "reason": "Part 0 is a hard gate and it did not pass.  Compiling a card would have meant sourcing its WHEN clause from somewhere other than the two records, which is the one thing the book forbids.",
+  "implemented": false,
+  "why_not_implemented": "the card compiler, the prior slot and the 12-run loop cannot be exercised or validated in this book, and building unexercisable machinery is what the project canon calls over-engineering.  The frozen protocol above is what a follow-up needs; the code is not written on speculation."
+ },
+ "oracle_isolation": {
+  "mechanism": "builtins.open, io.open, os.open, Path.open, Path.read_text and Path.read_bytes are wrapped at module import; any path containing artifacts/functional/e2/s1_oracle/ raises OracleIsolationBreach while the phase is 'arm'",
+  "arm_phase_attempts": 0,
+  "arm_phase_attempts_blocked": 0,
+  "arm_phase_leaks": [],
+  "deliberate_probe_rows": [],
+  "judge_phase_keys_read": [],
+  "unblocked_reads_by_phase": {
+   "setup": 0,
+   "select": 0,
+   "judge": 0
+  },
+  "holds": true
+ },
+ "wall_seconds": 0.07,
+ "verdict": {
+  "verdict": "SOURCE_PROVENANCE_INSUFFICIENT",
+  "reason": "items 1 through 4 pass on both sources: both are real executed Episodes, both unguided, both materially positive on Support and on delayed, and the two families are independent.  Item 5 fails: neither execution record persists any deployment-visible Pattern, so a five-axis Scope cannot be intersected from stored fields and the hypothesis card would have no machine-evaluable WHEN clause.  Stopped before Part 1 as the book directs.",
+  "failing_items": [
+   "5_machine_executable_five_axis_scope"
+  ],
+  "stopped_before": "Part 1 card compilation"
+ },
+ "obligations": {
+  "part0_items": {
+   "0_records_located": true,
+   "1_real_executed_episode:source_A": true,
+   "2_unguided:source_A": true,
+   "3_material_positive_on_support_and_delayed:source_A": true,
+   "1_real_executed_episode:source_B": true,
+   "2_unguided:source_B": true,
+   "3_material_positive_on_support_and_delayed:source_B": true,
+   "4_family_independence": true,
+   "5_machine_executable_five_axis_scope": false
+  },
+  "prior_slot_implementation": "not reached: no card was compiled and no arm ran.  The slot is declared as a runner-layer experiment mechanism only -- an independent paragraph in the agent's construction-time context, supplying no frozen candidate and changing no budget",
+  "production_governance_unmodified": true,
+  "methods_package_unmodified": true,
+  "runtime_contracts_operators_unmodified": true,
+  "t1_authorization_retrieval_unmodified": true,
+  "llm_calls": 0,
+  "consumer_fits": 0,
+  "downloads": 0,
+  "arms_run": 0,
+  "exam_substrate_opened": false,
+  "sealed_artifacts_not_read": true,
+  "sealed_artifacts_not_rewritten": true,
+  "full_repo_pytest_not_run": true,
+  "stage_report_not_written": "this book does not touch docs/STAGE_REPORT; another diagnostic book is in flight and the main line records for it"
+ },
+ "outside_book": [
+  "the persistence gap is systemic, not specific to these two runs: the Fast path computes the binned pattern view every single round and hands it to run_online_round as fast_features, and no runner on the classification line writes it to its artifact.  Every future cross-domain hypothesis will hit this same gate.",
+  "the two sealed places the pattern view does live -- the r3 census and the s1_oracle keys -- both carry isolation banners, so the only legal supply is a live run that records its own Context.  A card built from either would be an oracle leak wearing a Scope.",
+  "source A predates the S1 runner line and its artifact shape has no slot for the field, so closing the gap for source A means earning the positive again rather than re-reading it.",
+  "second, independent reason source B's cell record cannot be a card source: the course record it lives in is the frozen curriculum entry, and that entry carries oracle-derived selection metadata -- oracle_set, menu_oracle_program, key_heldin_readout, largest_legal_heldin_magnitude, harmful_outlier_operators.  That is correct for a judging-side curriculum freeze and no arm ever reads it, but it means a card compiler pointed at course[] would be reading answers.  The Context a card may legally quote has to come from the round record, which is exactly the record that does not keep it.",
+  "S1c's own GPOvY record is worth keeping next to this: A3 proposed nothing in r1 and one verifier-rejected candidate in r2, K0-fixed probed outlier_iqr to +0.0909 and still deployed identity, and A5-online proposed only outlier_mad twice and had both rejected by the verifier.  The +0.184 hampel headroom was never proposed by any arm, which is the observation PS-1 exists to explain."
+ ]
+}
