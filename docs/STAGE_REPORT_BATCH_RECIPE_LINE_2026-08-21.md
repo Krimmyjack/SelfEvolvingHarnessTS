@@ -1077,6 +1077,41 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`evaluation/functional/run_e2_s1_cold_policy_map.py`(新诊断 runner,既有 methods/runtime/contracts/operators/课程 runner 零改);`artifacts/functional/e2/s1_cold_policy_map.json/.md`;探针目录;本节。
 
+### PS-0 收口(提交 bbd5fc5):GPA 复挣成功/PowerCons 源资格取消;瓶颈拆双名;PS-0b 确认面审计发车(2026-08-27 01:0x,主线)
+
+**Part 1**:round record 落盘 fast_features_binned(叶级对拍过)+ 全提案账本;顺带揪出并修复族标注缺口(原靠扫自由文本 id,S1c 全部 probe 算子列表实为空)。**Part 2**:源 A'(GPA)首试复挣(Support+0.40/delayed+0.40/部署+0.2690,**可复现源**;胜路细节:agent 选了 level-shift 被 verifier 拒,Support 预算走到 probe_order 第二项 hampel——**ordering 而非 selection 在关键路径**);源 B'(PowerCons)两试皆失:srcB_1 未提出族(发现失败),srcB_2 提出并探得 Support 恰 0.0(**确认失败,hypothesis 卡不可治**);S1c 的 +0.0714 = 14 行切片 1 行,信号在分辨率地板——**PowerCons 判"一行假象",源资格取消**。**Part 3 未跑**:PS1_SOURCES_NOT_REEARNED,双源规则守住;PS-1 runner 以 sol 统一架构(SkillEntry 四权限字段/inert 中性卡/预算相等断言/SHIFT_WEAK 无追加)已提交待第二源。**教义候选(呈 sol)**:瓶颈双名制——发现失败 vs 确认失败,各配 hypothesis 卡 / 切片分辨率两种疗法;**源资格再生性原则**:授权源须确认面余量 ≥2× 分辨率地板(离线可验),或经复挣存活。**PS-0b 发车(grok,0 LLM,fit≤300)**:全池非 identity oracle 单元的确认面审计——按实际两轮切片逐片重算 oracle 算子读数,分类 ROBUST_LEARNABLE / FRAGILE(一行假象类)/ UNREADABLE;判各簇是否存活独立家族双源(hampel:GPA+?;burst:Toe1/L2/ECGFiveDays[+0.571 大余量]);附"对半 vs 四分"切片协议变体的报告级分析(不采纳,呈 sol);判词 SECOND_SOURCE_AVAILABLE(点名)/ NO_ROBUST_PAIR(切片协议问题呈 sol)。
+
+### PS-0b 收口:SECOND_SOURCE_AVAILABLE;hampel = GPA + PowerCons 单元面;burst 凑不出双源(2026-08-27 01:1x)
+
+**对象** 22 个非 identity oracle 单元 × 29 算子对(含并列)。cell 与密封 `slice_rows` 逐单元对齐;同一 consumer(ridge-raw-plus-difference-v1 / accuracy);fit 复用(每单元 1 次 identity + 每算子 1 次处理,共 51/300)。0 LLM。
+
+**四分分级(冻结)**:ROBUST 7 / FRAGILE 11 / UNREADABLE 11。
+- **hampel ROBUST 6**:GPA 4/4(+0.375,余量 3.75×) / GP 4/4(余量 1.40×,最粗 n=3) / GPMVF 3/4(1.35×) / GPOVY 4/4(4.15×) / PowerCons impulse 3/4(+0.143/+0.429/+0.214/0,余量 2.44×) / PowerCons burst 3/4(2.22×)。独立家族 **2**(GunPointFamily, PowerCons);五轴 Pattern 交可用(11 叶;`period_change_score` 未入交:GPA=zero vs PowerCons=very_low)。
+- **burst**:Toe1 **FRAGILE 1/4**(唯 r2_delayed +1.0 on n=2);Lightning2 **FRAGILE 1/4**(唯 r2_support +0.50);ECGFiveDays **ROBUST 3/4** 但最粗片 **1 行**(材料线 1.0,余量 0.57×)——census +0.571 是 7 行池,不是高质量源。簇独立 ROBUST 家族 = 1,凑不出双源。
+- 其余簇(iqr/mad/level-shift/winsorize)零 ROBUST。
+
+**判词 `SECOND_SOURCE_AVAILABLE`**(单元 × oracle 算子确认面,不是给 S1c PowerCons Episode 平反)。PS-1 路径:源 A = GPA(已复挣 Episode);源 B = PowerCons **单元**(oracle 默认 hampel 3/4);考场仍 **GPOVY**(原场,现 4/4 ROBUST,与 GPA 同族,不得作跨族 capability 主张)。S1c PowerCons Episode 仍取消;若 PS-1 坚持双 live Episode,须对 PowerCons **新挣** oracle-default/稳定 hampel,禁从密封 oracle 编卡。
+
+**协议变体(不采纳)**:对半后 ROBUST 7→10;hampel 双源仍在;iqr 新够双源(Distal burst + GPMVF burst);burst 仍不够(Toe1/L2 仍 FRAGILE)。改切片协议救不了 burst +0.571。
+
+**提交**:`evaluation/functional/run_e2_ps0b_confirmation_surface_audit.py`(新诊断 runner;methods/runtime/contracts/operators/既有 runner 零改);`artifacts/functional/e2/ps0b_confirmation_surface_audit.json/.md`;本节。密封 oracle 只读;产物隔离于臂视野。
+
+### 后端切换指令(用户,2026-08-27 00:46)
+
+自下一本书起,live agent 后端切换为用户提供的新中转(base_url = trycloudflare orbit-words-principle-alberta,model = cpa-gpt-5.6-sol);密钥存本地未跟踪文件 `_scratch/agent_backend.ps1`(已核 .gitignore 覆盖,禁入任何提交物/工件/文档),执行者 dot-source 后运行。**在飞 PS 链豁免**:按 sol 后端锁定规则于原后端(gpt-5.6-sol@agicto)跑完,保持与 S1c 基线可比;若其 live 段遭遇原后端连接失败,按 BACKEND_UNAVAILABLE 停报后由主线以新配置续跑。此后跨后端的历史对比须注明后端变更;新跑工件照例记录 probe 与 returned_model。
+
+### 常备纪律:principle-driven 五问协议(sol)+ 主线锚定与模型路由强化(用户,2026-08-27 00:4x)
+
+**五问协议(一切方法改动前必答)**:①现象与证据等级?②因果链最早断在哪层(Observation/proposal/selection/verification/feedback/Skill compilation/Scope/authority/implementation wiring)?③现有框架原则能否表达正确行为(仅实现未接通或参数/表示不当)?④能表达→优先修现有实现;唯现有抽象确实无法表达才许新增机制;⑤新机制须统一解释一类问题并直接解锁核心实验,禁单数据集/单次失败专用补丁。**每次方法改动附五件套**:root cause/与既有 principle 关系/最小修改面/可证伪实验/回退方案。**Runner、Gate、Schema、文档不算方法进展**。总框架(Task/Consumer/Pattern Context→Workflow proposal→downstream feedback→Episode→Scoped Skill/Memory→Target 校准→freeze/deploy)判定基本合理;候选发现问题优先补齐"低权限 Skill 影响 proposal"的既有语义路径,不建平行系统。**用户加持二则**:一切推进须锚定项目目的/主线不偏移;模型路由再强化——**默认 grok-4.6,唯真困难任务用 opus**。主线自查(今晚账):PS-0 记录修复 = 五问③"实现未接通"型✓;PS-1 = 检验既有权限格✓;被撤回的 Hypothesis 新类 = ④违例被 sol 拦下(引以为戒);在飞 opus 书(PS 链)属实现+实验复合,保留;此后简单书一律 grok。
+
+### S1-diag 收口(提交 94cf58e):proposal_semantics_insufficient;行为漏斗定量;K 消融否证截断说(2026-08-27 00:5x,主线)
+
+**漏斗**(15 个含正解臂-单元机会,仅 S1c 层,历史 CLS-OP 分层单列未混):**11 未提出**(提案召回)/ 3 执行未过(MiddlePhalanx 三臂齐执 repair_level_shift、delayed 全拒)/ 1 走通(A3-PowerCons-hampel);措辞按"这一次运行"纪律。**K 消融**(12 LLM,只提案不执行,oracle 判 prompt 外):K=5 仍无一单元提出正解,且**候选数停 0-1 连帽不满**(GPOvY 双 K 空提案;PowerCons 双 K 皆 level-shift)——截断解释被否证,"原 K 提过未执行"亦无,冻结判 **proposal_semantics_insufficient**(不再拆 observation/策略偏置,留待未来 observation 扩展消融)。**附带定性**:冷 proposer 重度 level-shift 偏好(与 C40 A5 同款);Slow 空携带 = 无可编译证据非预算饿死;**仪器缺口确认:工件未存原始提案,最早可得层为编译后 pool**(PS-0 Part 1 的全提案落盘正中此缺)。**对 PS-1 的含义**:瓶颈在提案语义 → supplies_candidates=true 恰是把正确族直接放进 pool 的机制,若有效应当显著;分级 hypothesis 仍按"待验假设"表述。探针隔离存放。全菜单排序确认未跑。
+
+### sol 统一裁定:不建 Hypothesis 新类,PS-1 = 现有 SkillEntry 的 proposal-only 权限格实验;七项待定拍板;在飞书已中断修正(2026-08-27 00:4x,主线)
+
+**统一 Principle(入典)**:唯一知识对象 Episode→Skill;Scope 定可见处,Authority 定影响步;权限梯 = 只存储→重排候选→供一待验证候选→执行冻结 Workflow——同一 SkillEntry 的权限差,非四种新 Skill。`ordering_card.py:214` 既有四权限字段,**PS-1 即检验空格 supplies_candidates=true ∧ grants_execution=false**;禁增 PreparationHypothesis/第四 Active Skill/新权限平台(主线原提案系过度工程,撤回)。**在飞修正(已中断送达)**:A5-neutral 改全权限关闭、零算子名的 inert SkillEntry(原 period no-op 设计非真中性,作废);三臂候选帽与 LLM 预算严格相等(supplies 候选计入同帽);本轮定级 **pilot**,不得冻结生产设计。**七项拍板(sol)**:(1) 灰区判 SHIFT_WEAK,取消自动追加,充分重复留后续一次预冻实验;(2) 引导下正例可成 Target-local,对 Source 跨域扩权**计零**(不折权,防新任意参数);(3) 独立 family≠Scope 相容,五轴交塌缩至 task_kind 级即 SCOPE_INTERSECTION_TOO_WIDE 停编;(4) 成本材料线不拍百分比,报"到首个有效 Skill 的 LLM/probe/fit/轮次",非劣下少一次完整 probe 即清楚改善;(5) 害证家族归并暂缓(安全辅助非正向承重);(6) HELDOUT_ONLY 切片诊断排 PS-1 后;(7) Stage 2 扩写与论文主张定高,待 PS-1 正证据。**最小工程清单**:机器可执行 Scope + 现有 Skill 的 proposal-only 使用方式,仅此两项。**文档债**:AGENTS.md:198 状态锁停在 C32/#44a 严重滞后,PS-1 收口后仅更新"当前状态锁与下一门",不做大同步。
+
 ### PS-1 停于 Part 0(SOURCE_PROVENANCE_INSUFFICIENT,提交 3eda222);持久化缺口定性;PS-0 发车(2026-08-27 00:3x,主线)
 
 **门判**(0 LLM/0 fit/<1s):双源 1-4 项全过(A:GPA hampel,DELAYED 级/LOCAL_ACTIVE/unguided[仅 bootstrap 三卡]/Support+0.50/delayed+0.40;B:PowerCons hampel,A3-reset 冷启动 by construction/Support+0.0714/delayed+0.50;家族独立);**轴 5 失败**:两执行记录均未持久化 OBSERVABLE_FEATURES 的 20 个非 task_kind 叶任何一个——witness/observer 统计不在 observable 契约内,不能作 applicability 叶。**系统性发现**:Fast 每轮都算 `extract_public_features` 产出的 binned pattern view(fast_features)传给 run_online_round,**分类线无任何 runner 落盘**;仅存两处(r3 census、s1_oracle 密封件)均在隔离横幅下,取之即"披 Scope 外衣的 oracle 泄漏"。执行者按"存量字段求交,禁事后重构"停手正确;Parts 1-3 协议已预冻入工件(未见任何 outcome);未建不可运转机械。**两条规划注记**:源 A 早于本 runner 线,工件无字段槽,须重挣;源 B 的 cell 记录躺在冻结课程条目内含 oracle 选课元数据,卡编译器不得读 course[]——合法 Context 只能来自 round record(恰是不存 pattern 的那个)。**PS-0 发车(续 opus 会话)**:Part 1 记录层修复(round record 落盘 binned pattern view + **全部原始提案清单**[兼修行为漏斗顶层缺口],零行为改动);Part 2 双源重挣(GPA/PowerCons 各 ≤2 次预注册 A3-reset 单 cell 跑,take-what-comes,漏采如实报——漏采本身是发现瓶颈数据);Part 3 双源齐则自动续跑 PS-1 冻结协议(Part 0 复验→编卡→12 跑)。**灰区规则预钉(A 层项 1)**:hampel 提案率分离落灰区(如 scoped 2/4 vs 对照 ≤1/4)→ 自动追加一批预冻 4 重复;仍灰判 SHIFT_WEAK 停报。预算:LLM≤220/fit≤200/墙钟≤3h。不写 STAGE_REPORT(diag 在飞)。
