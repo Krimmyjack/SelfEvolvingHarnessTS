@@ -1027,6 +1027,20 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`methods/ttha/online_loop.py`、`evaluation/functional/task_episode_harness/agentic/source_skill.py`、`evaluation/functional/run_e2_t6_cls_op_shared_harness.py`、新测试文件、`artifacts/functional/e2/b_guard_pipeline_reachability.json/.md`、本节(含他书未提交台账条目一并入库,未删改既有正文)。`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP` 未碰未提交;`contracts/`/`runtime/`/`operators/`/`risk_skill.py` 零改。
 
+### S1b-r2 收口:切片可读性地板重选课程,反馈面活证到手,仪器阻断解除(2026-08-26 21:4x,opus)
+
+**主线裁定采纳**:r1 的"最小总点数"排序反向选择了反馈面,系主线规则错误;r2 改为可读性地板 + 可读性排序。执行:0 LLM、0 下载、22 fit、34 s。r1 课程完整保留于 `artifacts/functional/e2/s1_curriculum_frozen_r1.json/.md`,未丢弃。
+
+**新冻结课程(r2,正序)**:`MiddlePhalanxOutlineCorrect__impulse_v2`(害证A,最小切片 45)→ `DistalPhalanxOutlineCorrect__burst_cls2`(可学A,44)→ `PowerCons__impulse_v2`(害证B,12)→ `FreezerRegularTrain__burst_cls2`(identityA,10)→ `GunPointOldVersusYoung__impulse_v2`(可学B,10)→ `ECG200__impulse_v2`(HELDOUT_ONLY,7)→ `Ham__impulse_v2`(identityB,8);反序严格逆转。**7 单元全部无空切片,最小切片全课程 ≥7 行**(r1 为 6/7 单元 ≤2 行、3 个 `r2_delayed` 为 0 行)。切片数直接读密封 oracle 的 `cell.slice_rows`,零新 fit。**降档轨迹**:害证/identity/HELDOUT_ONLY 三组均在地板 5 + 严格跨课程家族去重下满额,零降档;可学组在地板 5 严格家族下只能填 1(Phalanx 与 PowerCons 两族已被害证组占用,GunPoint 族只能出 1 个),按声明的松弛阶梯先走完 5→4→3 严格档仍不满,再回到地板 5 允许同族,取 `DistalPhalanxOutlineCorrect__burst_cls2` 为**具名同族重复**(PhalanxFamily,与害证A 同族但不同底物)。**家族**:6 独立家族 / 7 单元,重复 1(PhalanxFamily);7 个底物互不重复(r1 曾有 MoteStrain 底物重复,已消除)。
+
+**规则解释一处,须主线确认**:必要条件 `|pooled held-in 读数| ≥ 1/最小切片行数` 只对害证组与可学组生效。identity 组按定义 oracle set = identity、HELDOUT_ONLY 组按定义 held-in = 0,literal 套用该式会让这两组在阶梯每一档都归零候选(工件 `literal_application_counterfactual` 逐组记数),与"2+2+2+1"结构自相矛盾;对这两组,"若真有材料级效应则本可看见"正是地板本身。已写入 `selection_rules.necessary_condition_scope`。
+
+**smoke 读数(单元 1 = MiddlePhalanx,45 行切片,scripted backend)**:八门全绿,`S1B_SMOKE_WIRED`。**反馈面活证到手**:三个适应臂各拿到一条 **NEGATIVE** Support 回执(winsorize,slice support gain +0.1333、delayed −0.1111),`feedback_surface_evidence_mode = live`,不需退回算术旁证;旁证仍一并记账(outlier_iqr pooled −0.0944、outlier_mad +0.1389,均 ≥ 1/45 = 0.0222)。四臂表:Static identity/gain 0;A3/K0/A5 三臂同样冻结部署 winsorize、held-out gain **+0.1993**、worst-class **−0.0720**、harm_event True、regret **−0.1890**。状态隔离 17 项、域绑定合成探针、oracle 隔离(三读取面探针全 blocked、判分只读 1 键、臂阶段泄漏 0)全部沿用 r1 实现并全绿。
+
+**书外发现三条**:(1) **regret 单指标可被"伤类换准确率"反向刷分**——本单元 menu-oracle 是受 class-harm 约束的 `repair_level_shift`(+0.0103),而 winsorize 以 worst-class −0.072 换来 +0.1993,于是 regret 为负而 harm 为真。预注册判读已把 regret 与 harm/worst-class 非劣并列,此例是该设计必要性的实证,S1c 报告不得单引 regret。(2) **delayed 否决的 winner 仍被冻结部署**——`handle_feedback_delayed` 正确拒批(approved_skill_id 为 none),但共享 runner 轮体里由 Support winner 写入的 `state['incumbent']` 未被清除,`_frozen_recall` 据此部署。属继承自共享 runner 的部署规则,本书只记账不修(改它是行为变更,需自己的切片)。工件 `deploy_rule_observation`。(3) **guard 通道可行性已可算**:`outlier_iqr` 在两个害证单元上均合法且可读地有害(−0.0944 / −0.1852,分别 ≥ 1/45 与 1/12),预期最早在正序第 3 单元后成型;但成型仍取决于提案阶段是否在两个单元上都采样到它,这是 Agent 行为、非算术保证。工件 `guard_channel_feasibility`。
+
+**提交**:runner(选课函数 r2 重写 + 三个新读数)、`s1_curriculum_frozen.json/.md`(r2)、`s1_curriculum_frozen_r1.json/.md`(留档)、`s1_smoke_cell1.json/.md`、本节。未跑全程课程;未跑全仓 pytest;`methods/`/`runtime/`/`contracts/`/`operators/` 与共享 runner 零改动;密封 oracle 零改写。S1c 仍不在本书。
+
 ### S1b 收口:课程机械冻结 + 四臂 runner 就绪 + 单元 1 smoke `S1B_SMOKE_WIRED`;实测仪器阻断 S1c(2026-08-26 21:2x,opus)
 
 **交付**:新独立 runner `evaluation/functional/run_e2_s1_curriculum_four_arms.py`(`--select-curriculum` / `--smoke`);`methods/`、`runtime/`、`contracts/`、`operators/` 与共享 runner 零改动,只 import 复用。0 真实 LLM(smoke 走 scripted sealed-probe backend,9 次为脚本探测调用非 LLM 支出)、13 fit、11.2 s。
@@ -1042,6 +1056,10 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **判词**:`S1B_SMOKE_WIRED`(七门全绿:四臂状态隔离 / 域绑定钩子 / 判分出 regret 表 / oracle 隔离 / 隔离墙自检 / 预算 / 部署纯净)。仅为接线证据,非能力证据,课程未跑。**S1c 不应在仪器裁定前发车**。
 
 **提交**:新 runner、`artifacts/functional/e2/s1_curriculum_frozen.json/.md`、`artifacts/functional/e2/s1_smoke_cell1.json/.md`、本节(含他书未提交台账条目一并入库,未删改既有正文)。封存 oracle 件零改写;未跑全仓 pytest;零下载。
+
+### S1b 交付但 S1c 拦停:选课规则"最小点数"反向选择反馈面(主线规则错);S1b-r2 修正发车(2026-08-26 21:4x,主线)
+
+**S1b 交付**(提交 dbd840a,0 真 LLM/13 fit/11s smoke):四臂 runner + 机械冻结 7 单元双序 + 单元 1 smoke 七门全过(S1B_SMOKE_WIRED);17 项状态隔离断言过,K0 惰性卡在两臂 store 中且 Fast 三面零出现(T1 闸在活料上工作);oracle 隔离墙自检暴露并修复 Path.read_text 旁路(初版只包 builtins/io.open——**隔离审计自身也要正向自测**,入教训);合成条目验证域绑定双墙(异域 Target-local 丢弃/五轴 Scope 拒空交集与错 Consumer)。**S1c 拦停原因(主线选课规则错误)**:"各组内总点数最小"反向选择反馈面——6/7 单元最小 held-in 切片 ≤2 行、3 单元 r2_delayed 为空,probe 增益量化为 0.0、Episode 全 NEUTRAL,**guard 通道物理不可点火**;执行者按声明规则忠实执行并停给主线,纪律正确。**连带仪器缺口**:r2/r3 可学性标签基于拼接全池,臂协议实读四分切片,标签系统性偏乐观——"协议常数泄漏底物假设"第四例。**S1b-r2 修正规则(主线声明,续 opus 会话执行)**:(1) 全课程单元准入加**切片可读性地板**:两轮协议下最小切片行数 ≥5,且 |pooled 增益/害| ≥ 1/最小切片行数(必要条件筛,零新 fit);地板 5 不满足组配额时按 5→4→3 阶梯降,每步记录,禁止静默重选;(2) 害证/可学组的组内择优从"点数最小"改为"最小切片行数最大",identity 组同受地板;(3) 家族相异改为**全课程跨组去重**(7 底物尽量互异,池不足时同族需报);(4) 重冻结双序、重跑单元 1 smoke(期望见到至少一条非 NEUTRAL 回执的可读面证据)。S1c 待 r2 冻结课程复核后发。
 
 ### 用户-sol 大讨论裁定:"3"门考古定性;分级授权+课程回归门立为待批修订案;两轨一门合流方案(2026-08-26 20:4x,主线)
 

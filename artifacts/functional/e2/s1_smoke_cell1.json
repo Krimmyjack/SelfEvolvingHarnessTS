@@ -2,65 +2,95 @@
  "protocol_version": "s1_curriculum_four_arms_v1",
  "entry": "--smoke",
  "evidence_grade": "DEVELOPMENT",
- "git_head": "e64c68444923725351fcf99ad7652e87cb884690",
- "python": "3.10.19",
+ "git_head": "dbd840a50bddfb0b9e74b0284e2e2f88c3396776",
+ "python": "3.13.5",
  "backend": "scripted_sealed_probe",
  "curriculum_source": "artifacts/functional/e2/s1_curriculum_frozen.json",
+ "curriculum": {
+  "revision": "r2",
+  "forward_order": [
+   "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "DistalPhalanxOutlineCorrect__burst_cls2",
+   "PowerCons__impulse_v2",
+   "FreezerRegularTrain__burst_cls2",
+   "GunPointOldVersusYoung__impulse_v2",
+   "ECG200__impulse_v2",
+   "Ham__impulse_v2"
+  ],
+  "supersedes": "artifacts/functional/e2/s1_curriculum_frozen_r1.json"
+ },
  "unit_under_test": {
   "forward_position": 1,
-  "unit_id": "MoteStrain__impulse_v2",
-  "dataset": "MoteStrain",
+  "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+  "dataset": "MiddlePhalanxOutlineCorrect",
   "injection": "impulse_v2",
   "condition": "fit_only_artifact",
   "consumer": "ridge-raw-plus-difference-v1",
   "metric": "accuracy",
   "group": "harm_evidence",
-  "family_key": "MoteStrain",
+  "family_key": "PhalanxFamily",
+  "family_repeat": false,
   "learnability": "HELDOUT_ONLY",
-  "total_points": 1680,
-  "official_train_rows": 20,
-  "series_length": 84,
-  "n_heldin": 6,
-  "n_heldout": 1252,
+  "slice_rows": {
+   "r1_support": 45,
+   "r1_delayed": 45,
+   "r2_support": 45,
+   "r2_delayed": 45
+  },
+  "min_slice_rows": 45,
+  "slice_resolution": 0.022222222222222223,
+  "key_heldin_readout": 0.09444444444444444,
+  "largest_legal_heldin_magnitude": 0.13888888888888895,
+  "total_points": 48000,
+  "official_train_rows": 600,
+  "series_length": 80,
+  "n_heldin": 180,
+  "n_heldout": 291,
   "oracle_set": [
-   "hampel_filter"
+   "repair_level_shift"
   ],
-  "menu_oracle_program": "hampel_filter",
+  "menu_oracle_program": "repair_level_shift",
   "harmful_outlier_operators": [
    {
-    "program": "outlier_mad",
-    "heldin_headroom": -0.16666666666666663,
-    "heldout_utility": -0.05830670926517567,
-    "cohort_modified_fraction": 0.05442176870748299
-   },
-   {
     "program": "outlier_iqr",
-    "heldin_headroom": -0.16666666666666663,
-    "heldout_utility": -0.07987220447284338,
-    "cohort_modified_fraction": 0.05442176870748299
+    "heldin_headroom": -0.09444444444444444,
+    "heldout_utility": 0.20962199312714774,
+    "cohort_modified_fraction": 0.05
    }
   ]
  },
  "next_unit_for_the_boundary_test": {
   "forward_position": 2,
-  "unit_id": "ECGFiveDays__impulse_v2",
-  "dataset": "ECGFiveDays",
-  "injection": "impulse_v2",
+  "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+  "dataset": "DistalPhalanxOutlineCorrect",
+  "injection": "burst_cls2",
   "condition": "fit_only_artifact",
   "consumer": "ridge-raw-plus-difference-v1",
   "metric": "accuracy",
   "group": "learnable_positive",
-  "family_key": "ECGFamily",
+  "family_key": "PhalanxFamily",
+  "family_repeat": true,
   "learnability": "LEARNABLE",
-  "total_points": 3128,
-  "official_train_rows": 23,
-  "series_length": 136,
-  "n_heldin": 7,
-  "n_heldout": 861,
+  "slice_rows": {
+   "r1_support": 46,
+   "r1_delayed": 45,
+   "r2_support": 45,
+   "r2_delayed": 44
+  },
+  "min_slice_rows": 44,
+  "slice_resolution": 0.022727272727272728,
+  "key_heldin_readout": 0.033333333333333326,
+  "largest_legal_heldin_magnitude": 0.033333333333333326,
+  "total_points": 48000,
+  "official_train_rows": 600,
+  "series_length": 80,
+  "n_heldin": 180,
+  "n_heldout": 276,
   "oracle_set": [
-   "repair_burst_segment"
+   "outlier_iqr",
+   "outlier_mad"
   ],
-  "menu_oracle_program": "repair_burst_segment",
+  "menu_oracle_program": "outlier_iqr",
   "harmful_outlier_operators": []
  },
  "reduced_protocol": {
@@ -114,7 +144,7 @@
   }
  },
  "pattern_views": {
-  "MoteStrain__impulse_v2": {
+  "MiddlePhalanxOutlineCorrect__impulse_v2": {
    "missing_fraction": "zero",
    "longest_missing_run_fraction": "zero",
    "local_robust_z_peak": "high",
@@ -123,23 +153,23 @@
    "level_region_fraction": "very_low",
    "level_region_end_fraction": "very_low",
    "outlier_region_end_fraction": "very_low",
-   "level_excursion_score": "high",
-   "estimated_level_offset": "zero",
-   "period_change_score": "high",
+   "level_excursion_score": "medium",
+   "estimated_level_offset": "low",
+   "period_change_score": "zero",
    "period_reliability": "high",
    "period_evidence_status": "OK"
   },
-  "ECGFiveDays__impulse_v2": {
+  "DistalPhalanxOutlineCorrect__burst_cls2": {
    "missing_fraction": "zero",
    "longest_missing_run_fraction": "zero",
    "local_robust_z_peak": "high",
-   "estimated_region_start_fraction": "very_low",
+   "estimated_region_start_fraction": "low",
    "estimated_region_end_fraction": "high",
    "level_region_fraction": "very_low",
    "level_region_end_fraction": "very_low",
    "outlier_region_end_fraction": "very_low",
-   "level_excursion_score": "high",
-   "estimated_level_offset": "zero",
+   "level_excursion_score": "medium",
+   "estimated_level_offset": "low",
    "period_change_score": "low",
    "period_reliability": "high",
    "period_evidence_status": "OK"
@@ -157,7 +187,7 @@
  "a5_slow_integration": {
   "probe_rows": [
    {
-    "task_episode_id": "MoteStrain__impulse_v2",
+    "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "arm": "A5-online",
     "program": "denoise_median",
     "context_condition": false,
@@ -167,12 +197,12 @@
     "conditioned_served": true
    },
    {
-    "task_episode_id": "MoteStrain__impulse_v2",
+    "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "arm": "A5-online",
-    "program": "outlier_iqr",
+    "program": "winsorize",
     "context_condition": false,
-    "support_gain": 0.0,
-    "relation": "NEUTRAL",
+    "support_gain": 0.1333333333333333,
+    "relation": "NEGATIVE",
     "conditioned_snapshot": true,
     "conditioned_served": true
    }
@@ -186,18 +216,18 @@
     "support_relation": "NEUTRAL",
     "distinct_task_count": 1,
     "distinct_task_episode_ids": [
-     "MoteStrain__impulse_v2"
+     "MiddlePhalanxOutlineCorrect__impulse_v2"
     ]
    },
    {
     "canonical_program": [
-     "outlier_iqr"
+     "winsorize"
     ],
     "support_reproduces_fit_signal": false,
-    "support_relation": "NEUTRAL",
+    "support_relation": "NEGATIVE",
     "distinct_task_count": 1,
     "distinct_task_episode_ids": [
-     "MoteStrain__impulse_v2"
+     "MiddlePhalanxOutlineCorrect__impulse_v2"
     ]
    }
   ],
@@ -218,15 +248,15 @@
     "withheld_because": "no_unguided_positive"
    },
    {
-    "program": "outlier_iqr",
+    "program": "winsorize",
     "context_condition": false,
     "pooled_positive": 0,
-    "pooled_negative": 0,
+    "pooled_negative": 1,
     "pooled_immaterial": 0,
     "unguided_positive": 0,
     "unguided_negative": 0,
     "conditioned_positive": 0,
-    "conditioned_negative": 0,
+    "conditioned_negative": 1,
     "leave_one_out_minimum_positive": 0,
     "active_try_authorized": false,
     "deprioritization_authorized": false,
@@ -243,7 +273,7 @@
   "entry_skill_id": null
  },
  "a5_carry_into_next_unit": {
-  "next_unit_id": "ECGFiveDays__impulse_v2",
+  "next_unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
   "decisions": [],
   "carried_skill_ids": [],
   "dropped_skill_ids": [],
@@ -288,7 +318,7 @@
    "store_evolved_in_unit": false,
    "episodes_at_unit_end": 2
   },
-  "next_unit_id": "ECGFiveDays__impulse_v2"
+  "next_unit_id": "DistalPhalanxOutlineCorrect__burst_cls2"
  },
  "arm_isolation": {
   "checks": {
@@ -316,12 +346,12 @@
  "domain_binding": {
   "hook_1_stamped_skills": [],
   "hook_1_every_minted_skill_is_stamped": true,
-  "hook_2_next_unit": "ECGFiveDays__impulse_v2",
+  "hook_2_next_unit": "DistalPhalanxOutlineCorrect__burst_cls2",
   "hook_2_target_local_decisions": [],
   "hook_2_all_foreign_target_local_dropped": true,
   "hook_3_source_card_decision": null,
   "episode_domain_namespaces": [
-   "MoteStrain__impulse_v2"
+   "MiddlePhalanxOutlineCorrect__impulse_v2"
   ],
   "synthetic_probe": {
    "note": "synthetic entries through the live decision functions; the arms minted none of these",
@@ -330,16 +360,16 @@
     "foreign_domain_capability": {
      "skill_id": "probe_target_local_foreign_domain",
      "carrier_kind": "target_local_capability",
-     "domain_namespace": "MoteStrain__impulse_v2",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "carried": false,
-     "why": "hook 2: a Target-local capability carries frozen program steps and is valid only in the domain that formed it; stamped MoteStrain__impulse_v2, next unit is ECGFiveDays__impulse_v2"
+     "why": "hook 2: a Target-local capability carries frozen program steps and is valid only in the domain that formed it; stamped MiddlePhalanxOutlineCorrect__impulse_v2, next unit is DistalPhalanxOutlineCorrect__burst_cls2"
     },
     "native_domain_capability": {
      "skill_id": "probe_target_local_native_domain",
      "carrier_kind": "target_local_capability",
-     "domain_namespace": "ECGFiveDays__impulse_v2",
+     "domain_namespace": "DistalPhalanxOutlineCorrect__burst_cls2",
      "carried": true,
-     "why": "hook 2: a Target-local capability carries frozen program steps and is valid only in the domain that formed it; stamped ECGFiveDays__impulse_v2, next unit is ECGFiveDays__impulse_v2"
+     "why": "hook 2: a Target-local capability carries frozen program steps and is valid only in the domain that formed it; stamped DistalPhalanxOutlineCorrect__burst_cls2, next unit is DistalPhalanxOutlineCorrect__burst_cls2"
     },
     "behaves_as_specified": true
    },
@@ -353,7 +383,7 @@
     "pattern_mismatch_scope": {
      "admits": false,
      "why": [
-      "pattern_mismatch:period_change_score"
+      "pattern_mismatch:estimated_region_start_fraction,period_change_score"
      ]
     },
     "empty_intersection_scope": {
@@ -369,6 +399,7 @@
      ]
     },
     "pattern_axes_that_differ_between_unit_1_and_unit_2": [
+     "estimated_region_start_fraction",
      "period_change_score"
     ],
     "behaves_as_specified": true
@@ -378,211 +409,155 @@
  "instrument_census": {
   "per_unit": [
    {
-    "unit_id": "MoteStrain__impulse_v2",
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "forward_position": 1,
     "group": "harm_evidence",
-    "fit_rows": 14,
-    "support_pool_rows": 6,
+    "fit_rows": 420,
+    "support_pool_rows": 180,
     "slice_rows": {
-     "r1_support": 2,
-     "r1_delayed": 2,
-     "r2_support": 2,
-     "r2_delayed": 0
+     "r1_support": 45,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 45
     },
-    "empty_slices": [
-     "r2_delayed"
-    ],
-    "smallest_slice_rows": 0,
-    "smallest_expressible_gain": null,
-    "can_express_a_material_relation": false,
-    "relation_resolution": "the r2 round has no rows to read at all"
+    "empty_slices": [],
+    "smallest_slice_rows": 45,
+    "smallest_expressible_gain": 0.022222222222222223,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 45-row slice moves accuracy only in steps of 0.022"
    },
    {
-    "unit_id": "ECGFiveDays__impulse_v2",
+    "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
     "forward_position": 2,
     "group": "learnable_positive",
-    "fit_rows": 16,
-    "support_pool_rows": 7,
+    "fit_rows": 420,
+    "support_pool_rows": 180,
     "slice_rows": {
-     "r1_support": 2,
-     "r1_delayed": 2,
-     "r2_support": 2,
-     "r2_delayed": 1
+     "r1_support": 46,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 44
     },
     "empty_slices": [],
-    "smallest_slice_rows": 1,
-    "smallest_expressible_gain": 1.0,
+    "smallest_slice_rows": 44,
+    "smallest_expressible_gain": 0.022727272727272728,
     "can_express_a_material_relation": true,
-    "relation_resolution": "a 1-row slice moves accuracy only in steps of 1.000"
+    "relation_resolution": "a 44-row slice moves accuracy only in steps of 0.023"
    },
    {
-    "unit_id": "Coffee__impulse_v2",
+    "unit_id": "PowerCons__impulse_v2",
     "forward_position": 3,
     "group": "harm_evidence",
-    "fit_rows": 20,
-    "support_pool_rows": 8,
+    "fit_rows": 126,
+    "support_pool_rows": 54,
     "slice_rows": {
-     "r1_support": 2,
-     "r1_delayed": 2,
-     "r2_support": 2,
-     "r2_delayed": 2
+     "r1_support": 14,
+     "r1_delayed": 14,
+     "r2_support": 14,
+     "r2_delayed": 12
     },
     "empty_slices": [],
-    "smallest_slice_rows": 2,
-    "smallest_expressible_gain": 0.5,
+    "smallest_slice_rows": 12,
+    "smallest_expressible_gain": 0.08333333333333333,
     "can_express_a_material_relation": true,
-    "relation_resolution": "a 2-row slice moves accuracy only in steps of 0.500"
+    "relation_resolution": "a 12-row slice moves accuracy only in steps of 0.083"
    },
    {
-    "unit_id": "SonyAIBORobotSurface1__burst_cls2",
+    "unit_id": "FreezerRegularTrain__burst_cls2",
     "forward_position": 4,
     "group": "identity",
-    "fit_rows": 13,
-    "support_pool_rows": 7,
+    "fit_rows": 106,
+    "support_pool_rows": 44,
     "slice_rows": {
-     "r1_support": 2,
-     "r1_delayed": 2,
-     "r2_support": 2,
-     "r2_delayed": 1
+     "r1_support": 12,
+     "r1_delayed": 12,
+     "r2_support": 10,
+     "r2_delayed": 10
     },
     "empty_slices": [],
-    "smallest_slice_rows": 1,
-    "smallest_expressible_gain": 1.0,
+    "smallest_slice_rows": 10,
+    "smallest_expressible_gain": 0.1,
     "can_express_a_material_relation": true,
-    "relation_resolution": "a 1-row slice moves accuracy only in steps of 1.000"
+    "relation_resolution": "a 10-row slice moves accuracy only in steps of 0.100"
    },
    {
-    "unit_id": "GunPoint__impulse_v2",
+    "unit_id": "GunPointOldVersusYoung__impulse_v2",
     "forward_position": 5,
     "group": "learnable_positive",
-    "fit_rows": 35,
-    "support_pool_rows": 15,
+    "fit_rows": 95,
+    "support_pool_rows": 41,
     "slice_rows": {
-     "r1_support": 4,
-     "r1_delayed": 4,
-     "r2_support": 4,
-     "r2_delayed": 3
+     "r1_support": 11,
+     "r1_delayed": 10,
+     "r2_support": 10,
+     "r2_delayed": 10
     },
     "empty_slices": [],
-    "smallest_slice_rows": 3,
-    "smallest_expressible_gain": 0.3333333333333333,
+    "smallest_slice_rows": 10,
+    "smallest_expressible_gain": 0.1,
     "can_express_a_material_relation": true,
-    "relation_resolution": "a 3-row slice moves accuracy only in steps of 0.333"
+    "relation_resolution": "a 10-row slice moves accuracy only in steps of 0.100"
    },
    {
-    "unit_id": "BeetleFly__burst_cls2",
+    "unit_id": "ECG200__impulse_v2",
     "forward_position": 6,
     "group": "heldout_only_temptation",
-    "fit_rows": 14,
-    "support_pool_rows": 6,
+    "fit_rows": 70,
+    "support_pool_rows": 30,
     "slice_rows": {
-     "r1_support": 2,
-     "r1_delayed": 2,
-     "r2_support": 2,
-     "r2_delayed": 0
+     "r1_support": 9,
+     "r1_delayed": 7,
+     "r2_support": 7,
+     "r2_delayed": 7
     },
-    "empty_slices": [
-     "r2_delayed"
-    ],
-    "smallest_slice_rows": 0,
-    "smallest_expressible_gain": null,
-    "can_express_a_material_relation": false,
-    "relation_resolution": "the r2 round has no rows to read at all"
+    "empty_slices": [],
+    "smallest_slice_rows": 7,
+    "smallest_expressible_gain": 0.14285714285714285,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 7-row slice moves accuracy only in steps of 0.143"
    },
    {
-    "unit_id": "MoteStrain__burst_cls2",
+    "unit_id": "Ham__impulse_v2",
     "forward_position": 7,
     "group": "identity",
-    "fit_rows": 14,
-    "support_pool_rows": 6,
+    "fit_rows": 76,
+    "support_pool_rows": 33,
     "slice_rows": {
-     "r1_support": 2,
-     "r1_delayed": 2,
-     "r2_support": 2,
-     "r2_delayed": 0
+     "r1_support": 9,
+     "r1_delayed": 8,
+     "r2_support": 8,
+     "r2_delayed": 8
     },
-    "empty_slices": [
-     "r2_delayed"
-    ],
-    "smallest_slice_rows": 0,
-    "smallest_expressible_gain": null,
-    "can_express_a_material_relation": false,
-    "relation_resolution": "the r2 round has no rows to read at all"
+    "empty_slices": [],
+    "smallest_slice_rows": 8,
+    "smallest_expressible_gain": 0.125,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 8-row slice moves accuracy only in steps of 0.125"
    }
   ],
-  "units_whose_smallest_slice_is_at_most_two_rows": [
-   "MoteStrain__impulse_v2",
-   "ECGFiveDays__impulse_v2",
-   "Coffee__impulse_v2",
-   "SonyAIBORobotSurface1__burst_cls2",
-   "BeetleFly__burst_cls2",
-   "MoteStrain__burst_cls2"
-  ],
-  "units_with_an_empty_held_in_slice": [
-   {
-    "unit_id": "MoteStrain__impulse_v2",
-    "empty_slices": [
-     "r2_delayed"
-    ]
-   },
-   {
-    "unit_id": "BeetleFly__burst_cls2",
-    "empty_slices": [
-     "r2_delayed"
-    ]
-   },
-   {
-    "unit_id": "MoteStrain__burst_cls2",
-    "empty_slices": [
-     "r2_delayed"
-    ]
-   }
-  ],
-  "two_round_protocol_has_rows_on_every_unit": false,
-  "why_this_matters": "the harm channel needs NEGATIVE Episodes on two distinct units before risk_skill can compile a guard.  A one- or two-row Support slice cannot produce one: every candidate reads gain 0.0 and classify_relation returns NEUTRAL.  A zero-row slice is worse -- the frozen two-round protocol has no delayed surface to open on that unit at all."
+  "units_whose_smallest_slice_is_at_most_two_rows": [],
+  "units_with_an_empty_held_in_slice": [],
+  "two_round_protocol_has_rows_on_every_unit": true,
+  "why_this_matters": "the harm channel needs NEGATIVE Episodes on two distinct units before risk_skill can compile a guard, and classify_relation needs an aggregate move of at least 0.005 to call anything but NEUTRAL.  A slice of n rows moves accuracy only in steps of 1/n, so a one- or two-row slice reports 0.0 for every candidate and a zero-row slice leaves the round with no surface to read at all.  This table is the readability precondition, not a result."
  },
  "instrument_findings": {
   "observed_relations_on_unit_1": [
+   "NEGATIVE",
    "NEUTRAL"
   ],
-  "units_with_an_empty_held_in_slice": [
-   {
-    "unit_id": "MoteStrain__impulse_v2",
-    "empty_slices": [
-     "r2_delayed"
-    ]
-   },
-   {
-    "unit_id": "BeetleFly__burst_cls2",
-    "empty_slices": [
-     "r2_delayed"
-    ]
-   },
-   {
-    "unit_id": "MoteStrain__burst_cls2",
-    "empty_slices": [
-     "r2_delayed"
-    ]
-   }
-  ],
-  "two_round_protocol_has_rows_on_every_unit": false,
-  "harm_episode_formed_on_unit_1": false,
+  "units_with_an_empty_held_in_slice": [],
+  "two_round_protocol_has_rows_on_every_unit": true,
+  "smallest_slice_anywhere_in_the_course": 7,
+  "harm_episode_formed_on_unit_1": true,
   "guard_minted_on_unit_1": false,
-  "coarse_units": [
-   "MoteStrain__impulse_v2",
-   "ECGFiveDays__impulse_v2",
-   "Coffee__impulse_v2",
-   "SonyAIBORobotSurface1__burst_cls2",
-   "BeetleFly__burst_cls2",
-   "MoteStrain__burst_cls2"
-  ],
-  "finding": "the course selected by the declared smallest-total-points rule gives 6 of its seven units a held-in slice of at most two rows, and 3 of those slices are empty outright, so the frozen two-round protocol has no r2 delayed surface to open there.  On unit 1 every probe read gain 0.0 and every Episode came back NEUTRAL: no harm evidence was written and the guard channel had nothing to compile.  The wiring is correct; the material is too coarse to exercise it.",
-  "blocks_s1c": true,
-  "what_would_unblock_it": "the selection rule optimises for cheapness (smallest total points), which is the opposite of what a readable Support surface needs.  Either the rule changes -- e.g. a floor on support_pool_rows, or the largest-points qualifier instead of the smallest -- or the four held-in slices stop being quarters of an already tiny support pool.  Both are protocol changes and are outside this book; they are reported for the main line to arbitrate before S1c runs."
+  "coarse_units": [],
+  "finding": "the r2 readability floor holds across the whole course: every unit's smallest held-in slice is at least 7 rows, none is empty, and the frozen two-round protocol has a delayed surface everywhere.  On unit 1 the observed Episode relations were ['NEGATIVE', 'NEUTRAL'], so a harm Episode was written on live evidence rather than inferred.",
+  "blocks_s1c": false,
+  "what_would_unblock_it": "nothing outstanding on the readability axis.  The remaining question is not whether harm can be *read* but whether the proposal stage samples the same harmful program on both harm units -- see guard_channel_feasibility."
  },
  "arm_results": [
   {
-   "unit_id": "MoteStrain__impulse_v2",
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
    "arm": "Static",
    "base_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
    "end_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
@@ -603,7 +578,7 @@
    "rounds": [],
    "deployment": {
     "arm": "Static",
-    "dataset": "MoteStrain",
+    "dataset": "MiddlePhalanxOutlineCorrect",
     "condition": "fit_only_artifact",
     "mode": "FROZEN_FAST_ONLY_DEPLOY",
     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
@@ -618,17 +593,17 @@
     "applied_program": [],
     "scored_program": [],
     "scored_equals_applied": true,
-    "heldout_rows": 1252,
-    "heldout_identity_accuracy": 0.7675718849840255,
-    "heldout_accuracy": 0.7675718849840255,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.42955326460481097,
     "heldout_accuracy_gain": 0.0,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.4,
+     "1": 0.45180722891566266
     },
     "heldout_identity_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.4,
+     "1": 0.45180722891566266
     },
     "heldout_recall_delta_by_class": {
      "0": 0.0,
@@ -651,10 +626,10 @@
    "llm_calls": 0,
    "consumer_fits": 1,
    "consumer_fit_cap": 25,
-   "seconds": 1.36
+   "seconds": 2.28
   },
   {
-   "unit_id": "MoteStrain__impulse_v2",
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
    "arm": "A3-reset",
    "base_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
    "end_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
@@ -674,16 +649,16 @@
    "skills_added_in_unit": [],
    "rounds": [
     {
-     "unit_id": "MoteStrain__impulse_v2",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "round": "r1",
      "arm": "A3-reset",
-     "dataset": "MoteStrain",
-     "domain_namespace": "MoteStrain__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
      "pool": [
       "identity",
       "cand_denoise_median",
-      "cand_outlier_iqr"
+      "cand_winsorize"
      ],
      "chosen": "cand_denoise_median",
      "retrieved_skill_ids": [
@@ -705,19 +680,24 @@
        ]
       },
       {
-       "candidate_id": "cand_outlier_iqr",
+       "candidate_id": "cand_winsorize",
        "kind": "probe",
-       "gain": 0.0,
+       "gain": 0.1333333333333333,
        "passed": true,
        "operators": [
-        "outlier_iqr"
+        "winsorize"
        ]
       }
      ],
-     "winner_program": null,
-     "abstained": true,
+     "winner_program": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "abstained": false,
      "harm_count": 0,
-     "delayed_utility": null,
+     "delayed_utility": -0.11111111111111116,
      "approved_skill_id": null,
      "activated": false,
      "minted_skill_ids": [],
@@ -730,20 +710,20 @@
       "guarded_operators_in_fast_view": [],
       "pool_operators": [
        "denoise_median",
-       "outlier_iqr"
+       "winsorize"
       ],
       "probed_operators": [
        "denoise_median",
-       "outlier_iqr"
+       "winsorize"
       ],
       "guarded_and_not_probed": [],
       "guarded_but_probed_anyway": []
      },
      "episodes": [
       {
-       "episode_id": "MoteStrain__impulse_v2_target_denoise_median_a3-reset_MoteStrain__impulse_v2_r1_p1",
-       "domain_namespace": "MoteStrain__impulse_v2",
-       "task_episode_id": "MoteStrain__impulse_v2",
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_denoise_median_a3-reset_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p1",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
        "workflow_signature": "denoise_median",
        "relation": "NEUTRAL",
        "evidence_level": "SUPPORT",
@@ -765,45 +745,56 @@
        "delayed_effect": null
       },
       {
-       "episode_id": "MoteStrain__impulse_v2_target_outlier_iqr_a3-reset_MoteStrain__impulse_v2_r1_p2",
-       "domain_namespace": "MoteStrain__impulse_v2",
-       "task_episode_id": "MoteStrain__impulse_v2",
-       "workflow_signature": "outlier_iqr",
-       "relation": "NEUTRAL",
-       "evidence_level": "SUPPORT",
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a3-reset_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "winsorize",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
        "local_status": "EPISODE_ONLY",
-       "support_gain": 0.0,
-       "delayed_gain": null,
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
        "support_effect": {
-        "relation": "NEUTRAL",
-        "classification_basis": "aggregate within +/-0.005 of zero",
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
         "material_threshold": 0.005,
         "consumer_id": "ridge-raw-plus-difference-v1",
-        "aggregate_gain": 0.0,
-        "aggregate_direction": "unchanged",
+        "aggregate_gain": 0.1333333333333333,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.06896551724137934
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.11111111111111116,
+        "aggregate_direction": "degraded",
         "series_read": 2,
         "harmed_series_count": 1,
         "harmed_series": [
-         "view_0"
+         "view_1"
         ],
-        "min_per_series_gain": -1.0
-       },
-       "delayed_effect": null
+        "min_per_series_gain": -0.20689655172413796
+       }
       }
      ],
-     "consumer_fits_after": 3,
+     "consumer_fits_after": 5,
      "llm_calls_this_round": 3,
      "candidate_executions": 2,
-     "seconds": 1.27
+     "seconds": 5.02
     }
    ],
    "deployment": {
     "arm": "A3-reset",
-    "dataset": "MoteStrain",
+    "dataset": "MiddlePhalanxOutlineCorrect",
     "condition": "fit_only_artifact",
     "mode": "FROZEN_FAST_ONLY_DEPLOY",
-    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
-    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "deploy_why": "the last held-in round adopted this Workflow",
     "active_skill_id": null,
     "recall_hit": false,
     "view_skill_ids": [
@@ -811,26 +802,38 @@
      "inspect_and_localize",
      "select_or_identity_and_verify"
     ],
-    "applied_program": [],
-    "scored_program": [],
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
     "scored_equals_applied": true,
-    "heldout_rows": 1252,
-    "heldout_identity_accuracy": 0.7675718849840255,
-    "heldout_accuracy": 0.7675718849840255,
-    "heldout_accuracy_gain": 0.0,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_accuracy_gain": 0.19931271477663232,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.328,
+     "1": 0.8554216867469879
     },
     "heldout_identity_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.4,
+     "1": 0.45180722891566266
     },
     "heldout_recall_delta_by_class": {
-     "0": 0.0,
-     "1": 0.0
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
     },
-    "harmed_classes_over_bar": [],
+    "harmed_classes_over_bar": [
+     "0"
+    ],
     "harm_bar": 0.05,
     "open_delayed_calls": 0,
     "slow_calls": 0,
@@ -839,18 +842,18 @@
     "store_unchanged": true,
     "experience_unchanged": true,
     "heldout_openings": 1,
-    "consumer_fits_after": 4,
+    "consumer_fits_after": 7,
     "breach": [],
     "pure": true
    },
    "approved_skill_ids": [],
    "llm_calls": 3,
-   "consumer_fits": 4,
+   "consumer_fits": 7,
    "consumer_fit_cap": 25,
-   "seconds": 2.5
+   "seconds": 9.51
   },
   {
-   "unit_id": "MoteStrain__impulse_v2",
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
    "arm": "K0-fixed",
    "base_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
    "end_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
@@ -872,16 +875,16 @@
    "skills_added_in_unit": [],
    "rounds": [
     {
-     "unit_id": "MoteStrain__impulse_v2",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "round": "r1",
      "arm": "K0-fixed",
-     "dataset": "MoteStrain",
-     "domain_namespace": "MoteStrain__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
      "pool": [
       "identity",
       "cand_denoise_median",
-      "cand_outlier_iqr"
+      "cand_winsorize"
      ],
      "chosen": "cand_denoise_median",
      "retrieved_skill_ids": [
@@ -903,19 +906,24 @@
        ]
       },
       {
-       "candidate_id": "cand_outlier_iqr",
+       "candidate_id": "cand_winsorize",
        "kind": "probe",
-       "gain": 0.0,
+       "gain": 0.1333333333333333,
        "passed": true,
        "operators": [
-        "outlier_iqr"
+        "winsorize"
        ]
       }
      ],
-     "winner_program": null,
-     "abstained": true,
+     "winner_program": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "abstained": false,
      "harm_count": 0,
-     "delayed_utility": null,
+     "delayed_utility": -0.11111111111111116,
      "approved_skill_id": null,
      "activated": false,
      "minted_skill_ids": [],
@@ -928,20 +936,20 @@
       "guarded_operators_in_fast_view": [],
       "pool_operators": [
        "denoise_median",
-       "outlier_iqr"
+       "winsorize"
       ],
       "probed_operators": [
        "denoise_median",
-       "outlier_iqr"
+       "winsorize"
       ],
       "guarded_and_not_probed": [],
       "guarded_but_probed_anyway": []
      },
      "episodes": [
       {
-       "episode_id": "MoteStrain__impulse_v2_target_denoise_median_k0-fixed_MoteStrain__impulse_v2_r1_p1",
-       "domain_namespace": "MoteStrain__impulse_v2",
-       "task_episode_id": "MoteStrain__impulse_v2",
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_denoise_median_k0-fixed_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p1",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
        "workflow_signature": "denoise_median",
        "relation": "NEUTRAL",
        "evidence_level": "SUPPORT",
@@ -963,45 +971,56 @@
        "delayed_effect": null
       },
       {
-       "episode_id": "MoteStrain__impulse_v2_target_outlier_iqr_k0-fixed_MoteStrain__impulse_v2_r1_p2",
-       "domain_namespace": "MoteStrain__impulse_v2",
-       "task_episode_id": "MoteStrain__impulse_v2",
-       "workflow_signature": "outlier_iqr",
-       "relation": "NEUTRAL",
-       "evidence_level": "SUPPORT",
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_k0-fixed_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "winsorize",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
        "local_status": "EPISODE_ONLY",
-       "support_gain": 0.0,
-       "delayed_gain": null,
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
        "support_effect": {
-        "relation": "NEUTRAL",
-        "classification_basis": "aggregate within +/-0.005 of zero",
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
         "material_threshold": 0.005,
         "consumer_id": "ridge-raw-plus-difference-v1",
-        "aggregate_gain": 0.0,
-        "aggregate_direction": "unchanged",
+        "aggregate_gain": 0.1333333333333333,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.06896551724137934
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.11111111111111116,
+        "aggregate_direction": "degraded",
         "series_read": 2,
         "harmed_series_count": 1,
         "harmed_series": [
-         "view_0"
+         "view_1"
         ],
-        "min_per_series_gain": -1.0
-       },
-       "delayed_effect": null
+        "min_per_series_gain": -0.20689655172413796
+       }
       }
      ],
-     "consumer_fits_after": 3,
+     "consumer_fits_after": 5,
      "llm_calls_this_round": 3,
      "candidate_executions": 2,
-     "seconds": 1.27
+     "seconds": 4.99
     }
    ],
    "deployment": {
     "arm": "K0-fixed",
-    "dataset": "MoteStrain",
+    "dataset": "MiddlePhalanxOutlineCorrect",
     "condition": "fit_only_artifact",
     "mode": "FROZEN_FAST_ONLY_DEPLOY",
-    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
-    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "deploy_why": "the last held-in round adopted this Workflow",
     "active_skill_id": null,
     "recall_hit": false,
     "view_skill_ids": [
@@ -1009,26 +1028,38 @@
      "inspect_and_localize",
      "select_or_identity_and_verify"
     ],
-    "applied_program": [],
-    "scored_program": [],
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
     "scored_equals_applied": true,
-    "heldout_rows": 1252,
-    "heldout_identity_accuracy": 0.7675718849840255,
-    "heldout_accuracy": 0.7675718849840255,
-    "heldout_accuracy_gain": 0.0,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_accuracy_gain": 0.19931271477663232,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.328,
+     "1": 0.8554216867469879
     },
     "heldout_identity_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.4,
+     "1": 0.45180722891566266
     },
     "heldout_recall_delta_by_class": {
-     "0": 0.0,
-     "1": 0.0
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
     },
-    "harmed_classes_over_bar": [],
+    "harmed_classes_over_bar": [
+     "0"
+    ],
     "harm_bar": 0.05,
     "open_delayed_calls": 0,
     "slow_calls": 0,
@@ -1037,18 +1068,18 @@
     "store_unchanged": true,
     "experience_unchanged": true,
     "heldout_openings": 1,
-    "consumer_fits_after": 4,
+    "consumer_fits_after": 7,
     "breach": [],
     "pure": true
    },
    "approved_skill_ids": [],
    "llm_calls": 3,
-   "consumer_fits": 4,
+   "consumer_fits": 7,
    "consumer_fit_cap": 25,
-   "seconds": 2.55
+   "seconds": 9.51
   },
   {
-   "unit_id": "MoteStrain__impulse_v2",
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
    "arm": "A5-online",
    "base_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
    "end_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
@@ -1070,16 +1101,16 @@
    "skills_added_in_unit": [],
    "rounds": [
     {
-     "unit_id": "MoteStrain__impulse_v2",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "round": "r1",
      "arm": "A5-online",
-     "dataset": "MoteStrain",
-     "domain_namespace": "MoteStrain__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
      "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
      "pool": [
       "identity",
       "cand_denoise_median",
-      "cand_outlier_iqr"
+      "cand_winsorize"
      ],
      "chosen": "cand_denoise_median",
      "retrieved_skill_ids": [
@@ -1101,19 +1132,24 @@
        ]
       },
       {
-       "candidate_id": "cand_outlier_iqr",
+       "candidate_id": "cand_winsorize",
        "kind": "probe",
-       "gain": 0.0,
+       "gain": 0.1333333333333333,
        "passed": true,
        "operators": [
-        "outlier_iqr"
+        "winsorize"
        ]
       }
      ],
-     "winner_program": null,
-     "abstained": true,
+     "winner_program": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "abstained": false,
      "harm_count": 0,
-     "delayed_utility": null,
+     "delayed_utility": -0.11111111111111116,
      "approved_skill_id": null,
      "activated": false,
      "minted_skill_ids": [],
@@ -1126,20 +1162,20 @@
       "guarded_operators_in_fast_view": [],
       "pool_operators": [
        "denoise_median",
-       "outlier_iqr"
+       "winsorize"
       ],
       "probed_operators": [
        "denoise_median",
-       "outlier_iqr"
+       "winsorize"
       ],
       "guarded_and_not_probed": [],
       "guarded_but_probed_anyway": []
      },
      "episodes": [
       {
-       "episode_id": "MoteStrain__impulse_v2_target_denoise_median_a5-online_MoteStrain__impulse_v2_r1_p1",
-       "domain_namespace": "MoteStrain__impulse_v2",
-       "task_episode_id": "MoteStrain__impulse_v2",
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_denoise_median_a5-online_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p1",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
        "workflow_signature": "denoise_median",
        "relation": "NEUTRAL",
        "evidence_level": "SUPPORT",
@@ -1161,45 +1197,56 @@
        "delayed_effect": null
       },
       {
-       "episode_id": "MoteStrain__impulse_v2_target_outlier_iqr_a5-online_MoteStrain__impulse_v2_r1_p2",
-       "domain_namespace": "MoteStrain__impulse_v2",
-       "task_episode_id": "MoteStrain__impulse_v2",
-       "workflow_signature": "outlier_iqr",
-       "relation": "NEUTRAL",
-       "evidence_level": "SUPPORT",
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a5-online_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "winsorize",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
        "local_status": "EPISODE_ONLY",
-       "support_gain": 0.0,
-       "delayed_gain": null,
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
        "support_effect": {
-        "relation": "NEUTRAL",
-        "classification_basis": "aggregate within +/-0.005 of zero",
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
         "material_threshold": 0.005,
         "consumer_id": "ridge-raw-plus-difference-v1",
-        "aggregate_gain": 0.0,
-        "aggregate_direction": "unchanged",
+        "aggregate_gain": 0.1333333333333333,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.06896551724137934
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.11111111111111116,
+        "aggregate_direction": "degraded",
         "series_read": 2,
         "harmed_series_count": 1,
         "harmed_series": [
-         "view_0"
+         "view_1"
         ],
-        "min_per_series_gain": -1.0
-       },
-       "delayed_effect": null
+        "min_per_series_gain": -0.20689655172413796
+       }
       }
      ],
-     "consumer_fits_after": 3,
+     "consumer_fits_after": 5,
      "llm_calls_this_round": 3,
      "candidate_executions": 2,
-     "seconds": 1.17
+     "seconds": 5.08
     }
    ],
    "deployment": {
     "arm": "A5-online",
-    "dataset": "MoteStrain",
+    "dataset": "MiddlePhalanxOutlineCorrect",
     "condition": "fit_only_artifact",
     "mode": "FROZEN_FAST_ONLY_DEPLOY",
-    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
-    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "deploy_why": "the last held-in round adopted this Workflow",
     "active_skill_id": null,
     "recall_hit": false,
     "view_skill_ids": [
@@ -1207,26 +1254,38 @@
      "inspect_and_localize",
      "select_or_identity_and_verify"
     ],
-    "applied_program": [],
-    "scored_program": [],
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
     "scored_equals_applied": true,
-    "heldout_rows": 1252,
-    "heldout_identity_accuracy": 0.7675718849840255,
-    "heldout_accuracy": 0.7675718849840255,
-    "heldout_accuracy_gain": 0.0,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_accuracy_gain": 0.19931271477663232,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.328,
+     "1": 0.8554216867469879
     },
     "heldout_identity_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.4,
+     "1": 0.45180722891566266
     },
     "heldout_recall_delta_by_class": {
-     "0": 0.0,
-     "1": 0.0
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
     },
-    "harmed_classes_over_bar": [],
+    "harmed_classes_over_bar": [
+     "0"
+    ],
     "harm_bar": 0.05,
     "open_delayed_calls": 0,
     "slow_calls": 0,
@@ -1235,15 +1294,15 @@
     "store_unchanged": true,
     "experience_unchanged": true,
     "heldout_openings": 1,
-    "consumer_fits_after": 4,
+    "consumer_fits_after": 7,
     "breach": [],
     "pure": true
    },
    "approved_skill_ids": [],
    "llm_calls": 3,
-   "consumer_fits": 4,
+   "consumer_fits": 7,
    "consumer_fit_cap": 25,
-   "seconds": 2.34
+   "seconds": 9.68
   }
  ],
  "judging": {
@@ -1251,20 +1310,20 @@
   "read_when": "after every arm is closed; the arm phase physically cannot open these files",
   "per_unit_per_arm": [
    {
-    "unit_id": "MoteStrain__impulse_v2",
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "forward_position": 1,
     "group": "harm_evidence",
     "arm": "Static",
     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
     "applied_program": [],
-    "menu_oracle_program": "hampel_filter",
-    "menu_oracle_heldout_utility": 0.1142172523961662,
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
     "heldout_utility": 0.0,
-    "regret": 0.1142172523961662,
-    "heldout_accuracy": 0.7675718849840255,
+    "regret": 0.010309278350515483,
+    "heldout_accuracy": 0.42955326460481097,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.4,
+     "1": 0.45180722891566266
     },
     "heldout_recall_delta_by_class": {
      "0": 0.0,
@@ -1291,145 +1350,211 @@
     "deploy_purity_breach": []
    },
    {
-    "unit_id": "MoteStrain__impulse_v2",
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "forward_position": 1,
     "group": "harm_evidence",
     "arm": "A3-reset",
-    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
-    "applied_program": [],
-    "menu_oracle_program": "hampel_filter",
-    "menu_oracle_heldout_utility": 0.1142172523961662,
-    "heldout_utility": 0.0,
-    "regret": 0.1142172523961662,
-    "heldout_accuracy": 0.7675718849840255,
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.19931271477663232,
+    "regret": -0.18900343642611683,
+    "heldout_accuracy": 0.6288659793814433,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.328,
+     "1": 0.8554216867469879
     },
     "heldout_recall_delta_by_class": {
-     "0": 0.0,
-     "1": 0.0
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
     },
-    "worst_class_harm": 0.0,
-    "harm_event": false,
-    "harm_event_detail": [],
+    "worst_class_harm": -0.07200000000000001,
+    "harm_event": true,
+    "harm_event_detail": [
+     {
+      "program": "winsorize",
+      "known": true,
+      "legal": true,
+      "in_oracle_set": false,
+      "heldout_utility": 0.19931271477663232,
+      "heldout_worst_class_recall_delta": -0.07200000000000001,
+      "oracle_harmful": true
+     }
+    ],
     "wrong_promotions": 0,
     "wrong_promotion_detail": [],
     "cost": {
      "llm": 3,
-     "consumer_fits": 4,
+     "consumer_fits": 7,
      "probes": 2
     },
     "wasted_probes": 1,
     "wasted_probe_detail": [
      {
       "round": "r1",
-      "candidate_id": "cand_outlier_iqr",
+      "candidate_id": "cand_winsorize",
       "reasons": [
-       "oracle_harmful:outlier_iqr"
+       "oracle_harmful:winsorize"
       ]
      }
     ],
     "support_delayed_direction": {
-     "pairs": 0,
+     "pairs": 1,
      "same_direction": 0,
-     "detail": []
+     "detail": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a3-reset_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "same_direction": false
+      }
+     ]
     },
     "guard_events": [],
     "deploy_purity_breach": []
    },
    {
-    "unit_id": "MoteStrain__impulse_v2",
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "forward_position": 1,
     "group": "harm_evidence",
     "arm": "K0-fixed",
-    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
-    "applied_program": [],
-    "menu_oracle_program": "hampel_filter",
-    "menu_oracle_heldout_utility": 0.1142172523961662,
-    "heldout_utility": 0.0,
-    "regret": 0.1142172523961662,
-    "heldout_accuracy": 0.7675718849840255,
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.19931271477663232,
+    "regret": -0.18900343642611683,
+    "heldout_accuracy": 0.6288659793814433,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.328,
+     "1": 0.8554216867469879
     },
     "heldout_recall_delta_by_class": {
-     "0": 0.0,
-     "1": 0.0
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
     },
-    "worst_class_harm": 0.0,
-    "harm_event": false,
-    "harm_event_detail": [],
+    "worst_class_harm": -0.07200000000000001,
+    "harm_event": true,
+    "harm_event_detail": [
+     {
+      "program": "winsorize",
+      "known": true,
+      "legal": true,
+      "in_oracle_set": false,
+      "heldout_utility": 0.19931271477663232,
+      "heldout_worst_class_recall_delta": -0.07200000000000001,
+      "oracle_harmful": true
+     }
+    ],
     "wrong_promotions": 0,
     "wrong_promotion_detail": [],
     "cost": {
      "llm": 3,
-     "consumer_fits": 4,
+     "consumer_fits": 7,
      "probes": 2
     },
     "wasted_probes": 1,
     "wasted_probe_detail": [
      {
       "round": "r1",
-      "candidate_id": "cand_outlier_iqr",
+      "candidate_id": "cand_winsorize",
       "reasons": [
-       "oracle_harmful:outlier_iqr"
+       "oracle_harmful:winsorize"
       ]
      }
     ],
     "support_delayed_direction": {
-     "pairs": 0,
+     "pairs": 1,
      "same_direction": 0,
-     "detail": []
+     "detail": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_k0-fixed_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "same_direction": false
+      }
+     ]
     },
     "guard_events": [],
     "deploy_purity_breach": []
    },
    {
-    "unit_id": "MoteStrain__impulse_v2",
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "forward_position": 1,
     "group": "harm_evidence",
     "arm": "A5-online",
-    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
-    "applied_program": [],
-    "menu_oracle_program": "hampel_filter",
-    "menu_oracle_heldout_utility": 0.1142172523961662,
-    "heldout_utility": 0.0,
-    "regret": 0.1142172523961662,
-    "heldout_accuracy": 0.7675718849840255,
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.19931271477663232,
+    "regret": -0.18900343642611683,
+    "heldout_accuracy": 0.6288659793814433,
     "heldout_recall_by_class": {
-     "0": 0.7155555555555555,
-     "1": 0.82842287694974
+     "0": 0.328,
+     "1": 0.8554216867469879
     },
     "heldout_recall_delta_by_class": {
-     "0": 0.0,
-     "1": 0.0
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
     },
-    "worst_class_harm": 0.0,
-    "harm_event": false,
-    "harm_event_detail": [],
+    "worst_class_harm": -0.07200000000000001,
+    "harm_event": true,
+    "harm_event_detail": [
+     {
+      "program": "winsorize",
+      "known": true,
+      "legal": true,
+      "in_oracle_set": false,
+      "heldout_utility": 0.19931271477663232,
+      "heldout_worst_class_recall_delta": -0.07200000000000001,
+      "oracle_harmful": true
+     }
+    ],
     "wrong_promotions": 0,
     "wrong_promotion_detail": [],
     "cost": {
      "llm": 3,
-     "consumer_fits": 4,
+     "consumer_fits": 7,
      "probes": 2
     },
     "wasted_probes": 1,
     "wasted_probe_detail": [
      {
       "round": "r1",
-      "candidate_id": "cand_outlier_iqr",
+      "candidate_id": "cand_winsorize",
       "reasons": [
-       "oracle_harmful:outlier_iqr"
+       "oracle_harmful:winsorize"
       ]
      }
     ],
     "support_delayed_direction": {
-     "pairs": 0,
+     "pairs": 1,
      "same_direction": 0,
-     "detail": []
+     "detail": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a5-online_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "same_direction": false
+      }
+     ]
     },
     "guard_events": [],
     "deploy_purity_breach": []
@@ -1438,7 +1563,7 @@
   "totals_by_arm": {
    "Static": {
     "units": 1,
-    "cumulative_regret": 0.1142172523961662,
+    "cumulative_regret": 0.010309278350515483,
     "cumulative_heldout_utility": 0.0,
     "harm_events": 0,
     "wrong_promotions": 0,
@@ -1449,10 +1574,10 @@
     "worst_class_harm_min": 0.0,
     "curve": [
      {
-      "unit_id": "MoteStrain__impulse_v2",
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
       "forward_position": 1,
-      "regret": 0.1142172523961662,
-      "cumulative_regret": 0.1142172523961662,
+      "regret": 0.010309278350515483,
+      "cumulative_regret": 0.010309278350515483,
       "heldout_utility": 0.0,
       "llm": 0,
       "consumer_fits": 1
@@ -1461,70 +1586,70 @@
    },
    "A3-reset": {
     "units": 1,
-    "cumulative_regret": 0.1142172523961662,
-    "cumulative_heldout_utility": 0.0,
-    "harm_events": 0,
+    "cumulative_regret": -0.18900343642611683,
+    "cumulative_heldout_utility": 0.19931271477663232,
+    "harm_events": 1,
     "wrong_promotions": 0,
     "wasted_probes": 1,
     "llm": 3,
-    "consumer_fits": 4,
+    "consumer_fits": 7,
     "probes": 2,
-    "worst_class_harm_min": 0.0,
+    "worst_class_harm_min": -0.07200000000000001,
     "curve": [
      {
-      "unit_id": "MoteStrain__impulse_v2",
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
       "forward_position": 1,
-      "regret": 0.1142172523961662,
-      "cumulative_regret": 0.1142172523961662,
-      "heldout_utility": 0.0,
+      "regret": -0.18900343642611683,
+      "cumulative_regret": -0.18900343642611683,
+      "heldout_utility": 0.19931271477663232,
       "llm": 3,
-      "consumer_fits": 4
+      "consumer_fits": 7
      }
     ]
    },
    "K0-fixed": {
     "units": 1,
-    "cumulative_regret": 0.1142172523961662,
-    "cumulative_heldout_utility": 0.0,
-    "harm_events": 0,
+    "cumulative_regret": -0.18900343642611683,
+    "cumulative_heldout_utility": 0.19931271477663232,
+    "harm_events": 1,
     "wrong_promotions": 0,
     "wasted_probes": 1,
     "llm": 3,
-    "consumer_fits": 4,
+    "consumer_fits": 7,
     "probes": 2,
-    "worst_class_harm_min": 0.0,
+    "worst_class_harm_min": -0.07200000000000001,
     "curve": [
      {
-      "unit_id": "MoteStrain__impulse_v2",
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
       "forward_position": 1,
-      "regret": 0.1142172523961662,
-      "cumulative_regret": 0.1142172523961662,
-      "heldout_utility": 0.0,
+      "regret": -0.18900343642611683,
+      "cumulative_regret": -0.18900343642611683,
+      "heldout_utility": 0.19931271477663232,
       "llm": 3,
-      "consumer_fits": 4
+      "consumer_fits": 7
      }
     ]
    },
    "A5-online": {
     "units": 1,
-    "cumulative_regret": 0.1142172523961662,
-    "cumulative_heldout_utility": 0.0,
-    "harm_events": 0,
+    "cumulative_regret": -0.18900343642611683,
+    "cumulative_heldout_utility": 0.19931271477663232,
+    "harm_events": 1,
     "wrong_promotions": 0,
     "wasted_probes": 1,
     "llm": 3,
-    "consumer_fits": 4,
+    "consumer_fits": 7,
     "probes": 2,
-    "worst_class_harm_min": 0.0,
+    "worst_class_harm_min": -0.07200000000000001,
     "curve": [
      {
-      "unit_id": "MoteStrain__impulse_v2",
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
       "forward_position": 1,
-      "regret": 0.1142172523961662,
-      "cumulative_regret": 0.1142172523961662,
-      "heldout_utility": 0.0,
+      "regret": -0.18900343642611683,
+      "cumulative_regret": -0.18900343642611683,
+      "heldout_utility": 0.19931271477663232,
       "llm": 3,
-      "consumer_fits": 4
+      "consumer_fits": 7
      }
     ]
    }
@@ -1536,13 +1661,218 @@
    "judged_in": "S1c.  This book freezes the readout and does not judge it."
   }
  },
+ "readable_surface_evidence": {
+  "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+  "min_slice_rows": 45,
+  "slice_resolution": 0.022222222222222223,
+  "support_receipts": [
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "program": "denoise_median",
+    "relation": "NEUTRAL",
+    "support_gain": 0.0,
+    "delayed_gain": null
+   },
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "program": "denoise_median",
+    "relation": "NEUTRAL",
+    "support_gain": 0.0,
+    "delayed_gain": null
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "program": "denoise_median",
+    "relation": "NEUTRAL",
+    "support_gain": 0.0,
+    "delayed_gain": null
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   }
+  ],
+  "programs_probed": [
+   "denoise_median",
+   "winsorize"
+  ],
+  "live_non_neutral_receipts": [
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   }
+  ],
+  "live_non_neutral_count": 3,
+  "arithmetic_corroboration": [
+   {
+    "program": "outlier_iqr",
+    "legal": true,
+    "pooled_heldin_headroom": -0.09444444444444444,
+    "magnitude": 0.09444444444444444,
+    "slice_resolution": 0.022222222222222223,
+    "expressible_on_the_smallest_slice": true,
+    "material": true,
+    "was_probed_in_the_smoke": false
+   },
+   {
+    "program": "outlier_mad",
+    "legal": true,
+    "pooled_heldin_headroom": 0.13888888888888895,
+    "magnitude": 0.13888888888888895,
+    "slice_resolution": 0.022222222222222223,
+    "expressible_on_the_smallest_slice": true,
+    "material": true,
+    "was_probed_in_the_smoke": false
+   },
+   {
+    "program": "repair_level_shift",
+    "legal": true,
+    "pooled_heldin_headroom": 0.0,
+    "magnitude": 0.0,
+    "slice_resolution": 0.022222222222222223,
+    "expressible_on_the_smallest_slice": false,
+    "material": false,
+    "was_probed_in_the_smoke": false
+   }
+  ],
+  "arithmetic_corroboration_holds": true,
+  "mode": "live",
+  "reading": "at least one Support receipt came back non-NEUTRAL: the feedback surface is readable on live evidence",
+  "caveat": "the oracle headroom is measured on the pooled held-in surface (all four slices concatenated) while a round reads one slice, so the arithmetic is a necessary condition on the surface, not a guarantee about any single round"
+ },
+ "guard_channel_feasibility": {
+  "harm_units": [
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "min_slice_rows": 45,
+    "slice_resolution": 0.022222222222222223,
+    "readably_harmful_legal_programs": {
+     "outlier_iqr": -0.09444444444444444
+    }
+   },
+   {
+    "unit_id": "PowerCons__impulse_v2",
+    "forward_position": 3,
+    "min_slice_rows": 12,
+    "slice_resolution": 0.08333333333333333,
+    "readably_harmful_legal_programs": {
+     "outlier_iqr": -0.18518518518518517,
+     "repair_level_shift": -0.27777777777777773
+    }
+   }
+  ],
+  "programs_readably_harmful_on_every_harm_unit": [
+   "outlier_iqr"
+  ],
+  "guard_is_formable_in_principle": true,
+  "reading": "a guard can form on ['outlier_iqr']: legal and readably harmful on both harm units.  Formation still requires the proposal stage to sample it on both, which is an agent behaviour and not an arithmetic guarantee.",
+  "expected_earliest_guard": "after forward position 3, the second harm unit"
+ },
+ "deploy_rule_observation": {
+  "rows": [
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "support_winner": [
+     "winsorize"
+    ],
+    "approved_skill_id": null,
+    "activated": false,
+    "delayed_relations": [
+     "NEGATIVE"
+    ],
+    "deployed_program": [
+     "winsorize"
+    ],
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT"
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "support_winner": [
+     "winsorize"
+    ],
+    "approved_skill_id": null,
+    "activated": false,
+    "delayed_relations": [
+     "NEGATIVE"
+    ],
+    "deployed_program": [
+     "winsorize"
+    ],
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT"
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "support_winner": [
+     "winsorize"
+    ],
+    "approved_skill_id": null,
+    "activated": false,
+    "delayed_relations": [
+     "NEGATIVE"
+    ],
+    "deployed_program": [
+     "winsorize"
+    ],
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT"
+   }
+  ],
+  "any_arm_deployed_a_delayed_rejected_winner": true,
+  "note": "the delayed gate correctly withheld Skill approval, but the ledger incumbent set by the Support winner survived it and became the frozen deployment.  Inherited from the shared runner's round body; recorded here, not repaired."
+ },
  "ledger": {
   "llm_calls_fast": 9,
   "llm_calls_slow": 0,
   "llm_calls_total": 9,
   "llm_cap": 15,
-  "consumer_fits": 13,
-  "wall_seconds": 10.7,
+  "consumer_fits": 22,
+  "wall_seconds": 33.9,
   "wall_seconds_cap": 1800,
   "real_llm_spend": 0,
   "counter_meaning": "scripted sealed-probe backend calls; real LLM spend is 0"
@@ -1556,7 +1886,7 @@
    {
     "path": "C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\artifacts\\functional\\e2\\s1_oracle\\BeetleFly__burst_cls2.json",
     "phase": "arm",
-    "unit": "MoteStrain__impulse_v2",
+    "unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "arm": "Static",
     "blocked": true,
     "probe": true
@@ -1564,7 +1894,7 @@
    {
     "path": "C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\artifacts\\functional\\e2\\s1_oracle\\BeetleFly__burst_cls2.json",
     "phase": "arm",
-    "unit": "MoteStrain__impulse_v2",
+    "unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "arm": "Static",
     "blocked": true,
     "probe": true
@@ -1572,19 +1902,20 @@
    {
     "path": "C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\artifacts\\functional\\e2\\s1_oracle\\BeetleFly__burst_cls2.json",
     "phase": "arm",
-    "unit": "MoteStrain__impulse_v2",
+    "unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
     "arm": "Static",
     "blocked": true,
     "probe": true
    }
   ],
   "judge_phase_keys_read": [
-   "MoteStrain__impulse_v2.json"
+   "MiddlePhalanxOutlineCorrect__impulse_v2.json",
+   "PowerCons__impulse_v2.json"
   ],
   "unblocked_reads_by_phase": {
    "setup": 0,
    "select": 0,
-   "judge": 1
+   "judge": 2
   },
   "holds": true
  },
@@ -1597,8 +1928,10 @@
    "oracle_isolation_holds": true,
    "oracle_wall_proved_armed": true,
    "within_budget": true,
-   "deploy_purity_clean": true
+   "deploy_purity_clean": true,
+   "feedback_surface_readable": true
   },
+  "feedback_surface_evidence_mode": "live",
   "scope": "wiring only, on curriculum unit 1, one round per adaptive arm.  No Capability claim; the course was not run."
  },
  "obligations": {
@@ -1616,8 +1949,12 @@
    "pathlib.Path.read_text": "blocked",
    "pathlib.Path.open": "blocked"
   },
-  "harm_channel_exercised_on_unit_1": false,
-  "instrument_blocker_reported_for_s1c": true,
+  "harm_channel_exercised_on_unit_1": true,
+  "instrument_blocker_reported_for_s1c": false,
+  "feedback_surface_evidence_mode": "live",
+  "guard_formable_in_principle_on_this_course": true,
+  "a_delayed_rejected_winner_was_still_deployed": true,
+  "curriculum_revision": "r2",
   "k0_has_no_target_local_capability": true,
   "k0_card_carries_no_frozen_steps": true,
   "live_llm_backend": false,

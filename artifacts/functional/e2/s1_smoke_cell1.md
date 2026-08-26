@@ -1,12 +1,14 @@
 # S1b smoke -- four arms on curriculum unit 1
 
-protocol: `s1_curriculum_four_arms_v1`  entry: `--smoke`  backend: **scripted_sealed_probe**  git: `e64c68444923725351fcf99ad7652e87cb884690`
+protocol: `s1_curriculum_four_arms_v1`  entry: `--smoke`  backend: **scripted_sealed_probe**  git: `dbd840a50bddfb0b9e74b0284e2e2f88c3396776`
 
 **S1B_SMOKE_WIRED**
 
 wiring only, on curriculum unit 1, one round per adaptive arm.  No Capability claim; the course was not run.
 
-unit under test: `MoteStrain__impulse_v2` (harm_evidence, MoteStrain)
+curriculum revision under test: **r2** (forward order frozen in `artifacts/functional/e2/s1_curriculum_frozen.json`)
+
+unit under test: `MiddlePhalanxOutlineCorrect__impulse_v2` (harm_evidence, PhalanxFamily; smallest held-in slice 45 rows)
 
 ## Gates
 
@@ -17,19 +19,44 @@ unit under test: `MoteStrain__impulse_v2` (harm_evidence, MoteStrain)
 - **oracle_wall_proved_armed**: True
 - **within_budget**: True
 - **deploy_purity_clean**: True
+- **feedback_surface_readable**: True
 
 ## Four-arm readout
 
 | arm | deploy | program | held-out utility | menu-oracle | regret | worst-class | harm | wrong promo | LLM | fits | probes | wasted |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Static | FROZEN_LEDGER_NO_INCUMBENT_IDENTITY | identity | +0.0000 | +0.1142 | +0.1142 | +0.0000 | False | 0 | 0 | 1 | 0 | 0 |
-| A3-reset | FROZEN_LEDGER_NO_INCUMBENT_IDENTITY | identity | +0.0000 | +0.1142 | +0.1142 | +0.0000 | False | 0 | 3 | 4 | 2 | 1 |
-| K0-fixed | FROZEN_LEDGER_NO_INCUMBENT_IDENTITY | identity | +0.0000 | +0.1142 | +0.1142 | +0.0000 | False | 0 | 3 | 4 | 2 | 1 |
-| A5-online | FROZEN_LEDGER_NO_INCUMBENT_IDENTITY | identity | +0.0000 | +0.1142 | +0.1142 | +0.0000 | False | 0 | 3 | 4 | 2 | 1 |
+| Static | FROZEN_LEDGER_NO_INCUMBENT_IDENTITY | identity | +0.0000 | +0.0103 | +0.0103 | +0.0000 | False | 0 | 0 | 1 | 0 | 0 |
+| A3-reset | FROZEN_LEDGER_INCUMBENT | winsorize | +0.1993 | +0.0103 | -0.1890 | -0.0720 | True | 0 | 3 | 7 | 2 | 1 |
+| K0-fixed | FROZEN_LEDGER_INCUMBENT | winsorize | +0.1993 | +0.0103 | -0.1890 | -0.0720 | True | 0 | 3 | 7 | 2 | 1 |
+| A5-online | FROZEN_LEDGER_INCUMBENT | winsorize | +0.1993 | +0.0103 | -0.1890 | -0.0720 | True | 0 | 3 | 7 | 2 | 1 |
+
+## Feedback surface: is it readable? (**live**)
+
+at least one Support receipt came back non-NEUTRAL: the feedback surface is readable on live evidence
+
+- smallest held-in slice: 45 rows, resolution 0.0222
+- programs the proposal stage actually probed: ['denoise_median', 'winsorize']
+- non-NEUTRAL Support receipts: **3**
+
+| arm | round | program | relation | support gain | delayed gain |
+|---|---|---|---|---|---|
+| A3-reset | r1 | winsorize | NEGATIVE | 0.1333333333333333 | -0.11111111111111116 |
+| K0-fixed | r1 | winsorize | NEGATIVE | 0.1333333333333333 | -0.11111111111111116 |
+| A5-online | r1 | winsorize | NEGATIVE | 0.1333333333333333 | -0.11111111111111116 |
+
+Arithmetic side-evidence from the sealed oracle:
+
+| program | legal | pooled held-in | |m| >= 1/slice | material | probed in this smoke |
+|---|---|---|---|---|---|
+| outlier_iqr | True | -0.09444444444444444 | True | True | False |
+| outlier_mad | True | 0.13888888888888895 | True | True | False |
+| repair_level_shift | True | 0.0 | False | False | False |
+
+- the oracle headroom is measured on the pooled held-in surface (all four slices concatenated) while a round reads one slice, so the arithmetic is a necessary condition on the surface, not a guarantee about any single round
 
 ## State at the unit boundary
 
-next unit would be `ECGFiveDays__impulse_v2`
+next unit would be `DistalPhalanxOutlineCorrect__burst_cls2`
 
 | arm | end-of-unit sha | store evolved | episodes at end | next base | episodes carried | skills carried |
 |---|---|---|---|---|---|---|
@@ -62,10 +89,10 @@ next unit would be `ECGFiveDays__impulse_v2`
 
 - hook 1, every minted Skill stamped: True
 - hook 1, stamped Skills: none minted
-- hook 2, next unit `ECGFiveDays__impulse_v2`; foreign Target-local dropped: True
+- hook 2, next unit `DistalPhalanxOutlineCorrect__burst_cls2`; foreign Target-local dropped: True
 - hook 2, decisions: none
 - hook 3, Source card decision: no card minted
-- Episode domain namespaces observed: ['MoteStrain__impulse_v2']
+- Episode domain namespaces observed: ['MiddlePhalanxOutlineCorrect__impulse_v2']
 
 ### Synthetic probe of the two walls
 
@@ -77,32 +104,54 @@ synthetic entries through the live decision functions; the arms minted none of t
 - hook 3, matching five-axis Scope admits: True
 - hook 3, empty pattern intersection admits: False
 - hook 3, wrong consumer admits: False
-- hook 3, pattern mismatch admits: False (axes that differ between unit 1 and unit 2: ['period_change_score'])
+- hook 3, pattern mismatch admits: False (axes that differ between unit 1 and unit 2: ['estimated_region_start_fraction', 'period_change_score'])
 - hook 3 behaves as specified: **True**
 
-## Instrument finding (blocks S1c: **True**)
+## Instrument finding (blocks S1c: **False**)
 
-the course selected by the declared smallest-total-points rule gives 6 of its seven units a held-in slice of at most two rows, and 3 of those slices are empty outright, so the frozen two-round protocol has no r2 delayed surface to open there.  On unit 1 every probe read gain 0.0 and every Episode came back NEUTRAL: no harm evidence was written and the guard channel had nothing to compile.  The wiring is correct; the material is too coarse to exercise it.
+the r2 readability floor holds across the whole course: every unit's smallest held-in slice is at least 7 rows, none is empty, and the frozen two-round protocol has a delayed surface everywhere.  On unit 1 the observed Episode relations were ['NEGATIVE', 'NEUTRAL'], so a harm Episode was written on live evidence rather than inferred.
 
-- relations observed on unit 1: ['NEUTRAL']
-- harm Episode formed on unit 1: False
+- relations observed on unit 1: ['NEGATIVE', 'NEUTRAL']
+- harm Episode formed on unit 1: True
 - guard minted on unit 1: False
-- the frozen two-round protocol has rows on every unit: False
-- units with an empty held-in slice: [{'unit_id': 'MoteStrain__impulse_v2', 'empty_slices': ['r2_delayed']}, {'unit_id': 'BeetleFly__burst_cls2', 'empty_slices': ['r2_delayed']}, {'unit_id': 'MoteStrain__burst_cls2', 'empty_slices': ['r2_delayed']}]
+- the frozen two-round protocol has rows on every unit: True
+- units with an empty held-in slice: none
 
-the selection rule optimises for cheapness (smallest total points), which is the opposite of what a readable Support surface needs.  Either the rule changes -- e.g. a floor on support_pool_rows, or the largest-points qualifier instead of the smallest -- or the four held-in slices stop being quarters of an already tiny support pool.  Both are protocol changes and are outside this book; they are reported for the main line to arbitrate before S1c runs.
+nothing outstanding on the readability axis.  The remaining question is not whether harm can be *read* but whether the proposal stage samples the same harmful program on both harm units -- see guard_channel_feasibility.
 
 | # | unit | group | fit rows | support pool | slice rows (r1s/r1d/r2s/r2d) | smallest slice | smallest expressible gain |
 |---|---|---|---|---|---|---|---|
-| 1 | MoteStrain__impulse_v2 | harm_evidence | 14 | 6 | 2/2/2/0 | 0 | empty slice |
-| 2 | ECGFiveDays__impulse_v2 | learnable_positive | 16 | 7 | 2/2/2/1 | 1 | 1.000 |
-| 3 | Coffee__impulse_v2 | harm_evidence | 20 | 8 | 2/2/2/2 | 2 | 0.500 |
-| 4 | SonyAIBORobotSurface1__burst_cls2 | identity | 13 | 7 | 2/2/2/1 | 1 | 1.000 |
-| 5 | GunPoint__impulse_v2 | learnable_positive | 35 | 15 | 4/4/4/3 | 3 | 0.333 |
-| 6 | BeetleFly__burst_cls2 | heldout_only_temptation | 14 | 6 | 2/2/2/0 | 0 | empty slice |
-| 7 | MoteStrain__burst_cls2 | identity | 14 | 6 | 2/2/2/0 | 0 | empty slice |
+| 1 | MiddlePhalanxOutlineCorrect__impulse_v2 | harm_evidence | 420 | 180 | 45/45/45/45 | 45 | 0.022 |
+| 2 | DistalPhalanxOutlineCorrect__burst_cls2 | learnable_positive | 420 | 180 | 46/45/45/44 | 44 | 0.023 |
+| 3 | PowerCons__impulse_v2 | harm_evidence | 126 | 54 | 14/14/14/12 | 12 | 0.083 |
+| 4 | FreezerRegularTrain__burst_cls2 | identity | 106 | 44 | 12/12/10/10 | 10 | 0.100 |
+| 5 | GunPointOldVersusYoung__impulse_v2 | learnable_positive | 95 | 41 | 11/10/10/10 | 10 | 0.100 |
+| 6 | ECG200__impulse_v2 | heldout_only_temptation | 70 | 30 | 9/7/7/7 | 7 | 0.143 |
+| 7 | Ham__impulse_v2 | identity | 76 | 33 | 9/8/8/8 | 8 | 0.125 |
 
-- the harm channel needs NEGATIVE Episodes on two distinct units before risk_skill can compile a guard.  A one- or two-row Support slice cannot produce one: every candidate reads gain 0.0 and classify_relation returns NEUTRAL.  A zero-row slice is worse -- the frozen two-round protocol has no delayed surface to open on that unit at all.
+- the harm channel needs NEGATIVE Episodes on two distinct units before risk_skill can compile a guard, and classify_relation needs an aggregate move of at least 0.005 to call anything but NEUTRAL.  A slice of n rows moves accuracy only in steps of 1/n, so a one- or two-row slice reports 0.0 for every candidate and a zero-row slice leaves the round with no surface to read at all.  This table is the readability precondition, not a result.
+
+## Guard channel feasibility
+
+a guard can form on ['outlier_iqr']: legal and readably harmful on both harm units.  Formation still requires the proposal stage to sample it on both, which is an agent behaviour and not an arithmetic guarantee.
+
+- programs readably harmful on **every** harm unit: ['outlier_iqr']
+- after forward position 3, the second harm unit
+
+| harm unit | # | min slice | resolution | readably harmful legal programs (held-in) |
+|---|---|---|---|---|
+| MiddlePhalanxOutlineCorrect__impulse_v2 | 1 | 45 | 0.0222 | outlier_iqr -0.0944 |
+| PowerCons__impulse_v2 | 3 | 12 | 0.0833 | outlier_iqr -0.1852, repair_level_shift -0.2778 |
+
+## Deploy-rule observation (inherited, not repaired)
+
+the delayed gate correctly withheld Skill approval, but the ledger incumbent set by the Support winner survived it and became the frozen deployment.  Inherited from the shared runner's round body; recorded here, not repaired.
+
+| arm | round | Support winner | delayed relation | Skill approved | deployed | deploy source |
+|---|---|---|---|---|---|---|
+| A3-reset | r1 | ['winsorize'] | ['NEGATIVE'] | none | ['winsorize'] | FROZEN_LEDGER_INCUMBENT |
+| K0-fixed | r1 | ['winsorize'] | ['NEGATIVE'] | none | ['winsorize'] | FROZEN_LEDGER_INCUMBENT |
+| A5-online | r1 | ['winsorize'] | ['NEGATIVE'] | none | ['winsorize'] | FROZEN_LEDGER_INCUMBENT |
 
 ## A5 Slow integration at the boundary
 
@@ -116,15 +165,15 @@ the selection rule optimises for cheapness (smallest total points), which is the
 
 - builtins.open, io.open, os.open, Path.open, Path.read_text and Path.read_bytes are wrapped at module import; any path containing artifacts/functional/e2/s1_oracle/ raises OracleIsolationBreach while the phase is 'arm'
 - deliberate arm-phase probe fired the wall on every reader surface: **True** on `BeetleFly__burst_cls2.json` -- {'builtins.open': 'blocked', 'pathlib.Path.read_text': 'blocked', 'pathlib.Path.open': 'blocked'}
-- keys the judging component read (after every arm closed): ['MoteStrain__impulse_v2.json']
+- keys the judging component read (after every arm closed): ['MiddlePhalanxOutlineCorrect__impulse_v2.json', 'PowerCons__impulse_v2.json']
 - arm-phase attempts 3, blocked 3, leaks 0
-- unblocked reads by phase: {'setup': 0, 'select': 0, 'judge': 1}
+- unblocked reads by phase: {'setup': 0, 'select': 0, 'judge': 2}
 
 ## Cost
 
 - proposal-backend calls: 9 fast + 0 slow = 9 / 15  (**scripted** backend: these are sealed-probe calls, real LLM spend is 0)
-- Consumer fits: 13
-- wall clock: 10.7 s / 1800 s
+- Consumer fits: 22
+- wall clock: 33.9 s / 1800 s
 - downloads: 0
 
 ## Obligations
@@ -139,8 +188,12 @@ the selection rule optimises for cheapness (smallest total points), which is the
 - **oracle_isolation_holds**: True
 - **oracle_wall_selftest_fired**: True
 - **oracle_wall_surfaces_probed**: {'builtins.open': 'blocked', 'pathlib.Path.read_text': 'blocked', 'pathlib.Path.open': 'blocked'}
-- **harm_channel_exercised_on_unit_1**: False
-- **instrument_blocker_reported_for_s1c**: True
+- **harm_channel_exercised_on_unit_1**: True
+- **instrument_blocker_reported_for_s1c**: False
+- **feedback_surface_evidence_mode**: live
+- **guard_formable_in_principle_on_this_course**: True
+- **a_delayed_rejected_winner_was_still_deployed**: True
+- **curriculum_revision**: r2
 - **k0_has_no_target_local_capability**: True
 - **k0_card_carries_no_frozen_steps**: True
 - **live_llm_backend**: False

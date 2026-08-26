@@ -356,34 +356,89 @@ def _pattern_view_of(cell: Mapping[str, Any]) -> dict[str, Any]:
 # =========================================================================== #
 # Part 1 -- mechanical curriculum selection
 # =========================================================================== #
+CURRICULUM_REVISION = "r2"
+SLICE_FLOOR_LADDER = (5, 4, 3)
+
 SELECTION_RULES = {
+    "revision": (
+        "r2.  The r1 rule ranked every group by smallest total points, which "
+        "selected *against* the feedback surface: six of seven r1 units had a "
+        "held-in slice of at most two rows and three had an empty r2 delayed "
+        "slice, so no relation but NEUTRAL was reachable and the guard "
+        "channel could never compile.  r2 replaces the ranking with a "
+        "readability floor plus a readability ranking.  The r1 course is kept "
+        "at s1_curriculum_frozen_r1.json/.md."),
     "source_artifacts": [
         "artifacts/functional/e2/s1a_r3_pool_census.json (family_key, "
         "learnability, held-in headroom)",
         "artifacts/functional/e2/s1_oracle/*.json (oracle set, per-operator "
-        "legality / cohort modified fraction / held-in headroom, cell size)",
+        "legality / cohort modified fraction / held-in headroom, and "
+        "cell.slice_rows -- the four held-in slice sizes the oracle pass "
+        "already recorded, so the readability screen costs zero new fits)",
     ],
-    "total_points": (
-        "cell.official_train_rows x series_length, the same point count the "
-        "S1a-r3 census enumerated the pool with"),
-    "tie_break": "ascending (total_points, unit_id); no outcome may reorder",
+    "min_slice_rows": (
+        "min(cell.slice_rows) over r1_support, r1_delayed, r2_support, "
+        "r2_delayed: the coarsest surface the frozen two-round protocol will "
+        "read on that unit.  A slice of n rows moves accuracy only in steps "
+        "of 1/n"),
+    "slice_readability_floor": (
+        "admission gate for all four groups: min_slice_rows >= L, L walking "
+        "the ladder %s.  A group that cannot fill its quota at L steps down "
+        "one rung and the step is written into ladder_trace; nothing is "
+        "reselected silently." % (list(SLICE_FLOOR_LADDER),)),
+    "necessary_condition": (
+        "|key held-in readout| >= 1 / min_slice_rows, computed from the "
+        "sealed oracle numbers already on disk.  The key readout is the one "
+        "the group is defined by: for harm units the largest-magnitude "
+        "qualifying outlier harm, for learnable units the oracle program's "
+        "held-in headroom.  See necessary_condition_scope for why the other "
+        "two groups are not screened by it."),
+    "necessary_condition_scope": (
+        "the condition binds only on the two groups whose defining held-in "
+        "readout is non-zero (harm, learnable).  identity units are defined "
+        "by an identity oracle set and HELDOUT_ONLY units by a held-in "
+        "reading of zero, so |readout| >= 1/n is unsatisfiable for them by "
+        "construction and applying it literally empties both groups at every "
+        "rung of the ladder -- see literal_application_counterfactual.  For "
+        "those two groups the informative requirement is that a material "
+        "reading *would* have been visible had one existed, which is exactly "
+        "the slice floor.  Flagged for main-line confirmation."),
+    "within_group_ranking": (
+        "descending min_slice_rows; ties broken by descending |key held-in "
+        "readout|, then ascending unit_id.  No outcome may reorder."),
+    "family_deduplication": (
+        "cross-course, not per-group: the seven units should carry seven "
+        "distinct family_key values.  When a group cannot fill its quota "
+        "without a repeat, the repeat is taken best-ranked-first and named "
+        "in family_census.repeated_families and in the group's "
+        "ladder_trace."),
+    "relaxation_ladder": (
+        "per group, in order: (floor 5, 4, 3 with strict cross-course family "
+        "distinctness), then (floor 5, 4, 3 with family repeats allowed but "
+        "still preferring a fresh family within each rung).  The first rung "
+        "that fills the quota wins.  The floor is relaxed before family "
+        "distinctness is *not* the order: keeping the floor high is the whole "
+        "point of r2, so the strict-family rungs are tried across the whole "
+        "ladder first, and only then are repeats allowed starting again at "
+        "floor 5.  Every rung tried is recorded."),
+    "group_selection_order": (
+        "harm -> learnable -> identity -> HELDOUT_ONLY.  Earlier groups "
+        "consume families and units; the order is fixed here, before any "
+        "candidate is scored."),
     GROUP_HARM: (
         "an oracle-scored unit qualifies when outlier_mad or outlier_iqr is "
         "legal on it (verifier passed and cohort modified fraction <= 0.10) "
         "and its held-in headroom is <= -0.005, i.e. materially harmful on "
-        "held-in.  Take the two smallest-total-points qualifiers whose "
-        "family_key differ."),
+        "held-in.  Two units, ranked by within_group_ranking."),
     GROUP_LEARNABLE: (
-        "learnability == LEARNABLE, family_key distinct from each other and "
-        "from both harm units.  Take the two largest held-in headroom."),
+        "learnability == LEARNABLE.  Two units, ranked by "
+        "within_group_ranking."),
     GROUP_IDENTITY: (
-        "oracle_set is exactly identity (or empty).  Take the two smallest-"
-        "total-points units whose family_key differ."),
+        "oracle_set is exactly identity (or empty).  Two units, ranked by "
+        "within_group_ranking."),
     GROUP_HELDOUT_ONLY: (
-        "learnability == HELDOUT_ONLY, not already selected.  Prefer a "
-        "family_key no other selected unit uses; take the smallest total "
-        "points.  If every HELDOUT_ONLY family is already used, drop the "
-        "family preference and take the smallest total points."),
+        "learnability == HELDOUT_ONLY.  One unit, ranked by "
+        "within_group_ranking."),
     "unit_disjointness": "no unit id may appear twice in the course",
     "forward_order": (
         "harm A -> learnable A -> harm B -> identity A -> learnable B -> "
@@ -404,12 +459,23 @@ def _census_units() -> dict[str, dict[str, Any]]:
     return {str(row["unit_id"]): dict(row) for row in payload["units"]}
 
 
+SLICE_NAMES = ("r1_support", "r1_delayed", "r2_support", "r2_delayed")
+
+
 def _oracle_unit(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     programs = {str(row["program"]): row for row in payload["programs"]}
     cell = dict(payload.get("cell") or {})
     points = int(cell.get("official_train_rows") or 0) * int(
         payload.get("series_length") or 0)
+    slice_rows = {name: int(value) for name, value
+                  in (cell.get("slice_rows") or {}).items()}
+    smallest = min(slice_rows.values()) if slice_rows else 0
+    best_legal = 0.0
+    for row in programs.values():
+        headroom = row.get("heldin_headroom")
+        if row.get("legal") and headroom is not None:
+            best_legal = max(best_legal, abs(float(headroom)))
     harmful_ops: list[dict[str, Any]] = []
     for op in HARM_OPERATORS:
         row = programs.get(op)
@@ -438,6 +504,10 @@ def _oracle_unit(path: Path) -> dict[str, Any]:
         "n_heldin": payload.get("n_heldin"),
         "n_heldout": payload.get("n_heldout"),
         "total_points": points,
+        "slice_rows": {name: slice_rows.get(name) for name in SLICE_NAMES},
+        "min_slice_rows": smallest,
+        "slice_resolution": (1.0 / smallest) if smallest else None,
+        "largest_legal_heldin_magnitude": best_legal,
         "oracle_set": [str(item) for item in (payload.get("oracle_set") or [])],
         "oracle_set_empty": bool(payload.get("oracle_set_empty")),
         "menu_oracle_program": payload.get("menu_oracle_program"),
@@ -468,92 +538,201 @@ def _candidate_table() -> list[dict[str, Any]]:
     return rows
 
 
-def _pick_smallest_distinct_family(candidates: Sequence[Mapping[str, Any]],
-                                   *, count: int,
-                                   used_units: set[str]) -> list[dict[str, Any]]:
-    picked: list[dict[str, Any]] = []
-    families: set[str] = set()
-    for row in sorted(candidates,
-                      key=lambda r: (r["total_points"], r["unit_id"])):
-        if row["unit_id"] in used_units or row["family_key"] in families:
+# Which groups the |readout| >= 1/min_slice necessary condition can bind on.
+# identity and HELDOUT_ONLY are defined by a held-in reading of zero, so the
+# condition is unsatisfiable for them by construction.
+NECESSARY_CONDITION_GROUPS = (GROUP_HARM, GROUP_LEARNABLE)
+
+
+def _key_readout(group: str, row: Mapping[str, Any]) -> float:
+    """The held-in reading the group is defined by, in magnitude."""
+    if group == GROUP_HARM:
+        return max((abs(float(item["heldin_headroom"]))
+                    for item in row["harmful_outlier_operators"]), default=0.0)
+    if group == GROUP_LEARNABLE:
+        return abs(float(row["census_heldin_headroom"] or 0.0))
+    return 0.0
+
+
+def _group_pool(group: str, rows: Sequence[Mapping[str, Any]]
+                ) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        if group == GROUP_HARM:
+            keep = bool(row["harmful_outlier_operators"])
+        elif group == GROUP_LEARNABLE:
+            keep = row["learnability"] == "LEARNABLE"
+        elif group == GROUP_IDENTITY:
+            keep = bool(row["oracle_set"] == ["identity"]
+                        or row["oracle_set_empty"] or not row["oracle_set"])
+        else:
+            keep = row["learnability"] == "HELDOUT_ONLY"
+        if not keep:
             continue
-        picked.append(dict(row))
+        candidate = dict(row)
+        candidate["group"] = group
+        candidate["key_heldin_readout"] = _key_readout(group, row)
+        out.append(candidate)
+    return out
+
+
+def _rank_key(row: Mapping[str, Any]) -> tuple[int, float, str]:
+    return (-int(row["min_slice_rows"]), -float(row["key_heldin_readout"]),
+            str(row["unit_id"]))
+
+
+def _admits(row: Mapping[str, Any], *, floor: int, screened: bool) -> bool:
+    if int(row["min_slice_rows"]) < floor:
+        return False
+    if not screened:
+        return True
+    resolution = row["slice_resolution"]
+    if resolution is None:
+        return False
+    return float(row["key_heldin_readout"]) >= float(resolution)
+
+
+def _fill_rung(candidates: Sequence[Mapping[str, Any]], *, quota: int,
+               used_units: set[str], used_families: set[str],
+               allow_repeat: bool) -> list[dict[str, Any]]:
+    """One rung: fresh families first, then repeats when the rung allows it."""
+    ranked = sorted(candidates, key=_rank_key)
+    picked: list[dict[str, Any]] = []
+    families = set(used_families)
+    for row in ranked:
+        if row["unit_id"] in used_units or len(picked) >= quota:
+            continue
+        if str(row["family_key"]) in families:
+            continue
+        entry = dict(row)
+        entry["family_repeat"] = False
+        picked.append(entry)
         families.add(str(row["family_key"]))
-        if len(picked) == count:
+    if allow_repeat:
+        taken = {row["unit_id"] for row in picked}
+        for row in ranked:
+            if len(picked) >= quota:
+                break
+            if row["unit_id"] in used_units or row["unit_id"] in taken:
+                continue
+            entry = dict(row)
+            entry["family_repeat"] = True
+            entry["family_repeat_of"] = str(row["family_key"])
+            picked.append(entry)
+            taken.add(row["unit_id"])
+    return sorted(picked, key=_rank_key)
+
+
+def _select_group(group: str, rows: Sequence[Mapping[str, Any]], *,
+                  quota: int, used_units: set[str], used_families: set[str]
+                  ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Walk the declared relaxation ladder and stop at the first rung that
+    fills the quota.  Every rung tried is recorded."""
+    pool = _group_pool(group, rows)
+    screened = group in NECESSARY_CONDITION_GROUPS
+    trace: list[dict[str, Any]] = []
+    chosen: list[dict[str, Any]] = []
+    chosen_rung: dict[str, Any] | None = None
+    for allow_repeat in (False, True):
+        for floor in SLICE_FLOOR_LADDER:
+            admitted = [row for row in pool
+                        if _admits(row, floor=floor, screened=screened)]
+            picked = _fill_rung(admitted, quota=quota, used_units=used_units,
+                                used_families=used_families,
+                                allow_repeat=allow_repeat)
+            rung = {
+                "slice_floor": floor,
+                "family_repeats_allowed": allow_repeat,
+                "admitted_units": len(admitted),
+                "filled": len(picked),
+                "quota": quota,
+                "picked": [row["unit_id"] for row in picked],
+            }
+            trace.append(rung)
+            if len(picked) >= quota:
+                chosen = picked
+                chosen_rung = rung
+                break
+        if chosen_rung is not None:
             break
-    return picked
+    if chosen_rung is None and trace:
+        # nothing filled the quota anywhere; keep the best partial fill
+        best = max(trace, key=lambda rung: rung["filled"])
+        floor = int(best["slice_floor"])
+        admitted = [row for row in pool
+                    if _admits(row, floor=floor, screened=screened)]
+        chosen = _fill_rung(admitted, quota=quota, used_units=used_units,
+                            used_families=used_families,
+                            allow_repeat=bool(best["family_repeats_allowed"]))
+        chosen_rung = best
+    literal = [row for row in pool
+               if _admits(row, floor=SLICE_FLOOR_LADDER[-1], screened=True)]
+    return chosen, {
+        "group": group,
+        "quota": quota,
+        "pool_size": len(pool),
+        "necessary_condition_applied": screened,
+        "ladder_trace": trace,
+        "rung_used": chosen_rung,
+        "downgraded_from_floor_5": bool(
+            chosen_rung and int(chosen_rung["slice_floor"]) != SLICE_FLOOR_LADDER[0]),
+        "family_repeats_used": [row["unit_id"] for row in chosen
+                                if row.get("family_repeat")],
+        "short_by": max(0, quota - len(chosen)),
+        "literal_application_counterfactual": {
+            "note": ("how many of this group's units would survive if the "
+                     "|readout| >= 1/min_slice condition were applied "
+                     "literally at the lowest floor on the ladder"),
+            "surviving_units": len(literal),
+        },
+    }
 
 
 def select_curriculum() -> dict[str, Any]:
     _set_phase(PHASE_SELECT)
     rows = _candidate_table()
-    by_id = {row["unit_id"]: row for row in rows}
     used: set[str] = set()
+    used_families: set[str] = set()
     shortfalls: list[dict[str, Any]] = []
+    groups: dict[str, list[dict[str, Any]]] = {}
+    ladder: dict[str, Any] = {}
 
-    harm_pool = [r for r in rows if r["harmful_outlier_operators"]]
-    harm = _pick_smallest_distinct_family(harm_pool, count=2, used_units=used)
-    used.update(r["unit_id"] for r in harm)
-    if len(harm) < 2:
-        shortfalls.append({"group": GROUP_HARM, "found": len(harm),
-                           "fallback": "none available; group reported short"})
-
-    harm_families = {str(r["family_key"]) for r in harm}
-    learn_pool = [r for r in rows
-                  if r["learnability"] == "LEARNABLE"
-                  and str(r["family_key"]) not in harm_families
-                  and r["unit_id"] not in used]
-    learnable: list[dict[str, Any]] = []
-    learn_families: set[str] = set()
-    for row in sorted(learn_pool,
-                      key=lambda r: (-(float(r["census_heldin_headroom"] or 0.0)),
-                                     r["unit_id"])):
-        if row["family_key"] in learn_families:
-            continue
-        learnable.append(dict(row))
-        learn_families.add(str(row["family_key"]))
-        if len(learnable) == 2:
-            break
-    used.update(r["unit_id"] for r in learnable)
-    if len(learnable) < 2:
-        shortfalls.append({"group": GROUP_LEARNABLE, "found": len(learnable),
-                           "fallback": "none available; group reported short"})
-
-    identity_pool = [r for r in rows
-                     if (r["oracle_set"] == ["identity"] or r["oracle_set_empty"]
-                         or not r["oracle_set"])
-                     and r["unit_id"] not in used]
-    identity = _pick_smallest_distinct_family(identity_pool, count=2,
-                                              used_units=used)
-    used.update(r["unit_id"] for r in identity)
-    if len(identity) < 2:
-        shortfalls.append({"group": GROUP_IDENTITY, "found": len(identity),
-                           "fallback": "none available; group reported short"})
-
-    used_families = {str(r["family_key"]) for r in (*harm, *learnable, *identity)}
-    heldout_pool = [r for r in rows
-                    if r["learnability"] == "HELDOUT_ONLY"
-                    and r["unit_id"] not in used]
-    fresh = [r for r in heldout_pool if str(r["family_key"]) not in used_families]
-    relaxed = False
-    if not fresh:
-        fresh = heldout_pool
-        relaxed = bool(heldout_pool)
-    heldout = sorted(fresh, key=lambda r: (r["total_points"], r["unit_id"]))[:1]
-    heldout = [dict(row) for row in heldout]
-    used.update(r["unit_id"] for r in heldout)
-    if relaxed:
-        shortfalls.append({
-            "group": GROUP_HELDOUT_ONLY,
-            "found": len(heldout),
-            "fallback": ("every HELDOUT_ONLY family was already used; the "
-                         "family preference was dropped as the rule declares")})
-    if not heldout:
-        shortfalls.append({"group": GROUP_HELDOUT_ONLY, "found": 0,
-                           "fallback": "none available; group reported short"})
-
-    groups = {GROUP_HARM: harm, GROUP_LEARNABLE: learnable,
-              GROUP_IDENTITY: identity, GROUP_HELDOUT_ONLY: heldout}
+    for group, quota in ((GROUP_HARM, 2), (GROUP_LEARNABLE, 2),
+                         (GROUP_IDENTITY, 2), (GROUP_HELDOUT_ONLY, 1)):
+        picked, report = _select_group(
+            group, rows, quota=quota, used_units=used,
+            used_families=used_families)
+        groups[group] = picked
+        ladder[group] = report
+        used.update(str(row["unit_id"]) for row in picked)
+        used_families.update(str(row["family_key"]) for row in picked)
+        if report["downgraded_from_floor_5"] or report["family_repeats_used"]:
+            shortfalls.append({
+                "group": group,
+                "found": len(picked),
+                "fallback": (
+                    "quota could not be filled at slice floor %d with strict "
+                    "cross-course family distinctness; the rung actually used "
+                    "was floor %d with family repeats %s%s"
+                    % (SLICE_FLOOR_LADDER[0],
+                       int(report["rung_used"]["slice_floor"]),
+                       "allowed" if report["rung_used"][
+                           "family_repeats_allowed"] else "forbidden",
+                       (" -- repeated: %s" % report["family_repeats_used"])
+                       if report["family_repeats_used"] else "")),
+            })
+        if report["short_by"]:
+            shortfalls.append({
+                "group": group,
+                "found": len(picked),
+                "fallback": ("quota still short by %d at the bottom of the "
+                             "ladder; reported short rather than reselected"
+                             % report["short_by"]),
+            })
+    harm_pool = _group_pool(GROUP_HARM, rows)
+    learn_pool = _group_pool(GROUP_LEARNABLE, rows)
+    identity_pool = _group_pool(GROUP_IDENTITY, rows)
+    heldout_pool = _group_pool(GROUP_HELDOUT_ONLY, rows)
     forward: list[dict[str, Any]] = []
     for group, index in FORWARD_TEMPLATE:
         members = groups[group]
@@ -571,6 +750,8 @@ def select_curriculum() -> dict[str, Any]:
     datasets = [str(row["dataset"]) for row in forward]
     payload = {
         "protocol_version": PROTOCOL_VERSION,
+        "curriculum_revision": CURRICULUM_REVISION,
+        "supersedes": "artifacts/functional/e2/s1_curriculum_frozen_r1.json",
         "curriculum_name": CURRICULUM_NAME,
         "evidence_grade": EVIDENCE_GRADE,
         "git_head": _git("rev-parse", "HEAD"),
@@ -579,13 +760,26 @@ def select_curriculum() -> dict[str, Any]:
         "candidate_counts": {
             "oracle_units_available": len(rows),
             "harm_qualifiers": len(harm_pool),
-            "learnable_after_family_exclusion": len(learn_pool),
+            "learnable_available": len(learn_pool),
             "identity_available": len(identity_pool),
             "heldout_only_available": len(heldout_pool),
+            "units_passing_slice_floor": {
+                str(floor): len([row for row in rows
+                                 if int(row["min_slice_rows"]) >= floor])
+                for floor in SLICE_FLOOR_LADDER},
         },
+        "ladder_trace_by_group": ladder,
         "selected_groups": {
             group: [{"unit_id": row["unit_id"],
                      "family_key": row["family_key"],
+                     "family_repeat": bool(row.get("family_repeat")),
+                     "min_slice_rows": row["min_slice_rows"],
+                     "slice_rows": row["slice_rows"],
+                     "slice_resolution": row["slice_resolution"],
+                     "key_heldin_readout": row["key_heldin_readout"],
+                     "necessary_condition_holds": _admits(
+                         row, floor=1,
+                         screened=group in NECESSARY_CONDITION_GROUPS),
                      "total_points": row["total_points"],
                      "learnability": row["learnability"],
                      "oracle_set": row["oracle_set"],
@@ -606,7 +800,14 @@ def select_curriculum() -> dict[str, Any]:
             "metric": METRIC,
             "group": row["group"],
             "family_key": row["family_key"],
+            "family_repeat": bool(row.get("family_repeat")),
             "learnability": row["learnability"],
+            "slice_rows": row["slice_rows"],
+            "min_slice_rows": row["min_slice_rows"],
+            "slice_resolution": row["slice_resolution"],
+            "key_heldin_readout": row["key_heldin_readout"],
+            "largest_legal_heldin_magnitude": row[
+                "largest_legal_heldin_magnitude"],
             "total_points": row["total_points"],
             "official_train_rows": row["official_train_rows"],
             "series_length": row["series_length"],
@@ -669,23 +870,34 @@ def select_curriculum() -> dict[str, Any]:
 
 
 def _why(group: str, row: Mapping[str, Any]) -> str:
+    surface = ("smallest held-in slice %d rows, so the surface resolves "
+               "%.4f" % (int(row["min_slice_rows"]),
+                         float(row["slice_resolution"] or 0.0)))
+    repeat = ("; family repeat, named because the group could not fill its "
+              "quota with a fresh family" if row.get("family_repeat") else "")
     if group == GROUP_HARM:
         ops = ", ".join("%s(held-in %+.4f)" % (item["program"],
                                                item["heldin_headroom"])
                         for item in row["harmful_outlier_operators"])
-        return ("materially harmful legal outlier program on held-in: %s; "
-                "smallest-points qualifier in its family" % ops)
+        return ("materially harmful legal outlier program on held-in: %s.  %s, "
+                "and the harm magnitude %.4f clears it%s"
+                % (ops, surface, float(row["key_heldin_readout"]), repeat))
     if group == GROUP_LEARNABLE:
-        return ("LEARNABLE with held-in headroom %.4f, the largest available "
-                "in a family unused by the harm units"
-                % float(row["census_heldin_headroom"] or 0.0))
+        return ("LEARNABLE, held-in headroom %+.4f.  %s, and the headroom "
+                "clears it%s" % (float(row["census_heldin_headroom"] or 0.0),
+                                 surface, repeat))
     if group == GROUP_IDENTITY:
         return ("oracle set is identity, so the correct end state is to change "
-                "nothing; smallest-points identity unit in its family")
-    return ("HELDOUT_ONLY: the oracle-set program helps held-out (%.4f) but "
-            "held-in cannot approve it (headroom %.4f) -- the abstention "
-            "temptation" % (float(row["census_heldout_utility"] or 0.0),
-                            float(row["census_heldin_headroom"] or 0.0)))
+                "nothing.  %s, so 'nothing helps' is a reading rather than a "
+                "blind spot; the largest legal held-in magnitude on this unit "
+                "is %.4f%s" % (surface,
+                               float(row["largest_legal_heldin_magnitude"] or 0.0),
+                               repeat))
+    return ("HELDOUT_ONLY: the oracle-set program helps held-out (%+.4f) but "
+            "held-in cannot approve it (headroom %+.4f) -- the abstention "
+            "temptation.  %s, so the held-in zero is measured, not missing%s"
+            % (float(row["census_heldout_utility"] or 0.0),
+               float(row["census_heldin_headroom"] or 0.0), surface, repeat))
 
 
 def _k0_definition() -> dict[str, Any]:
@@ -1497,11 +1709,13 @@ def instrument_census(course: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "two_round_protocol_has_rows_on_every_unit": not empty_units,
         "why_this_matters": (
             "the harm channel needs NEGATIVE Episodes on two distinct units "
-            "before risk_skill can compile a guard.  A one- or two-row Support "
-            "slice cannot produce one: every candidate reads gain 0.0 and "
-            "classify_relation returns NEUTRAL.  A zero-row slice is worse -- "
-            "the frozen two-round protocol has no delayed surface to open on "
-            "that unit at all."),
+            "before risk_skill can compile a guard, and classify_relation "
+            "needs an aggregate move of at least %s to call anything but "
+            "NEUTRAL.  A slice of n rows moves accuracy only in steps of 1/n, "
+            "so a one- or two-row slice reports 0.0 for every candidate and a "
+            "zero-row slice leaves the round with no surface to read at all.  "
+            "This table is the readability precondition, not a result."
+            % MATERIAL),
     }
 
 
@@ -1534,6 +1748,101 @@ def _oracle_verdict_on(program_rows: Mapping[str, Mapping[str, Any]],
         "heldout_utility": utility,
         "heldout_worst_class_recall_delta": worst,
         "oracle_harmful": harmful,
+    }
+
+
+def readable_surface_evidence(*, unit: Mapping[str, Any],
+                              by_arm: Mapping[str, Mapping[str, Any]]
+                              ) -> dict[str, Any]:
+    """Did the feedback surface actually say anything, and could it have?
+
+    Live evidence is a Support receipt whose relation is not NEUTRAL.  When
+    the proposal stage never sampled an operator the oracle knows is material
+    on this unit, that is a sampling miss rather than an unreadable surface,
+    and the arithmetic corroboration below says so from the sealed numbers:
+    a pooled held-in reading of magnitude m is expressible on a slice of n
+    rows when m >= 1/n, and is material when m >= %s.
+
+    Runs in the judging phase, after every arm is closed.
+    """ % MATERIAL
+    _set_phase(PHASE_JUDGE)
+    unit_id = str(unit["unit_id"])
+    receipts: list[dict[str, Any]] = []
+    for arm in ADAPTIVE_ARMS:
+        for record in by_arm[arm]["rounds"]:
+            for episode in record["episodes"]:
+                receipts.append({
+                    "arm": arm,
+                    "round": record["round"],
+                    "program": episode["workflow_signature"],
+                    "relation": episode["relation"],
+                    "support_gain": episode["support_gain"],
+                    "delayed_gain": episode["delayed_gain"],
+                })
+    live = [row for row in receipts if str(row["relation"]) != "NEUTRAL"]
+    probed = sorted({str(row["program"]) for row in receipts})
+
+    oracle = _oracle_for(unit_id)
+    rows = {str(row["program"]): row for row in oracle["programs"]}
+    resolution = float(unit.get("slice_resolution") or 0.0)
+    watch = sorted(set(HARM_OPERATORS) | {
+        str(name) for name in (oracle.get("oracle_set") or [])
+        if str(name) != "identity"})
+    arithmetic: list[dict[str, Any]] = []
+    for op in watch:
+        row = rows.get(op)
+        if row is None:
+            continue
+        headroom = row.get("heldin_headroom")
+        magnitude = abs(float(headroom)) if headroom is not None else None
+        arithmetic.append({
+            "program": op,
+            "legal": bool(row.get("legal")),
+            "pooled_heldin_headroom": headroom,
+            "magnitude": magnitude,
+            "slice_resolution": resolution,
+            "expressible_on_the_smallest_slice": bool(
+                magnitude is not None and resolution
+                and magnitude >= resolution),
+            "material": bool(magnitude is not None and magnitude >= MATERIAL),
+            "was_probed_in_the_smoke": op in probed,
+        })
+    corroborated = [row for row in arithmetic
+                    if row["expressible_on_the_smallest_slice"]
+                    and row["material"] and row["legal"]]
+    mode = ("live" if live else
+            "arithmetic_only" if corroborated else "none")
+    return {
+        "unit_id": unit_id,
+        "min_slice_rows": unit.get("min_slice_rows"),
+        "slice_resolution": resolution,
+        "support_receipts": receipts,
+        "programs_probed": probed,
+        "live_non_neutral_receipts": live,
+        "live_non_neutral_count": len(live),
+        "arithmetic_corroboration": arithmetic,
+        "arithmetic_corroboration_holds": bool(corroborated),
+        "mode": mode,
+        "reading": (
+            "at least one Support receipt came back non-NEUTRAL: the feedback "
+            "surface is readable on live evidence"
+            if mode == "live" else
+            "every Support receipt was NEUTRAL, but the proposal stage never "
+            "sampled a program the sealed oracle knows is material here.  The "
+            "arithmetic side-evidence stands in: %s"
+            % "; ".join(
+                "%s reads %+.4f pooled, %.4f resolvable on a %s-row slice"
+                % (row["program"], row["pooled_heldin_headroom"],
+                   row["slice_resolution"], unit.get("min_slice_rows"))
+                for row in corroborated)
+            if mode == "arithmetic_only" else
+            "neither a live non-NEUTRAL receipt nor an arithmetic "
+            "corroboration: this unit's feedback surface is not readable"),
+        "caveat": (
+            "the oracle headroom is measured on the pooled held-in surface "
+            "(all four slices concatenated) while a round reads one slice, so "
+            "the arithmetic is a necessary condition on the surface, not a "
+            "guarantee about any single round"),
     }
 
 
@@ -1725,6 +2034,11 @@ def smoke(*, live: bool = False) -> int:
         "python": sys.version.split()[0],
         "backend": "live_fast_agent" if live else "scripted_sealed_probe",
         "curriculum_source": FROZEN_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "curriculum": {
+            "revision": frozen.get("curriculum_revision", "r1"),
+            "forward_order": frozen.get("forward_order"),
+            "supersedes": frozen.get("supersedes"),
+        },
         "unit_under_test": unit,
         "next_unit_for_the_boundary_test": next_unit,
         "reduced_protocol": {
@@ -1824,6 +2138,10 @@ def smoke(*, live: bool = False) -> int:
             {key: value for key, value in row.items()
              if not key.startswith("_")} for row in unit_results]
         payload["judging"] = judge(unit_results=unit_results, course=[unit])
+        payload["readable_surface_evidence"] = readable_surface_evidence(
+            unit=unit, by_arm=by_arm)
+        payload["guard_channel_feasibility"] = guard_channel_feasibility(course)
+        payload["deploy_rule_observation"] = deploy_rule_observation(by_arm)
     except Stop as stop:
         stopped = stop.verdict
         payload["stop"] = {"verdict": stop.verdict, "reason": stop.reason}
@@ -1878,37 +2196,154 @@ def _instrument_findings(census: Mapping[str, Any], *,
         for episode in record["episodes"]})
     coarse = list(census["units_whose_smallest_slice_is_at_most_two_rows"])
     empty = list(census["units_with_an_empty_held_in_slice"])
+    harm_written = "NEGATIVE" in relations
+    smallest = min([int(row.get("smallest_slice_rows") or 0)
+                    for row in census.get("per_unit", [])] or [0])
+    blocks = bool(len(coarse) >= 2 or empty or not harm_written)
+    if blocks:
+        finding = (
+            "%d of the seven units have a held-in slice of at most two rows "
+            "and %d have an empty slice outright.  On unit 1 the observed "
+            "Episode relations were %s.  The wiring is correct; the material "
+            "is too coarse to exercise it."
+            % (len(coarse), len(empty), relations))
+        unblock = (
+            "raise the slice readability floor, or stop quartering an already "
+            "small support pool.  Both are protocol changes reported for the "
+            "main line rather than taken here.")
+    else:
+        finding = (
+            "the r2 readability floor holds across the whole course: every "
+            "unit's smallest held-in slice is at least %d rows, none is "
+            "empty, and the frozen two-round protocol has a delayed surface "
+            "everywhere.  On unit 1 the observed Episode relations were %s, "
+            "so a harm Episode was written on live evidence rather than "
+            "inferred." % (smallest, relations))
+        unblock = (
+            "nothing outstanding on the readability axis.  The remaining "
+            "question is not whether harm can be *read* but whether the "
+            "proposal stage samples the same harmful program on both harm "
+            "units -- see guard_channel_feasibility.")
     return {
         "observed_relations_on_unit_1": relations,
         "units_with_an_empty_held_in_slice": empty,
         "two_round_protocol_has_rows_on_every_unit": census[
             "two_round_protocol_has_rows_on_every_unit"],
-        "harm_episode_formed_on_unit_1": "NEGATIVE" in relations,
+        "smallest_slice_anywhere_in_the_course": smallest,
+        "harm_episode_formed_on_unit_1": harm_written,
         "guard_minted_on_unit_1": any(
             (record.get("risk_lifecycle") or {}).get("risk_skill_ids")
             for arm in ADAPTIVE_ARMS
             for record in by_arm[arm]["rounds"]),
         "coarse_units": coarse,
-        "finding": (
-            "the course selected by the declared smallest-total-points rule "
-            "gives %d of its seven units a held-in slice of at most two rows, "
-            "and %d of those slices are empty outright, so the frozen "
-            "two-round protocol has no r2 delayed surface to open there.  On "
-            "unit 1 every probe read gain 0.0 and every Episode came back "
-            "NEUTRAL: no harm evidence was written and the guard channel had "
-            "nothing to compile.  The wiring is correct; the material is too "
-            "coarse to exercise it."
-            % (len(coarse), len(empty))),
-        "blocks_s1c": bool(len(coarse) >= 2 or empty),
-        "what_would_unblock_it": (
-            "the selection rule optimises for cheapness (smallest total "
-            "points), which is the opposite of what a readable Support "
-            "surface needs.  Either the rule changes -- e.g. a floor on "
-            "support_pool_rows, or the largest-points qualifier instead of "
-            "the smallest -- or the four held-in slices stop being quarters "
-            "of an already tiny support pool.  Both are protocol changes and "
-            "are outside this book; they are reported for the main line to "
-            "arbitrate before S1c runs."),
+        "finding": finding,
+        "blocks_s1c": blocks,
+        "what_would_unblock_it": unblock,
+    }
+
+
+def guard_channel_feasibility(course: Sequence[Mapping[str, Any]]
+                              ) -> dict[str, Any]:
+    """Can a guard form at all on this course, and on which program?
+
+    ``risk_skill`` compiles a guard when the same Program family carries a
+    NEGATIVE Episode on two distinct counted units.  That needs a program
+    that is (a) legal on both harm units, (b) materially harmful on held-in
+    there, and (c) harmful by more than the coarsest slice can resolve.
+    Whether the guard actually forms additionally needs the proposal stage to
+    sample that program on both units, which no arithmetic can promise.
+
+    Judging phase: reads the sealed oracle.
+    """
+    _set_phase(PHASE_JUDGE)
+    harm_units = [unit for unit in course if unit.get("group") == GROUP_HARM]
+    per_unit: list[dict[str, Any]] = []
+    sets: list[set[str]] = []
+    for unit in harm_units:
+        oracle = _oracle_for(str(unit["unit_id"]))
+        resolution = float(unit.get("slice_resolution") or 0.0)
+        readable: dict[str, float] = {}
+        for row in oracle["programs"]:
+            headroom = row.get("heldin_headroom")
+            if not row.get("legal") or headroom is None:
+                continue
+            value = float(headroom)
+            if value > -MATERIAL:
+                continue
+            if resolution and abs(value) < resolution:
+                continue
+            readable[str(row["program"])] = value
+        per_unit.append({
+            "unit_id": unit["unit_id"],
+            "forward_position": unit.get("forward_position"),
+            "min_slice_rows": unit.get("min_slice_rows"),
+            "slice_resolution": resolution,
+            "readably_harmful_legal_programs": dict(sorted(readable.items())),
+        })
+        sets.append(set(readable))
+    shared = sorted(set.intersection(*sets)) if sets else []
+    return {
+        "harm_units": per_unit,
+        "programs_readably_harmful_on_every_harm_unit": shared,
+        "guard_is_formable_in_principle": bool(shared),
+        "reading": (
+            "a guard can form on %s: legal and readably harmful on both harm "
+            "units.  Formation still requires the proposal stage to sample it "
+            "on both, which is an agent behaviour and not an arithmetic "
+            "guarantee." % shared if shared else
+            "no program is legal and readably harmful on both harm units, so "
+            "the two-distinct-unit floor cannot be reached on this course"),
+        "expected_earliest_guard": (
+            "after forward position %s, the second harm unit"
+            % max((unit.get("forward_position") for unit in harm_units),
+                  default=None)),
+    }
+
+
+def deploy_rule_observation(by_arm: Mapping[str, Mapping[str, Any]]
+                            ) -> dict[str, Any]:
+    """Did any arm freeze a Workflow that its own delayed feedback rejected?
+
+    Inherited from the shared runner's round body: ``state['incumbent']`` is
+    set from the round's Support winner and is not cleared when
+    ``handle_feedback_delayed`` refuses to approve.  ``_frozen_recall`` then
+    deploys that incumbent.  Recorded, not repaired -- the deploy rule lives
+    in the shared runner and changing it is a behaviour change with its own
+    slice.
+    """
+    rows: list[dict[str, Any]] = []
+    for arm in ADAPTIVE_ARMS:
+        result = by_arm[arm]
+        for record in result["rounds"]:
+            winner = record.get("winner_program") or []
+            if not winner:
+                continue
+            rejected = [episode for episode in record["episodes"]
+                        if str(episode["relation"]) != "POSITIVE"
+                        and episode.get("delayed_gain") is not None]
+            if not rejected:
+                continue
+            rows.append({
+                "arm": arm,
+                "round": record["round"],
+                "support_winner": [step.get("op") for step in winner],
+                "approved_skill_id": record.get("approved_skill_id"),
+                "activated": record.get("activated"),
+                "delayed_relations": [episode["relation"]
+                                      for episode in rejected],
+                "deployed_program": [
+                    step.get("op") for step
+                    in result["deployment"]["applied_program"]],
+                "deploy_source": result["deployment"]["deploy_source"],
+            })
+    return {
+        "rows": rows,
+        "any_arm_deployed_a_delayed_rejected_winner": bool(rows),
+        "note": (
+            "the delayed gate correctly withheld Skill approval, but the "
+            "ledger incumbent set by the Support winner survived it and "
+            "became the frozen deployment.  Inherited from the shared "
+            "runner's round body; recorded here, not repaired."),
     }
 
 
@@ -2061,10 +2496,14 @@ def _smoke_verdict(payload: Mapping[str, Any], *,
             not row["deploy_purity_breach"]
             for row in judged.get("per_unit_per_arm", [])),
     }
+    readable = payload.get("readable_surface_evidence") or {}
+    gates["feedback_surface_readable"] = readable.get("mode") in (
+        "live", "arithmetic_only")
     return {
         "verdict": "S1B_SMOKE_WIRED" if all(gates.values())
                    else "S1B_SMOKE_INCOMPLETE",
         "gates": gates,
+        "feedback_surface_evidence_mode": readable.get("mode"),
         "scope": ("wiring only, on curriculum unit 1, one round per adaptive "
                   "arm.  No Capability claim; the course was not run."),
     }
@@ -2092,6 +2531,16 @@ def _smoke_obligations(payload: Mapping[str, Any], *,
                 "harm_episode_formed_on_unit_1"),
         "instrument_blocker_reported_for_s1c": (
             payload.get("instrument_findings") or {}).get("blocks_s1c"),
+        "feedback_surface_evidence_mode": (
+            payload.get("readable_surface_evidence") or {}).get("mode"),
+        "guard_formable_in_principle_on_this_course": (
+            payload.get("guard_channel_feasibility") or {}).get(
+                "guard_is_formable_in_principle"),
+        "a_delayed_rejected_winner_was_still_deployed": (
+            payload.get("deploy_rule_observation") or {}).get(
+                "any_arm_deployed_a_delayed_rejected_winner"),
+        "curriculum_revision": (
+            payload.get("curriculum") or {}).get("revision"),
         "k0_has_no_target_local_capability": (
             payload["k0"]["purity"]["no_target_local_capability_in_k0"]),
         "k0_card_carries_no_frozen_steps": (
@@ -2108,38 +2557,64 @@ def _smoke_obligations(payload: Mapping[str, Any], *,
 # =========================================================================== #
 def _frozen_markdown(payload: Mapping[str, Any]) -> str:
     lines = [
-        "# S1 four-arm evolution curriculum -- frozen course",
+        "# S1 four-arm evolution curriculum -- frozen course (%s)"
+        % payload["curriculum_revision"],
         "",
-        "protocol: `%s`  evidence grade: **%s**  git: `%s`"
-        % (payload["protocol_version"], payload["evidence_grade"],
-           payload["git_head"]),
+        "protocol: `%s`  revision: **%s**  evidence grade: **%s**  git: `%s`"
+        % (payload["protocol_version"], payload["curriculum_revision"],
+           payload["evidence_grade"], payload["git_head"]),
+        "",
+        "supersedes `%s` (kept, not discarded)" % payload["supersedes"],
         "",
         "The course below was selected mechanically from the sealed census and "
         "oracle artifacts by the rules in section 1.  No unit was chosen by "
-        "hand and no outcome reordered anything after the rules ran.",
+        "hand and no outcome reordered anything after the rules ran.  The "
+        "readability screen reads `cell.slice_rows` off the sealed oracle "
+        "files, so it costs zero new Consumer fits.",
         "",
         "## 1. Selection rules (declared before scoring)",
         "",
     ]
-    for key in (GROUP_HARM, GROUP_LEARNABLE, GROUP_IDENTITY,
-                GROUP_HELDOUT_ONLY, "total_points", "tie_break",
-                "unit_disjointness", "forward_order", "reverse_order",
-                "domain_namespace"):
+    for key in ("revision", "min_slice_rows", "slice_readability_floor",
+                "necessary_condition", "necessary_condition_scope",
+                "within_group_ranking", "family_deduplication",
+                "relaxation_ladder", "group_selection_order",
+                GROUP_HARM, GROUP_LEARNABLE, GROUP_IDENTITY,
+                GROUP_HELDOUT_ONLY, "unit_disjointness", "forward_order",
+                "reverse_order", "domain_namespace"):
         lines.append("- **%s**: %s" % (key, payload["selection_rules"][key]))
     lines += ["", "## 2. The seven units, forward order", "",
               "| # | unit | group | family | learnability | oracle set | "
-              "points | held-in n | held-out n | why |",
-              "|---|---|---|---|---|---|---|---|---|---|"]
+              "slice rows (r1s/r1d/r2s/r2d) | min slice | resolution | key "
+              "held-in readout | why |",
+              "|---|---|---|---|---|---|---|---|---|---|---|"]
     groups = payload["selected_groups"]
     why_by_unit = {row["unit_id"]: row["why"]
                    for members in groups.values() for row in members}
     for row in payload["units"]:
-        lines.append("| %d | %s | %s | %s | %s | %s | %d | %s | %s | %s |" % (
-            row["forward_position"], row["unit_id"], row["group"],
-            row["family_key"], row["learnability"],
-            ",".join(row["oracle_set"]) or "-", row["total_points"],
-            row["n_heldin"], row["n_heldout"],
-            why_by_unit.get(row["unit_id"], "")))
+        lines.append(
+            "| %d | %s | %s | %s%s | %s | %s | %s | %d | %.4f | %.4f | %s |" % (
+                row["forward_position"], row["unit_id"], row["group"],
+                row["family_key"], " (repeat)" if row["family_repeat"] else "",
+                row["learnability"], ",".join(row["oracle_set"]) or "-",
+                "/".join(str(value) for value in row["slice_rows"].values()),
+                row["min_slice_rows"], row["slice_resolution"] or 0.0,
+                row["key_heldin_readout"], why_by_unit.get(row["unit_id"], "")))
+    lines += ["", "### Readability ladder actually walked", "",
+              "| group | quota | rung used | family repeats | downgraded from "
+              "floor 5 | short by | rungs tried |",
+              "|---|---|---|---|---|---|---|"]
+    for group, report in payload["ladder_trace_by_group"].items():
+        rung = report["rung_used"] or {}
+        lines.append("| %s | %d | floor %s, repeats %s | %s | %s | %d | %s |" % (
+            group, report["quota"], rung.get("slice_floor"),
+            "allowed" if rung.get("family_repeats_allowed") else "forbidden",
+            report["family_repeats_used"] or "none",
+            report["downgraded_from_floor_5"], report["short_by"],
+            " ; ".join("floor %s/%s -> %d" % (
+                item["slice_floor"],
+                "repeat" if item["family_repeats_allowed"] else "strict",
+                item["filled"]) for item in report["ladder_trace"])))
     lines += [
         "",
         "forward: `%s`" % payload["forward_order"],
@@ -2221,10 +2696,14 @@ def _smoke_markdown(payload: Mapping[str, Any]) -> str:
         "",
         verdict.get("scope", ""),
         "",
-        "unit under test: `%s` (%s, %s)"
+        "curriculum revision under test: **%s** (forward order frozen in `%s`)"
+        % (payload["curriculum"]["revision"], payload["curriculum_source"]),
+        "",
+        "unit under test: `%s` (%s, %s; smallest held-in slice %s rows)"
         % (payload["unit_under_test"]["unit_id"],
            payload["unit_under_test"]["group"],
-           payload["unit_under_test"]["family_key"]),
+           payload["unit_under_test"]["family_key"],
+           payload["unit_under_test"].get("min_slice_rows")),
         "",
         "## Gates",
         "",
@@ -2254,6 +2733,35 @@ def _smoke_markdown(payload: Mapping[str, Any]) -> str:
                     row["wrong_promotions"], row["cost"]["llm"],
                     row["cost"]["consumer_fits"], row["cost"]["probes"],
                     row["wasted_probes"]))
+    readable = payload.get("readable_surface_evidence") or {}
+    if readable:
+        lines += ["", "## Feedback surface: is it readable? (**%s**)"
+                  % readable["mode"], "",
+                  readable["reading"], "",
+                  "- smallest held-in slice: %s rows, resolution %.4f"
+                  % (readable["min_slice_rows"], readable["slice_resolution"]),
+                  "- programs the proposal stage actually probed: %s"
+                  % (readable["programs_probed"] or "none"),
+                  "- non-NEUTRAL Support receipts: **%d**"
+                  % readable["live_non_neutral_count"], ""]
+        if readable["live_non_neutral_receipts"]:
+            lines += ["| arm | round | program | relation | support gain | "
+                      "delayed gain |", "|---|---|---|---|---|---|"]
+            for row in readable["live_non_neutral_receipts"]:
+                lines.append("| %s | %s | %s | %s | %s | %s |" % (
+                    row["arm"], row["round"], row["program"], row["relation"],
+                    row["support_gain"], row["delayed_gain"]))
+            lines.append("")
+        lines += ["Arithmetic side-evidence from the sealed oracle:", "",
+                  "| program | legal | pooled held-in | |m| >= 1/slice | "
+                  "material | probed in this smoke |",
+                  "|---|---|---|---|---|---|"]
+        for row in readable["arithmetic_corroboration"]:
+            lines.append("| %s | %s | %s | %s | %s | %s |" % (
+                row["program"], row["legal"], row["pooled_heldin_headroom"],
+                row["expressible_on_the_smallest_slice"], row["material"],
+                row["was_probed_in_the_smoke"]))
+        lines += ["", "- %s" % readable["caveat"]]
     boundary = payload.get("unit_boundary_state") or {}
     if boundary:
         lines += ["", "## State at the unit boundary", "",
@@ -2351,6 +2859,36 @@ def _smoke_markdown(payload: Mapping[str, Any]) -> str:
                 row["smallest_slice_rows"],
                 "empty slice" if step is None else "%.3f" % step))
         lines += ["", "- %s" % census.get("why_this_matters", "")]
+    guard = payload.get("guard_channel_feasibility") or {}
+    if guard:
+        lines += ["", "## Guard channel feasibility", "",
+                  guard["reading"], "",
+                  "- programs readably harmful on **every** harm unit: %s"
+                  % (guard["programs_readably_harmful_on_every_harm_unit"]
+                     or "none"),
+                  "- %s" % guard["expected_earliest_guard"], "",
+                  "| harm unit | # | min slice | resolution | readably "
+                  "harmful legal programs (held-in) |",
+                  "|---|---|---|---|---|"]
+        for row in guard["harm_units"]:
+            lines.append("| %s | %s | %s | %.4f | %s |" % (
+                row["unit_id"], row["forward_position"], row["min_slice_rows"],
+                row["slice_resolution"],
+                ", ".join("%s %+.4f" % (name, value) for name, value
+                          in row["readably_harmful_legal_programs"].items())
+                or "none"))
+    deploy = payload.get("deploy_rule_observation") or {}
+    if deploy and deploy.get("any_arm_deployed_a_delayed_rejected_winner"):
+        lines += ["", "## Deploy-rule observation (inherited, not repaired)",
+                  "", deploy["note"], "",
+                  "| arm | round | Support winner | delayed relation | Skill "
+                  "approved | deployed | deploy source |",
+                  "|---|---|---|---|---|---|---|"]
+        for row in deploy["rows"]:
+            lines.append("| %s | %s | %s | %s | %s | %s | %s |" % (
+                row["arm"], row["round"], row["support_winner"],
+                row["delayed_relations"], row["approved_skill_id"] or "none",
+                row["deployed_program"], row["deploy_source"]))
     integration = payload.get("a5_slow_integration") or {}
     if integration:
         lines += ["", "## A5 Slow integration at the boundary", "",
