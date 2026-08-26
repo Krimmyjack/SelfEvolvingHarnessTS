@@ -993,6 +993,26 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:runner 最小入口 `--conf-dev-run`(`--dataset` 默认 ECG200);隔离工件 `t6_cls_conf_dev_ecg200.json/.md`;本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;未触 `data/ucr_conf_downloaded/`;他线文件未碰;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
 
+### 纲领换轨定案:三段式演化实验(主线自立,sol 六点修订采纳);S1a-r1 发车(2026-08-26 13:2x,主线)
+
+**换轨(用户驱动,主线定稿)**:证明单元从"动作 Skill 跨底物复制"(C38→CLS-CONF 阶梯,被三底物命运表证伪,退役)改为"**整台 Harness 知识状态随经历复利**"。三段式:S1 任务内演化课程(分类)/ S2 跨任务程序性迁移探针(S1 产出算子中立程序知识后;预测 cell 主探,AD 作 Task 卡惰性副守卫)/ S3 受治理 Instruction/策略自修订(**移出关键路径但留 ROADMAP 具名里程碑**;首考靶 = v2 教训自主重发现)。#38-46 的管道工程与能力测绘全部继承为地基。**sol 六点修订全采**:(1) 四臂 = Static(不适应)/ A3-reset(每单元 H0)/ **K0-fixed(同课前知识 K0,单元间禁写回,单元内正常 held-in)**/ A5-online(同 K0 起点,持续整合)——原"A5-冻结"废止(单元 1 特殊化混淆先验与演化);(2) **S1a 先证处理组存在**:每类经验编译终态、Fast 可见时点、Scope 是否来自部署可见特征、A5-online 与 K0-fixed 首次状态分歧单元;`evidence_distinct_task_count≥2` 须核现役编译器实际计数语义(risk_skill.py:246)+ 两害证同 Program/Context/first-fault;主线补:**Wine mad 害证系 0-LLM 预检非 Episode,课前池 mad 害证仅 ECG200 n=1,第二计数单元须课程内产生**;(3) 课程须 ≥2 个独立 Scope 相容正向单元,否则停在 S1a(主线加预注册双出口:FULL_CURRICULUM_QUALIFIED / SAFETY_ONLY_CURRICULUM 带决策件停);防钓鱼 = 候选池一次性预声明 + oracle 一轮算完;(4) **oracle 双层**:menu oracle(现菜单最优,无安全改进则 identity)判决策正确性 + readiness upper bound(clean/exact repair 上界)报残差——Program Supply 缺口不得洗成"数据无需处理";oracle 工件全程隔离于 Harness/Agent/Memory 视野;课程定名 development positive-control curriculum;(5) 门收紧:主读数 = 每单元 regret(menu-oracle 效用−实际冻结部署效用),报累计 regret / held-out 效用与 worst-class harm / 错误晋升 / Target 边际成本(LLM/fit/probe)/ 含 Slow 整合的累计总成本;**A5-online 须在质量与 harm 非劣前提下 regret 或成本至少一项材料级改善**;fit 数改称适应/搜索成本;(6) 单顺序单跑只记 `S1_DEVELOPMENT_EVOLUTION_SIGNAL`,复合措辞需 ≥2 套预冻结反平衡顺序(S1a-r1 一并冻结)。**批准范围:仅 S1a-r1(课程资格 + 双层判分器 + 状态可达性审计),禁自动衔接 S1b/S1c。**
+
+### S1a-r1 收口:FULL_CURRICULUM_QUALIFIED;双层 oracle 密封;处理组非空(2026-08-26 14:xx,执行方)
+
+**总判定:`FULL_CURRICULUM_QUALIFIED`**(development positive-control curriculum;非 fresh)。预声明 9 单元池一轮算完,禁事后扩池/扫注入。0 Fast LLM,0 Slow 排演(卡形态可由现役谓词+既有 `source_investigation_cls_v1` 推演),69 fit / 500,墙钟 103.3 s / 5400 s。
+
+**Part A 双层 oracle**(ridge × `fit_only_artifact`;held-out = 官方干净 TEST;上界 = exact-repair 干净训练)。正向 7 / identity 2。hampel 簇:GunPointAgeSpan(+0.2627,残差 0.0095)/ GunPoint(+0.4067,残差 0.1133)/ Herring(+0.0469,残差 0.0781)。`repair_burst_segment` 簇:ECG200(+0.040,残差 0.160)/ ToeSegmentation1(+0.031,残差 0.083)/ Lightning2(+0.098,残差 0.164)——**菜单有解 ≠ 上界已达**;Wine/Ham oracle=identity 但 identity 残差 0.148/0.114,不得写成"无需处理"。GunPoint×burst 拉伸 oracle=`outlier_iqr`(+0.0133,残差 0.100)。密封件 `artifacts/functional/e2/s1_oracle/` 头部声明不得进入任何臂 prompt/store/检索。
+
+**Part B 冻结课程**(hampel 簇过门:同 Task/Consumer + Pattern 交非空且禁用 dataset 名 + 同一 Program 几何):正序 `GunPointAgeSpan__impulse_v2 → Wine__impulse_v2 → GunPoint__impulse_v2 → Ham__impulse_v2 → Herring__impulse_v2 → GunPoint__burst_cls2`;反序为其严格逆。含 3 正向 / 2 identity / 1 burst。第二相容簇(`repair_burst_segment`×3)入账但不作本课动作族。
+
+**Part C**:课前 K0 = `source_investigation_cls_v1`(TRY 弃权,无 `evidence_distinct_task_count`)→ **Slow-only**。C40 GPA hampel 是 Target-local capability,不得装进 K0。`evidence_distinct_task_count` 按 `context_summary.task_episode_id` 计(risk_skill.py:72-74/246);分类 `online_loop.py:180-193` 不写该字段,两单元害证会塌成 count=1;分类 harness 不调用 `run_risk_skill_lifecycle`;source 卡编译器也不写该字段 → **Fast-guard 结构性不可达**。A5-online vs K0-fixed 第一处 Fast 可见差异 = **单元 2 起始**(单元 1 形成的 Target-local Skill 被 A5 带入,K0-fixed 回 K0);单元 3(第二 hampel 正向)后 Slow 可授权 Fast-TRY。处理组非空,非 `TREATMENT_EMPTY`。
+
+**提交**:独立 runner `evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py`(不改共享 runner);密封 oracle 9 份;审计 `s1a_curriculum_audit.json/.md`;本节(连同主线未提交的换轨发车条与 Wine 关族条)。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;未触 `data/ucr_conf_downloaded/`;未跑正式臂;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
+
+### Wine 预检触发关闭条款:impulse×hampel family 关闭;三底物命运表定型(2026-08-26 12:2x,主线)
+
+**门判 FAMILY_CLOSURE_RECOMMENDED(提交 436cc71,0 LLM/2 fit/1.2s)**:v2 等比模板下 hampel 合法(0.0297<0.10,L=150 不变性五检过)但 headroom +0.0 < 门 0.0588,且 worst-class Δrecall −0.5556;唯一合法非空动作即 hampel,全局裁剪族(mad 0.245/iqr 0.164)超帽被拒。按 sol 预设条款 **impulse×hampel family 关闭,不再换数据追结果**;Part C 未跑。**三底物命运表(同一注入 family)**:GunPointAgeSpan(150 点)= 正向 +0.2690 / ECG200(96 点)= 校验器几何拒(v2 亦无解:round(1/150×96)=1 同 v1,halo 数学在短行不可压)/ Wine(234 点)= 合法但零 headroom+类伤——**同 family 三种命运,直接支撑"数据就绪由底物几何×Consumer×缺陷共同条件化"的核心论题,负边界证据入账**。书外仪器注:observer 末段 2 点回收咬偏(recovered_all_nodes=false),记债不修。**分类线定格状态**:生命周期已通(ECG200 229s 端到端)+ 治理链已证(T1/T2)+ 单域正例 n=1(GunPoint)+ 跨底物边界已测绘;Shared Skill 归纳与 impulse 系 A5>A3 跨域主考不可行,后续路线呈 sol:(a) 跨域正迁移头条押回预测线 Frep(已有 A5>A3 +31.7% 成本优势),分类章定位"第二任务生命周期+治理+条件化边界";(b) 以机制推理预注册设计新分类缺陷 family(不许数据挖掘式选家族);(c) 补 ridge/kNN 双 Consumer impulse 对照完善条件化证据章。D2/D3 继续封存,IPD 维持暂停,r3a 使用地图固化与 junction 移除等入 housekeeping 待发。
+
 ### sol 裁定:帽不动/注入模板等比缩放/暂停 IPD/Wine 预检制 dev 验证/否则关 family(2026-08-26 12:06)
 
 (1) **0.10 修改帽保留,不为结果调高**;(2) 注入模板改为**随序列长度等比缩放**,比例从 GunPoint 正控机械换算、禁止扫描,并保证注入占比低于修改帽;(3) **ItalyPowerDemand 暂停**(24 点,现协议必然更不适配);(4) 许可**一次**本地 development 机制验证:长度≥150、规模小,**推荐 Wine**(57×234);**先 0-LLM"程序合法性+headroom"预检**(hampel 可执行 ∧ 确实正向)通过才花 LLM 跑 Harness;(5) 若仍无合法正向 headroom → **关闭 impulse×hampel family,不再换数据追结果**。定位一句话:分类 Harness 已能运行且会正确拒绝有害处理(ECG200 零害守住);缺第二个几何相容正向场;Shared Skill 归纳与真 A5>A3 跨域主考均未到条件。ECG200 反馈面未被证伪(outlier_mad Support −0.1429 被正确不晋升)。
