@@ -28,6 +28,7 @@ Entry points::
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --smoke
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --run
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-replay-a5
+  python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --conf-dev-run
 
 ``--smoke`` is the 0-LLM mechanical pass over the same execution body with a
 scripted backend; ``--run`` is the live Fast Agent pass that produces the
@@ -2444,6 +2445,46 @@ CONF_DL_DATA_DIR = "data/ucr_conf_downloaded/D1"
 CONF_DL_ROSTER = PROJECT_ROOT / "data" / "ucr_conf_downloaded" / "ROSTER.md"
 CONF_DL_META = PROJECT_ROOT / "_scratch" / "tsc_metadata.csv"
 
+# CLS-DEV -- local already-used substrate, development-grade conf lifecycle.
+# Isolated artifacts; same two-arm machinery as --conf-run; not a confirmation.
+CONF_DEV_OUT_JSON = E2 / "t6_cls_conf_dev_ecg200.json"
+CONF_DEV_OUT_MD = E2 / "t6_cls_conf_dev_ecg200.md"
+CONF_DEV_PROTOCOL = "t6_cls_conf_dev_v1"
+CONF_DEV_RUN_ID = "t6_cls_conf_dev_ecg200_run1"
+CONF_DEV_DEFAULT_DATASET = "ECG200"
+CONF_DEV_WALL_SECONDS = 90 * 60
+CONF_DEV_EVIDENCE_GRADE = "development"
+CONF_DEV_HONESTY = (
+    "ECG200 was previously used by the W48 / W49 / curvature lines under the "
+    "same impulse condition pair (audit: artifacts/functional/e2/"
+    "t6_cls_conf_r3_selection.json). This run is therefore not an independent "
+    "confirmation. Every judgement stays at evidence_grade=development. The "
+    "label CLS_CHAIN_CONFIRMED must not be used."
+)
+CONF_DEV_POSITIVE = "DEV_CHAIN_POSITIVE"
+CONF_DEV_NO_POSITIVE = "DEV_CHAIN_NO_POSITIVE"
+GUNPOINT_A3_REFERENCE = {
+    "dataset": "GunPointAgeSpan",
+    "source": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+    "skill": "hampel_filter",
+    "first_skill_round": "r1",
+    "support_gain": 0.5,
+    "delayed_utility": 0.4,
+    "heldout_accuracy": 0.8512658227848101,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.2689873417721519,
+    "heldout_recall_delta_by_class": {"0": 0.28125, "1": 0.2564102564102564},
+    "support_delayed_direction_agree": 2,
+    "support_delayed_direction_disagree": 0,
+    "llm_calls_to_first_skill": 6,
+    "candidate_executions_to_first_skill": 1,
+    "retrieved_r1": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+    ],
+}
+
 
 def _conf_dl_load_selection() -> dict[str, Any]:
     """Reload the pre-download filter trajectory.  Never invent a new pick."""
@@ -2704,6 +2745,389 @@ def conf_dl_run(*, run_id: str = CONF_DL_RUN_ID) -> int:
         census_fn=_conf_dl_census, entry="--conf-dl-run",
         data_dir=CONF_DL_DATA_DIR, extra=extra,
         markdown_fn=_conf_dl_markdown)
+
+
+def _conf_dev_census(dataset: str) -> dict[str, Any]:
+    """Pick a local already-used zip.  Not an unused-Target census."""
+    if "/" in dataset or "\\" in dataset or ".." in dataset:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "dataset name must be a bare UCR stem, got %r" % dataset)
+    archive = PROJECT_ROOT / DATA_DIR / ("%s.zip" % dataset)
+    if not archive.is_file():
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "local zip missing: %s/%s.zip" % (DATA_DIR, dataset))
+    _ctx, helpers = _legacy_helpers()
+    train_values, train_labels = helpers["load"](np, archive, dataset, "TRAIN")
+    n_train = int(train_values.shape[0])
+    length = int(train_values.shape[1])
+    n_classes = int(len({int(label) for label in train_labels}))
+    return {
+        "selected": dataset,
+        "rule": (
+            "development reuse of a local UCR zip already used under the "
+            "same impulse condition pair; the unused-Target census is not "
+            "applied"),
+        "pool_size": 1,
+        "eligible": [dataset],
+        "selection_basis": (
+            "task-book CLS-DEV-ECG200; --dataset default %s; archive %s/%s.zip"
+            % (CONF_DEV_DEFAULT_DATASET, DATA_DIR, dataset)),
+        "archive": "%s/%s.zip" % (DATA_DIR, dataset),
+        "bytes": int(archive.stat().st_size),
+        "official_train_rows": n_train,
+        "series_length": length,
+        "class_count": n_classes,
+        "approx_heldin_points": n_train * length,
+        "independent_confirmation": False,
+        "honesty_constraint": CONF_DEV_HONESTY,
+        "prior_use_audit": "artifacts/functional/e2/t6_cls_conf_r3_selection.json",
+    }
+
+
+def _conf_dev_shape_note(payload: Mapping[str, Any]) -> str:
+    """One paragraph: same-shape / different-shape vs GunPointAgeSpan A3."""
+    difference = payload.get("difference_read") or {}
+    hampel = difference.get("hampel_filter_on_this_target") or {}
+    rounds = [row for row in (payload.get("rounds") or [])
+              if row.get("arm") == "A3"]
+    families = []
+    for record in rounds:
+        for probe in record.get("probes") or []:
+            families.append("%s/%s:%s" % (
+                record.get("round"), probe.get("candidate_id"),
+                probe.get("kind")))
+    rejected = hampel.get("rejection_codes") or []
+    fraction = hampel.get("cohort_modified_fraction")
+    return (
+        "Same-shape: A3-only, bootstrap-three retrieval, cohort verifier, "
+        "maximum_candidates=3, held-in r1/r2 → freeze → Fast-only held-out. "
+        "Different-shape: GunPoint formed a hampel Target-local Skill in r1 "
+        "with Support/delayed both positive; this run proposed %s and formed "
+        "no Skill. Post-freeze menu diagnostic: hampel_filter verifier_passed="
+        "%s rejection=%s cohort_fraction=%s. Scope-compiler development "
+        "should treat this as same impulse family, different Program "
+        "geometry / verifier fate, not as a second hampel positive."
+        % (families or "(none)",
+           hampel.get("verifier_passed"),
+           ",".join(str(code) for code in rejected) or "-",
+           fraction))
+
+
+def _conf_dev_verdict(payload: Mapping[str, Any], *,
+                      stopped: str | None) -> dict[str, Any]:
+    """Same gate as _conf_verdict; DEV labels only; no CLS_CHAIN_CONFIRMED."""
+    verdict = _conf_verdict(
+        payload, stopped=stopped,
+        positive_label=CONF_DEV_POSITIVE,
+        negative_label=CONF_DEV_NO_POSITIVE,
+        claim_limit=(
+            "development only.  " + CONF_DEV_HONESTY
+            + "  The impulse is a controlled injection; a positive here is a "
+            "second development-grade Target-local Skill, not a fresh "
+            "confirmation."))
+    verdict["forbidden_label"] = "CLS_CHAIN_CONFIRMED"
+    verdict["independent_confirmation"] = False
+    verdict["evidence_grade"] = CONF_DEV_EVIDENCE_GRADE
+    return verdict
+
+
+def _conf_dev_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload.get("verdict") or {}
+    ledger = payload.get("ledger") or {}
+    selection = payload.get("selection") or {}
+    cells = (payload.get("readouts") or {}).get("cells") or {}
+    honesty = payload.get("honesty_constraint") or CONF_DEV_HONESTY
+    lines = [
+        "# CLS-DEV-ECG200 -- development-grade conf lifecycle on local ECG200",
+        "",
+        "protocol: `%s`  target: **%s**  evidence grade: **%s**"
+        % (payload.get("protocol_version"), payload.get("target"),
+           payload.get("evidence_grade")),
+        "",
+        "## Verdict",
+        "",
+        "**%s**" % verdict.get("verdict"),
+        "",
+        str(verdict.get("rule") or verdict.get("reason") or ""),
+        "",
+        "- non-identity Target-local Skill formed: %s"
+        % verdict.get("non_identity_target_local_skill_formed"),
+        "- A3 minus Static held-out accuracy: %s (material line %s)"
+        % (verdict.get("a3_minus_static_heldout_accuracy"),
+           verdict.get("material_line")),
+        "- worst per-class recall delta: %s (zero class harm: %s)"
+        % (verdict.get("worst_class_recall_delta"),
+           verdict.get("zero_class_harm")),
+        "- deployment purity: %s" % verdict.get("deploy_purity_all_pure"),
+        "- forbidden label unused: CLS_CHAIN_CONFIRMED",
+        "",
+        str(verdict.get("claim_limit") or ""),
+        "",
+        "## Honesty constraint",
+        "",
+        honesty if isinstance(honesty, str) else json.dumps(
+            honesty, ensure_ascii=False),
+        "",
+        "This artifact is **development** evidence.  It is not an independent "
+        "confirmation and must not be cited as CLS_CHAIN_CONFIRMED.",
+        "",
+        "## Substrate",
+        "",
+        "- archive: `%s` (%s bytes)"
+        % (selection.get("archive"), selection.get("bytes")),
+        "- TRAIN rows × length: %s × %s; classes: %s"
+        % (selection.get("official_train_rows"),
+           selection.get("series_length"), selection.get("class_count")),
+        "- selection: %s" % selection.get("selection_basis"),
+        "- condition: `%s`" % payload.get("condition"),
+        "",
+        "## Held-in trajectory",
+        "",
+        "| arm | round | retrieved_skill_ids | chosen | probes | winner | "
+        "Support receipts | delayed | abstain | relation(s) |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for record in payload.get("rounds") or []:
+        relations = ",".join(str(ep.get("relation"))
+                             for ep in record.get("episodes") or []) or "-"
+        retrieved = ",".join(record.get("retrieved_skill_ids") or []) or "-"
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |"
+            % (record.get("arm"), record.get("round"), retrieved,
+               record.get("chosen"), record.get("proposal_count"),
+               record.get("winner_program"), record.get("support_receipts"),
+               record.get("delayed_utility"), record.get("abstained"),
+               relations))
+    if not payload.get("rounds"):
+        lines.append("| (none) | | | | | | | | | |")
+    lines += [
+        "",
+        "## Two-arm readouts",
+        "",
+        "| arm | Skill formed | first-Skill LLM | first-Skill "
+        "executions | held-in delayed | held-out acc | vs identity | "
+        "recall by class | recall delta | worst class recall d | "
+        "Support/delayed agree:disagree | deploy |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for key in sorted(cells):
+        row = cells[key]
+        first = row.get("first_skill") or {}
+        acc = row.get("heldout_accuracy")
+        gain = row.get("heldout_accuracy_gain")
+        worst = row.get("worst_class_recall_delta")
+        delayed = row.get("held_in_delayed_utility")
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s:%s | %s |"
+            % (row.get("arm"), row.get("target_local_skill_formed"),
+               first.get("llm_calls_to_first_skill", "-"),
+               first.get("candidate_executions_to_first_skill", "-"),
+               ("%+.4f" % delayed) if delayed is not None else "n/a",
+               ("%.4f" % acc) if acc is not None else "n/a",
+               ("%+.4f" % gain) if gain is not None else "n/a",
+               row.get("heldout_recall_by_class"),
+               row.get("heldout_recall_delta_by_class"),
+               ("%+.4f" % worst) if worst is not None else "n/a",
+               row.get("support_delayed_direction_agree"),
+               row.get("support_delayed_direction_disagree"),
+               row.get("deploy_source")))
+    if not cells:
+        lines.append("| (none) | | | | | | | | | | | |")
+    ref = GUNPOINT_A3_REFERENCE
+    a3 = cells.get("%s/A3" % payload.get("target")) or {}
+    first = a3.get("first_skill") or {}
+    lines += [
+        "",
+        "## Lifecycle shape vs GunPointAgeSpan A3 positive",
+        "",
+        "GunPointAgeSpan A3 (development positive, `%s`): r1 retrieved "
+        "bootstrap-only `%s`; proposal `hampel_filter`; Support +%.2f → "
+        "delayed +%.2f; Skill in r1; held-out %.4f vs identity %.4f "
+        "(+%0.4f); per-class recall delta %s; Support-delayed %s:%s; "
+        "first-Skill LLM %s / executions %s."
+        % (ref["source"], ",".join(ref["retrieved_r1"]),
+           ref["support_gain"], ref["delayed_utility"],
+           ref["heldout_accuracy"], ref["heldout_identity_accuracy"],
+           ref["heldout_accuracy_gain"],
+           ref["heldout_recall_delta_by_class"],
+           ref["support_delayed_direction_agree"],
+           ref["support_delayed_direction_disagree"],
+           ref["llm_calls_to_first_skill"],
+           ref["candidate_executions_to_first_skill"]),
+        "",
+        "This run A3: retrieved bootstrap-only on both rounds; first "
+        "Skill=%s round=%s; held-out acc=%s gain=%s; recall delta=%s; "
+        "Support-delayed %s:%s."
+        % (first.get("program"), first.get("round"),
+           a3.get("heldout_accuracy"), a3.get("heldout_accuracy_gain"),
+           a3.get("heldout_recall_delta_by_class"),
+           a3.get("support_delayed_direction_agree"),
+           a3.get("support_delayed_direction_disagree")),
+        "",
+        _conf_dev_shape_note(payload),
+        "",
+        "Same-shape / different-shape notes are for Scope-compiler "
+        "development only.  Shared-capability induction is not authorized "
+        "from this development pair.",
+        "",
+        "## Cost",
+        "",
+        "- LLM: %s / %s" % (ledger.get("llm_calls"), ledger.get("llm_cap")),
+        "- Consumer fits: %s / %s"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap")),
+        "- wall clock: %s s (cap %s s)"
+        % (ledger.get("wall_seconds"), CONF_DEV_WALL_SECONDS),
+        "- downloads: %s" % ledger.get("downloads", 0),
+        "",
+        "## Obligations",
+        "",
+    ]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
+def _conf_dev_paths(dataset: str) -> tuple[Path, Path, str]:
+    slug = "".join(ch for ch in dataset.lower() if ch.isalnum()) or "target"
+    if dataset == CONF_DEV_DEFAULT_DATASET:
+        return CONF_DEV_OUT_JSON, CONF_DEV_OUT_MD, CONF_DEV_RUN_ID
+    return (E2 / ("t6_cls_conf_dev_%s.json" % slug),
+            E2 / ("t6_cls_conf_dev_%s.md" % slug),
+            "t6_cls_conf_dev_%s_run1" % slug)
+
+
+def _conf_dev_write_stall(*, out_json: Path, out_md: Path, run_id: str,
+                          dataset: str, started: float,
+                          reason: str) -> None:
+    payload = {
+        "protocol_version": CONF_DEV_PROTOCOL,
+        "run_id": run_id,
+        "entry": "--conf-dev-run",
+        "evidence_grade": CONF_DEV_EVIDENCE_GRADE,
+        "target": dataset,
+        "honesty_constraint": CONF_DEV_HONESTY,
+        "independent_confirmation": False,
+        "verdict": {
+            "verdict": "COMPUTE_BUDGET_EXCEEDED",
+            "reason": reason,
+            "note": (
+                "stop-report; 90-minute wall-clock cap; not a scientific "
+                "negative"),
+            "forbidden_label": "CLS_CHAIN_CONFIRMED",
+        },
+        "ledger": {
+            "llm_calls": None,
+            "llm_cap": CONF_LLM_CAP,
+            "consumer_fits": None,
+            "consumer_fit_cap": CONF_FIT_CAP,
+            "wall_seconds": round(time.time() - started, 1),
+            "wall_cap_seconds": CONF_DEV_WALL_SECONDS,
+            "downloads": 0,
+        },
+        "obligations": {
+            "methods_package_unmodified": True,
+            "downloads": 0,
+            "ucr_conf_downloaded_not_opened": True,
+            "not_an_independent_confirmation": True,
+        },
+    }
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    out_md.write_text(_conf_dev_markdown(payload), encoding="utf-8")
+
+
+def conf_dev_run(*, dataset: str = CONF_DEV_DEFAULT_DATASET,
+                 run_id: str | None = None) -> int:
+    """CLS-DEV: same two-arm conf lifecycle on a local light substrate."""
+    import threading
+
+    out_json, out_md, default_run_id = _conf_dev_paths(dataset)
+    run_id = run_id or default_run_id
+    started = time.time()
+    print("CLS-DEV start  protocol=%s  dataset=%s  wall_cap=%ss"
+          % (CONF_DEV_PROTOCOL, dataset, CONF_DEV_WALL_SECONDS), flush=True)
+    armed = {"live": True}
+
+    def _timeout() -> None:
+        if not armed["live"]:
+            return
+        _conf_dev_write_stall(
+            out_json=out_json, out_md=out_md, run_id=run_id,
+            dataset=dataset, started=started,
+            reason=("hard wall-clock cap of %ss reached; process terminated"
+                    % CONF_DEV_WALL_SECONDS))
+        print(json.dumps({
+            "verdict": "COMPUTE_BUDGET_EXCEEDED",
+            "target": dataset,
+            "wall_seconds": round(time.time() - started, 1),
+            "artifact": str(out_json),
+        }, ensure_ascii=False, indent=1), flush=True)
+        os._exit(2)
+
+    timer = threading.Timer(CONF_DEV_WALL_SECONDS, _timeout)
+    timer.daemon = True
+    timer.start()
+    extra = {
+        "honesty_constraint": CONF_DEV_HONESTY,
+        "independent_confirmation": False,
+        "forbidden_label": "CLS_CHAIN_CONFIRMED",
+        "wall_cap_seconds": CONF_DEV_WALL_SECONDS,
+        "ledger_downloads": 0,
+        "obligations": {
+            "sealed_d2_d3_untouched": True,
+            "ucr_conf_downloaded_not_opened": True,
+            "methods_package_unmodified": True,
+            "downloads": 0,
+            "not_an_independent_confirmation": True,
+            "cls_chain_confirmed_label_not_used": True,
+            "target_never_used_before": (
+                "FALSE.  ECG200 is a local already-used substrate "
+                "(W48/W49/curvature under the same impulse pair); this is "
+                "development reuse, not a virgin Target"),
+        },
+    }
+    try:
+        return conf_run(
+            run_id=run_id, protocol=CONF_DEV_PROTOCOL,
+            out_json=out_json, out_md=out_md,
+            census_fn=lambda: _conf_dev_census(dataset),
+            entry="--conf-dev-run", data_dir=DATA_DIR, extra=extra,
+            markdown_fn=_conf_dev_markdown,
+            verdict_fn=_conf_dev_verdict,
+            evidence_grade=CONF_DEV_EVIDENCE_GRADE,
+            accepted_verdicts=(CONF_DEV_POSITIVE, CONF_DEV_NO_POSITIVE))
+    except Stop as stop:
+        if stop.verdict == "INSTRUMENT_UNREADABLE":
+            payload = {
+                "protocol_version": CONF_DEV_PROTOCOL,
+                "run_id": run_id,
+                "entry": "--conf-dev-run",
+                "evidence_grade": CONF_DEV_EVIDENCE_GRADE,
+                "target": dataset,
+                "honesty_constraint": CONF_DEV_HONESTY,
+                "independent_confirmation": False,
+                "verdict": {"verdict": stop.verdict, "reason": stop.reason,
+                            "forbidden_label": "CLS_CHAIN_CONFIRMED"},
+                "ledger": {"llm_calls": 0, "llm_cap": CONF_LLM_CAP,
+                           "consumer_fits": 0,
+                           "consumer_fit_cap": CONF_FIT_CAP,
+                           "wall_seconds": round(time.time() - started, 1),
+                           "downloads": 0},
+                "obligations": extra["obligations"],
+            }
+            out_json.parent.mkdir(parents=True, exist_ok=True)
+            out_json.write_text(
+                json.dumps(_plain(payload), indent=1, ensure_ascii=False)
+                + "\n", encoding="utf-8")
+            out_md.write_text(_conf_dev_markdown(payload), encoding="utf-8")
+            print(json.dumps(payload["verdict"], ensure_ascii=False, indent=1))
+            return 1
+        raise
+    finally:
+        armed["live"] = False
+        timer.cancel()
 
 
 def _conf_name_census(names: Sequence[str]) -> dict[str, Any]:
@@ -3108,8 +3532,11 @@ def conf_r2_select() -> int:
 
 
 def _conf_verdict(payload: Mapping[str, Any], *,
-                  stopped: str | None) -> dict[str, Any]:
-    """CLS_CHAIN_CONFIRMED needs a Skill *and* a clean held-out gain."""
+                  stopped: str | None,
+                  positive_label: str = "CLS_CHAIN_CONFIRMED",
+                  negative_label: str = "CLS_CHAIN_NOT_REPLICATED",
+                  claim_limit: str | None = None) -> dict[str, Any]:
+    """Positive label needs a Skill *and* a clean held-out gain."""
     if stopped:
         return {"verdict": stopped,
                 "stage": (payload.get("stop") or {}).get("reason"),
@@ -3138,14 +3565,18 @@ def _conf_verdict(payload: Mapping[str, Any], *,
     material_positive = gain >= line
     zero_class_harm = worst >= -MATERIAL
     confirmed = bool(skill and material_positive and zero_class_harm)
+    default_claim = (
+        "DEVELOPMENT.  The impulse is a controlled injection on a UCR "
+        "background; this confirms the Harness chain reproduces on a "
+        "Target it had never seen, not that natural classification data "
+        "carries the same defect.")
     return {
-        "verdict": ("CLS_CHAIN_CONFIRMED" if confirmed
-                    else "CLS_CHAIN_NOT_REPLICATED"),
+        "verdict": (positive_label if confirmed else negative_label),
         "rule": (
-            "CLS_CHAIN_CONFIRMED iff a non-identity Target-local Skill formed "
+            "%s iff a non-identity Target-local Skill formed "
             "and the frozen Fast-only deployment beats Static identity by at "
             "least max(0.005, 1/n) on held-out accuracy with no per-class "
-            "recall falling more than 0.005."),
+            "recall falling more than 0.005." % positive_label),
         "non_identity_target_local_skill_formed": skill,
         "a3_minus_static_heldout_accuracy": gain,
         "material_line": line,
@@ -3156,11 +3587,7 @@ def _conf_verdict(payload: Mapping[str, Any], *,
             "harm_bar": HARM_BAR,
             "classes_over_bar": a3["harmed_classes_over_bar"]},
         "deploy_purity_all_pure": purity,
-        "claim_limit": (
-            "DEVELOPMENT.  The impulse is a controlled injection on a UCR "
-            "background; this confirms the Harness chain reproduces on a "
-            "Target it had never seen, not that natural classification data "
-            "carries the same defect."),
+        "claim_limit": claim_limit if claim_limit is not None else default_claim,
     }
 
 
@@ -3256,7 +3683,10 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
              entry: str = "--conf-run",
              data_dir: str | None = None,
              extra: Mapping[str, Any] | None = None,
-             markdown_fn: Any = None) -> int:
+             markdown_fn: Any = None,
+             verdict_fn: Any = None,
+             evidence_grade: str | None = None,
+             accepted_verdicts: Sequence[str] | None = None) -> int:
     """CLS-CONF: A3 against Static identity on the mechanically chosen Target."""
     from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
         compile_snapshot,
@@ -3267,6 +3697,10 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
     census_fn = census_fn or _conf_candidate_census
     data_dir = data_dir or DATA_DIR
     markdown_fn = markdown_fn or _conf_markdown
+    verdict_fn = verdict_fn or _conf_verdict
+    evidence_grade = evidence_grade or EVIDENCE_GRADE
+    accepted_verdicts = tuple(accepted_verdicts or (
+        "CLS_CHAIN_CONFIRMED", "CLS_CHAIN_NOT_REPLICATED"))
     started = time.time()
     fit_budget = FitBudget(CONF_FIT_CAP)
     store_root = Path(tempfile.gettempdir()) / run_id
@@ -3281,7 +3715,7 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
         "protocol_version": protocol,
         "run_id": run_id,
         "entry": entry,
-        "evidence_grade": EVIDENCE_GRADE,
+        "evidence_grade": evidence_grade,
         "git_head": _git("rev-parse", "HEAD"),
         "selection": census,
         "target": census["selected"],
@@ -3410,11 +3844,22 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
                         arm=arm, fit_budget=fit_budget, allow_fast_skill=True,
                         fraction_scope="cohort", ledger=backend)
                     rounds.append(record)
-                    print("%-6s %-28s %s probes=%d winner=%s delayed=%s"
+                    print("%-6s %-28s %s probes=%d winner=%s delayed=%s "
+                          "retrieved=%s chosen=%s"
                           % (arm, dataset, round_name,
                              record["support_receipts"],
                              record["winner_program"],
-                             record["delayed_utility"]), flush=True)
+                             record["delayed_utility"],
+                             ",".join(record.get("retrieved_skill_ids") or [])
+                             or "-",
+                             record.get("chosen") or "-"), flush=True)
+                    wall_cap = (extra or {}).get("wall_cap_seconds")
+                    if wall_cap is not None and (
+                            time.time() - started) > float(wall_cap):
+                        raise Stop(
+                            "COMPUTE_BUDGET_EXCEEDED",
+                            "wall-clock cap of %ss exceeded after %s %s"
+                            % (wall_cap, arm, round_name))
             deployment = _deploy_and_score(
                 state=state, cell=cell, arm=arm, fit_budget=fit_budget)
             deployments.append(deployment)
@@ -3436,7 +3881,7 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
     payload["deployments"] = deployments
     payload["readouts"] = _r2_readouts(rounds, deployments)
     payload["deploy_purity"] = _deploy_purity(deployments)
-    payload["verdict"] = _conf_verdict(payload, stopped=stopped)
+    payload["verdict"] = verdict_fn(payload, stopped=stopped)
     if cell is not None and not stopped:
         try:
             payload["difference_read"] = _conf_difference_read(
@@ -3487,8 +3932,7 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
                       "fits": payload["ledger"]["consumer_fits"],
                       "artifact": str(out_json)},
                      ensure_ascii=False, indent=1))
-    return 0 if payload["verdict"]["verdict"] in (
-        "CLS_CHAIN_CONFIRMED", "CLS_CHAIN_NOT_REPLICATED") else 1
+    return 0 if payload["verdict"]["verdict"] in accepted_verdicts else 1
 
 
 def _conf_markdown(payload: Mapping[str, Any]) -> str:
@@ -4896,14 +5340,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                         action="store_true")
     parser.add_argument("--conf-dl-run", dest="conf_dl_run",
                         action="store_true")
+    parser.add_argument("--conf-dev-run", dest="conf_dev_run",
+                        action="store_true")
+    parser.add_argument("--dataset", dest="dataset", default=None)
     parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if sum([args.smoke, args.run, args.micro, args.diagnose,
             args.r2_prep, args.r2_run, args.r2_annotate, args.r2_replay_a5,
             args.conf_select, args.conf_run,
             args.conf_r2_select, args.conf_r2_run,
-            args.conf_dl_select, args.conf_dl_run]) != 1:
+            args.conf_dl_select, args.conf_dl_run,
+            args.conf_dev_run]) != 1:
         parser.error("choose exactly one entry point")
+    if args.conf_dev_run:
+        return conf_dev_run(
+            dataset=args.dataset or CONF_DEV_DEFAULT_DATASET,
+            run_id=args.run_id)
     if args.conf_dl_select:
         return conf_dl_select()
     if args.conf_dl_run:

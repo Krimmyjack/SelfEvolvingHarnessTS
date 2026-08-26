@@ -974,6 +974,25 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:runner 最小入口 `--r2-replay-a5`;隔离工件 `t6_cls_op_r2_a5_replay.json/.md`(未覆写 r2 三臂件);本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;他线文件未碰;下载 0;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
 
+### CLS-DEV-ECG200:本地轻底物 development 级 conf 生命周期收口——DEV_CHAIN_NO_POSITIVE(2026-08-26 11:4x,执行方)
+
+**判定**:**DEV_CHAIN_NO_POSITIVE**(development;非独立确认;禁 `CLS_CHAIN_CONFIRMED`)。门算式与 `_conf_verdict` 相同:非 identity Target-local Skill 未形成;A3−Static held-out accuracy = 0.0 < max(0.005, 1/100)=0.01;逐类 recall 无伤害(worst Δ=0.0)。部署纯度 `all_pure=true`。ECG200 曾被 W48/W49/curvature 在同一 impulse 条件对下用过(见 `t6_cls_conf_r3_selection.json`),本跑只作开发数据复用。
+
+**两臂读数**(held-out n=100,官方 TEST 未注入):
+
+| 臂 | Skill | held-out acc | vs identity | recall 0/1 | recall Δ | Support-delayed | 部署 |
+|---|---|---|---|---|---|---|---|
+| A3 | 无 | 0.6000 | +0.0000 | 0.6389 / 0.5781 | 0.0 / 0.0 | 0:0 | `FROZEN_LEDGER_NO_INCUMBENT_IDENTITY` |
+| STATIC | 无 | 0.6000 | +0.0000 | 0.6389 / 0.5781 | 0.0 / 0.0 | 0:0 | `FROZEN_LEDGER_NO_INCUMBENT_IDENTITY` |
+
+**A3 提案轨迹**:两轮 `retrieved_skill_ids` 仅 bootstrap 三卡(`build_contrastive_candidates` / `inspect_and_localize` / `select_or_identity_and_verify`),无 Source 卡。r1:`repair_level_excursion` verifier 拒,0 Support,abstain。r2:选 `remove_broad_extreme_deviations`=`outlier_mad`,Support −0.1429 → NEGATIVE(delayed 未开);`repair_early_level_shift` verifier 拒。冻结后 Fast-only = identity。
+
+**与 GunPointAgeSpan 正例形态**:同型 = A3 冷启动 + bootstrap 三卡 + cohort 校验器 + `maximum_candidates=3` + held-in r1/r2 → freeze → held-out Fast-only,管线端到端收口(conf 机制首个完整样本)。异型 = GunPoint r1 即 hampel Support +0.50 / delayed +0.40 → Skill → held-out +0.2690;本跑从未提案 hampel,冻结后诊断 `hampel_filter` 在此底物被 `COHORT_MODIFICATION_FRACTION_EXCEEDED` 拒(cohort 比 0.128>0.10,47/70 窗超 per-window 帽)。Scope 编译开发应读作「同 impulse 族、不同 Program 几何/校验器命运」,不得把本跑与 GunPoint 并成第二 hampel 正例。
+
+**成本**:LLM 10/40;fit 12/200;墙钟 runner 账 229.2 s / 进程 285.5 s(帽 5400 s,未触发 `COMPUTE_BUDGET_EXCEEDED`);下载 0。
+
+**提交**:runner 最小入口 `--conf-dev-run`(`--dataset` 默认 ECG200);隔离工件 `t6_cls_conf_dev_ecg200.json/.md`;本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;未触 `data/ucr_conf_downloaded/`;他线文件未碰;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
+
 ### 夜间-早晨统一状态摘要:D1 计算不可行终止;sol 重构分类数据使用策略;队列重启(2026-08-26 09:5x,主线)
 
 **T0 时间线**:BinaryHeartbeat 两臂 21:36 开跑,选靶+下载 26min 正常;A3 臂 22:02 起,**12.3h 仅完成 r1(probes=1, winner=None, delayed=None)**,进程全程单核 ~91% 真算非挂(累计 CPU ~11h);执行子代理 08:16 网络死亡,跑批本体独立存活由主线看护;09:55:06 按用户+sol 明确裁定人工终止。**判定:COMPUTE_BUDGET_EXCEEDED(主)+ INSTRUMENT_SCALE_MISMATCH(次)——非科学负结果,CLS-CONF 问题保持 OPEN,r1 无 winner 系局部观察不得引为不复现证据**。部分工件保留(选靶 census/ROSTER/终端轨迹/store 快照)。性能实证:378 万总点数底物单轮数小时,瓶颈为随点数放大的管线热路径(留 profiling 定位),LLM/fit 帽不封单位算量——选靶规则漏"行数×长度"的规则债被坐实。**sol 重构裁定(全采)**:(1) 立即停,判计算不可行;(2) **当前分类开发改用本地 ECG200**(100/100×96≈1.92 万点,证据等级明确 development)——本地 18 件跑过条件对者不可再包装为全新独立确认,但完全可用于接线/生命周期/Scope 编译开发/A3-A5 机制调试/已曝光 development 复现;(3) 最终独立确认另用满足计算门的轻量未曝光 Target(候选 ItalyPowerDemand 67×24,届时另行下载授权);(4) **选靶规则修正:先过公开结构计算门(例:总点数≤100,000)再机械排序,禁止单纯字典序**;(5) CatsDogs/Epilepsy2 继续封存,不得因已下载强用。**核心原则入典:开发数据可重复用;唯最终承重确认需处女数据**。**队列重启**:复活 dl 执行者出终止记录+提交 → T1 最小可见性修复(opus)→ T2 C40 单臂重放(grok,锁原后端)→ ECG200 development 级 conf 机制跑(接续 Scope 编译开发)→ 终考事宜(D2 处置/可行性门正式化/ItalyPowerDemand)另呈 sol。

@@ -1,0 +1,565 @@
+{
+ "protocol_version": "t6_cls_conf_dev_v1",
+ "run_id": "t6_cls_conf_dev_ecg200_run1",
+ "entry": "--conf-dev-run",
+ "evidence_grade": "development",
+ "git_head": "168cc99a39873ae8c1f7c51e9a6d0aa76186474c",
+ "selection": {
+  "selected": "ECG200",
+  "rule": "development reuse of a local UCR zip already used under the same impulse condition pair; the unused-Target census is not applied",
+  "pool_size": 1,
+  "eligible": [
+   "ECG200"
+  ],
+  "selection_basis": "task-book CLS-DEV-ECG200; --dataset default ECG200; archive data/ucr_task_context/ECG200.zip",
+  "archive": "data/ucr_task_context/ECG200.zip",
+  "bytes": 298857,
+  "official_train_rows": 100,
+  "series_length": 96,
+  "class_count": 2,
+  "approx_heldin_points": 9600,
+  "independent_confirmation": false,
+  "honesty_constraint": "ECG200 was previously used by the W48 / W49 / curvature lines under the same impulse condition pair (audit: artifacts/functional/e2/t6_cls_conf_r3_selection.json). This run is therefore not an independent confirmation. Every judgement stays at evidence_grade=development. The label CLS_CHAIN_CONFIRMED must not be used.",
+  "prior_use_audit": "artifacts/functional/e2/t6_cls_conf_r3_selection.json"
+ },
+ "target": "ECG200",
+ "condition": "fit_only_artifact",
+ "arms": [
+  "A3",
+  "STATIC"
+ ],
+ "protocol": {
+  "modification_fraction_scope": "cohort",
+  "maximum_modified_fraction": 0.1,
+  "maximum_candidates": 3,
+  "held_in_rounds": [
+   "r1",
+   "r2"
+  ],
+  "support_trial_budget_per_round": 2,
+  "task_context_sha": "7832f300e0eeca7caa7f06f4b6c9fd843f7fd761303ad73180c0540fd77fd3b4",
+  "new_surfaces_opened": "none; every gate is r2's",
+  "static_arm": "same store, same snapshot, zero held-in rounds, deploy from frozen state -- which is identity, because a Harness that never adapted has no incumbent"
+ },
+ "injection": {
+  "template": "C38 class-conditioned impulse, unchanged",
+  "amplitude": "SPIKE_AMPLITUDE = 16.0 row standard deviations",
+  "fractions": [
+   0.08,
+   0.2,
+   0.8,
+   0.92
+  ],
+  "seed_ledger": "the family's injection is seed-free: _inject writes a fixed signed template at positions derived from the series length, and the fit/support split is deterministic evenly-spaced selection.  There is no RNG to seed, so a fresh seed would be a fiction; the run is bit-reproducible instead."
+ },
+ "prediction_gate": null,
+ "cell": {
+  "dataset": "ECG200",
+  "condition": "fit_only_artifact",
+  "data_dir": "data/ucr_task_context",
+  "archive": "data/ucr_task_context/ECG200.zip",
+  "series_length": 96,
+  "official_train_rows": 100,
+  "fit_rows": 70,
+  "support_pool_rows": 30,
+  "slice_rows": {
+   "r1_support": 9,
+   "r1_delayed": 7,
+   "r2_support": 7,
+   "r2_delayed": 7
+  },
+  "controlled_impulse_positions": [
+   8,
+   19,
+   76,
+   87
+  ],
+  "observer_localized_nodes": [
+   8,
+   19,
+   76,
+   87
+  ],
+  "observer_recovered_all_nodes": true,
+  "witness": {
+   "witness_id": "cross-cohort-local-label-evidence/1",
+   "inputs_used": [
+    "fit_inputs",
+    "fit_labels",
+    "support_inputs",
+    "support_labels",
+    "candidate_program_nodes"
+   ],
+   "query_values_or_labels_used": false,
+   "dataset_id_used": false,
+   "program_outcome_used": false,
+   "node_count": 4,
+   "normalized_node_positions": [
+    0.08421052631578947,
+    0.2,
+    0.8,
+    0.9157894736842105
+   ],
+   "fit_node_median_strength": 31.96470784758708,
+   "support_node_median_strength": 0.01984933638992692,
+   "support_to_fit_strength_ratio": 0.0006209766245436065,
+   "direction_alignment": 0.75
+  },
+  "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+  "legacy_scope_reasons": [
+   "localized_fit_signal_not_reproduced_in_support"
+  ],
+  "support_reproduces_fit_signal": false,
+  "observation_rows": 34
+ },
+ "rounds": [
+  {
+   "round": "r1",
+   "arm": "A3",
+   "dataset": "ECG200",
+   "condition": "fit_only_artifact",
+   "support_origin": 3264,
+   "delayed_origin": 3265,
+   "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+   "pool": [
+    "identity",
+    "repair_level_excursion"
+   ],
+   "chosen": "identity",
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "memory_resolution": "no_memory",
+   "proposal_count": 1,
+   "support_receipts": 0,
+   "probes": [
+    {
+     "candidate_id": "repair_level_excursion",
+     "kind": "verifier_rejected",
+     "gain": null
+    }
+   ],
+   "winner_program": null,
+   "abstained": true,
+   "harm_count": 0,
+   "delayed_utility": null,
+   "fast_skill_event": null,
+   "delayed_event": null,
+   "approved_skill_id": null,
+   "activated": false,
+   "episodes": [],
+   "adapter_calls": [],
+   "consumer_fits_after": 0,
+   "modification_fraction_scope": "cohort",
+   "llm_calls_before": 0,
+   "llm_calls_after": 6,
+   "llm_calls_this_round": 6,
+   "candidate_executions": 1,
+   "seconds": 83.24
+  },
+  {
+   "round": "r2",
+   "arm": "A3",
+   "dataset": "ECG200",
+   "condition": "fit_only_artifact",
+   "support_origin": 3264,
+   "delayed_origin": 3265,
+   "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+   "pool": [
+    "identity",
+    "repair_early_level_shift",
+    "remove_broad_extreme_deviations"
+   ],
+   "chosen": "remove_broad_extreme_deviations",
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "memory_resolution": "no_memory",
+   "proposal_count": 2,
+   "support_receipts": 1,
+   "probes": [
+    {
+     "candidate_id": "remove_broad_extreme_deviations",
+     "kind": "probe",
+     "gain": -0.1428571428571429
+    },
+    {
+     "candidate_id": "repair_early_level_shift",
+     "kind": "verifier_rejected",
+     "gain": null
+    }
+   ],
+   "winner_program": null,
+   "abstained": true,
+   "harm_count": 1,
+   "delayed_utility": null,
+   "fast_skill_event": null,
+   "delayed_event": null,
+   "approved_skill_id": null,
+   "activated": false,
+   "episodes": [
+    {
+     "episode_id": "ECG200/fit_only_artifact_target_outlier_mad_a3_ECG200_r2_p1",
+     "domain_namespace": "ECG200/fit_only_artifact",
+     "workflow_signature": "outlier_mad",
+     "relation": "NEGATIVE",
+     "evidence_level": "SUPPORT",
+     "local_status": "EPISODE_ONLY",
+     "support_gain": -0.1428571428571429,
+     "delayed_gain": null,
+     "support_effect": {
+      "relation": "NEGATIVE",
+      "classification_basis": "aggregate < -0.005",
+      "material_threshold": 0.005,
+      "consumer_id": "ridge-raw-plus-difference-v1",
+      "aggregate_gain": -0.1428571428571429,
+      "aggregate_direction": "degraded",
+      "series_read": 2,
+      "harmed_series_count": 1,
+      "harmed_series": [
+       "view_0"
+      ],
+      "min_per_series_gain": -1.0
+     },
+     "delayed_effect": null
+    }
+   ],
+   "adapter_calls": [
+    {
+     "signature": "identity",
+     "surface": "support",
+     "origin": 3264,
+     "cache": "miss",
+     "consumer_fits": 1,
+     "accuracy": 0.7142857142857143
+    },
+    {
+     "signature": "outlier_mad({})",
+     "surface": "support",
+     "origin": 3264,
+     "cache": "miss",
+     "consumer_fits": 1,
+     "accuracy": 0.5714285714285714
+    }
+   ],
+   "consumer_fits_after": 2,
+   "modification_fraction_scope": "cohort",
+   "llm_calls_before": 6,
+   "llm_calls_after": 10,
+   "llm_calls_this_round": 4,
+   "candidate_executions": 2,
+   "seconds": 71.59
+  }
+ ],
+ "deployments": [
+  {
+   "arm": "A3",
+   "dataset": "ECG200",
+   "condition": "fit_only_artifact",
+   "mode": "FROZEN_FAST_ONLY_DEPLOY",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+   "active_skill_id": null,
+   "recall_hit": false,
+   "view_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "applied_program": [],
+   "scored_program": [],
+   "scored_equals_applied": true,
+   "heldout_rows": 100,
+   "heldout_identity_accuracy": 0.6,
+   "heldout_accuracy": 0.6,
+   "heldout_accuracy_gain": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.6388888888888888,
+    "1": 0.578125
+   },
+   "heldout_identity_recall_by_class": {
+    "0": 0.6388888888888888,
+    "1": 0.578125
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "harmed_classes_over_bar": [],
+   "harm_bar": 0.05,
+   "open_delayed_calls": 0,
+   "slow_calls": 0,
+   "llm_calls": 0,
+   "new_skill_formed": false,
+   "store_unchanged": true,
+   "experience_unchanged": true,
+   "heldout_openings": 1,
+   "consumer_fits_after": 3,
+   "breach": [],
+   "pure": true
+  },
+  {
+   "arm": "STATIC",
+   "dataset": "ECG200",
+   "condition": "fit_only_artifact",
+   "mode": "FROZEN_FAST_ONLY_DEPLOY",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+   "active_skill_id": null,
+   "recall_hit": false,
+   "view_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "applied_program": [],
+   "scored_program": [],
+   "scored_equals_applied": true,
+   "heldout_rows": 100,
+   "heldout_identity_accuracy": 0.6,
+   "heldout_accuracy": 0.6,
+   "heldout_accuracy_gain": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.6388888888888888,
+    "1": 0.578125
+   },
+   "heldout_identity_recall_by_class": {
+    "0": 0.6388888888888888,
+    "1": 0.578125
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "harmed_classes_over_bar": [],
+   "harm_bar": 0.05,
+   "open_delayed_calls": 0,
+   "slow_calls": 0,
+   "llm_calls": 0,
+   "new_skill_formed": false,
+   "store_unchanged": true,
+   "experience_unchanged": true,
+   "heldout_openings": 1,
+   "consumer_fits_after": 4,
+   "breach": [],
+   "pure": true
+  }
+ ],
+ "readouts": {
+  "cells": {
+   "ECG200/A3": {
+    "dataset": "ECG200",
+    "arm": "A3",
+    "target_local_skill_formed": false,
+    "first_skill": null,
+    "llm_calls_total": 10,
+    "candidate_executions_total": 3,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "abstained_rounds": 2,
+    "abstain_episodes": 0,
+    "support_delayed_direction_agree": 0,
+    "support_delayed_direction_disagree": 0,
+    "heldout_accuracy": 0.6,
+    "heldout_identity_accuracy": 0.6,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.6388888888888888,
+     "1": 0.578125
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "worst_class_recall_delta": 0.0,
+    "worst_class_harm": 0.0,
+    "harmed_classes_over_bar": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": []
+   },
+   "ECG200/STATIC": {
+    "dataset": "ECG200",
+    "arm": "STATIC",
+    "target_local_skill_formed": false,
+    "first_skill": null,
+    "llm_calls_total": 0,
+    "candidate_executions_total": 0,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "abstained_rounds": 0,
+    "abstain_episodes": 0,
+    "support_delayed_direction_agree": 0,
+    "support_delayed_direction_disagree": 0,
+    "heldout_accuracy": 0.6,
+    "heldout_identity_accuracy": 0.6,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.6388888888888888,
+     "1": 0.578125
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "worst_class_recall_delta": 0.0,
+    "worst_class_harm": 0.0,
+    "harmed_classes_over_bar": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": []
+   }
+  },
+  "contrasts": {},
+  "material_threshold": 0.005,
+  "harm_bar": 0.05
+ },
+ "deploy_purity": {
+  "slots": {
+   "ECG200/A3": {
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "scored_equals_applied": true,
+    "breach": [],
+    "ok": true
+   },
+   "ECG200/STATIC": {
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "scored_equals_applied": true,
+    "breach": [],
+    "ok": true
+   }
+  },
+  "all_pure": true
+ },
+ "verdict": {
+  "verdict": "DEV_CHAIN_NO_POSITIVE",
+  "rule": "DEV_CHAIN_POSITIVE iff a non-identity Target-local Skill formed and the frozen Fast-only deployment beats Static identity by at least max(0.005, 1/n) on held-out accuracy with no per-class recall falling more than 0.005.",
+  "non_identity_target_local_skill_formed": false,
+  "a3_minus_static_heldout_accuracy": 0.0,
+  "material_line": 0.01,
+  "material_positive": false,
+  "worst_class_recall_delta": 0.0,
+  "zero_class_harm": true,
+  "harm_bar_view": {
+   "harm_bar": 0.05,
+   "classes_over_bar": []
+  },
+  "deploy_purity_all_pure": true,
+  "claim_limit": "development only.  ECG200 was previously used by the W48 / W49 / curvature lines under the same impulse condition pair (audit: artifacts/functional/e2/t6_cls_conf_r3_selection.json). This run is therefore not an independent confirmation. Every judgement stays at evidence_grade=development. The label CLS_CHAIN_CONFIRMED must not be used.  The impulse is a controlled injection; a positive here is a second development-grade Target-local Skill, not a fresh confirmation.",
+  "forbidden_label": "CLS_CHAIN_CONFIRMED",
+  "independent_confirmation": false,
+  "evidence_grade": "development"
+ },
+ "difference_read": {
+  "note": "post-freeze diagnostic; the arms were already scored when this ran, so it could not have selected anything",
+  "operators_that_reached_a_legal_receipt": [
+   "outlier_mad"
+  ],
+  "episode_relations": {
+   "NEGATIVE": 1
+  },
+  "menu_survivors": [
+   "outlier_iqr",
+   "outlier_mad",
+   "repair_burst_segment"
+  ],
+  "menu_numeric_no_ops": [
+   "impute_linear",
+   "impute_fft",
+   "impute_ema",
+   "period_complete",
+   "period_median_complete",
+   "impute_ssm",
+   "impute_ar",
+   "denoise_median",
+   "resample_uniform"
+  ],
+  "menu_verifier_rejected": [
+   "denoise_savgol",
+   "denoise_wavelet",
+   "smooth_ma",
+   "denoise_stl",
+   "winsorize",
+   "hampel_filter",
+   "repair_level_shift",
+   "stl_decompose",
+   "fft_decompose",
+   "smooth_ema",
+   "znorm",
+   "minmax_norm"
+  ],
+  "hampel_filter_on_this_target": {
+   "program": "hampel_filter",
+   "params": {
+    "window": 3,
+    "n_sigmas": 0.1,
+    "global_z_min": 1.0
+   },
+   "verifier_passed": false,
+   "verifier_passed_per_window_scope": false,
+   "unblocked_by_the_fix": false,
+   "cohort_modified_fraction": 0.12842261904761904,
+   "cohort_modified_points": 863,
+   "cohort_total_points": 6720,
+   "windows_over_per_window_cap": 47,
+   "checked_windows": 70,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "survives": false,
+   "scored": false
+  },
+  "gunpointagespan_reference": {
+   "survivors": [
+    "outlier_iqr",
+    "hampel_filter"
+   ],
+   "hampel_support_delta_accuracy": 0.5,
+   "hampel_delayed_delta_accuracy": 0.3,
+   "hampel_worst_class_recall_delta": 0.4,
+   "source": "t6_cls_op_r2_prep.json / t6_cls_op_r2_three_arms.json"
+  },
+  "consumer_fits_after": 12
+ },
+ "ledger": {
+  "llm_calls": 10,
+  "llm_cap": 40,
+  "llm_within_cap": true,
+  "consumer_fits": 12,
+  "consumer_fit_cap": 200,
+  "wall_seconds": 229.2,
+  "downloads": 0
+ },
+ "obligations": {
+  "methods_package_unmodified": true,
+  "new_gates_opened": "none; cohort scope and maximum_candidates=3 are exactly r2's",
+  "target_never_used_before": "FALSE.  ECG200 is a local already-used substrate (W48/W49/curvature under the same impulse pair); this is development reuse, not a virgin Target",
+  "downloads": 0,
+  "forbidden_data_untouched": "no Yahoo, NOAA, NAB or SMD path is opened; the only data root opened for values is data/ucr_task_context",
+  "artifact_not_committed": true,
+  "difference_read_ran_after_the_freeze": true,
+  "sealed_d2_d3_untouched": true,
+  "ucr_conf_downloaded_not_opened": true,
+  "not_an_independent_confirmation": true,
+  "cls_chain_confirmed_label_not_used": true
+ },
+ "honesty_constraint": "ECG200 was previously used by the W48 / W49 / curvature lines under the same impulse condition pair (audit: artifacts/functional/e2/t6_cls_conf_r3_selection.json). This run is therefore not an independent confirmation. Every judgement stays at evidence_grade=development. The label CLS_CHAIN_CONFIRMED must not be used.",
+ "independent_confirmation": false,
+ "forbidden_label": "CLS_CHAIN_CONFIRMED",
+ "wall_cap_seconds": 5400
+}
