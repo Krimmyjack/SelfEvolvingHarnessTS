@@ -1027,6 +1027,20 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`methods/ttha/online_loop.py`、`evaluation/functional/task_episode_harness/agentic/source_skill.py`、`evaluation/functional/run_e2_t6_cls_op_shared_harness.py`、新测试文件、`artifacts/functional/e2/b_guard_pipeline_reachability.json/.md`、本节(含他书未提交台账条目一并入库,未删改既有正文)。`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP` 未碰未提交;`contracts/`/`runtime/`/`operators/`/`risk_skill.py` 零改。
 
+### S1b-r3 微书收口:delayed 拒批的 winner 不再被部署(canon-vs-code bug 修复)(2026-08-26 22:0x,opus)
+
+**主线裁定**:三级反馈教义——Support 只立 Draft,delayed 批准才 Active;部署一个 delayed 已拒的程序违背已批语义,系 canon-vs-code bug,S1c 前必修。0 LLM、0 下载、19 fit、33 s。
+
+**最小修复**(共享 runner,新函数 `run_e2_t6_cls_op_shared_harness._incumbent_after_delayed`,轮体一行改调用):winner 存在且 `approved_skill_id` 非 None 才写入 ledger incumbent;被拒则**不采纳该程序**,回退到"上一轮真正过双门的 Workflow",没有则 identity(`FROZEN_LEDGER_NO_INCUMBENT_IDENTITY`)。**语义零改动**:Support/delayed 判定、`classify_relation`、`MATERIAL=0.005`、LOO、T1 谓词、risk_skill 全部逐字未动;无开关、无新 Schema。轮记录新增三个只读字段(`winner_delayed_approved` / `incumbent_before_round` / `incumbent_after_round`)供审计。S1b runner 的自有轮体改为调用同一函数,规则只有一处定义。
+
+**受影响入口清单**(共享 runner `_run_round` 全部 5 个调用点 + S1b runner 1 个,修复一致生效):(1) `run()` Part B Source 轮(`allow_fast_skill=False`,**不部署**,行为不变仅 incumbent 字段变);(2) `run()` Part C 三臂 Target 赛(`--run`/`--smoke` 及经 `run()` 的 conf-dev / dev-wine / r2-prep 派生入口,**部署,行为改变**);(3) `conf_run()` A3 臂(**部署,行为改变**);(4) `micro()`(`allow_fast_skill=False`,只打印,**不部署**);(5) `r2_replay_a5()`(**部署,行为改变**);(6) `run_e2_s1_curriculum_four_arms._run_round`(**部署,行为改变**)。既有已提交工件未重跑、未覆写。
+
+**聚焦单测** `tests/functional/test_delayed_rejected_winner_not_deployed.py`(8 项,0 LLM/0 fit):Support 正+delayed 拒 → incumbent 清除、`_frozen_recall` 部署 identity;Support 正+delayed 批 → 照常部署该程序(现行为不变);无 winner 轮不动 ledger;r1 批 hampel、r2 拒 winsorize 的双轮序列 → 仍部署 hampel(拒批只否决新候选,不丢弃已批 incumbent);另加一条防回潮断言(两处轮体必须走同一函数,旧的直接赋值写法不得复现)。回归:`test_guard_pipeline_reachability` 12 项 + 本文件 8 项 = 20 passed。
+
+**smoke 复跑(r3,工件 `s1_smoke_cell1_r3.json/.md`,不覆写 r2)**:九门全绿(新增 `no_delayed_rejected_winner_deployed`)。三适应臂由 `FROZEN_LEDGER_INCUMBENT/winsorize/+0.1993/worst-class −0.0720/harm=True/regret −0.1890` 改为 `FROZEN_LEDGER_NO_INCUMBENT_IDENTITY/identity/+0.0000/worst-class 0.0000/harm=False/**regret +0.0103**`,与 Static 齐平;Static 完全不变。**harm 事件归零、负 regret 消失**——r2 那条"伤类换准确率把 regret 刷成负"的书外发现,根因正是本 bug:被 delayed 判定为 NEGATIVE 的程序本不该进部署账。每臂 fit 由 7 降至 6(部署 identity 命中基线缓存)。17 项状态隔离断言、域绑定合成探针、oracle 三读取面探针全部照跑全绿;反馈面仍为 `live`(三条 NEGATIVE Support 回执不变——修的是部署,不是判定)。
+
+**提交**:共享 runner 修复、S1b runner(同规则 + `--smoke-suffix`)、新测试、`s1_smoke_cell1_r3.json/.md`、本节。**义务自报**:阈值与判定语义零改动;受影响入口清单见上;S1c 未跑;未跑全仓 pytest;`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;密封 oracle 零改写;零下载。
+
 ### S1b-r2 收口:切片可读性地板重选课程,反馈面活证到手,仪器阻断解除(2026-08-26 21:4x,opus)
 
 **主线裁定采纳**:r1 的"最小总点数"排序反向选择了反馈面,系主线规则错误;r2 改为可读性地板 + 可读性排序。执行:0 LLM、0 下载、22 fit、34 s。r1 课程完整保留于 `artifacts/functional/e2/s1_curriculum_frozen_r1.json/.md`,未丢弃。
@@ -1056,6 +1070,10 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **判词**:`S1B_SMOKE_WIRED`(七门全绿:四臂状态隔离 / 域绑定钩子 / 判分出 regret 表 / oracle 隔离 / 隔离墙自检 / 预算 / 部署纯净)。仅为接线证据,非能力证据,课程未跑。**S1c 不应在仪器裁定前发车**。
 
 **提交**:新 runner、`artifacts/functional/e2/s1_curriculum_frozen.json/.md`、`artifacts/functional/e2/s1_smoke_cell1.json/.md`、本节(含他书未提交台账条目一并入库,未删改既有正文)。封存 oracle 件零改写;未跑全仓 pytest;零下载。
+
+### S1b-r2 收口:仪器解锁 + smoke 抓获两发现;部署规则 canon-vs-code bug 拦停 S1c;修复书发车(2026-08-26 22:0x,主线)
+
+**r2 交付**(提交 4cca785,0 真 LLM/22 fit/34s):新 7 单元课程全底物互异、最小切片 7-45 行、零空切片;降档轨迹全记录(可学组走完 5→4→3 严格阶梯后按声明回到地板 5 允许同族重复,DistalPhalanx burst 具名入选);r1 课程存档未覆写。smoke 八门全绿且拿到**活证**:三适应臂各得 winsorize 的 NEGATIVE Support 回执(slice +0.1333/delayed −0.1111),feedback_surface_evidence_mode=live,S1c 仪器阻塞解除。**规则解释确认(主线)**:必要条件 |读数|≥1/切片只约束害证/可学组;identity/HELDOUT_ONLY 组定义读数为零,地板即可读性要求——解释正确,反事实已记。**发现一(regret 可被卖类游戏)**:三适应臂全冻结 winsorize,裸 held-out +0.1993 越过 menu oracle(+0.0103,类伤约束下),regret −0.1890 与 harm 事件同现——预注册"regret 必须与 harm/worst-class 非劣配对"实战立功;**S1c 判读禁单引 regret,站规**。**发现二(部署规则 canon-vs-code bug,拦停 S1c)**:handle_feedback_delayed 正确拒批(approved_skill_id=none),但 Support 立的 ledger incumbent 未被清除,_frozen_recall 照常部署被拒程序——三级反馈"delayed 才批准"教义在部署环失守;共享 runner 轮体规则,r2 记录未修(正确纪律)。**主线裁定:S1c 前必修**(canon-vs-code,B/T1 同类;污染 harm/regret 读数且系统性利好激进臂);修复 = delayed 拒批时清除/不采信 incumbent,部署回退 identity,配聚焦测试+单元 1 smoke 复跑(期望三臂改部署 identity、harm 事件归零、regret 回正);续 opus 会话执行,sol 异步复核。**发现三**:iqr 在两害证单元均合法可读有害(−0.0944@1/45、−0.1852@1/12),guard 前向位置 3 后原则可成型,实际取决于提案采样。
 
 ### S1b 交付但 S1c 拦停:选课规则"最小点数"反向选择反馈面(主线规则错);S1b-r2 修正发车(2026-08-26 21:4x,主线)
 

@@ -1197,8 +1197,10 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
     trace = method.last_trace
     fresh_ids = set(result.episode_ids)
     fresh = [e for e in method.experience_episodes if e.episode_id in fresh_ids]
-    if result.winner_program is not None:
-        state["incumbent"] = _plain(result.winner_program)
+    # One rule, defined in the shared runner: a Support winner the delayed
+    # gate refused is not adopted as the ledger incumbent.
+    incumbent_before = state.get("incumbent")
+    state["incumbent"] = cls._incumbent_after_delayed(result, incumbent_before)
     skills_after = {str(s.skill_id) for s in method._active_snapshot().skills}
     minted = sorted(skills_after - skills_before)
     for skill_id in minted:
@@ -1242,6 +1244,11 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
         "delayed_utility": result.delayed_utility,
         "approved_skill_id": result.approved_skill_id,
         "activated": activated,
+        "winner_delayed_approved": (
+            result.winner_program is not None
+            and result.approved_skill_id is not None),
+        "incumbent_before_round": _plain(incumbent_before),
+        "incumbent_after_round": _plain(state["incumbent"]),
         "minted_skill_ids": minted,
         "risk_lifecycle": _plain(risk_lifecycle),
         "guard_readout": {
@@ -2003,8 +2010,11 @@ def judge(*, unit_results: Sequence[Mapping[str, Any]],
 # =========================================================================== #
 # Part 6 -- the smoke
 # =========================================================================== #
-def smoke(*, live: bool = False) -> int:
+def smoke(*, live: bool = False, suffix: str = "") -> int:
     started = time.time()
+    out_json = SMOKE_JSON.with_name(
+        "%s%s.json" % (SMOKE_JSON.stem, suffix))
+    out_md = SMOKE_MD.with_name("%s%s.md" % (SMOKE_MD.stem, suffix))
     _set_phase(PHASE_SETUP)
     if not FROZEN_JSON.is_file():
         raise Stop("INSTRUMENT_UNREADABLE",
@@ -2175,13 +2185,13 @@ def smoke(*, live: bool = False) -> int:
     payload["oracle_isolation"] = _oracle_isolation_report()
     payload["verdict"] = _smoke_verdict(payload, stopped=stopped)
     payload["obligations"] = _smoke_obligations(payload, live=live)
-    _dump(SMOKE_JSON, payload)
-    SMOKE_MD.write_text(_smoke_markdown(payload), encoding="utf-8")
+    _dump(out_json, payload)
+    out_md.write_text(_smoke_markdown(payload), encoding="utf-8")
     print(json.dumps({"verdict": payload["verdict"]["verdict"],
                       "llm": payload["ledger"]["llm_calls_total"],
                       "fits": payload["ledger"]["consumer_fits"],
                       "seconds": payload["ledger"]["wall_seconds"],
-                      "artifact": str(SMOKE_JSON)},
+                      "artifact": str(out_json)},
                      ensure_ascii=False, indent=1))
     return 0 if payload["verdict"]["verdict"] == "S1B_SMOKE_WIRED" else 1
 
@@ -2302,48 +2312,62 @@ def guard_channel_feasibility(course: Sequence[Mapping[str, Any]]
 
 def deploy_rule_observation(by_arm: Mapping[str, Mapping[str, Any]]
                             ) -> dict[str, Any]:
-    """Did any arm freeze a Workflow that its own delayed feedback rejected?
+    """Standing check: no arm freezes a Workflow its delayed gate refused.
 
-    Inherited from the shared runner's round body: ``state['incumbent']`` is
-    set from the round's Support winner and is not cleared when
-    ``handle_feedback_delayed`` refuses to approve.  ``_frozen_recall`` then
-    deploys that incumbent.  Recorded, not repaired -- the deploy rule lives
-    in the shared runner and changing it is a behaviour change with its own
-    slice.
+    S1b's r2 smoke caught the shared runner writing ``state['incumbent']`` from
+    the Support winner and never clearing it, so ``_frozen_recall`` deployed a
+    program whose Draft had just been rejected.  The rule now lives in
+    ``run_e2_t6_cls_op_shared_harness._incumbent_after_delayed``; this readout
+    is the arm-side regression check that it held.
     """
     rows: list[dict[str, Any]] = []
+    violations: list[dict[str, Any]] = []
     for arm in ADAPTIVE_ARMS:
         result = by_arm[arm]
+        deployed = [str(step.get("op"))
+                    for step in result["deployment"]["applied_program"]]
         for record in result["rounds"]:
-            winner = record.get("winner_program") or []
+            winner = [str(step.get("op"))
+                      for step in (record.get("winner_program") or [])]
             if not winner:
                 continue
-            rejected = [episode for episode in record["episodes"]
-                        if str(episode["relation"]) != "POSITIVE"
-                        and episode.get("delayed_gain") is not None]
-            if not rejected:
+            refused = [episode for episode in record["episodes"]
+                       if str(episode["relation"]) != "POSITIVE"
+                       and episode.get("delayed_gain") is not None]
+            if not refused or record.get("winner_delayed_approved"):
                 continue
-            rows.append({
+            row = {
                 "arm": arm,
                 "round": record["round"],
-                "support_winner": [step.get("op") for step in winner],
+                "support_winner": winner,
                 "approved_skill_id": record.get("approved_skill_id"),
-                "activated": record.get("activated"),
                 "delayed_relations": [episode["relation"]
-                                      for episode in rejected],
-                "deployed_program": [
-                    step.get("op") for step
-                    in result["deployment"]["applied_program"]],
+                                      for episode in refused],
+                "incumbent_before_round": record.get("incumbent_before_round"),
+                "incumbent_after_round": record.get("incumbent_after_round"),
+                "deployed_program": deployed,
                 "deploy_source": result["deployment"]["deploy_source"],
-            })
+                "refused_winner_was_deployed": deployed == winner,
+            }
+            rows.append(row)
+            if row["refused_winner_was_deployed"]:
+                violations.append(row)
     return {
-        "rows": rows,
-        "any_arm_deployed_a_delayed_rejected_winner": bool(rows),
+        "refused_winner_rounds": rows,
+        "violations": violations,
+        "any_arm_deployed_a_delayed_rejected_winner": bool(violations),
+        "rule": ("Support drafts, delayed approves; a refused winner is not "
+                 "adopted as the ledger incumbent and the arm falls back to "
+                 "the last approved Workflow, or to identity when there is "
+                 "none"),
+        "rule_lives_in": (
+            "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:"
+            "_incumbent_after_delayed"),
         "note": (
-            "the delayed gate correctly withheld Skill approval, but the "
-            "ledger incumbent set by the Support winner survived it and "
-            "became the frozen deployment.  Inherited from the shared "
-            "runner's round body; recorded here, not repaired."),
+            "%d round(s) had a Support winner the delayed gate refused; none "
+            "of them reached a deployment" % len(rows) if rows and not violations
+            else "no round produced a refused Support winner" if not rows
+            else "REGRESSION: a refused winner was deployed"),
     }
 
 
@@ -2499,6 +2523,9 @@ def _smoke_verdict(payload: Mapping[str, Any], *,
     readable = payload.get("readable_surface_evidence") or {}
     gates["feedback_surface_readable"] = readable.get("mode") in (
         "live", "arithmetic_only")
+    gates["no_delayed_rejected_winner_deployed"] = not (
+        payload.get("deploy_rule_observation") or {}).get(
+            "any_arm_deployed_a_delayed_rejected_winner")
     return {
         "verdict": "S1B_SMOKE_WIRED" if all(gates.values())
                    else "S1B_SMOKE_INCOMPLETE",
@@ -2536,9 +2563,13 @@ def _smoke_obligations(payload: Mapping[str, Any], *,
         "guard_formable_in_principle_on_this_course": (
             payload.get("guard_channel_feasibility") or {}).get(
                 "guard_is_formable_in_principle"),
-        "a_delayed_rejected_winner_was_still_deployed": (
+        "refused_winner_reached_a_deployment": (
             payload.get("deploy_rule_observation") or {}).get(
                 "any_arm_deployed_a_delayed_rejected_winner"),
+        "rounds_with_a_delayed_refused_winner": len(
+            (payload.get("deploy_rule_observation") or {}).get(
+                "refused_winner_rounds") or []),
+        "support_delayed_thresholds_and_relation_semantics_unchanged": True,
         "curriculum_revision": (
             payload.get("curriculum") or {}).get("revision"),
         "k0_has_no_target_local_capability": (
@@ -2878,17 +2909,23 @@ def _smoke_markdown(payload: Mapping[str, Any]) -> str:
                           in row["readably_harmful_legal_programs"].items())
                 or "none"))
     deploy = payload.get("deploy_rule_observation") or {}
-    if deploy and deploy.get("any_arm_deployed_a_delayed_rejected_winner"):
-        lines += ["", "## Deploy-rule observation (inherited, not repaired)",
-                  "", deploy["note"], "",
+    if deploy and deploy.get("refused_winner_rounds"):
+        lines += ["", "## Deploy rule: refused winners (regression check)", "",
+                  "- rule: %s" % deploy["rule"],
+                  "- rule lives in: `%s`" % deploy["rule_lives_in"],
+                  "- **a refused winner reached a deployment: %s**"
+                  % deploy["any_arm_deployed_a_delayed_rejected_winner"],
+                  "- %s" % deploy["note"], "",
                   "| arm | round | Support winner | delayed relation | Skill "
-                  "approved | deployed | deploy source |",
-                  "|---|---|---|---|---|---|---|"]
-        for row in deploy["rows"]:
-            lines.append("| %s | %s | %s | %s | %s | %s | %s |" % (
+                  "approved | incumbent after round | deployed | deploy "
+                  "source |",
+                  "|---|---|---|---|---|---|---|---|"]
+        for row in deploy["refused_winner_rounds"]:
+            lines.append("| %s | %s | %s | %s | %s | %s | %s | %s |" % (
                 row["arm"], row["round"], row["support_winner"],
                 row["delayed_relations"], row["approved_skill_id"] or "none",
-                row["deployed_program"], row["deploy_source"]))
+                row["incumbent_after_round"] or "cleared",
+                row["deployed_program"] or "identity", row["deploy_source"]))
     integration = payload.get("a5_slow_integration") or {}
     if integration:
         lines += ["", "## A5 Slow integration at the boundary", "",
@@ -2975,11 +3012,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="four arms on curriculum unit 1, reduced protocol")
     parser.add_argument("--live", action="store_true",
                         help="use the live Fast Agent backend in --smoke")
+    parser.add_argument("--smoke-suffix", default="",
+                        help="suffix the smoke artifact names, e.g. _r3, so a "
+                             "rerun sits beside the previous one instead of "
+                             "overwriting it")
     args = parser.parse_args(list(argv) if argv is not None else None)
     if args.select_curriculum:
         return select_and_write()
     if args.smoke:
-        return smoke(live=args.live)
+        return smoke(live=args.live, suffix=args.smoke_suffix)
     parser.print_help()
     return 2
 

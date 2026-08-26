@@ -754,6 +754,33 @@ def _risk_lifecycle(state: Mapping[str, Any], *, arm: str) -> dict[str, Any]:
     return out
 
 
+def _incumbent_after_delayed(result: Any, previous: Any) -> Any:
+    """What the arm is standing on once the delayed gate has spoken.
+
+    Three-tier feedback doctrine: a Support receipt only drafts, and a Draft
+    becomes Active only when the delayed feedback approves it
+    (``method.handle_feedback_delayed`` -> ``stage == "approved"``, which is
+    what sets ``result.approved_skill_id``).  Deploying a Support winner the
+    delayed gate refused therefore deploys a Workflow that never earned
+    execution right.  S1b's unit-1 smoke caught exactly that: winsorize was
+    drafted on Support, rejected on delayed (relation NEGATIVE, no Skill
+    approved), and still froze as the ledger incumbent.
+
+    A refused winner is not adopted.  An incumbent an *earlier* round did get
+    approved is not thrown away by a later refusal -- the refusal is about the
+    new candidate, and the ledger keeps the last Workflow that actually passed
+    both gates.  With no such earlier incumbent the arm deploys identity.
+
+    Nothing about how Support or delayed are judged changes here, and no
+    threshold is touched; this only decides what the ledger carries.
+    """
+    if getattr(result, "winner_program", None) is None:
+        return previous
+    if getattr(result, "approved_skill_id", None) is not None:
+        return _plain(result.winner_program)
+    return previous
+
+
 def _run_round(
     *,
     state: Mapping[str, Any],
@@ -825,8 +852,8 @@ def _run_round(
     fresh_ids = set(result.episode_ids)
     fresh = [e for e in method.experience_episodes
              if e.episode_id in fresh_ids]
-    if result.winner_program is not None:
-        state["incumbent"] = _plain(result.winner_program)
+    incumbent_before = state.get("incumbent")
+    state["incumbent"] = _incumbent_after_delayed(result, incumbent_before)
     record = {
         "round": round_name,
         "arm": arm,
@@ -853,6 +880,11 @@ def _run_round(
         "delayed_event": _plain(result._delayed_event),
         "approved_skill_id": result.approved_skill_id,
         "activated": activated,
+        "winner_delayed_approved": (
+            result.winner_program is not None
+            and result.approved_skill_id is not None),
+        "incumbent_before_round": _plain(incumbent_before),
+        "incumbent_after_round": _plain(state["incumbent"]),
         "risk_lifecycle": _plain(risk_lifecycle),
         "episodes": [{
             "episode_id": e.episode_id,
