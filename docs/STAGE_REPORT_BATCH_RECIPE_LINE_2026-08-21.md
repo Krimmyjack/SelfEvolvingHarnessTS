@@ -964,6 +964,16 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务自报**:改动文件 4 件 —— `methods/ttha/retrieval.py`、`methods/ttha/harness/h0/snapshot.lock.json`(机械重生成)、`tests/methods/test_inert_experience_card_visibility.py`(新增)、本节;未碰 `operators/`/`contracts/`/`runtime/`/`evaluation/` 既有 runner,未碰他线文件(`AGENTS.md`/`README.md`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`——工作树中它们由他线持有修改,本轮未 stage)。**LLM 调用 0;下载 0;consumer fit 0;未跑全仓 pytest**。解释器 `D:\Anaconda_envs\envs\project\python.exe`。未处理任何背景债,未顺带清理代码。
 
+### T2 C40 A5 单臂机制重放:VISIBILITY_INVARIANT_HOLDS(2026-08-26,执行方)
+
+**判定**:**VISIBILITY_INVARIANT_HOLDS**(机制级;不产 capability)。同一张无权卡 `source_investigation_cls_v1` 从 r2 账本安装进 fresh A5 store(Slow 可见、store 在场),`--r2-replay-a5` 只重跑 GunPointAgeSpan A5:held-in r1/r2 → freeze → Fast-only。**卡在预检 Fast 视图、两轮 `retrieved_skill_ids`、部署 Fast 视图共 3 面确定性缺席**。C40「每轮唯一候选都是 level-shift」模式打破:r1 仍为 `repair_local_level_shift`(verifier 拒,0 Support);r2 改为 `outlier_iqr` 并获得合法 Support 回执(gain 0.0,NEUTRAL,delayed 未开)。探索通道恢复见证 = 该 Support 回执;提案族与 A3 冷启动(hampel)不同型,不要求。终局 held-out accuracy **0.5823 = identity**(信息位,不判定;不要求等于 A3 的 0.8513)。
+
+**后端锁定**:r2 工件只记 `obligations.backend = live Fast Agent`;代码路径还原并实测 = Fast `gpt-5.6-sol` @ `https://api.agicto.cn/v1`(probe `ok`,returned_model 同名)。未换中转/模型。协议帽沿 r2:LLM 90/Fast 82、fit 600;本臂实耗 Fast 9(与 r2 A5 GunPoint 9 同量级)+ probe 1 不计入臂帽、fit 3/600、墙钟 545.9 s。
+
+**`retrieval_binding_miss` 误标**:`r2_annotate` 分类器(~:3675-3701)见卡不在 `retrieved_skill_ids` 会标 `retrieval_binding_miss`。本迹若过该分类器也会如此。这是**故意的治理扣留**,不是检索失败;分类器与共享 runner 既有逻辑**未改**。
+
+**提交**:runner 最小入口 `--r2-replay-a5`;隔离工件 `t6_cls_op_r2_a5_replay.json/.md`(未覆写 r2 三臂件);本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;他线文件未碰;下载 0;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
+
 ### 夜间-早晨统一状态摘要:D1 计算不可行终止;sol 重构分类数据使用策略;队列重启(2026-08-26 09:5x,主线)
 
 **T0 时间线**:BinaryHeartbeat 两臂 21:36 开跑,选靶+下载 26min 正常;A3 臂 22:02 起,**12.3h 仅完成 r1(probes=1, winner=None, delayed=None)**,进程全程单核 ~91% 真算非挂(累计 CPU ~11h);执行子代理 08:16 网络死亡,跑批本体独立存活由主线看护;09:55:06 按用户+sol 明确裁定人工终止。**判定:COMPUTE_BUDGET_EXCEEDED(主)+ INSTRUMENT_SCALE_MISMATCH(次)——非科学负结果,CLS-CONF 问题保持 OPEN,r1 无 winner 系局部观察不得引为不复现证据**。部分工件保留(选靶 census/ROSTER/终端轨迹/store 快照)。性能实证:378 万总点数底物单轮数小时,瓶颈为随点数放大的管线热路径(留 profiling 定位),LLM/fit 帽不封单位算量——选靶规则漏"行数×长度"的规则债被坐实。**sol 重构裁定(全采)**:(1) 立即停,判计算不可行;(2) **当前分类开发改用本地 ECG200**(100/100×96≈1.92 万点,证据等级明确 development)——本地 18 件跑过条件对者不可再包装为全新独立确认,但完全可用于接线/生命周期/Scope 编译开发/A3-A5 机制调试/已曝光 development 复现;(3) 最终独立确认另用满足计算门的轻量未曝光 Target(候选 ItalyPowerDemand 67×24,届时另行下载授权);(4) **选靶规则修正:先过公开结构计算门(例:总点数≤100,000)再机械排序,禁止单纯字典序**;(5) CatsDogs/Epilepsy2 继续封存,不得因已下载强用。**核心原则入典:开发数据可重复用;唯最终承重确认需处女数据**。**队列重启**:复活 dl 执行者出终止记录+提交 → T1 最小可见性修复(opus)→ T2 C40 单臂重放(grok,锁原后端)→ ECG200 development 级 conf 机制跑(接续 Scope 编译开发)→ 终考事宜(D2 处置/可行性门正式化/ItalyPowerDemand)另呈 sol。

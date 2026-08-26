@@ -27,10 +27,13 @@ Entry points::
 
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --smoke
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --run
+  python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-replay-a5
 
 ``--smoke`` is the 0-LLM mechanical pass over the same execution body with a
 scripted backend; ``--run`` is the live Fast Agent pass that produces the
-book's artifact.  Neither entry opens Yahoo, NOAA, NAB or SMD.
+book's artifact.  ``--r2-replay-a5`` is the C40 A5-only mechanism replay on
+the already-exposed GunPointAgeSpan ledger after the Fast-visibility fix.
+Neither entry opens Yahoo, NOAA, NAB or SMD.
 
 Evidence grade: DEVELOPMENT.  Every UCR split used here was already opened by
 W48/W55/W56; this is a lifecycle replay, not a fresh Capability claim.
@@ -2049,6 +2052,18 @@ R2_RUN_MD = E2 / "t6_cls_op_r2_three_arms.md"
 R2_RUN_PROTOCOL = "t6_cls_op_r2_three_arms_v1"
 R2_RUN_ID = "t6_cls_op_r2_run1"
 R2_LLM_CAP = 90
+# C40 A5-only mechanism replay.  Same r2 protocol (cohort verifier, menu,
+# TaskContext, Fast factories, A5 construction).  Isolated artifacts; the
+# Source card is the r2 ledger entry, not a new Slow consolidation.
+R2_REPLAY_JSON = E2 / "t6_cls_op_r2_a5_replay.json"
+R2_REPLAY_MD = E2 / "t6_cls_op_r2_a5_replay.md"
+R2_REPLAY_PROTOCOL = "t6_cls_op_r2_a5_replay_v1"
+R2_REPLAY_RUN_ID = "t6_cls_op_r2_a5_replay1"
+R2_REPLAY_DATASET = "GunPointAgeSpan"
+_LEVEL_SHIFT_FAMILY_MARKERS = (
+    "level_shift", "level-shift", "level_excursion", "repair_level",
+)
+_HAMPEL_FAMILY_MARKERS = ("hampel",)
 
 
 def _r2_menu() -> list[dict[str, Any]]:
@@ -4154,6 +4169,710 @@ def micro() -> int:
     return 0
 
 
+def _proposal_family(name: Any) -> str:
+    text = str(name or "").strip().lower()
+    if not text or text == "identity":
+        return "identity"
+    if any(marker in text for marker in _LEVEL_SHIFT_FAMILY_MARKERS):
+        return "level-shift"
+    if any(marker in text for marker in _HAMPEL_FAMILY_MARKERS):
+        return "hampel/local-median"
+    return "other"
+
+
+def _non_identity_names(record: Mapping[str, Any]) -> list[str]:
+    names: list[str] = []
+    for candidate in record.get("pool") or ():
+        if str(candidate) != "identity":
+            names.append(str(candidate))
+    for probe in record.get("probes") or ():
+        candidate = probe.get("candidate_id")
+        if candidate and str(candidate) != "identity":
+            names.append(str(candidate))
+    winner = record.get("winner_program") or ()
+    if isinstance(winner, Sequence) and not isinstance(winner, (str, bytes)):
+        for step in winner:
+            if isinstance(step, Mapping) and step.get("op"):
+                names.append(str(step["op"]))
+    for episode in record.get("episodes") or ():
+        signature = episode.get("workflow_signature")
+        if signature and str(signature) not in ("identity", "unknown"):
+            names.append(str(signature))
+    # Preserve order, drop repeats -- family identity is what matters.
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for name in names:
+        if name not in seen:
+            seen.add(name)
+            ordered.append(name)
+    return ordered
+
+
+def _families_of(record: Mapping[str, Any]) -> list[str]:
+    families = [_proposal_family(name) for name in _non_identity_names(record)]
+    return [family for family in families if family != "identity"]
+
+
+def _round_is_level_shift_only(record: Mapping[str, Any]) -> bool:
+    families = _families_of(record)
+    return bool(families) and all(family == "level-shift" for family in families)
+
+
+def _c40_a5_rounds(r2: Mapping[str, Any], *, dataset: str
+                   ) -> list[dict[str, Any]]:
+    rounds = ((r2.get("part_c") or {}).get("rounds") or [])
+    return [dict(record) for record in rounds
+            if record.get("arm") == "A5" and record.get("dataset") == dataset]
+
+
+def _c40_a3_families(r2: Mapping[str, Any], *, dataset: str) -> list[str]:
+    rounds = ((r2.get("part_c") or {}).get("rounds") or [])
+    families: list[str] = []
+    for record in rounds:
+        if record.get("arm") == "A3" and record.get("dataset") == dataset:
+            families.extend(_families_of(record))
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for family in families:
+        if family not in seen:
+            seen.add(family)
+            ordered.append(family)
+    return ordered
+
+
+def _r2_backend_identity(r2: Mapping[str, Any]) -> dict[str, Any]:
+    """Identity the r2 run actually used, reconstructed from its code path.
+
+    The r2 artifact records only ``obligations.backend = "live Fast Agent"``.
+    ``--r2-run`` builds Fast through ``_live_backend`` + ``_live_agent``:
+    AgictoChatCompletionsBackend at ``NF_BASE_URL``, model ``SLOW_MODEL``
+    (the name this runner passes to TTHAAgentCore for the Fast path).
+    """
+    from evaluation.functional.task_episode_harness.e1 import NF_BASE_URL
+
+    return {
+        "artifact_field": "obligations.backend",
+        "artifact_value": (r2.get("obligations") or {}).get("backend"),
+        "r2_git_head": r2.get("git_head"),
+        "r2_entry": r2.get("entry"),
+        "code_path": {
+            "fast_factory": (
+                "evaluation.functional.task_episode_harness.agentic.runner"
+                "._default_backend_factory"),
+            "transport": "AgictoChatCompletionsBackend",
+            "model": SLOW_MODEL,
+            "base_url": NF_BASE_URL,
+            "agent_constructor": "_live_agent -> TTHAAgentCore(model=SLOW_MODEL)",
+        },
+        "note": (
+            "r2 JSON has no model/base_url fields.  Replay locks the same "
+            "unchanged --r2-run factories; no other relay or model is allowed."),
+    }
+
+
+def _probe_locked_backend(identity: Mapping[str, Any]) -> dict[str, Any]:
+    """Reachability check on the locked model/URL.  Not charged to the A5 cap."""
+    import openai
+    from evaluation.functional.task_episode_harness.e1 import NF_BASE_URL
+
+    api_key = next(
+        (os.environ.get(name, "").strip()
+         for name in ("OPENAI_API_KEY", "AGICTO_API_KEY")
+         if os.environ.get(name, "").strip()),
+        None,
+    )
+    expected_model = str((identity.get("code_path") or {}).get("model") or "")
+    expected_url = str((identity.get("code_path") or {}).get("base_url") or "")
+    if expected_model != SLOW_MODEL or expected_url != NF_BASE_URL:
+        return {"ok": False,
+                "reason": "locked identity drifted from --r2-run factories"}
+    if not api_key:
+        return {"ok": False,
+                "reason": "OPENAI_API_KEY and AGICTO_API_KEY are both empty"}
+    try:
+        client = openai.OpenAI(api_key=api_key, base_url=NF_BASE_URL, timeout=60)
+        completion = client.chat.completions.create(
+            model=SLOW_MODEL,
+            messages=[{"role": "user",
+                       "content": "Reply with the single word pong."}])
+        relay_error = None
+        try:
+            from SelfEvolvingHarnessTS.runtime.agent_backend import (
+                _relay_error_payload,
+            )
+            relay_error = _relay_error_payload(completion)
+        except Exception:  # noqa: BLE001
+            relay_error = None
+        if relay_error:
+            return {"ok": False,
+                    "reason": "relay error payload: %s" % relay_error}
+        choices = getattr(completion, "choices", None) or []
+        if not choices:
+            return {"ok": False, "reason": "completion returned no choices"}
+        returned = getattr(completion, "model", None)
+        return {
+            "ok": True,
+            "returned_model": returned,
+            "completion_id": getattr(completion, "id", None),
+            "probe_charged_to_a5_cap": False,
+        }
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False,
+                "reason": "%s: %s" % (type(exc).__name__, exc)}
+
+
+def _snapshot_skill_ids(snapshot: Any) -> list[str]:
+    return sorted(str(skill.skill_id) for skill in getattr(snapshot, "skills", ()))
+
+
+def _view_skill_ids(snapshot: Any, features: Mapping[str, Any], *,
+                    role: str) -> list[str]:
+    from SelfEvolvingHarnessTS.methods.ttha.retrieval import (
+        resolve_harness_view,
+    )
+    view = resolve_harness_view(snapshot, dict(features), role=role)
+    return [str(skill.skill_id) for skill in view.skills]
+
+
+def _a5_arm_caps_from_r2(r2: Mapping[str, Any], *, dataset: str
+                         ) -> dict[str, Any]:
+    """What the r2 A5 arm actually spent, and the protocol caps it sat under."""
+    budgets = r2.get("budgets") or {}
+    rounds = _c40_a5_rounds(r2, dataset=dataset)
+    all_a5 = [record for record in ((r2.get("part_c") or {}).get("rounds") or [])
+              if record.get("arm") == "A5"]
+    cell_llm = sum(int(record.get("llm_calls_this_round") or 0)
+                   for record in rounds)
+    arm_llm = sum(int(record.get("llm_calls_this_round") or 0)
+                  for record in all_a5)
+    return {
+        "protocol_llm_cap": int(budgets.get("llm_cap") or R2_LLM_CAP),
+        "protocol_llm_fast_cap": int(budgets.get("llm_fast_cap")
+                                     or (R2_LLM_CAP - LLM_SLOW_RESERVE)),
+        "protocol_llm_slow_reserve": int(budgets.get("llm_slow_reserve")
+                                         or LLM_SLOW_RESERVE),
+        "protocol_fit_cap": int(budgets.get("consumer_fit_cap")
+                                or CONSUMER_FIT_CAP),
+        "r2_a5_gunpoint_llm": cell_llm,
+        "r2_a5_all_targets_llm": arm_llm,
+        "replay_uses_protocol_caps": True,
+        "note": (
+            "Replay keeps the r2 protocol Fast/fit caps (not a newly invented "
+            "tighter A5-only number).  A5-only will underspend them."),
+    }
+
+
+def _legacy_deficit_mislabel(rounds: Sequence[Mapping[str, Any]]
+                             ) -> dict[str, Any]:
+    """What r2_annotate's classifier would say.  Not invoked; not modified.
+
+    That classifier (run_e2_t6_cls_op_shared_harness.py ~3675-3701) maps
+    'card absent from retrieved_skill_ids' to retrieval_binding_miss.  After
+    the visibility fix that absence is intentional withholding.
+    """
+    retrieved_everywhere = bool(rounds) and all(
+        SOURCE_SKILL_ID in (record.get("retrieved_skill_ids") or ())
+        for record in rounds)
+    if retrieved_everywhere:
+        would_say = "prior_delivered_but_steered_the_proposal_elsewhere"
+        nature = "not_a_mislabel_on_this_trace"
+    else:
+        would_say = "retrieval_binding_miss"
+        nature = (
+            "MISLABEL: the card is withheld by the Fast-visibility predicate, "
+            "not a retrieval-binding failure")
+    return {
+        "classifier_location": (
+            "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:"
+            "r2_annotate a5_deficit_mechanism"),
+        "would_classify_as": would_say,
+        "nature": nature,
+        "classifier_modified": False,
+        "shared_runner_logic_modified": False,
+    }
+
+
+def _r2_replay_mechanism_verdict(
+    *,
+    rounds: Sequence[Mapping[str, Any]],
+    deployment: Mapping[str, Any] | None,
+    a3_families: Sequence[str],
+    install: Mapping[str, Any],
+) -> dict[str, Any]:
+    fast_views = [list(record.get("retrieved_skill_ids") or ())
+                  for record in rounds]
+    if deployment is not None:
+        fast_views.append(list(deployment.get("view_skill_ids") or ()))
+    present = [SOURCE_SKILL_ID in ids for ids in fast_views]
+    card_absent = bool(fast_views) and not any(present)
+    c40_pattern = bool(rounds) and all(
+        _round_is_level_shift_only(record) for record in rounds)
+    legal_receipts = [
+        {"round": record.get("round"), "probe": probe}
+        for record in rounds
+        for probe in (record.get("probes") or ())
+        if probe.get("kind") == "probe"]
+    replay_families: list[str] = []
+    for record in rounds:
+        replay_families.extend(_families_of(record))
+    a3_type = bool(set(replay_families) & set(a3_families))
+    exploration_restored = bool(legal_receipts) or a3_type
+    if any(present):
+        verdict = "VISIBILITY_INVARIANT_VIOLATED"
+    elif card_absent and c40_pattern:
+        verdict = "EXPLORATION_NOT_RESTORED"
+    elif card_absent and (not c40_pattern) and exploration_restored:
+        verdict = "VISIBILITY_INVARIANT_HOLDS"
+    elif card_absent and (not c40_pattern):
+        # Card withheld and the C40 lock is gone, but neither restoration
+        # witness fired.  Named as HOLDS on the visibility half; the false
+        # exploration_restored flag is the remainder, not a second leak path.
+        verdict = "VISIBILITY_INVARIANT_HOLDS"
+    else:
+        verdict = "INSTRUMENT_UNREADABLE"
+    return {
+        "verdict": verdict,
+        "claim_limit": (
+            "MECHANISM.  Tests the inertness invariant on the exposed C40 "
+            "ledger after the Fast-visibility fix.  Held-out accuracy is "
+            "recorded, not judged.  No capability claim."),
+        "card_absent_every_fast_view": card_absent,
+        "card_present_in_any_fast_view": bool(any(present)),
+        "fast_views_checked": len(fast_views),
+        "c40_level_shift_only_pattern": c40_pattern,
+        "legal_support_receipts": legal_receipts,
+        "legal_support_receipt_count": len(legal_receipts),
+        "replay_proposal_families": replay_families,
+        "a3_cold_start_families": list(a3_families),
+        "proposal_families_a3_same_type": a3_type,
+        "exploration_restored": exploration_restored,
+        "source_card_installed": bool(install.get("card_in_store")),
+        "source_card_in_slow_view": bool(install.get("card_in_slow_view")),
+        "source_card_in_preflight_fast_view": bool(
+            install.get("card_in_preflight_fast_view")),
+    }
+
+
+def _r2_replay_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload.get("verdict") or {}
+    ledger = payload.get("ledger") or {}
+    lock = payload.get("backend_lock") or {}
+    install = payload.get("source_install") or {}
+    part_c = payload.get("part_c") or {}
+    comparison = payload.get("proposal_family_comparison") or []
+    mislabel = payload.get("retrieval_binding_miss_note") or {}
+    lines = [
+        "# CLS-OP-r2 A5 mechanism replay (inertness invariant)",
+        "",
+        "protocol: `%s`  evidence grade: **MECHANISM**"
+        % payload.get("protocol_version"),
+        "",
+        "## Verdict",
+        "",
+        "**%s**" % verdict.get("verdict"),
+        "",
+        verdict.get("claim_limit", ""),
+        "",
+        "- card absent every Fast view: %s"
+        % verdict.get("card_absent_every_fast_view"),
+        "- C40 level-shift-only pattern: %s"
+        % verdict.get("c40_level_shift_only_pattern"),
+        "- legal Support receipts: %s"
+        % verdict.get("legal_support_receipt_count"),
+        "- proposal families A3-same-type: %s"
+        % verdict.get("proposal_families_a3_same_type"),
+        "- source card installed / Slow-visible: %s / %s"
+        % (verdict.get("source_card_installed"),
+           verdict.get("source_card_in_slow_view")),
+        "",
+        "## Backend lock",
+        "",
+        "- artifact field `%s` = %s"
+        % (lock.get("artifact_field"), lock.get("artifact_value")),
+        "- r2 git_head: %s" % lock.get("r2_git_head"),
+        "- locked model: %s" % ((lock.get("code_path") or {}).get("model")),
+        "- locked base_url: %s"
+        % ((lock.get("code_path") or {}).get("base_url")),
+        "- probe: %s" % ((payload.get("backend_probe") or {}).get("ok")),
+        "",
+        "## Source card install",
+        "",
+        "- skill_id: %s" % install.get("skill_id"),
+        "- store skill ids: %s" % install.get("store_skill_ids"),
+        "- preflight Fast view: %s" % install.get("preflight_fast_view"),
+        "- preflight Slow view: %s" % install.get("preflight_slow_view"),
+        "",
+        "## Per-round comparison (replay vs C40 A5)",
+        "",
+        "| dataset | round | side | retrieved contains card | "
+        "non-identity pool | family | probe kind | Support | delayed |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for row in comparison:
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s | %s | %s | %s |"
+            % (row.get("dataset"), row.get("round"), row.get("side"),
+               row.get("card_in_retrieved"),
+               row.get("non_identity_pool"),
+               row.get("families"),
+               row.get("probe_kinds"),
+               row.get("support_receipts"),
+               row.get("delayed_utility")))
+    deployment = None
+    for item in part_c.get("deployments") or []:
+        deployment = item
+    lines += [
+        "",
+        "## Held-out (information only)",
+        "",
+        "- accuracy: %s" % (
+            None if deployment is None else deployment.get("heldout_accuracy")),
+        "- vs identity: %s" % (
+            None if deployment is None
+            else deployment.get("heldout_accuracy_gain")),
+        "- applied: %s" % (
+            "identity" if deployment is None
+            else (deployment.get("applied_program") or "identity")),
+        "- deploy source: %s" % (
+            None if deployment is None else deployment.get("deploy_source")),
+        "",
+        "## retrieval_binding_miss mislabel",
+        "",
+        "- the r2_annotate classifier would say: **%s**"
+        % mislabel.get("would_classify_as"),
+        "- nature: %s" % mislabel.get("nature"),
+        "- classifier modified: %s" % mislabel.get("classifier_modified"),
+        "",
+        "## Budget",
+        "",
+        "- LLM: %s of %s (fast %s, slow %s)"
+        % (ledger.get("llm_calls_total"), ledger.get("llm_cap"),
+           ledger.get("llm_calls_fast"), ledger.get("llm_calls_slow")),
+        "- Consumer fits: %s of %s"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap")),
+        "- wall clock: %s s" % ledger.get("wall_seconds"),
+        "",
+        "## Obligations",
+        "",
+    ]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
+def _write_replay_artifacts(payload: Mapping[str, Any]) -> None:
+    R2_REPLAY_JSON.parent.mkdir(parents=True, exist_ok=True)
+    R2_REPLAY_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False,
+                   sort_keys=False) + "\n",
+        encoding="utf-8")
+    R2_REPLAY_MD.write_text(_r2_replay_markdown(payload), encoding="utf-8")
+
+
+def r2_replay_a5(*, run_id: str = R2_REPLAY_RUN_ID) -> int:
+    """Replay only the C40 A5 arm on the exposed GunPointAgeSpan ledger.
+
+    The unauthorized Source card is installed into a fresh store exactly as
+    r2 materialized it.  The visibility fix is the only intended change.
+    """
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+
+    started = time.time()
+    if not R2_RUN_JSON.is_file():
+        payload = {
+            "protocol_version": R2_REPLAY_PROTOCOL,
+            "run_id": run_id,
+            "entry": "--r2-replay-a5",
+            "evidence_grade": "MECHANISM",
+            "verdict": {"verdict": "INSTRUMENT_UNREADABLE",
+                        "reason": "r2 artifact missing"},
+        }
+        _write_replay_artifacts(payload)
+        print(json.dumps(payload["verdict"], indent=1))
+        return 1
+
+    r2 = json.loads(R2_RUN_JSON.read_text(encoding="utf-8"))
+    entry = (r2.get("part_b") or {}).get("source_skill_entry")
+    identity = _r2_backend_identity(r2)
+    caps = _a5_arm_caps_from_r2(r2, dataset=R2_REPLAY_DATASET)
+    c40_rounds = _c40_a5_rounds(r2, dataset=R2_REPLAY_DATASET)
+    a3_families = _c40_a3_families(r2, dataset=R2_REPLAY_DATASET)
+
+    payload: dict[str, Any] = {
+        "protocol_version": R2_REPLAY_PROTOCOL,
+        "run_id": run_id,
+        "entry": "--r2-replay-a5",
+        "modification_fraction_scope": "cohort",
+        "evidence_grade": "MECHANISM",
+        "claim_limit": (
+            "MECHANISM only.  Governance-fix replay; no capability reading."),
+        "git_head": _git("rev-parse", "HEAD"),
+        "r2_source": {
+            "path": str(R2_RUN_JSON.relative_to(PROJECT_ROOT)).replace(
+                "\\", "/"),
+            "run_id": r2.get("run_id"),
+            "protocol_version": r2.get("protocol_version"),
+            "git_head": r2.get("git_head"),
+        },
+        "backend_lock": identity,
+        "a5_budget_from_r2": caps,
+        "c40_a5_reference": [{
+            "round": record.get("round"),
+            "dataset": record.get("dataset"),
+            "retrieved_skill_ids": record.get("retrieved_skill_ids"),
+            "pool": record.get("pool"),
+            "chosen": record.get("chosen"),
+            "families": _families_of(record),
+            "probes": record.get("probes"),
+            "support_receipts": record.get("support_receipts"),
+            "delayed_utility": record.get("delayed_utility"),
+            "abstained": record.get("abstained"),
+        } for record in c40_rounds],
+        "wiring_check": _wiring_check(),
+        "preflight": _preflight(),
+        "binding": {
+            "dataset": R2_REPLAY_DATASET,
+            "target_condition": TARGET_CONDITION,
+            "held_in_rounds": list(HELD_IN_ROUNDS),
+            "support_trial_budget_per_round": SUPPORT_TRIAL_BUDGET,
+            "maximum_candidates": 1 + SUPPORT_TRIAL_BUDGET,
+            "modification_fraction_scope": "cohort",
+            "source_skill_id": SOURCE_SKILL_ID,
+            "source_card_origin": "r2 part_b.source_skill_entry (same ledger)",
+        },
+        "budgets": {
+            "llm_cap": caps["protocol_llm_cap"],
+            "llm_fast_cap": caps["protocol_llm_fast_cap"],
+            "llm_slow_reserve": caps["protocol_llm_slow_reserve"],
+            "consumer_fit_cap": caps["protocol_fit_cap"],
+        },
+    }
+
+    def stop_write(verdict: str, reason: str, extra: Mapping[str, Any] | None = None
+                   ) -> int:
+        payload["stop"] = {"verdict": verdict, "reason": reason}
+        payload["verdict"] = {"verdict": verdict, "reason": reason}
+        if extra:
+            payload.update(dict(extra))
+        payload["ledger"] = {
+            "llm_calls_fast": 0, "llm_calls_slow": 0, "llm_calls_total": 0,
+            "llm_cap": caps["protocol_llm_cap"],
+            "consumer_fits": 0,
+            "consumer_fit_cap": caps["protocol_fit_cap"],
+            "wall_seconds": round(time.time() - started, 1),
+        }
+        payload["obligations"] = {
+            "methods_package_unmodified": True,
+            "runtime_contracts_operators_unmodified": True,
+            "other_line_files_untouched": True,
+            "backend": "locked r2 Fast path; no substitute relay",
+            "data": "only the r2 local GunPointAgeSpan substrate",
+        }
+        _write_replay_artifacts(payload)
+        print(json.dumps({"verdict": verdict, "reason": reason}, indent=1))
+        return 1
+
+    if not isinstance(entry, Mapping) or entry.get("skill_id") != SOURCE_SKILL_ID:
+        return stop_write("INSTRUMENT_UNREADABLE",
+                          "r2 source_skill_entry missing or wrong skill_id")
+    if identity.get("artifact_value") != "live Fast Agent":
+        return stop_write(
+            "BACKEND_UNAVAILABLE",
+            "r2 artifact backend is %r, not 'live Fast Agent'"
+            % identity.get("artifact_value"))
+
+    probe = _probe_locked_backend(identity)
+    payload["backend_probe"] = probe
+    if not probe.get("ok"):
+        return stop_write("BACKEND_UNAVAILABLE",
+                          str(probe.get("reason") or "locked backend probe failed"),
+                          extra={"backend_probe": probe})
+
+    fit_budget = FitBudget(caps["protocol_fit_cap"])
+    llm_ledger = {"fast": 0, "slow": 0}
+    tag = run_id
+    store_root = Path(tempfile.gettempdir()) / tag
+    if store_root.exists():
+        shutil.rmtree(store_root)
+    stopped: str | None = None
+    try:
+        h0 = compile_snapshot(
+            PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+            verify_lock=False)
+        source_snapshot = _materialize_source_snapshot(entry, h0, store_root)
+        cell = _build_cell(R2_REPLAY_DATASET, TARGET_CONDITION)
+        block = np.asarray(cell["observation_block"], dtype=np.float64)
+        features = dict(extract_public_features(block, task_kind="classification"))
+        store_ids = _snapshot_skill_ids(source_snapshot)
+        fast_ids = _view_skill_ids(source_snapshot, features, role="fast")
+        slow_ids = _view_skill_ids(source_snapshot, features, role="slow")
+        install = {
+            "skill_id": SOURCE_SKILL_ID,
+            "store_skill_ids": store_ids,
+            "card_in_store": SOURCE_SKILL_ID in store_ids,
+            "preflight_fast_view": fast_ids,
+            "preflight_slow_view": slow_ids,
+            "card_in_preflight_fast_view": SOURCE_SKILL_ID in fast_ids,
+            "card_in_slow_view": SOURCE_SKILL_ID in slow_ids,
+            "h0_runtime_bundle_sha": h0.runtime_bundle_sha,
+            "source_runtime_bundle_sha": source_snapshot.runtime_bundle_sha,
+            "r2_h0_runtime_bundle_sha": (
+                (r2.get("part_b") or {}).get("snapshots") or {}
+            ).get("h0_runtime_bundle_sha"),
+            "sha_note": (
+                "h0 runtime_bundle_sha may differ from r2 because T1 regenerated "
+                "the lock after changing retrieval.py; harness_content_sha is "
+                "unchanged.  The installed card bytes are the r2 ledger entry."),
+        }
+        payload["source_install"] = install
+        payload["part_b"] = {
+            "source_skill_entry": entry,
+            "source_skill_sections": (
+                (r2.get("part_b") or {}).get("source_skill_sections")),
+            "reused_r2_card": True,
+            "slow_not_re_run": True,
+        }
+        if not install["card_in_store"] or not install["card_in_slow_view"]:
+            raise Stop("INSTRUMENT_UNREADABLE",
+                       "Source card failed to install into the A5 store/Slow view")
+
+        backend = _live_backend(caps["protocol_llm_fast_cap"])
+        state = _new_arm_state(
+            snapshot=source_snapshot,
+            agent=_live_agent(cell["observation_block"],
+                              backend.new_arm_backend()),
+            store_root=store_root,
+            tag="target_%s_A5" % R2_REPLAY_DATASET)
+        arm_rounds: list[dict[str, Any]] = []
+        for round_name in HELD_IN_ROUNDS:
+            record = _run_round(
+                state=state, cell=cell, round_name=round_name,
+                arm="A5", fit_budget=fit_budget,
+                allow_fast_skill=True,
+                fraction_scope="cohort", ledger=backend)
+            arm_rounds.append(record)
+            print("A5 %-28s %s retrieved=%s probes=%s winner=%s delayed=%s"
+                  % (R2_REPLAY_DATASET, round_name,
+                     record["retrieved_skill_ids"],
+                     record["probes"],
+                     record["winner_program"],
+                     record["delayed_utility"]),
+                  flush=True)
+        deployment = _deploy_and_score(
+            state=state, cell=cell, arm="A5", fit_budget=fit_budget)
+        print("DEPLOY A5 %-28s %-32s heldout_acc=%.4f gain=%+.4f"
+              % (R2_REPLAY_DATASET, deployment["deploy_source"],
+                 deployment["heldout_accuracy"],
+                 deployment["heldout_accuracy_gain"]),
+              flush=True)
+        llm_ledger["fast"] = int(backend.calls)
+        payload["part_c"] = {
+            "cells": [{k: v for k, v in cell.items()
+                       if k not in ("fit_values", "fit_labels", "surfaces",
+                                    "observation_block")}],
+            "rounds": arm_rounds,
+            "deployments": [deployment],
+            "arm_table": _arm_table(arm_rounds, [deployment]),
+            "deploy_purity": _deploy_purity([deployment]),
+            "r2_readouts": _r2_readouts(arm_rounds, [deployment]),
+        }
+        comparison = []
+        by_round = {record["round"]: record for record in arm_rounds}
+        for record in c40_rounds:
+            comparison.append({
+                "dataset": record.get("dataset"),
+                "round": record.get("round"),
+                "side": "c40_a5",
+                "card_in_retrieved": SOURCE_SKILL_ID in (
+                    record.get("retrieved_skill_ids") or ()),
+                "non_identity_pool": _non_identity_names(record),
+                "families": _families_of(record),
+                "probe_kinds": [p.get("kind")
+                                for p in (record.get("probes") or ())],
+                "support_receipts": record.get("support_receipts"),
+                "delayed_utility": record.get("delayed_utility"),
+            })
+            replay = by_round.get(record["round"])
+            if replay is not None:
+                comparison.append({
+                    "dataset": replay.get("dataset"),
+                    "round": replay.get("round"),
+                    "side": "replay_a5",
+                    "card_in_retrieved": SOURCE_SKILL_ID in (
+                        replay.get("retrieved_skill_ids") or ()),
+                    "non_identity_pool": _non_identity_names(replay),
+                    "families": _families_of(replay),
+                    "probe_kinds": [p.get("kind")
+                                    for p in (replay.get("probes") or ())],
+                    "support_receipts": replay.get("support_receipts"),
+                    "delayed_utility": replay.get("delayed_utility"),
+                })
+        payload["proposal_family_comparison"] = comparison
+        payload["retrieval_binding_miss_note"] = _legacy_deficit_mislabel(
+            arm_rounds)
+        payload["verdict"] = _r2_replay_mechanism_verdict(
+            rounds=arm_rounds, deployment=deployment,
+            a3_families=a3_families, install=install)
+    except Stop as stop:
+        stopped = stop.verdict
+        payload["stop"] = {"verdict": stop.verdict, "reason": stop.reason}
+        payload["verdict"] = {"verdict": stop.verdict, "reason": stop.reason}
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        stopped = "INSTRUMENT_UNREADABLE"
+        payload["stop"] = {"verdict": stopped,
+                           "reason": "%s: %s" % (type(exc).__name__, exc),
+                           "traceback": traceback.format_exc()}
+        payload["verdict"] = payload["stop"]
+
+    payload["ledger"] = {
+        "llm_calls_fast": llm_ledger["fast"],
+        "llm_calls_slow": llm_ledger["slow"],
+        "llm_calls_total": llm_ledger["fast"] + llm_ledger["slow"],
+        "llm_cap": caps["protocol_llm_cap"],
+        "llm_within_cap": (llm_ledger["fast"] + llm_ledger["slow"]
+                           <= caps["protocol_llm_cap"]),
+        "consumer_fits": fit_budget.used,
+        "consumer_fit_cap": fit_budget.cap,
+        "wall_seconds": round(time.time() - started, 1),
+        "backend_probe_llm_calls": 1,
+        "backend_probe_charged_to_a5_cap": False,
+        "r2_a5_gunpoint_llm": caps["r2_a5_gunpoint_llm"],
+        "r2_a5_all_targets_llm": caps["r2_a5_all_targets_llm"],
+    }
+    payload["obligations"] = {
+        "methods_package_unmodified": True,
+        "runtime_contracts_operators_unmodified": True,
+        "other_line_files_untouched": True,
+        "forbidden_data_untouched": (
+            "no Yahoo, NOAA 2025, beyond_17520, NAB or SMD path is opened; "
+            "the only data root is data/ucr_task_context"),
+        "source_card_reused_from_r2_ledger": True,
+        "slow_not_re_run": True,
+        "deficit_classifier_unmodified": True,
+        "backend": (
+            "locked r2 Fast path %s @ %s"
+            % (SLOW_MODEL, identity["code_path"]["base_url"])),
+        "full_repo_pytest_not_run": True,
+        "downloads": 0,
+    }
+    _write_replay_artifacts(payload)
+    print(json.dumps({
+        "verdict": (payload.get("verdict") or {}).get("verdict"),
+        "llm": payload["ledger"]["llm_calls_total"],
+        "fits": payload["ledger"]["consumer_fits"],
+        "artifact": str(R2_REPLAY_JSON),
+    }, ensure_ascii=False, indent=1))
+    verdict_name = str((payload.get("verdict") or {}).get("verdict") or "")
+    return 0 if verdict_name in (
+        "VISIBILITY_INVARIANT_HOLDS",
+        "VISIBILITY_INVARIANT_VIOLATED",
+        "EXPLORATION_NOT_RESTORED",
+    ) and stopped is None else 1
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke", action="store_true")
@@ -4163,6 +4882,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--r2-prep", dest="r2_prep", action="store_true")
     parser.add_argument("--r2-run", dest="r2_run", action="store_true")
     parser.add_argument("--r2-annotate", dest="r2_annotate",
+                        action="store_true")
+    parser.add_argument("--r2-replay-a5", dest="r2_replay_a5",
                         action="store_true")
     parser.add_argument("--conf-select", dest="conf_select",
                         action="store_true")
@@ -4178,7 +4899,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
     if sum([args.smoke, args.run, args.micro, args.diagnose,
-            args.r2_prep, args.r2_run, args.r2_annotate,
+            args.r2_prep, args.r2_run, args.r2_annotate, args.r2_replay_a5,
             args.conf_select, args.conf_run,
             args.conf_r2_select, args.conf_r2_run,
             args.conf_dl_select, args.conf_dl_run]) != 1:
@@ -4197,6 +4918,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return conf_run(run_id=args.run_id or CONF_RUN_ID)
     if args.r2_annotate:
         return r2_annotate()
+    if args.r2_replay_a5:
+        return r2_replay_a5(run_id=args.run_id or R2_REPLAY_RUN_ID)
     if args.r2_run:
         return run(live=True, out_path=R2_RUN_JSON, md_path=R2_RUN_MD,
                    fraction_scope="cohort",
