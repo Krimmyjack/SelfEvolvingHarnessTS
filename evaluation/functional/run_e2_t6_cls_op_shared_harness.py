@@ -29,6 +29,8 @@ Entry points::
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --run
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-replay-a5
   python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --conf-dev-run
+  python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --dev-wine-precheck
+  python evaluation/functional/run_e2_t6_cls_op_shared_harness.py --dev-wine-run
 
 ``--smoke`` is the 0-LLM mechanical pass over the same execution body with a
 scripted backend; ``--run`` is the live Fast Agent pass that produces the
@@ -388,6 +390,20 @@ def _assert_behaviour_context(request: Any) -> None:
 # =========================================================================== #
 # cells -- the family's own material, sliced for the shared lifecycle
 # =========================================================================== #
+# Injection template versions.  v1 is the C38 single-point impulse used by
+# every existing entry.  v2 is length-proportional and is used only by the
+# Wine precheck / Wine development entries in this book.
+INJECTION_TEMPLATE_V1 = "v1"
+INJECTION_TEMPLATE_V2 = "v2"
+# GunPoint / GunPointAgeSpan official TRAIN length -- the positive-control
+# row length from which v2 scales.  Not a free parameter.
+GUNPOINT_POSITIVE_CONTROL_LENGTH = 150
+# v1 writes one sample at each SPIKE_FRACTIONS position.  Source:
+# evaluation/functional/run_e2_task_context_label_evidence_witness.py:95-100
+# (_inject assigns template[position] = ±SPIKE_AMPLITUDE; one index).
+V1_SPIKE_SEGMENT_LENGTH = 1
+
+
 def _legacy_helpers() -> tuple[Any, dict[str, Any]]:
     from SelfEvolvingHarnessTS.evaluation.functional.run_e2_task_risk_action_credit_transfer import (
         _helpers,
@@ -411,18 +427,67 @@ def _quarter(labels: Any, indices: Any) -> list[list[int]]:
     return [sorted(part) for part in slices]
 
 
+def _v2_segment_length(series_length: int) -> int:
+    """Mechanical v2 width: round(v1_width / 150 * row_length).
+
+    No other degree of freedom.  At length 150 this is identically 1.
+    """
+    return int(round(
+        V1_SPIKE_SEGMENT_LENGTH / float(GUNPOINT_POSITIVE_CONTROL_LENGTH)
+        * int(series_length)))
+
+
+def _inject_v2(np_mod: Any, values: Any, labels: Any,
+               positions: tuple[int, ...]) -> Any:
+    """v1 ``_inject`` with each spike widened to ``_v2_segment_length``.
+
+    Placement is forward from the v1 position (the only mechanical extension
+    of writing ``template[position]``).  At segment length 1 the bytes match
+    v1.  Overflow is a hard error, not a clip -- clipping would be a new
+    degree of freedom.
+    """
+    from SelfEvolvingHarnessTS.evaluation.functional.run_e2_task_context_label_evidence_witness import (
+        SPIKE_AMPLITUDE,
+    )
+
+    length = int(values.shape[1])
+    segment = _v2_segment_length(length)
+    if segment <= 0:
+        raise ValueError("v2 segment length is %d at series length %d"
+                         % (segment, length))
+    template = np_mod.zeros(length, dtype=np_mod.float64)
+    for index, position in enumerate(positions):
+        start = int(position)
+        stop = start + segment
+        if start < 0 or stop > length:
+            raise ValueError(
+                "v2 segment [%d, %d) overflows series length %d"
+                % (start, stop, length))
+        template[start:stop] = (
+            (1.0 if index % 2 == 0 else -1.0) * float(SPIKE_AMPLITUDE))
+    signs = np_mod.where(labels[:, None] == 1, 1.0, -1.0)
+    return np_mod.asarray(values, dtype=np_mod.float64) + signs * template
+
+
 def _build_cell(dataset: str, condition: str,
-                data_dir: str | None = None) -> dict[str, Any]:
+                data_dir: str | None = None,
+                injection_template: str = INJECTION_TEMPLATE_V1) -> dict[str, Any]:
     """One (dataset, condition) cell: fit cohort, four held-in slices, context.
 
     The official TEST split is *not* read here.  It is opened once, by
     ``_score_heldout``, after every arm's Workflow is frozen.
+    ``injection_template`` defaults to v1 so every existing entry
+    (``--conf-run`` / ``--conf-dev-run`` / ``--r2-*``) keeps the C38
+    single-point impulse.  Only the Wine book entries pass v2.
     """
     from SelfEvolvingHarnessTS.evaluation.functional.run_e2_task_risk_action_credit_transfer import (
         _condition_inputs,
     )
 
     data_dir = data_dir or DATA_DIR
+    if injection_template not in (INJECTION_TEMPLATE_V1, INJECTION_TEMPLATE_V2):
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "unknown injection_template %r" % injection_template)
     _ctx, helpers = _legacy_helpers()
     archive = PROJECT_ROOT / data_dir / ("%s.zip" % dataset)
     train_values, train_labels = helpers["load"](np, archive, dataset, "TRAIN")
@@ -432,11 +497,13 @@ def _build_cell(dataset: str, condition: str,
     fit_labels = train_labels[fit_indices]
     base_support = train_values[support_indices]
     support_labels = train_labels[support_indices]
+    inject = (_inject_v2 if injection_template == INJECTION_TEMPLATE_V2
+              else helpers["inject"])
     fit_values, support_values = _condition_inputs(
         np,
         base_fit=base_fit, fit_labels=fit_labels,
         base_support=base_support, support_labels=support_labels,
-        positions=positions, condition=condition, inject=helpers["inject"])
+        positions=positions, condition=condition, inject=inject)
 
     observation = helpers["observe"](np, fit_values, fit_labels)
     nodes = tuple(int(node) for node in observation["nodes"])
@@ -459,7 +526,7 @@ def _build_cell(dataset: str, condition: str,
     rows_in_window = min(rows_in_window, int(fit_values.shape[0]))
     observation_block = np.asarray(
         fit_values[:rows_in_window], dtype=np.float64).ravel()
-    return {
+    cell = {
         "dataset": dataset,
         "condition": condition,
         "data_dir": data_dir,
@@ -485,6 +552,10 @@ def _build_cell(dataset: str, condition: str,
         "observation_rows": rows_in_window,
         "observation_block": observation_block,
     }
+    if injection_template == INJECTION_TEMPLATE_V2:
+        cell["injection_template"] = INJECTION_TEMPLATE_V2
+        cell["injection_segment_length"] = _v2_segment_length(length)
+    return cell
 
 
 def _heldout_surface(dataset: str, condition: str,
@@ -3686,7 +3757,8 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
              markdown_fn: Any = None,
              verdict_fn: Any = None,
              evidence_grade: str | None = None,
-             accepted_verdicts: Sequence[str] | None = None) -> int:
+             accepted_verdicts: Sequence[str] | None = None,
+             injection_template: str = INJECTION_TEMPLATE_V1) -> int:
     """CLS-CONF: A3 against Static identity on the mechanically chosen Target."""
     from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
         compile_snapshot,
@@ -3749,6 +3821,30 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
         },
         "prediction_gate": census.get("prediction_gate"),
     }
+    if injection_template == INJECTION_TEMPLATE_V2:
+        payload["injection"] = {
+            "template": (
+                "C38 class-conditioned impulse, v2 length-proportional "
+                "segments"),
+            "template_version": INJECTION_TEMPLATE_V2,
+            "amplitude": "SPIKE_AMPLITUDE = 16.0 row standard deviations",
+            "fractions": [0.08, 0.20, 0.80, 0.92],
+            "v1_segment_length": V1_SPIKE_SEGMENT_LENGTH,
+            "gunpoint_positive_control_length": (
+                GUNPOINT_POSITIVE_CONTROL_LENGTH),
+            "segment_formula": (
+                "round(%d/%d * series_length)"
+                % (V1_SPIKE_SEGMENT_LENGTH, GUNPOINT_POSITIVE_CONTROL_LENGTH)),
+            "source_constants": (
+                "evaluation/functional/"
+                "run_e2_task_context_label_evidence_witness.py:37 "
+                "SPIKE_FRACTIONS; :38 SPIKE_AMPLITUDE; :95-100 _inject "
+                "writes one point per position (v1 segment length = 1)"),
+            "seed_ledger": (
+                "the family's injection is seed-free: v2 writes a fixed "
+                "signed template of width round(1/150*L) at the same "
+                "relative positions as v1.  There is no RNG to seed."),
+        }
     if census["selected"] is None:
         claimed: dict[str, list[str]] = {}
         for row in census["candidates"]:
@@ -3827,7 +3923,8 @@ def conf_run(*, run_id: str = CONF_RUN_ID,
     deployments: list[dict[str, Any]] = []
     cell: Mapping[str, Any] | None = None
     try:
-        cell = _build_cell(dataset, CONF_CONDITION, data_dir=data_dir)
+        cell = _build_cell(dataset, CONF_CONDITION, data_dir=data_dir,
+                           injection_template=injection_template)
         payload["cell"] = {key: value for key, value in cell.items()
                            if key not in ("fit_values", "fit_labels",
                                           "surfaces", "observation_block")}
@@ -5317,6 +5414,683 @@ def r2_replay_a5(*, run_id: str = R2_REPLAY_RUN_ID) -> int:
     ) and stopped is None else 1
 
 
+# =========================================================================== #
+# CLS-DEV-WINE -- v2 injection precheck, then optional development lifecycle
+# =========================================================================== #
+WINE_DATASET = "Wine"
+WINE_PRECHECK_JSON = E2 / "t6_cls_dev_wine_precheck.json"
+WINE_PRECHECK_MD = E2 / "t6_cls_dev_wine_precheck.md"
+WINE_OUT_JSON = E2 / "t6_cls_dev_wine.json"
+WINE_OUT_MD = E2 / "t6_cls_dev_wine.md"
+WINE_PROTOCOL = "t6_cls_dev_wine_v1"
+WINE_RUN_ID = "t6_cls_dev_wine_run1"
+WINE_WALL_SECONDS = 90 * 60
+WINE_EVIDENCE_GRADE = "development"
+ECG200_REFERENCE_LENGTH = 96
+WINE_PRECHECK_REQUIRED = (
+    "identity", "hampel_filter", "outlier_mad", "outlier_iqr",
+)
+WINE_HONESTY = (
+    "Wine was previously used by the action_credit line "
+    "(run_e2_action_credit_candidate_ordering.py) under the same impulse "
+    "condition pair (audit: artifacts/functional/e2/"
+    "t6_cls_conf_r3_selection.json). This run is therefore not an "
+    "independent confirmation. Every judgement stays at "
+    "evidence_grade=development. The label CLS_CHAIN_CONFIRMED must not "
+    "be used."
+)
+
+
+def _v2_invariance_at_150() -> dict[str, Any]:
+    """At GunPoint length 150, v2 constants and inject bytes equal v1."""
+    from SelfEvolvingHarnessTS.evaluation.functional.run_e2_task_context_label_evidence_witness import (
+        SPIKE_AMPLITUDE,
+        SPIKE_FRACTIONS,
+    )
+
+    _ctx, helpers = _legacy_helpers()
+    length = GUNPOINT_POSITIVE_CONTROL_LENGTH
+    segment = _v2_segment_length(length)
+    positions = tuple(int(p) for p in helpers["positions"](length))
+    values = np.tile(
+        np.linspace(-1.0, 1.0, length, dtype=np.float64), (6, 1))
+    labels = np.asarray([0, 0, 0, 1, 1, 1], dtype=np.int64)
+    v1 = helpers["inject"](np, values, labels, positions)
+    v2 = _inject_v2(np, values, labels, positions)
+    checks = {
+        "segment_length_equals_v1": segment == V1_SPIKE_SEGMENT_LENGTH,
+        "positions_equal": True,
+        "amplitude_equals_v1": float(SPIKE_AMPLITUDE) == 16.0,
+        "fractions_equal_v1": tuple(SPIKE_FRACTIONS) == (0.08, 0.20, 0.80, 0.92),
+        "injected_values_equal": bool(np.array_equal(v1, v2)),
+    }
+    return {
+        "length": length,
+        "v1_segment_length": V1_SPIKE_SEGMENT_LENGTH,
+        "v2_segment_length": segment,
+        "positions": list(positions),
+        "source_constants": (
+            "evaluation/functional/"
+            "run_e2_task_context_label_evidence_witness.py:37 "
+            "SPIKE_FRACTIONS=(0.08, 0.20, 0.80, 0.92); :38 "
+            "SPIKE_AMPLITUDE=16.0; :95-100 _inject writes one point "
+            "per position so v1 segment length = 1"),
+        "formula": "round(%d/%d * L)"
+                   % (V1_SPIKE_SEGMENT_LENGTH,
+                      GUNPOINT_POSITIVE_CONTROL_LENGTH),
+        "checks": checks,
+        "passed": all(checks.values()),
+    }
+
+
+def _v2_geometry_derivation(series_length: int, *,
+                            hampel_window: int,
+                            label: str) -> dict[str, Any]:
+    """Constant-only occupancy and theoretical hampel fraction.
+
+    Injected points = n_spikes * v2_segment (no-overlap, proved from
+    positions).  Hampel theoretical upper bound per spike is
+    segment + window - 1 (the segment plus a window-3 halo).  ECG200
+    v1 measured 0.128 against this bound of 12/96 = 0.125.
+    """
+    from SelfEvolvingHarnessTS.evaluation.functional.run_e2_task_context_label_evidence_witness import (
+        _bound_positions,
+        SPIKE_FRACTIONS,
+    )
+
+    length = int(series_length)
+    segment = _v2_segment_length(length)
+    n_spikes = len(SPIKE_FRACTIONS)
+    positions = tuple(int(p) for p in _bound_positions(length))
+    gaps = [positions[i + 1] - positions[i]
+            for i in range(len(positions) - 1)]
+    injected = n_spikes * segment
+    injection_fraction = injected / float(length)
+    halo = segment + int(hampel_window) - 1
+    hampel_points = n_spikes * halo
+    hampel_fraction = hampel_points / float(length)
+    cap = float(
+        _task_context().deployment_constraints.maximum_modified_fraction)
+    return {
+        "label": label,
+        "series_length": length,
+        "v2_segment_length": segment,
+        "formula": "round(%d/%d * L)"
+                   % (V1_SPIKE_SEGMENT_LENGTH,
+                      GUNPOINT_POSITIVE_CONTROL_LENGTH),
+        "n_spikes": n_spikes,
+        "positions": list(positions),
+        "min_gap": min(gaps) if gaps else None,
+        "segments_overlap": bool(gaps) and min(gaps) < segment,
+        "injected_points": injected,
+        "injection_fraction": injection_fraction,
+        "injection_fraction_exact": "%d/%d" % (injected, length),
+        "hampel_window": int(hampel_window),
+        "hampel_halo_per_spike": halo,
+        "hampel_theoretical_modified_points_upper_bound": hampel_points,
+        "hampel_theoretical_modified_fraction": hampel_fraction,
+        "hampel_theoretical_fraction_exact": "%d/%d" % (hampel_points, length),
+        "modification_cap": cap,
+        "injection_below_cap": injection_fraction < cap,
+        "hampel_theoretical_below_cap": hampel_fraction < cap,
+    }
+
+
+def _wine_heldin_pool(cell: Mapping[str, Any]) -> tuple[Any, Any]:
+    """Concatenate the four held-in slices: the full support pool."""
+    values: list[Any] = []
+    labels: list[Any] = []
+    for name in ("r1_support", "r1_delayed", "r2_support", "r2_delayed"):
+        block, labs = cell["surfaces"][name]
+        values.append(np.asarray(block, dtype=np.float64))
+        labels.append(np.asarray(labs))
+    return np.concatenate(values), np.concatenate(labels)
+
+
+def _wine_precheck_pass(cell: Mapping[str, Any], *,
+                        fit_budget: FitBudget) -> dict[str, Any]:
+    """0-LLM legality + held-in headroom census on one v2 cell."""
+    heldin_values, heldin_labels = _wine_heldin_pool(cell)
+    n_heldin = int(heldin_labels.size)
+    line = max(MATERIAL, 1.0 / max(n_heldin, 1))
+    block = np.asarray(cell["observation_block"], dtype=np.float64)
+    support_origin = int(block.size)
+    delayed_origin = support_origin + 1
+    heldout_origin = support_origin + 2
+    adapter = ClassificationConsumerAdapter(
+        fit_values=cell["fit_values"], fit_labels=cell["fit_labels"],
+        surfaces={SUPPORT: (heldin_values, heldin_labels)},
+        delayed_origin=delayed_origin, heldout_origin=heldout_origin,
+        budget=fit_budget, ridge_alpha=RIDGE_ALPHA,
+        allowed_surfaces=(SUPPORT,))
+    cap = float(
+        _task_context().deployment_constraints.maximum_modified_fraction)
+    executor = _ClsScopeExecutor(
+        cell=cell, evaluate_fn=adapter, max_modified_fraction=cap,
+        modification_fraction_scope="cohort")
+
+    rows: list[dict[str, Any]] = [{
+        "program": "identity",
+        "params": {},
+        "legal": True,
+        "verifier_passed": True,
+        "cohort_modified_fraction": 0.0,
+        "cohort_modified_points": 0,
+        "cohort_total_points": int(np.asarray(cell["fit_values"]).size),
+        "rejection_codes": [],
+        "numeric_no_op": True,
+        "headroom": 0.0,
+        "delta_accuracy": 0.0,
+        "per_class_recall_delta": [],
+        "worst_class_recall_delta": 0.0,
+        "scored": False,
+        "skip_reason": "identity_headroom_is_zero_by_definition",
+    }]
+    for entry in _r2_menu():
+        steps = ((entry["program"], dict(entry["params"])),)
+        verification = executor.verify(steps, support_origin)
+        no_op = bool(
+            verification.checked_windows
+            and verification.identity_equivalent_windows
+            == verification.checked_windows)
+        record: dict[str, Any] = {
+            "program": entry["program"],
+            "params": entry["params"],
+            "legal": bool(verification.passed),
+            "verifier_passed": bool(verification.passed),
+            "cohort_modified_fraction": verification.cohort_modified_fraction,
+            "cohort_modified_points": verification.cohort_modified_points,
+            "cohort_total_points": verification.cohort_total_points,
+            "windows_over_per_window_cap": (
+                verification.windows_over_maximum_fraction),
+            "checked_windows": verification.checked_windows,
+            "rejection_codes": sorted({
+                str(row["rejection_code"])
+                for row in verification.rejected_windows}),
+            "numeric_no_op": no_op,
+            "headroom": None,
+            "delta_accuracy": None,
+            "per_class_recall_delta": None,
+            "worst_class_recall_delta": None,
+            "scored": False,
+        }
+        if not record["legal"]:
+            record["skip_reason"] = (
+                "verifier_rejected:" + ",".join(record["rejection_codes"]))
+        elif no_op:
+            record["headroom"] = 0.0
+            record["delta_accuracy"] = 0.0
+            record["per_class_recall_delta"] = []
+            record["worst_class_recall_delta"] = 0.0
+            record["skip_reason"] = "numeric_no_op"
+        else:
+            receipt = executor.evaluate(steps, support_origin)
+            delta = (float(receipt.gain) if receipt.gain is not None
+                     else None)
+            recalls = [float(value) for value in receipt.per_view_gain]
+            record["scored"] = True
+            record["headroom"] = delta
+            record["delta_accuracy"] = delta
+            record["per_class_recall_delta"] = recalls
+            record["worst_class_recall_delta"] = (
+                min(recalls) if recalls else None)
+            record["evaluate_error"] = receipt.error
+        rows.append(record)
+
+    missing = [name for name in WINE_PRECHECK_REQUIRED
+               if not any(row["program"] == name for row in rows)]
+    if missing:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "precheck menu missing required operators: %s" % missing)
+    hampel = next(row for row in rows if row["program"] == "hampel_filter")
+    hampel_headroom = hampel.get("headroom")
+    gate_pass = bool(
+        hampel["legal"]
+        and hampel_headroom is not None
+        and float(hampel_headroom) >= line)
+    return {
+        "dataset": cell["dataset"],
+        "condition": cell["condition"],
+        "injection_template": INJECTION_TEMPLATE_V2,
+        "fit_rows": cell["fit_rows"],
+        "series_length": cell["series_length"],
+        "n_heldin": n_heldin,
+        "material_line": line,
+        "maximum_modified_fraction": cap,
+        "modification_fraction_scope": "cohort",
+        "consumer": "ridge-raw-plus-difference-v1",
+        "metric": "accuracy",
+        "heldin_surface": "full_support_pool",
+        "programs": rows,
+        "hampel_legal": bool(hampel["legal"]),
+        "hampel_headroom": hampel_headroom,
+        "hampel_modified_fraction": hampel.get("cohort_modified_fraction"),
+        "hampel_rejection_codes": hampel.get("rejection_codes") or [],
+        "gate": {
+            "rule": (
+                "PASS iff hampel_filter is legal under the cohort verifier "
+                "(cap 0.10) and its held-in headroom vs identity is "
+                ">= max(0.005, 1/n_heldin).  Otherwise "
+                "FAMILY_CLOSURE_RECOMMENDED; do not spend LLM, do not "
+                "change the substrate."),
+            "n_heldin": n_heldin,
+            "material_line": line,
+            "passed": gate_pass,
+            "verdict": (
+                "PASS" if gate_pass else "FAMILY_CLOSURE_RECOMMENDED"),
+        },
+        "consumer_fits_after": fit_budget.used,
+    }
+
+
+def _dev_wine_census() -> dict[str, Any]:
+    """Local already-used Wine zip.  Not an unused-Target census."""
+    archive = PROJECT_ROOT / DATA_DIR / ("%s.zip" % WINE_DATASET)
+    if not archive.is_file():
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "local zip missing: %s/%s.zip" % (DATA_DIR, WINE_DATASET))
+    _ctx, helpers = _legacy_helpers()
+    train_values, train_labels = helpers["load"](
+        np, archive, WINE_DATASET, "TRAIN")
+    n_train = int(train_values.shape[0])
+    length = int(train_values.shape[1])
+    n_classes = int(len({int(label) for label in train_labels}))
+    return {
+        "selected": WINE_DATASET,
+        "rule": (
+            "development reuse of local Wine; the unused-Target census "
+            "is not applied"),
+        "pool_size": 1,
+        "eligible": [WINE_DATASET],
+        "selection_basis": (
+            "task-book CLS-DEV-WINE; archive %s/%s.zip"
+            % (DATA_DIR, WINE_DATASET)),
+        "archive": "%s/%s.zip" % (DATA_DIR, WINE_DATASET),
+        "bytes": int(archive.stat().st_size),
+        "official_train_rows": n_train,
+        "series_length": length,
+        "class_count": n_classes,
+        "approx_heldin_points": n_train * length,
+        "independent_confirmation": False,
+        "honesty_constraint": WINE_HONESTY,
+        "prior_use_audit": (
+            "artifacts/functional/e2/t6_cls_conf_r3_selection.json"),
+        "prior_use_runner": (
+            "evaluation/functional/"
+            "run_e2_action_credit_candidate_ordering.py"),
+    }
+
+
+def _wine_precheck_markdown(payload: Mapping[str, Any]) -> str:
+    census = payload.get("selection") or {}
+    invariance = payload.get("v2_invariance_at_150") or {}
+    derivations = payload.get("v2_geometry") or {}
+    precheck = payload.get("precheck") or {}
+    gate = precheck.get("gate") or {}
+    ledger = payload.get("ledger") or {}
+    lines = [
+        "# CLS-DEV-WINE precheck -- v2 injection legality + headroom",
+        "",
+        "protocol: `%s`  target: **%s**  evidence grade: **%s**"
+        % (payload.get("protocol_version"), payload.get("target"),
+           payload.get("evidence_grade")),
+        "",
+        "## Gate",
+        "",
+        "**%s**" % gate.get("verdict"),
+        "",
+        str(gate.get("rule") or ""),
+        "",
+        "- hampel_filter legal: %s" % precheck.get("hampel_legal"),
+        "- hampel headroom vs identity: %s (line %s, n_heldin=%s)"
+        % (precheck.get("hampel_headroom"), gate.get("material_line"),
+           gate.get("n_heldin")),
+        "- hampel cohort modified fraction: %s"
+        % precheck.get("hampel_modified_fraction"),
+        "- hampel rejection: %s"
+        % (",".join(precheck.get("hampel_rejection_codes") or []) or "-"),
+        "",
+        "## Honesty constraint",
+        "",
+        WINE_HONESTY,
+        "",
+        "This artifact is **development** evidence.  It is not an "
+        "independent confirmation and must not be cited as "
+        "CLS_CHAIN_CONFIRMED.",
+        "",
+        "## v2 scaling",
+        "",
+        "- formula: `%s`" % (invariance.get("formula") or ""),
+        "- v1 source constants: %s"
+        % (invariance.get("source_constants") or ""),
+        "- invariance at L=150: **%s**  checks=%s"
+        % (invariance.get("passed"), invariance.get("checks")),
+        "",
+    ]
+    for key in ("wine_234", "ecg200_96_reference", "gunpoint_150"):
+        row = derivations.get(key) or {}
+        if not row:
+            continue
+        lines += [
+            "### %s (L=%s)" % (row.get("label"), row.get("series_length")),
+            "",
+            "- v2 segment length: %s" % row.get("v2_segment_length"),
+            "- positions: %s" % row.get("positions"),
+            "- injection: %s = %s (below 0.10: %s)"
+            % (row.get("injection_fraction_exact"),
+               row.get("injection_fraction"),
+               row.get("injection_below_cap")),
+            "- hampel theoretical (window=%s, halo/spike=%s): %s = %s "
+              "(below 0.10: %s)"
+            % (row.get("hampel_window"), row.get("hampel_halo_per_spike"),
+               row.get("hampel_theoretical_fraction_exact"),
+               row.get("hampel_theoretical_modified_fraction"),
+               row.get("hampel_theoretical_below_cap")),
+            "- segments overlap: %s (min gap %s)"
+            % (row.get("segments_overlap"), row.get("min_gap")),
+            "",
+        ]
+    lines += [
+        "## Substrate",
+        "",
+        "- archive: `%s` (%s bytes)"
+        % (census.get("archive"), census.get("bytes")),
+        "- TRAIN rows × length: %s × %s; classes: %s"
+        % (census.get("official_train_rows"),
+           census.get("series_length"), census.get("class_count")),
+        "- held-in n (full support pool): %s" % precheck.get("n_heldin"),
+        "- consumer / metric: %s / %s"
+        % (precheck.get("consumer"), precheck.get("metric")),
+        "",
+        "## Operator table",
+        "",
+        "| program | legal | modified fraction | rejection | "
+        "no-op | headroom vs identity | worst class Δrecall |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for row in precheck.get("programs") or []:
+        headroom = row.get("headroom")
+        worst = row.get("worst_class_recall_delta")
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s | %s |"
+            % (row.get("program"), row.get("legal"),
+               row.get("cohort_modified_fraction"),
+               ",".join(row.get("rejection_codes") or []) or "-",
+               row.get("numeric_no_op"),
+               ("%+.4f" % headroom) if headroom is not None else "n/a",
+               ("%+.4f" % worst) if worst is not None else "n/a"))
+    lines += [
+        "",
+        "## Cost",
+        "",
+        "- LLM: %s / %s" % (ledger.get("llm_calls"), ledger.get("llm_cap")),
+        "- Consumer fits: %s / %s"
+        % (ledger.get("consumer_fits"), ledger.get("consumer_fit_cap")),
+        "- wall clock: %s s" % ledger.get("wall_seconds"),
+        "- downloads: 0",
+        "",
+        "## Obligations",
+        "",
+    ]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
+def _dev_wine_markdown(payload: Mapping[str, Any]) -> str:
+    text = _conf_dev_markdown(payload)
+    text = text.replace(
+        "# CLS-DEV-ECG200 -- development-grade conf lifecycle on local ECG200",
+        "# CLS-DEV-WINE -- development-grade conf lifecycle on local Wine "
+        "(v2 injection)")
+    return text
+
+
+def _dev_wine_verdict(payload: Mapping[str, Any], *,
+                      stopped: str | None) -> dict[str, Any]:
+    verdict = _conf_verdict(
+        payload, stopped=stopped,
+        positive_label=CONF_DEV_POSITIVE,
+        negative_label=CONF_DEV_NO_POSITIVE,
+        claim_limit=(
+            "development only.  " + WINE_HONESTY
+            + "  The impulse is a controlled injection; a positive here "
+            "is a second development-grade Target-local Skill, not a "
+            "fresh confirmation."))
+    verdict["forbidden_label"] = "CLS_CHAIN_CONFIRMED"
+    verdict["independent_confirmation"] = False
+    verdict["evidence_grade"] = WINE_EVIDENCE_GRADE
+    return verdict
+
+
+def dev_wine_precheck() -> int:
+    """Part B: 0-LLM legality + headroom gate on Wine with v2 injection."""
+    started = time.time()
+    print("CLS-DEV-WINE precheck  protocol=%s  dataset=%s  template=v2"
+          % (WINE_PROTOCOL, WINE_DATASET), flush=True)
+    fit_budget = FitBudget(CONF_FIT_CAP)
+    invariance = _v2_invariance_at_150()
+    if not invariance["passed"]:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "v2 invariance at L=150 failed: %s"
+                   % invariance["checks"])
+    hampel_params = _contract_params("hampel_filter")
+    hampel_window = int(hampel_params.get("window") or 3)
+    geometry = {
+        "wine_234": _v2_geometry_derivation(
+            234, hampel_window=hampel_window, label="Wine"),
+        "ecg200_96_reference": _v2_geometry_derivation(
+            ECG200_REFERENCE_LENGTH, hampel_window=hampel_window,
+            label="ECG200 reference"),
+        "gunpoint_150": _v2_geometry_derivation(
+            GUNPOINT_POSITIVE_CONTROL_LENGTH, hampel_window=hampel_window,
+            label="GunPoint positive-control length"),
+        "hampel_contract_params": hampel_params,
+        "note": (
+            "ECG200 is a constant-derivation reference, not a substrate "
+            "retry.  v2 segment at L=96 is still 1, so the 0.125 "
+            "theoretical hampel fraction is the same geometry that "
+            "failed the 0.10 cap on the ECG200 development run."),
+    }
+    wine_geom = geometry["wine_234"]
+    if wine_geom["segments_overlap"]:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "v2 segments overlap on Wine; formula produced an "
+                   "invalid geometry")
+    if not (wine_geom["injection_below_cap"]
+            and wine_geom["hampel_theoretical_below_cap"]):
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "Wine v2 derivation does not sit below the 0.10 cap")
+    census = _dev_wine_census()
+    cell = _build_cell(WINE_DATASET, CONF_CONDITION, data_dir=DATA_DIR,
+                       injection_template=INJECTION_TEMPLATE_V2)
+    precheck = _wine_precheck_pass(cell, fit_budget=fit_budget)
+    payload: dict[str, Any] = {
+        "protocol_version": WINE_PROTOCOL,
+        "run_id": "t6_cls_dev_wine_precheck1",
+        "entry": "--dev-wine-precheck",
+        "evidence_grade": WINE_EVIDENCE_GRADE,
+        "git_head": _git("rev-parse", "HEAD"),
+        "target": WINE_DATASET,
+        "condition": CONF_CONDITION,
+        "selection": census,
+        "honesty_constraint": WINE_HONESTY,
+        "independent_confirmation": False,
+        "forbidden_label": "CLS_CHAIN_CONFIRMED",
+        "v2_invariance_at_150": invariance,
+        "v2_geometry": geometry,
+        "cell": {key: value for key, value in cell.items()
+                 if key not in ("fit_values", "fit_labels",
+                                "surfaces", "observation_block")},
+        "precheck": precheck,
+        "verdict": {
+            "verdict": precheck["gate"]["verdict"],
+            "hampel_legal": precheck["hampel_legal"],
+            "hampel_headroom": precheck["hampel_headroom"],
+            "material_line": precheck["gate"]["material_line"],
+            "n_heldin": precheck["n_heldin"],
+            "rule": precheck["gate"]["rule"],
+            "next": (
+                "Part C --dev-wine-run is authorized"
+                if precheck["gate"]["passed"] else
+                "FAMILY_CLOSURE_RECOMMENDED: impulse×hampel family has "
+                "no second geometry-compatible positive field; do not "
+                "change the substrate or spend LLM"),
+        },
+        "ledger": {
+            "llm_calls": 0,
+            "llm_cap": 0,
+            "consumer_fits": fit_budget.used,
+            "consumer_fit_cap": CONF_FIT_CAP,
+            "wall_seconds": round(time.time() - started, 1),
+            "downloads": 0,
+        },
+        "obligations": {
+            "methods_package_unmodified": True,
+            "runtime_contracts_operators_unmodified": True,
+            "cap_not_raised": True,
+            "no_scan_no_tune": True,
+            "zero_llm": True,
+            "downloads": 0,
+            "ucr_conf_downloaded_not_opened": True,
+            "other_line_files_untouched": True,
+            "not_an_independent_confirmation": True,
+            "cls_chain_confirmed_label_not_used": True,
+            "existing_entries_unchanged": True,
+        },
+    }
+    WINE_PRECHECK_JSON.parent.mkdir(parents=True, exist_ok=True)
+    WINE_PRECHECK_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    WINE_PRECHECK_MD.write_text(
+        _wine_precheck_markdown(payload), encoding="utf-8")
+    print(json.dumps({
+        "verdict": payload["verdict"]["verdict"],
+        "hampel_legal": precheck["hampel_legal"],
+        "hampel_headroom": precheck["hampel_headroom"],
+        "n_heldin": precheck["n_heldin"],
+        "fits": fit_budget.used,
+        "artifact": str(WINE_PRECHECK_JSON),
+    }, ensure_ascii=False, indent=1), flush=True)
+    return 0 if precheck["gate"]["passed"] else 1
+
+
+def _dev_wine_write_stall(*, started: float, reason: str) -> None:
+    payload = {
+        "protocol_version": WINE_PROTOCOL,
+        "run_id": WINE_RUN_ID,
+        "entry": "--dev-wine-run",
+        "evidence_grade": WINE_EVIDENCE_GRADE,
+        "target": WINE_DATASET,
+        "honesty_constraint": WINE_HONESTY,
+        "independent_confirmation": False,
+        "verdict": {
+            "verdict": "COMPUTE_BUDGET_EXCEEDED",
+            "reason": reason,
+            "note": (
+                "stop-report; 90-minute wall-clock cap; not a scientific "
+                "negative"),
+            "forbidden_label": "CLS_CHAIN_CONFIRMED",
+        },
+        "ledger": {
+            "llm_calls": None,
+            "llm_cap": CONF_LLM_CAP,
+            "consumer_fits": None,
+            "consumer_fit_cap": CONF_FIT_CAP,
+            "wall_seconds": round(time.time() - started, 1),
+            "wall_cap_seconds": WINE_WALL_SECONDS,
+            "downloads": 0,
+        },
+        "obligations": {
+            "methods_package_unmodified": True,
+            "downloads": 0,
+            "ucr_conf_downloaded_not_opened": True,
+            "not_an_independent_confirmation": True,
+        },
+    }
+    WINE_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    WINE_OUT_JSON.write_text(
+        json.dumps(_plain(payload), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    WINE_OUT_MD.write_text(_dev_wine_markdown(payload), encoding="utf-8")
+
+
+def dev_wine_run(*, run_id: str = WINE_RUN_ID) -> int:
+    """Part C: same two-arm conf lifecycle on Wine, v2 injection only."""
+    import threading
+
+    if not WINE_PRECHECK_JSON.is_file():
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "Wine precheck artifact missing; run --dev-wine-precheck "
+                   "first: %s" % WINE_PRECHECK_JSON)
+    precheck = json.loads(WINE_PRECHECK_JSON.read_text(encoding="utf-8"))
+    if (precheck.get("verdict") or {}).get("verdict") != "PASS":
+        raise Stop(
+            "FAMILY_CLOSURE_RECOMMENDED",
+            "precheck did not PASS; Part C is not authorized")
+    started = time.time()
+    print("CLS-DEV-WINE start  protocol=%s  dataset=%s  wall_cap=%ss  "
+          "template=v2" % (WINE_PROTOCOL, WINE_DATASET, WINE_WALL_SECONDS),
+          flush=True)
+    armed = {"live": True}
+
+    def _timeout() -> None:
+        if not armed["live"]:
+            return
+        _dev_wine_write_stall(
+            started=started,
+            reason=("hard wall-clock cap of %ss reached; process terminated"
+                    % WINE_WALL_SECONDS))
+        print(json.dumps({
+            "verdict": "COMPUTE_BUDGET_EXCEEDED",
+            "target": WINE_DATASET,
+            "wall_seconds": round(time.time() - started, 1),
+            "artifact": str(WINE_OUT_JSON),
+        }, ensure_ascii=False, indent=1), flush=True)
+        os._exit(2)
+
+    timer = threading.Timer(WINE_WALL_SECONDS, _timeout)
+    timer.daemon = True
+    timer.start()
+    extra = {
+        "honesty_constraint": WINE_HONESTY,
+        "independent_confirmation": False,
+        "forbidden_label": "CLS_CHAIN_CONFIRMED",
+        "wall_cap_seconds": WINE_WALL_SECONDS,
+        "ledger_downloads": 0,
+        "precheck_gate": (precheck.get("verdict") or {}),
+        "obligations": {
+            "sealed_d2_d3_untouched": True,
+            "ucr_conf_downloaded_not_opened": True,
+            "methods_package_unmodified": True,
+            "downloads": 0,
+            "not_an_independent_confirmation": True,
+            "cls_chain_confirmed_label_not_used": True,
+            "precheck_passed": True,
+            "injection_template": INJECTION_TEMPLATE_V2,
+            "target_never_used_before": (
+                "FALSE.  Wine is a local already-used substrate "
+                "(action_credit line under the same impulse pair); this "
+                "is development reuse, not a virgin Target"),
+        },
+    }
+    try:
+        return conf_run(
+            run_id=run_id, protocol=WINE_PROTOCOL,
+            out_json=WINE_OUT_JSON, out_md=WINE_OUT_MD,
+            census_fn=_dev_wine_census,
+            entry="--dev-wine-run", data_dir=DATA_DIR, extra=extra,
+            markdown_fn=_dev_wine_markdown,
+            verdict_fn=_dev_wine_verdict,
+            evidence_grade=WINE_EVIDENCE_GRADE,
+            accepted_verdicts=(CONF_DEV_POSITIVE, CONF_DEV_NO_POSITIVE),
+            injection_template=INJECTION_TEMPLATE_V2)
+    finally:
+        armed["live"] = False
+        timer.cancel()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke", action="store_true")
@@ -5342,6 +6116,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         action="store_true")
     parser.add_argument("--conf-dev-run", dest="conf_dev_run",
                         action="store_true")
+    parser.add_argument("--dev-wine-precheck", dest="dev_wine_precheck",
+                        action="store_true")
+    parser.add_argument("--dev-wine-run", dest="dev_wine_run",
+                        action="store_true")
     parser.add_argument("--dataset", dest="dataset", default=None)
     parser.add_argument("--run-id", dest="run_id", default=None)
     args = parser.parse_args(list(argv) if argv is not None else None)
@@ -5350,8 +6128,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.conf_select, args.conf_run,
             args.conf_r2_select, args.conf_r2_run,
             args.conf_dl_select, args.conf_dl_run,
-            args.conf_dev_run]) != 1:
+            args.conf_dev_run, args.dev_wine_precheck,
+            args.dev_wine_run]) != 1:
         parser.error("choose exactly one entry point")
+    if args.dev_wine_precheck:
+        return dev_wine_precheck()
+    if args.dev_wine_run:
+        return dev_wine_run(run_id=args.run_id or WINE_RUN_ID)
     if args.conf_dev_run:
         return conf_dev_run(
             dataset=args.dataset or CONF_DEV_DEFAULT_DATASET,

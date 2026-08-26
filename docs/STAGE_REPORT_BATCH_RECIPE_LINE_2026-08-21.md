@@ -993,6 +993,26 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:runner 最小入口 `--conf-dev-run`(`--dataset` 默认 ECG200);隔离工件 `t6_cls_conf_dev_ecg200.json/.md`;本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;未触 `data/ucr_conf_downloaded/`;他线文件未碰;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
 
+### sol 裁定:帽不动/注入模板等比缩放/暂停 IPD/Wine 预检制 dev 验证/否则关 family(2026-08-26 12:06)
+
+(1) **0.10 修改帽保留,不为结果调高**;(2) 注入模板改为**随序列长度等比缩放**,比例从 GunPoint 正控机械换算、禁止扫描,并保证注入占比低于修改帽;(3) **ItalyPowerDemand 暂停**(24 点,现协议必然更不适配);(4) 许可**一次**本地 development 机制验证:长度≥150、规模小,**推荐 Wine**(57×234);**先 0-LLM"程序合法性+headroom"预检**(hampel 可执行 ∧ 确实正向)通过才花 LLM 跑 Harness;(5) 若仍无合法正向 headroom → **关闭 impulse×hampel family,不再换数据追结果**。定位一句话:分类 Harness 已能运行且会正确拒绝有害处理(ECG200 零害守住);缺第二个几何相容正向场;Shared Skill 归纳与真 A5>A3 跨域主考均未到条件。ECG200 反馈面未被证伪(outlier_mad Support −0.1429 被正确不晋升)。
+
+### CLS-DEV-WINE:注入模板 v2 等比缩放 + 0-LLM 预检——FAMILY_CLOSURE_RECOMMENDED(2026-08-26 12:1x,执行方)
+
+**判定**:**FAMILY_CLOSURE_RECOMMENDED**(development;非独立确认;禁 `CLS_CHAIN_CONFIRMED`)。冻结门 = `hampel_filter` 合法 ∧ held-in headroom ≥ max(0.005, 1/n_heldin)。Wine n_heldin=17,线 = 0.0588。hampel **合法**(cohort 修改分数 0.0297 < 0.10 帽)但 headroom = **+0.0000**,且 worst-class Δrecall = −0.5556(类交换、净精度不动)。按书停 Part C,不换数据,不花 LLM。
+
+**v2 换算**:原常量 `run_e2_task_context_label_evidence_witness.py:37` `SPIKE_FRACTIONS=(0.08,0.20,0.80,0.92)`;`:38` `SPIKE_AMPLITUDE=16.0`;`:95-100` `_inject` 每位点写 1 点 → v1 段长=1。公式 `段长=round(1/150×L)`。L=150 不变性断言 **passed**(段长/位点/幅度/分数/注入字节五检全过)。Wine L=234 → 段长 2,注入 8/234≈0.0342,hampel 理论上界 16/234≈0.0684,均 < 0.10。ECG200 参考位 L=96 → 段长仍 1,理论 12/96=0.125 仍超帽(只作常数对照,未再跑该底物)。
+
+**预检全表**(cohort 0.10 帽;consumer = ridge-raw-plus-difference-v1 / accuracy;held-in = 全 support 池 17 行):合法且非空动作仅 `hampel_filter`(0.0297,+0.0000);`identity` 与插补/resample/denoise_median 合法但 no-op; `outlier_mad`/`outlier_iqr`/`winsorize`/`repair_*` 及全局平滑族一律 `COHORT_MODIFICATION_FRACTION_EXCEEDED`。无第二合法正向动作。
+
+**成本**:LLM 0/0;fit 2/200;墙钟 runner 账 1.2 s;下载 0。Part C `--dev-wine-run` 未开。
+
+**提交**:runner 新入口 `--dev-wine-precheck`/`--dev-wine-run`(v2 仅这两口;既有 `--conf-*`/`--r2-*` 仍走 v1);工件 `t6_cls_dev_wine_precheck.json/.md`;本节。`methods/`/`runtime/`/`contracts/`/`operators/` 零改动;未触 `data/ucr_conf_downloaded/`;他线文件未碰;未跑全仓 pytest。解释器 `D:\Anaconda_envs\envs\project\python.exe`。
+
+### 中午统一摘要:上午四步全收口;ECG200 dev 负结果定性为"校验器-几何失配";正式确认前置问题呈 sol(2026-08-26 12:0x,主线)
+
+**上午成绩单**:(1) D1 BinaryHeartbeat 09:55 终止,COMPUTE_BUDGET_EXCEEDED+INSTRUMENT_SCALE_MISMATCH,提交 10f9fee;(2) T1 可见性修复落地(谓词 retrieval.py:274 单闸口,C40 卡 Fast 恒拦/Slow 保留,A3 视图 sha 逐字节不变,聚焦+fixture+回归 22/22 全绿,h0 锁机械重生成仅 retrieval sha 与 runtime_bundle_sha 移动,提交 03f2c1b);(3) T2 重放判 VISIBILITY_INVARIANT_HOLDS(卡装 store/Slow 可见,Fast 三面恒缺席;C40 双轮 level-shift 锁破,r2 探 outlier_iqr 获合法 Support;后端锁定 gpt-5.6-sol@agicto 核对通过;9 LLM/546s,提交 168cc99)——**惰性不变量成立,且确认"去误导只还冷启动,不送发现"**;(4) CLS-DEV-ECG200 判 **DEV_CHAIN_NO_POSITIVE**(229s/10 LLM/12 fit,管线首次正常规模端到端收口,提交 96db0e9)。**ECG200 负结果机制定性(比结果本身重要)**:hampel 在该底物被 cohort 校验器拒——修改分数 0.128>帽 0.10(47/70 窗超帽);注入模板固定段长,96 点短行占比天然高;唯一合法回执 outlier_mad 系 Support 有害;A3 守 identity(0.6000=Static,零害)。**定性:同 impulse family、不同 Program 几何/校验器命运——不是"修复不迁移"的证据;GunPoint 正例仍 n=1**。此系"协议常数泄漏底物假设"第三例(前:AD contamination=0.1、选靶漏计算门)。**呈 sol 决策件**:(A) 几何失配修哪端——注入模板按长度等比缩放(改注入,保帽),或 cohort 帽按 task_context 参数化(改帽,须防"按注入调帽"倒挂),或两者;(B) **ItalyPowerDemand 24 点/行,同模板+帽下大概率结构不可用**——正式确认选靶须同时过总点数门(≤100k)与长度-模板相容门(下限从模板常量机械导出),下载授权前必须先裁 (A);(C) 是否许可第二个本地轻底物 dev 跑(定位为注入几何×校验器机制研究,非钓正例;候选须长度≥GunPoint 级)。**队列状态**:sol 夜间队列全部履行(T0 终止/T1 过/T2 过/T3-T4 按门跳过)+重构后 dev 跑完成;无在飞任务;等 sol 裁 (A)(B)(C) 后发车。
+
 ### 夜间-早晨统一状态摘要:D1 计算不可行终止;sol 重构分类数据使用策略;队列重启(2026-08-26 09:5x,主线)
 
 **T0 时间线**:BinaryHeartbeat 两臂 21:36 开跑,选靶+下载 26min 正常;A3 臂 22:02 起,**12.3h 仅完成 r1(probes=1, winner=None, delayed=None)**,进程全程单核 ~91% 真算非挂(累计 CPU ~11h);执行子代理 08:16 网络死亡,跑批本体独立存活由主线看护;09:55:06 按用户+sol 明确裁定人工终止。**判定:COMPUTE_BUDGET_EXCEEDED(主)+ INSTRUMENT_SCALE_MISMATCH(次)——非科学负结果,CLS-CONF 问题保持 OPEN,r1 无 winner 系局部观察不得引为不复现证据**。部分工件保留(选靶 census/ROSTER/终端轨迹/store 快照)。性能实证:378 万总点数底物单轮数小时,瓶颈为随点数放大的管线热路径(留 profiling 定位),LLM/fit 帽不封单位算量——选靶规则漏"行数×长度"的规则债被坐实。**sol 重构裁定(全采)**:(1) 立即停,判计算不可行;(2) **当前分类开发改用本地 ECG200**(100/100×96≈1.92 万点,证据等级明确 development)——本地 18 件跑过条件对者不可再包装为全新独立确认,但完全可用于接线/生命周期/Scope 编译开发/A3-A5 机制调试/已曝光 development 复现;(3) 最终独立确认另用满足计算门的轻量未曝光 Target(候选 ItalyPowerDemand 67×24,届时另行下载授权);(4) **选靶规则修正:先过公开结构计算门(例:总点数≤100,000)再机械排序,禁止单纯字典序**;(5) CatsDogs/Epilepsy2 继续封存,不得因已下载强用。**核心原则入典:开发数据可重复用;唯最终承重确认需处女数据**。**队列重启**:复活 dl 执行者出终止记录+提交 → T1 最小可见性修复(opus)→ T2 C40 单臂重放(grok,锁原后端)→ ECG200 development 级 conf 机制跑(接续 Scope 编译开发)→ 终考事宜(D2 处置/可行性门正式化/ItalyPowerDemand)另呈 sol。
