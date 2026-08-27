@@ -1,6 +1,12 @@
 {
   "protocol": "cap0_epilepsy2_capstone_freeze_v1",
   "book": "CAP-0",
+  "status": "SUPERSEDED_IN_PART",
+  "superseded_note": "Seal verdict SEAL_INTACT and structural MATCH remain in force. The mod-24 TEST subset rule and the CAP-0 auto-unseal trigger are superseded by cap1_capstone_protocol_freeze_v1 (seeded sample of the same 476 rows + full exam protocol). Do not use frozen_k=24 at unseal.",
+  "superseded_by": {
+    "protocol": "cap1_capstone_protocol_freeze_v1",
+    "path": "artifacts/functional/e2/cap1_capstone_protocol_freeze.json"
+  },
   "written_utc_date": "2026-08-27",
   "git_head_at_write": "19c6b227abf1a831bdfdb0808ddb42f74224b48e",
   "discipline": {
@@ -181,7 +187,9 @@
     "row_counts_match_official_metadata": true
   },
   "part2_subset_rule": {
-    "status": "FROZEN",
+    "status": "SUPERSEDED",
+    "superseded_by": "cap1_capstone_protocol_freeze_v1.sampling",
+    "supersede_reason": "mod-24 systematic sample can be class/batch-biased; CAP-1 replaces it with sorted(random.Random(20260827).sample(range(11420), 476)). n_sub=476 and total_points=98968 unchanged.",
     "index_origin": 0,
     "train_rule": "use every TRAIN data-record row (all 80)",
     "test_rule": "keep TEST data-record row index i if i ≡ 0 (mod k), i = 0 .. N-1",
@@ -228,8 +236,9 @@
     "frozen_total_points": 98968,
     "identical_subset_all_arms": ["Static", "A3", "A5"],
     "auto_unseal": {
-      "trigger": "S1-v2 passes its pre-registered gate",
-      "action": "unseal D3 under this protocol and apply the frozen subset; no second authorization required",
+      "status": "SUPERSEDED",
+      "trigger": "SUPERSEDED by CAP-1: S1-v2 forward x2 S1V2_FORWARD_SIGNAL and reverse x1 confirmation, then unseal under cap1_capstone_protocol_freeze_v1",
+      "action": "do not unseal under CAP-0 subset; use CAP-1 protocol",
       "until_then": "no oracle, no fit, no label read, no value parse of D3"
     }
   },
@@ -237,9 +246,9 @@
     "seal": "SEAL_INTACT",
     "structure": "MATCH",
     "capstone_target": "Epilepsy2 / EpilepticSeizures.zip D3_reserve",
-    "subset": "TRAIN all 80 rows; TEST i ≡ 0 (mod 24) → 476 rows; 556 * 178 = 98968 points",
-    "arms": "Static, A3, and A5 must use this exact same subset",
-    "authorization": "After S1-v2 passes the pre-registered gate, open under this protocol automatically. No further download or authorization book is required unless a later book records SEAL_BROKEN or a loader finds STRUCTURAL_MISMATCH.",
+    "subset": "SUPERSEDED: do not use i ≡ 0 (mod 24). CAP-1 owns the 476-row seeded list. n and point cap from this book still stand.",
+    "arms": "Static, A3, and A5 must use the CAP-1 identical subset",
+    "authorization": "SUPERSEDED: unseal only under cap1_capstone_protocol_freeze_v1 after S1-v2 forward x2 SIGNAL and reverse x1 confirm.",
     "pre_unseal_ban": "oracle / fit / label / value reads of D3 remain forbidden until that gate."
   }
 }

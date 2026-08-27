@@ -1,5 +1,9 @@
 # CAP-0: Epilepsy2 seal audit + capstone subset freeze
 
+> **SUPERSEDED IN PART (CAP-1, 2026-08-27).**  
+> 密封判词 `SEAL_INTACT` 与结构 `MATCH`（TRAIN 80 / TEST 11420 / 476 行 / 98968 点）仍有效。  
+> **mod-24 TEST 规则与 CAP-0 开封触发已作废。** 开封与子集以 `cap1_capstone_protocol_freeze_v1` 为准：`sorted(random.Random(20260827).sample(range(11420), 476))` + 完整终考协议。勿在开封时使用 `k=24`。
+
 protocol: `cap0_epilepsy2_capstone_freeze_v1`  
 written: 2026-08-27  
 HEAD at write: `19c6b227abf1a831bdfdb0808ddb42f74224b48e`
@@ -93,13 +97,14 @@ TRAIN / TEST 成员存在，行数与官方元数据一致 → **`MATCH`**，不
 - `n_sub(24) = floor(11419/24)+1 = 476` ∈ [400, 480]；`556 × 178 = 98968 ≤ 100000`。
 - `k = 25..28` 也在带宽内，但不是最小 `k`。`k = 29` 起 `n_sub = 394 < 400`。
 
-**冻结：`k = 24`，TEST 子集 476 行，TRAIN+TEST 556 条 × 178 = 98968 点。**
+**原冻结：`k = 24`，TEST 子集 476 行，TRAIN+TEST 556 条 × 178 = 98968 点。**  
+**CAP-1：该行号规则 SUPERSEDED；476 / 98968 保留，行号改为种子随机清单。**
 
 ## 4. 冻结声明
 
 1. Capstone Target = 密封 D3 `Epilepsy2` / `EpilepticSeizures.zip`。
-2. 子集规则：TRAIN 全 80 行；TEST 行号 `i ≡ 0 (mod 24)` → 476 行；总点 98968。
-3. **Static / A3 / A5 三臂必须使用完全相同的该子集。**
-4. **S1-v2 通过预注册门后，按本协议自动开封并套用该子集，无需再次授权。**
+2. 子集规则：**SUPERSEDED。** 勿用 `i ≡ 0 (mod 24)`。见 CAP-1 种子清单。总点 98968 仍成立。
+3. **Static / A3 / A5 三臂必须使用 CAP-1 的同一子集。**
+4. **开封触发 SUPERSEDED。** 改为 S1-v2 正序 ×2 出 `S1V2_FORWARD_SIGNAL` 且反序 ×1 确认后，按 CAP-1 协议自动开封，无需再次授权。
 5. 开封前禁止对 D3 做 oracle / fit / 标签读取 / 数值解析。
 6. 若日后 loader 发现结构不再匹配，记 `STRUCTURAL_MISMATCH` 并停用本冻结，再回到新下载路线。
