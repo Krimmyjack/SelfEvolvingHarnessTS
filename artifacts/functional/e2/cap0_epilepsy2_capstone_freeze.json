@@ -1,0 +1,245 @@
+{
+  "protocol": "cap0_epilepsy2_capstone_freeze_v1",
+  "book": "CAP-0",
+  "written_utc_date": "2026-08-27",
+  "git_head_at_write": "19c6b227abf1a831bdfdb0808ddb42f74224b48e",
+  "discipline": {
+    "llm_calls": 0,
+    "fits": 0,
+    "downloads": 0,
+    "code_changes": 0,
+    "stage_report_written": false,
+    "allowlist": [
+      "artifacts/functional/e2/cap0_epilepsy2_capstone_freeze.json",
+      "artifacts/functional/e2/cap0_epilepsy2_capstone_freeze.md"
+    ]
+  },
+  "target": {
+    "role": "D3_reserve",
+    "official_metadata_name": "Epilepsy2",
+    "zip_path": "data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip",
+    "source_url": "https://timeseriesclassification.com/aeon-toolkit/EpilepticSeizures.zip",
+    "note": "aeon-toolkit/Epilepsy2.zip returned 404.php; equivalent official zip stored 2026-08-25T13:26:20Z"
+  },
+  "zero_value_label_read_declaration": {
+    "this_book": true,
+    "statement": "CAP-0 did not parse any numeric series tokens or class labels from D3. Allowed operations only: zip member names, ZipInfo sizes, raw-byte newline counts on TRAIN.ts and TEST.ts, and recognition of the exact header token @data as a section marker. EpilepticSeizures.txt, EpilepticSeizures.png, and val.ts contents were not opened.",
+    "prior_authorized_member_name_opens_are_not_unseals": true
+  },
+  "part1_seal_audit": {
+    "verdict": "SEAL_INTACT",
+    "definition": {
+      "allowed_prior_ops": "zip open + member-name listing (namelist / ZipInfo)",
+      "unseal": "reading numeric values or class labels from any D3 zip member"
+    },
+    "roster": {
+      "path": "data/ucr_conf_downloaded/ROSTER.md",
+      "table_row": {
+        "role": "D3_reserve",
+        "dataset": "Epilepsy2",
+        "downloaded_utc": "2026-08-25T13:26:20Z",
+        "bytes": 16220082,
+        "sealed": "yes — sol 2026-08-26: remain sealed; do not force-use because already downloaded",
+        "values_loaded": "no (zip open + member names only)"
+      },
+      "section_D3_reserve": {
+        "path_declared": "data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip",
+        "official_metadata": "TRAIN 80 / TEST 11420 / length 178 / 2 classes / 1 channel",
+        "members_declared": [
+          "EpilepticSeizures/",
+          "EpilepticSeizures/EpilepticSeizures.png",
+          "EpilepticSeizures/EpilepticSeizures.txt",
+          "EpilepticSeizures/EpilepticSeizures_TEST.ts",
+          "EpilepticSeizures/EpilepticSeizures_TRAIN.ts",
+          "EpilepticSeizures/val.ts"
+        ],
+        "role_declared": "Structural-failure reserve only. Do not load values unless a future book promotes it after a classified structural failure of D1, and only before the first LLM spend.",
+        "sol_2026_08_26": "remain sealed. Compute-infeasible D1 is not a structural/load failure; do not promote or force-use this zip because it is already on disk."
+      }
+    },
+    "on_disk": {
+      "directory_exists": true,
+      "only_file": "EpilepticSeizures.zip",
+      "bytes": 16220082,
+      "bytes_match_roster": true,
+      "mtime_local_cst": "2026-08-25 21:26:20",
+      "mtime_matches_roster_utc": true,
+      "leftover_epilepsy2_404_stub": false,
+      "zip_gitignored": true,
+      "gitignore_rule": "*.zip"
+    },
+    "git_history_of_path": {
+      "tracked_under_data_ucr_conf_downloaded": "ROSTER.md only; D3 zip never entered git",
+      "commits_touching_data_ucr_conf_downloaded_or_ROSTER_md": [
+        {
+          "hash": "10f9fee503c4596aba8069b827a4cd37310a28f0",
+          "date": "2026-08-26 10:07:25 +0800",
+          "subject": "record CLS-CONF-dl D1 termination as compute-budget exceeded"
+        }
+      ],
+      "commits_pickaxe_D3_reserve_or_EpilepticSeizures": [
+        "10f9fee503c4596aba8069b827a4cd37310a28f0"
+      ],
+      "later_mentions_are_not_path_writes": [
+        "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md (remain sealed / CAP-0 redirect; no zip open)",
+        "docs/S1V2_DESIGN_DRAFT_2026-08-27.md (future auto-unseal after CAP-0 freeze; no zip open)",
+        "artifacts/functional/e2/t6_cls_conf_dl.json/.md (official metadata.csv census written before zips; D3 sealed:true)",
+        "evaluation/functional/run_e2_t6_cls_op_shared_harness.py seal_table note only"
+      ]
+    },
+    "who_opened_zip_members_only": [
+      {
+        "artifact": "_scratch/cls_conf_dl_download.py",
+        "op": "_members_only = ZipFile.namelist(); first D3 attempt wrote Epilepsy2.zip 404.php 44 bytes and raised BadZipFile",
+        "values_read": false
+      },
+      {
+        "artifact": "_scratch/cls_conf_dl_d3_retry.json",
+        "op": "successful fetch of EpilepticSeizures.zip 16220082 bytes at 2026-08-25T13:26:20Z; member list recorded",
+        "flags": {
+          "content_not_read": true,
+          "values_not_loaded": true
+        },
+        "values_read": false
+      }
+    ],
+    "who_did_not_load_d3_values": [
+      {
+        "path": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+        "evidence": "sole Python mention of D3_reserve / EpilepticSeizures.zip is seal_table at lines 2854-2860: sealed True, values_loaded False, members only. CONF_DL_DATA_DIR is data/ucr_conf_downloaded/D1 only. _conf_dl_census enumerates D1 zips only. obligations.d2_d3_values_not_loaded True."
+      },
+      {
+        "path": "_scratch/convert_ucr_ts_to_txt_zip.py",
+        "evidence": "ROSTER conversion is D1 BinaryHeartbeat only; D3 was not converted."
+      },
+      {
+        "path": "artifacts/functional/e2/t6_cls_conf_dl.json",
+        "evidence": "Epilepsy2 train_size 80 / test_size 11420 / length 178 come from official metadata.csv census before dataset zips (audit_gate PASSED_FILTER_TRAJECTORY_WRITTEN_BEFORE_DATASET_ZIPS; downloads_started false in that snapshot). Not zip series or labels."
+      }
+    ],
+    "mechanical_search": {
+      "python_hits_D3_reserve_or_EpilepticSeizures": [
+        "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+      ],
+      "no_loader_reads_d3_zip_values_or_labels": true
+    },
+    "evidence_chain": [
+      "ROSTER.md D3 row + section: sealed, values loaded = no, member names only, remain sealed after D1 compute kill.",
+      "On-disk zip bytes 16220082 and UTC timestamp match ROSTER; zip is gitignored and never committed.",
+      "git log on data/ucr_conf_downloaded and pickaxe D3_reserve/EpilepticSeizures: only 10f9fee (ROSTER + termination record).",
+      "Prior zip opens are namelist-only; d3_retry.json records content_not_read and values_not_loaded.",
+      "No runner, conversion, oracle, or fit artifact loads D3 numeric values or labels.",
+      "CAP-0 structural pass used member names + line counts only; no token/label parse."
+    ]
+  },
+  "part2_structural": {
+    "verdict": "MATCH",
+    "allowed_ops_this_book": [
+      "ZipFile.namelist()",
+      "ZipInfo.file_size / compress_size",
+      "read TRAIN.ts and TEST.ts as raw bytes",
+      "count b'\\n' and lines after the exact header token @data",
+      "did not split tokens, float-parse, or read labels",
+      "did not open EpilepticSeizures.txt, EpilepticSeizures.png, or val.ts bytes"
+    ],
+    "members_observed": [
+      "EpilepticSeizures/",
+      "EpilepticSeizures/EpilepticSeizures.png",
+      "EpilepticSeizures/EpilepticSeizures.txt",
+      "EpilepticSeizures/EpilepticSeizures_TEST.ts",
+      "EpilepticSeizures/EpilepticSeizures_TRAIN.ts",
+      "EpilepticSeizures/val.ts"
+    ],
+    "members_match_roster": true,
+    "train_member": "EpilepticSeizures/EpilepticSeizures_TRAIN.ts",
+    "test_member": "EpilepticSeizures/EpilepticSeizures_TEST.ts",
+    "train_member_present": true,
+    "test_member_present": true,
+    "train": {
+      "file_newlines": 87,
+      "data_marker_seen": true,
+      "data_record_lines": 80,
+      "bytes": 272040
+    },
+    "test": {
+      "file_newlines": 11427,
+      "data_marker_seen": true,
+      "data_record_lines": 11420,
+      "bytes": 38806349
+    },
+    "val_ts": {
+      "present": true,
+      "content_opened": false,
+      "file_size": 68077,
+      "note": "extra member listed in ROSTER; not a mismatch; content not read"
+    },
+    "expected": {
+      "train_rows": 80,
+      "test_rows": 11420,
+      "length": 178
+    },
+    "row_counts_match_official_metadata": true
+  },
+  "part2_subset_rule": {
+    "status": "FROZEN",
+    "index_origin": 0,
+    "train_rule": "use every TRAIN data-record row (all 80)",
+    "test_rule": "keep TEST data-record row index i if i ≡ 0 (mod k), i = 0 .. N-1",
+    "N_test_rows": 11420,
+    "length": 178,
+    "n_sub_formula": "n_sub(k) = floor((N-1)/k) + 1",
+    "constraints": {
+      "n_sub_band": [400, 480],
+      "total_points_cap": 100000,
+      "total_points_formula": "(80 + n_sub) * 178",
+      "choose": "smallest integer k satisfying both"
+    },
+    "arithmetic": {
+      "cap_over_length": "100000 / 178 = 561.7977528089888",
+      "max_rows_under_cap": "floor(100000/178) = 561 ⇒ n_sub ≤ 561 - 80 = 481",
+      "band_and_cap": "band max 480 is stricter than point-cap 481; therefore n_sub ≤ 480 and (80+n_sub)*178 ≤ 99680 ≤ 100000",
+      "k_min_for_band_max": "n_sub(23) = floor(11419/23)+1 = 496+1 = 497 > 480; n_sub(24) = floor(11419/24)+1 = 475+1 = 476 ≤ 480 ⇒ k ≥ 24",
+      "k_max_for_band_min": "n_sub(28) = 408 ≥ 400; n_sub(29) = 394 < 400 ⇒ k ≤ 28 for the band",
+      "k23_rejected": {
+        "k": 23,
+        "n_sub": 497,
+        "in_band": false,
+        "total_points": 102706,
+        "under_cap": false,
+        "note": "497 ≈ the task-book 482-near-overflow case; 577*178 = 102706 > 100000"
+      },
+      "k24_accepted": {
+        "k": 24,
+        "n_sub": 476,
+        "in_band": true,
+        "rows_total": 556,
+        "total_points": 98968,
+        "under_cap": true,
+        "mul_check": "556 * 178 = 98968"
+      },
+      "other_band_k_larger_than_min": [25, 26, 27, 28],
+      "selected_k_is_minimum_satisfying_both": true
+    },
+    "frozen_k": 24,
+    "frozen_n_test_subset": 476,
+    "frozen_n_train": 80,
+    "frozen_length": 178,
+    "frozen_total_series": 556,
+    "frozen_total_points": 98968,
+    "identical_subset_all_arms": ["Static", "A3", "A5"],
+    "auto_unseal": {
+      "trigger": "S1-v2 passes its pre-registered gate",
+      "action": "unseal D3 under this protocol and apply the frozen subset; no second authorization required",
+      "until_then": "no oracle, no fit, no label read, no value parse of D3"
+    }
+  },
+  "freeze_declaration": {
+    "seal": "SEAL_INTACT",
+    "structure": "MATCH",
+    "capstone_target": "Epilepsy2 / EpilepticSeizures.zip D3_reserve",
+    "subset": "TRAIN all 80 rows; TEST i ≡ 0 (mod 24) → 476 rows; 556 * 178 = 98968 points",
+    "arms": "Static, A3, and A5 must use this exact same subset",
+    "authorization": "After S1-v2 passes the pre-registered gate, open under this protocol automatically. No further download or authorization book is required unless a later book records SEAL_BROKEN or a loader finds STRUCTURAL_MISMATCH.",
+    "pre_unseal_ban": "oracle / fit / label / value reads of D3 remain forbidden until that gate."
+  }
+}
