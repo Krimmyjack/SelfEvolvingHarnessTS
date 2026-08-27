@@ -1013,6 +1013,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### S1-v2 Part 0 停报:`COURSE_NOT_CONSTRUCTIBLE`;本地池无第五个可学 hampel 单元,未烧一次 LLM(2026-08-27 18:2x,执行方)
+
+**判词:`COURSE_NOT_CONSTRUCTIBLE`**(Part 0 算术预检,**0 LLM / 0 fit / 0 下载**)。按设计稿"推演不通 → 停报,不烧 LLM"执行,四臂正序 ×2 **未发车**;LLM 500 帽、fit 900 帽分文未动。
+
+**对半协议余量重算(全池,复用 M-1 role-concat 算术:Support=r1s+r2s、delayed=r1d+r2d,双门保留)**:清 2× 的 hampel 单元共 **6 个**——GPA 7.00×、GPOvY 5.00×、PowerCons-burst 5.00×、PowerCons-impulse 5.00×、GunPoint-impulse 3.00×、GPMvF-impulse 2.00×(季度余量分别为 3.75/4.15/2.22/2.44/1.40/1.35,对半协议一律抬升,与 M-1 因果结论同向)。其余带 hampel 的单元(BeetleFly-burst、GPMvF-burst、Herring、MoteStrain、SonyAIBO2-burst、ToeSeg2-burst)**全部 HELDOUT_ONLY**。
+
+**产例侧成立**:排除四个他书已用单元(GPA/PowerCons-impulse 双源、GPOvY PS-2/W-1 考场、GPMvF-impulse M-1)后,恰剩 **PowerCons__burst_cls2(5.00×)与 GunPoint__impulse_v2(3.00×)** 两个未被占用的 ≥2× 可学 hampel 单元,`task_episode_id` 互异,五轴 Scope 交集 **19 叶非空**——课程内自产供给卡的证据对是存在的。
+
+**受益侧不成立(第一处未满足条件)**:候选受益单元必须"机器 Scope 匹配 ∧ held-in 可学"。剩余六个带 hampel 单元里只有 `GunPointMaleVersusFemale__burst_cls2` 机器匹配,而它 **HELDOUT_ONLY**——"考官可见、学生不可学",held-in 反馈按构造批不了该族。**若照书内"取机器匹配且余量最高者"的宽松条款收下它,等于把 `NO_TRANSFER` 预先写死在池的性质上而非 Harness 的性质上**,正是 S1a-r2 已经踩过、而本预检存在的目的就是拦住的那一类。故本书把宽松条款读作"放宽余量档,不放宽 held-in 可学性",并如实报停。
+
+**反事实(供主线裁决,已入工件)**:四个被排除单元**若释放则全部合格**为受益单元——GPA 7.00×、GPOvY 5.00×、PowerCons-impulse 5.00×、GPMvF-impulse 2.00×,四者机器 Scope 全匹配且 held-in LEARNABLE。**代价分级**:释放任一双源单元会让卡变成"部分带资进场",直接消解本考"课程内自产 vs 带资进场"的区分;释放 GPOvY 或 GPMvF-impulse 只损失与已读过该单元的书的独立性,代价小得多。**本书不自行释放任何排除项**——排除名单是设计稿冻结件,改它属方法决策。
+
+**书外发现**:(1) 首版选课把 `GunPointMaleVersusFemale__burst_cls2` 当受益单元选中并判 `S1V2_COURSE_FROZEN`,其 menu oracle 实为 `outlier_iqr`、census HELDOUT_ONLY;若照此发车,六单元全程会在预计首分叉位置产出一个**注定否决**的读数,而判词会写成 `NO_TRANSFER` —— 预检收紧后当场翻为停报。**这是本轮最有价值的一次自查:一个"能跑通"的课程不等于一个"能证伪"的课程**。(2) 同一次收紧还发现治理槽会把 BeetleFly 的 impulse 与 burst 两个视图同时选进 identity 与 HELDOUT_ONLY 槽,已改为按 dataset 去重。(3) 若课程当时成立,`Δ_material = max_u(1/n_slice_u)` 会是 **1/7 ≈ 0.143**(由 GunPoint-impulse 对半协议最粗切片 n=7 决定)——这个 regret 门比任何单元的实际 held-out 余量都苛刻,说明**即便课程构成,材料门本身也需要主线复核**:要么课程避开 n 极小的单元,要么门的定义改用加权而非 max。此点单列供裁决。
+
+**提交**:`evaluation/functional/run_e2_s1v2_forward_course.py`(Part 0 冻结件生成器;live 入口读冻结件的判词把关,课程未冻结时拒跑)、`artifacts/functional/e2/s1v2_course_freeze.json/.md`、本节。`methods/`/`contracts/`/`runtime/`/`operators/` 零改;`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`/设计稿 未碰;密钥零出现;未跑全仓 pytest。
+
 ### P0 收口:供给档在**产卡端**落地;`SUPPLY_TIER_PRODUCTION_REACHABLE`(2026-08-27 18:0x,执行方)
 
 **判词:`SUPPLY_TIER_PRODUCTION_REACHABLE`**(infrastructure;确定性,**0 LLM / 0 fit / 0.3 s / 0 下载**)。仲裁核码定案兑现:W-1 只接通读卡端,产卡端此前唯一的正向出口是 TRY 档(LOO 使其实要 3 个未受引导正例),两源课程照跑必然要么产不出可消费的卡、要么产出权限过强的旧卡。本书补上**供给档出口**。
@@ -1130,6 +1146,10 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **核心正效果移动:是。** 唯一变量(四分→角色拼接对半:Support n=21 / delayed n=19,单轮双门)下,A5-scoped **供给候选经双门转化 2/4**(m1_a5_1/2),部署 held-out **+0.1867**,harm 0。冻结判词 **`MARGIN_GATING_CONFIRMED`**:确认面余量门控成立,余量分层进 Gate 4。算术先行 0 fit:Support 4.00× / delayed 2.00×,均 ≥2×(G3 四分余量 1.35×,材料正 0/4 不重跑)。漏斗:卡 4/4 在视野;入池 2/4;材料正 2/4;供给双门 2/4。a5_3/4 卡在视野但 inject=False(同族 prepare/identity-only 漏注入),agent 自提 hampel 亦部署——**不计供给转化**。A3 冷提案 3/4 同增益部署(a3_4 identity):对半面本身可读,门控的是确认面余量而非只是供给通道。对半读数只作余量机制证据,**不得与四分基线作能力比较**。pilot;GunPointFamily 同族;引导正例计零。成本 LLM 29/100、fit 45/100、墙钟 1068.7s/7200s;returned_model=`gpt-5.6-sol`;下载 0;methods/contracts/runtime/operators 零改;密钥零出现。
 
 **提交**:`evaluation/functional/run_e2_m1_margin_gate.py`;`artifacts/functional/e2/m1_margin_gate.json/.md`;本节(含他书未提交的 Gate 3 收口 / A′ 发车 / 提速四点,未删改既有正文)。不提交 checkpoint / `AGENTS.md` / `README` / `PROJECT_STATE*` / `SUCCESSOR_BRIEF*`。
+
+### P0 收口(提交 98fc1fd):SUPPLY_TIER_PRODUCTION_REACHABLE;S1-v2 前置清零,正序发车(2026-08-27 17:2x,主线)
+
+**P0**(0 LLM/0 fit,121 回归+13 新测全绿,h0 锁无需动):供给档产卡端落地于 evaluation 层(source_skill.py:294-566:2 个 distinct 未引导正例+五轴交非空 → 机械模板卡 supplies/no-exec/requires-support;1 例不产;引导计零;同族未解决 NEGATIVE 阻断[引旧规:225];两族同时合格不出卡留 Slow);**两档互不干扰双向证明**(同 2 正例下 TRY 档仍 does_not_survive_LOO、供给档正常出卡;TRY 载荷无 authority 块);**七环生产链真实双源全通**(含 PS-1 当年被打回的 EditController apply 环);模板顺序敏感缺陷被确定性断言当场抓修(编译产物=证据的函数非读序的函数,入教训);schema-代码四叶漂移续记账。**发车裁定**:sol 预授权条件全部满足(P0+判分冻结),S1-v2 正序 ×2 发车(opus)——课程冻结件作 Part 0(从 ps0b 对半余量机械推导:2 产例单元+≥1 受益单元+2 identity+1 HELDOUT_ONLY,排除 GPA/PowerCons-impulse[源]/GPOvY[已用]/GPMvF[M-1 用],处理组存在性算术预检不过即停不烧 LLM);A5-online 边界整合 = guard lifecycle + compile_supply_tier(P0 出口);ITT 主分析;材料门公式按冻结课程代入常数;TREATMENT_EMPTY 即停;正序×2 异注入 seed;判词封顶 S1V2_FORWARD_SIGNAL;预算总 LLM≤500(每跑≤250)/fit≤900/墙钟≤6h 硬。
 
 ### CAP-1 收口(提交 fd1ed90):终考协议冻结完毕;开封条件写死(2026-08-27 17:1x,主线)
 
