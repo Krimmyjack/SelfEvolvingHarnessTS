@@ -1077,6 +1077,24 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`evaluation/functional/run_e2_s1_cold_policy_map.py`(新诊断 runner,既有 methods/runtime/contracts/operators/课程 runner 零改);`artifacts/functional/e2/s1_cold_policy_map.json/.md`;探针目录;本节。
 
+### 主线定向指令(用户,2026-08-27 11:12):产出以"有效正效果"为唯一中心;负证据/边界降级为附录防御
+
+用户重申项目目的(任务书原文重贴):最终产出是**方法设计 + 有效的正效果**(自适应提升下游模型性能与训练效率),**不是**"坚实的负证据/边界/条件"类结论。主线执行调整:(1) 报告与规划的重心从"断点钉得漂亮"回到"正效果推进了多少";(2) 实验排序以能产出正面演示者优先(PS-2 收口 → S1-v2 演化曲线 → capstone 处女靶正效果),边界测绘类工序除非阻塞正面路径否则不再排;(3) 论文架构:正效果为主章(预测线迁移正例 + 分类线经验加速就绪 + 训练效率读数),负证据/治理/边界全部降入消融与附录;(4) 已 bank 的正面资产清单:Frep A5>A3(成本 −31.7%/held-out 优/害 1v4)、GPA hampel +0.2690(可再生)、PowerCons +0.0833(可再生)、GPOvY +0.184 headroom(PS-2 目标回收物)、两任务全生命周期、全程零 harm 纪录。排障链(七层)重定性为:为正效果扫清路障的过程记录,其价值以"解锁了 PS-2/S1-v2 正面演示"计,不独立成章。
+
+### PS-2 收口:POOL_ENTRY_WITHOUT_CONVERSION——机械入池 2/4,选择层未选中,无批准部署(2026-08-27 11:3x)
+
+**判词 `POOL_ENTRY_WITHOUT_CONVERSION`(冻结表,协议记录)**:隧道恢复后续跑 12 跑落盘。A5-scoped 冻结 hampel **入池 2/4**(run9/12),run3/6 未入;入池的两跑 **select 均未选中** → Support/delayed/部署全零。A5-neutral 入池 2/4,0 虚假部署(非 PLACEBO_CONVERSION)。harm 0;探索槽保留(DRAFT 合并未删自提槽;入池轮均与自提共存)。**不得写成 agent 学会了 hampel**:自提族仍是 burst/outlier_threshold,相对 PS-1 无提案能力改善。机械档成功措辞仍只许"经验以机械通道供给候选、Target 反馈裁决"——本场未走到裁决。
+
+**inject=False 归因(结构化,非 stdout)**:卡 **4/4 进 Fast 视野**(检索出卡)。未入池轮池内只有 identity、`proposal_count=0`、chosen 空、LLM 2–4、自提空——属 **卡在视野但 prepare 落到 identity-only 池**(提案早停/编译路径未发出 `cand_skill_*`),不是检索未出卡。入池轮则自提与注入共存。断层主位:**selection 不选** + 半数轮机械通道未发出候选。
+
+**成本**:LLM 134/150(含 attempt1 67);fit 63/160;本次墙钟 3930s/7200s;下载 0;returned_model=`gpt-5.6-sol`。run7 曾 500,checkpoint 保住 1–6 后 resume。pilot;GPOVY 同族;引导正例计零(本场无部署)。
+
+**提交**:协议工件 `ps2_mechanical_supply.json/.md`;runner 续跑/漏斗/miss 归因;本节(未删改既有 PS-2 BACKEND 段)。不提交他线文件与 checkpoint。
+
+### PS-2 部分收口(提交 1f0a921):BACKEND_UNAVAILABLE(隧道死亡,11/12 非协议);实现已落地可续跑;整夜链条总结(2026-08-27 06:3x,主线)
+
+**判词 BACKEND_UNAVAILABLE(冻结表,不升格)**:机械入池实现已落地(卡尾 Frozen program steps 走生产路径 _parse_frozen_steps→_skill_frozen_candidates→cand_skill_*,requires_target_support=true 入 DRAFT 合并、占 3 帽一槽不外加,grants_execution=false 全程同权无捷径;中性程序 resample_uniform 密封核为 numeric_no_op);attempt1 跑完 11/12 时中转 500 且 runner 终局落盘设计吞掉协议记录(**教训:长协议必须逐跑 checkpoint,已补 +--resume**);attempt2 隧道整段不可达(trycloudflare 发送即断),禁回退旧后端遵守。stdout 11 行仅作补记:scoped 已完成 3 跑 2 跑入池、从未 selected/部署;neutral 3/4 入池、0 虚假部署;自提仍 burst/outlier_threshold 零 hampel;run5/6 inject=False 疑检索未出卡——**均不作因果定案**。成本 67 LLM/31 fit。**待办**:隧道恢复(需用户侧重启)后 --resume 重开 12 跑,判词表不得改。**整夜断点链(总结,均有工件)**:S1c 处理组空 → diag 提案语义不足(11/15 未提出,K=5 不救) → PS-0 记录层不存 Context+PowerCons 一行假象(瓶颈拆双名:发现 vs 确认) → PS-0b 确认面审计(hampel 簇存活/burst 系拼池假象) → PS-0c 双源就绪 → PS-1 文本档惰性(卡在视野零影响零安慰剂效应) → PS-1b 根因 = bootstrap 4b 承诺注入从未接线 + 文本影响系修辞函数(C40 对照)→ **设计原则:知识影响必须走类型化机械通道** → PS-2 机械档实现落地待续跑。**永久资产**:round record 持久化(pattern+全提案)、确认面审计法与 ROBUST/FRAGILE/UNREADABLE 分级、源再生性标准、安慰剂对照双卡设计、checkpoint+resume、8 个提交。
+
 ### PS-1b 收口(提交 01dd11c):TEXT_RUNG_INERT 冻结;根因 = bootstrap 4b 承诺的 runtime 注入从未接线(supplies_candidates 死旗);PS-2 发车(2026-08-27 03:4x,主线)
 
 **尸检定案**(0 LLM):非 WIRING_FAULT——scoped 卡完整进提案调用 system(与 C40 同槽 skills[3],8/8 轮在视野);位置不解释分裂。**双重根因**:(1) 措辞——C40 短 RISK+具体名+否定句即可带偏,PS-1 卡"prioritise exploring"+六条 hedge 抹平影响(A5-scoped 2/4 跑仍提竞品族);(2) **spec-vs-wiring 缺口**——bootstrap `build_contrastive_candidates` 4b 明文"Source prior 由 runtime 注入,勿自己复述提案",但 supplies_candidates 在 Fast 零读取、卡无冻结程序则 _skill_frozen_candidates 无物可供:**系统对 agent 承诺机械注入、叫它别抄先验,却从未兑现注入**——与 guard 管道同族的第 N 个"框架已表达、实现未接线"(五问 Q3 型)。**设计原则入典**:文本是不可治理的影响通道(无 hedge 强到成灾[C40]、有 hedge 惰性到零[PS-1],影响力系修辞函数非权限函数)→ **知识影响必须走类型化机械通道**。模型混淆评级低(两场 returned_model 同为 gpt-5.6-sol)。书外:supplies_candidates 死旗、C40 算子名被 risk_guards.sections 双写、schema-代码叶集漂移(16/20)。**PS-2 发车(grok 续)**:实现 4b 已承诺语义(评估层)——scoped 卡携冻结 hampel 程序机械入池(同帽不外加、与自提候选完全同权、Support/delayed 仍握批准),安慰剂携合法中性 no-op 程序(对照"任何入池"vs"正确候选"),GPOVY 三臂×4;判词 MECHANICAL_RUNG_CONFIRMED / POOL_ENTRY_WITHOUT_CONVERSION / **PLACEBO_CONVERSION(批准链失灵警报单列)**;语义纪律:机械档成功表述为"经验以机械通道供给候选、Target 反馈裁决",不得包装为提案能力改善。

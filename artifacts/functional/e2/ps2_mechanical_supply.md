@@ -1,10 +1,10 @@
 # PS-2 -- mechanical supply of one candidate to verify (pilot)
 
-protocol: `ps2_mechanical_supply_v1`  evidence grade: **development-mechanism (pilot)**  git: `01dd11c1237729247b549a0af6169fbb4394b88c`  backend: **None**
+protocol: `ps2_mechanical_supply_v1`  evidence grade: **development-mechanism (pilot)**  git: `1f0a921b1f48907e85b17249f6a49c275f414a1c`  backend: **gpt-5.6-sol**
 
-**BACKEND_UNAVAILABLE**
+**POOL_ENTRY_WITHOUT_CONVERSION**
 
-the 12-run protocol did not finish.  Attempt 1 printed 11/12 then InternalServerError on ps2_run12 inspect (records were in-memory and dropped).  Attempt 2 probe failed with APIConnectionError after repeated retries.  No old-relay fallback.  Attempt-1 stdout is supplementary, not a protocol table.
+mechanical entry was not 4/4 (saw 2/4).  break_at=['never_entered_pool', 'never_entered_pool', 'selection_did_not_choose_inject', 'selection_did_not_choose_inject']
 
 > Pilot grade.  GunPointOldVersusYoung__impulse_v2 shares GunPointFamily with source A, so this isolates a mechanism and is not a cross-family transfer claim.  A conversion means experience supplied a candidate through the mechanical channel and Target feedback adjudicated it.  It is not 'the agent learned to propose hampel'.  A guided positive counts zero toward Source cross-domain authorization.
 
@@ -105,29 +105,44 @@ Structured rows were dropped when run 12 raised AgentTransportError.  These cell
 
 ## Per-run readout (persisted protocol records)
 
-| run | arm | card | inject in pool | selected | Support | delayed | deployed | break_at | agent families | explore kept | gain | worst | LLM | fits |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| run | arm | card | inject in pool | selected | Support | delayed | deployed | break_at | miss | agent families | explore kept | gain | worst | LLM | fits |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ps2_run1 | A3 | - | False | False | False | False | False | no_card | - | burst | True | +0.0000 | +0.0000 | 8 | 1 |
+| ps2_run2 | A5-neutral | yes | True | False | False | False | False | selection_did_not_choose_inject | - | burst | True | +0.0000 | +0.0000 | 6 | 3 |
+| ps2_run3 | A5-scoped | yes | False | False | False | False | False | never_entered_pool | card_in_view_not_in_selectable_pool | - | True | +0.0000 | +0.0000 | 4 | 1 |
+| ps2_run4 | A3 | - | False | False | False | False | False | no_card | - | burst | True | +0.0000 | +0.0000 | 6 | 1 |
+| ps2_run5 | A5-neutral | yes | False | False | False | False | False | never_entered_pool | card_in_view_not_in_selectable_pool | - | True | +0.0000 | +0.0000 | 4 | 1 |
+| ps2_run6 | A5-scoped | yes | False | False | False | False | False | never_entered_pool | card_in_view_not_in_selectable_pool | - | True | +0.0000 | +0.0000 | 4 | 1 |
+| ps2_run7 | A3 | - | False | False | False | False | False | no_card | - | burst | True | +0.0000 | +0.0000 | 8 | 1 |
+| ps2_run8 | A5-neutral | yes | True | False | False | False | False | selection_did_not_choose_inject | - | burst | True | +0.0000 | +0.0000 | 5 | 3 |
+| ps2_run9 | A5-scoped | yes | True | False | False | False | False | selection_did_not_choose_inject | - | outlier_threshold | True | +0.0000 | +0.0000 | 7 | 9 |
+| ps2_run10 | A3 | - | False | False | False | False | False | no_card | - | burst,outlier_threshold | True | +0.0000 | +0.0000 | 6 | 1 |
+| ps2_run11 | A5-neutral | yes | False | False | False | False | False | never_entered_pool | card_in_view_not_in_selectable_pool | - | True | +0.0000 | +0.0000 | 2 | 1 |
+| ps2_run12 | A5-scoped | yes | True | False | False | False | False | selection_did_not_choose_inject | - | burst | True | +0.0000 | +0.0000 | 7 | 9 |
 
 ## Three-arm inject funnel
 
 | arm | entry | selected | verifier/probe | Support | delayed | deployed | harm | explore kept | agent families |
 |---|---|---|---|---|---|---|---|---|---|
+| A3 | **0/4** | 0 | 0 | 0 | 0 | 0 | 0 | 4/4 | burst, outlier_threshold |
+| A5-neutral | **2/4** | 0 | 2 | 0 | 0 | 0 | 0 | 4/4 | burst |
+| A5-scoped | **2/4** | 0 | 2 | 0 | 0 | 0 | 0 | 4/4 | burst, outlier_threshold |
 
 ## Agent-authored families vs PS-1 baseline
 
 - PS-1 verdict: **NO_PROPOSAL_SHIFT**
 
-- **A3**: PS-1 ['burst', 'outlier_threshold'] → PS-2 agent-authored none
-- **A5-neutral**: PS-1 ['burst', 'outlier_threshold'] → PS-2 agent-authored none
-- **A5-scoped**: PS-1 ['outlier_threshold'] → PS-2 agent-authored none
+- **A3**: PS-1 ['burst', 'outlier_threshold'] → PS-2 agent-authored ['burst', 'outlier_threshold']
+- **A5-neutral**: PS-1 ['burst', 'outlier_threshold'] → PS-2 agent-authored ['burst']
+- **A5-scoped**: PS-1 ['outlier_threshold'] → PS-2 agent-authored ['burst', 'outlier_threshold']
 
 ## Cost
 
-- LLM: 67 / 150 (attempt 1 charged)
-- Consumer fits: 31 / 160
-- attempt-2 wall: 30.1 s / 9000 s
+- LLM: 134 / 150 (attempt 1 charged)
+- Consumer fits: 63 / 160
+- attempt-2 wall: 3930.0 s / 7200 s
 - attempt-1 wall (lost records): 5236.8 s
-- combined wall: 5266.9 s
+- combined wall: 9166.8 s
 - downloads: 0
 
 ## Obligations
@@ -140,17 +155,17 @@ Structured rows were dropped when run 12 raised AgentTransportError.  These cell
 - **injected_candidate_same_rights**: True
 - **grants_execution_false**: True
 - **experimental_prior_slot**: True
+- **budgets_equal_across_arms**: True
 - **oracle_not_loaded_into_harness**: True
 - **guided_positive_counts_zero_toward_source_auth**: True
 - **downloads**: 0
 - **full_repo_pytest_not_run**: True
-- **no_old_relay_fallback**: True
-- **stdout_not_promoted_to_protocol**: True
 - **semantic_discipline**: a conversion is experience supplying a candidate through the mechanical channel, adjudicated by Target feedback.  It is not a proposal-ability improvement.
 
 ## Outside the book
 
-- attempt 1 printed 11/12 then InternalServerError on ps2_run12; records were in-memory only and dropped.
-- attempt 2 added per-run checkpoint and unit-level transport retry, but the trycloudflare relay then failed probe with APIConnectionError (connection reset). No old-relay fallback.
-- stdout 11-row table is supplementary; inject=True on some arms is not MECHANICAL_RUNG_CONFIRMED.
-- run3/9 printed support=True with selected=False: possible funnel attribution of any hampel Episode to the inject. Unconfirmed without structured rows.
+- attempt 1 printed 11/12 then InternalServerError on ps2_run12; in-memory records dropped; charged 67 LLM / 31 fit / 5236s.
+- attempt 2 probe failed after the trycloudflare tunnel died.
+- attempt 3 (this book) restarts the 12-run protocol on the user-restarted relay; wall hard-cap 2h; ledger continues from 67/31; no checkpoint existed so all 12 run-ids are re-executed and persisted after each unit.
+- run7 hit InternalServerError after two unit retries; checkpoint held runs 1-6 and `--resume` finished 7-12.
+- inject misses (run3/5/6/11) are not retrieval misses: the card was in `retrieved_skill_ids` both rounds, but the selectable pool was identity-only (`proposal_count=0`, empty chosen, LLM 2-4, no agent program). The prepare path did not emit `cand_skill_*`. Entry rounds coexisted with an agent program.

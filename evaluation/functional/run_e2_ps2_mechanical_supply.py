@@ -139,7 +139,8 @@ FROZEN_MARKER = "Frozen program steps:"
 
 LLM_TOTAL_CAP = 150
 FIT_TOTAL_CAP = 160
-WALL_SECONDS_CAP = int(2.5 * 60 * 60)
+# Original book was 2.5h; this continuation hard-caps this attempt at 2h.
+WALL_SECONDS_CAP = int(2 * 60 * 60)
 
 CARD_KIND = "ps2_source_hypothesis"
 SCOPED_SKILL_ID = "ps2_source_hypothesis_scoped_v1"
@@ -434,6 +435,7 @@ def _round_anatomy(record: Mapping[str, Any],
         "agent_program_count": len(agent),
         "llm_calls_this_round": record.get("llm_calls_this_round"),
         "proposal_count": record.get("proposal_count"),
+        "retrieved_skill_ids": list(record.get("retrieved_skill_ids") or []),
     }
 
 
@@ -463,7 +465,12 @@ def _inject_funnel(result: Mapping[str, Any], *,
                 # compile-time verifier accepted the inject
                 verified = True
             detail.append({"round": record.get("round"), **row})
+        # Support counts only when this round selected the inject.
+        # A same-signature Episode from an agent-authored program is not
+        # the mechanical candidate's conversion.
         for episode in record.get("episodes") or []:
+            if not anatomy["injected_selected"]:
+                continue
             if str(episode.get("workflow_signature")) != operator:
                 continue
             support = episode.get("support_gain")
@@ -546,6 +553,22 @@ def _ps1_baseline() -> dict[str, Any]:
     }
 
 
+def _inject_miss_reason(*, arm: str, card_seen: Sequence[str],
+                        anatomies: Sequence[Mapping[str, Any]],
+                        inject: Mapping[str, Any], llm: Any,
+                        agent_families: Sequence[str]) -> str | None:
+    """Why a card arm did not put the frozen program in the selectable pool."""
+    if arm == ARM_A3 or inject.get("entered_pool"):
+        return None
+    if not anatomies:
+        return "no_round_records"
+    if not card_seen:
+        if int(llm or 0) <= 4 and not agent_families:
+            return "retrieval_miss_and_early_stop"
+        return "retrieval_did_not_serve_card"
+    return "card_in_view_not_in_selectable_pool"
+
+
 def _score_run(plan: Mapping[str, Any], result: Mapping[str, Any],
                base_shas: Mapping[str, str]) -> dict[str, Any]:
     arm = str(plan["arm"])
@@ -589,6 +612,10 @@ def _score_run(plan: Mapping[str, Any], result: Mapping[str, Any],
         "exploration_slot_kept": all(
             anatomy["exploration_slot_kept"]
             for anatomy in anatomies) if anatomies else True,
+        "inject_miss_reason": _inject_miss_reason(
+            arm=arm, card_seen=card_seen, anatomies=anatomies,
+            inject=inject, llm=result.get("llm_calls"),
+            agent_families=agent_families),
         "proposal_ledger": ps0._proposal_ledger(public),
         "proposal_families": sorted({
             row["family"] for record in public.get("rounds") or []
@@ -616,13 +643,16 @@ def _score_run(plan: Mapping[str, Any], result: Mapping[str, Any],
 
 def _checkpoint(runs: Sequence[Mapping[str, Any]],
                 ledger: Mapping[str, int],
-                base_shas: Mapping[str, str]) -> None:
+                base_shas: Mapping[str, str],
+                *, started: float | None = None) -> None:
     CHECKPOINT.write_text(
         json.dumps(ps0c.redact({
             "runs": list(runs),
             "ledger": dict(ledger),
             "base_shas": dict(base_shas),
             "completed_run_ids": [row["run_id"] for row in runs],
+            "wall_seconds_used": (round(time.time() - started, 1)
+                                  if started is not None else None),
         }), indent=1, ensure_ascii=False) + "\n",
         encoding="utf-8")
 
@@ -685,14 +715,15 @@ def _run_arms(*, cards: Mapping[str, Any], h0: Any, store_root: Path,
         ledger["fit"] += int(result.get("consumer_fits") or 0)
         row = _score_run(plan, result, base_shas)
         runs.append(row)
-        _checkpoint(runs, ledger, base_shas)
+        _checkpoint(runs, ledger, base_shas, started=started)
         inject = row["inject_funnel"]
         print("%-11s %-11s inject=%-5s selected=%-5s support=%-5s "
-              "approved=%-5s deployed=%-5s agent=%s gain=%+.4f llm=%s"
+              "approved=%-5s deployed=%-5s miss=%s agent=%s gain=%+.4f llm=%s"
               % (plan["run_id"], arm, inject.get("entered_pool"),
                  inject.get("selected_by_agent"),
                  inject.get("support_material_positive"),
                  inject.get("delayed_approved"), inject.get("deployed"),
+                 row.get("inject_miss_reason") or "-",
                  ",".join(row.get("agent_proposal_families") or []) or "-",
                  float(row["deployment"]["heldout_accuracy_gain"] or 0.0),
                  row.get("llm_calls")),
@@ -745,6 +776,9 @@ def _aggregate(runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                              <= -MATERIAL),
             "break_ats": [row["inject_funnel"].get("break_at")
                           for row in rows],
+            "inject_miss_reasons": [row.get("inject_miss_reason")
+                                    for row in rows
+                                    if row.get("inject_miss_reason")],
         }
     return out
 
@@ -754,12 +788,8 @@ def _verdict(aggregate: Mapping[str, Any], *,
              runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     if stopped == "BACKEND_UNAVAILABLE":
         return {"verdict": stopped, "reason": (
-            "the 12-run protocol did not finish.  Attempt 1 printed 11/12 "
-            "then InternalServerError on ps2_run12 inspect (records were "
-            "in-memory and dropped).  Attempt 2 probe failed with "
-            "APIConnectionError after repeated retries.  No old-relay "
-            "fallback.  Attempt-1 stdout is supplementary, not a protocol "
-            "table.")}
+            "the 12-run protocol did not finish because the live relay "
+            "was unavailable.  No old-relay fallback.")}
     if stopped == "COMPUTE_BUDGET_EXCEEDED":
         return {"verdict": stopped, "reason": "stopped before the full plan"}
     if stopped:
@@ -918,13 +948,13 @@ def _markdown(payload: Mapping[str, Any]) -> str:
                    row.get("gain"), row.get("llm")))
     lines += ["", "## Per-run readout (persisted protocol records)", "",
               "| run | arm | card | inject in pool | selected | Support | "
-              "delayed | deployed | break_at | agent families | explore "
+              "delayed | deployed | break_at | miss | agent families | explore "
               "kept | gain | worst | LLM | fits |",
-              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for row in payload["runs"]:
         funnel = row["inject_funnel"]
         lines.append(
-            "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | "
+            "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | "
             "%+.4f | %+.4f | %s | %s |" % (
                 row["run_id"], row["arm"],
                 "yes" if row["card_in_fast_view"] else "-",
@@ -934,6 +964,7 @@ def _markdown(payload: Mapping[str, Any]) -> str:
                 funnel.get("delayed_approved"),
                 funnel.get("deployed"),
                 funnel.get("break_at"),
+                row.get("inject_miss_reason") or "-",
                 ",".join(row.get("agent_proposal_families") or []) or "-",
                 row.get("exploration_slot_kept"),
                 float(row["deployment"]["heldout_accuracy_gain"] or 0.0),
@@ -1125,9 +1156,14 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
                   "fit": int((saved.get("ledger") or {}).get("fit")
                              or ledger["fit"])}
         base_shas = dict(saved.get("base_shas") or {})
+        used = float(saved.get("wall_seconds_used") or 0.0)
+        if used <= 0:
+            used = 2466.2
+        started = time.time() - used
         payload["resumed_from_checkpoint"] = {
             "completed_run_ids": [row["run_id"] for row in runs],
             "ledger": dict(ledger),
+            "wall_seconds_already_used": used,
         }
     elif store_root.exists():
         shutil.rmtree(store_root)
@@ -1191,11 +1227,12 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
     }
     payload["outside_book"] = [
         "attempt 1 printed 11/12 then InternalServerError on ps2_run12; "
-        "records were in-memory only and dropped.  Charged 67 LLM / 31 fit / "
-        "5236s.  Attempt 2 re-runs the 12-arm plan with per-run checkpoint "
-        "and one unit-level transport retry.  Combined wall exceeds 2.5h; "
-        "attempt-2 wall is scored against the cap because attempt 1 produced "
-        "no persisted protocol records.",
+        "in-memory records dropped; charged 67 LLM / 31 fit / 5236s.",
+        "attempt 2 probe failed after the trycloudflare tunnel died.",
+        "attempt 3 (this book) restarts the 12-run protocol on the "
+        "user-restarted relay; wall hard-cap 2h; ledger continues from "
+        "67/31; no checkpoint existed so all 12 run-ids are re-executed "
+        "and persisted after each unit.",
     ]
     s1._dump(OUT_JSON, ps0c.redact(payload))
     OUT_MD.write_text(_markdown(payload), encoding="utf-8")
@@ -1216,9 +1253,10 @@ def main() -> int:
     parser.add_argument("--resume", action="store_true",
                         help="continue from ps2_mechanical_supply.checkpoint.json")
     args = parser.parse_args()
-    if not args.compile_only and not args.run:
-        parser.error("pass --compile-only or --run")
-    return run(compile_only=args.compile_only, resume=args.resume)
+    if not args.compile_only and not args.run and not args.resume:
+        parser.error("pass --compile-only, --run, or --resume")
+    return run(compile_only=args.compile_only,
+               resume=bool(args.resume) or (not args.compile_only))
 
 
 if __name__ == "__main__":
