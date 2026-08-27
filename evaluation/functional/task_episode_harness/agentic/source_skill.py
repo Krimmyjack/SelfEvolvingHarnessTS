@@ -304,7 +304,19 @@ def authorized_try_operators(audit: Sequence[Mapping[str, Any]]) -> set[str]:
 # decision.  Two independent unguided positives is what that costs.  The two
 # tiers share their clause vocabulary -- unguided evidence only, opposing
 # evidence blocks -- and differ in exactly one parameter, the count.
-SUPPLY_TIER_MIN_DISTINCT_TASKS = 2
+# Ladder revision v2 (2026-08-28, sol proposal / user approved / main line
+# entered into canon): the evidence price is set to what the permission is
+# worth.  A supply-only card asks for the least authority on the ladder -- it
+# places one candidate for the Target to verify, executes nothing and deploys
+# nothing -- so one *strong* positive buys it: Support and delayed both
+# POSITIVE on the same Episode.  Two independent unguided positives still buy
+# the intersection-Scope Source card, and the TRY tier's leave-one-out floor
+# in ``authorization_audit`` above is untouched.
+#
+# Anti-bootstrap is unchanged and is what makes the low price safe: a positive
+# earned while this card was already in view is Harness-conditioned and counts
+# zero, so a single-Episode card can never license its own promotion.
+SUPPLY_TIER_MIN_DISTINCT_TASKS = 1
 
 SUPPLY_CARD_KIND = "source_supply_tier/1"
 

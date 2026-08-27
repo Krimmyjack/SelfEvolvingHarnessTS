@@ -142,33 +142,75 @@ def test_a_the_template_is_deterministic_and_llm_free():
         second, sort_keys=True)
 
 
-# ================================================== (b) one is not two
-def test_b_a_single_positive_task_compiles_nothing():
+# ============================== (b) the price, and what distinctness means
+def test_b_ladder_v2_prices_the_supply_tier_at_one_strong_positive():
+    """Ladder revision v2: least authority on the ladder, least evidence.
+
+    The card places one candidate for the Target to verify and executes
+    nothing, so one Episode that cleared *both* gates buys it.  The caller is
+    what enforces "strong": rows reach the audit only after Support POSITIVE
+    and delayed LOCAL_ACTIVE.
+    """
+    assert ss.SUPPLY_TIER_MIN_DISTINCT_TASKS == 1
     out = _compile(TWO_GOOD[:1])
-    assert out["card"] is None
-    assert out["withheld_because"] == (
-        "fewer_than_2_distinct_unguided_positive_tasks")
+    assert out["withheld_because"] is None
+    assert out["card"] is not None
+    assert out["card"]["risk_guards"]["evidence"]["source_count"] == 1
+    assert out["card"]["risk_guards"]["authority"] == {
+        "reorders_supplied_candidates": False,
+        "supplies_candidates": True,
+        "suppresses_operators": False,
+        "grants_execution": False,
+    }
+
+
+def test_b_a_single_episode_scope_is_that_episodes_own_fields():
+    """n=1 degenerates the intersection to the Episode itself -- the narrowest
+    Scope the rule can produce, which is the point of pricing it this low."""
+    out = _compile(TWO_GOOD[:1])
+    scope = out["card"]["risk_guards"]["scope_v1"]
+    assert scope["pattern_intersection"] == PATTERN_A
+    assert scope["program_geometry"] == [PROGRAM]
 
 
 def test_b_the_same_task_twice_is_still_one_task():
     twice = [TWO_GOOD[0], _row("GunPointAgeSpan__impulse_v2",
                                "GunPointAgeSpan__impulse_v2", support=0.31)]
     out = _compile(twice)
-    assert out["card"] is None
     assert out["audit"][0]["unguided_positive"] == 1
+
+
+def test_b_zero_positives_still_compiles_nothing():
+    none_earned = [_row("GunPointAgeSpan__impulse_v2",
+                        "GunPointAgeSpan__impulse_v2", relation="IMMATERIAL")]
+    out = _compile(none_earned)
+    assert out["card"] is None
+    assert out["withheld_because"] == (
+        "fewer_than_1_distinct_unguided_positive_tasks")
 
 
 # ============================================ (c) guided positives count zero
 def test_c_a_conditioned_positive_does_not_count():
+    """Anti-bootstrap: this is what makes the one-positive price safe."""
+    rows = [_row("PowerCons__impulse_v2", "PowerCons__impulse_v2",
+                 conditioned=True)]
+    out = _compile(rows)
+    assert out["card"] is None
+    assert out["audit"][0]["unguided_positive"] == 0
+    assert out["audit"][0]["conditioned_positive"] == 1
+    assert out["withheld_because"] == (
+        "fewer_than_1_distinct_unguided_positive_tasks")
+
+
+def test_c_a_card_cannot_be_promoted_by_evidence_it_guided():
+    """A single-Episode card plus a positive it guided is still n=1."""
     rows = [TWO_GOOD[0],
             _row("PowerCons__impulse_v2", "PowerCons__impulse_v2",
                  conditioned=True)]
     out = _compile(rows)
-    assert out["card"] is None
+    assert out["card"]["risk_guards"]["evidence"]["source_count"] == 1
     assert out["audit"][0]["unguided_positive"] == 1
     assert out["audit"][0]["conditioned_positive"] == 1
-    assert out["withheld_because"] == (
-        "fewer_than_2_distinct_unguided_positive_tasks")
 
 
 # ==================================== (d) the TRY tier is untouched by this
@@ -191,9 +233,11 @@ def test_d_the_try_tier_still_needs_three_and_leave_one_out():
     assert audit_three[0]["active_try_authorized"] is True
     assert ss.authorized_try_operators(audit_two) == set()
 
-    # The supply tier speaks at exactly the count the TRY tier does not.
+    # The supply tier speaks well below the count the TRY tier needs, and
+    # ladder v2 widened that separation rather than narrowing it.
     assert _compile(TWO_GOOD)["card"] is not None
-    assert ss.SUPPLY_TIER_MIN_DISTINCT_TASKS == 2
+    assert ss.SUPPLY_TIER_MIN_DISTINCT_TASKS == 1
+    assert ss.SUPPLY_TIER_MIN_DISTINCT_TASKS < 2
 
 
 def test_d_the_supply_exit_does_not_touch_the_try_payload():

@@ -2088,12 +2088,692 @@ def _run_markdown(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+# =========================================================================== #
+# L1 -- ladder revision v2 replay from the v4 boundary
+# =========================================================================== #
+V4_CHECKPOINT = E2 / "s1v2_v4_forward_run1.checkpoint.json"
+L1_SKILL_ID = "l1_ladder_v2_supply_v1"
+L1_BOUNDARY_POSITION = 3
+L1_TAIL_POSITIONS = (4, 5, 6, 7, 8)
+L1_LLM_CAP = 120
+L1_FIT_CAP = 300
+L1_WALL_CAP = int(4 * 60 * 60)
+
+
+def _l1_paths(seed: str) -> tuple[Path, Path, Path]:
+    return (E2 / ("l1_ladder_v2_replay_%s.json" % seed),
+            E2 / ("l1_ladder_v2_replay_%s.md" % seed),
+            E2 / ("l1_ladder_v2_replay_%s.checkpoint.json" % seed))
+
+
+def _v4_rows() -> list[dict[str, Any]]:
+    saved = json.loads(V4_CHECKPOINT.read_text(encoding="utf-8"))
+    return list(saved.get("rows") or [])
+
+
+def _line_of(path: str, needle: str) -> str:
+    text = (PROJECT_ROOT / path).read_text(encoding="utf-8").splitlines()
+    line = next((i + 1 for i, t in enumerate(text) if needle in t), None)
+    return "%s:%s" % (path, line)
+
+
+def _l1_boundary_card() -> tuple[dict[str, Any] | None, dict[str, Any],
+                                 list[dict[str, Any]]]:
+    """Recompile the unit-3 boundary at the new price, off the v4 record."""
+    rows = [row for row in _v4_rows()
+            if row["arm"] == ARM_A5 and int(row["position"]) <= L1_BOUNDARY_POSITION]
+    supply_rows = _supply_rows_from(rows, card_installed_after=None)
+    compiled = ss.compile_supply_tier(
+        supply_rows, skill_id=L1_SKILL_ID,
+        legal_features=ss._edit_schema_features(PROJECT_ROOT))
+    return compiled["card"], compiled, supply_rows
+
+
+def _l1_t1(frozen: Mapping[str, Any]) -> dict[str, Any]:
+    """Six offline checks.  Zero LLM, zero Consumer fits."""
+    import dataclasses
+
+    from SelfEvolvingHarnessTS.contracts.harness import load_skill_entry
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.fast_agent import (
+        _supply_rung_candidates,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
+        extract_public_features,
+    )
+    from SelfEvolvingHarnessTS.methods.ttha.retrieval import (
+        _is_inert_experience_card,
+        resolve_harness_view,
+    )
+    from SelfEvolvingHarnessTS.runtime.candidate_verification import (
+        verify_candidate,
+    )
+    import numpy as np
+
+    checks: list[dict[str, Any]] = []
+
+    # (1) the price constant, and proof the TRY tier was not touched.
+    checks.append({
+        "check": "1. supply-tier price constant is 1",
+        "pass": ss.SUPPLY_TIER_MIN_DISTINCT_TASKS == 1,
+        "evidence": {
+            "constant": ss.SUPPLY_TIER_MIN_DISTINCT_TASKS,
+            "file_line": _line_of(
+                "evaluation/functional/task_episode_harness/agentic/"
+                "source_skill.py", "SUPPLY_TIER_MIN_DISTINCT_TASKS = 1"),
+            "try_tier_untouched_file_line": _line_of(
+                "evaluation/functional/task_episode_harness/agentic/"
+                "source_skill.py", "loo_minimum = ("),
+            "try_tier_still_loo": "authorization_audit computes "
+                                  "leave_one_out_minimum_positive and gates "
+                                  "active_try_authorized on it; no edit in "
+                                  "this book touches that function",
+        },
+    })
+
+    # (2) the boundary compiles a single-Episode card, deterministically.
+    card, compiled, supply_rows = _l1_boundary_card()
+    twice = ss.compile_supply_tier(
+        supply_rows, skill_id=L1_SKILL_ID,
+        legal_features=ss._edit_schema_features(PROJECT_ROOT))["card"]
+    authority = (card or {}).get("risk_guards", {}).get("authority") or {}
+    scope = (card or {}).get("risk_guards", {}).get("scope_v1") or {}
+    evidence = (card or {}).get("risk_guards", {}).get("evidence") or {}
+    checks.append({
+        "check": "2. unit-3 boundary compiles the single-Episode card",
+        "pass": bool(
+            card is not None
+            and authority == {"reorders_supplied_candidates": False,
+                              "supplies_candidates": True,
+                              "suppresses_operators": False,
+                              "grants_execution": False}
+            and int(evidence.get("source_count") or 0) == 1
+            and json.dumps(card, sort_keys=True)
+            == json.dumps(twice, sort_keys=True)),
+        "evidence": {
+            "supply_rows": supply_rows,
+            "audit": compiled["audit"],
+            "authority": authority,
+            "scope_v1": scope,
+            "evidence_block": evidence,
+            "deterministic_recompile": json.dumps(card, sort_keys=True)
+            == json.dumps(twice, sort_keys=True),
+            "dual_gate_enforced_at": _line_of(
+                "evaluation/functional/run_e2_s1v2_forward_course.py",
+                'if str(episode.get("local_status")) != "LOCAL_ACTIVE"'),
+        },
+    })
+    if card is None:
+        return {"checks": checks, "pass": False, "card": None,
+                "first_fault": "boundary did not compile a card at price 1"}
+
+    # (3) the inert predicate does not withhold it from Fast.
+    entry = load_skill_entry(card)
+    checks.append({
+        "check": "3. T1 inert predicate does not withhold the supply card",
+        "pass": _is_inert_experience_card(entry) is False,
+        "evidence": {
+            "is_inert": _is_inert_experience_card(entry),
+            "why": "the predicate only classifies six-section experience "
+                   "cards; a supply card carries no risk_guards.sections, so "
+                   "_experience_card_sections returns None and the predicate "
+                   "returns False before any clause is read",
+            "predicate_file_line": _line_of(
+                "methods/ttha/retrieval.py", "def _is_inert_experience_card"),
+            "sections_probe_file_line": _line_of(
+                "methods/ttha/retrieval.py",
+                "def _experience_card_sections"),
+            "carve_out_needed": False,
+            "methods_edits_this_book": 0,
+        },
+    })
+
+    # (4) Scope match over the tail units' frozen pattern views.
+    h0 = compile_snapshot(
+        PROJECT_ROOT / "methods" / "ttha" / "harness" / "h0",
+        verify_lock=False)
+    snapshot = dataclasses.replace(h0, skills=(*h0.skills, entry))
+    tail = [row for row in frozen["course"]
+            if int(row["position"]) in L1_TAIL_POSITIONS]
+    table = []
+    for row in tail:
+        oracle = _oracle(str(row["unit_id"])) or {}
+        features = {"task_kind": "classification",
+                    **dict(oracle.get("public_features_binned") or {})}
+        matched, _score = evaluate_applicability(
+            card["observable_applicability"], features)
+        view = resolve_harness_view(snapshot, features, role="fast")
+        table.append({
+            "position": row["position"], "unit_id": row["unit_id"],
+            "role": row["role"], "machine_match": bool(matched),
+            "served_in_fast_view": L1_SKILL_ID in view.skill_ids,
+        })
+    predicted_match = {"GunPoint__impulse_v2",
+                       "GunPointOldVersusYoung__impulse_v2",
+                       "PowerCons__impulse_v2", "Herring__impulse_v2"}
+    checks.append({
+        "check": "4. Scope match precheck over the tail five units",
+        "pass": any(row["machine_match"] for row in table),
+        "evidence": {
+            "table": table,
+            "matched": sorted(row["unit_id"] for row in table
+                              if row["machine_match"]),
+            "pre_registered_match": sorted(predicted_match),
+            "matches_prediction": (
+                {row["unit_id"] for row in table if row["machine_match"]}
+                == predicted_match),
+            "stop_rule": "if none of the five matched this is "
+                         "SCOPE_TOO_NARROW_TO_MATTER and the book stops; "
+                         "widening Scope on the spot is forbidden",
+        },
+    })
+    if not any(row["machine_match"] for row in table):
+        return {"checks": checks, "pass": False, "card": card,
+                "first_fault": "SCOPE_TOO_NARROW_TO_MATTER"}
+
+    # (5) injection dry run on the first matching tail unit.
+    target = next(row for row in table if row["machine_match"])
+    unit = next(row for row in frozen["course"]
+                if str(row["unit_id"]) == target["unit_id"])
+    cell = _half_cell(s1._build_cell(unit))
+    block = np.asarray(cell["observation_block"], dtype=np.float64)
+    features = dict(extract_public_features(block, task_kind="classification"))
+    view = resolve_harness_view(snapshot, features, role="fast")
+    supplied = _supply_rung_candidates(view, features)
+    receipts = []
+    for candidate in supplied:
+        artifact = verify_candidate(
+            candidate, block,
+            allowed_operators=[op for op, _p
+                               in candidate.program.execution_steps()],
+            inspected_regions=(),
+            maximum_modified_fraction=float(
+                cls._task_context().deployment_constraints
+                .maximum_modified_fraction),
+            preserve_outside_inspected_region=True,
+            require_finite_output=True)
+        receipts.append({
+            "candidate_id": candidate.candidate_id,
+            "status": artifact.receipt.status,
+            "selectable": artifact.selectable,
+            "modified_fraction": artifact.receipt.modified_fraction,
+            "rejection_code": artifact.receipt.rejection_code,
+        })
+    checks.append({
+        "check": "5. injection dry run materialises and verifies",
+        "pass": bool(supplied and all(row["selectable"] for row in receipts)),
+        "evidence": {
+            "unit_id": target["unit_id"],
+            "served": L1_SKILL_ID in view.skill_ids,
+            "candidate_ids": [c.candidate_id for c in supplied],
+            "verifier_receipts": receipts,
+            "reader_file_line": _line_of("methods/ttha/fast_agent.py",
+                                         "def _supply_rung_candidates"),
+            "probe_slot_semantics": "W-1: the supplied candidate occupies a "
+                                    "slot inside maximum_candidates and does "
+                                    "not delete the agent's exploration slot",
+        },
+    })
+
+    # (6) a positive earned while the card is in view counts zero.
+    guided = _supply_rows_from(
+        [row for row in _v4_rows()
+         if row["arm"] == ARM_A5 and int(row["position"]) <= L1_BOUNDARY_POSITION],
+        card_installed_after=L1_BOUNDARY_POSITION - 1)
+    guided_audit = ss.supply_tier_audit(guided)
+    checks.append({
+        "check": "6. guided positives count zero",
+        "pass": bool(guided_audit
+                     and guided_audit[0]["unguided_positive"] == 0
+                     and guided_audit[0]["conditioned_positive"] >= 1),
+        "evidence": {
+            "audit_when_marked_conditioned": guided_audit,
+            "marker_file_line": _line_of(
+                "evaluation/functional/run_e2_s1v2_forward_course.py",
+                "conditioned = bool(card_installed_after is not None"),
+            "rule_file_line": _line_of(
+                "evaluation/functional/task_episode_harness/agentic/"
+                "source_skill.py",
+                'key = ("positive_conditioned" if row.get(conditioning_key)'),
+            "consequence": "a single-Episode card cannot license its own "
+                           "promotion or a wider Scope",
+        },
+    })
+    return {"checks": checks, "pass": all(row["pass"] for row in checks),
+            "card": card, "scope_table": table,
+            "first_fault": next((row["check"] for row in checks
+                                 if not row["pass"]), None)}
+
+
+def l1_replay(seed: str = "r1", *, t1_only: bool = False,
+              resume: bool = False) -> int:
+    import run_e2_ps0c_ps1 as ps0c
+
+    out_json, out_md, checkpoint = _l1_paths(seed)
+    frozen = json.loads(FREEZE_V4_JSON.read_text(encoding="utf-8"))
+    started = time.time()
+    s1._set_phase(s1.PHASE_SETUP)
+    payload: dict[str, Any] = {
+        "protocol_version": "l1_ladder_v2_replay_v1",
+        "evidence_grade": "development",
+        "git_head": s1._git("rev-parse", "HEAD"),
+        "python": sys.version.split()[0],
+        "seed": seed,
+        "ladder_revision": (
+            "v2: supply-tier evidence price 2 -> 1 strong positive (Support "
+            "and delayed both POSITIVE).  TRY tier LOO, RISK tier, execution "
+            "and deployment gates, MATERIAL and the prompt/model/budget "
+            "protocol are all untouched."),
+        "course_source": FREEZE_V4_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "v4_source": V4_CHECKPOINT.relative_to(PROJECT_ROOT).as_posix(),
+        "course": frozen["course"],
+        "delta_material": frozen["delta_material"],
+        "pre_registered_predictions": {
+            "card_compiles_at_boundary": True,
+            "scope_matches": ["GunPoint__impulse_v2",
+                              "GunPointOldVersusYoung__impulse_v2",
+                              "PowerCons__impulse_v2", "Herring__impulse_v2"],
+            "scope_does_not_match": ["BirdChicken__burst_cls2"],
+            "converts": ["GunPoint__impulse_v2",
+                         "GunPointOldVersusYoung__impulse_v2"],
+            "does_not_convert": ["PowerCons__impulse_v2"],
+            "abstains": ["Herring__impulse_v2"],
+            "harm_events": 0,
+            "a5_tail_regret": "from +0.7710 down to <= 0.20",
+        },
+    }
+    payload["t1"] = _l1_t1(frozen)
+    if not payload["t1"]["pass"] or t1_only:
+        payload["verdict"] = {
+            "verdict": ("L1_T1_PASSED_NO_LIVE" if payload["t1"]["pass"]
+                        else "L1_T1_FAILED"),
+            "reason": (payload["t1"].get("first_fault")
+                       or "offline gate passed; live replay not requested"),
+        }
+        payload["ledger"] = {"llm": 0, "fit": 0, "downloads": 0,
+                             "wall_seconds": round(time.time() - started, 1)}
+        payload["rows"] = []
+        out_json.write_text(json.dumps(
+            ps0c.redact(s1._plain(payload)), ensure_ascii=False, indent=1,
+            sort_keys=True, default=str) + "\n", encoding="utf-8")
+        out_md.write_text(_l1_markdown(payload), encoding="utf-8")
+        print(json.dumps({"verdict": payload["verdict"]["verdict"],
+                          "t1_pass": payload["t1"]["pass"],
+                          "artifact": str(out_json)},
+                         ensure_ascii=False, indent=1))
+        return 0 if payload["t1"]["pass"] else 1
+
+    card = payload["t1"]["card"]
+    rows: list[dict[str, Any]] = []
+    ledger = {"llm": 0, "fit": 0}
+    if resume and checkpoint.is_file():
+        saved = json.loads(checkpoint.read_text(encoding="utf-8"))
+        rows = list(saved.get("rows") or [])
+        ledger = {"llm": int((saved.get("ledger") or {}).get("llm") or 0),
+                  "fit": int((saved.get("ledger") or {}).get("fit") or 0)}
+        started = time.time() - float(saved.get("wall_seconds") or 0.0)
+    done = {int(row["position"]) for row in rows}
+
+    stopped: str | None = None
+    try:
+        probe = ps0c.probe_new_backend()
+        payload["backend_probe"] = ps0c.redact(probe)
+        print("PROBE ok=%s model=%s" % (probe.get("ok"),
+                                        probe.get("returned_model")),
+              flush=True)
+        if not probe.get("ok"):
+            raise Stop("BACKEND_UNAVAILABLE", str(probe.get("reason")))
+        store_root = Path(tempfile.gettempdir()) / ("l1_%s" % seed)
+        if not resume and store_root.exists():
+            shutil.rmtree(store_root)
+        k0 = s1.compile_k0(store_root)
+        a5_snapshot, _applied = s1._apply_entries(
+            k0["k0"], [card], store_root=store_root / "boundary",
+            tag="l1_supply")
+        payload["boundary_resume"] = {
+            "kind": "boundary_replay",
+            "carried": "the supply card compiled from the recorded unit-3 "
+                       "Episode, installed on K0 through the frozen edit path",
+            "not_carried": (
+                "A5's in-memory Episode objects and its unit-3 Target-local "
+                "capability.  The Episode rows survive as the card's evidence "
+                "block; the Target-local Skill is domain-stamped and could "
+                "not apply to any tail unit anyway.  Stated so the attribution "
+                "is not overclaimed."),
+            "producer_stage_not_rerun": True,
+            "runtime_bundle_sha": a5_snapshot.runtime_bundle_sha,
+            "k0_sha": k0["k0_sha"],
+        }
+        backend = cls._live_backend(L1_LLM_CAP)
+        for unit in frozen["course"]:
+            position = int(unit["position"])
+            if position not in L1_TAIL_POSITIONS or position in done:
+                continue
+            if time.time() - started > L1_WALL_CAP:
+                raise Stop("COMPUTE_BUDGET_EXCEEDED", "wall cap")
+            if ledger["llm"] >= L1_LLM_CAP or ledger["fit"] >= L1_FIT_CAP:
+                raise Stop("COMPUTE_BUDGET_EXCEEDED", "budget cap")
+            print("UNIT %d %s (%s)" % (position, unit["unit_id"],
+                                       unit["role"]), flush=True)
+            cell = _half_cell(s1._build_cell(unit))
+            result = s1.run_unit(
+                unit=unit, cell=cell, arm=ARM_A5, base_snapshot=a5_snapshot,
+                carried_episodes=(), agent_factory=cls._live_agent,
+                backend=backend, store_root=store_root,
+                rounds=HALF_ROUNDS, fit_cap=FIT_PER_UNIT_PER_ARM,
+                carried_stamps={})
+            ledger["llm"] = int(backend.calls)
+            ledger["fit"] += int(result.get("consumer_fits") or 0)
+            scored = _score_unit(unit, ARM_A5, result)
+            scored["candidate_sources"] = _candidate_sources(scored)
+            rows.append(scored)
+            checkpoint.write_text(json.dumps(ps0c.redact(s1._plain({
+                "rows": rows, "ledger": ledger,
+                "wall_seconds": round(time.time() - started, 1)})),
+                indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+            src = scored["candidate_sources"]
+            print("  A5 deploy=%-34s gain=%+.4f regret=%+.4f worst=%+.4f "
+                  "supplied=%d self=%d probes=%d llm=%d fit=%d"
+                  % (scored["deploy_source"], scored["heldout_utility"],
+                     scored["regret"], scored["worst_class_delta"],
+                     src["supplied_in_pool"], src["self_proposed_in_pool"],
+                     scored["probes"], scored["llm_calls"],
+                     scored["consumer_fits"]), flush=True)
+    except Stop as stop:
+        stopped = stop.verdict
+        payload["stop"] = {"verdict": stop.verdict, "reason": stop.reason}
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        stopped = "INSTRUMENT_UNREADABLE"
+        payload["stop"] = {"verdict": stopped,
+                           "reason": ps0c.redact("%s: %s"
+                                                 % (type(exc).__name__, exc)),
+                           "traceback": ps0c.redact(traceback.format_exc())}
+    payload["rows"] = rows
+    payload["v4_control"] = _v4_tail_control()
+    payload["verdict"] = _l1_verdict(rows, payload, stopped=stopped)
+    payload["prediction_table"] = _l1_prediction_table(payload, rows)
+    payload["ledger"] = {
+        "llm": ledger["llm"], "llm_cap": L1_LLM_CAP,
+        "fit": ledger["fit"], "fit_cap": L1_FIT_CAP,
+        "wall_seconds": round(time.time() - started, 1),
+        "wall_seconds_cap": L1_WALL_CAP, "downloads": 0,
+    }
+    payload["obligations"] = _l1_obligations()
+    out_json.write_text(json.dumps(
+        ps0c.redact(s1._plain(payload)), ensure_ascii=False, indent=1,
+        sort_keys=True, default=str) + "\n", encoding="utf-8")
+    out_md.write_text(_l1_markdown(payload), encoding="utf-8")
+    print(json.dumps({"verdict": payload["verdict"]["verdict"],
+                      "headline": payload["verdict"].get("headline"),
+                      "ledger": payload["ledger"],
+                      "artifact": str(out_json)},
+                     ensure_ascii=False, indent=1), flush=True)
+    return 0
+
+
+def _candidate_sources(scored: Mapping[str, Any]) -> dict[str, Any]:
+    supplied = self_proposed = 0
+    supplied_probed = self_probed = 0
+    supplied_won = False
+    for record in scored.get("rounds") or []:
+        for row in record.get("proposals") or []:
+            cid = str(row.get("candidate_id") or "")
+            if cid == "identity":
+                continue
+            if cid.startswith("cand_skill_"):
+                supplied += 1
+                supplied_probed += int(row.get("outcome") == "probe")
+            else:
+                self_proposed += 1
+                self_probed += int(row.get("outcome") == "probe")
+        winner = record.get("winner_program") or []
+        if winner and record.get("approved_skill_id"):
+            supplied_won = supplied_won or bool(
+                any(str(p.get("candidate_id", "")).startswith("cand_skill_")
+                    and p.get("chosen_by_select") is not None
+                    for p in (record.get("proposals") or [])))
+    return {"supplied_in_pool": supplied,
+            "self_proposed_in_pool": self_proposed,
+            "supplied_probed": supplied_probed,
+            "self_proposed_probed": self_probed,
+            "supplied_reached_winner": supplied_won}
+
+
+def _v4_tail_control() -> dict[str, Any]:
+    rows = [row for row in _v4_rows()
+            if int(row["position"]) in L1_TAIL_POSITIONS]
+    out: dict[str, Any] = {"note": (
+        "v4 frozen readings, used as a replay-grade control.  The other three "
+        "arms are not re-run in L1, so these are not a fresh contemporaneous "
+        "comparison and must not be reported as one.")}
+    for arm in (ARM_STATIC, ARM_A3, ARM_K0, ARM_A5):
+        arm_rows = [row for row in rows if row["arm"] == arm]
+        out[arm] = {
+            "units": len(arm_rows),
+            "cumulative_regret": sum(row["regret"] for row in arm_rows),
+            "harm_events": sum(1 for row in arm_rows
+                               if row.get("harm_event")),
+            "probes": sum(row["probes"] for row in arm_rows),
+            "llm": sum(row["llm_calls"] for row in arm_rows),
+            "consumer_fits": sum(row["consumer_fits"] for row in arm_rows),
+        }
+    return out
+
+
+def _l1_verdict(rows, payload, *, stopped) -> dict[str, Any]:
+    control = _v4_tail_control()
+    a5_v4 = control[ARM_A5]["cumulative_regret"] if control.get(ARM_A5) else 0.0
+    regret = sum(row["regret"] for row in rows)
+    harm = sum(1 for row in rows if row["harm_event"])
+    converted = [row for row in rows
+                 if row["candidate_sources"]["supplied_probed"]
+                 and row["applied_ops"]]
+    supplied_units = [row for row in rows
+                      if row["candidate_sources"]["supplied_in_pool"]]
+    gain = a5_v4 - regret
+    delta = float(payload["delta_material"])
+    headline = ("YES, %+.4f cumulative regret against the v4 A5 tail "
+                "(%.4f -> %.4f), gate %.6f"
+                % (gain, a5_v4, regret, delta)) if gain >= delta else (
+        "NO, %+.4f cumulative regret against the v4 A5 tail (%.4f -> %.4f), "
+        "gate %.6f" % (gain, a5_v4, regret, delta))
+    facts = {
+        "a5_tail_regret_v4": a5_v4, "a5_tail_regret_l1": regret,
+        "regret_improvement": gain, "delta_material": delta,
+        "harm_events": harm,
+        "units_with_supplied_candidate": len(supplied_units),
+        "units_converted_from_supply": [row["unit_id"] for row in converted],
+        "units_run": len(rows),
+    }
+    if stopped:
+        return {"verdict": stopped, "headline": headline, "facts": facts,
+                "reason": "stopped before the tail completed"}
+    if not supplied_units:
+        return {"verdict": "L1_NO_INJECTION", "headline": headline,
+                "facts": facts,
+                "reason": ("the card compiled but no tail unit received the "
+                           "supplied candidate in its pool")}
+    if not converted:
+        return {"verdict": "L1_NO_CONVERSION", "headline": headline,
+                "facts": facts,
+                "reason": ("the supplied candidate reached %d pool(s) and "
+                           "converted nowhere" % len(supplied_units))}
+    if harm == 0 and gain >= delta:
+        return {"verdict": "L1_SIGNAL", "headline": headline, "facts": facts,
+                "reason": ("supply-sourced conversion produced a material "
+                           "regret improvement with zero harm")}
+    return {"verdict": "L1_CONVERSION_BELOW_GATE", "headline": headline,
+            "facts": facts,
+            "reason": ("conversion happened but the improvement did not "
+                       "clear the material gate, or harm was not zero")}
+
+
+def _l1_prediction_table(payload, rows) -> list[dict[str, Any]]:
+    pred = payload["pre_registered_predictions"]
+    by_unit = {row["unit_id"]: row for row in rows}
+    scope = {row["unit_id"]: row["machine_match"]
+             for row in payload["t1"].get("scope_table") or []}
+    table = [{
+        "prediction": "card compiles at the unit-3 boundary",
+        "expected": True,
+        "observed": payload["t1"]["card"] is not None,
+        "held": payload["t1"]["card"] is not None,
+    }]
+    for unit in pred["scope_matches"]:
+        table.append({"prediction": "Scope matches %s" % unit,
+                      "expected": True, "observed": scope.get(unit),
+                      "held": scope.get(unit) is True})
+    for unit in pred["scope_does_not_match"]:
+        table.append({"prediction": "Scope does not match %s" % unit,
+                      "expected": False, "observed": scope.get(unit),
+                      "held": scope.get(unit) is False})
+    for unit in pred["converts"]:
+        row = by_unit.get(unit)
+        observed = bool(row and row["applied_ops"]
+                        and row["candidate_sources"]["supplied_probed"])
+        table.append({"prediction": "%s converts" % unit, "expected": True,
+                      "observed": observed, "held": observed})
+    for unit in pred["does_not_convert"] + pred["abstains"]:
+        row = by_unit.get(unit)
+        observed = bool(row and not row["applied_ops"])
+        table.append({"prediction": "%s does not deploy" % unit,
+                      "expected": True, "observed": observed,
+                      "held": observed})
+    harm = sum(1 for row in rows if row["harm_event"])
+    table.append({"prediction": "harm events = 0", "expected": 0,
+                  "observed": harm, "held": harm == 0})
+    facts = payload["verdict"]["facts"]
+    table.append({
+        "prediction": "A5 tail regret +0.7710 -> <= 0.20",
+        "expected": "<= 0.20",
+        "observed": round(facts["a5_tail_regret_l1"], 4),
+        "held": facts["a5_tail_regret_l1"] <= 0.20})
+    return table
+
+
+def _l1_obligations() -> dict[str, Any]:
+    return {
+        "methods_package_unmodified": True,
+        "try_tier_loo_untouched": True,
+        "risk_tier_untouched": True,
+        "execution_and_deployment_gates_untouched": True,
+        "material_threshold_untouched": True,
+        "prompt_model_budget_protocol_untouched": True,
+        "sealed_artifacts_untouched": "Epilepsy2 and s1_oracle never enter "
+                                      "any arm view",
+        "no_new_units_operators_or_consumers": True,
+        "producer_stage_not_rerun": True,
+        "other_three_arms_are_v4_replay_grade_control": True,
+        "guided_positive_counts_zero": True,
+        "downloads": 0,
+        "full_repo_pytest_not_run": True,
+    }
+
+
+def _l1_markdown(payload: Mapping[str, Any]) -> str:
+    verdict = payload["verdict"]
+    lines = [
+        "# L1 -- ladder revision v2 replay from the v4 boundary", "",
+        "**Core positive effect moved: %s**" % (
+            verdict.get("headline") or "not evaluated (offline gate only)"),
+        "",
+        "protocol: `%s`  git: `%s`  verdict: **%s**"
+        % (payload["protocol_version"], payload["git_head"],
+           verdict["verdict"]),
+        "", verdict.get("reason", ""), "",
+        "> %s" % payload["ladder_revision"], "",
+        "## T1 offline gate", "",
+        "| check | pass | evidence |", "|---|---|---|",
+    ]
+    for row in payload["t1"]["checks"]:
+        ev = row["evidence"]
+        cite = (ev.get("file_line") or ev.get("predicate_file_line")
+                or ev.get("reader_file_line") or ev.get("rule_file_line")
+                or ev.get("dual_gate_enforced_at") or "")
+        lines.append("| %s | **%s** | `%s` |" % (row["check"], row["pass"],
+                                                 cite))
+    scope_table = payload["t1"].get("scope_table") or []
+    if scope_table:
+        lines += ["", "### Scope match precheck", "",
+                  "| # | unit | role | machine match | served in Fast view |",
+                  "|---|---|---|---|---|"]
+        for row in scope_table:
+            lines.append("| %s | `%s` | %s | **%s** | %s |" % (
+                row["position"], row["unit_id"], row["role"],
+                row["machine_match"], row["served_in_fast_view"]))
+    boundary = payload.get("boundary_resume")
+    if boundary:
+        lines += ["", "## Boundary resume", "",
+                  "- kind: **%s**" % boundary["kind"],
+                  "- carried: %s" % boundary["carried"],
+                  "- not carried: %s" % boundary["not_carried"],
+                  "- producer stage re-run: %s"
+                  % (not boundary["producer_stage_not_rerun"])]
+    if payload.get("rows"):
+        lines += ["", "## A5 tail, per unit", "",
+                  "| # | role | unit | supplied in pool | self-proposed | "
+                  "supplied probed | deployed | held-out | regret | worst "
+                  "class | probes | LLM | fits |",
+                  "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+        for row in payload["rows"]:
+            src = row["candidate_sources"]
+            lines.append("| %s | %s | %s | %d | %d | %d | `%s` | %+.4f | "
+                         "%+.4f | %+.4f | %d | %d | %d |" % (
+                             row["position"], row["role"],
+                             row["unit_id"].split("__")[0],
+                             src["supplied_in_pool"],
+                             src["self_proposed_in_pool"],
+                             src["supplied_probed"],
+                             ",".join(row["applied_ops"]) or "identity",
+                             row["heldout_utility"], row["regret"],
+                             row["worst_class_delta"], row["probes"],
+                             row["llm_calls"], row["consumer_fits"]))
+    if payload.get("prediction_table"):
+        lines += ["", "## Pre-registered predictions", "",
+                  "| prediction | expected | observed | held |",
+                  "|---|---|---|---|"]
+        for row in payload["prediction_table"]:
+            lines.append("| %s | %s | %s | **%s** |" % (
+                row["prediction"], row["expected"], row["observed"],
+                row["held"]))
+    control = payload.get("v4_control") or {}
+    if control:
+        lines += ["", "## v4 replay-grade control (tail units)", "",
+                  "- %s" % control.get("note", ""), "",
+                  "| arm | units | cumulative regret | harm | probes | LLM | "
+                  "fits |", "|---|---|---|---|---|---|---|"]
+        for arm in (ARM_STATIC, ARM_A3, ARM_K0, ARM_A5):
+            row = control.get(arm)
+            if not row:
+                continue
+            lines.append("| %s | %d | %+.4f | %d | %d | %d | %d |" % (
+                arm, row["units"], row["cumulative_regret"],
+                row["harm_events"], row["probes"], row["llm"],
+                row["consumer_fits"]))
+    ledger = payload.get("ledger") or {}
+    lines += ["", "## Cost", "",
+              "- LLM: %s / %s" % (ledger.get("llm"), ledger.get("llm_cap")),
+              "- fits: %s / %s" % (ledger.get("fit"), ledger.get("fit_cap")),
+              "- wall: %s s" % ledger.get("wall_seconds"),
+              "- downloads: 0", "", "## Obligations", ""]
+    for key, value in (payload.get("obligations") or {}).items():
+        lines.append("- **%s**: %s" % (key, value))
+    return "\n".join(lines) + "\n"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="S1-v2 forward course")
     parser.add_argument("--freeze", action="store_true")
     parser.add_argument("--freeze-r2", action="store_true")
     parser.add_argument("--freeze-v3", action="store_true")
     parser.add_argument("--freeze-v4", action="store_true")
+    parser.add_argument("--l1-t1", action="store_true",
+                        help="L1 offline gate only (0 LLM)")
+    parser.add_argument("--l1-replay", action="store_true",
+                        help="L1: T1 then the live A5 tail replay")
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--finalize", action="store_true",
@@ -2108,6 +2788,10 @@ def main() -> int:
         return freeze_v3()
     if args.freeze_v4:
         return freeze_v4()
+    if args.l1_t1:
+        return l1_replay(args.seed, t1_only=True)
+    if args.l1_replay:
+        return l1_replay(args.seed, resume=bool(args.resume))
     # The live entries are gated on Part 0.  The gate is read off the frozen
     # artifact rather than recomputed, so a run can never start on a course
     # the freeze refused.
