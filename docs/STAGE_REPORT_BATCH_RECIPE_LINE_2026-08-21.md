@@ -1013,6 +1013,24 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### S1-v2 终掷(课程 v4)正序 r1:第三次 `TREATMENT_EMPTY`;按终掷硬帽转为**系统性结论**,全停呈机制重审(2026-08-28 00:4x,执行方)
+
+**判词:`TREATMENT_EMPTY`**(development)。**终掷硬帽生效**:三次处理组落空不是第四次重排的理由,而是一个结论——S1-v2 全停,机制重审。r2 不发。**成本 115/280 LLM、77/900 fit、3206.0 s / 21600 s、0 下载**;三课累计 306 LLM(总帽 500 内)。
+
+**三答执行确认**:**①** 采样重复授权 —— 已写入冻结件(SIGNAL 才续 r2);本跑负判,未续。**②** 判据第三项 live Support 通过率 —— 已入件并附实证账:GPA 冷发现 3/3 且 Support 3/3;GPMvF-impulse 3/4(M-1 对半实证);GunPoint-impulse 未实测(正因如此仅作备份);PowerCons-impulse 冷发现 2/4、**Support 贴线 0/2**(+0.0714 / +0.0357)。**③** 备份产例 C —— 已入件,语义如实写明:C 是"第二个正例的第三次机会",不是第三个正例;任一边界凑满 2 个未引导正例即编卡,此后 C 的正例因卡已在 A5 视野属**受引导、计零**(既有 UNGUIDED 规则,非本课特设)。
+
+**冻结件 v4**(`s1v2_course_freeze_v4.json/.md`,定名 **discovery-and-support-reliable development curriculum**,8 单元):GPA(产例A)→ BeetleFly-impulse(identity A)→ GPMvF-impulse(产例B)→ GunPoint-impulse(**备份产例C**)→ [边界]→ GPOvY(受益强 5.00×)→ **PowerCons-impulse(受益弱)**→ Herring(HELDOUT_ONLY)→ BirdChicken-burst(identity B)。Δ_material = 1/20 + 1/26 = **0.088462**。必写注记全入件:终掷硬帽、判据第三项与实证账、备份产例语义、**家族注记**(卡证据若成型即 GPA+GPMvF 同属 GunPoint 族、强受益 GPOvY 亦同族 → development mechanism 级,不得报跨族)、**PowerCons 密封 5.00× 与 live 贴线的落差**(归因提案参数绑定:密封 oracle 按自调参数打分,臂按契约绑定提案)、以及沿 v3 的排除令语义/前曝光/采样重复/自然自举对照。
+
+**本跑发生了什么(A5 三个产例位逐一)**:**产例A GPA** —— A5 只提了 `repair_localized_level_shift`(level_shift 族),**verifier_rejected**,全程未提 hampel;同一单元同一协议下 **K0-fixed 提了 hampel 并拿到 +0.2690**。**产例B GPMvF** —— A5 提 hampel,Support **+0.1905 POSITIVE**、delayed +0.0526、`LOCAL_ACTIVE`、获批、部署 **+0.1867**。**产例C GunPoint-impulse(备份)** —— A5 只提 `repair_local_level_excursion`(level_shift),**verifier_rejected**,随后选 identity。于是**未引导正例 1 个**,八个边界审计全判 `fewer_than_2_distinct_unguided_positive_tasks`(前两个边界更早,判 `no_program_family_met_the_supply_rule`),**卡从未编译**,受益场注入 **0/2**(ITT)。
+
+**四臂读数(ITT,8 单元累计)**:Static regret +1.2267 / 均值 0;A3-reset **+1.2267** / +0.0000 / 11 probe / 38 LLM / 19 fit / **0 次非 identity 部署**;**A5-online +1.0400** / +0.0233 / 12 probe / 38 LLM / 23 fit / 1 次部署;K0-fixed **+0.7710** / +0.0570 / 12 probe / 39 LLM / 27 fit / 2 次部署。**四臂 harm 全零、worst-class 全零**。**门核算**:A5 对 A3 regret 差 **+0.1867 > Δ 0.0885**(数值上过!)但**归因门不过**——零产卡零注入,该差值来自 A5 自己在产例B 的同单元学习,与"课程内自产知识跨单元复利"无关,按判词逻辑不计信号;对 K0 **−0.2690**(更差)。成本门 probe 差 **−1**,未过。**训练计算效率**:fit 墙钟 A5 965 s / A3 1068 s / K0 1102 s / Static 52 s,三适应臂无材料差异;time-to-threshold 不可算。**分层预测**无法检验(两受益场零注入)。
+
+**系统性结论(三课汇总,这是本条的承重内容)**:把三课的 **A5 产例位**拉平看——v2 两位(0 次提 hampel)、v3 两位(2 次提、1 次过 Support)、v4 三位(1 次提、1 次过 Support)——共 **7 个产例位:提出 hampel 3 次(43%)、过 Support 双门 2 次(29%)**。供给档要 **2 个独立未引导正例**;在每位约 0.29 的成功率下,三产例位凑满两个的概率约 **0.19**。**这不是课程构成问题,是价格与供给率不匹配**:重排课程、升级判据、加备份产例三招都试过,三次都空。**首处故障因此从"提案语义"进一步收窄为"提案语义 × 供给档价格"**:通道(W-1 读端 / G-3 条件化与否决 / P0 产端)三书已分别证通,可达性链在 P0 上 7/7 全通;缺的是**能稳定产出两个独立正例的提案器**。
+
+**书外发现**:(1) **level_shift 偏好仍在烧提案位**:v4 的产例A与C,A5 唯一的非 identity 提案都是 level_shift 族,且**两次都被 verifier 拒**——即冷 proposer 不仅偏爱错误族(C40 起已记),而且偏爱到连校验都过不了,提案位等于白丢。这是比"没提对族"更具体的一条:**提案器的候选合法性也不达标**。(2) **同单元跨臂对照是最干净的采样证据**:v4 产例A 上 K0 提了 hampel(+0.2690)、A5 没提;两臂同底物同协议同预算,唯一差别是 LLM 采样。臂间差异当前由采样方差主导这一点,现在有了单单元级证据。(3) 备份产例 C 的语义在本跑未被触发(卡未成型),其"受引导计零"分支仍未获实测,如实记。(4) PowerCons 作受益弱场的密封-live 落差已入件;本跑它在四臂上全 identity、regret +0.1333,与"贴线"预期一致。
+
+**提交**:`evaluation/functional/run_e2_s1v2_forward_course.py`(v4 冻结 + 输出路径 + LLM 帽 280)、`artifacts/functional/e2/s1v2_course_freeze_v4.json/.md`、`artifacts/functional/e2/s1v2_v4_forward_run1.json/.md/.checkpoint.json`、本节。`methods/`/`contracts/`/`runtime/`/`operators/` 零改;`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`/设计稿 未碰;密钥零出现;未跑全仓 pytest。
+
 ### S1-v2 课程 v3(discovery-reliable)正序 r1:`TREATMENT_EMPTY`,但性质与 v2 完全不同——管线全通,卡差一个正例(2026-08-27 23:2x,执行方)
 
 **判词:`TREATMENT_EMPTY`**(development)。r2 **不发**(停发规则照旧;是否补发采样重复由仲裁定)。**成本 95/250 LLM、73/900 fit、4228.1 s / 21600 s、0 下载**。仲裁批案 A 只改产例侧,其余(判分/ITT/材料门 Δ=0.102632/预算/对半协议/K0 纯度/oracle 纪律/checkpoint)全部沿 r2 冻结与原书。
@@ -1178,6 +1196,10 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **核心正效果移动:是。** 唯一变量(四分→角色拼接对半:Support n=21 / delayed n=19,单轮双门)下,A5-scoped **供给候选经双门转化 2/4**(m1_a5_1/2),部署 held-out **+0.1867**,harm 0。冻结判词 **`MARGIN_GATING_CONFIRMED`**:确认面余量门控成立,余量分层进 Gate 4。算术先行 0 fit:Support 4.00× / delayed 2.00×,均 ≥2×(G3 四分余量 1.35×,材料正 0/4 不重跑)。漏斗:卡 4/4 在视野;入池 2/4;材料正 2/4;供给双门 2/4。a5_3/4 卡在视野但 inject=False(同族 prepare/identity-only 漏注入),agent 自提 hampel 亦部署——**不计供给转化**。A3 冷提案 3/4 同增益部署(a3_4 identity):对半面本身可读,门控的是确认面余量而非只是供给通道。对半读数只作余量机制证据,**不得与四分基线作能力比较**。pilot;GunPointFamily 同族;引导正例计零。成本 LLM 29/100、fit 45/100、墙钟 1068.7s/7200s;returned_model=`gpt-5.6-sol`;下载 0;methods/contracts/runtime/operators 零改;密钥零出现。
 
 **提交**:`evaluation/functional/run_e2_m1_margin_gate.py`;`artifacts/functional/e2/m1_margin_gate.json/.md`;本节(含他书未提交的 Gate 3 收口 / A′ 发车 / 提速四点,未删改既有正文)。不提交 checkpoint / `AGENTS.md` / `README` / `PROJECT_STATE*` / `SUCCESSOR_BRIEF*`。
+
+### v3 r1 收口(提交 a1f5134):TREATMENT_EMPTY 但性质跃迁——产例 A 全链自产成功;判据补第三项;课程 v4 终掷(2026-08-27 23:4x,主线)
+
+**读数**(95/250 LLM,73 fit,4228s,harm 全零):**产例 A/GPA 课程内全链自产成功**(A5 r1 自提 hampel,Support +0.45 POSITIVE,delayed +0.40,部署 +0.2690,regret 略优 oracle)——"课程自产知识"首次真实发生;产例 B/PowerCons **族提对了**(hampel),Support 读 +0.0357 判 CONFLICT(聚合正逐序列害,EPISODE_ONLY)——**断点从提案语义移到 Support 分级**;卡 1/2 未编,受益注入 0/2。**v2 vs v3 性质区分入案**:结构性空场 vs 采样差一发(管线全通)。附带负读数如实记:A5 在两受益场 0 提案弃权,丢掉 A3 自挣的 +0.1867;K0 连续两跑靠 GPMvF 自挣 hampel 得最低 regret(处理组空,不可比)。供给档七拒零凑数照旧。**诊断升级(执行者)**:冷发现率先验只覆盖"提出",不覆盖"过 Support 双门";live 读数与密封余量算术的落差另源于提案参数差(agent 的 hampel 变体参数 ≠ oracle 默认)。**主线三答组成课程 v4(终掷)**:(b) 产例判据 = 发现率 × live Support 通过率 → 产例 B 换 GPMvF(M-1 对半 3/4 实证),PowerCons-impulse 降弱受益场(Support 面实测贴线,诚实弱分层);(c) GunPoint-impulse 作备份产例 C(任一边界凑满 2 正例即编卡,保险成本 ~20 LLM);(a) v4 即修正后重试,实例化概率 ~0.8;**硬帽:v4 系 S1-v2 最后一次课程尝试,第三次空场即系统性结论,全停呈机制重审**;家族注记(卡证据或为 GunPoint 族内相关)如实入件。课程 v4:GPA→identityA→GPMvF→GunPoint(备份产例)→[边界]→GPOvY(强受益)→PowerCons-impulse(弱受益)→Herring(HELDOUT)→identityB。
 
 ### sol 批案 A(用户定调:正效果优先);S1-v2 课程 v3 重冻发车(2026-08-27 22:0x,主线)
 

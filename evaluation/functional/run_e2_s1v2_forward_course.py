@@ -70,6 +70,11 @@ FREEZE_R2_MD = E2 / "s1v2_course_freeze_r2.md"
 # is what run 1 showed was the missing precondition.
 FREEZE_V3_JSON = E2 / "s1v2_course_freeze_v3.json"
 FREEZE_V3_MD = E2 / "s1v2_course_freeze_v3.md"
+# v4: the final throw.  Producer selection gains a third criterion (live
+# Support pass rate) and a backup producer, and the weak beneficiary becomes
+# the unit whose live Support is honestly thin.
+FREEZE_V4_JSON = E2 / "s1v2_course_freeze_v4.json"
+FREEZE_V4_MD = E2 / "s1v2_course_freeze_v4.md"
 
 PROTOCOL_VERSION = "s1v2_forward_course_v1"
 EVIDENCE_GRADE = "development"
@@ -1194,6 +1199,369 @@ def freeze_v3() -> int:
 
 
 # =========================================================================== #
+# Part 0 v4 -- the final throw
+# =========================================================================== #
+COURSE_NAME_V4 = "discovery-and-support-reliable development curriculum"
+FINAL_THROW_CAP = (
+    "HARD CAP, written into the freeze: this is S1-v2's last course attempt.  "
+    "A third empty treatment group is not a fourth reshuffle -- it is a "
+    "systematic result.  If this run returns TREATMENT_EMPTY, everything "
+    "stops and the mechanism goes back for review; no v5 is compiled."
+)
+# Third criterion, added by arbitration: a producer must not only propose the
+# family (cold discovery) but also get it past the live Support gate under the
+# half protocol.  v3 is where this became necessary: PowerCons proposed hampel
+# and read +0.0357, which grades CONFLICT.
+LIVE_SUPPORT_LEDGER = {
+    "GunPointAgeSpan__impulse_v2": {
+        "cold_discovery": "3/3", "live_support_pass": "3/3",
+        "readings": "PS-0 re-earn +0.4000; S1-v2 v3 r1 +0.4500 POSITIVE",
+        "role": "producer_A"},
+    "GunPointMaleVersusFemale__impulse_v2": {
+        "cold_discovery": "3/4", "live_support_pass": "3/4",
+        "readings": "M-1 half protocol: supply conversion 2/4 -> 3/4 after "
+                    "the wiring, +0.1867 deployed; S1-v2 v3 r1 A3/K0 both "
+                    "earned +0.1867 on this unit",
+        "role": "producer_B"},
+    "GunPoint__impulse_v2": {
+        "cold_discovery": "unmeasured", "live_support_pass": "unmeasured",
+        "readings": "no live earn on record; carried as the backup producer "
+                    "precisely because the other two are single points",
+        "role": "producer_C_backup"},
+    "PowerCons__impulse_v2": {
+        "cold_discovery": "2/4", "live_support_pass": "0/2 at the material "
+                                                     "line",
+        "readings": "PS-0c +0.0714; S1-v2 v3 r1 +0.0357 -> CONFLICT.  Sealed "
+                    "half-protocol margin is 5.00x, which the live readings "
+                    "do not reproduce",
+        "role": "beneficiary_weak"},
+}
+BACKUP_PRODUCER_SEMANTICS = (
+    "Producer C is a third chance at the second positive, not a third "
+    "positive.  The supply tier compiles as soon as any boundary holds two "
+    "distinct unguided positives, so if A and B both land the card is written "
+    "after position 3 and C still runs -- but by then the card is in A5's "
+    "view, so C's own positive is Harness-conditioned and counts zero toward "
+    "authorization.  That is the existing UNGUIDED rule, not an exception "
+    "carved for this course, and it is why C cannot inflate the evidence."
+)
+FAMILY_NOTE_V4 = (
+    "If the card compiles from A and B, its two Episodes are GunPointAgeSpan "
+    "and GunPointMaleVersusFemale -- both GunPoint name family.  The strong "
+    "beneficiary GPOvY is the same family again.  This is therefore a "
+    "within-family transfer at the substrate level: development-mechanism "
+    "grade, and it must not be reported as cross-family capability.  The weak "
+    "beneficiary PowerCons is the one genuinely outside that family, which is "
+    "part of why it is worth keeping despite its thin live Support."
+)
+POWERCONS_DISCREPANCY_NOTE = (
+    "PowerCons__impulse_v2 carries a sealed half-protocol margin of 5.00x and "
+    "live Support readings of +0.0714 (PS-0c) and +0.0357 (v3), the latter "
+    "graded CONFLICT.  Sealed margin and live reading disagree, and the "
+    "attribution is the proposal's parameter binding rather than the "
+    "substrate: the sealed oracle scores the operator at its own tuned "
+    "parameters, while the arm proposes it at whatever the contract binds.  "
+    "Recorded as an honest weak stratum, not as a substrate defect."
+)
+
+PRODUCER_A_V4 = "GunPointAgeSpan__impulse_v2"
+PRODUCER_B_V4 = "GunPointMaleVersusFemale__impulse_v2"
+PRODUCER_C_V4 = "GunPoint__impulse_v2"
+BENEFICIARY_STRONG_V4 = "GunPointOldVersusYoung__impulse_v2"
+BENEFICIARY_WEAK_V4 = "PowerCons__impulse_v2"
+
+
+def select_course_v4() -> dict[str, Any]:
+    pool = _pool()
+    by_id = {row["unit_id"]: row for row in pool}
+    order = [
+        (PRODUCER_A_V4, "producer_A"),
+        ("BeetleFly__impulse_v2", "identity_A"),
+        (PRODUCER_B_V4, "producer_B"),
+        (PRODUCER_C_V4, "producer_C_backup"),
+        (BENEFICIARY_STRONG_V4, "beneficiary_strong"),
+        (BENEFICIARY_WEAK_V4, "beneficiary_weak"),
+        ("Herring__impulse_v2", "heldout_only"),
+        ("BirdChicken__burst_cls2", "identity_B"),
+    ]
+    missing = [unit for unit, _role in order if unit not in by_id]
+    if missing:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "named units absent: %s" % ", ".join(missing))
+
+    producers = [by_id[PRODUCER_A_V4], by_id[PRODUCER_B_V4]]
+    scope = _scope_of(producers)
+    pattern = dict((scope or {}).get("pattern_intersection") or {})
+    ast = {"all": [{"feature": "task_kind", "op": "==",
+                    "value": "classification"}]
+           + [{"feature": key, "op": "==", "value": value}
+              for key, value in sorted(pattern.items())]}
+
+    beneficiaries = []
+    for unit_id, band in ((BENEFICIARY_STRONG_V4, "strong"),
+                          (BENEFICIARY_WEAK_V4, "weak")):
+        row = by_id[unit_id]
+        matched, _score = evaluate_applicability(
+            ast, {"task_kind": "classification", **row["pattern"]})
+        beneficiaries.append({
+            "unit_id": unit_id, "margin_band": band,
+            "machine_match_producer_scope": bool(matched),
+            "census_learnability": row["census_learnability"],
+            "half_margin": row["half_margin"],
+            "half_meets_2x": row["half_meets_2x"],
+            "material_line": _material_line(row),
+            "n_slice_half_min": row["n_slice_half_min"],
+            "live_support": LIVE_SUPPORT_LEDGER.get(unit_id, {}).get(
+                "live_support_pass"),
+            "is_also_a_producer": unit_id in (PRODUCER_A_V4, PRODUCER_B_V4,
+                                              PRODUCER_C_V4),
+        })
+
+    course = []
+    for position, (unit_id, role) in enumerate(order, start=1):
+        row = by_id[unit_id]
+        course.append({
+            "position": position, "unit_id": unit_id, "role": role,
+            "dataset": row["dataset"], "injection": row["injection"],
+            "series_length": row["series_length"],
+            "menu_oracle_program": row["menu_oracle_program"],
+            "menu_oracle_heldout_utility": row["menu_oracle_heldout_utility"],
+            "half_margin": row["half_margin"],
+            "half_meets_2x": row["half_meets_2x"],
+            "census_learnability": row["census_learnability"],
+            "n_slice_half_min": row["n_slice_half_min"],
+            "name_family": row["name_family"],
+            "live_support_ledger": LIVE_SUPPORT_LEDGER.get(unit_id),
+        })
+
+    delta_parts = [row["material_line"] for row in beneficiaries]
+    delta_material = (sum(part for part in delta_parts if part)
+                      if all(delta_parts) else None)
+    constructible = bool(
+        all(row["machine_match_producer_scope"] for row in beneficiaries)
+        and all(row["census_learnability"] == "LEARNABLE"
+                for row in beneficiaries)
+        and not any(row["is_also_a_producer"] for row in beneficiaries)
+        and pattern)
+    return {
+        "course_name": COURSE_NAME_V4,
+        "final_throw_cap": FINAL_THROW_CAP,
+        "pool": pool,
+        "producer_selection": {
+            "rule": "three criteria: demonstrated cold discovery, live "
+                    "Support pass rate under the half protocol, then sealed "
+                    "margin; plus one backup producer",
+            "third_criterion_origin": (
+                "v3 showed cold discovery is not sufficient: PowerCons "
+                "proposed hampel and read +0.0357, graded CONFLICT"),
+            "ledger": LIVE_SUPPORT_LEDGER,
+            "backup_producer_semantics": BACKUP_PRODUCER_SEMANTICS,
+        },
+        "exclusion_semantics_revision": EXCLUSION_SEMANTICS_V3,
+        "family_overlap_note": FAMILY_NOTE_V4,
+        "powercons_sealed_vs_live_note": POWERCONS_DISCREPANCY_NOTE,
+        "natural_bootstrap_control": NATURAL_BOOTSTRAP_CONTROL,
+        "rulings": {
+            "a_beneficiaries_released": {
+                "released": [BENEFICIARY_STRONG_V4, BENEFICIARY_WEAK_V4],
+                "stratified_prediction": (
+                    "pre-registered: A5's advantage should concentrate on the "
+                    "strong-margin beneficiary (GPOvY) and be marginal or "
+                    "absent on the weak one (PowerCons), whose live Support "
+                    "has not cleared the material line in two attempts"),
+                "prior_exposure_note": PRIOR_EXPOSURE_NOTE,
+            },
+            "b_regret_gate": {
+                "definition": "sum of the two beneficiaries' half-protocol "
+                              "material lines",
+                "parts": {row["unit_id"]: row["material_line"]
+                          for row in beneficiaries},
+                "delta_material": delta_material,
+                "cost_gate_unchanged": "convertible units average >= 1 probe "
+                                       "saved",
+            },
+        },
+        "producers_scope_v1": scope,
+        "beneficiaries": beneficiaries,
+        "course": course,
+        "course_length": len(course),
+        "transfer_graph": [{
+            "from": [PRODUCER_A_V4, PRODUCER_B_V4,
+                     PRODUCER_C_V4 + " (backup)"],
+            "via": "first Slow boundary holding two distinct unguided "
+                   "positives -> compile_supply_tier",
+            "to": [BENEFICIARY_STRONG_V4, BENEFICIARY_WEAK_V4],
+            "carrier": "supplies_candidates card (grants_execution=false)",
+        }],
+        "precheck": {
+            "expected_card_boundary_after_position": "3 if A and B both land, "
+                                                    "otherwise 4 via the "
+                                                    "backup producer",
+            "expected_first_divergence_position": 5,
+            "expected_first_divergence_unit": BENEFICIARY_STRONG_V4,
+            "five_axis_scope_non_empty": bool(pattern),
+            "pattern_intersection_leaves": sorted(pattern),
+            "beneficiaries_machine_match": all(
+                row["machine_match_producer_scope"] for row in beneficiaries),
+            "no_beneficiary_is_a_producer": not any(
+                row["is_also_a_producer"] for row in beneficiaries),
+            "k0_carries_no_card": "asserted at run time by compile_k0 purity",
+        },
+        "constructible": constructible,
+        "delta_material": delta_material,
+        "seeds": dict(SEEDS),
+        "replicate_kind": "sampling",
+        "replicate_semantics": (
+            "the injection has no RNG to seed "
+            "(run_e2_t6_cls_op_shared_harness.py:3896-3901), so a second run "
+            "is a sampling replicate: identical substrate and protocol, Fast "
+            "Agent the only stochastic element"),
+        "protocol": {
+            "slicing": "M-1 half protocol (one held-in round; Support = "
+                       "concat(r1_support, r2_support), delayed = "
+                       "concat(r1_delayed, r2_delayed))",
+            "arms": [ARM_STATIC, ARM_A3, ARM_K0, ARM_A5],
+            "k0": "bootstrap three cards + the inert Slow card; no "
+                  "Target-local capability and no PS dual-source card",
+            "llm_per_unit_per_arm": 12,
+            "fit_per_unit_per_arm": 10,
+            "llm_per_slow_boundary": 6,
+            "llm_per_run_cap": 280,
+        },
+    }
+
+
+def _freeze_v4_markdown(payload: Mapping[str, Any]) -> str:
+    lines = [
+        "# S1-v2 course freeze v4 -- %s" % payload["course_name"], "",
+        "protocol: `%s`  git: `%s`" % (payload["protocol_version"],
+                                       payload["git_head"]),
+        "", "**%s**" % payload["verdict"]["verdict"], "",
+        payload["verdict"]["reason"], "",
+        "> **FINAL THROW.** %s" % payload["final_throw_cap"], "",
+        "> **Exclusion semantics.** %s"
+        % payload["exclusion_semantics_revision"], "",
+        "> **Prior exposure.** %s"
+        % payload["rulings"]["a_beneficiaries_released"][
+            "prior_exposure_note"], "",
+        "> **Family.** %s" % payload["family_overlap_note"], "",
+        "> **Backup producer.** %s"
+        % payload["producer_selection"]["backup_producer_semantics"], "",
+        "> **PowerCons sealed vs live.** %s"
+        % payload["powercons_sealed_vs_live_note"], "",
+        "> **Control.** %s" % payload["natural_bootstrap_control"], "",
+        "> **Replicates.** %s" % payload["replicate_semantics"], "",
+        "## Course (frozen forward order)", "",
+        "| # | role | unit | menu oracle | half margin | cold discovery | "
+        "live Support pass |", "|---|---|---|---|---|---|---|",
+    ]
+    for row in payload["course"]:
+        led = row.get("live_support_ledger") or {}
+        lines.append("| %d | %s | `%s` | `%s` | %s | %s | %s |" % (
+            row["position"], row["role"], row["unit_id"],
+            row["menu_oracle_program"],
+            ("%.2f" % row["half_margin"]) if row["half_margin"] else "-",
+            led.get("cold_discovery", "-"),
+            led.get("live_support_pass", "-")))
+    lines += ["", "## Producer selection (third criterion)", "",
+              "- rule: %s" % payload["producer_selection"]["rule"],
+              "- why the third criterion exists: %s"
+              % payload["producer_selection"]["third_criterion_origin"], "",
+              "| unit | role | cold discovery | live Support pass | readings |",
+              "|---|---|---|---|---|"]
+    for unit, led in payload["producer_selection"]["ledger"].items():
+        lines.append("| `%s` | %s | %s | %s | %s |" % (
+            unit, led["role"], led["cold_discovery"],
+            led["live_support_pass"], led["readings"]))
+    lines += ["", "## Beneficiaries", "",
+              "| unit | band | Scope match | census | half margin | material "
+              "line | live Support | also a producer |",
+              "|---|---|---|---|---|---|---|---|"]
+    for row in payload["beneficiaries"]:
+        lines.append("| `%s` | **%s** | %s | %s | %.2f | %.4f | %s | %s |" % (
+            row["unit_id"], row["margin_band"],
+            row["machine_match_producer_scope"], row["census_learnability"],
+            row["half_margin"], row["material_line"], row["live_support"],
+            row["is_also_a_producer"]))
+    gate = payload["rulings"]["b_regret_gate"]
+    lines += ["", "- stratified prediction: %s"
+              % payload["rulings"]["a_beneficiaries_released"][
+                  "stratified_prediction"], "",
+              "## Gates", "",
+              "- regret gate `Delta_material` = %s = %.6f"
+              % (" + ".join("%.6f" % v for v in gate["parts"].values()),
+                 gate["delta_material"]),
+              "- cost gate: %s" % gate["cost_gate_unchanged"], "",
+              "## Transfer graph", ""]
+    for edge in payload["transfer_graph"]:
+        lines.append("- %s --%s--> %s (carrier: %s)" % (
+            " + ".join("`%s`" % unit for unit in edge["from"]), edge["via"],
+            ", ".join("`%s`" % unit for unit in edge["to"]), edge["carrier"]))
+    pre = payload["precheck"]
+    lines += ["", "## Precheck", "",
+              "- five-axis Scope non-empty: %s (%d leaves)"
+              % (pre["five_axis_scope_non_empty"],
+                 len(pre["pattern_intersection_leaves"])),
+              "- both beneficiaries machine-match: %s"
+              % pre["beneficiaries_machine_match"],
+              "- no beneficiary is a producer: %s"
+              % pre["no_beneficiary_is_a_producer"],
+              "- expected card boundary: %s"
+              % pre["expected_card_boundary_after_position"],
+              "- expected first divergence: position %s (`%s`)"
+              % (pre["expected_first_divergence_position"],
+                 pre["expected_first_divergence_unit"]), ""]
+    return "\n".join(lines) + "\n"
+
+
+def freeze_v4() -> int:
+    selection = select_course_v4()
+    constructible = selection["constructible"]
+    payload = {
+        "protocol_version": PROTOCOL_VERSION + "_v4",
+        "evidence_grade": EVIDENCE_GRADE,
+        "git_head": s1._git("rev-parse", "HEAD"),
+        "python": sys.version.split()[0],
+        "design": "docs/S1V2_DESIGN_DRAFT_2026-08-27.md",
+        "supersedes": FREEZE_V3_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "arbitration": "three answers: sampling repeat authorized on SIGNAL, "
+                       "live Support pass rate added as the third producer "
+                       "criterion, one backup producer allowed.  Everything "
+                       "else carries over from v3.",
+        "sources": {
+            "margins": PS0B_JSON.relative_to(PROJECT_ROOT).as_posix(),
+            "oracles": "artifacts/functional/e2/s1_oracle/*.json "
+                       "(exam keys only; not loaded into any arm)",
+        },
+        **selection,
+        "verdict": {
+            "verdict": ("S1V2_COURSE_FROZEN_V4" if constructible
+                        else "COURSE_NOT_CONSTRUCTIBLE"),
+            "reason": (
+                "three producers -- two selected on cold discovery *and* live "
+                "Support pass rate, plus one backup -- a non-empty five-axis "
+                "Scope, and two held-in learnable beneficiaries at separated "
+                "bands, neither of which is a producer.  Final throw."
+                if constructible else
+                "the named units did not satisfy the precheck"),
+        },
+        "ledger": {"llm": 0, "consumer_fits": 0, "downloads": 0},
+    }
+    FREEZE_V4_JSON.write_text(
+        json.dumps(s1._plain(payload), ensure_ascii=False, indent=1,
+                   sort_keys=True, default=str) + "\n", encoding="utf-8")
+    FREEZE_V4_MD.write_text(_freeze_v4_markdown(payload), encoding="utf-8")
+    print(json.dumps({
+        "verdict": payload["verdict"]["verdict"],
+        "course_name": selection["course_name"],
+        "course": [row["unit_id"] for row in selection["course"]],
+        "delta_material": selection["delta_material"],
+        "artifact": str(FREEZE_V4_JSON),
+    }, ensure_ascii=False, indent=1))
+    return 0 if constructible else 1
+
+
+# =========================================================================== #
 # Part 1 -- the live four-arm forward course
 # =========================================================================== #
 SUPPLY_SKILL_ID = "s1v2_course_supply_v1"
@@ -1201,16 +1569,16 @@ LLM_PER_UNIT_PER_ARM = 12
 FIT_PER_UNIT_PER_ARM = 10
 LLM_PER_BOUNDARY = 6
 LLM_TOTAL_CAP = 500
-LLM_PER_RUN_CAP = 250
+LLM_PER_RUN_CAP = 280
 FIT_TOTAL_CAP = 900
 WALL_SECONDS_CAP = int(6 * 60 * 60)
 HALF_ROUNDS = ("r1",)
 
 
 def _out_paths(seed: str) -> tuple[Path, Path, Path]:
-    return (E2 / ("s1v2_v3_forward_run%s.json" % seed[-1]),
-            E2 / ("s1v2_v3_forward_run%s.md" % seed[-1]),
-            E2 / ("s1v2_v3_forward_run%s.checkpoint.json" % seed[-1]))
+    return (E2 / ("s1v2_v4_forward_run%s.json" % seed[-1]),
+            E2 / ("s1v2_v4_forward_run%s.md" % seed[-1]),
+            E2 / ("s1v2_v4_forward_run%s.checkpoint.json" % seed[-1]))
 
 
 def _half_cell(quarter: Mapping[str, Any]) -> dict[str, Any]:
@@ -1323,7 +1691,7 @@ def run_course(seed: str, *, resume: bool = False,
     import run_e2_ps0c_ps1 as ps0c
 
     out_json, out_md, checkpoint = _out_paths(seed)
-    frozen = json.loads(FREEZE_V3_JSON.read_text(encoding="utf-8"))
+    frozen = json.loads(FREEZE_V4_JSON.read_text(encoding="utf-8"))
     course = list(frozen["course"])
     started = time.time()
     s1._set_phase(s1.PHASE_SETUP)
@@ -1345,7 +1713,8 @@ def run_course(seed: str, *, resume: bool = False,
             "honest *sampling* replicates: identical substrate and identical "
             "protocol, with the Fast Agent as the only stochastic element.  "
             "The seed label is a run id, not an injection parameter."),
-        "course_source": FREEZE_V3_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "course_source": FREEZE_V4_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "final_throw_cap": frozen.get("final_throw_cap"),
         "course_name": frozen.get("course_name"),
         "course": course,
         "delta_material": frozen["delta_material"],
@@ -1724,6 +2093,7 @@ def main() -> int:
     parser.add_argument("--freeze", action="store_true")
     parser.add_argument("--freeze-r2", action="store_true")
     parser.add_argument("--freeze-v3", action="store_true")
+    parser.add_argument("--freeze-v4", action="store_true")
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--finalize", action="store_true",
@@ -1736,14 +2106,16 @@ def main() -> int:
         return freeze_r2()
     if args.freeze_v3:
         return freeze_v3()
+    if args.freeze_v4:
+        return freeze_v4()
     # The live entries are gated on Part 0.  The gate is read off the frozen
     # artifact rather than recomputed, so a run can never start on a course
     # the freeze refused.
-    if not FREEZE_V3_JSON.is_file():
-        parser.error("run --freeze-v3 first")
-    frozen = json.loads(FREEZE_V3_JSON.read_text(encoding="utf-8"))
+    if not FREEZE_V4_JSON.is_file():
+        parser.error("run --freeze-v4 first")
+    frozen = json.loads(FREEZE_V4_JSON.read_text(encoding="utf-8"))
     verdict = (frozen.get("verdict") or {}).get("verdict")
-    if verdict != "S1V2_COURSE_FROZEN_V3":
+    if verdict != "S1V2_COURSE_FROZEN_V4":
         print(json.dumps({
             "verdict": verdict,
             "reason": (frozen.get("verdict") or {}).get("reason"),
