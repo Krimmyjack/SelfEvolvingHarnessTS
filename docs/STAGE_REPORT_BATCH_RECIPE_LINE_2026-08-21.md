@@ -1013,6 +1013,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### S1-v2 正序第一跑:`TREATMENT_EMPTY`;产例未产,课程内自产知识为零,按预注册停发第二跑(2026-08-27 19:4x,执行方)
+
+**判词:`TREATMENT_EMPTY`**(development)。按设计稿"课程内未产生任何 Fast 可见知识 → **立即停**"执行,**第二跑不发**。**成本 96/250 LLM(总帽 500 未过半)、68/900 fit、3284.6 s / 21600 s、0 下载**。
+
+**两项裁定执行确认**:**(a)** GPOvY(强,对半 5.00×)与 GPMvF-impulse(弱,2.00×)作双受益单元,两者机器 Scope 均命中产例 19 叶交集且 held-in LEARNABLE;双源单元 GPA/PowerCons-impulse 维持排除;**前曝光注记已强制写入** `s1v2_course_freeze_r2.json/.md` 与 run1 工件正文(两受益单元可转化性系 PS-2/W-1/M-1 已知,臂内无泄漏,新颖主张 = 课程内自产 + ITT 端到端复利)。**(b)** regret 门 `Δ_material` 改为双受益单元对半材料线之和 = 1/20 + 1/19 = **0.102632**,常数已代入冻结件;成本门(可转化单元均省 ≥1 probe)不动。
+
+**课程冻结件 r2**(`s1v2_course_freeze_r2.json/.md`,r1 停报件保留):PowerCons__burst_cls2(产例A,5.00×)→ BeetleFly__impulse_v2(identity A)→ GunPoint__impulse_v2(产例B,3.00×)→ **[Slow 边界预计产卡]** → GPOvY__impulse_v2(受益强)→ GPMvF__impulse_v2(受益弱)→ Herring__impulse_v2(HELDOUT_ONLY)→ BirdChicken__burst_cls2(identity B)。七单元 + 一边界(书内"8"含边界步);预计首分叉 = 位置 4。
+
+**首处断裂在产例侧,不在传递侧。** 七个边界的供给档审计**每一次**都判 `fewer_than_2_distinct_unguided_positive_tasks`,且合格 Episode 始终只有 **1 条、族为 `outlier_iqr`**:A5 在产例 A 上自提并部署了 outlier_iqr(+0.0444),在产例 B(GunPoint impulse)上**一无所获**。课程选产例的依据是"hampel 是其密封答案且对半余量 ≥2×",而**臂在两个产例上都没有提出 hampel**——余量说的是"若探到该族则读得出",不是"会探到该族"。于是供给卡从未编译、候选从未入池、受益单元零注入(ITT 主分析:0/2),`TREATMENT_EMPTY` 成立。这与本线既有诊断同族:S1c 漏斗 11/15 "未提出"、PS-1 `NO_PROPOSAL_SHIFT`、K 消融 `proposal_semantics_insufficient`——**瓶颈是提案语义,不是供给通道**(供给通道 W-1/G-3/P0 三书已分别证读端、条件化、产端均通)。
+
+**四臂读数(ITT,七单元累计)**:A3-reset regret +0.9474 / 均值 gain +0.0000 / harm 0 / 8 probes / 30 LLM / 15 fit;**A5-online** +0.9029 / +0.0063 / **harm 1** / 10 probes / 33 LLM / 22 fit;K0-fixed +0.7607 / +0.0267 / harm 0 / 12 probes / 33 LLM / 24 fit;Static +0.9474 / 0 / harm 0 / 0 probes。A5 对 A3 的 regret 差 +0.0444 **未过** Δ_material=0.1026;对 K0 为 **−0.1423(更差)**;成本门亦未过(probe 差 −2,A5 反而多探)。**训练计算效率**:consumer fit 墙钟 A5 1038 s / A3 1095 s / K0 1053 s / Static 89 s,三适应臂无材料差异;time-to-threshold 不可算(A5 未达任何质量阈)。**A5 唯一一次 harm 事件**来自单元 1 的 outlier_iqr 部署(worst-class −0.0667),即课程内自产的**非目标族**知识本身带来的代价。
+
+**书外发现**:(1) **"异注入 seed"在本底物上不可实现**——`run_e2_t6_cls_op_shared_harness.py:3896-3901` 已入册:该族注入无 RNG 可播种(固定符号模板 + 确定性等距 fit/support 划分),"新注入种子"是虚构。故两跑只能是**采样重复**(唯一随机源是 Fast Agent);本书如实改标 `replicate_kind=sampling` 并把出处写进工件,不伪装成注入重复。第二跑因 `TREATMENT_EMPTY` 未发,该问题本轮不构成实际偏差,但**反序/重复书必须先解决重复语义**。(2) K0-fixed 本跑 regret 最低(+0.7607),来自它在 GPMvF 上自行挣到 hampel(+0.1867)——臂间差异当前由 agent 采样方差主导,**在处理组为空时四臂对比不具解释力**,不得读作"K0 优于 A5"。(3) 产例选择判据需要升级:现依据"密封答案 + 余量",应加一条**可提出性**先验(该族在该单元曾被冷 proposer 自然提出过的实证),否则产例侧会继续空转。(4) 供给档在**零知识**下的行为正确:七次审计全部给出同一条明确拒绝理由,没有任何一次凑数产卡。
+
+**提交**:`evaluation/functional/run_e2_s1v2_forward_course.py`(r2 冻结 + 四臂课程驱动 + `--finalize`)、`artifacts/functional/e2/s1v2_course_freeze_r2.json/.md`、`artifacts/functional/e2/s1v2_forward_run1.json/.md`、本节。`methods/`/`contracts/`/`runtime/`/`operators/` 零改;`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`/设计稿 未碰;密钥零出现;未跑全仓 pytest。
+
 ### S1-v2 Part 0 停报:`COURSE_NOT_CONSTRUCTIBLE`;本地池无第五个可学 hampel 单元,未烧一次 LLM(2026-08-27 18:2x,执行方)
 
 **判词:`COURSE_NOT_CONSTRUCTIBLE`**(Part 0 算术预检,**0 LLM / 0 fit / 0 下载**)。按设计稿"推演不通 → 停报,不烧 LLM"执行,四臂正序 ×2 **未发车**;LLM 500 帽、fit 900 帽分文未动。
@@ -1146,6 +1162,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **核心正效果移动:是。** 唯一变量(四分→角色拼接对半:Support n=21 / delayed n=19,单轮双门)下,A5-scoped **供给候选经双门转化 2/4**(m1_a5_1/2),部署 held-out **+0.1867**,harm 0。冻结判词 **`MARGIN_GATING_CONFIRMED`**:确认面余量门控成立,余量分层进 Gate 4。算术先行 0 fit:Support 4.00× / delayed 2.00×,均 ≥2×(G3 四分余量 1.35×,材料正 0/4 不重跑)。漏斗:卡 4/4 在视野;入池 2/4;材料正 2/4;供给双门 2/4。a5_3/4 卡在视野但 inject=False(同族 prepare/identity-only 漏注入),agent 自提 hampel 亦部署——**不计供给转化**。A3 冷提案 3/4 同增益部署(a3_4 identity):对半面本身可读,门控的是确认面余量而非只是供给通道。对半读数只作余量机制证据,**不得与四分基线作能力比较**。pilot;GunPointFamily 同族;引导正例计零。成本 LLM 29/100、fit 45/100、墙钟 1068.7s/7200s;returned_model=`gpt-5.6-sol`;下载 0;methods/contracts/runtime/operators 零改;密钥零出现。
 
 **提交**:`evaluation/functional/run_e2_m1_margin_gate.py`;`artifacts/functional/e2/m1_margin_gate.json/.md`;本节(含他书未提交的 Gate 3 收口 / A′ 发车 / 提速四点,未删改既有正文)。不提交 checkpoint / `AGENTS.md` / `README` / `PROJECT_STATE*` / `SUCCESSOR_BRIEF*`。
+
+### 跑批间隙并行预备(sol 清单采纳)+ 分支任务书预写(2026-08-27 18:1x,主线)
+
+**PREP-1 发车(grok,零 live/零 CPA/零 D3/不碰在飞文件/不写本档)**:A = 独立 ITT 聚合器(四臂表+知识形成时间线+材料门核算+三档自动判词,run1 部分 checkpoint 只读验证);B = capstone runner 预建(常数全从 CAP-1 冻结件读、**开封连锁**[无 S1-v2 双门判词解锁文件即拒读 D3]、合成数据 smoke + checkpoint/resume 演练)。**分支任务书预写(判词落地即按对应支发车,无需现场起草)**:①TREATMENT_EMPTY → 停,不跑反序;查 Episode→supply_tier 产卡链(冻结件预计产卡边界 vs 实际,断层定位表),呈裁;②处理组现但无优势(NO_EVOLUTION_SIGNAL 系)→ 记可信负结果(ITT 表全文入典),按 first-fault 字段查成本面或受益场转化断点,呈 sol 议机制层结论;③正序 r1 SIGNAL → r2 已在同书自动续;双跑 SIGNAL → 发反序 ×1(同课程逆排、同预算、判词 REVERSE_CONFIRMED/NOT);④反序确认 → 写解锁文件,capstone 按 CAP-1 + PREP-1 runner 一键发车(单次验收)。**间隙禁做清单(sol)**:改 methods/S1 runner/Scope/课程/阈值、开 Epilepsy2、重占 CPA 后端、按中途结果调课、清无关债——照办。监控:主线按 checkpoint/预算/后端健康轻量只读巡检。
+
+### S1-v2 Part 0 停:COURSE_NOT_CONSTRUCTIBLE(受益侧空);主线两项裁定后重冻发车(2026-08-27 17:3x,主线)
+
+**预检停报**(提交 2e7c527,0 LLM/0 fit):产例对成立(PowerCons-burst 5.00× + GunPoint-impulse 3.00×,19 叶交)但受益侧空——剩余 Scope 匹配 hampel 单元唯 GPMvF-burst 且系 HELDOUT_ONLY,"能跑通≠能证伪";执行者自查推翻首版错误冻结(曾选 HELDOUT_ONLY 作受益,将把 NO_TRANSFER 写死在池性质里),live 入口现读冻结件把关。对半余量重算表在案(对半一律抬升,与 M-1 同向)。**主线裁定 (a)**:释放 GPOvY(5.00×)+GPMvF-impulse(2.00×)作双受益单元——代价同类(实验者层已知转化倾向,臂内无泄漏),双受益将 M-1 余量分层预测内建进课程(强场应转化/弱场应边缘);前曝光注记强制入报告(新颖主张=课程内自产+ITT 端到端复利,非受益单元可转化性);**不释放双源单元**(防"带资进场")。**主线裁定 (b)**:regret 材料门从 max_u(1/n_slice) 改为**受益单元材料线之和**(max 被 GunPoint n=7 顶到 0.143 超一切真实 headroom;门本义=处理可作用处的可读改善);成本门不动。课程重冻:产例 A→identity A→产例 B→[边界产卡]→受益强(GPOvY)→受益弱(GPMvF-imp)→HELDOUT_ONLY→identity B(8 单元);立即重冻发车,正序 ×2。
 
 ### P0 收口(提交 98fc1fd):SUPPLY_TIER_PRODUCTION_REACHABLE;S1-v2 前置清零,正序发车(2026-08-27 17:2x,主线)
 
