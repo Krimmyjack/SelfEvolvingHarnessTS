@@ -41,6 +41,7 @@ never hand-authored to make the round produce something.
 """
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -288,6 +289,330 @@ def authorized_try_operators(audit: Sequence[Mapping[str, Any]]) -> set[str]:
         if cell["active_try_authorized"]:
             operators.update(str(cell["program"]).split("+"))
     return operators
+
+
+# ------------------------------------------------------- P0: the supply tier
+# The permission ladder has two graded exits on the positive side and this is
+# the lower one.  ``authorization_audit`` above is the TRY tier: it authorizes
+# an *active recommendation*, and its leave-one-out floor means a card needs
+# three unguided positive Tasks before it may name an operator to prefer.
+# Nothing about it changes here.
+#
+# The supply tier authorizes strictly less: one candidate placed in the pool
+# for the Target to verify, with ``grants_execution=false`` and
+# ``requires_target_support=true``, so Support and the delayed gate keep every
+# decision.  Two independent unguided positives is what that costs.  The two
+# tiers share their clause vocabulary -- unguided evidence only, opposing
+# evidence blocks -- and differ in exactly one parameter, the count.
+SUPPLY_TIER_MIN_DISTINCT_TASKS = 2
+
+SUPPLY_CARD_KIND = "source_supply_tier/1"
+
+# The five axes a supplied candidate is scoped on.  The first three are
+# identity of the Task the evidence was earned against; the fourth is the
+# deployment-visible Pattern the evidence shares; the fifth is the Program
+# geometry the card carries frozen.
+SUPPLY_SCOPE_AXES = ("task_kind", "consumer_id", "metric",
+                     "pattern_intersection", "program_geometry")
+
+
+def _distinct(rows: Sequence[Mapping[str, Any]]) -> set[str]:
+    return {str(row["task_episode_id"]) for row in rows}
+
+
+def supply_tier_audit(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    min_distinct_tasks: int = SUPPLY_TIER_MIN_DISTINCT_TASKS,
+    conditioning_key: str = "conditioned_snapshot",
+) -> list[dict[str, Any]]:
+    """Per Program family: may the supply tier speak, and on what evidence?
+
+    Three rules, and each is the same clause the TRY tier already applies --
+    only the count differs:
+
+    * evidence produced while a Skill already named the family is not
+      independent of the Harness, so a conditioned positive counts zero;
+    * ``>= min_distinct_tasks`` *distinct* unguided positive Tasks; one Task
+      is an accident of that Task, and repeating it does not make it two;
+    * an unresolved opposing reading in the same family blocks, from either
+      provenance.  ``authorization_audit`` blocks the TRY tier on exactly this
+      and the supply tier takes the same, most conservative, reading: a family
+      the evidence is split on supports neither clause.
+
+    No leave-one-out.  That floor is what distinguishes the TRY tier, and
+    lowering or raising it here would silently move the other tier's line.
+    """
+    families: dict[str, dict[str, list[Mapping[str, Any]]]] = {}
+    for row in rows:
+        family = str(row["program"])
+        bucket = families.setdefault(
+            family, {"positive_unguided": [], "positive_conditioned": [],
+                     "negative": [], "immaterial": []})
+        relation = str(row.get("relation") or "").upper()
+        if relation == "POSITIVE":
+            key = ("positive_conditioned" if row.get(conditioning_key)
+                   else "positive_unguided")
+        elif relation == "NEGATIVE":
+            key = "negative"
+        else:
+            key = "immaterial"
+        bucket[key].append(row)
+
+    out: list[dict[str, Any]] = []
+    for family, bucket in sorted(families.items()):
+        unguided = _distinct(bucket["positive_unguided"])
+        conditioned = _distinct(bucket["positive_conditioned"])
+        negative = _distinct(bucket["negative"])
+        enough = len(unguided) >= int(min_distinct_tasks)
+        authorized = bool(enough and not negative)
+        out.append({
+            "program": family,
+            "unguided_positive_tasks": sorted(unguided),
+            "unguided_positive": len(unguided),
+            "conditioned_positive": len(conditioned),
+            "opposing_negative": len(negative),
+            "opposing_negative_tasks": sorted(negative),
+            "immaterial": len(_distinct(bucket["immaterial"])),
+            "min_distinct_tasks": int(min_distinct_tasks),
+            "supply_authorized": authorized,
+            "withheld_because": (
+                None if authorized
+                else "opposing_evidence_in_the_same_family" if negative
+                else "fewer_than_%d_distinct_unguided_positive_tasks"
+                     % int(min_distinct_tasks)),
+        })
+    return out
+
+
+def five_axis_scope(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any] | None:
+    """The Scope the supplying evidence actually shares, and nothing wider.
+
+    Task identity must be identical across the sources -- a card that spans
+    two Consumers is making a claim its evidence never tested.  The Pattern
+    axis keeps only leaves present with the same value in *every* source, the
+    same intersection rule ``risk_skill._shared_signature`` uses on the guard
+    side.  Returns ``None`` when the identity axes disagree.
+    """
+    if not rows:
+        return None
+    first = rows[0]
+    identity = {axis: first.get(axis) for axis in
+                ("task_kind", "consumer_id", "metric")}
+    for row in rows[1:]:
+        if any(row.get(axis) != identity[axis] for axis in identity):
+            return None
+    pattern = dict(first.get("pattern") or {})
+    for row in rows[1:]:
+        other = dict(row.get("pattern") or {})
+        pattern = {key: value for key, value in pattern.items()
+                   if key in other and other[key] == value}
+    programs = {str(row["program"]) for row in rows}
+    if len(programs) != 1:
+        return None
+    return {
+        "task_kind": identity["task_kind"],
+        "consumer_id": identity["consumer_id"],
+        "metric": identity["metric"],
+        "pattern_intersection": pattern,
+        "program_geometry": list(programs.pop().split("+")),
+    }
+
+
+def _edit_schema_features(project_root: Any) -> frozenset[str]:
+    """Leaf names an edit manifest may carry.
+
+    ``contracts/observables.OBSERVABLE_FEATURES`` is a superset of
+    ``contracts/schemas/observable_feature_v1.json``.  PS-1 hit this: dumping
+    the raw intersection into ``observable_applicability`` fails shape
+    validation before anything runs.  The drift itself is recorded as a
+    finding elsewhere; here the compiler simply keeps the machine AST inside
+    what the schema accepts and reports what it dropped.
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    schema_path = (_Path(project_root) / "contracts" / "schemas"
+                   / "observable_feature_v1.json")
+    schema = _json.loads(schema_path.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for option in schema.get("oneOf") or []:
+        feature = (option.get("properties") or {}).get("feature") or {}
+        if "const" in feature:
+            names.add(str(feature["const"]))
+        names.update(str(item) for item in (feature.get("enum") or []))
+    return frozenset(names)
+
+
+def supply_applicability(
+    scope: Mapping[str, Any],
+    *,
+    legal_features: Sequence[str] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
+    """Scope -> machine AST, plus the leaves the edit schema cannot carry."""
+    legal = frozenset(str(name) for name in legal_features) \
+        if legal_features is not None else None
+    leaves = [{"feature": "task_kind", "op": "==",
+               "value": str(scope["task_kind"])}]
+    dropped: list[str] = []
+    for key, value in sorted(dict(scope["pattern_intersection"]).items()):
+        if legal is not None and key not in legal:
+            dropped.append(str(key))
+            continue
+        leaves.append({"feature": str(key), "op": "==", "value": value})
+    return {"all": leaves}, dropped
+
+
+def build_supply_card_payload(
+    *,
+    skill_id: str,
+    scope: Mapping[str, Any],
+    sources: Sequence[Mapping[str, Any]],
+    legal_features: Sequence[str] | None = None,
+    revision: int = 1,
+) -> dict[str, Any]:
+    """The supply-tier card.  Mechanical template fill, no LLM.
+
+    Every sentence below is a slot filled from the audit and the Scope.  A
+    Slow stage authoring prose is what the TRY tier needs, because a TRY
+    clause is an argument; a supplied candidate is not an argument, it is a
+    Program plus the Scope it was earned in, and templating it removes the
+    one place a model could quietly widen the claim.
+    """
+    pattern = dict(scope["pattern_intersection"])
+    geometry = list(scope["program_geometry"])
+    applicability, dropped = supply_applicability(
+        scope, legal_features=legal_features)
+    provenance = "; ".join(
+        "%s (Support %+.4f, delayed %+.4f)"
+        % (row["unit_id"], float(row["support_gain"]),
+           float(row["delayed_gain"]))
+        for row in sources)
+    steps = [{"op": op, "params": {}} for op in geometry]
+    body = "\n".join([
+        "WHEN: task_kind == %s, consumer %s, metric %s, and the deployment-"
+        "visible pattern reads %s."
+        % (scope["task_kind"], scope["consumer_id"], scope["metric"],
+           ", ".join("%s=%s" % (key, value)
+                     for key, value in sorted(pattern.items()))),
+        "OBSERVE: before deciding, read those same pattern features in the "
+        "current Workspace and check whether what they describe is present "
+        "here too.",
+        "SUPPLY: one candidate is placed in this round's candidate pool for "
+        "verification -- %s. It occupies a slot inside the existing candidate "
+        "cap, it is not a recommendation, and it carries no right to deploy."
+        % ", ".join(geometry),
+        "EVIDENCE: %d independent prior domains improved under this program "
+        "in the same direction -- %s. n = %d. Independent agreeing domains at "
+        "this count establish a candidate worth one Target probe, not a fact."
+        % (len(sources), provenance, len(sources)),
+        "VERIFY: this holds here only if this Target's own held-in Support "
+        "reads materially positive and the delayed feedback approves the "
+        "Draft. Neither is assumed from the prior domains.",
+        "FALLBACK: if Support or delayed refuses, drop the candidate and "
+        "return to identity rather than retrying the program.",
+        "Frozen program steps: " + json.dumps(steps, separators=(",", ":")),
+    ])
+    return {
+        "schema_version": "skill-entry/1",
+        "skill_id": str(skill_id),
+        "skill_kind": "capability",
+        "revision": int(revision),
+        "body": body,
+        "observable_applicability": applicability,
+        "allowed_tools": [],
+        "risk_guards": {
+            "card_kind": SUPPLY_CARD_KIND,
+            "authority": {
+                "reorders_supplied_candidates": False,
+                "supplies_candidates": True,
+                "suppresses_operators": False,
+                "grants_execution": False,
+            },
+            "requires_target_support": True,
+            "execution_right": "withheld_supplies_candidate_only",
+            "scope_v1": {
+                "task_kind": scope["task_kind"],
+                "consumer_id": scope["consumer_id"],
+                "metric": scope["metric"],
+                "pattern_intersection": pattern,
+                "program_geometry": geometry,
+            },
+            "pattern_leaves_dropped_as_uncontracted_for_edit_schema": dropped,
+            "evidence": {
+                "tier": "supply",
+                "source_count": len(sources),
+                "min_distinct_tasks": SUPPLY_TIER_MIN_DISTINCT_TASKS,
+                "sources": [
+                    {"unit_id": row["unit_id"],
+                     "task_episode_id": row.get("task_episode_id"),
+                     "run_id": row.get("run_id"),
+                     "support_gain": row["support_gain"],
+                     "delayed_gain": row["delayed_gain"],
+                     "direction": "improved"}
+                    for row in sources],
+                "uncertainty": (
+                    "n=%d agreeing unguided domains; a candidate worth one "
+                    "probe, not a fact" % len(sources)),
+            },
+            "counting_rule": (
+                "a positive earned under this card is a Target-local Skill "
+                "only and counts zero toward any cross-domain authorization "
+                "for this Source Skill"),
+        },
+    }
+
+
+def compile_supply_tier(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    skill_id: str,
+    min_distinct_tasks: int = SUPPLY_TIER_MIN_DISTINCT_TASKS,
+    conditioning_key: str = "conditioned_snapshot",
+    legal_features: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    """The supply-tier exit: Episodes in, one card or a stated refusal out.
+
+    Deterministic end to end.  When nothing qualifies the result carries
+    ``withheld_because`` and no card, which is a result rather than a
+    failure -- the same shape the TRY tier uses when its audit authorizes
+    nothing.
+    """
+    audit = supply_tier_audit(rows, min_distinct_tasks=min_distinct_tasks,
+                              conditioning_key=conditioning_key)
+    eligible = [row for row in audit if row["supply_authorized"]]
+    if not eligible:
+        return {"tier": "supply", "audit": audit, "card": None, "scope": None,
+                "withheld_because": (
+                    audit[0]["withheld_because"] if len(audit) == 1
+                    else "no_program_family_met_the_supply_rule")}
+    if len(eligible) > 1:
+        # Two families qualifying at once is a Slow question, not something a
+        # template should resolve by picking one.
+        return {"tier": "supply", "audit": audit, "card": None, "scope": None,
+                "withheld_because": "more_than_one_family_qualified"}
+    family = eligible[0]
+    # Sorted, so the compiled bytes are a function of the evidence and not of
+    # the order it happened to be read in.
+    sources = sorted(
+        (row for row in rows
+         if str(row["program"]) == family["program"]
+         and str(row.get("relation") or "").upper() == "POSITIVE"
+         and not row.get(conditioning_key)),
+        key=lambda row: (str(row["task_episode_id"]), str(row.get("run_id"))))
+    scope = five_axis_scope(sources)
+    if scope is None:
+        return {"tier": "supply", "audit": audit, "card": None, "scope": None,
+                "withheld_because": "identity_axes_disagree_across_sources"}
+    if not scope["pattern_intersection"]:
+        return {"tier": "supply", "audit": audit, "card": None,
+                "scope": scope,
+                "withheld_because": "pattern_intersection_empty"}
+    card = build_supply_card_payload(
+        skill_id=skill_id, scope=scope, sources=sources,
+        legal_features=legal_features)
+    return {"tier": "supply", "audit": audit, "scope": scope, "card": card,
+            "withheld_because": None}
 
 
 def risk_guard_rows(

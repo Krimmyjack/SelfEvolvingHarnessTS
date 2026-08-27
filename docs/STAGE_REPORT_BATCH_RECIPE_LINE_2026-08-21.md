@@ -1013,6 +1013,20 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### P0 收口:供给档在**产卡端**落地;`SUPPLY_TIER_PRODUCTION_REACHABLE`(2026-08-27 18:0x,执行方)
+
+**判词:`SUPPLY_TIER_PRODUCTION_REACHABLE`**(infrastructure;确定性,**0 LLM / 0 fit / 0.3 s / 0 下载**)。仲裁核码定案兑现:W-1 只接通读卡端,产卡端此前唯一的正向出口是 TRY 档(LOO 使其实要 3 个未受引导正例),两源课程照跑必然要么产不出可消费的卡、要么产出权限过强的旧卡。本书补上**供给档出口**。
+
+**分层实现(全在 evaluation 层,methods 零改)**:`agentic/source_skill.py` 新增 `SUPPLY_TIER_MIN_DISTINCT_TASKS=2` / `SUPPLY_CARD_KIND`、`supply_tier_audit`、`five_axis_scope`、`supply_applicability`、`build_supply_card_payload`、`compile_supply_tier`。**两档共用同一套子句词汇**(只算未受引导证据、对立证据一票否决、distinct `task_episode_id` 为计数单位),**唯一差别是计数与是否套 LOO**:供给档 2 个、不套 LOO;TRY 档 `authorization_audit` 一字未动,仍是 LOO 地板。编译**全程机械模板填充,零 LLM 撰文**——理由入码:TRY 子句是一个论证,需要 Slow 撰文;供给候选不是论证,是"一个 Program 加上它被挣到的 Scope",模板化正好堵住模型悄悄放宽主张的那一处。卡形固定为 `supplies_candidates=true / grants_execution=false / requires_target_support=true`,Frozen program = 共同 Program(参数取证据侧共同缺省),Scope = 五轴交集(task_kind/consumer/metric + 持久化 pattern 叶交 + program geometry)。**保守条款依据**:同族存在未解决 NEGATIVE 即不产卡,直接沿用 `authorization_audit` 既有的"对立证据从任一出处都阻断"(source_skill.py:225-226);受引导正例计零,沿用既有 UNGUIDED 规则(:219-221);另加两条机械拒绝——身份轴不一致、pattern 交为空。
+
+**六项聚焦测试**(新 `tests/functional/test_supply_tier_compiler.py`,13 项,0 LLM):(a) 2 个合格 Episode → 产卡且四权限字段逐字正确 + 模板对输入顺序不变;(b) 1 个不产、同一 task 两次仍算 1;(c) 受引导正例计零;(d) **两档互不干扰证明**——同一 2 正例下 `authorization_audit` 判 `does_not_survive_leave_one_out`、`authorized_try_operators` 为空,而供给档产卡,且 `build_skill_payload` 的 TRY 载荷不含 `authority` 块;(e) 卡过 `load_skill_entry`、Scope AST 双向机器可判(在域命中/离域不命中)、T1 谓词对其正确无操作、W-1 读端 `_supply_rung_candidates` 消费成功、离域零供给,另加未契约叶被丢弃并记录;(f) 同族 NEGATIVE 阻断、异族 NEGATIVE 不阻断、身份轴不一致、pattern 交空各产正确拒绝理由。**回归 121 passed**(W-1/G-3 供给测试 + guard 12 测 + T1 + agent 套件 + risk/source/ordering card)。**h0 锁无需重生成**:本书零 methods 改动,`agentic/source_skill.py` 不在 dependency_shas,`compile_snapshot(verify_lock=True)` 通过,`harness_content_sha` 仍 `53b1c803…0654f`。
+
+**生产路径可达性(真实双源,7 环全通)**:输入 = PS-0 重挣 GPA `ps0_srcA_1`(Support +0.4000 / delayed +0.4000)与 PS-0c 重挣 PowerCons `ps0_srcB_4`(+0.0714 / +0.5000),各带 21 个持久化 pattern 叶,均为 A3-reset 空店所挣故未受引导。链路:① 持久化 Episode 读取 → ② 供给档审计+模板编译(`source_skill.py:566`)→ ③ 卡形八项断言(`source_skill.py:466`)→ ④ **真实 EditController apply 与重编译**(`run_e2_s1_curriculum_four_arms.py:1058`;PS-1 当年就是在这一环被 AST 形状打回)→ ⑤ `resolve_harness_view(fast)` 在域送达、离域withhold(`retrieval.py:241`)→ ⑥ `_supply_rung_candidates` dry 入池、离域零供给(`fast_agent.py:386`)→ ⑦ 双门在该路径上存在(`online_loop.py:435` Support 门、`online_loop.py:833` delayed 门,后者即 W-1 同权修)。**编译结果**:17 叶机器 AST(16 pattern 叶 + task_kind),4 个未契约叶如实丢弃并记录。工件 `artifacts/functional/e2/p0_supply_tier_reachability.json/.md`。
+
+**书外发现**:(1) 首版模板对输入顺序敏感(provenance 串与 sources 列表随读入序变),被 (a) 的确定性断言抓到,已改为按 `task_episode_id` 排序后编译——编译产物是证据的函数,不是读取顺序的函数。(2) schema-代码叶集漂移仍在:`contracts/observables.OBSERVABLE_FEATURES` 是 `contracts/schemas/observable_feature_v1.json` 的超集,四个叶(`level_only_post_shift_support_sufficient`、`level_region_end_fraction`、`level_region_fraction`、`outlier_region_end_fraction`)只能进 `scope_v1` 记录不能进机器 AST;本书照 PS-1 先例丢弃并留痕,未修契约。(3) 本卡 17 叶比 W-1 手写卡的 16 叶多一叶(`period_change_score`),因为机械交集不做人工取舍——两源在该叶上确实一致。(4) 供给档目前只在同族单卡时出卡:两族同时合格判 `more_than_one_family_qualified` 不出卡,留给 Slow,不由模板替它选。
+
+**提交**:`evaluation/functional/task_episode_harness/agentic/source_skill.py`、`tests/functional/test_supply_tier_compiler.py`、`evaluation/functional/run_e2_p0_supply_tier_reachability.py`、`artifacts/functional/e2/p0_supply_tier_reachability.json/.md`、本节。`methods/`/`contracts/`/`runtime/`/`operators/` 零改;`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP` 未碰;密钥零出现;未跑全仓 pytest。
+
 ### G-3 收口:三场小课程;条件化两场全过、迁移场未复现;判词 `FIELD1_NO_CONVERSION`(2026-08-27 16:0x,执行方)
 
 **总判:`FIELD1_NO_CONVERSION`**(development-mechanism, pilot)。16 跑全部完成。**成本 116/150 LLM、86/120 fit、4050.8 s / 10800 s**;0 下载。**阈值/授权语义零改动**:卡不重编(W-1 同一张双源 hampel 卡)、MATERIAL、LOO、T1 谓词、incumbent 规则、`classify_relation` 三档全未动;methods 只多一处 inspect 层接线。
@@ -1116,6 +1130,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **核心正效果移动:是。** 唯一变量(四分→角色拼接对半:Support n=21 / delayed n=19,单轮双门)下,A5-scoped **供给候选经双门转化 2/4**(m1_a5_1/2),部署 held-out **+0.1867**,harm 0。冻结判词 **`MARGIN_GATING_CONFIRMED`**:确认面余量门控成立,余量分层进 Gate 4。算术先行 0 fit:Support 4.00× / delayed 2.00×,均 ≥2×(G3 四分余量 1.35×,材料正 0/4 不重跑)。漏斗:卡 4/4 在视野;入池 2/4;材料正 2/4;供给双门 2/4。a5_3/4 卡在视野但 inject=False(同族 prepare/identity-only 漏注入),agent 自提 hampel 亦部署——**不计供给转化**。A3 冷提案 3/4 同增益部署(a3_4 identity):对半面本身可读,门控的是确认面余量而非只是供给通道。对半读数只作余量机制证据,**不得与四分基线作能力比较**。pilot;GunPointFamily 同族;引导正例计零。成本 LLM 29/100、fit 45/100、墙钟 1068.7s/7200s;returned_model=`gpt-5.6-sol`;下载 0;methods/contracts/runtime/operators 零改;密钥零出现。
 
 **提交**:`evaluation/functional/run_e2_m1_margin_gate.py`;`artifacts/functional/e2/m1_margin_gate.json/.md`;本节(含他书未提交的 Gate 3 收口 / A′ 发车 / 提速四点,未删改既有正文)。不提交 checkpoint / `AGENTS.md` / `README` / `PROJECT_STATE*` / `SUCCESSOR_BRIEF*`。
+
+### CAP-1 收口(提交 fd1ed90):终考协议冻结完毕;开封条件写死(2026-08-27 17:1x,主线)
+
+TEST 子集改 seed=20260827 确定性随机 476 行(清单 sha256 7e1c4088…,总点 98,968 不变,mod-24 标 SUPERSEDED);终考协议冻结:三臂(Static/A3 冷/A5=S1-v2 同 K0+正序终态池)、TRAIN 对半按行号奇偶(Support/delayed 各 40,材料线 0.025)、ridge+accuracy+逐类 recall、菜单 blob 8de9545b/名单 sha 48e09ec4、每臂 LLM≤15/fit≤25/总墙钟≤90min、单次验收、判词 CAPSTONE_POSITIVE=A5−A3≥0.005 ∧ worst-class≥−0.005 ∧ harm 0;**开封缺一不可:S1-v2 正序×2 均 SIGNAL ∧ 反序×1 确认,届时自动开封无需再授权**。D3 全程零开封。0 LLM/0 fit。
+
+### sol 发车裁定:S1-v2 方向批、原稿缓发;P0(供给档编译语义)+ CAP-1(协议冻结)并行发车(2026-08-27 17:0x,主线)
+
+**M-1 证据等级定名**:development mechanism evidence(单单元;A3 对半亦 3/4 自然转化——反馈可读性惠及全系统非 A5 独占;delayed 恰 2.00× 系边界证据),支持进 S1-v2,非能力结论。**S1-v2 两处未对齐(sol 核码)**:(1) 设计稿"2 正例产供给卡"vs 现役 authorization_audit 仍 LOO≥2(等价 3 正例)——须正式分层:**2 独立未引导正例 → 仅 supplies_candidates(不执行不部署,受 Target 双门);3+LOO → 才可能更强 Shared TRY**(证据价格与权限对齐,非降门);(2) **Slow 编译器不会产 W-1 可消费的卡**——现路径产旧式 Active Skill(Frozen program 无 supplies_candidates=true/grants_execution=false 语义)——W-1 只接读端,产端缺失;照跑则 treatment empty 或测错对象(runner:1129/fast_agent:377)。**P0 发车(opus)**:在 Slow/source_skill 编译路径实现供给档语义(2 个 distinct task_episode_id、未引导、五轴 Scope 交非空 → 机械模板产卡:supplies_candidates=true/grants_execution=false/requires_target_support=true/Scope=交集/证据引用;1 正例不产;引导正例计零;3+LOO 旧档不动)+ **零成本生产路径可达性检查**(真实双源 Episode → Slow 编译 → 卡形 → T1/Scope/Fast 入池 → 双门,预算 ≤4 LLM);聚焦测试全套。**CAP-1 发车(grok)**:TEST 子集从 mod-24 系统抽样改**固定公开 seed 确定性随机 476 行**(防类别/批次排序结构偏差,标签仍封)+ 冻结完整终考协议(三臂/TRAIN 内切分/Consumer/metric/菜单/Scope/初始态/预算/seeds/repeats/停止条件/判词);CAP-0 记为密封+算力合格,**CAP-1 冻结后才许自动开封**。**S1-v2 判分收紧(入设计终稿)**:主分析 ITT(Scope 合格注入失败=A5 系统失败,条件转化率另报);材料门数值化;冻结具体课程名单/顺序/transfer graph/预计产卡边界与首分叉单元;**反序不替代重复——预冻正序 ×2(异 seed)+ 信号后反序 ×1**;效率措辞主用"适应/搜索效率",训练计算效率仅 fit 墙钟/time-to-threshold 支撑部分。P0 落地 → 冻结终稿 → 直接跑正序,**不再增资格轮**。
+
+### CAP-0 收口(提交 010c0d1):SEAL_INTACT;capstone 靶冻结 Epilepsy2 子集(2026-08-27 16:4x,主线)
+
+密封证据链五层全过(ROSTER 声明/磁盘字节与时间戳/git 唯一提交 10f9fee/下载脚本仅 namelist/全仓零数值 loader,80-11420-178 系下载前 metadata census 非 zip 读取);结构 MATCH。**子集冻结:k=24,TEST 行号 ≡0(mod 24) 取 476 行,总点 (80+476)×178=98,968 ≤ 100,000**;三臂同子集;S1-v2 过预注册门后按协议**自动开封**,无需再授权;开封前禁 oracle/fit/标签/数值。0 LLM/0 fit,D3 零数值零标签读取。
+
+### M-1 收口(提交 55f1d1e):MARGIN_GATING_CONFIRMED——余量门控获受控因果证据;S1-v2 参数回填待 sol(2026-08-27 16:4x,主线)
+
+**判词依据**(29/100 LLM,45/100 fit,1069s):算术先行(0 fit)——对半拼接 Support n=21 余量 4.00×、delayed n=19 余量 2.00×(四分基线 1.35×);唯一变量承诺守住(同卡/Scope/算子/Consumer/帽/底物/种子);**供给候选双门转化 2/4(四分基线 0/4),部署 held-out +0.1867,harm 0**。**深层读数**:A3 冷提案在可读面自然转化 3/4——门控主体是确认面余量,非供给通道特权;"反馈可读性是就绪学习前提"获实证。**注记**:注入漏(prepare→identity-only)仍在(2/4,PS-2/G3/M-1 三场同族),按 sol"不再修 wiring"裁定不追修,S1-v2 按 50-75% 注入可靠性如实设计;delayed 余量恰在 2.00× 杠上;对半读数仅作机制证据不与四分比能力。**S1-v2 设计稿参数已回填**(docs/S1V2_DESIGN_DRAFT_2026-08-27.md:对半协议全程、余量按对半重算、注入可靠性入设计、K0 不装双源卡、处理组存在性预检、TREATMENT_EMPTY 即停、训练效率=fit 墙钟+time-to-threshold),**待 sol 终审即发**。CAP-0(Epilepsy2 密封审计)在飞。
 
 ### 提速方案四点收紧 + capstone 改道 Epilepsy2(sol,2026-08-27 16:2x,主线采纳)
 
