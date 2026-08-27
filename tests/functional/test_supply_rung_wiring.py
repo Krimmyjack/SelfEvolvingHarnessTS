@@ -159,6 +159,29 @@ class _ProposeFailsBackend(sealed.SealedProbeBackend):
         return super().complete(request)
 
 
+class _InspectFailsBackend(sealed.SealedProbeBackend):
+    """G-3 Part 0: the inspect stage fails.
+
+    This is the shape the ps2p production runs left behind: two LLM calls,
+    empty chosen, no agent program.  It sits one stage upstream of the W-1
+    repair, so before Part 0 the supplied program died here too.
+    """
+
+    def complete(self, request):
+        if getattr(request, "stage", "") == "inspect":
+            from SelfEvolvingHarnessTS.runtime.agent_backend import (
+                AgentResponse,
+            )
+            # Schema-valid envelope, region fractions outside [0,1]: the
+            # inspect post-validator refuses it on both attempts.
+            return AgentResponse(json.dumps({
+                "inspected_region_fractions": [[1.5, 2.5]],
+                "requested_public_tools": [],
+                "uncertainty": "high",
+            }))
+        return super().complete(request)
+
+
 def _round(snapshot, *, backend_cls=sealed.SealedProbeBackend,
            evaluate_fn=_neutral_eval, budget=2, store=None,
            controller=None, allow_fast_skill=False):
@@ -220,6 +243,28 @@ def test_a_the_same_failure_without_the_flag_still_fails(tmp_path):
     _method, result = _round(snapshot, backend_cls=_ProposeFailsBackend)
     pool = _pool(result)
     assert "cand_skill_w1_no_supply_v1" not in pool, pool
+    assert result.actual_probed_programs == []
+
+
+def test_a_the_supply_survives_an_inspect_stage_that_raises(tmp_path):
+    """G-3 Part 0.  With no region recorded the scope check is not asserted
+    (``verify_candidate`` computes ``outside`` only when regions exist), so
+    this needs no degraded full-window decision."""
+    _store, snapshot = _snapshot_with(_supply_card(), tmp_path)
+    method, result = _round(snapshot, backend_cls=_InspectFailsBackend)
+
+    pool = _pool(result)
+    assert _supply_cand_id() in pool, pool
+    assert method.last_trace.inspected_regions == ()
+    probed = [row["candidate_id"] for row in result.actual_probed_programs]
+    assert probed == [_supply_cand_id()], probed
+
+
+def test_a_an_inspect_failure_without_the_flag_still_fails(tmp_path):
+    _store, snapshot = _snapshot_with(
+        _supply_card(skill_id="w1_no_supply_v1", supplies=False), tmp_path)
+    _method, result = _round(snapshot, backend_cls=_InspectFailsBackend)
+    assert "cand_skill_w1_no_supply_v1" not in _pool(result)
     assert result.actual_probed_programs == []
 
 

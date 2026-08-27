@@ -1013,6 +1013,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### G-3 收口:三场小课程;条件化两场全过、迁移场未复现;判词 `FIELD1_NO_CONVERSION`(2026-08-27 16:0x,执行方)
+
+**总判:`FIELD1_NO_CONVERSION`**(development-mechanism, pilot)。16 跑全部完成。**成本 116/150 LLM、86/120 fit、4050.8 s / 10800 s**;0 下载。**阈值/授权语义零改动**:卡不重编(W-1 同一张双源 hampel 卡)、MATERIAL、LOO、T1 谓词、incumbent 规则、`classify_relation` 三档全未动;methods 只多一处 inspect 层接线。
+
+**Part 0(inspect 层一行修)**:`fast_agent.prepare` 把 inspect 阶段按 W-1 同法单独包一层(捕获集与外层相同,仅在视野里确有供给卡时降级为"agent 零贡献"继续)。判据依据:`inspected_regions=()` 时 `verify_candidate` 的 `outside` 恒 False,故**无须任何"退化全窗口"决定**;修改分数帽与卡自带 region 参数照旧生效。配 2 项聚焦单测(inspect 抛错时供给候选仍入池并获测;同形无旗卡仍失败)。h0 锁机械重生成:`harness_content_sha` **不变** `53b1c803…0654f`,`runtime_bundle_sha` 0d66c4d3…→c3427b4e…。**live 兑现**:g3_f1_a5_1 与 a5_2 各有一轮 `supply_without_agent_program=True`——**W-1 遗留的"去耦合未 live 观测"缺口在本书补上**。
+
+**Part 1 场地机械选定(0 LLM,先于任何 live 跑)**:用卡的 16 叶机器 AST 对 45 份密封单元逐一求值(密封件只作考卷,不入任何臂视野)。**Scope 判别力读数:45 单元中仅 8 个命中 WHEN,其中 6 个的密封答案正是 hampel**——WHEN 轴不是橡皮图章。选定:**场① `GunPointMaleVersusFemale__impulse_v2`**(16/16 命中、hampel 为 oracle、ps0b ROBUST_LEARNABLE 1.35×;同名族 GunPointFamily 与源 A 同族,如实注记);**场② `ShapeletSim__impulse_v2`**(缺 3 叶:estimated_level_offset / estimated_region_start_fraction / level_excursion_score,oracle=identity);**场③ `ToeSegmentation2__impulse_v2`**(16/16 命中但 oracle=identity、hampel held-out −0.023)。**书内点名的 Wine 落选**:Wine 缺 `estimated_region_start_fraction`,机器 WHEN 不匹配,按书内后备条款改用"匹配但 oracle≠hampel"的全池扫描结果。**排除规则**:卡自身两个源单元(GPA、PowerCons impulse)与 ps2p 考场单元(GPOvY)一律不得作场①——PowerCons impulse 余量最大(2.44×)但正是源 B,用它等于自证。
+
+**三场读数**:场②(Scope 不匹配)**注入 0/4**,四跑全 identity 部署、harm 0 —— **无 Scope 泄漏**;场③(Scope 匹配但 Target 不同意)**注入 4/4、获测 15 探针、材料正 0/4、部署 hampel 0/4**,四跑全 identity、harm 0 —— **否决成立**;场①(Scope 匹配正向)A5-scoped 注入 3/4,但**材料正 0/4、部署 hampel 1/4**(且那一跑 `g3_f1_a5_4` 的 hampel 来自 **agent 自提**而非注入),均值 held-out **+0.0467**;A3 对照同为 **+0.0467**(a3_2 自行提出 hampel,+0.1867)。**成本对照**:A5 26 LLM / 28 fit / 7 探针,A3 25 LLM / 17 fit / 4 探针——A5 更贵而不更好。
+
+**判词按预注册取 `FIELD1_NO_CONVERSION`**:两条治理红灯(FIELD2_SCOPE_LEAK / FIELD3_VETO_FAILED)均未触发,但场①未达"≥2/4 转化且正收益差"。**结论一句话**:供给机制的**条件化与数据主权已被两场独立证实**(该出现时出现、不该出现时不出现、出现了也可被 Target 否决),但"Scope 匹配即转化"**未在 GPOvY 之外复现**——+0.2127 目前仍是单单元读数。
+
+**书外发现**:(1) GPMvF 上 hampel 的 Support 在 A5 三次注入中一次都未记为材料正:a5_1 探针读 +0.1818 却被 delayed −0.10 否决(否决链正确),另两次未过 Support 门——与 ps0b 记的 GPMvF 余量仅 1.35×、held-in 切片 0.18/0/0.20/0.22 一致,即**该单元本身的确认面比 GPOvY(4.15×)弱得多**,场①的阴性更像单元质量而非通道故障。(2) A3 在 GPMvF 上自行提出并部署了 hampel(a3_2 +0.1867),说明该族在此单元对冷 proposer **并非不可达**——这正是"供给机制的边际价值"应当被质疑的地方,如实记。(3) 场③ 15 次探针零转化、零 harm,是 Target 数据主权最干净的一次读数。(4) 执行顺序中途改为**治理优先**(场②③ 先跑,场① A5/A3 交错):理由是墙钟若截断,应当截在正向场而非红灯场;各跑状态相互独立,顺序非实验变量,如实记。
+
+**提交**:`methods/ttha/fast_agent.py`(Part 0)、`methods/ttha/harness/h0/snapshot.lock.json`(机械)、`tests/functional/test_supply_rung_wiring.py`(+2 项)、`evaluation/functional/run_e2_g3_three_field_course.py`(新 runner:`--select` / `--run` / `--resume` / `--finalize`)、`artifacts/functional/e2/g3_three_field_course.json/.md`、本节。`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP` 未碰;`contracts/`/`runtime/`/`operators/` 零改;密钥零出现于任何提交物;回归 105 passed;未跑全仓 pytest。
+
 ### W-1 收口:supplies_candidates 生产接线;`SUPPLY_RUNG_PRODUCTION_CONFIRMED`,GPOvY held-out **+0.2127 ×4/4**(2026-08-27 13:1x,执行方)
 
 **判词:`SUPPLY_RUNG_PRODUCTION_CONFIRMED`**(development-mechanism, pilot)。12 跑协议 ps2p_run1..12,0 下载。**成本 74/150 LLM、48/160 fit、3043.4 s / 12600 s 墙钟**。**阈值/授权语义零改动**:MATERIAL=0.005、LOO、T1 谓词、`_incumbent_after_delayed`、`classify_relation` 三档、`risk_skill` 计数全部未动;谁得 `supplies_candidates` 旗仍由外部编译决定,methods 只读旗不发旗;无新 Skill 类、无权限平台、无 Schema 改动。
@@ -1094,6 +1110,10 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **原书 Part B 全菜单排序未跑**(作废,本会话无探索性排名物)。**Part A(0 LLM)**:工件未存全部原始提案——最早可得层 = 编译+verifier 后的 `pool`(`proposal_count` = 非恒等池长)。S1c 单层:在当前课程/Prompt/候选预算/这一次运行中,15 个含菜单正解的臂-单元机会**冻结部署命中 1 次**(A3-PowerCons-hampel);同一 15 次里菜单正解被执行 4 次(MiddlePhalanx 三臂 `repair_level_shift` delayed 未过 + 上述 1 次部署)。断点 `not_proposed=11 / executed_not_passed=3 / deployed=1`。不得写成固有难度或稳定概率。历史 CLS-OP 三件(r2 three-arms 8 轮 / a5-replay 2 / ECG200 conf-dev 2)分层单列,未混算。A5 六次 Slow 各 1/6 LLM,空携带因无可编译证据(非预算饿死)。**Part B(LLM 12/12,0 fit)**:同 observation/instruction/菜单,只改 K=3 vs K=5,只提案不执行,oracle 事后判定。K=5 三单元(PowerCons/GPOVY/Distal)均未提出菜单正解,且候选数仍为 0–1(槽未用满);ECG200 未跑、MiddlePhalanx 帽满未提案。**冻结判读 = proposal_semantics_insufficient**(不得再拆 observation vs 策略偏置)。无截断解释。探针隔离于 `s1_cold_policy_map_probes/`,不入未来臂视野。分级 hypothesis 轨含义按合理假设待因果实验验证照写。本书封顶。
 
 **提交**:`evaluation/functional/run_e2_s1_cold_policy_map.py`(新诊断 runner,既有 methods/runtime/contracts/operators/课程 runner 零改);`artifacts/functional/e2/s1_cold_policy_map.json/.md`;探针目录;本节。
+
+### W-1 收口(提交 70b6d8d):SUPPLY_RUNG_PRODUCTION_CONFIRMED——分类线首个 A5 正效果入账;Gate 1+2 通过;Gate 3 发车(2026-08-27 13:2x,主线)
+
+**核心正效果移动:是。** A5-scoped 4/4 全链走通(入池→Support 回执→材料正→delayed 批准→部署),**GPOvY held-out gain +0.2127 ×4**(超密封上界预估 +0.184);A5-neutral 2/4 入池 0/4 材料正 0/4 部署(安慰剂链正确);三臂 harm 全零;探索槽 4/4 保留;成本 74/150 LLM、48/160 fit。**接线内容**:修 1 = fast_agent.py:373-408/:1005-1052 注入与 propose 失败解耦(单测证实,live 未直接观测——残留耦合定位于 inspect 层上游,一行级修复候选已具名,折入 Gate 3 验证);**修 2 = online_loop.py:775/:817-836 供给 winner 补上 agent 自提 winner 本就有的 delayed 裁决出口——此为真正解锁**(PS-2 run9/12 实已走完 Support+delayed,被无裁决分支丢弃;**PS-2 漏斗记账订正入案**:Support 应按注入探针 Episode 归因,非 select 选中)。**机制注记**:转化全程未经 LLM 选择层(探针序+Support 预算完成)——选择盲区仍在但不再挡路。同权证明在案(补权非扩权);阈值/授权语义零改动;h0 content sha 不变;95 回归+11 新测全绿。语义纪律:只主张"经验机械供给候选、Target 反馈裁决并批准",不主张 agent 学会提 hampel;GPOvY 同族注记;pilot。**四行现状块**:当前目标 = 证明供给机制条件化(非复读)|最新判词 = SUPPLY_RUNG_PRODUCTION_CONFIRMED(+0.2127×4)|当前 first fault = inspect 层残留耦合(一行修候选)|下一门 = Gate 3 三单元小课程。**Gate 3 发车(opus)**:①Scope 匹配正向场(机械选自 PS-0b ROBUST 且非 GPOvY,A3+A5-scoped 各×4,读正收益与成本差)②Scope 不匹配场(pattern 轴不交单元,A5-scoped ×4,断言零注入——条件化直接证明)③identity/harm 否决场(Wine:hampel 合法但 Support≈0+类伤,A5-scoped ×4,断言获测但 Target 否决、identity 部署零害——数据主权直接证明);inspect 一行修折入并以注入可靠性读数验证(预期 ①③ 注入 4/4、② 0/4);判词 GATE3_PASSED 或按场失败标签;LLM ≤150/fit ≤120/墙钟 ≤3h。
 
 ### 止损线与推进方式改革(sol 周度审计,用户裁可,主线全采并自认三重漂移,2026-08-27 12:1x)
 

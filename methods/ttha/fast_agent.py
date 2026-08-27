@@ -927,32 +927,58 @@ class TTHAFastAgent:
             if request.run_dependency_binding
             else ""
         )
+        inspect_payload: Mapping[str, object] = {}
+        agent_stage_failed = False
         try:
-            inspect = self.core.run_stage(
-                role=AgentRole.FAST,
-                stage="inspect",
-                case_id=request.series_uid,
-                public_input={
-                    **_task_binding(request, legacy_inspect_stage=True),
-                    "features": _plain(features),
-                    "fixed_probe_panel": _plain(fixed_probe_panel or {}),
-                },
-                harness_view=view,
-                output_schema_name="fast_inspect_v1",
-                output_schema=self.core.load_stage_schema("fast_inspect_v1"),
-                source_snapshot_sha=snapshot.runtime_bundle_sha,
-                task_context_sha=task_context_sha,
-                run_context_sha=run_context_sha,
-                validation_retries=1,
-                post_validator=lambda payload: _validate_inspect_hypotheses(
-                    payload, features
-                ),
-            )
-            stages.append(inspect)
-            inspected_regions = _regions_from_fractions(
-                inspect.payload["inspected_region_fractions"], request.values.size
-            )
             allowed = _allowed_operators(request)
+            # G-3 Part 0: the inspect stage is the second place the supply
+            # rung was coupled to the agent's own protocol success.  W-1
+            # decoupled propose; the ps2p production runs then showed the
+            # residual misses one stage earlier -- two LLM calls, empty
+            # chosen, no agent program, and the card's frozen program gone
+            # with the round.  An empty ``inspected_regions`` is not a
+            # degraded full-window decision: ``verify_candidate`` computes
+            # ``outside`` only when regions exist, so with none recorded the
+            # scope check is simply not asserted, while the modification
+            # fraction cap and the card's own region parameters still are.
+            try:
+                inspect = self.core.run_stage(
+                    role=AgentRole.FAST,
+                    stage="inspect",
+                    case_id=request.series_uid,
+                    public_input={
+                        **_task_binding(request, legacy_inspect_stage=True),
+                        "features": _plain(features),
+                        "fixed_probe_panel": _plain(fixed_probe_panel or {}),
+                    },
+                    harness_view=view,
+                    output_schema_name="fast_inspect_v1",
+                    output_schema=self.core.load_stage_schema(
+                        "fast_inspect_v1"),
+                    source_snapshot_sha=snapshot.runtime_bundle_sha,
+                    task_context_sha=task_context_sha,
+                    run_context_sha=run_context_sha,
+                    validation_retries=1,
+                    post_validator=lambda payload: (
+                        _validate_inspect_hypotheses(payload, features)),
+                )
+                stages.append(inspect)
+                inspect_payload = inspect.payload
+                inspected_regions = _regions_from_fractions(
+                    inspect_payload["inspected_region_fractions"],
+                    request.values.size,
+                )
+            except (AgentProtocolError, ProtocolChoiceError, ValueError,
+                    TypeError):
+                # Same exception set the outer handler already catches, and
+                # only redirected while there is something to supply.
+                if not _supply_rung_candidates(view, features):
+                    raise
+                agent_stage_failed = True
+                inspect_payload = {}
+                inspected_regions = ()
+            supplied: tuple[Candidate, ...] = ()
+            hypothesis_map: Mapping[str, str] = {}
             # 前提过滤（实验 1，2026-08-09）：无缺失 Context 时缺失处理族是
             # 确定性 no-op——从 propose contracts（Agent 可见动作空间）剔除，
             # 探测预算不浪费在 no-op 提案上（supply 层过滤作防御，见下）。
@@ -986,47 +1012,51 @@ class TTHAFastAgent:
             # protocol failure breaks that promise exactly when the agent
             # needed it most.
             supply_candidates = _supply_rung_candidates(view, features)
-            try:
-                propose = self.core.run_stage(
-                    role=AgentRole.FAST,
-                    stage="propose",
-                    case_id=request.series_uid,
-                    public_input={
-                        **_task_binding(request),
-                        "features": _plain(features),
-                        "inspection": _plain(inspect.payload),
-                        "fixed_probe_panel": _plain(fixed_probe_panel or {}),
-                        "allowed_operator_contracts": propose_contracts,
-                    },
-                    harness_view=view,
-                    output_schema_name="fast_propose_v1",
-                    output_schema=self.core.load_stage_schema("fast_propose_v1"),
-                    source_snapshot_sha=snapshot.runtime_bundle_sha,
-                    task_context_sha=task_context_sha,
-                    run_context_sha=run_context_sha,
-                    validation_retries=1,
-                    post_validator=lambda payload: (
-                        _validate_public_parameter_bindings(
-                            payload, features, fixed_probe_panel
+            if not agent_stage_failed:
+                try:
+                    propose = self.core.run_stage(
+                        role=AgentRole.FAST,
+                        stage="propose",
+                        case_id=request.series_uid,
+                        public_input={
+                            **_task_binding(request),
+                            "features": _plain(features),
+                            "inspection": _plain(inspect_payload),
+                            "fixed_probe_panel": _plain(
+                                fixed_probe_panel or {}),
+                            "allowed_operator_contracts": propose_contracts,
+                        },
+                        harness_view=view,
+                        output_schema_name="fast_propose_v1",
+                        output_schema=self.core.load_stage_schema(
+                            "fast_propose_v1"),
+                        source_snapshot_sha=snapshot.runtime_bundle_sha,
+                        task_context_sha=task_context_sha,
+                        run_context_sha=run_context_sha,
+                        validation_retries=1,
+                        post_validator=lambda payload: (
+                            _validate_public_parameter_bindings(
+                                payload, features, fixed_probe_panel
+                            ),
+                            _validate_hypothesis_references(
+                                payload, inspect_payload),
                         ),
-                        _validate_hypothesis_references(payload, inspect.payload),
-                    ),
-                )
-                stages.append(propose)
-                supplied, hypothesis_map = _compile_candidates(
-                    propose.payload, request)
-            except (AgentProtocolError, ProtocolChoiceError, ValueError,
-                    TypeError):
-                # Same exception set the outer handler already catches, so
-                # nothing newly survives a failure -- it is only redirected,
-                # and only while there is something to supply.  With no
-                # supply rung in view the round fails exactly as before.  The
-                # failure stays visible: no propose entry reaches ``stages``,
-                # so a round with a program pool and one stage is a round the
-                # agent contributed nothing to.
-                if not supply_candidates:
-                    raise
-                supplied, hypothesis_map = (), {}
+                    )
+                    stages.append(propose)
+                    supplied, hypothesis_map = _compile_candidates(
+                        propose.payload, request)
+                except (AgentProtocolError, ProtocolChoiceError, ValueError,
+                        TypeError):
+                    # Same exception set the outer handler already catches, so
+                    # nothing newly survives a failure -- it is only
+                    # redirected, and only while there is something to supply.
+                    # With no supply rung in view the round fails exactly as
+                    # before.  The failure stays visible: no propose entry
+                    # reaches ``stages``, so a round with a program pool and
+                    # one stage is a round the agent contributed nothing to.
+                    if not supply_candidates:
+                        raise
+                    supplied, hypothesis_map = (), {}
             # 前提过滤（审核 2026-08-09 实验 1：Program Supply 前提修复）：
             # 依据部署可见 Context 与 Operator 前提，跳过确定性无行为的候选
             # （不读取 gain）——当前 Context 无缺失信号时，仅处理缺失数据的
@@ -1251,7 +1281,7 @@ class TTHAFastAgent:
                     public_input={
                         **_task_binding(request),
                         "features": _plain(features),
-                        "inspection": _plain(inspect.payload),
+                        "inspection": _plain(inspect_payload),
                         "fixed_probe_panel": _plain(fixed_probe_panel or {}),
                         "candidates": public_candidates,
                     },
