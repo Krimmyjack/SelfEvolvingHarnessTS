@@ -65,6 +65,11 @@ FREEZE_MD = E2 / "s1v2_course_freeze.md"
 # the regret gate.  The r1 stop artifact is kept as the record of why.
 FREEZE_R2_JSON = E2 / "s1v2_course_freeze_r2.json"
 FREEZE_R2_MD = E2 / "s1v2_course_freeze_r2.md"
+# v3: arbitration A.  Only the producer side changes -- they are now picked on
+# demonstrated cold-discovery rate rather than on sealed margin alone, which
+# is what run 1 showed was the missing precondition.
+FREEZE_V3_JSON = E2 / "s1v2_course_freeze_v3.json"
+FREEZE_V3_MD = E2 / "s1v2_course_freeze_v3.md"
 
 PROTOCOL_VERSION = "s1v2_forward_course_v1"
 EVIDENCE_GRADE = "development"
@@ -869,6 +874,326 @@ def freeze_r2() -> int:
 
 
 # =========================================================================== #
+# Part 0 v3 -- arbitration A: producers picked on cold-discovery rate
+# =========================================================================== #
+COURSE_NAME_V3 = "discovery-reliable development curriculum"
+PRODUCER_A_V3 = "GunPointAgeSpan__impulse_v2"
+PRODUCER_B_V3 = "PowerCons__impulse_v2"
+# Demonstrated cold-discovery rate: how often an arm with no card naming the
+# family proposed and earned it on this unit, across the line's own books.
+COLD_DISCOVERY = {
+    PRODUCER_A_V3: {"earned": 2, "attempts": 2, "source": "PS-0 re-earn"},
+    PRODUCER_B_V3: {"earned": 2, "attempts": 3, "source": "PS-0c re-earn"},
+}
+EXCLUSION_SEMANTICS_V3 = (
+    "Revised, and the revision is what releases the former dual-source pair "
+    "as producers.  The constraint that protects 'the card is earned inside "
+    "the course' is not 'this unit was ever a source elsewhere'; it is (i) K0 "
+    "carries no card, so A5 starts with nothing, and (ii) no beneficiary is "
+    "also a producer, so nothing is graded on the unit that taught it.  "
+    "Re-earning the family on a producer *inside* this course is exactly what "
+    "the course is supposed to do, and it does not make the compiled card "
+    "'brought in' -- the Episodes it compiles from are this course's own.  "
+    "Checked with sol."
+)
+FAMILY_OVERLAP_NOTE_V3 = (
+    "GunPointAgeSpan (producer A) and GunPointOldVersusYoung / "
+    "GunPointMaleVersusFemale (beneficiaries) share the GunPoint name family. "
+    "The units themselves are disjoint and no beneficiary is a producer, but "
+    "this is a within-family transfer at the substrate level and must not be "
+    "reported as cross-family capability."
+)
+NATURAL_BOOTSTRAP_CONTROL = (
+    "Course r1 (natural-bootstrap producers, chosen on sealed margin alone) "
+    "returned TREATMENT_EMPTY: the arm never proposed the family on either "
+    "producer, so no card compiled.  That run is retained as the discovery "
+    "module's control -- it is the measurement of what happens when producer "
+    "selection ignores proposability.  Artifact: "
+    "artifacts/functional/e2/s1v2_forward_run1.json"
+)
+
+
+def select_course_v3() -> dict[str, Any]:
+    pool = _pool()
+    by_id = {row["unit_id"]: row for row in pool}
+    named = [PRODUCER_A_V3, PRODUCER_B_V3, BENEFICIARY_STRONG,
+             BENEFICIARY_WEAK]
+    missing = [unit for unit in named if unit not in by_id]
+    if missing:
+        raise Stop("INSTRUMENT_UNREADABLE",
+                   "named units absent: %s" % ", ".join(missing))
+
+    producers = [by_id[PRODUCER_A_V3], by_id[PRODUCER_B_V3]]
+    scope = _scope_of(producers)
+    pattern = dict((scope or {}).get("pattern_intersection") or {})
+    ast = {"all": [{"feature": "task_kind", "op": "==",
+                    "value": "classification"}]
+           + [{"feature": key, "op": "==", "value": value}
+              for key, value in sorted(pattern.items())]}
+
+    beneficiaries = []
+    for unit_id, band in ((BENEFICIARY_STRONG, "strong"),
+                          (BENEFICIARY_WEAK, "weak")):
+        row = by_id[unit_id]
+        matched, _score = evaluate_applicability(
+            ast, {"task_kind": "classification", **row["pattern"]})
+        beneficiaries.append({
+            "unit_id": unit_id, "margin_band": band,
+            "machine_match_producer_scope": bool(matched),
+            "census_learnability": row["census_learnability"],
+            "half_margin": row["half_margin"],
+            "half_meets_2x": row["half_meets_2x"],
+            "material_line": _material_line(row),
+            "n_slice_half_min": row["n_slice_half_min"],
+            "prior_exposure": ("PS-2 / W-1 exam unit"
+                               if unit_id == BENEFICIARY_STRONG
+                               else "M-1 margin-gate unit"),
+            "is_also_a_producer": unit_id in (PRODUCER_A_V3, PRODUCER_B_V3),
+        })
+
+    order = [
+        (PRODUCER_A_V3, "producer_A"),
+        ("BeetleFly__impulse_v2", "identity_A"),
+        (PRODUCER_B_V3, "producer_B"),
+        (BENEFICIARY_STRONG, "beneficiary_strong"),
+        (BENEFICIARY_WEAK, "beneficiary_weak"),
+        ("Herring__impulse_v2", "heldout_only"),
+        ("BirdChicken__burst_cls2", "identity_B"),
+    ]
+    course = []
+    for position, (unit_id, role) in enumerate(order, start=1):
+        row = by_id[unit_id]
+        course.append({
+            "position": position, "unit_id": unit_id, "role": role,
+            "dataset": row["dataset"], "injection": row["injection"],
+            "series_length": row["series_length"],
+            "menu_oracle_program": row["menu_oracle_program"],
+            "menu_oracle_heldout_utility": row["menu_oracle_heldout_utility"],
+            "half_margin": row["half_margin"],
+            "half_meets_2x": row["half_meets_2x"],
+            "census_learnability": row["census_learnability"],
+            "n_slice_half_min": row["n_slice_half_min"],
+            "name_family": row["name_family"],
+            "cold_discovery": COLD_DISCOVERY.get(unit_id),
+        })
+
+    delta_parts = [row["material_line"] for row in beneficiaries]
+    delta_material = (sum(part for part in delta_parts if part)
+                      if all(delta_parts) else None)
+    constructible = bool(
+        all(row["machine_match_producer_scope"] for row in beneficiaries)
+        and all(row["census_learnability"] == "LEARNABLE"
+                for row in beneficiaries)
+        and not any(row["is_also_a_producer"] for row in beneficiaries)
+        and pattern)
+    return {
+        "course_name": COURSE_NAME_V3,
+        "course_name_basis": (
+            "producers are selected on demonstrated cold-discovery rate; the "
+            "natural-bootstrap course r1 is retained as the discovery "
+            "module's control"),
+        "pool": pool,
+        "producer_selection": {
+            "rule": "demonstrated cold-discovery rate on this unit, then "
+                    "sealed half-protocol margin",
+            "producers": [
+                {"unit_id": row["unit_id"],
+                 "cold_discovery": COLD_DISCOVERY[row["unit_id"]],
+                 "half_margin": row["half_margin"],
+                 "half_meets_2x": row["half_meets_2x"]}
+                for row in producers],
+            "why_r1_failed": (
+                "r1 picked producers on sealed margin alone; a margin says a "
+                "reading would be legible if the family were probed, not that "
+                "the arm will propose it"),
+        },
+        "exclusion_semantics_revision": EXCLUSION_SEMANTICS_V3,
+        "family_overlap_note": FAMILY_OVERLAP_NOTE_V3,
+        "natural_bootstrap_control": NATURAL_BOOTSTRAP_CONTROL,
+        "rulings": {
+            "a_beneficiaries_released": {
+                "released": [BENEFICIARY_STRONG, BENEFICIARY_WEAK],
+                "stratified_prediction": (
+                    "pre-registered: A5's advantage should concentrate on the "
+                    "strong-margin beneficiary and be marginal on the weak "
+                    "one"),
+                "prior_exposure_note": PRIOR_EXPOSURE_NOTE,
+            },
+            "b_regret_gate": {
+                "definition": "sum of the two beneficiaries' half-protocol "
+                              "material lines",
+                "parts": {row["unit_id"]: row["material_line"]
+                          for row in beneficiaries},
+                "delta_material": delta_material,
+                "cost_gate_unchanged": "convertible units average >= 1 probe "
+                                       "saved",
+            },
+        },
+        "producers_scope_v1": scope,
+        "beneficiaries": beneficiaries,
+        "course": course,
+        "course_length": len(course),
+        "transfer_graph": [{
+            "from": [PRODUCER_A_V3, PRODUCER_B_V3],
+            "via": "Slow boundary after position 3 -> compile_supply_tier",
+            "to": [BENEFICIARY_STRONG, BENEFICIARY_WEAK],
+            "carrier": "supplies_candidates card (grants_execution=false)",
+        }],
+        "precheck": {
+            "expected_card_boundary_after_position": 3,
+            "expected_first_divergence_position": 4,
+            "expected_first_divergence_unit": BENEFICIARY_STRONG,
+            "five_axis_scope_non_empty": bool(pattern),
+            "pattern_intersection_leaves": sorted(pattern),
+            "beneficiaries_machine_match": all(
+                row["machine_match_producer_scope"] for row in beneficiaries),
+            "no_beneficiary_is_a_producer": not any(
+                row["is_also_a_producer"] for row in beneficiaries),
+            "k0_carries_no_card": "asserted at run time by compile_k0 purity",
+        },
+        "constructible": constructible,
+        "delta_material": delta_material,
+        "seeds": dict(SEEDS),
+        "replicate_kind": "sampling",
+        "replicate_semantics": (
+            "the injection has no RNG to seed "
+            "(run_e2_t6_cls_op_shared_harness.py:3896-3901), so a second run "
+            "is a sampling replicate: identical substrate and protocol, Fast "
+            "Agent the only stochastic element"),
+        "protocol": {
+            "slicing": "M-1 half protocol (one held-in round; Support = "
+                       "concat(r1_support, r2_support), delayed = "
+                       "concat(r1_delayed, r2_delayed))",
+            "arms": [ARM_STATIC, ARM_A3, ARM_K0, ARM_A5],
+            "k0": "bootstrap three cards + the inert Slow card; no "
+                  "Target-local capability and no PS dual-source card",
+            "llm_per_unit_per_arm": 12,
+            "fit_per_unit_per_arm": 10,
+            "llm_per_slow_boundary": 6,
+        },
+    }
+
+
+def _freeze_v3_markdown(payload: Mapping[str, Any]) -> str:
+    lines = [
+        "# S1-v2 course freeze v3 -- %s" % payload["course_name"], "",
+        "protocol: `%s`  git: `%s`" % (payload["protocol_version"],
+                                       payload["git_head"]),
+        "", "**%s**" % payload["verdict"]["verdict"], "",
+        payload["verdict"]["reason"], "",
+        "- %s" % payload["course_name_basis"], "",
+        "> **Exclusion semantics, revised.** %s"
+        % payload["exclusion_semantics_revision"], "",
+        "> **Prior exposure.** %s"
+        % payload["rulings"]["a_beneficiaries_released"][
+            "prior_exposure_note"], "",
+        "> **Family overlap.** %s" % payload["family_overlap_note"], "",
+        "> **Control.** %s" % payload["natural_bootstrap_control"], "",
+        "> **Replicates.** %s" % payload["replicate_semantics"], "",
+        "## Course (frozen forward order)", "",
+        "| # | role | unit | menu oracle | half margin | cold discovery | "
+        "census |", "|---|---|---|---|---|---|---|",
+    ]
+    for row in payload["course"]:
+        cold = row.get("cold_discovery")
+        lines.append("| %d | %s | `%s` | `%s` | %s | %s | %s |" % (
+            row["position"], row["role"], row["unit_id"],
+            row["menu_oracle_program"],
+            ("%.2f" % row["half_margin"]) if row["half_margin"] else "-",
+            ("%d/%d (%s)" % (cold["earned"], cold["attempts"], cold["source"]))
+            if cold else "-",
+            row["census_learnability"]))
+    lines += ["", "## Producer selection (the only change from r2)", "",
+              "- rule: %s" % payload["producer_selection"]["rule"],
+              "- why r1 failed: %s"
+              % payload["producer_selection"]["why_r1_failed"], "",
+              "## Beneficiaries", "",
+              "| unit | band | Scope match | census | half margin | material "
+              "line | also a producer |", "|---|---|---|---|---|---|---|"]
+    for row in payload["beneficiaries"]:
+        lines.append("| `%s` | **%s** | %s | %s | %.2f | %.4f | %s |" % (
+            row["unit_id"], row["margin_band"],
+            row["machine_match_producer_scope"], row["census_learnability"],
+            row["half_margin"], row["material_line"],
+            row["is_also_a_producer"]))
+    gate = payload["rulings"]["b_regret_gate"]
+    lines += ["", "- stratified prediction: %s"
+              % payload["rulings"]["a_beneficiaries_released"][
+                  "stratified_prediction"], "",
+              "## Gates", "",
+              "- regret gate `Delta_material` = %s = %.6f"
+              % (" + ".join("%.6f" % v for v in gate["parts"].values()),
+                 gate["delta_material"]),
+              "- cost gate: %s" % gate["cost_gate_unchanged"], "",
+              "## Transfer graph", ""]
+    for edge in payload["transfer_graph"]:
+        lines.append("- `%s` + `%s` --%s--> %s (carrier: %s)" % (
+            edge["from"][0], edge["from"][1], edge["via"],
+            ", ".join("`%s`" % unit for unit in edge["to"]), edge["carrier"]))
+    pre = payload["precheck"]
+    lines += ["", "## Precheck", "",
+              "- five-axis Scope non-empty: %s (%d leaves)"
+              % (pre["five_axis_scope_non_empty"],
+                 len(pre["pattern_intersection_leaves"])),
+              "- both beneficiaries machine-match: %s"
+              % pre["beneficiaries_machine_match"],
+              "- no beneficiary is a producer: %s"
+              % pre["no_beneficiary_is_a_producer"],
+              "- K0 purity: %s" % pre["k0_carries_no_card"],
+              "- expected card boundary: after position %s"
+              % pre["expected_card_boundary_after_position"],
+              "- expected first divergence: position %s (`%s`)"
+              % (pre["expected_first_divergence_position"],
+                 pre["expected_first_divergence_unit"]), ""]
+    return "\n".join(lines) + "\n"
+
+
+def freeze_v3() -> int:
+    selection = select_course_v3()
+    constructible = selection["constructible"]
+    payload = {
+        "protocol_version": PROTOCOL_VERSION + "_v3",
+        "evidence_grade": EVIDENCE_GRADE,
+        "git_head": s1._git("rev-parse", "HEAD"),
+        "python": sys.version.split()[0],
+        "design": "docs/S1V2_DESIGN_DRAFT_2026-08-27.md",
+        "supersedes": FREEZE_R2_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "arbitration": "A (producer side only; scoring, ITT, gates, budgets, "
+                       "half protocol, K0 purity and oracle discipline all "
+                       "carry over from r2)",
+        "sources": {
+            "margins": PS0B_JSON.relative_to(PROJECT_ROOT).as_posix(),
+            "oracles": "artifacts/functional/e2/s1_oracle/*.json "
+                       "(exam keys only; not loaded into any arm)",
+        },
+        **selection,
+        "verdict": {
+            "verdict": ("S1V2_COURSE_FROZEN_V3" if constructible
+                        else "COURSE_NOT_CONSTRUCTIBLE"),
+            "reason": (
+                "two producers with demonstrated cold-discovery on their own "
+                "unit, a non-empty five-axis Scope, and two held-in learnable "
+                "beneficiaries at separated margin bands, none of which is a "
+                "producer." if constructible else
+                "the named units did not satisfy the precheck"),
+        },
+        "ledger": {"llm": 0, "consumer_fits": 0, "downloads": 0},
+    }
+    FREEZE_V3_JSON.write_text(
+        json.dumps(s1._plain(payload), ensure_ascii=False, indent=1,
+                   sort_keys=True, default=str) + "\n", encoding="utf-8")
+    FREEZE_V3_MD.write_text(_freeze_v3_markdown(payload), encoding="utf-8")
+    print(json.dumps({
+        "verdict": payload["verdict"]["verdict"],
+        "course_name": selection["course_name"],
+        "course": [row["unit_id"] for row in selection["course"]],
+        "delta_material": selection["delta_material"],
+        "artifact": str(FREEZE_V3_JSON),
+    }, ensure_ascii=False, indent=1))
+    return 0 if constructible else 1
+
+
+# =========================================================================== #
 # Part 1 -- the live four-arm forward course
 # =========================================================================== #
 SUPPLY_SKILL_ID = "s1v2_course_supply_v1"
@@ -883,9 +1208,9 @@ HALF_ROUNDS = ("r1",)
 
 
 def _out_paths(seed: str) -> tuple[Path, Path, Path]:
-    return (E2 / ("s1v2_forward_run%s.json" % seed[-1]),
-            E2 / ("s1v2_forward_run%s.md" % seed[-1]),
-            E2 / ("s1v2_forward_run%s.checkpoint.json" % seed[-1]))
+    return (E2 / ("s1v2_v3_forward_run%s.json" % seed[-1]),
+            E2 / ("s1v2_v3_forward_run%s.md" % seed[-1]),
+            E2 / ("s1v2_v3_forward_run%s.checkpoint.json" % seed[-1]))
 
 
 def _half_cell(quarter: Mapping[str, Any]) -> dict[str, Any]:
@@ -998,7 +1323,7 @@ def run_course(seed: str, *, resume: bool = False,
     import run_e2_ps0c_ps1 as ps0c
 
     out_json, out_md, checkpoint = _out_paths(seed)
-    frozen = json.loads(FREEZE_R2_JSON.read_text(encoding="utf-8"))
+    frozen = json.loads(FREEZE_V3_JSON.read_text(encoding="utf-8"))
     course = list(frozen["course"])
     started = time.time()
     s1._set_phase(s1.PHASE_SETUP)
@@ -1020,12 +1345,17 @@ def run_course(seed: str, *, resume: bool = False,
             "honest *sampling* replicates: identical substrate and identical "
             "protocol, with the Fast Agent as the only stochastic element.  "
             "The seed label is a run id, not an injection parameter."),
-        "course_source": FREEZE_R2_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "course_source": FREEZE_V3_JSON.relative_to(PROJECT_ROOT).as_posix(),
+        "course_name": frozen.get("course_name"),
         "course": course,
         "delta_material": frozen["delta_material"],
         "rulings": frozen["rulings"],
         "protocol": frozen["protocol"],
         "prior_exposure_note": PRIOR_EXPOSURE_NOTE,
+        "exclusion_semantics_revision": frozen.get(
+            "exclusion_semantics_revision"),
+        "family_overlap_note": frozen.get("family_overlap_note"),
+        "natural_bootstrap_control": frozen.get("natural_bootstrap_control"),
         "analysis": (
             "ITT: a Scope-qualified unit whose supplied candidate failed to "
             "enter the pool counts as an A5 system failure.  The conditional "
@@ -1393,6 +1723,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="S1-v2 forward course")
     parser.add_argument("--freeze", action="store_true")
     parser.add_argument("--freeze-r2", action="store_true")
+    parser.add_argument("--freeze-v3", action="store_true")
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--finalize", action="store_true",
@@ -1403,14 +1734,16 @@ def main() -> int:
         return freeze()
     if args.freeze_r2:
         return freeze_r2()
+    if args.freeze_v3:
+        return freeze_v3()
     # The live entries are gated on Part 0.  The gate is read off the frozen
     # artifact rather than recomputed, so a run can never start on a course
     # the freeze refused.
-    if not FREEZE_R2_JSON.is_file():
-        parser.error("run --freeze-r2 first")
-    frozen = json.loads(FREEZE_R2_JSON.read_text(encoding="utf-8"))
+    if not FREEZE_V3_JSON.is_file():
+        parser.error("run --freeze-v3 first")
+    frozen = json.loads(FREEZE_V3_JSON.read_text(encoding="utf-8"))
     verdict = (frozen.get("verdict") or {}).get("verdict")
-    if verdict != "S1V2_COURSE_FROZEN_R2":
+    if verdict != "S1V2_COURSE_FROZEN_V3":
         print(json.dumps({
             "verdict": verdict,
             "reason": (frozen.get("verdict") or {}).get("reason"),

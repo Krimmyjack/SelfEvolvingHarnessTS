@@ -1013,6 +1013,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### S1-v2 课程 v3(discovery-reliable)正序 r1:`TREATMENT_EMPTY`,但性质与 v2 完全不同——管线全通,卡差一个正例(2026-08-27 23:2x,执行方)
+
+**判词:`TREATMENT_EMPTY`**(development)。r2 **不发**(停发规则照旧;是否补发采样重复由仲裁定)。**成本 95/250 LLM、73/900 fit、4228.1 s / 21600 s、0 下载**。仲裁批案 A 只改产例侧,其余(判分/ITT/材料门 Δ=0.102632/预算/对半协议/K0 纯度/oracle 纪律/checkpoint)全部沿 r2 冻结与原书。
+
+**冻结件 v3**(`s1v2_course_freeze_v3.json/.md`):课程定名 **discovery-reliable development curriculum**(产例按历史冷发现率实证选取)。正序 = GPA(产例A,冷发现 2/2)→ BeetleFly-impulse(identity A)→ PowerCons-impulse(产例B,2/3)→ **[边界]** → GPOvY(受益强 5.00×)→ GPMvF-impulse(受益弱 2.00×)→ Herring(HELDOUT_ONLY)→ BirdChicken-burst(identity B)。**排除令语义修订注记已入件**:护住"卡是课程内自产"的约束不是"该单元曾在别处当过源",而是 (i) K0 空、(ii) 受益单元≠产例单元;产例上课程内重挣正是课程该做的事,不破卡自产性(sol 已核)。受益单元前曝光注记沿 r2;`replicate_kind=sampling`(注入无 RNG,出处已引);**GunPoint 家族重叠如实注记**(GPA 与 GPOvY/GPMvF 同名族、单元级不重叠,不得报作跨族能力)。
+
+**与 v2 空场的性质区分(本条是本轮主结论)**:v2 的空场是**结构性**的——受益侧根本不存在(池内可学 hampel 单元全被占用或 HELDOUT_ONLY),且产例上臂**从未提出**目标族;v3 的空场是**采样差一发**——管线每一环都通了,只是产例 B 的 2/3 抽签这次没中。证据:**产例 A(GPA)一轮命中**——A5 自提 `hampel_extreme_deviation`,Support **+0.4500 → POSITIVE**,delayed **+0.4000**,Episode `LOCAL_ACTIVE`,Skill 获批,部署 held-out **+0.2690**(regret −0.0063,略优于菜单 oracle);**产例 B(PowerCons-impulse)也提出了正确的族**——A5 一轮自提 hampel,但 Support 只读到 **+0.0357**,经 `classify_relation` 判 **CONFLICT → EPISODE_ONLY**(聚合过材料线但逐序列有害),不计未受引导正例。于是七个边界的供给档审计一致给出 `fewer_than_2_distinct_unguided_positive_tasks`(未受引导正例 **1**、受引导 0、对立 0,族=`hampel_filter`),**卡 1/2 未编**,受益场注入 **0/2**(ITT)。**产例实证率更新:GPA 3/3、PowerCons-impulse 2/4。**
+
+**四臂读数(ITT,七单元累计)**:Static regret +0.8200 / 均值 0 / 0 probe;A3-reset **+0.6333** / +0.0267 / 11 probe / 33 LLM / 21 fit / 1 次非 identity 部署;**A5-online +0.5510** / +0.0384 / 9 probe / 32 LLM / 23 fit / 1 次部署;K0-fixed **+0.3643** / +0.0651 / 6 probe / 30 LLM / 22 fit / 2 次部署。**三臂 harm 全零,worst-class 全零**(v2 的那次 A5 harm 未复现)。**门核算**:A5 对 A3 regret 差 **+0.0823 < Δ_material 0.1026**(未过);对 K0 **−0.1867**(更差)。成本门 probe 差 **+2 ≥ 可转化单元数 2**(数值上过),但**归因门不过**(零产卡、零注入),按判词逻辑归因优先,故不计入信号。**训练计算效率**:consumer fit 墙钟 A5 1309 s / A3 1385 s / K0 1388 s / Static 128 s,三适应臂无材料差异;time-to-threshold 不可算。
+
+**分层预测对表**:预注册"A5 优势集中强余量受益场"——**无法检验**,因为两受益场 A5 均零注入;更值得记的是 A5 在两个受益单元上 **0 probe、0 提案、llm 3**(弃权),而 A3 在弱受益场自行挣到 hampel(+0.1867)。A5 单元 1 挣得的 Target-local hampel 按设计带域戳、不跨单元生效,故受益场对 A5 而言等同冷启动——**这一轮 A5 比 A3 更沉默,且因此丢掉了 +0.1867**,如实记为负面读数。
+
+**书外发现**:(1) **产例 B 的失败点从"提案"移到了"Support 分级"**:+0.0357 聚合为正却因逐序列有害判 CONFLICT。这是 `classify_relation` 的既有正确行为(聚合正、逐序列害不得扩权),但它意味着**"冷发现率"这个先验只覆盖到"提出",没有覆盖"过 Support 双门"**——产例选择判据还需要第三项:该单元在对半协议下的 **Support 通过率**,而不只是历史 earn 率。(2) K0-fixed 连续两跑 regret 最低,两跑都靠在 GPMvF 上自行挣到 hampel;在处理组为空时四臂对比仍不具解释力,不得读作"K0 优于 A5"。(3) 供给档在"1 个正例"处稳定拒绝七次,零凑数,与 P0 单测一致。
+
+**提交**:`evaluation/functional/run_e2_s1v2_forward_course.py`(v3 冻结 + 输出路径切换)、`artifacts/functional/e2/s1v2_course_freeze_v3.json/.md`、`artifacts/functional/e2/s1v2_v3_forward_run1.json/.md/.checkpoint.json`、本节。`methods/`/`contracts/`/`runtime/`/`operators/` 零改;`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP`/设计稿 未碰;密钥零出现;未跑全仓 pytest。
+
 ### S1-v2 正序第一跑:`TREATMENT_EMPTY`;产例未产,课程内自产知识为零,按预注册停发第二跑(2026-08-27 19:4x,执行方)
 
 **判词:`TREATMENT_EMPTY`**(development)。按设计稿"课程内未产生任何 Fast 可见知识 → **立即停**"执行,**第二跑不发**。**成本 96/250 LLM(总帽 500 未过半)、68/900 fit、3284.6 s / 21600 s、0 下载**。
@@ -1162,6 +1178,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **核心正效果移动:是。** 唯一变量(四分→角色拼接对半:Support n=21 / delayed n=19,单轮双门)下,A5-scoped **供给候选经双门转化 2/4**(m1_a5_1/2),部署 held-out **+0.1867**,harm 0。冻结判词 **`MARGIN_GATING_CONFIRMED`**:确认面余量门控成立,余量分层进 Gate 4。算术先行 0 fit:Support 4.00× / delayed 2.00×,均 ≥2×(G3 四分余量 1.35×,材料正 0/4 不重跑)。漏斗:卡 4/4 在视野;入池 2/4;材料正 2/4;供给双门 2/4。a5_3/4 卡在视野但 inject=False(同族 prepare/identity-only 漏注入),agent 自提 hampel 亦部署——**不计供给转化**。A3 冷提案 3/4 同增益部署(a3_4 identity):对半面本身可读,门控的是确认面余量而非只是供给通道。对半读数只作余量机制证据,**不得与四分基线作能力比较**。pilot;GunPointFamily 同族;引导正例计零。成本 LLM 29/100、fit 45/100、墙钟 1068.7s/7200s;returned_model=`gpt-5.6-sol`;下载 0;methods/contracts/runtime/operators 零改;密钥零出现。
 
 **提交**:`evaluation/functional/run_e2_m1_margin_gate.py`;`artifacts/functional/e2/m1_margin_gate.json/.md`;本节(含他书未提交的 Gate 3 收口 / A′ 发车 / 提速四点,未删改既有正文)。不提交 checkpoint / `AGENTS.md` / `README` / `PROJECT_STATE*` / `SUCCESSOR_BRIEF*`。
+
+### sol 批案 A(用户定调:正效果优先);S1-v2 课程 v3 重冻发车(2026-08-27 22:0x,主线)
+
+**裁定**:案 A 立即推进,B 收编为一行命名(discovery-reliable development curriculum)与模块化对照框架(自然自举课程=发现模块负结果保留;本课程=积累模块正控),**不加任何新声明/资格工序**;发现率瓶颈记后续优化点(Stage 3 的 Instruction/策略进化),不占关键路径;GPA/PowerCons 作产例的排除令语义修订获 sol 核(约束对象=K0 空 + 受益≠产例单元;课程内重挣不破自产性)。**主线补裁**:GunPoint 冗余产例不加(与 GPA 同族,证据计数添乱;GPA 2/2+PowerCons-impulse 2/3 实证命中率 + 每单元两轮已足)。**课程 v3**:GPA(产例A)→identity A→PowerCons-impulse(产例B)→[边界产卡]→GPOvY(受益强)→GPMvF(受益弱)→Herring(HELDOUT_ONLY)→identity B;判分/预算/ITT/材料门沿 r2 冻结;重复=采样重复(如实标);r1 SIGNAL 自动续采样 r2(分支③);TREATMENT_EMPTY 即停。发 opus 续话。
+
+### S1-v2 正序 r1 判 TREATMENT_EMPTY(提交 cf06343);断裂在产例可提出性;分支①启动呈裁(2026-08-27 18:5x,主线)
+
+**判定**(96/250 LLM,68/900 fit,3285s;r2 按预注册停发):两项裁定执行确认(双受益+前曝光注记+Δ_material=0.102632);七边界审计全拒 `fewer_than_2_distinct_unguided_positive_tasks`——全课程合格 Episode 仅 1 条且族为 outlier_iqr(产例 A 自提 iqr:held-in 批 +0.0444、held-out worst −0.0667 harm 1;产例 B 零收获);**agent 在两产例均未提出 hampel,供给卡从未编译,受益注入 0/2(ITT)**。**断裂定位(执行者原句入典)**:"余量说的是'若探到该族则读得出',不是'会探到该族'"——课程判据混淆可读性与可提出性;提案语义瓶颈第四次现身(S1c 漏斗/PS-1/K 消融/本轮自举层)。**供给档零知识行为正确**(七拒同因,零凑数);处理组空时四臂对比无解释力(K0 最低 regret 系 GPMvF 自然挣得 hampel 的采样方差,不得读作 K0>A5)。**仪器事实**:本注入族无 RNG,"异注入 seed"虚构,重复=采样重复(replicate_kind=sampling 已改标;反序/重复书须先修重复语义)。**分支①裁决件(呈用户/sol,主线荐案 A)**:产例选择判据加**可提出性先验**(该族在该单元被冷 proposer 实证提出过)——实证发现账:GPA 2/2、PowerCons-impulse 2/3、GPMvF-halved 3/4、GPOvY 0/5+;**案 A**:产例改 GPA+PowerCons-impulse(+GunPoint-impulse 冗余第三产例),受益仍 GPOvY+GPMvF——关键论证:双源单元排除令本意防"卡带资进场",约束对象应为 **K0 与受益≠产例**,产例场上 agent 课程内**重新挣得**新 Episode 不违自产性(K0 仍空,卡仍课程自产);须 sol 核此排除令语义修订;**案 B**:判"自然自举形态在提案语义未解前不可考",演化主张重构为"复用链因果已证(W-1/G-3/M-1)+ 自举吞吐量已量化 + 复利曲线在发现可靠课程上演示";**案 C**:攻提案语义本身(observation 契约扩展,重手术,先不动)。荐 A(含 B 的措辞收编:课程定名 discovery-reliable curriculum,如实注记)。
 
 ### 跑批间隙并行预备(sol 清单采纳)+ 分支任务书预写(2026-08-27 18:1x,主线)
 
