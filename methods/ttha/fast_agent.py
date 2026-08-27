@@ -370,6 +370,43 @@ def _skill_frozen_candidates(view: EffectiveHarnessView,
     return tuple(out)
 
 
+# The permission rung a Skill entry was granted on the supply axis.  Who gets
+# it is decided outside this package -- Slow consolidation, or the runner that
+# compiles the card.  Nothing here grants, widens or audits the flag; this is
+# only the reader that makes an already-granted flag effective.
+_SUPPLY_AUTHORITY_KEY = "supplies_candidates"
+
+
+def _supplies_candidates(skill: Any) -> bool:
+    guards = getattr(skill, "risk_guards", None) or {}
+    authority = guards.get("authority") or {}
+    return authority.get(_SUPPLY_AUTHORITY_KEY) is True
+
+
+def _supply_rung_candidates(view: EffectiveHarnessView,
+                            features: Mapping[str, object]
+                            ) -> tuple[Candidate, ...]:
+    """The frozen programs the retrieved view is authorized to *supply*.
+
+    A subset of :func:`_skill_frozen_candidates`, selected by the entry's own
+    ``risk_guards.authority.supplies_candidates``.  Scope is not re-checked
+    here: ``view.skills`` is already the applicability-filtered view, which is
+    the layer that owns Scope.
+    """
+    supplying = {
+        str(skill.skill_id) for skill in view.skills
+        if _supplies_candidates(skill)
+    }
+    if not supplying:
+        return ()
+    out: list[Candidate] = []
+    for candidate in _skill_frozen_candidates(view, features):
+        source = str(getattr(candidate, "source", "") or "")
+        if source.startswith("skill:") and source[len("skill:"):] in supplying:
+            out.append(candidate)
+    return tuple(out)
+
+
 def _compile_candidates(
     payload: Mapping[str, object],
     request: PreparationRequest,
@@ -938,34 +975,58 @@ class TTHAFastAgent:
             propose_contracts = [
                 public_operator_contract(name) for name in propose_ops
             ]
-            propose = self.core.run_stage(
-                role=AgentRole.FAST,
-                stage="propose",
-                case_id=request.series_uid,
-                public_input={
-                    **_task_binding(request),
-                    "features": _plain(features),
-                    "inspection": _plain(inspect.payload),
-                    "fixed_probe_panel": _plain(fixed_probe_panel or {}),
-                    "allowed_operator_contracts": propose_contracts,
-                },
-                harness_view=view,
-                output_schema_name="fast_propose_v1",
-                output_schema=self.core.load_stage_schema("fast_propose_v1"),
-                source_snapshot_sha=snapshot.runtime_bundle_sha,
-                task_context_sha=task_context_sha,
-                run_context_sha=run_context_sha,
-                validation_retries=1,
-                post_validator=lambda payload: (
-                    _validate_public_parameter_bindings(
-                        payload, features, fixed_probe_panel
+            # W-1: a card that was granted the supply rung promises a
+            # candidate to verify, and that promise cannot depend on how the
+            # agent's own propose stage went.  PS-2 measured the coupling: in
+            # 4 of 12 runs propose raised, the round fell to the outer
+            # handler, and the frozen program the agent never had to author
+            # died with it (trace pool degraded to identity via _trace's
+            # pool-is-None fallback).  bootstrap 4b tells the agent the
+            # runtime injects the Source prior; withdrawing it on an agent
+            # protocol failure breaks that promise exactly when the agent
+            # needed it most.
+            supply_candidates = _supply_rung_candidates(view, features)
+            try:
+                propose = self.core.run_stage(
+                    role=AgentRole.FAST,
+                    stage="propose",
+                    case_id=request.series_uid,
+                    public_input={
+                        **_task_binding(request),
+                        "features": _plain(features),
+                        "inspection": _plain(inspect.payload),
+                        "fixed_probe_panel": _plain(fixed_probe_panel or {}),
+                        "allowed_operator_contracts": propose_contracts,
+                    },
+                    harness_view=view,
+                    output_schema_name="fast_propose_v1",
+                    output_schema=self.core.load_stage_schema("fast_propose_v1"),
+                    source_snapshot_sha=snapshot.runtime_bundle_sha,
+                    task_context_sha=task_context_sha,
+                    run_context_sha=run_context_sha,
+                    validation_retries=1,
+                    post_validator=lambda payload: (
+                        _validate_public_parameter_bindings(
+                            payload, features, fixed_probe_panel
+                        ),
+                        _validate_hypothesis_references(payload, inspect.payload),
                     ),
-                    _validate_hypothesis_references(payload, inspect.payload),
-                ),
-            )
-            stages.append(propose)
-            supplied, hypothesis_map = _compile_candidates(
-                propose.payload, request)
+                )
+                stages.append(propose)
+                supplied, hypothesis_map = _compile_candidates(
+                    propose.payload, request)
+            except (AgentProtocolError, ProtocolChoiceError, ValueError,
+                    TypeError):
+                # Same exception set the outer handler already catches, so
+                # nothing newly survives a failure -- it is only redirected,
+                # and only while there is something to supply.  With no
+                # supply rung in view the round fails exactly as before.  The
+                # failure stays visible: no propose entry reaches ``stages``,
+                # so a round with a program pool and one stage is a round the
+                # agent contributed nothing to.
+                if not supply_candidates:
+                    raise
+                supplied, hypothesis_map = (), {}
             # 前提过滤（审核 2026-08-09 实验 1：Program Supply 前提修复）：
             # 依据部署可见 Context 与 Operator 前提，跳过确定性无行为的候选
             # （不读取 gain）——当前 Context 无缺失信号时，仅处理缺失数据的

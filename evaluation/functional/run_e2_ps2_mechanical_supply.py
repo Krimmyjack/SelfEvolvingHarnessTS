@@ -154,6 +154,31 @@ RUN_PLAN = tuple(
     for index in range(REPLICATES * len(ARMS))
 )
 
+# ---------------------------------------------------------------- W-1 prod
+# The same 12-run protocol, re-run after the supply rung was wired in
+# ``methods/ttha``.  Same cards, same arms, same unit, same budgets: the only
+# difference is that ``supplies_candidates`` is now read by Fast, so the
+# frozen program no longer depends on the agent's propose stage surviving.
+PROD_PROTOCOL_VERSION = "ps2p_production_validation_v1"
+PROD_OUT_JSON = E2 / "ps2p_production_validation.json"
+PROD_OUT_MD = E2 / "ps2p_production_validation.md"
+PROD_CHECKPOINT = E2 / "ps2p_production_validation.checkpoint.json"
+PROD_RUN_PLAN = tuple(
+    {"run_id": "ps2p_run%d" % (index + 1),
+     "arm": ARMS[index % len(ARMS)],
+     "replicate": index // len(ARMS) + 1}
+    for index in range(REPLICATES * len(ARMS))
+)
+_PROD = {"on": False}
+
+
+def _run_plan() -> tuple[Mapping[str, Any], ...]:
+    return PROD_RUN_PLAN if _PROD["on"] else RUN_PLAN
+
+
+def _checkpoint_path() -> Path:
+    return PROD_CHECKPOINT if _PROD["on"] else CHECKPOINT
+
 AUTHORITY_FIELDS = ps1.AUTHORITY_FIELDS
 
 
@@ -431,6 +456,11 @@ def _round_anatomy(record: Mapping[str, Any],
         # program was the missing-data no-op filter), not that the slot
         # was removed.
         "inject_and_agent_coexist": bool(injected) and bool(agent),
+        # W-1 decoupling readout: the inject is in the pool and the agent
+        # contributed no program.  Before the wiring this combination was
+        # unreachable -- the merge lived downstream of a successful propose
+        # stage, so an agent that produced nothing took the inject with it.
+        "supply_without_agent_program": bool(injected) and not agent,
         "exploration_slot_kept": True,
         "agent_program_count": len(agent),
         "llm_calls_this_round": record.get("llm_calls_this_round"),
@@ -465,19 +495,27 @@ def _inject_funnel(result: Mapping[str, Any], *,
                 # compile-time verifier accepted the inject
                 verified = True
             detail.append({"round": record.get("round"), **row})
-        # Support counts only when this round selected the inject.
-        # A same-signature Episode from an agent-authored program is not
-        # the mechanical candidate's conversion.
+        # Scoring correction (W-1).  PS-2 gated Support on the *select*
+        # stage naming the inject, but the harness gives every pool member a
+        # Support trial inside the round's budget, so a probed inject that
+        # select passed over still earns a real receipt.  PS-2 run9/run12
+        # were scored 0/4 Support on that convention while the persisted
+        # Episodes show +0.6364 / +0.6000 POSITIVE.  Attribution is exact
+        # without selection: the Episode the inject's own probe wrote carries
+        # the Skill id in its episode_id, so an agent-authored program of the
+        # same signature is still not counted here.
         for episode in record.get("episodes") or []:
-            if not anatomy["injected_selected"]:
+            if skill_id not in str(episode.get("episode_id") or ""):
                 continue
-            if str(episode.get("workflow_signature")) != operator:
+            if str(episode.get("workflow_signature")) not in (
+                    operator, skill_id):
                 continue
             support = episode.get("support_gain")
             if support is not None and float(support) >= MATERIAL \
                     and str(episode.get("relation")) == "POSITIVE":
                 supported = True
-                if break_at == "selected_verifier_or_support":
+                if break_at in ("entered_not_selected",
+                                "selected_verifier_or_support"):
                     break_at = "support_positive_delayed_pending"
         if record.get("winner_delayed_approved"):
             winner_ops = [str(step.get("op"))
@@ -645,7 +683,7 @@ def _checkpoint(runs: Sequence[Mapping[str, Any]],
                 ledger: Mapping[str, int],
                 base_shas: Mapping[str, str],
                 *, started: float | None = None) -> None:
-    CHECKPOINT.write_text(
+    _checkpoint_path().write_text(
         json.dumps(ps0c.redact({
             "runs": list(runs),
             "ledger": dict(ledger),
@@ -696,7 +734,7 @@ def _run_arms(*, cards: Mapping[str, Any], h0: Any, store_root: Path,
         bases[arm] = snapshot
         base_shas[arm] = snapshot.runtime_bundle_sha
     done = {str(row["run_id"]) for row in runs}
-    for plan in RUN_PLAN:
+    for plan in _run_plan():
         if plan["run_id"] in done:
             print("skip %s (checkpoint)" % plan["run_id"], flush=True)
             continue
@@ -781,6 +819,127 @@ def _aggregate(runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                                     if row.get("inject_miss_reason")],
         }
     return out
+
+
+def _supply_decoupling(runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Did the supply rung survive rounds the agent contributed nothing to?
+
+    The PS-2 break was structural, not statistical: the merge that put the
+    frozen program in the pool lived downstream of a successful propose
+    stage.  A round with the inject in the pool and no agent program is the
+    direct observation that the dependency is gone.
+    """
+    rows: list[dict[str, Any]] = []
+    for run_row in runs:
+        for anatomy in run_row.get("pool_anatomy") or []:
+            if str(run_row["arm"]) == ARM_A3:
+                continue
+            rows.append({
+                "run_id": run_row["run_id"],
+                "arm": run_row["arm"],
+                "round": anatomy.get("round"),
+                "injected_in_pool": bool(anatomy.get("injected_in_pool")),
+                "agent_program_count": int(
+                    anatomy.get("agent_program_count") or 0),
+                "supply_without_agent_program": bool(
+                    anatomy.get("supply_without_agent_program")),
+                "llm_calls_this_round": anatomy.get("llm_calls_this_round"),
+            })
+    agentless = [row for row in rows if row["agent_program_count"] == 0]
+    return {
+        "card_arm_rounds": len(rows),
+        "rounds_with_inject_in_pool": sum(
+            1 for row in rows if row["injected_in_pool"]),
+        "rounds_without_an_agent_program": len(agentless),
+        "of_those_the_inject_still_entered": sum(
+            1 for row in agentless if row["injected_in_pool"]),
+        "decoupled": all(row["injected_in_pool"] for row in agentless),
+        "rows": rows,
+        "ps2_comparison": (
+            "PS-2 recorded 4 card-arm runs whose pool degraded to identity "
+            "with proposal_count=0 and llm=2; every one of them lost the "
+            "inject."),
+    }
+
+
+def _prod_verdict(aggregate: Mapping[str, Any], *,
+                  stopped: str | None,
+                  runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """W-1 production validation, pre-registered before the runs."""
+    if stopped:
+        return {"verdict": stopped, "reason": "stopped before the full plan"}
+    if not all(arm in aggregate for arm in ARMS):
+        return {"verdict": "COMPUTE_BUDGET_EXCEEDED",
+                "reason": "not every arm completed its replicates"}
+    scoped = aggregate[ARM_SCOPED]
+    neutral = aggregate[ARM_NEUTRAL]
+    a3 = aggregate[ARM_A3]
+    counts = scoped["inject_funnel_counts"]
+    scoped_n = int(scoped["runs"])
+    entered = int(counts["entered_pool"])
+    probed = int(counts["passed_verifier"])
+    supported = int(counts["support_material_positive"])
+    deployed = int(counts["deployed"])
+    placebo_deployed = int(
+        neutral["inject_funnel_counts"]["deployed"]) >= 1
+    placebo_supported = int(
+        neutral["inject_funnel_counts"]["support_material_positive"]) >= 1
+    harm_zero = (int(scoped["harm_runs"]) == 0
+                 and int(neutral["harm_runs"]) == 0
+                 and int(a3["harm_runs"]) == 0)
+    explore = int(scoped["exploration_slot_kept_runs"]) == scoped_n
+    gains = [float((row.get("deployment") or {}).get(
+        "heldout_accuracy_gain") or 0.0)
+        for row in runs if row["arm"] == ARM_SCOPED]
+    facts = {
+        "scoped_entry": "%d/%d" % (entered, scoped_n),
+        "scoped_support_receipt": "%d/%d" % (probed, scoped_n),
+        "scoped_support_material_positive": "%d/%d" % (supported, scoped_n),
+        "scoped_deployed": "%d/%d" % (deployed, scoped_n),
+        "scoped_heldout_gains": gains,
+        "placebo_support_material_positive": placebo_supported,
+        "placebo_deployed": placebo_deployed,
+        "harm_zero_all_arms": harm_zero,
+        "exploration_slot_kept": explore,
+        "break_ats": {ARM_SCOPED: scoped["break_ats"],
+                      ARM_NEUTRAL: neutral["break_ats"]},
+        "wording": (
+            "a conversion is experience supplying a candidate through the "
+            "mechanical channel, adjudicated by Target feedback.  It is not "
+            "evidence that the agent learned to propose the family."),
+    }
+    if placebo_deployed:
+        return {"verdict": "PLACEBO_CONVERSION", "facts": facts,
+                "reason": (
+                    "A5-neutral deployed the sealed-oracle no-op (%s); the "
+                    "approval chain accepted a numerically-identity "
+                    "candidate.  Dangerous-signal stop." % PLACEBO_OPERATOR)}
+    if deployed >= 2 and not placebo_deployed and harm_zero:
+        return {"verdict": "SUPPLY_RUNG_PRODUCTION_CONFIRMED", "facts": facts,
+                "reason": (
+                    "the frozen hampel entered the pool in %d/%d runs, took "
+                    "a Support receipt in %d, converted through Support and "
+                    "the delayed gate in %d, the no-op card did not falsely "
+                    "deploy, and harm was zero in every arm.  Experience "
+                    "supplied the candidate; Target feedback adjudicated it."
+                    % (entered, scoped_n, probed, deployed))}
+    if probed >= 1 and supported == 0:
+        return {"verdict": "SUPPLY_WITHOUT_CONVERSION", "facts": facts,
+                "reason": (
+                    "the supplied candidate reached a Support receipt in %d "
+                    "run(s) and no receipt was a material positive.  That "
+                    "points at the GPOvY Support surface, not at the supply "
+                    "channel." % probed)}
+    if entered < scoped_n:
+        return {"verdict": "POOL_ENTRY_WITHOUT_CONVERSION", "facts": facts,
+                "reason": (
+                    "mechanical entry was %d/%d after the wiring; the "
+                    "decoupling did not hold in every run." % (entered,
+                                                               scoped_n))}
+    return {"verdict": "POOL_ENTRY_WITHOUT_CONVERSION", "facts": facts,
+            "reason": (
+                "entry and Support were reached but fewer than two runs "
+                "completed the delayed gate and deployment.")}
 
 
 def _verdict(aggregate: Mapping[str, Any], *,
@@ -1084,18 +1243,23 @@ def _apply_smoke(scoped: Mapping[str, Any],
     return out
 
 
-def run(*, compile_only: bool = False, resume: bool = False) -> int:
+def run(*, compile_only: bool = False, resume: bool = False,
+        prod: bool = False) -> int:
+    _PROD["on"] = bool(prod)
+    out_json = PROD_OUT_JSON if prod else OUT_JSON
+    out_md = PROD_OUT_MD if prod else OUT_MD
     started = time.time()
     s1._set_phase(s1.PHASE_SETUP)
     compiled = compile_cards()
     payload: dict[str, Any] = {
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": (PROD_PROTOCOL_VERSION if prod
+                             else PROTOCOL_VERSION),
         "evidence_grade": EVIDENCE_GRADE,
         "git_head": s1._git("rev-parse", "HEAD"),
         "python": sys.version.split()[0],
         "exam_unit": EXAM_UNIT["unit_id"],
         "ps1_source": PS1_JSON.relative_to(PROJECT_ROOT).as_posix(),
-        "run_plan": [dict(plan) for plan in RUN_PLAN],
+        "run_plan": [dict(plan) for plan in _run_plan()],
         "arms": {
             ARM_A3: "no Source Skill",
             ARM_NEUTRAL: (
@@ -1127,11 +1291,11 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
             "methods_package_unmodified": True,
             "runtime_contracts_operators_unmodified": True,
         }
-        s1._dump(OUT_JSON, ps0c.redact(payload))
-        OUT_MD.write_text(_markdown(payload), encoding="utf-8")
+        s1._dump(out_json, ps0c.redact(payload))
+        out_md.write_text(_markdown(payload), encoding="utf-8")
         print(json.dumps({"verdict": "COMPILE_ONLY",
                           "audit": payload["card_audit"],
-                          "artifact": str(OUT_JSON)},
+                          "artifact": str(out_json)},
                          ensure_ascii=False, indent=1))
         return 0
 
@@ -1141,15 +1305,20 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
         "model": install.get("model"),
         "family": "M0_AGENT_* trycloudflare relay",
     }
-    ledger = {"llm": int(ATTEMPT1_WASTED["llm"]),
-              "fit": int(ATTEMPT1_WASTED["fit"])}
-    payload["attempt1_wasted"] = dict(ATTEMPT1_WASTED)
-    store_root = Path(tempfile.gettempdir()) / "ps2_arms_r2"
+    # The production validation is its own book with its own ledger; the
+    # PS-2 attempt-1 waste is charged to PS-2, not re-charged here.
+    ledger = ({"llm": 0, "fit": 0} if prod
+              else {"llm": int(ATTEMPT1_WASTED["llm"]),
+                    "fit": int(ATTEMPT1_WASTED["fit"])})
+    if not prod:
+        payload["attempt1_wasted"] = dict(ATTEMPT1_WASTED)
+    store_root = Path(tempfile.gettempdir()) / (
+        "ps2p_arms" if prod else "ps2_arms_r2")
     stopped: str | None = None
     runs: list[dict[str, Any]] = []
     base_shas: dict[str, str] = {}
-    if resume and CHECKPOINT.is_file():
-        saved = json.loads(CHECKPOINT.read_text(encoding="utf-8"))
+    if resume and _checkpoint_path().is_file():
+        saved = json.loads(_checkpoint_path().read_text(encoding="utf-8"))
         runs = list(saved.get("runs") or [])
         ledger = {"llm": int((saved.get("ledger") or {}).get("llm")
                              or ledger["llm"]),
@@ -1157,7 +1326,7 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
                              or ledger["fit"])}
         base_shas = dict(saved.get("base_shas") or {})
         used = float(saved.get("wall_seconds_used") or 0.0)
-        if used <= 0:
+        if used <= 0 and not prod:
             used = 2466.2
         started = time.time() - used
         payload["resumed_from_checkpoint"] = {
@@ -1194,23 +1363,37 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
     payload["runs"] = runs
     payload["budget_equality"] = _budget_equality(base_shas)
     payload["aggregate"] = _aggregate(runs)
-    payload["verdict"] = _verdict(payload["aggregate"], stopped=stopped,
-                                  runs=runs)
+    payload["verdict"] = (
+        _prod_verdict(payload["aggregate"], stopped=stopped, runs=runs)
+        if prod
+        else _verdict(payload["aggregate"], stopped=stopped, runs=runs))
+    if prod:
+        payload["supply_decoupling"] = _supply_decoupling(runs)
     attempt2_wall = round(time.time() - started, 1)
     payload["ledger"] = {
         "llm": ledger["llm"], "llm_cap": LLM_TOTAL_CAP,
         "fit": ledger["fit"], "fit_cap": FIT_TOTAL_CAP,
         "wall_seconds": attempt2_wall,
-        "wall_seconds_attempt1": ATTEMPT1_WASTED["wall_seconds"],
-        "wall_seconds_combined": round(
-            float(ATTEMPT1_WASTED["wall_seconds"]) + attempt2_wall, 1),
         "wall_seconds_cap": WALL_SECONDS_CAP, "downloads": 0,
-        "attempt1_charged": True,
-        "attempt2_wall_timer_reset": True,
     }
+    if not prod:
+        payload["ledger"].update({
+            "wall_seconds_attempt1": ATTEMPT1_WASTED["wall_seconds"],
+            "wall_seconds_combined": round(
+                float(ATTEMPT1_WASTED["wall_seconds"]) + attempt2_wall, 1),
+            "attempt1_charged": True,
+            "attempt2_wall_timer_reset": True,
+        })
     payload["oracle_isolation"] = s1._oracle_isolation_report()
     payload["obligations"] = {
-        "methods_package_unmodified": True,
+        "methods_package_unmodified": not prod,
+        "methods_surgery": (
+            "W-1 wired the supply rung: fast_agent materialises a "
+            "supplies_candidates card independently of the propose stage, "
+            "and open_delayed gives a supply-sourced winner the delayed "
+            "approval route every agent-authored winner already had.  No "
+            "threshold, no authorization policy and no permission class."
+            if prod else None),
         "runtime_contracts_operators_unmodified": True,
         "production_governance_unmodified": True,
         "no_new_skill_class_or_permission_platform": True,
@@ -1226,6 +1409,12 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
         "semantic_discipline": payload["semantic_discipline"],
     }
     payload["outside_book"] = [
+        "PS-2 scored Support only when the select stage named the inject.  "
+        "The harness gives every pool member a Support trial inside the "
+        "round budget, so ps2_run9 / ps2_run12 were full Support+delayed "
+        "walks recorded as 0/4.  The funnel now attributes by the Episode "
+        "the inject's own probe wrote (episode_id carries the Skill id).",
+    ] if prod else [
         "attempt 1 printed 11/12 then InternalServerError on ps2_run12; "
         "in-memory records dropped; charged 67 LLM / 31 fit / 5236s.",
         "attempt 2 probe failed after the trycloudflare tunnel died.",
@@ -1234,16 +1423,17 @@ def run(*, compile_only: bool = False, resume: bool = False) -> int:
         "67/31; no checkpoint existed so all 12 run-ids are re-executed "
         "and persisted after each unit.",
     ]
-    s1._dump(OUT_JSON, ps0c.redact(payload))
-    OUT_MD.write_text(_markdown(payload), encoding="utf-8")
+    s1._dump(out_json, ps0c.redact(payload))
+    out_md.write_text(_markdown(payload), encoding="utf-8")
     print(json.dumps({"verdict": payload["verdict"]["verdict"],
                       "reason": payload["verdict"]["reason"],
                       "ledger": payload["ledger"],
-                      "artifact": str(OUT_JSON)},
+                      "artifact": str(out_json)},
                      ensure_ascii=False, indent=1), flush=True)
     return 0 if payload["verdict"]["verdict"] in (
         "MECHANICAL_RUNG_CONFIRMED", "POOL_ENTRY_WITHOUT_CONVERSION",
-        "PLACEBO_CONVERSION") else 1
+        "PLACEBO_CONVERSION", "SUPPLY_RUNG_PRODUCTION_CONFIRMED",
+        "SUPPLY_WITHOUT_CONVERSION") else 1
 
 
 def main() -> int:
@@ -1252,9 +1442,16 @@ def main() -> int:
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", action="store_true",
                         help="continue from ps2_mechanical_supply.checkpoint.json")
+    parser.add_argument("--prod-run", action="store_true",
+                        help="W-1: same 12-run protocol on the wired "
+                             "production supply rung (ps2p_run1..12)")
+    parser.add_argument("--prod-resume", action="store_true",
+                        help="continue ps2p from its own checkpoint")
     args = parser.parse_args()
+    if args.prod_run or args.prod_resume:
+        return run(resume=bool(args.prod_resume), prod=True)
     if not args.compile_only and not args.run and not args.resume:
-        parser.error("pass --compile-only, --run, or --resume")
+        parser.error("pass --compile-only, --run, --resume or --prod-run")
     return run(compile_only=args.compile_only,
                resume=bool(args.resume) or (not args.compile_only))
 

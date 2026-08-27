@@ -755,6 +755,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
     # 修正（2026-08-12 用户承重 5）：**无 winner 时全部不开 delayed**
     # （原条件在 _winner_steps=None 时恒真——失败 probe 全被打开——
     # 违反"delayed 只评价最终部署 winner"）。
+    _winner_delayed_status = ""
     for ep, steps in result._episodes:
         if result._winner_steps is None:
             continue  # 本轮无部署——不打开任何 delayed
@@ -771,6 +772,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
             series_uids=result._series_uids,
             consumer_id=result._consumer_id)
         method.update_experience_episode(upd)
+        _winner_delayed_status = str(getattr(upd, "local_status", "") or "")
     # 两阶段批准（10）：pending 必须经 handle_feedback_delayed
     if result._slow_event is not None \
             and result._slow_event.get("stage") == "pending":
@@ -813,6 +815,28 @@ def open_delayed(result: RoundResult, executor: Any, *,
             and result.delayed_utility is not None
             and float(result.delayed_utility) < -M):
         revoke_deployed_skill(result, store)
+    # W-1 同权：winner 来自已批准/已供给 Skill（cand_skill_*）时走上面的
+    # deployed_existing_skill 路由——而该路由此前**没有 delayed 裁决出口**，
+    # 于是 approved_skill_id 永远为 None，而每一条 ledger incumbent 规则
+    # 都以它为准。结果是供给候选比 agent 自提 winner 权利**更少**：过了
+    # Support、过了 delayed，仍然无法部署。PS-2 run9/run12 即此形：
+    # Support +0.636/+0.600 POSITIVE、delayed +0.30、Episode LOCAL_ACTIVE，
+    # 部署却回落 identity。
+    #
+    # 这里不新造判据：批准与否直接读 winner Episode 刚刚拿到的 delayed
+    # 分级（_update_delayed_status 的既有三档映射，LOCAL_ACTIVE = delayed
+    # 确认）。CONFLICT→RESTRICTED、NEGATIVE/NEUTRAL→EPISODE_ONLY 一律不
+    # 批准，撤销过的更不批准。
+    if (result.deployed_skill_id is not None
+            and result.revoked_skill_id is None
+            and result.approved_skill_id is None
+            and _winner_delayed_status == "LOCAL_ACTIVE"):
+        result.approved_skill_id = result.deployed_skill_id
+        result._delayed_event = {
+            "stage": "approved",
+            "skill_id": result.deployed_skill_id,
+            "route": "deployed_existing_skill",
+            "delayed_gain": result.delayed_utility}
     return result
 
 

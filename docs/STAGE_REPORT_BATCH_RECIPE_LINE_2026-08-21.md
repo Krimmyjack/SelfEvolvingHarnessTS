@@ -1013,6 +1013,24 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **提交**:`artifacts/functional/e2/s1a_r2_legal_treatment_audit.json/.md`(新,不覆 r1);runner `--legal-r2`;本节(他书未提交台账条目一并入库,未删改既有正文)。
 
+### W-1 收口:supplies_candidates 生产接线;`SUPPLY_RUNG_PRODUCTION_CONFIRMED`,GPOvY held-out **+0.2127 ×4/4**(2026-08-27 13:1x,执行方)
+
+**判词:`SUPPLY_RUNG_PRODUCTION_CONFIRMED`**(development-mechanism, pilot)。12 跑协议 ps2p_run1..12,0 下载。**成本 74/150 LLM、48/160 fit、3043.4 s / 12600 s 墙钟**。**阈值/授权语义零改动**:MATERIAL=0.005、LOO、T1 谓词、`_incumbent_after_delayed`、`classify_relation` 三档、`risk_skill` 计数全部未动;谁得 `supplies_candidates` 旗仍由外部编译决定,methods 只读旗不发旗;无新 Skill 类、无权限平台、无 Schema 改动。
+
+**接线两处(methods 手术)**:(1) `fast_agent.py` 新增 `_supplies_candidates` / `_supply_rung_candidates`,并把 propose 阶段单独包一层 try——**捕获集与外层完全相同**,仅在视野里确有供给卡时把失败降级为"agent 零提案"而非整轮失败(此前合并点在 propose 成功路径**下游**,agent 协议失败会连带毁掉卡的冻结程序;失败仍可见:propose 不进 `stages`)。(2) `online_loop.open_delayed` 给 `deployed_existing_skill` 路由补上 delayed 裁决出口——判据不新造,直接读 winner Episode 刚拿到的 `_update_delayed_status` 三档分级(LOCAL_ACTIVE 才批准)。**这是同权修复而非扩权**:此前供给候选比 agent 自提 winner 权利**更少**——PS-2 run9/run12 Support +0.6364/+0.6000 POSITIVE、delayed +0.30、Episode LOCAL_ACTIVE,却因 `approved_skill_id` 恒为 None 而被 ledger 规则拒绝,部署回落 identity。
+
+**12 跑协议表**:A5-scoped **4/4 入池 / 4/4 获 Support 回执 / 4/4 材料正 / 4/4 delayed 批准 / 4/4 部署,held-out accuracy gain 每跑 +0.2127**(sealed oracle 上界 +0.184,实测略高于预注册"≈+0.18 级");A5-neutral 2/4 入池、**0/4 材料正、0/4 部署**(安慰剂链正确,`resample_uniform` 被测但读不出效果);A3 无卡全 0;**三臂 harm 全零**;探索槽 4/4 保留(每个入池轮都与 agent 自提候选共存,select 从未选中供给候选而 Support 预算仍给了它一个位)。工件 `artifacts/functional/e2/ps2p_production_validation.json/.md`。
+
+**PS-2 读数订正(承重)**:PS-2 的 `_inject_funnel` 把 Support 记在"select 选中"上,但 harness 对池内每个成员都在轮预算内发 Support 位——run9/run12 实为完整 Support+delayed 走通却被记成 0/4。本书改为按注入自己探针写下的 Episode 归因(episode_id 带 Skill id,agent 同签名程序不会误计)。故 PS-2 的 `POOL_ENTRY_WITHOUT_CONVERSION` 中"零 Support"一句应读作计分口径产物;真正未兑现的是**部署**,由上述第 (2) 处修复解开。
+
+**测试**:新增 `tests/functional/test_supply_rung_wiring.py`(11 项,0 LLM):(a) propose 抛错时供给候选仍入池且获测 + (e) 同形但 `supplies_candidates=false` 的卡不入池(读的是权限位不是形状);(b) agent 有提案时其首选先测、预算只够一个时探索槽不被挤占;(c) 池含供给候选时总数 ≤ maximum_candidates;(d) 无捷径四项(delayed 确认→批准;delayed 拒→`_incumbent_after_delayed` 不动 ledger;delayed 害→撤销且不批准;Support 非材料正→无 Draft、无 winner、Episode 仍如实写)。回归 95 passed(B 的 12 项 guard 测试 + T1 惰性 + `test_ttha_agent` + risk/source/ordering card 套)。**h0 锁机械重生成**(`ttha:fast_agent` 在 dependency_shas 内):`harness_content_sha` **不变** `53b1c803…0654f`,`runtime_bundle_sha` 4abf3bec…→0d66c4d3…。未跑全仓 pytest。
+
+**书外发现**:(1) **残留耦合在 inspect 层**——ps2p_run2/run8 仍 `card_in_view_not_in_selectable_pool`,两轮均 llm=2、`chosen=""`、agent 零程序;同一张 neutral 卡在 run5/run11 正常入池,说明 `_supply_rung_candidates` 非空,故失败发生在**本书 try 之前的 inspect 阶段**(inspect + 一次重试 = 2 call)。同款一行处理应当可行:`inspected_regions=()` 时 `verify_candidate` 的 `outside` 恒 False,不需要任何"退化全窗口"决定;但需再跑一次 12 跑验证,本书预算不够,列为下一书具名项。**因此"注入去耦合"在本轮 live 未被直接观测**(每个入池轮都恰好有 agent 程序共存),只有单测证据。(2) select 层四跑全未选中供给候选,却四跑全部转化——**转化不经 select**,由探针序 + Support 预算完成;这既是好消息(机械通道不依赖 LLM 选择)也是提醒:PS-2"选择盲区"断点仍在,只是不再挡路。(3) A3 run7 亦出现 agent 零程序轮(llm=3),说明该早停与卡无关,是 GPOvY 上 proposer 自身的失败率。
+
+**语义纪律**:本条只主张"经验以机械通道供给了一个待验证候选、Target 反馈裁决并批准了它",**不主张 agent 学会了提出 hampel**(自提族仍为 burst/outlier_threshold,与 PS-1 基线一致);GPOvY 与 source A 同属 GunPointFamily,系机制隔离而非跨族迁移主张;引导下的正例对 Source 跨域授权**计零**;pilot 级,不冻结生产设计。
+
+**提交**:`methods/ttha/fast_agent.py`、`methods/ttha/online_loop.py`、`methods/ttha/harness/h0/snapshot.lock.json`(机械)、`evaluation/functional/run_e2_ps2_mechanical_supply.py`(生产模式 `--prod-run`)、`tests/functional/test_supply_rung_wiring.py`、`artifacts/functional/e2/ps2p_production_validation.json/.md`、本节。`AGENTS.md`/`README`/`PROJECT_STATE`/`SUCCESSOR_BRIEF`/`ROADMAP` 未碰;`contracts/`/`runtime/`/`operators/` 零改;密钥零出现于任何提交物。
+
 ### B 收口:guard 管道三处修复落地,中档在分类线可达(2026-08-26 19:xx,执行方)
 
 **判定:`GUARD_TIER_REACHABLE_AT_TWO_UNITS`**(INFRASTRUCTURE,非能力证据)。0 LLM / 0 fit / 0 下载。解释器 `D:\Anaconda_envs\envs\project\python.exe`。**阈值/语义零改动**:`RISK_MIN_DISTINCT_TASKS`、`MIN_DISTINCT_TASKS`、`MATERIAL=0.005`、LOO 语义、T1 谓词逻辑、TRY 授权规则、risk_skill 计数与 payload 全部逐字未动;无配置开关、无新平台、无 Schema 改动。
@@ -1076,6 +1094,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **原书 Part B 全菜单排序未跑**(作废,本会话无探索性排名物)。**Part A(0 LLM)**:工件未存全部原始提案——最早可得层 = 编译+verifier 后的 `pool`(`proposal_count` = 非恒等池长)。S1c 单层:在当前课程/Prompt/候选预算/这一次运行中,15 个含菜单正解的臂-单元机会**冻结部署命中 1 次**(A3-PowerCons-hampel);同一 15 次里菜单正解被执行 4 次(MiddlePhalanx 三臂 `repair_level_shift` delayed 未过 + 上述 1 次部署)。断点 `not_proposed=11 / executed_not_passed=3 / deployed=1`。不得写成固有难度或稳定概率。历史 CLS-OP 三件(r2 three-arms 8 轮 / a5-replay 2 / ECG200 conf-dev 2)分层单列,未混算。A5 六次 Slow 各 1/6 LLM,空携带因无可编译证据(非预算饿死)。**Part B(LLM 12/12,0 fit)**:同 observation/instruction/菜单,只改 K=3 vs K=5,只提案不执行,oracle 事后判定。K=5 三单元(PowerCons/GPOVY/Distal)均未提出菜单正解,且候选数仍为 0–1(槽未用满);ECG200 未跑、MiddlePhalanx 帽满未提案。**冻结判读 = proposal_semantics_insufficient**(不得再拆 observation vs 策略偏置)。无截断解释。探针隔离于 `s1_cold_policy_map_probes/`,不入未来臂视野。分级 hypothesis 轨含义按合理假设待因果实验验证照写。本书封顶。
 
 **提交**:`evaluation/functional/run_e2_s1_cold_policy_map.py`(新诊断 runner,既有 methods/runtime/contracts/operators/课程 runner 零改);`artifacts/functional/e2/s1_cold_policy_map.json/.md`;探针目录;本节。
+
+### 止损线与推进方式改革(sol 周度审计,用户裁可,主线全采并自认三重漂移,2026-08-27 12:1x)
+
+**周度诚实计账**:七天内核心主张(分类 A5>A3 via 积累)零推进;工程/诊断/可信度进展明显但不等价方法进度。**主线自认三失**:(1) 报告美化——把断点定位写成"论文级成果",致停滞被叙事掩盖(第三次同类漂移);(2) 时序错误——先建七单元重实验后验处理组存在,正确序为 1 单元→3 单元→7 单元;(3) 审计递归——r 系与 PS 系连环,主实验不断后移。**报告改革(立即生效)**:一切报告首行 = "核心正效果今日移动:是/否 + 数字";诊断发现一行带过,禁用"论文级/信息量大"类修辞于非正结果。**硬止损线(sol,逐字采)**:此后仅允许 ①W-1 生产接线(在飞,恰为允许项)②一次生产路径 PS-2 重跑(含于 W-1)③至多一次针对明确 first-fault 的修正;仍不能回收 GPOvY +0.184 → **全停,与用户和 sol 重审"经验以候选供应影响搜索"机制本身**,不再加 runner/权限层/PS-3。**通过后的门序**:Gate 3 = 三单元小课程(Scope 匹配正向场/Scope 不匹配惰性场/identity-harm 拒绝场,三场全对才证明机制非复读 Hampel)→ Gate 4 = S1-v2 四臂演化课程 → Gate 5 = Stage 2/fresh capstone/Stage 3。**暂停清单(全采)**:AD 新实验、新 Consumer、新算子、新数据下载、七单元课程、Stage 2/3、新权限平台、长篇论文整编、新诊断 runner——直到小型正向闭环成立。**文档**:W-1 落地后更新 AGENTS.md 状态锁 + 四行现状块(当前目标/最新判词/当前 first fault/下一门),不做长文档运动。
+
+### PS-2 正式收口(提交 853f367):POOL_ENTRY_WITHOUT_CONVERSION;两断点定位;生产接线书发车(2026-08-27 12:0x,主线)
+
+**判词**(12 跑协议落盘,134/150 LLM,checkpoint+resume 经受住 run7 两次 500):卡 4/4 在视野;注入仅 2/4 入池(**断点一:注入与 agent 提案活动耦合**——prepare 落 identity-only 池时 cand_skill_* 不发射,proposal_count=0/LLM 2-4 同现);入池轮**选择层零选中**(含过校验的 no-op,**断点二:选择盲区**),Support/delayed/部署全零;自提仍 burst/outlier_threshold 零 hampel(机械入池不改提案族,与 PS-1 一致);安慰剂零假阳;全程零害。GPOvY +0.18 headroom 未回收——**正效果第一级未兑现,断点已定位**。**生产接线书发车(opus,五件套齐)**:root cause = supplies_candidates 死旗+注入耦合+选择盲区;principle = bootstrap 4b 承诺+sol 权限梯"供一待验证候选"档+4f 探索槽保留;最小面 = methods/ttha Fast 候选组装与探针序;可证伪实验 = PS-2 协议在生产路径重跑(预期注入 4/4、供给候选获测、GPOvY 真 headroom 下转化、no-op 被测但 Support≈0 不获批);回退 = revert 单提交。**语义规格**:supplies_candidates 卡的冻结程序在 Scope 匹配时无条件物化为候选(去耦合);供给候选在既有 Support 预算内占探针位(agent 首选仍第一,探索槽 4f 保留;同帽不外加);grants_execution=false 与批准链原封;授权政策(谁得旗)不进 methods,留修订案。周冲刺表第 1 日照计划执行中;待用户:capstone 下载预授权、sol 包转呈。
 
 ### 主线定向指令(用户,2026-08-27 11:12):产出以"有效正效果"为唯一中心;负证据/边界降级为附录防御
 
