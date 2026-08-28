@@ -1223,6 +1223,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a G0 第二源清扫(执行方):electricity 一次切完;**S2_HOST_READY_FAIL_BOTH_SOURCES**(2026-08-28 17:0x,执行方)
+
+**S2a 状态: FAIL_BOTH_SOURCES**。授权链 = 台账 17:0x 条「S2a-G0 首败裁定……第二源清扫续令」。成本 **0 LLM / 75 本扫 fit(累计 180/300) / 下载 0 / 24.9s**。未改模板/门/菜单,未按读数增删,未开 Part C。
+
+**预声明切法**(池容量,非读数):现役 loader = `shared_tsq_datasets/electricity/electricity.csv`(TSL 321 通道,UCI 族;注册表 370×1024 不能承载同构 origin 1104/1800)。cell 宽 60 → 最多 5 个 impulse(300 列),余 21 未用;gap 沿用 `traffic_gap_00`(角色 = Scope 不匹配,其 LEARNABLE 不碍守卫)。注入现役 `impulsive_outlier` 原件。oracle 密封 `s2a_oracle/electricity_impulsive_outlier_0{0-4}.json`。
+
+**electricity 资格**:5/5 LEARNABLE two_x,oracle 全 `winsorize`,余量 1.14–1.50(远超门 0.10);贴线 0;identity 0。**两源合并**:impulse 11/11 强 LEARNABLE,weak 0,identity 0,gap 1(沿用)。课形凑不齐。工件 `s2a_g0_electricity_sweep.json/.md`。**后备三选现交主线呈 sol**:(i) 扩 metr_la/nn5;(ii) 课形收缩撤贴线/identity;(iii) identity 改 clean 条件 cell。**first fault:S2_HOST_READY_FAIL_BOTH_SOURCES — no_near_line_weak_beneficiary; no_identity_field。**
+
 ### S2a Part B(执行方):考场重切+oracle 已跑;**S2_HOST_READY 不过,全书停**(2026-08-28 16:5x,执行方)
 
 **首行读数:S2_HOST_READY 失败;first fault = 机械 6+1 cell 全强 LEARNABLE,缺贴线弱受益与 identity 场。** 授权链 = 台账 16:5x 条。成本 **0 LLM / 105 fit / 下载 0 / 78.8s**。未改数据、未改门、未开 Part C。
