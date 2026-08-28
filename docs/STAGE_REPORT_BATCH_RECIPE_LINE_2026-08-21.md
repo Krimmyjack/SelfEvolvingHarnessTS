@@ -1223,6 +1223,18 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2 收口(执行方):CPA 传输统一后产例命中;两掷合并 S2A_PORTABLE_REDUCED(2026-08-28 22:5x,执行方)
+
+**两掷合并判词:S2A_PORTABLE_REDUCED。** r1=`TREATMENT_EMPTY`(无 forecast 卡);完整 r2 产例双门命中并铸卡,走到缩形词表正词,不升格系统性空表、不移交 Stage 3。
+
+**S2a 判词:S2A_PORTABLE_REDUCED;自产卡:是;守卫三面:全零;核心数字 LLM 60 / fit 88。** 授权链 = 用户直令「inspect 上 CPA」+ `--resume --seed r2`。`first_returned_model=gpt-5.6-sol`(M-1 既有实践)。墙钟 1185s。
+
+**传输统一**(协议常量/prompt/预算未改):根因是代码内默认值,不是另一组 env 名。探测读 `M0_AGENT_*`(`run_e2_ps0c_ps1.py` `_relay_cfg` :102-107);`install_new_backend`(:117-142)会补丁 `NF_BASE_URL`/`SLOW_MODEL` 但 S2a 从未调用。inspect 原走 `normal_flow.py:55` `NF_BASE_URL=api.agicto.cn` + `cls.SLOW_MODEL=gpt-5.6-sol`(`run_e2_s2a_forecast_curriculum.py` 旧 `_live_agent` + `runner.py` 旧 `_default_backend_factory`)。现 `live_transport`(`runner.py:286-304`)成对读 `M0_AGENT_BASE_URL`/`M0_AGENT_MODEL`,缺省回落模块常量;工厂(:307-333)在 M0 源下优先 `CPA_API_KEY`(避免会话里过期 `OPENAI_API_KEY` 抢先致 401)。S2a `_live_agent`(:145-159)与 cls `_live_agent` 同读。提交 `a909a48`/`063c4a9`。
+
+**live r2**:产例 K0/A5 held-out +2.3173,铸 `s2a_forecast_supply_v0` v0 `b5058018ccb8`。U4 A5 供给卡入池并转化(supplied=1)。G2 10 面全零。harm_events=0。clean/gap 全臂 0。P6 材料分歧:产例 A3(+0,checkpoint 旧路径未重跑) vs K0(+2.3173)为续跑混跑,不是同掷方差;U3 |A3-K0|=0.147 记为方差警报,不改判词。工件披露 r1 inspect=agicto 直连、r2 inspect=CPA 中继,不进判词。
+
+**预算**:r2 本掷 LLM 60 / fit 88(含 checkpoint 3/2;本种子帽 120/200 未触)。Part P 累计若按 r1 69 + r2 新增 57 计 = LLM 129、fit 162(书上累计 120 被本种子帽而非全局闸)。工件 `s2a_g1_run1_r2.json/.md`。**first fault:无。**
+
 ### S2a 末段 Part P r2(执行方):健康链路再试仍死;inspect 走 agicto TLS EOF;两掷未闭合(2026-08-28 22:2x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 22:15「小请求/32KB/65s 长生成均 200」+ 用户再试。未换后端。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。两掷合并判定仍未成立。
