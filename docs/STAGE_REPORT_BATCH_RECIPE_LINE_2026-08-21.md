@@ -1247,6 +1247,28 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-1 发车(opus 续话,四段)**:Part 0 四归因字段(`episodes[].source_skill_id` / `source_skill_revision`=卡内容 sha / `round.scope_match_by_skill_id` / `guidance_conditioned_by_skill_id`)+聚焦测试 → Part 0.5 Scope v2 编译器,离线重编单例卡并出新匹配表(**门:尾段 impulse 四单元全匹、BirdChicken-burst 不匹**)→ Part 1 三写回接通(证据追加走 `risk_guards` PATCH append-only;收窄走 `observable_applicability` PATCH,排除叶限特征契约保证轴、只许由实拒单元编译;负向降权/排除同面)+离线 replay 门(含 R3 历史负例)→ Part 2 live 短课 r1。**课程冻结(六位,全为已审计单元,零新数据)**:GunPoint → GPOvY → PowerCons(#1) → Herring → **PowerCons(#2 再遇,机制探针)** → BirdChicken(族外对照)。三臂 = A3-reset(无卡)/ K0-fixed(scope-v2 单例卡,冻结不修订)/ A5-adaptive(同卡 + R1-R3);卡种子 = v4 GPMvF 记录 Episode(单例、供给权限、ITT 主判);**再遇位读数单列为机制读数,不计首行 regret(首行只算 distinct 单元)**。**预注册预测(可证伪)**:v2 卡匹 GunPoint/GPOvY/PowerCons/Herring、不匹 BirdChicken;GunPoint+GPOvY 供给转化;PowerCons#1 被拒 → **恰一次收窄 PATCH(卡 v1,内容 sha 版本化)**;Herring 被拒或被 v1 排除(均合法,如实报);**PowerCons#2:A5-adaptive 零供给零挨拒,K0-fixed 再供给再挨拒(核心机制差)**;A5 对 K0 probe ≥1 省、regret 非劣、harm 全零。**预算**:LLM ≤150 / fit ≤300 / 墙钟 ≤5h / 下载 0。**止损**:离线门任一不过即停呈 first fault;live 中 PowerCons#1 意外转化 → 机制读数改由 Herring 拒绝承载,如实报;拒绝发生而 R2 未触发 → 单一尸检,禁改课禁调门禁 r2。
 
+### CAPSTONE 终考收口(执行方):Epilepsy2 已开封,判词 **`CAPSTONE_NEUTRAL`**;A5−A3 = +0.000000;harm = 0;**卡 Scope 差一叶未匹,条件未进入**(2026-08-28 14:3x,执行方)
+
+**首行读数:CAPSTONE 判词 `CAPSTONE_NEUTRAL`;A5−A3 accuracy = +0.000000;harm = 0。** 工件 `artifacts/functional/e2/capstone_epilepsy2_final.json/.md`(+ 开封记录 `capstone_epilepsy2_unseal_record.json`);成本 **9 LLM(每臂帽 15,Static 0 / A3 4 / A5 5)、9 fit(每臂帽 25)、5.58 min(合计帽 90 min)、下载 0**;单次开封,不重跑。
+
+**开封记录(一行)**:2026-08-28T06:28:56Z 开封 `data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip`(16220082 B,sha256 `72ebe5b2be97…`),首次读取范围 = `EpilepticSeizures_TRAIN.ts` + `EpilepticSeizures_TEST.ts` 全量解析为浮点数组;`val.ts` / `.txt` / `.png` 未开;授权链 = CAP-1b + 主线 13:5x 条 + sol 令。
+
+**Part 0(0 LLM / 0 fit,开封前)**:① **去重记号仪器**按 CAP-1b 预声明落地——评估层从既有字段推导 `dedup_swallowed`(scope 匹配 ∧ 池无 `cand_skill_` ∧ 自提同程序签名),6 项聚焦测试(含一项断言其保持惰性),`methods/` 零改。② **密封复核 11/11 全过,`SEAL_INTACT` 复认**:ROSTER 字节数 16220082、六成员名逐字、TRAIN/TEST/val 未压缩尺寸(272040 / 38806349 / 68077)、原始换行数(87 / 11427)、`@data` 后记录数(80 / 11420)全部对上 CAP-0。**一处如实呈报的规格缺口:CAP-0 从未记录 zip 的 sha256**,故"对 CAP-0 记录校验 zip sha"这一项无基线可比;本书首次计算并入册为后续基线,CAP-0 实际记录的每一项均已复核且相符。③ 自证:TEST 476 行清单由 seed 20260827 重生成且 sha 对上 `7e1c4088…`;菜单名 sha 对上 `48e09ec4…`(序列化 = `json.dumps(menu, separators=(',',':'))`);h0 `runtime_bundle_sha c3427b4e…` / `harness_content_sha 53b1c803…` 对上;mod-4 四分 20/20/20/20 → Support 40 / delayed 40 复现冻结表;条件对 = `fit_only_artifact`。
+
+**两处替换(按 CAP-1b 授权,已引台账)**:§7 开封条件作废(其条件"S1-v2 正序×2 + 反序×1"随 S1-v2 三次 `TREATMENT_EMPTY` 退役后**字面不可满足**),runner 改为从工件机械重导授权链(CAP-1b 在库 ∧ SA-1 r2 记 exit A ∧ G0/G1/G2 全立);**旧 §7 校验器保留且仍被求值并写入工件**(它会拒绝),以便读者逐字看到替换改了什么。§3 A5 池替换:A5 = K0 起源 + SA-1 同源 scope-v2 单例供给卡(v0,内容 sha `00503481…`,装卡前对齐 SA-1 种子 sha 并校验权限为 supply-only)+ R1-R3 修订环开启;三臂骨架保留。
+
+**三臂读数(TEST 476 行干净子集,单次开启)**:Static / A3 / A5 **全部部署 identity**,accuracy 一致 **0.5336134**,逐类 recall {0: 0.4651, 1: 0.5487},逐类 delta 全 0.0,harm 全零;**A5−A3 = +0.000000**、worst-class 差 +0.000000 → 按 CAP-1 §6 三分落 `CAPSTONE_NEUTRAL`(|Δ| < 0.005 且 worst 差 ≥ −0.005 且 harm=0)。A5−Static = A3−Static = +0.000000(§2.1 附报,不替代判词)。
+
+**判词为何是 NEUTRAL——承重解释**:**卡的 Scope 在 Epilepsy2 上未匹配,差且仅差一叶**:`estimated_level_offset` 卡要 `low`,Epilepsy2 读 `zero`(applicability 分 8)。卡因此从未进入 A5 的 Fast 视野,供给 0、`dedup_swallowed` 0(去重记号如实报"Scope did not match",未误记为被吞)。**这正是 CAP-1b 预声明的合法读数**("不保证匹配——不匹配本身是合法读数",按 ITT 记)。**故能力侧主张本次未被考到**:A5 与 A3 的基底差异只剩 K0 起源(h0+三 bootstrap+惰性 Slow 卡)vs 冷 h0,A5 独有的那一件知识出了 Scope,Δ 恒为 0 系构造使然,不是对卡内容的读数。**并且这一叶是先于 L1 冻结的 S1a 家族交集成员,不是 L1 那种偶然叶**——家族轴按规格工作,是 Epilepsy2 在族外。
+
+**附带发现(对后续选靶承重)**:**Epilepsy2 对两个适应臂都没有 headroom**。A3 与 A5 各自独立提出同两个族(`repair_level_shift`、`outlier_mad`),Support 读数全为负(−0.2750 / −0.0500),无 Draft 形成,双臂弃权、部署 identity——弃权是正确行为而非未尝试。**卡自身的程序 `hampel_filter` 本轮无人提案,故其在 Epilepsy2 上的价值未被测量**:本考只证明卡拒绝了,未证明拒绝是最优。修订环相应地正确空转(无供给、无归因于卡的拒绝 → R1/R2/R3 均不写,版本链停在 v0);权限四旗未动、卡未被重铸、无升档、受引导计零红线未破。
+
+**预测对表(4 条,誊自主线)**:P1 密封校验全过 ✔(11/11);P2 A5 harm=0 且零越权 ✔;**P3 卡 Scope 按注入族匹配 ✘ 破**(machine_match False,供给 0)——这是本考唯一被证伪的预注册项,如实记;P4 头条不预测(照三分如实报)。
+
+**本考许可与不许可什么(诚实边界)**:**不构成能力主张**——条件化主张的条件未进入。**也不构成对 SA-1 的反证**——r1/r2 的 exit-A 机制证据不受"卡从未声称的靶"影响。**它确实在一次性开封的密封材料上证成了安全侧那一半**:以阶梯最低档买到的单例卡,面对其证据从未覆盖的域**主动不供给**,零成本、零 harm、零越权。**能力级判词需要一个落在卡家族之内的密封靶,本线当前没有**——此为下一步选靶的承重输入,不由本书裁定。
+
+**义务**:`methods/` `contracts/` `runtime/` `operators/` 零改;阈值/菜单/模板/prompt/模型零改(全部常量读自 `cap1_capstone_protocol_freeze.json`,注入模板 = `cls._inject_v2` @ `helpers['positions']` 原件);`s1_oracle` 未碰;下载 0;单次开封无重跑;未跑全仓 pytest;零子代理;他线文件未碰。
+
 ### SA-1 r2 收口(执行方,纯采样重复):**CAP-1b 出口 A** — G0/G1/G2 三门全立;七条预注册全立(r1 破的 P4 在 r2 立);无 r3(2026-08-28 13:5x,执行方)
 
 **首行读数:CAP-1b 出口 = A;G0 立 / G1 立 / G2 立(exercised)。** capstone 形态按 CAP-1b 表 = **A3-reset vs A5-adaptive**(scope-v2 单例卡 + R1-R3),头条主张 = 带 Scope 经验卡 + 反馈修订的端到端收益。工件 `artifacts/functional/e2/sa1_minimal_r2.json/.md`(+ `.checkpoint.json`),r1 三件未覆写(见下自证)。成本 **80 LLM(书面帽 120)、71/300 fit、2580 s / 10800 s、下载 0**。

@@ -1,0 +1,170 @@
+{
+ "seal": {
+  "boundary_this_function_respected": "member names, member sizes, raw newline counts, and records after the @data marker.  No float parse, no label read",
+  "checks": [
+   {
+    "check": "zip file present",
+    "expected": true,
+    "note": null,
+    "observed": true,
+    "pass": true
+   },
+   {
+    "check": "zip byte count matches the ROSTER record",
+    "expected": 16220082,
+    "note": null,
+    "observed": 16220082,
+    "pass": true
+   },
+   {
+    "check": "member listing matches CAP-0",
+    "expected": [
+     "EpilepticSeizures/",
+     "EpilepticSeizures/EpilepticSeizures.png",
+     "EpilepticSeizures/EpilepticSeizures.txt",
+     "EpilepticSeizures/EpilepticSeizures_TEST.ts",
+     "EpilepticSeizures/EpilepticSeizures_TRAIN.ts",
+     "EpilepticSeizures/val.ts"
+    ],
+    "note": null,
+    "observed": [
+     "EpilepticSeizures/",
+     "EpilepticSeizures/EpilepticSeizures.png",
+     "EpilepticSeizures/EpilepticSeizures.txt",
+     "EpilepticSeizures/EpilepticSeizures_TEST.ts",
+     "EpilepticSeizures/EpilepticSeizures_TRAIN.ts",
+     "EpilepticSeizures/val.ts"
+    ],
+    "pass": true
+   },
+   {
+    "check": "TRAIN member uncompressed size matches CAP-0",
+    "expected": 272040,
+    "note": null,
+    "observed": 272040,
+    "pass": true
+   },
+   {
+    "check": "TEST member uncompressed size matches CAP-0",
+    "expected": 38806349,
+    "note": null,
+    "observed": 38806349,
+    "pass": true
+   },
+   {
+    "check": "val.ts size matches CAP-0",
+    "expected": 68077,
+    "note": null,
+    "observed": 68077,
+    "pass": true
+   },
+   {
+    "check": "TRAIN raw newline count matches CAP-0",
+    "expected": 87,
+    "note": null,
+    "observed": 87,
+    "pass": true
+   },
+   {
+    "check": "TRAIN data-record count matches CAP-0",
+    "expected": 80,
+    "note": null,
+    "observed": 80,
+    "pass": true
+   },
+   {
+    "check": "TEST raw newline count matches CAP-0",
+    "expected": 11427,
+    "note": null,
+    "observed": 11427,
+    "pass": true
+   },
+   {
+    "check": "TEST data-record count matches CAP-0",
+    "expected": 11420,
+    "note": null,
+    "observed": 11420,
+    "pass": true
+   },
+   {
+    "check": "CAP-0 verdict on record is MATCH",
+    "expected": "MATCH",
+    "note": null,
+    "observed": "MATCH",
+    "pass": true
+   }
+  ],
+  "expected_shape": {
+   "length": 178,
+   "test_rows": 11420,
+   "train_rows": 80
+  },
+  "pass": true,
+  "verdict": "SEAL_INTACT",
+  "zip_bytes": 16220082,
+  "zip_path": "data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip",
+  "zip_sha256_computed_now": "72ebe5b2be9756967110593170c89bb440d33a793a8f362f9d85a325d853f2bb",
+  "zip_sha256_gap": "CAP-0 recorded the ROSTER byte count, the member listing, the member sizes and the row counts, but no sha256 of the zip.  That one comparison therefore could not be made; the digest above is computed here for the first time and is the baseline for any future check.  Every fact CAP-0 did record was re-checked and matches.",
+  "zip_sha256_recorded_by_cap0": null
+ },
+ "unlock": {
+  "cap1_section7_status": "VOID",
+  "cap1_section7_void_because": "its condition was S1-v2 forward x2 plus a reverse confirmation; S1-v2 retired under its own final-throw cap after a third TREATMENT_EMPTY, so the condition is literally unsatisfiable and had to be replaced rather than quietly reinterpreted",
+  "cap1_section7_would_say": {
+   "ok": false,
+   "reason": "no unseal record file"
+  },
+  "evidence": {
+   "amendment": "artifacts/functional/e2/cap1b_capstone_unlock_amendment.md",
+   "amendment_present": true,
+   "required_exit": "A",
+   "sa1_r2": "artifacts/functional/e2/sa1_minimal_r2.json",
+   "sa1_r2_capstone_shape": "A3-reset vs A5-adaptive (scope-v2 card + R1-R3)",
+   "sa1_r2_exit": "A",
+   "sa1_r2_gates": {
+    "G0": true,
+    "G1": true,
+    "G2": true
+   },
+   "sa1_r2_present": true,
+   "sa1_r2_verdict": "SA1_DEVELOPMENT_SIGNAL"
+  },
+  "replacement": "artifacts/functional/e2/cap1b_capstone_unlock_amendment.md",
+  "replacement_authorised_by": "CAP-1b (frozen before r2 results existed) + the mainline adjudication entry of 2026-08-28 13:5x + sol's ruling that one r2 is followed by the capstone regardless of outcome",
+  "replacement_says": {
+   "ok": true,
+   "reason": "CAP-1b amendment present; SA-1 r2 exit A with G0/G1/G2 all holding"
+  },
+  "unlocked": true
+ },
+ "unseal_record": {
+  "authorised_by": "CAP-1b (frozen before r2 results existed) + the mainline adjudication entry of 2026-08-28 13:5x + sol's ruling that one r2 is followed by the capstone regardless of outcome",
+  "class_counts_train": {
+   "0": 40,
+   "1": 40
+  },
+  "classes_test": [
+   0,
+   1
+  ],
+  "classes_train": [
+   0,
+   1
+  ],
+  "first_read_scope": "EpilepticSeizures/EpilepticSeizures_TRAIN.ts and EpilepticSeizures/EpilepticSeizures_TEST.ts, parsed in full to float arrays; val.ts, EpilepticSeizures.txt and the .png were not opened",
+  "normalisation": "row z-norm and sorted-unique label mapping, the same post-processing _load_split applies to every other Target in this line",
+  "seal_verdict": "SEAL_INTACT",
+  "test_shape": [
+   11420,
+   178
+  ],
+  "train_shape": [
+   80,
+   178
+  ],
+  "unsealed_at_utc": "2026-08-28T06:28:56Z",
+  "zip_bytes": 16220082,
+  "zip_path": "data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip",
+  "zip_sha256": "72ebe5b2be9756967110593170c89bb440d33a793a8f362f9d85a325d853f2bb"
+ }
+}

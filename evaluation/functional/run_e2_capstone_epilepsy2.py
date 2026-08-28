@@ -1504,6 +1504,87 @@ def _prediction_table(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def _exam_reading(payload: Mapping[str, Any]) -> list[str]:
+    """What the verdict does and does not license.  Derived, not asserted."""
+    score = payload.get("score") or {}
+    scope = payload.get("card_scope_on_epilepsy2") or {}
+    arms = payload.get("arms") or {}
+    missed = scope.get("missed_leaves") or []
+    a3 = arms.get("A3") or {}
+    a5 = arms.get("A5") or {}
+
+    def _probes(row: Mapping[str, Any]) -> list[tuple[Any, Any]]:
+        return [(probe.get("candidate_id"), probe.get("gain"))
+                for record in (row.get("rounds") or ())
+                for probe in (record.get("probes") or ())]
+
+    def _families(row: Mapping[str, Any]) -> list[str]:
+        return sorted({str(episode.get("workflow_signature"))
+                       for record in (row.get("rounds") or ())
+                       for episode in (record.get("episodes") or ())})
+
+    card_ops = ((payload.get("a5_pool") or {}).get("program_geometry") or [])
+    probed_ops = set(_families(a3)) | set(_families(a5))
+    return [
+        "**The NEUTRAL comes from a Scope non-match, not from a card that "
+        "matched and then failed.**  Exactly one leaf separates the card from "
+        "this Target: %s.  The card is scoped on the S1a hampel *family* "
+        "intersection, and Epilepsy2 sits outside it, so retrieval never put "
+        "the card in A5's Fast view, nothing was supplied, and the dedup mark "
+        "correctly reads 'Scope did not match' rather than claiming a "
+        "swallowed supply.  CAP-1b pre-declared this exact outcome a legal "
+        "reading of a conditional claim, and ITT records it as the condition "
+        "the card itself stated."
+        % ("; ".join("%s: card wants %s, Epilepsy2 reads %s"
+                     % (row["feature"], row["card_value"], row["unit_value"])
+                     for row in missed) or "none"),
+        "**So the capability half of the claim was never exercised.**  A5 and "
+        "A3 differ in base -- A5 starts from the K0 origin (h0 plus the three "
+        "bootstrap procedures plus the inert Slow card) and A3 from cold h0 -- "
+        "but the one piece of knowledge A5 carried that A3 did not, the supply "
+        "card, was out of Scope here.  A5 - A3 is therefore exactly %+.6f by "
+        "construction, and the verdict arithmetic reduces to 'no arm changed "
+        "anything'.  Reading this as evidence about the card's content would "
+        "be reading a number the exam did not produce."
+        % float(score.get("delta_a5_minus_a3") or 0.0),
+        "**Collateral finding: Epilepsy2 offered no headroom to either "
+        "adaptive arm.**  Both independently proposed the same two program "
+        "families (%s) and both got negative Support readings (%s), so no "
+        "Draft formed, both abstained, and all three arms deployed identity at "
+        "%.4f accuracy.  The abstention is the correct behaviour, not a "
+        "failure to try."
+        % (", ".join(sorted(probed_ops)) or "none",
+           "; ".join("%s %+.4f" % (name, float(gain or 0.0))
+                     for name, gain in _probes(a5)) or "none",
+           float((score.get("acc") or {}).get("A5") or 0.0)),
+        "**The card's own program was never probed here, so its value on "
+        "Epilepsy2 is unmeasured.**  Nobody proposed %s, which means this run "
+        "cannot say whether supplying it would have helped or wasted a probe. "
+        " The exam establishes that the card declined; it does not establish "
+        "that declining was optimal."
+        % (", ".join(card_ops) or "the card's program"),
+        "**This is not the L1 failure mode repeating.**  L1's misses were "
+        "decided by an incidental leaf a single Episode happened to carry; the "
+        "leaf that decides this one is a member of the pre-frozen S1a family "
+        "intersection.  The family axis behaved exactly as specified -- it is "
+        "Epilepsy2 that is outside the family, which is the axis doing its "
+        "job rather than failing at it.",
+        "**The revision loop correctly did nothing.**  With no supply and no "
+        "refusal attributable to the card, R1, R2 and R3 all declined to "
+        "write and the version chain stays at v0.  Combined with zero harm, "
+        "unchanged authority and no re-mint, the safety readout is clean.",
+        "**What the capstone licenses.**  Not a capability claim: the "
+        "conditional was not entered.  Not a refutation of SA-1 either: the "
+        "exit-A mechanism evidence from r1 and r2 is untouched by a Target the "
+        "card never claimed.  What it does demonstrate, on sealed material "
+        "opened once, is the safety half -- a single-Episode card bought at "
+        "the lowest rung on the ladder declined a domain its evidence never "
+        "covered, cost nothing, and harmed nothing.  A capability verdict "
+        "needs a sealed Target inside the card's family, which this line does "
+        "not currently hold.",
+    ]
+
+
 def _exam_obligations() -> dict[str, Any]:
     return {
         "methods_contracts_runtime_operators_unmodified": True,
@@ -1675,6 +1756,11 @@ def _exam_markdown(payload: Mapping[str, Any]) -> str:
             lines.append("| %s | %s |" % (key, gov.get(key)))
         lines.append("")
 
+    if payload.get("reading"):
+        lines += ["## What this verdict does and does not license", ""]
+        for note in payload["reading"]:
+            lines += ["- %s" % note, ""]
+
     lines += ["## Pre-registered predictions", "",
               "| id | claim | held | observed |", "|---|---|---|---|"]
     for row in payload.get("predictions") or ():
@@ -1716,6 +1802,8 @@ def main() -> int:
                              "structure only, no parse")
     parser.add_argument("--exam", action="store_true",
                         help="the one-shot live exam")
+    parser.add_argument("--rerender", action="store_true",
+                        help="re-render the written artifact; runs nothing")
     parser.add_argument("--run", action="store_true",
                         help="PREP-1 legacy entry point; refused")
     parser.add_argument("--unlock", type=Path, default=DEFAULT_UNLOCK)
@@ -1731,6 +1819,19 @@ def main() -> int:
         return 0 if (payload["unlock"]["unlocked"]
                      and payload["preflight"]["pass"]
                      and payload["seal"]["pass"]) else 1
+    if args.rerender:
+        # Re-render the written artifact.  Reads nothing sealed, runs no arm,
+        # opens no TEST row: the single-shot rule is about the exam, not about
+        # writing down what it produced.
+        payload = json.loads(OUT_JSON.read_text(encoding="utf-8"))
+        payload["reading"] = _exam_reading(payload)
+        payload["obligations"] = _exam_obligations()
+        OUT_JSON.write_text(json.dumps(payload, ensure_ascii=False, indent=1,
+                                       sort_keys=True, default=str) + "\n",
+                            encoding="utf-8")
+        OUT_MD.write_text(_exam_markdown(payload), encoding="utf-8")
+        print("rerendered %s" % OUT_MD, flush=True)
+        return 0
     if args.exam:
         return run_exam()
     if args.smoke_synthetic:
