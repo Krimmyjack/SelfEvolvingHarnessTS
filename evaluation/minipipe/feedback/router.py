@@ -14,6 +14,16 @@ _FORBIDDEN_TARGET_FRAGMENTS = (
     "public_tools.py",
 )
 
+# Direction tokens for the applicability surface.  RETRIEVAL_MISS stays the
+# widening-direction cause (the skill should have been retrieved and was
+# not).  SCOPE_OVERREACH is the narrowing-direction token: this Scope
+# reached too far, and the only authorized edit is a monotone applicability
+# PATCH.
+_APPLICABILITY_DIRECTION = {
+    "RETRIEVAL_MISS": "widen",
+    "SCOPE_OVERREACH": "narrow",
+}
+
 
 @dataclass(frozen=True)
 class RouteAuthorization:
@@ -58,6 +68,13 @@ class FaultRouter:
         target_surface_id: str | None = None,
     ) -> RouteAuthorization:
         route = self.allowed_targets(cause_code)
+        if (
+            _APPLICABILITY_DIRECTION.get(cause_code) == "narrow"
+            and target_class != "applicability"
+        ):
+            raise ValueError(
+                "SCOPE_OVERREACH only authorizes monotone Scope narrowing"
+            )
         if target_class not in route.target_classes:
             raise ValueError("target class is not authorized for the attributed cause")
         if operation not in route.allowed_operations:

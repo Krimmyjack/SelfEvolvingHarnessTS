@@ -564,6 +564,11 @@ def supply_applicability(
                "value": str(scope["task_kind"])}]
     dropped: list[str] = []
     for key, value in sorted(dict(scope["pattern_intersection"]).items()):
+        # Q11: the intersection already carries task_kind (the identity
+        # axis is copied into the Pattern view).  The leaf above is the
+        # only one; historical cards are not rewritten.
+        if key == "task_kind":
+            continue
         if legal is not None and key not in legal:
             dropped.append(str(key))
             continue
@@ -654,6 +659,10 @@ def build_supply_card_payload(
                 "program_geometry": geometry,
             },
             "pattern_leaves_dropped_as_uncontracted_for_edit_schema": dropped,
+            # Q7: axes the recorded Scope names but the edit schema cannot
+            # carry.  Pure addition -- matching still uses the machine AST
+            # only.  Empty when every intersection leaf is contracted.
+            "scope_unreachable_axes": list(dropped),
             "evidence": {
                 "tier": "supply",
                 "source_count": len(sources),

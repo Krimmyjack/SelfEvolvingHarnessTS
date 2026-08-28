@@ -45,17 +45,13 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-# The route table pairs exactly one confirmed cause with each of the two
-# surfaces below, and this book changes neither the table nor the router.
+# The route table pairs a confirmed cause with each of the two surfaces
+# below.  RISK_GAP still owns ``risk_guards``.  The applicability surface
+# is authorized for monotone narrowing by ``SCOPE_OVERREACH`` (Q1): the
+# Scope reached too far.  ``RETRIEVAL_MISS`` keeps its original widening
+# meaning and is not reused as the narrowing token.
 RISK_GUARD_CAUSE = "RISK_GAP"
-# `.observable_applicability` carries ``target_class: "applicability"``, and
-# ``RETRIEVAL_MISS`` is the only cause the frozen table pairs with that class
-# (``evaluation/minipipe/feedback/fault_routes.json:14``).  Its *name* is about
-# the widening direction -- "should have been retrieved and was not" -- and no
-# cause code in the table means "this Scope reaches too far".  SA-1 uses it as
-# the authorization token for a narrowing PATCH and records the mismatch as the
-# open Q1 residue rather than minting a code, which would be a new platform.
-APPLICABILITY_CAUSE = "RETRIEVAL_MISS"
+APPLICABILITY_CAUSE = "SCOPE_OVERREACH"
 
 EVIDENCE_LEDGER_KEY = "evidence_ledger"
 REVISION_LOG_KEY = "revision_log"
