@@ -1,0 +1,425 @@
+{
+ "protocol": "s2a_forecast_curriculum_v1",
+ "seed": "r2",
+ "branch": "reduced",
+ "R2_note": "R2 forecast 未考(冲突场在注入与 #31 自然池下均不可得)",
+ "course": [
+  {
+   "role": "producer",
+   "unit_id": "electricity_impulsive_outlier_03",
+   "source": "injected",
+   "program_family_expected": "winsorize",
+   "position": 1,
+   "counts_toward_cumulative_regret": true
+  },
+  {
+   "role": "clean_identity",
+   "unit_id": "traffic_clean_identity_00",
+   "source": "clean",
+   "sol_name": "无缺陷条件下的 identity 场",
+   "note": "clean condition cell; not a natural identity field",
+   "position": 2,
+   "counts_toward_cumulative_regret": true
+  },
+  {
+   "role": "strong_beneficiary_1",
+   "unit_id": "electricity_impulsive_outlier_01",
+   "source": "injected",
+   "position": 3,
+   "counts_toward_cumulative_regret": true
+  },
+  {
+   "role": "strong_beneficiary_2",
+   "unit_id": "electricity_impulsive_outlier_04",
+   "source": "injected",
+   "position": 4,
+   "counts_toward_cumulative_regret": true
+  },
+  {
+   "role": "gap_out_of_family_guard",
+   "unit_id": "traffic_gap_00",
+   "source": "injected",
+   "position": 5,
+   "counts_toward_cumulative_regret": true
+  }
+ ],
+ "delta_material": 0.1,
+ "verdict_vocabulary": [
+  "S2A_PORTABLE_REDUCED",
+  "S2A_PARTIAL",
+  "TREATMENT_EMPTY"
+ ],
+ "pre_registered_predictions": [
+  {
+   "id": "P1",
+   "claim": "v1.1 adapter: classification 149 green; no Skill/Memory semantic change"
+  },
+  {
+   "id": "P2",
+   "claim": "G2: classification card retrieval/scope_match/supply are all zero on every forecast unit"
+  },
+  {
+   "id": "P3",
+   "claim": "if the producer earns a dual-gate POSITIVE, a strong beneficiary converts the supplied forecast card"
+  },
+  {
+   "id": "P4",
+   "claim": "conflict-field R2: N/A on the reduced course"
+  },
+  {
+   "id": "P5",
+   "claim": "harm events are zero in every arm"
+  },
+  {
+   "id": "P6",
+   "claim": "K0-fixed ≡ A3-reset (empty forecast K0; classification card silent). Material divergence is a variance alarm"
+  },
+  {
+   "id": "P7",
+   "claim": "N/A (reduced course: no natural conflict field, R2 untested)"
+  }
+ ],
+ "git_head": "4e54c8cc3edde1fec5c0ab20805b58365187d5a0",
+ "backend_probe": {
+  "ok": true,
+  "returned_model": "gpt-5.6-sol",
+  "reason": null,
+  "expected_model": "cpa-gpt-5.6-sol"
+ },
+ "k0": {
+  "empty_forecast_k0": true,
+  "h0_sha": "c3427b4e4b7cdf68322382cbd6354e08f38d584f9a3dd74a5f1987c21b44e539",
+  "k0_fixed_sha": "1bb37750c9f02620fae806607e01b3f2b0bc1a1b64097422ece1f1320237b4ef",
+  "a5_v0_sha": "1bb37750c9f02620fae806607e01b3f2b0bc1a1b64097422ece1f1320237b4ef",
+  "classification_card": "sa1_supply_scope_v2",
+  "k0_skill_ids": [
+   "build_contrastive_candidates",
+   "inspect_and_localize",
+   "sa1_supply_scope_v2",
+   "select_or_identity_and_verify"
+  ]
+ },
+ "first_fault": "BACKEND_UNAVAILABLE — 授权中继隧道不可达",
+ "stop": {
+  "verdict": "BACKEND_UNAVAILABLE",
+  "reason": "AgentTransportError: relay transport failed (InternalServerError)",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\run_e2_s2a_forecast_curriculum.py\", line 1032, in run_course\n    result = run_unit(\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\run_e2_s2a_forecast_curriculum.py\", line 585, in run_unit\n    records.append(_run_round(\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\run_e2_s2a_forecast_curriculum.py\", line 379, in _run_round\n    result = run_online_round(\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\online_loop.py\", line 381, in run_online_round\n    method.prepare(request, runtime_prior_slot=runtime_prior_slot)\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\method.py\", line 354, in prepare\n    result, trace = self.fast_agent.prepare(\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\fast_agent.py\", line 1017, in prepare\n    propose = self.core.run_stage(\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\agent_core.py\", line 421, in run_stage\n    response = self.backend.complete(request)\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\run_e2_t6_cls_op_shared_harness.py\", line 657, in complete\n    return self._inner.complete(request)\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\runtime\\agent_backend.py\", line 456, in complete\n    response = self.delegate.complete(request)\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\task_episode_harness\\agentic\\runner.py\", line 231, in complete\n    raise last  # type: ignore[misc]\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\task_episode_harness\\agentic\\runner.py\", line 225, in complete\n    return self.delegate.complete(request)\n  File \"C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\runtime\\agent_backend.py\", line 558, in complete\n    raise AgentTransportError(\nSelfEvolvingHarnessTS.runtime.agent_backend.AgentTransportError: relay transport failed (InternalServerError)\n"
+ },
+ "rows": [
+  {
+   "position": 1,
+   "unit_id": "electricity_impulsive_outlier_03",
+   "role": "producer",
+   "source": "injected",
+   "arm": "Static",
+   "deploy_source": "identity",
+   "applied_ops": [],
+   "heldout_gain": 0.0,
+   "heldout_smase": 4.5330921078393365,
+   "harm_event": false,
+   "worst_series_gain": 0.0,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "seconds": 0.59,
+   "g2": {
+    "retrieval": 0,
+    "scope_match": 0,
+    "supply": 0
+   },
+   "scope_match": {
+    "classification": false,
+    "forecast": false
+   },
+   "candidate_sources": {
+    "supplied": 0,
+    "self_proposed": 0,
+    "dedup_swallowed": false
+   },
+   "rounds": [],
+   "deployment": {
+    "arm": "Static",
+    "deploy_source": "identity",
+    "deploy_why": "Static: identity frozen on every unit",
+    "active_skill_id": null,
+    "applied_program": [],
+    "view_skill_ids": [],
+    "heldout_identity_smase": 4.5330921078393365,
+    "heldout_smase": 4.5330921078393365,
+    "heldout_gain": 0.0,
+    "heldout_per_series_gain": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "worst_series_gain": 0.0,
+    "harm_event": false,
+    "heldout_relation": "ABSTAIN"
+   },
+   "end_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ]
+  },
+  {
+   "position": 1,
+   "unit_id": "electricity_impulsive_outlier_03",
+   "role": "producer",
+   "source": "injected",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_ops": [],
+   "heldout_gain": 0.0,
+   "heldout_smase": 4.5330921078393365,
+   "harm_event": false,
+   "worst_series_gain": 0.0,
+   "llm_calls": 3,
+   "consumer_fits": 1,
+   "seconds": 29.95,
+   "g2": {
+    "retrieval": 0,
+    "scope_match": 0,
+    "supply": 0
+   },
+   "scope_match": {
+    "classification": false,
+    "forecast": false
+   },
+   "candidate_sources": {
+    "supplied": 0,
+    "self_proposed": 0,
+    "dedup_swallowed": false,
+    "supplied_ids": [],
+    "self_proposed_ids": [],
+    "dedup_detail": {
+     "dedup_swallowed": false
+    }
+   },
+   "rounds": [
+    {
+     "unit_id": "electricity_impulsive_outlier_03",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "uci_electricity_tsl321",
+     "task_consumer_key": "forecast|pooled_ridge_a1|sMASE",
+     "pool": [
+      "identity"
+     ],
+     "chosen": "",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "zero",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "high",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "zero",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "zero",
+      "level_region_fraction": "zero",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": true,
+      "task_kind": "forecast"
+     },
+     "pattern_view": {
+      "estimated_level_offset": "zero",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "high",
+      "level_excursion_score": "zero",
+      "level_region_end_fraction": "zero",
+      "level_region_fraction": "zero",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "task_kind": "forecast"
+     },
+     "scope_match_by_skill_id": {
+      "build_contrastive_candidates": true,
+      "inspect_and_localize": true,
+      "select_or_identity_and_verify": true
+     },
+     "guidance_conditioned_by_skill_id": {
+      "build_contrastive_candidates": true,
+      "inspect_and_localize": true,
+      "select_or_identity_and_verify": true
+     },
+     "installed_skill_content_sha": {
+      "build_contrastive_candidates": "5e5756c1db9d5eed63d31bed20d942074c4374f395efe5f440c0b9ed42a84378",
+      "inspect_and_localize": "ef352d49eeb18fcdc32e4fade0a567f16303633ae9792ff8e0ec64f24f71e068",
+      "select_or_identity_and_verify": "b831250620f63f7fe0c0e41bde3d087e962a8353f7ed1d15a51e615e249d38c7"
+     },
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "source_skill_id": null
+      }
+     ],
+     "probes": [],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 3,
+     "seconds": 28.79,
+     "g2": {
+      "retrieval": 0,
+      "scope_match": 0,
+      "supply": 0
+     }
+    }
+   ],
+   "deployment": {
+    "arm": "A3-reset",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "applied_program": [],
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "heldout_identity_smase": 4.5330921078393365,
+    "heldout_smase": 4.5330921078393365,
+    "heldout_gain": 0.0,
+    "heldout_per_series_gain": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "worst_series_gain": 0.0,
+    "harm_event": false,
+    "heldout_relation": "ABSTAIN"
+   },
+   "end_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ]
+  }
+ ],
+ "revisions": [],
+ "version_chain": [],
+ "ledger": {
+  "llm": 3,
+  "fit": 2,
+  "llm_cap": 120,
+  "fit_cap": 200,
+  "wall_seconds": 381.0
+ },
+ "g2": {
+  "faces": [],
+  "tested": false,
+  "all_zero": null
+ },
+ "verdict": {
+  "label": "BACKEND_UNAVAILABLE",
+  "why": "run stopped before judging"
+ },
+ "predictions": [
+  {
+   "id": "P1",
+   "predicted": "hold",
+   "observed": "already landed (149 green)"
+  },
+  {
+   "id": "P2",
+   "predicted": "G2 three faces all zero",
+   "observed": "untested (no live unit)"
+  },
+  {
+   "id": "P3",
+   "predicted": "producer hit => strong beneficiary converts",
+   "observed": "forecast_card=False a5_strong_gains=[]"
+  },
+  {
+   "id": "P4",
+   "predicted": "N/A",
+   "observed": "N/A"
+  },
+  {
+   "id": "P5",
+   "predicted": "harm 0",
+   "observed": "harm_events=0"
+  },
+  {
+   "id": "P6",
+   "predicted": "K0 ≡ A3",
+   "observed": "material_divergences=none"
+  },
+  {
+   "id": "P7",
+   "predicted": "N/A",
+   "observed": "N/A (reduced course)"
+  },
+  {
+   "id": "verdict",
+   "predicted": "S2A_PORTABLE_REDUCED | S2A_PARTIAL | TREATMENT_EMPTY",
+   "observed": "BACKEND_UNAVAILABLE"
+  }
+ ]
+}

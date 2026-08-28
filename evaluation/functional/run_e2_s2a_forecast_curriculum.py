@@ -1122,12 +1122,23 @@ def run_course(seed: str = "r1", *, resume: bool = False) -> int:
             payload["first_fault"] = first_fault
     except Exception as exc:  # noqa: BLE001
         import traceback
-        stopped = "INSTRUMENT_UNREADABLE"
+        text = "%s: %s" % (type(exc).__name__, exc)
+        transport = (
+            type(exc).__name__ in ("AgentTransportError", "InternalServerError")
+            or "AgentTransportError" in text
+            or "InternalServerError" in text
+            or "530" in text
+            or "tunnel_error" in text
+        )
+        stopped = "BACKEND_UNAVAILABLE" if transport else "INSTRUMENT_UNREADABLE"
         payload["stop"] = {
             "verdict": stopped,
-            "reason": ps0c.redact("%s: %s" % (type(exc).__name__, exc)),
+            "reason": ps0c.redact(text),
             "traceback": ps0c.redact(traceback.format_exc()),
         }
+        if transport:
+            first_fault = "BACKEND_UNAVAILABLE — 授权中继隧道不可达"
+            payload["first_fault"] = first_fault
     finally:
         s1.bind_curriculum_identity()
 

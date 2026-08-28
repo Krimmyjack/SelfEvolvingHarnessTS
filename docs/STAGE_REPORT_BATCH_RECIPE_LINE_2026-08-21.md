@@ -1223,6 +1223,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2(执行方):两掷采样中继再死;停表 `BACKEND_UNAVAILABLE`(2026-08-28 20:3x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = r1 `88a6c63` + 两掷帽。未换后端。未改模板/门/菜单/prompt/模型。下载 0。
+
+**经过**:`--run --seed r2`。探测 wave1-2 全 530/1033;wave3 200,`gpt-5.6-sol`。产例 Static/A3 已跑(A3 再空,自提 0)。K0 `method.prepare` 遇 `AgentTransportError: relay transport failed (InternalServerError)`。runner 泛捕获原标 `INSTRUMENT_UNREADABLE`,按 CAP-1 谱系改标 `BACKEND_UNAVAILABLE`(同字节原因=中继隧道)。checkpoint 已落 `1/Static`+`1/A3-reset`。
+
+**两掷未闭合**:r1 科学判词 `TREATMENT_EMPTY` 仍立,但不得升格为「两掷仍空→系统性移交 Stage 3」。续跑:`--resume --seed r2`。累计 r1+r2 LLM 72/120、fit 76/200。工件 `s2a_g1_run1_r2.json/.md`。**first fault:BACKEND_UNAVAILABLE — 授权中继隧道不可达。**
+
 ### S2a 末段 Part P r1(执行方):缩形课四臂 live 落盘;`TREATMENT_EMPTY`;自产卡否;守卫全零;两掷续 r2(2026-08-28 20:3x,执行方)
 
 **S2a 判词:TREATMENT_EMPTY;自产卡:否;守卫三面:全零;核心数字 LLM 69 / fit 74。** 授权链 = 台账 18:5x/19:3x + 主线 20:2x 隧道恢复令。未改模板/门/菜单/prompt/模型。未碰 Skill/Memory。下载 0。判词词表 `S2A_PORTABLE_REDUCED / S2A_PARTIAL / TREATMENT_EMPTY`。P4/P7 = N/A。
