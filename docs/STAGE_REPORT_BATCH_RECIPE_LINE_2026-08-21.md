@@ -1247,6 +1247,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **测试**:3 新聚焦(`test_s2a_v11_adapter.py`) + 分类原 146 套件 = **149 passed**;未跑全仓 pytest。冻结清单 `skill_memory_v1_freeze.json/.md` 升 v1.1,`inventory_sha256 68ea0f07dc12e57b4c623d94979dfbff7b7a926fc6a9b1d05fccb7bc04f11494`。**first fault:无。** 续 Part B 考场重切。
 
+### S2a-G0 判 `FAIL_BOTH_SOURCES` 收口(主线);**冲突场定义的移植修正案 (iv) 成型**:CONFLICT 语义系承重触发,"贴线余量"系分类底物偶然形态;四选呈 sol(2026-08-28 17:1x,主线)
+
+**清扫核可**:electricity 一次切完 5/5 全强 LEARNABLE(oracle 均 `winsorize`,余量 1.14–1.50),两源合并 **11/11 impulse 强 LEARNABLE、贴线 0、identity 0**(提交 `951d85a`);执行者禁凑格纪律守住,未开 Part C+D。**书外正向注记**:electricity oracle 均 winsorize 而 traffic 侧非同一算子——两源程序几何有别,Scope 轴素材更富。
+
+**主线复盘发现(承重,自认设计稿抄错)**:设计把冲突场写成"贴线弱受益",系照抄分类底物的**偶然形态**;分类线真正触发 R2 的是 `classify_relation` 的 **CONFLICT 判**(SA-1 r2 实录:PowerCons#1 与 Herring 均 CONFLICT——聚合正、逐序列害),非"低于材料线"。forecast 的**忠实移植** = "pooled 正 ∧ 逐序列害 ≥ 杠"的 cell 即冲突场;#31 谱系(5/5 聚合藏害、guard 全抓)早证该形态在预测域天然存在。11 cell 系预声明全报集合,按冻结 CONFLICT 语义指派角色**非按结果挑数**;但角色定义超出已批设计 → 须 sol 核,主线不自行执行。
+
+**四选呈 sol(主线推荐序 iv > iii > i > ii)**:**(iv)** 对既有 11 cell 重算逐序列分解,CONFLICT 形态 cell 即冲突场(0 LLM,fit ≤60,机制忠实);**(iii)** identity 场以 clean 条件 cell 替代("不修没坏的"读数,协议变体);**(i)** 扩源 metr_la/nn5 仅当 (iv) 零命中;**(ii)** 课形收缩为末位(修订环标 forecast 未考会掏空 S2a 主张核心)。发车待 sol。
+
 ### S2a-G0 首败裁定(主线):v1.1 修订**已生效**(149 绿);资格门败于"注入-底物多样性失配";第二源清扫续令(设计内);后备三选预置(2026-08-28 17:0x,主线)
 
 **Part A 核可(真实进展)**:v1.1 三处分发落地,3 聚焦 + 分类 146 项回归**原封全绿**(P1 立),冻结清单升 v1.1(提交 `04f5703`)——修订案生效,Skill/Memory 语义零改自证。**Part B 首败定性**:traffic_hourly 机械重切 6 cell 在现役 `impulsive_outlier` 模板下**全部强 LEARNABLE**(余量 0.88–1.27 ≫ 门 0.10),无贴线弱场、无 identity 场(提交 `4ec3aff`,执行者拒凑格正确)。**注记一条**:gap 场的守卫角色 = Scope 不匹配(卡不该匹),其 LEARNABLE(+0.148)不碍守卫资格,资格门败点仅在贴线/identity 缺失。**定性入册**:forecast ridge/sMASE 对 impulsive_outlier 一致高敏且菜单一致可修,与分类线"同族三命运"成对照——不同 Task×Consumer 对同族缺陷的敏感度结构不同,系条件化论题正向素材,非机制失败。
