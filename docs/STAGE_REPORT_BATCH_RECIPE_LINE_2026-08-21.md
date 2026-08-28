@@ -1315,6 +1315,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **工件**:`s2a_natural_pool_sweep.json/.md`、`s2a_course_frozen.json/.md`。**first fault:无。** 续 Part P G1/G2 live。
 
+### 基础设施事后定案(主线双假说撤回):500 系中继**出口网络 TLS 抽风**,非体积非字段;owner 日志铁证;退避修正授权;r2 续跑(2026-08-28 21:2x,主线)
+
+**定案(owner 侧 CPA 服务日志,经用户转达,DeepSeek 判读)**:全部 500 = `utls: TLS handshake: EOF`(上游 chatgpt.com 出口被网络掐断,同窗 auth.openai.com 与 Google 亦 EOF——整条出口 20:28–21:06 间歇抽风);**CPA 本体 10:57 起从未重启**(NRestarts=0),20:30 重启的是 cloudflared 隧道;链路 21:14 起三连 200 实测恢复。**主线两个假说先后撤回并记档**:(a) "请求体 24-32KB 上限"——32KB 探测的 500 系撞上抽风窗;(b) "字段触发"——16KB 真实调用的 500 同因。**方法论教训入典:串行客户端探测把"当时出口断没断"与被测变量混淆;间歇故障下的单点探测不构成归因证据,服务端日志才是地面真相。**字段二分书作废,诊断产物留 _scratch 不提交。
+
+**退避修正授权(唯一代码改动)**:agent transport 重试 3×2s → 5 次指数退避(10s 起、30s 上限、总窗 ≥90s),以骑过 1-2 分钟抽风窗;零协议语义改动(prompt/模型/预算口径不变,失败传输尝试不计 LLM 账);单独提交注明基础设施韧性修正。**r2 已续跑**(改令经 interrupt 下达);两掷合并判定条款不变。
+
 ### S2a 末段停摆裁定(主线):自然池 12/12 结构性排除核可(转缩形课已冻结);`BACKEND_UNAVAILABLE` 按协议无科学判词;主线复探仍 530,owner_action_required;自动探测挂起(2026-08-28 19:3x,主线)
 
 **核可**:#31 池 12 成员全部装不进现行反馈容量门(TRAIN≥40/对半≥20),判**结构性排除**(非挑数,sol 红线逐字执行:旧读数零作证);四合取表空 → 按 sol 预授权转 **A 缩形课**,冻结件已入库(`4bd9955`,R2 forecast 未考注记在件);G1 四臂 runner 已立(`ba8da4d`)。**live 未开:授权中继 Cloudflare 隧道 530/1033,五波探测不可达,按 CAP-1 谱系协议判 `BACKEND_UNAVAILABLE`,无科学判词,零 LLM 零 fit 浪费**。主线 19:3x 独立复探 `/v1/models` 仍 530(源端隧道进程死),**owner_action_required**;自动恢复探测已挂(每 5 min,≤2.5h),恢复即续跑(`--run --seed r1`,runner 与课程冻结件均已入库,一条命令续)。
