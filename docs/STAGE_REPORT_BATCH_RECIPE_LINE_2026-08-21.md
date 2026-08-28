@@ -1223,6 +1223,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2 设计稿定稿呈 sol(主线):机制任务可移植性 + 跨任务条件化守卫;含唯一一处冻结修订案请求(2026-08-28 16:4x,主线)
+
+**盘点收口**(执行方 `cc8e045`,七项全引证):S1 四臂 runner 系分类特化(三常数写死 + `_scope_v1_admits :1683` 拒他任务 + `skill_revision.py:78` 特征提取写死)——**S2 必须付适配成本**;现役 forecast cell(12+8/12+4)反馈容量全部不过新门,须从 monash traffic_hourly(862)/UCI electricity(370)重切;+31.7% 正账系 v1 前 Guidance 卡年代,只作历史参照不得与 S2 读数并写;无现成 forecast Episode 库(冷发现率未知 = 最大风险);注入用现役 `impulsive_outlier`;#31 AD 卡无 task_kind 轴不能作守卫,跨任务负控由分类 supply 卡独任。
+
+**设计稿 `docs/S2_DESIGN_DRAFT_2026-08-28.md` 呈 sol**,要点:**G0** 宿主适配(语义零改仅分发)+ 考场重切(对半每面 ≥20)+ 双层 oracle 资格门(M-1 余量 ≥2× 产例判据继承),门 `S2_HOST_READY`;**G1** 机制重挣(课程形状照抄 SA-1 已证形状:产例→阶梯 v2 产卡→五轴转化→贴线冲突→R2 收窄→再遇位),判词 `S2_MECHANISM_PORTABLE / S2_PARTIAL / TREATMENT_EMPTY`,冷发现风险预置两掷硬帽;**G2** 跨任务守卫免费随跑(分类卡三面全零,非零即机制级 first fault);G3(程序性迁移)缓议另立。**冻结修订案请求(唯一)**:runner 三常数参数化 + task 轴放行 + 特征提取分发,Skill/Memory 语义零改,落地后清单升 v1.1、分类 146 项回归原封全绿为生效条件。预算:G0 0 LLM;G1+G2 ≤120 LLM。**待 sol 核准修订案与设计稿后发车(grok)。**
+
 ### Skill/Memory v1 冻结生效(主线):三债清、146 绿、29 文件清单入册;S2 设计进入资产盘点(2026-08-28 16:0x,主线)
 
 **裁定**:执行方三笔修复核可——Q1 `SCOPE_OVERREACH` 因码语义正确(扩/缩方向分离,`RETRIEVAL_MISS` 原义不动,fault_routes.json:15 / router.py:22-25/71-77 / skill_revision.py:54);Q7 卡面 `scope_unreachable_axes` 纯增声明(source_skill.py:665);Q11 交集编译器 task_kind 去重仅及新卡(source_skill.py:570-571)。146 测试绿;0 LLM/0 fit;提交 `edefd15`/`8645739`/`0e5a2bf`;py3.12 测试债(他线文件)挂账注明。**冻结即时生效**:`skill_memory_v1_freeze.json/.md`,29 文件,总 sha `a5c98d40…`;此后 Skill/Memory 结构性改动须 sol 级修订案;**Stage 3 许可面 = instruction/决策策略层;Stage 2 只读 Skill 层**(照 15:5x 条边界)。
