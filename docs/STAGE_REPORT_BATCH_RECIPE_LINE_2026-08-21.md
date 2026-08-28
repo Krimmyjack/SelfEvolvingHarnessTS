@@ -1255,6 +1255,16 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **测试**:3 新聚焦(`test_s2a_v11_adapter.py`) + 分类原 146 套件 = **149 passed**;未跑全仓 pytest。冻结清单 `skill_memory_v1_freeze.json/.md` 升 v1.1,`inventory_sha256 68ea0f07dc12e57b4c623d94979dfbff7b7a926fc6a9b1d05fccb7bc04f11494`。**first fault:无。** 续 Part B 考场重切。
 
+### S2a 末段 Part P(执行方):缩形课四臂 runner 已立;live 停于 `BACKEND_UNAVAILABLE`(2026-08-28 19:2x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE(缩形);自然冲突场:零命中;守卫三面:未考;核心数字 LLM 0 / fit 0。** 授权链 = 台账 18:5x 条 + N/O `4bd9955`。未改模板/门/菜单/prompt/模型。未碰 Skill/Memory。下载 0。
+
+**N/O 已入库**(`4bd9955`):#31 池 12/12 结构性排除,四合取空表,缩形课冻结。Δ_material=0.10。判词词表 `S2A_PORTABLE_REDUCED / S2A_PARTIAL / TREATMENT_EMPTY`。P7 = N/A。
+
+**G1 runner** `evaluation/functional/run_e2_s2a_forecast_curriculum.py`:四臂 Static / A3-reset / K0-fixed(空 forecast K0 + 分类 supply 卡 v0,预注册 ≡ A3) / A5-online;库存 `ScopeExecutor` + `bch._evaluate_assignment`;阶梯 v2 产卡在产例双门 POSITIVE 之后;R1-R3 只改 forecast 卡;G2 三面非零即停;delayed 拒→identity;两掷帽;checkpoint 续跑。身份绑定 `forecast|pooled_ridge_a1|sMASE`,结束恢复分类缺省。
+
+**live**:点 `_scratch/agent_backend.ps1` 后探测 5 波,全为 Cloudflare tunnel **530/1033**(owner_action_required)。未开任何臂、0 fit。守卫三面不得读成全零(空表)。工件 `s2a_g1_run1.json/.md`。续跑:`--run --seed r1`(隧道恢复后)。**first fault:BACKEND_UNAVAILABLE — 授权中继隧道不可达。**
+
 ### S2a 末段 Part N/O(执行方):#31 自然池 12/12 结构性排除;零命中转 A 缩形课已冻结(2026-08-28 19:0x,执行方)
 
 **S2a 状态:缩形课冻结;自然冲突场:零命中。** 授权链 = 台账 18:5x 条「sol 裁有界 B……S2a 末段发车」。成本 **0 LLM / 0 fit / 下载 0**。旧 #31 读数只圈池,一律不作证据。未改模板/门/菜单。未开 G1。
