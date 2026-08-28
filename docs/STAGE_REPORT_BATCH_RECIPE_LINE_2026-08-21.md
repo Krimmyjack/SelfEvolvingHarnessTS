@@ -1223,6 +1223,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2(执行方):链路双通后续跑;K0 inspect 退避窗打满仍死;两掷未闭合(2026-08-28 21:3x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 21:35 双通令 + 退避 `d77e705`。未换后端。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。
+
+**live**:探测 wave1 200、`gpt-5.6-sol`。跳过已完成两臂后,产例 K0 inspect `AgentTransportError: InternalServerError`;墙钟约 168s,与 5×指数退避窗(10+20+30+30=90s sleep + 请求)相符,**退避已触发并打满**。按令停表,不再续撞。两掷合并判定仍未成立。累计 LLM 72/120、fit 76/200。工件 `s2a_g1_run1_r2.json/.md`。**first fault:BACKEND_UNAVAILABLE — K0 inspect 退避窗打满仍 5xx。**
+
 ### S2a 末段 Part P(执行方):字段二分撤回;传输退避落地;r2 探测五波 530 未开臂(2026-08-28 21:3x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 21:1x「utls TLS handshake EOF、字段二分作废」+ 退避修正令。未换后端。下载 0。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。
