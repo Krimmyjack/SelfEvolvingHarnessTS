@@ -1213,6 +1213,16 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### S2 forecast 资产盘点(执行方):七项只读判定已落册;agentic 路线对 forecast 为分类特化(2026-08-28 16:2x,执行方)
+
+**首行读数:现役 forecast 仪器在、S1 四臂不能翻旗跑 forecast、现役 12+8/12+4 cell 过不了新 ≥20 行门、+31.7% 是 v1 冻结前 Guidance 卡年代。** 授权链 = 台账 16:0x 条 S2 设计前置(发 grok,0 LLM 只读盘点)。成本 **0 LLM / 0 fit / 下载 0**。工件 `artifacts/functional/e2/s2_forecast_asset_inventory.json/.md`。
+
+**七项(各一句)**:① 现役键 `forecast|ridge|sMASE`(TEH 回落,`experience_memory.py`:77 / `t1.py`:88)与 `forecast|pooled_ridge_a1|sMASE`(T5,`run_e2_t5_lifecycle_dual_consumer.py`:262-267);S1 四臂 `TASK_KIND=classification`(:275-277)且 :1683 拒他 kind。② 注册表 1919 行;现役 electricity/T233 12+8、traffic 12+8、NOAA Frep 12+4 对「对半每面 ≥20 行」FAIL;仅重切 traffic_hourly 862 / electricity 370 / metr_la 207 / nn5 91 才过。③ +31.7% = Frep 回放 84 vs 123(`t6_45_frep_a5a3_replay.md`:95),`CHAIN_REPRODUCED`,机制 = Guidance 卡非阶梯/修订;v1 冻结下重挣须过新门+新宿主+只读 Skill 层。④ Frep 有 `fresh_batch_guidance_*` 与 `fast_winner_forecast_*`;仓内无已提交可检索 forecast Episode 库。⑤ forecast 注入 = impulsive_outlier/gap/T0 cycle/minipipe/benchmark;**无** impulse_v2。⑥ 生命周期 Consumer 只有 ridge×sMASE(pooled+per_channel);DLinear/kNN 探针未接 G1/S1/T5。⑦ `#31` shared 卡无 `task_kind` 轴(预测域编译);AD v3 已归档(`AGENTS.md`:211);分类卡惰性守卫缺 forecast 宿主。
+
+**S2 成本承重**:现代课程(S1 四臂+修订+五轴)是分类特化,不是通用 `task_kind` 分发器;G1 agentic 是 forecast 写死(`runner.py`:351-372)但不承载该课程。S2 不能拨旗,须付适配器或新 runner。
+
+**义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
+
 ### Skill/Memory v1 冻结生效(主线):三债清、146 绿、29 文件清单入册;S2 设计进入资产盘点(2026-08-28 16:0x,主线)
 
 **裁定**:执行方三笔修复核可——Q1 `SCOPE_OVERREACH` 因码语义正确(扩/缩方向分离,`RETRIEVAL_MISS` 原义不动,fault_routes.json:15 / router.py:22-25/71-77 / skill_revision.py:54);Q7 卡面 `scope_unreachable_axes` 纯增声明(source_skill.py:665);Q11 交集编译器 task_kind 去重仅及新卡(source_skill.py:570-571)。146 测试绿;0 LLM/0 fit;提交 `edefd15`/`8645739`/`0e5a2bf`;py3.12 测试债(他线文件)挂账注明。**冻结即时生效**:`skill_memory_v1_freeze.json/.md`,29 文件,总 sha `a5c98d40…`;此后 Skill/Memory 结构性改动须 sol 级修订案;**Stage 3 许可面 = instruction/决策策略层;Stage 2 只读 Skill 层**(照 15:5x 条边界)。

@@ -1,0 +1,473 @@
+{
+  "schema_version": "s2_forecast_asset_inventory/1",
+  "book": "Stage 2 design-front forecast-line read-only asset inventory",
+  "written": "2026-08-28",
+  "authority": [
+    "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md:1216-1220 (v1 freeze; S2 dispatch)",
+    "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md:1222-1226 (sol 裁 B; Monash + A5>A3 +31.7%)",
+    "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md:1254-1256 (difficulty-tiering discipline)",
+    "docs/CLS_LINE_FINAL_REPORT_2026-08-28.md:43-46 (new feedback gate; S2 on forecast)"
+  ],
+  "constraints_honored": {
+    "code_changes": "none outside this inventory + STAGE_REPORT executor entry",
+    "llm_backend_calls": 0,
+    "downloads": 0,
+    "full_repo_pytest": false,
+    "spawn": false,
+    "untouched": [
+      "methods/",
+      "contracts/",
+      "runtime/",
+      "operators/",
+      "Epilepsy2",
+      "s1_oracle",
+      "D2"
+    ]
+  },
+  "item_1_runners": {
+    "one_line": "In-service forecast keys are forecast|ridge|sMASE (fallback/TEH) and forecast|pooled_ridge_a1|sMASE (T5 mint); S1 four-arm is classification-specialized and cannot host forecast by flipping a flag.",
+    "verdict": "recipe/T5/Frep/G1-e1/t1 are forecast-in-service; modern S1 curriculum is classify-specialized (S2 cost-bearing).",
+    "key_lineage": {
+      "rule": {
+        "text": "task_type|downstream_model_class|metric.name",
+        "cite": "SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:76"
+      },
+      "fallback": {
+        "key": "forecast|ridge|sMASE",
+        "cite": "SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:77"
+      },
+      "t1_literal": {
+        "key": "forecast|ridge|sMASE",
+        "cite": "evaluation/functional/task_episode_harness/t1.py:88"
+      },
+      "t5_mint": {
+        "key": "forecast|pooled_ridge_a1|sMASE",
+        "cites": [
+          "evaluation/functional/run_e2_t5_lifecycle_dual_consumer.py:262-267",
+          "artifacts/functional/e2/t5_lifecycle_v1.md:25,35"
+        ]
+      },
+      "historical_unretrievable_dialect": {
+        "key": "forecast|ridge_smase",
+        "cite": "SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:539,566,593",
+        "note": "live retrieval never mints this dialect; historical loads only"
+      },
+      "factory_third_dialect": {
+        "key": "forecast|dlinear_shared|nRMSE",
+        "cite": "SelfEvolvingHarnessTS/contracts/task.py:329-346",
+        "note": "forecast_task_spec_v1 defaults; not the in-service ridge/sMASE lifecycle"
+      }
+    },
+    "in_service_forecast_runners": [
+      {
+        "id": "recipe_v6_batch",
+        "path": "evaluation/functional/run_batch_composition_headroom.py",
+        "note": "v6 _evaluate; ridge + sMASE; traffic roster 12+8 at :163-164"
+      },
+      {
+        "id": "fresh_confirmation",
+        "path": "evaluation/functional/run_e2_fresh_confirmation.py",
+        "note": "NOAA FRESH_A5_DELIVERS original"
+      },
+      {
+        "id": "frep_replay",
+        "path": "evaluation/functional/run_e2_t6_45_frep_a5a3_replay.py",
+        "note": "reuses fresh_confirmation; +31.7% chain replay"
+      },
+      {
+        "id": "t5_lifecycle",
+        "path": "evaluation/functional/run_e2_t5_lifecycle_dual_consumer.py",
+        "cite": "f_task_spec :262-267 forecast_task_spec_v1(pooled_ridge_a1, sMASE)"
+      },
+      {
+        "id": "t1_flip",
+        "paths": [
+          "evaluation/functional/run_e2_t1_flip_control.py",
+          "evaluation/functional/run_e2_t1b_training_side_flip.py"
+        ]
+      },
+      {
+        "id": "forecasting_compat_0b",
+        "path": "evaluation/functional/run_e2_t6_forecasting_compat_0b.py"
+      },
+      {
+        "id": "teh_t1_e1",
+        "paths": [
+          "evaluation/functional/task_episode_harness/t1.py",
+          "evaluation/functional/task_episode_harness/e1.py",
+          "evaluation/functional/task_episode_harness/runner.py"
+        ]
+      },
+      {
+        "id": "g1_agentic",
+        "path": "evaluation/functional/task_episode_harness/agentic/runner.py",
+        "note": "forecast-native prompt/metric/window; not a task_kind dispatcher"
+      },
+      {
+        "id": "historical_v1_fastpath",
+        "paths": [
+          "evaluation/functional/run_v1_fastpath.py",
+          "evaluation/functional/run_v1_fastpath_framework.py"
+        ]
+      }
+    ],
+    "agentic_and_s1_vs_forecast": {
+      "verdict": "classify_specialized_not_generic",
+      "s2_cost_bearing": true,
+      "s1_four_arm": {
+        "task_kind": "classification",
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "metric": "accuracy",
+        "cites": [
+          "evaluation/functional/run_e2_s1_curriculum_four_arms.py:4,275-277",
+          "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1683-1688",
+          "evaluation/functional/run_e2_s1a_curriculum_oracle_audit.py:88-90"
+        ],
+        "cannot_flip_task_kind": "L1683 rejects any scope.task_kind != classification; runner imports cls shared harness / UCR / impulse_v2"
+      },
+      "skill_revision_feature_extract": {
+        "cite": "evaluation/functional/task_episode_harness/agentic/skill_revision.py:78",
+        "hardcoded": "extract_public_features(..., task_kind='classification')"
+      },
+      "g1_agentic": {
+        "cite": "evaluation/functional/task_episode_harness/agentic/runner.py:351-372",
+        "shape": "forecast-native hardcoded (downstream forecast Consumer, sMASE, 240-point windows); not a task_kind switch"
+      },
+      "public_context_default": {
+        "cite": "evaluation/functional/task_episode_harness/public_context.py:31",
+        "value": "PUBLIC_CONTEXT_TASK_KIND = 'forecast'"
+      },
+      "source_skill_default": {
+        "cite": "evaluation/functional/task_episode_harness/agentic/source_skill.py:49-60",
+        "id": "source_investigation_v1",
+        "applicability": "task_kind == forecast"
+      },
+      "implication_for_s2": "S2 cannot set task_kind=forecast on the S1 four-arm / revision / five-axis curriculum. Must pay for a forecast adapter or a new runner. G1 can run forecast today but does not carry the S1 curriculum."
+    }
+  },
+  "item_2_data_and_feedback_capacity": {
+    "one_line": "Current in-service cells (12+8 / 12+4) fail the new ≥20-per-face series-as-row gate; only redesigned Monash/UCI/METR pools (n≥40) can pass.",
+    "new_gate": {
+      "text": "Support/delayed half-split, each face ≥20 rows, material line ≤0.05",
+      "cite": "docs/CLS_LINE_FINAL_REPORT_2026-08-28.md:43"
+    },
+    "unit_note": "Classification 行 = TRAIN instance. Forecast analog applied as series-as-row (strict). Origin-window count (n_eval × n_delayed_origins) is also reported because that is the live forecast instrument. Forecast material/harm lines remain frozen 0.005/-0.005, not 1/n.",
+    "registry": {
+      "path": "artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_rows": 1919,
+      "parse": "D:\\Anaconda_envs\\envs\\project\\python.exe read-only"
+    },
+    "datasets": [
+      {
+        "id": "monash:traffic_hourly",
+        "n": 862,
+        "length": 1024,
+        "exposure": {"certified_virgin": 806, "probe_consumed": 56},
+        "series_as_row_if_redesigned": "PASS (half ≥431)",
+        "current_recipe_cell": "FAIL (traffic roster 12+8; run_batch_composition_headroom.py:163-164)"
+      },
+      {
+        "id": "uci_electricity_load_diagrams",
+        "n": 370,
+        "length": 1024,
+        "exposure": {"certified_virgin": 370},
+        "series_as_row_if_redesigned": "PASS",
+        "current_recipe_cell": "FAIL if used as 12+8; family already outcome-exposed via shared_tsq_datasets (g3_sourcing.py:144-158)"
+      },
+      {
+        "id": "metr_la",
+        "n": 207,
+        "length": 1024,
+        "exposure": {"certified_virgin": 207},
+        "series_as_row_if_redesigned": "PASS"
+      },
+      {
+        "id": "monash:nn5_daily",
+        "n": 91,
+        "length": "714-791",
+        "exposure": {"certified_virgin": 91},
+        "series_as_row_if_redesigned": "PASS (half ≈45)",
+        "current_v6_roster": "FAIL if 12+8"
+      },
+      {
+        "id": "monash:covid_deaths",
+        "n": 246,
+        "length": 212,
+        "exposure": {"certified_virgin": 246},
+        "series_as_row_if_redesigned": "PASS on n",
+        "length_vs_protocol": "FAIL vs 240-pt G1 / 3072-origin E1 windows"
+      },
+      {
+        "id": "noaa_global_hourly (benchmark v0.2 registry)",
+        "n": 40,
+        "length": 1024,
+        "exposure": {"certified_virgin": 40},
+        "series_as_row_if_redesigned": "BORDERLINE (half=20 if 20/20; current 12+8/12+4 FAIL)"
+      },
+      {
+        "id": "gefcom2012_load",
+        "n": 20,
+        "length": 1024,
+        "exposure": {"certified_virgin": 20},
+        "series_as_row": "FAIL (half=10)"
+      },
+      {
+        "id": "legacy_monash:fred_md",
+        "n": 20,
+        "length": 728,
+        "exposure": {"confirmed_exposed": 20},
+        "series_as_row": "FAIL"
+      },
+      {
+        "id": "legacy_monash:nn5_daily",
+        "n": 20,
+        "length": 791,
+        "exposure": {"confirmed_exposed": 20},
+        "series_as_row": "FAIL"
+      },
+      {
+        "id": "legacy_monash:tourism_monthly",
+        "n": 20,
+        "length": "187-330",
+        "exposure": {"confirmed_exposed": 20},
+        "series_as_row": "FAIL"
+      },
+      {
+        "id": "legacy_monash:covid_deaths",
+        "n": 20,
+        "length": 212,
+        "exposure": {"confirmed_exposed": 20},
+        "series_as_row": "FAIL"
+      },
+      {
+        "id": "noaa_global_hourly_fresh_v1",
+        "n": 20,
+        "length": 8760,
+        "cite": "data/benchmark_noaa_fresh_v1/series/72422093820/record.json:6",
+        "exposure": "2024+2025 EXPOSED (dev/replay only); beyond_17520 sealed; 2025 values not opened this book",
+        "roster": "12 train + 4 eval (Frep 16 series; t6_45_frep_a5a3_replay.md:18)",
+        "series_as_row": "FAIL (half of 20=10; current 12/4 faces 6 and 2)"
+      },
+      {
+        "id": "kdd2018 T233 cell",
+        "n_train": 12,
+        "n_eval": 8,
+        "cite": "evaluation/functional/task_episode_harness/g1.py:1881-1887",
+        "source": "data/kdd2018/series_cache.npz",
+        "series_as_row": "FAIL"
+      }
+    ],
+    "current_protocol_cells": [
+      {
+        "cell": "electricity / T233 recipe",
+        "roster": "12 train + 8 eval",
+        "support_origins": [3072, 3120, 3168],
+        "delayed_origins": [3216, 3264, 3312],
+        "series_as_row": "FAIL",
+        "origin_window_delayed_readings": "8×3=24 (borderline PASS if 行=origin-reading, not the CLS analog)"
+      },
+      {
+        "cell": "traffic recipe",
+        "roster": "12+8",
+        "cite": "evaluation/functional/run_batch_composition_headroom.py:163-164",
+        "delayed_origins": [1800],
+        "series_as_row": "FAIL",
+        "origin_window_delayed_readings": "8×1=8 FAIL"
+      },
+      {
+        "cell": "NOAA Frep",
+        "roster": "12+4 (16 series used)",
+        "cite": "artifacts/functional/e2/t6_45_frep_a5a3_replay.md:18,23-29",
+        "series_as_row": "FAIL",
+        "origin_window_delayed_readings": "4 eval × 3 delayed = 12 FAIL"
+      }
+    ]
+  },
+  "item_3_a5_over_a3_plus_31p7": {
+    "one_line": "+31.7% is the Frep replay first-positive cost 84 vs 123 on already-exposed NOAA 2024; pre–Skill/Memory v1-freeze Guidance-card era; cannot be re-cited as a v1-freeze ladder/revision win.",
+    "readout": {
+      "artifact": "artifacts/functional/e2/t6_45_frep_a5a3_replay.md",
+      "lines": "3,17,95",
+      "chain_verdict": "CHAIN_REPRODUCED",
+      "raw_instrument": "FRESH_A5_FAILS",
+      "pooled_first_positive": "84 vs 123 (−31.7%)",
+      "original": {
+        "verdict": "FRESH_A5_DELIVERS",
+        "cost": "69 vs 123 (−43.9%)",
+        "artifacts": [
+          "artifacts/functional/e2/fresh_confirmation_v1.json",
+          "artifacts/functional/e2/fresh_confirmation_v1_adjudication.md"
+        ]
+      }
+    },
+    "frep_b_after_protocol_fix": {
+      "artifact": "artifacts/functional/e2/t6_45_frep_b_symmetric_deploy.md",
+      "held_out_pooled": "A5 +0.059 vs A3 −0.217, diff +0.276",
+      "status": "development, already-exposed NOAA 2024; not a replication of FRESH_A5_DELIVERS"
+    },
+    "era": {
+      "mechanism": "recipe-compiled Guidance cards (fresh_batch_guidance_pooled_v1 / per_channel_v1) + Target-local fast_winner_forecast_*",
+      "not": "ladder v2 / five-axis Scope / Skill revision loop / Skill/Memory v1 freeze",
+      "freeze_cite": "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md:1216-1218"
+    },
+    "commits": {
+      "note": "Frep runner/overnight and Frep-b Part 0 live in repo history (commonly cited 03b07bf / 098ec40); this book does not re-open those commits' trees.",
+      "readout_authority": "the Frep md/json artifacts above, not a new run"
+    },
+    "reearn_gaps_under_v1_freeze": [
+      "Old cards lack five-axis Scope / supply-tier / revision fields required by the frozen Skill layer.",
+      "S2 is read-only on Skill/Memory structure (STAGE_REPORT:1218); cannot change Skill schema to make old cards v1-native.",
+      "NOAA 2024/2025 already EXPOSED — not a fresh sealed exam (t6_45_frep_a5a3_replay.md:11,18).",
+      "12+4 / 16-series cell fails the new ≥20-per-face series gate (CLS_LINE_FINAL_REPORT:43).",
+      "S1 four-arm / revision / five-axis curriculum cannot host forecast (item 1).",
+      "per_channel cell is a transfer boundary / TIE (t6_45_frep_a5a3_replay.md:7).",
+      "n=1 paired development draw; direction only, not a settled capability claim (t6_45_frep_a5a3_replay.md:103 / frep_b md:102).",
+      "Dialect keys (ridge|sMASE vs pooled_ridge_a1|sMASE vs ridge_smase) must be unified before Memory reuse."
+    ]
+  },
+  "item_4_episodes_store_cards": {
+    "one_line": "Forecast Source/Target-local cards exist in Frep artifacts; there is no committed live forecast Episode bank for S2 to retrieve from.",
+    "present_in_artifacts": {
+      "source_guidance": [
+        "fresh_batch_guidance_pooled_v1",
+        "fresh_batch_guidance_per_channel_v1"
+      ],
+      "target_local": [
+        "fast_winner_forecast_pooled_ridge_a1_smase_e1v2_outlier_iqr",
+        "fast_winner_forecast_per_channel_ridge_a1_smase_e1v2_repair_level_shift"
+      ],
+      "cite": "artifacts/functional/e2/t6_45_frep_b_symmetric_deploy.json:55-66,101-112"
+    },
+    "integrator_default": {
+      "id": "source_investigation_v1",
+      "applicability": "task_kind==forecast",
+      "cite": "evaluation/functional/task_episode_harness/agentic/source_skill.py:49-60"
+    },
+    "t5_episodes": {
+      "key": "forecast|pooled_ridge_a1|sMASE",
+      "cite": "artifacts/functional/e2/t5_lifecycle_v1.md:25,35,52"
+    },
+    "teh_historical": {
+      "key": "forecast|ridge|sMASE",
+      "cite": "artifacts/functional/e2/w1_task_episode_harness_report.json (many rows); t1.py:88"
+    },
+    "unretrievable_dialect": {
+      "key": "forecast|ridge_smase",
+      "cite": "SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:539+"
+    },
+    "shared_candidate_not_live_store": {
+      "id": "shared_outlier_repair_with_per_series_guard_v1",
+      "cite": "artifacts/functional/e2/shared_capability_candidate_v2.json:37-44",
+      "note": "forecast-domain compiled; no task_kind axis; not a committed live store entry"
+    },
+    "committed_live_store": "no durable in-repo forecast Episode bank for S2; Frep/T5 stores are run-local artifacts"
+  },
+  "item_5_defect_injection": {
+    "one_line": "Forecast cells have impulsive_outlier / gap / T0 cycle spike-burst / minipipe / benchmark corruption — not classification impulse_v2/burst_cls2.",
+    "families": [
+      {
+        "family": "impulsive_outlier",
+        "path": "evaluation/functional/task_episode_harness/injection.py:38-89",
+        "constants": {"amplitude": 8.0, "count": 40, "seed": 7, "scale": "nanstd[120:900]"},
+        "length_gate": "label-timestamp pool ≥ count; anchors 312-852 step 60, H=48 (injection.py:24-26,54-55)"
+      },
+      {
+        "family": "gap",
+        "path": "evaluation/functional/task_episode_harness/injection.py:91-128",
+        "constants": {"count": 80, "seed": 11, "write": "NaN"},
+        "length_gate": "same pool ≥ count"
+      },
+      {
+        "family": "t0_t1_cycle_spike_burst",
+        "path": "evaluation/functional/run_e2_t0_ad_instrument.py:78-89",
+        "constants": {
+          "EVENT_DIVISOR": 112,
+          "MIN_EVENT_SPACING": 50,
+          "BOUNDARY_EXCLUSION": 25,
+          "SIGMA_PREFIX": 168,
+          "CYCLE_TABLE": "1-pt spike ×6σ/10σ + 3-pt burst"
+        },
+        "length_gate": "zone protocol on NOAA; T1 injects 12 train only"
+      },
+      {
+        "family": "minipipe_synthetic",
+        "path": "evaluation/minipipe/corpus/injections.py:8-10,45-74",
+        "families": ["missing", "impulsive_outlier", "level_shift", "period_change"],
+        "length_gate": "fixed L=240, ctx=192, fut=48"
+      },
+      {
+        "family": "benchmark_v02_corruption",
+        "path": "evaluation/benchmark_v02/corruption.py",
+        "families": ["block/scattered missing", "spike", "level_shift", "gaussian", "local_permutation"],
+        "length_gate": "dose × series length"
+      }
+    ],
+    "not_forecast": {
+      "impulse_v2_burst_cls2": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:396-397; classification-only (GunPoint L=150 proportional v2)"
+    }
+  },
+  "item_6_consumers": {
+    "one_line": "Lifecycle-ready forecast Consumer is ridge×sMASE only (pooled + per_channel); DLinear/kNN are probe-only and not wired into G1/S1/T5.",
+    "inline_note": {
+      "cite": "evaluation/functional/consumers/__init__.py:3-8",
+      "text": "forecasting Consumer lives inline in batch runners, not as a consumers/ module imported by Harness"
+    },
+    "lifecycle_ready": [
+      {"id": "pooled_ridge_a1", "metric": "sMASE", "cite": "run_e2_t5_lifecycle_dual_consumer.py:264-267"},
+      {"id": "per_channel_ridge_a1", "metric": "sMASE", "note": "same ridge family, structure variant; Frep dual cell"}
+    ],
+    "dialects": [
+      "forecast|ridge|sMASE",
+      "forecast|pooled_ridge_a1|sMASE",
+      "forecast|ridge_smase (historical, unretrievable)",
+      "forecast|dlinear_shared|nRMSE (factory default, unused in current lifecycle)"
+    ],
+    "probe_only": {
+      "ids": ["ridge_alpha1", "ridge_alpha100", "dlinear_closed_form", "knn_analog_k3"],
+      "cite": "artifacts/functional/e2/consumer_axis_checkpoint.json declared_before_run"
+    },
+    "benchmark_v02_models": ["DLinear", "LSTMForecaster"],
+    "multi_consumer_readiness": "READY only as pooled vs per_channel (same ridge family). Ridge vs DLinear/kNN is NOT wired into G1/S1/T5 lifecycle."
+  },
+  "item_7_ad_guard_assets": {
+    "one_line": "#31 shared_outlier_repair is forecast-domain and unscoped on task_kind; AD v3 is RISK-only and archived; classification-card inertia is the intended S2 negative control but has no forecast host.",
+    "shared_candidate": {
+      "id": "shared_outlier_repair_with_per_series_guard_v1",
+      "artifact": "artifacts/functional/e2/shared_capability_candidate_v2.json",
+      "status": "SHARED_CANDIDATE",
+      "authorization": "GUIDANCE",
+      "target_support_required": true,
+      "grants_confirmation_free_try": false,
+      "programs_v2": ["outlier_iqr", "outlier_mad"],
+      "guard": {
+        "statistic": "min_per_series_gain",
+        "window": "delayed",
+        "comparator": "lt",
+        "threshold": -0.005,
+        "actions": ["VETO_AND_FALL_BACK", "RESCOPE_MASK_HARMED_SERIES"]
+      },
+      "applicability": "missing_fraction / local_robust_z_peak — no task_kind axis",
+      "compiled_from": "forecast traffic + NOAA",
+      "cite_compiler": "evaluation/functional/run_e2_shared_capability_candidate.py:188",
+      "s2_inertia_ready": false,
+      "why": "would fire on a forecast cell if features match; it is not a cross-task silent guard"
+    },
+    "ad_source_skills": {
+      "ids": ["source_investigation_ad_v1", "source_investigation_ad_v2", "source_investigation_ad_v3"],
+      "applicability": "task_kind==anomaly_detection",
+      "cite": "evaluation/functional/task_episode_harness/agentic/ad_source_skill.py:24-28",
+      "v3_status": "archived; TRY empty; RISK hampel/iqr/mad; AGENTS.md:211",
+      "s2_negative_control": "usable only if retrieval filters task_kind; temp store not committed"
+    },
+    "intended_s2_inertia": {
+      "shape": "classification cards (task_kind==classification) silent on a forecast cell",
+      "scope_ast_ready": true,
+      "cites": [
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:59",
+        "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1683-1684"
+      ],
+      "drop_in_ready": false,
+      "why": "S1 four-arm cannot host a forecast cell (item 1)"
+    }
+  }
+}
