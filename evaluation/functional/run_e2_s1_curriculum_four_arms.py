@@ -241,6 +241,9 @@ from SelfEvolvingHarnessTS.methods.ttha.public_tools import (  # noqa: E402
 from SelfEvolvingHarnessTS.operators.registry import (  # noqa: E402
     OPERATOR_NAMES,
 )
+from evaluation.functional.task_episode_harness.agentic import (  # noqa: E402
+    source_skill as ss,
+)
 
 Stop = cls.Stop
 FitBudget = cls.FitBudget
@@ -1195,6 +1198,63 @@ def _new_state(*, snapshot: Any, agent: Any, store_root: Path, tag: str,
     }
 
 
+def _scope_match_by_skill_id(entries: Mapping[str, Any],
+                             features: Mapping[str, Any]) -> dict[str, bool]:
+    """SA-1 Part 0 (3): the AST verdict for every installed card, per unit.
+
+    ``resolve_harness_view`` already evaluates exactly this
+    (``retrieval.py:278-280``) and then throws the losers away, so "the card
+    did not match" and "the card matched and the Target refused it" both
+    arrive as "no such candidate in the pool".  Those two are the whole
+    difference between a Scope that is too narrow and a card that is wrong.
+    The same evaluator is called here on the same feature mapping the Fast
+    path was handed; nothing is retrieved, ranked or proposed differently.
+    """
+    from SelfEvolvingHarnessTS.methods.ttha.retrieval import (
+        evaluate_applicability,
+    )
+
+    out: dict[str, bool] = {}
+    for skill_id, entry in sorted(entries.items()):
+        ast = getattr(entry, "observable_applicability", None)
+        if not ast:
+            out[skill_id] = False
+            continue
+        matched, _score = evaluate_applicability(_plain(ast), features)
+        out[skill_id] = bool(matched)
+    return out
+
+
+def _guidance_conditioned_by_skill_id(entries: Mapping[str, Any],
+                                      retrieved: Sequence[str]
+                                      ) -> dict[str, bool]:
+    """SA-1 Part 0 (4): was this card in view while this round earned its
+    Episodes?
+
+    A positive earned under a card is Harness-conditioned and counts zero
+    toward that card's own authorization.  Until now that was derived from
+    the unit's position relative to the one boundary a card was installed at,
+    which is correct for one card and undefined for two installed at
+    different boundaries.  In view is what conditioning actually means, and
+    the round already records which cards were in view.
+    """
+    in_view = {str(skill_id) for skill_id in retrieved}
+    return {skill_id: skill_id in in_view for skill_id in sorted(entries)}
+
+
+def _episode_attribution(episode: Any, entries: Mapping[str, Any],
+                         shas: Mapping[str, str]) -> dict[str, Any]:
+    """SA-1 Part 0 (1) and (2), read off one Episode."""
+    summary = getattr(episode, "context_summary", None) or {}
+    skill_id = summary.get("source_skill_id")
+    skill_id = str(skill_id) if skill_id else None
+    return {
+        "source_skill_id": skill_id,
+        "source_skill_revision": (
+            shas.get(skill_id) if skill_id in entries else None),
+    }
+
+
 def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
                unit_id: str, round_name: str, arm: str,
                fit_budget: FitBudget, ledger: Any) -> dict[str, Any]:
@@ -1251,7 +1311,12 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
     method.bind_round_data(block, task_kind=TASK_KIND)
     started = time.time()
     llm_before = int(getattr(ledger, "calls", 0) or 0)
-    skills_before = {str(s.skill_id) for s in method._active_snapshot().skills}
+    # SA-1 Part 0: the cards this round ran under, captured before the round
+    # can mint anything, so the per-card readouts below describe the view the
+    # Episodes were actually earned in.
+    entries_before = {str(s.skill_id): s
+                      for s in method._active_snapshot().skills}
+    skills_before = set(entries_before)
     result = run_online_round(
         method, executor, request, values,
         origin=support_origin, slow_agent=None,
@@ -1336,6 +1401,8 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
         })
     retrieved = [str(item) for item in
                  (getattr(trace, "retrieved_skill_ids", ()) or ())]
+    entry_shas = {skill_id: ss.skill_content_sha(entry)
+                  for skill_id, entry in entries_before.items()}
     guarded_ops = sorted({op for skill_id in retrieved
                           if skill_id.startswith("target_risk_")
                           for op in _ops_in(skill_id)})
@@ -1361,6 +1428,15 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
         # card compiler can take its WHEN clause off the round record.
         "fast_features_binned": _binned_contract_leaves(features),
         "fast_features_raw_keys": sorted(str(key) for key in features),
+        # SA-1 Part 0 (3) and (4): per installed card, did its Scope admit
+        # this unit, and was it in view while the Episodes were earned.  Both
+        # are readouts of state this round already had; neither is consulted
+        # by anything that decides.
+        "scope_match_by_skill_id": _scope_match_by_skill_id(
+            entries_before, features),
+        "guidance_conditioned_by_skill_id": _guidance_conditioned_by_skill_id(
+            entries_before, retrieved),
+        "installed_skill_content_sha": dict(sorted(entry_shas.items())),
         # PS-0 Part 1 (2): every raw proposal, family-tagged from its steps.
         "proposals": proposals,
         "proposal_families": sorted({row["family"] for row in proposals
@@ -1401,6 +1477,8 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
             "task_episode_id": (
                 (getattr(e, "context_summary", None) or {}).get(
                     "task_episode_id")),
+            # SA-1 Part 0 (1) and (2).
+            **_episode_attribution(e, entries_before, entry_shas),
             "workflow_signature": e.workflow_signature,
             "relation": e.relation,
             "evidence_level": e.evidence_level,

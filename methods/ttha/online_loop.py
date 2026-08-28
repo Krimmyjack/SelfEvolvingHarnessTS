@@ -137,6 +137,27 @@ def _per_series_gains(per_view_gain: Sequence[float] | None,
     return {str(uid): value for uid, value in zip(uids, values)}
 
 
+_SUPPLIED_CANDIDATE_PREFIX = "cand_skill_"
+
+
+def source_skill_of_candidate(candidate_id: Any) -> str | None:
+    """Which Skill card placed this candidate, or ``None`` if the agent did.
+
+    SA-1 Part 0 (1).  ``fast_agent._skill_frozen_candidates`` mints the id and
+    the ``Candidate.source`` from one string -- ``cand_skill_<skill_id>`` and
+    ``skill:<skill_id>`` (``fast_agent.py:365-369``) -- so decoding the prefix
+    recovers exactly what ``source`` carries.  The probe loop only keeps the
+    id, and this is the one place that turns it back into a card id.  Pure
+    reader: nothing here changes what is proposed, probed or written.
+    """
+    text = str(candidate_id or "")
+    if text.startswith("skill:"):
+        return text[len("skill:"):] or None
+    if text.startswith(_SUPPLIED_CANDIDATE_PREFIX):
+        return text[len(_SUPPLIED_CANDIDATE_PREFIX):] or None
+    return None
+
+
 def _write_target_episode(*, domain: str, op: str,
                           program_steps: Sequence[Mapping[str, object]],
                           support_gain: float, support_context: Mapping[str, float],
@@ -145,7 +166,8 @@ def _write_target_episode(*, domain: str, op: str,
                           support_origin: int | None = None,
                           task_spec: Any = None,
                           series_uids: Sequence[str] | None = None,
-                          consumer_id: str | None = None) -> Any:
+                          consumer_id: str | None = None,
+                          source_skill_id: str | None = None) -> Any:
     """与 run_v1_target_local_loop.write_target_episode 同构（生产路径
     直接复用 experience_memory.build_episode）。
 
@@ -187,6 +209,13 @@ def _write_target_episode(*, domain: str, op: str,
             # 或 delayed 读数——本 Episode 已经带着同一个串了。
             # 语义与预测线 e1._make_episode:937 同：一个 Task 单元一个串。
             "task_episode_id": str(domain),
+            # SA-1 Part 0 (1): which card supplied the candidate this Episode
+            # is a reading of, null when the agent proposed it itself.  Before
+            # this field a card-supplied hampel Episode and a self-proposed
+            # one were the same record, and the only join available was the
+            # workflow signature -- which cannot tell the card's work from the
+            # agent's luck when both name the same program.
+            "source_skill_id": str(source_skill_id) if source_skill_id else None,
             "cohort": {"series_count": 1, "evaluation_series_count": 0},
             "local_pattern": {"support_gain": support_gain,
                               **(dict(support_context) if support_context else {})},
@@ -422,7 +451,8 @@ def run_online_round(
             support_origin=origin,
             task_spec=result._task_spec,
             series_uids=result._series_uids,
-            consumer_id=result._consumer_id)
+            consumer_id=result._consumer_id,
+            source_skill_id=source_skill_of_candidate(cand))
         method.append_experience_episode(ep)
         result.episode_ids.append(ep.episode_id)
         result._episodes.append((ep, tuple(steps)))

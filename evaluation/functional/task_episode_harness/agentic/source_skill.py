@@ -328,6 +328,33 @@ SUPPLY_SCOPE_AXES = ("task_kind", "consumer_id", "metric",
                      "pattern_intersection", "program_geometry")
 
 
+def skill_content_sha(entry: Any) -> str:
+    """A card's content address -- SA-1's version stamp.
+
+    ``SkillEntry.revision`` is a static authoring field: every mint writes the
+    literal 1 and nothing in the repository increments it (SA-0 audit A-2), so
+    a revised card would still read ``revision: 1`` and no ledger could say
+    which version was in view.  The store already addresses snapshots by
+    content, and this is the same idea one level down: canonicalize the card
+    exactly as the compiler serializes it and hash those bytes.  Nothing here
+    writes to the card, so no mint site changes.
+    """
+    import hashlib
+
+    from SelfEvolvingHarnessTS.contracts.canonical import canonical_json_bytes
+    from SelfEvolvingHarnessTS.contracts.harness import load_skill_entry
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        skill_entry_to_dict,
+    )
+
+    # Both shapes go through the same serializer, so the stamp a card payload
+    # gets before it is installed and the stamp the installed entry gets are
+    # the same string.
+    loaded = load_skill_entry(dict(entry)) if isinstance(entry, Mapping) else entry
+    return hashlib.sha256(
+        canonical_json_bytes(skill_entry_to_dict(loaded))).hexdigest()
+
+
 def _distinct(rows: Sequence[Mapping[str, Any]]) -> set[str]:
     return {str(row["task_episode_id"]) for row in rows}
 
@@ -397,14 +424,72 @@ def supply_tier_audit(
     return out
 
 
-def five_axis_scope(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any] | None:
+# --------------------------------------------------------------------------- #
+# Scope rule v2 -- the Pattern *family* axis (SA-1 Part 0.5)
+# --------------------------------------------------------------------------- #
+# The degenerate case of the intersection rule below is what L1 paid for: with
+# one source Episode the "intersection" is that Episode's entire recorded
+# Pattern view, incidental leaves included, and one such leaf
+# (``period_change_score``) decided two of three non-matches.  Scope rule v2
+# replaces the Pattern axis of a *supply* card with the family the evidence
+# belongs to.
+#
+# The family definition is not invented here and is not chosen by looking at
+# what would have matched.  It is the Pattern intersection S1a already used to
+# decide whether a Program cluster qualifies as a family at all --
+# ``run_e2_s1a_curriculum_oracle_audit._compatible_clusters``
+# (``:619-652``, intersection helper ``_intersect_maps`` at ``:609-616``),
+# frozen months before L1 in
+# ``artifacts/functional/e2/s1a_curriculum_audit.json`` at
+# ``part_b.clusters[].pattern_intersection``.  S1a's gate reads: >= 2
+# independent positives sharing Task/Consumer, one Program geometry, and a
+# non-empty deployment-visible Pattern intersection.  Those shared leaves are
+# exactly "what this defect family looks like"; a leaf only one member carries
+# is by construction not in them.
+S1A_AUDIT_RELPATH = ("artifacts/functional/e2/s1a_curriculum_audit.json")
+PATTERN_FAMILY_AXIS_KIND = "s1a_cluster_pattern_intersection/1"
+
+
+def s1a_pattern_family_leaves(program: str, *, audit_path: Any
+                              ) -> dict[str, Any] | None:
+    """The frozen Pattern leaves that define ``program``'s defect family.
+
+    ``None`` when S1a found no qualifying cluster for that Program -- a
+    single-member "cluster" carries the whole member's view and is marked
+    ``compatible: false`` there, so it is not a family and must not be used
+    as one.  A missing definition is a stop, never an invitation to compile
+    the family here.
+    """
+    from pathlib import Path as _Path
+
+    audit = json.loads(_Path(audit_path).read_text(encoding="utf-8"))
+    clusters = (audit.get("part_b") or {}).get("clusters") or []
+    for cluster in clusters:
+        if str(cluster.get("program")) != str(program):
+            continue
+        if not cluster.get("compatible"):
+            return None
+        leaves = dict(cluster.get("pattern_intersection") or {})
+        return leaves or None
+    return None
+
+
+def five_axis_scope(rows: Sequence[Mapping[str, Any]],
+                    *, pattern_family: Mapping[str, Any] | None = None
+                    ) -> dict[str, Any] | None:
     """The Scope the supplying evidence actually shares, and nothing wider.
 
     Task identity must be identical across the sources -- a card that spans
-    two Consumers is making a claim its evidence never tested.  The Pattern
-    axis keeps only leaves present with the same value in *every* source, the
-    same intersection rule ``risk_skill._shared_signature`` uses on the guard
-    side.  Returns ``None`` when the identity axes disagree.
+    two Consumers is making a claim its evidence never tested.  Returns
+    ``None`` when the identity axes disagree.
+
+    The Pattern axis has two rules.  Without ``pattern_family`` it keeps only
+    leaves present with the same value in *every* source, the same
+    intersection rule ``risk_skill._shared_signature`` uses on the guard side;
+    this is the Source-card rule and is untouched.  With ``pattern_family``
+    (Scope rule v2, supply tier only) the axis *is* the family, and every
+    source must agree with the family on every one of its leaves -- an
+    Episode that disagrees is not a member and buys no family-wide card.
     """
     if not rows:
         return None
@@ -414,19 +499,30 @@ def five_axis_scope(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any] | None:
     for row in rows[1:]:
         if any(row.get(axis) != identity[axis] for axis in identity):
             return None
-    pattern = dict(first.get("pattern") or {})
-    for row in rows[1:]:
-        other = dict(row.get("pattern") or {})
-        pattern = {key: value for key, value in pattern.items()
-                   if key in other and other[key] == value}
     programs = {str(row["program"]) for row in rows}
     if len(programs) != 1:
         return None
+    if pattern_family is None:
+        pattern = dict(first.get("pattern") or {})
+        for row in rows[1:]:
+            other = dict(row.get("pattern") or {})
+            pattern = {key: value for key, value in pattern.items()
+                       if key in other and other[key] == value}
+        axis_kind = "source_intersection/1"
+    else:
+        pattern = dict(pattern_family)
+        for row in rows:
+            view = dict(row.get("pattern") or {})
+            if any(key not in view or view[key] != value
+                   for key, value in pattern.items()):
+                return None
+        axis_kind = PATTERN_FAMILY_AXIS_KIND
     return {
         "task_kind": identity["task_kind"],
         "consumer_id": identity["consumer_id"],
         "metric": identity["metric"],
         "pattern_intersection": pattern,
+        "pattern_axis_kind": axis_kind,
         "program_geometry": list(programs.pop().split("+")),
     }
 
@@ -548,6 +644,13 @@ def build_supply_card_payload(
                 "consumer_id": scope["consumer_id"],
                 "metric": scope["metric"],
                 "pattern_intersection": pattern,
+                # Which rule filled the Pattern axis.  A reader has to be able
+                # to tell a family axis from one Episode's whole recorded view
+                # without re-deriving it.
+                "pattern_axis_kind": scope.get("pattern_axis_kind",
+                                               "source_intersection/1"),
+                "pattern_axis_provenance": scope.get(
+                    "pattern_axis_provenance"),
                 "program_geometry": geometry,
             },
             "pattern_leaves_dropped_as_uncontracted_for_edit_schema": dropped,
@@ -561,6 +664,11 @@ def build_supply_card_payload(
                      "run_id": row.get("run_id"),
                      "support_gain": row["support_gain"],
                      "delayed_gain": row["delayed_gain"],
+                     # SA-1 R2 compiles an exclusion by comparing a refusing
+                     # unit against the units this card was earned on, so the
+                     # card has to carry their binned views rather than send
+                     # a later reader back to a run artifact.
+                     "pattern_view": dict(row.get("pattern") or {}),
                      "direction": "improved"}
                     for row in sources],
                 "uncertainty": (
@@ -582,6 +690,8 @@ def compile_supply_tier(
     min_distinct_tasks: int = SUPPLY_TIER_MIN_DISTINCT_TASKS,
     conditioning_key: str = "conditioned_snapshot",
     legal_features: Sequence[str] | None = None,
+    pattern_family: Mapping[str, Any] | None = None,
+    pattern_axis_provenance: str | None = None,
 ) -> dict[str, Any]:
     """The supply-tier exit: Episodes in, one card or a stated refusal out.
 
@@ -612,10 +722,15 @@ def compile_supply_tier(
          and str(row.get("relation") or "").upper() == "POSITIVE"
          and not row.get(conditioning_key)),
         key=lambda row: (str(row["task_episode_id"]), str(row.get("run_id"))))
-    scope = five_axis_scope(sources)
+    scope = five_axis_scope(sources, pattern_family=pattern_family)
     if scope is None:
         return {"tier": "supply", "audit": audit, "card": None, "scope": None,
-                "withheld_because": "identity_axes_disagree_across_sources"}
+                "withheld_because": (
+                    "a source Episode is outside the Pattern family"
+                    if pattern_family is not None
+                    else "identity_axes_disagree_across_sources")}
+    if pattern_axis_provenance:
+        scope["pattern_axis_provenance"] = str(pattern_axis_provenance)
     if not scope["pattern_intersection"]:
         return {"tier": "supply", "audit": audit, "card": None,
                 "scope": scope,
