@@ -1363,6 +1363,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **工件**:`s2a_natural_pool_sweep.json/.md`、`s2a_course_frozen.json/.md`。**first fault:无。** 续 Part P G1/G2 live。
 
+### 治理身份对齐 + sol 四裁入典:**用户即 sol,裁定直达**;新鲜度两级终验定案(F1 承主结果/F2 仅系最强主张);两下载科学+执行双批(2026-08-29 01:2x,主线)
+
+**治理对齐**:用户明示其即 sol,此前"转呈 sol"环节系表述误会;自本条起裁定直达,典中不再出现转呈措辞。
+
+**四裁全录**:(1) **三级新鲜度披露批准**,并配套两级终验细化——**严格核心四条**(正式考前冻结 Harness/预算/指标;Target held-out Outcome 一次性打开;开后不改不重跑;A3/A5 同 Target 反馈预算);**不必过严四条**(他文用过、同业同族、冻结后 held-in 可适应、同族新实例 Outcome 未见仍证同族泛化)。终验两级:**F1=同族新 Target、Outcome 未见,足撑 A5 vs A3 主系统结果与同族泛化**(traffic leftover 382 列即可承担正式 F1,主实验不等 F2);**F2=新族、Outcome 未见,仅系最强跨域主张(capstone),不得阻塞主实验**。"整族从未碰过"作全局硬门的旧表述过严,即时废止。(2) **触发富/fresh 角色分离批准**:KDD 含缺失版专用 G1/Stage 3 development,永不包装为 fresh;Solar-Energy 专用密封终验。(3) **Stage 3 pilot 批准进入 Part 0**:只编辑候选探索分配策略,安全门不可编辑,单轮不重掷,三臂不变。(4) **两下载科学协议批准 + 执行授权批准**(用户原话"我的话是批准的"),条件=下载前冻结:官方来源与版本、用途、Solar 序列/时间窗选择规则、KDD 永不冒充 fresh——冻结文档 `docs/D4_DOWNLOAD_FREEZE_2026-08-29.md` 随本条入库。
+
+**Solar 资格披露(主线核出)**:仓内已存 `cross_series_workflow_solar_target_plan.json`(旧跨序列线"仅计划"冻结,`AGGREGATE_SEEN`:观察过 137×52560 结构,`numeric_values_parsed=false`,**`program_or_consumer_outcome_computed=false`**)——按两级终验,**Outcome 未见成立,F2 资格保住**,结构曝光如实披露;另披露 `monash_weather_daily` 太阳辐射变量曾在 w1 开发使用(气象测量族,与光伏发电产出族不同源,不同数据生成过程)。**双源核定**:KDD=Zenodo 4656719(2.5MB,md5 `bd6af1e0…`);Solar=Zenodo 4656144(4.6MB,md5 `84c0de18…`,NREL AL-2006 光伏,即 LSTF Solar-Energy 同源)。执行序(sol 确认):KDD 测 G1 触发率 → Stage 3 接线审计与 pilot → 冻结 v2 → 四臂主实验 → Solar 密封终验。
+
 ### D4 普查+夜间清点落账(主线):traffic leftover 6/6 缺陷贫瘠;KDD 缓存 270 条容量全过但系去缺失变体;**触发富池与 fresh 池角色分离**,授权包收敛(2026-08-29 01:0x,主线)
 
 **普查核可**(Grok 执行,工件 `d4_leftover_defect_census.{json,md}`):traffic leftover 382/382 零缺失(registry 族标齐验),零值为占有率结构非缺失(中位零率 0.445%),MAD-8 机械 rich 判为右尾混淆照录不采,周跳变 0-3 条/cell,**6/6 cell = poor**;electricity 21 列 moderate 但不足一 cell。判读采认:**F1 只能承担易档,天然触发期望 ≈0/课**(低于 G1 拟 ≥2/课)——00:3x 条耦合警示由数据证实。

@@ -4,6 +4,21 @@
 v0 见 git 历史(93cb6c1)。变更记录 v0→v1:C5 拆三层;考场难度由「必须变贵」改为
 三档预注册梯度;D1-D5 全部落定;并入多 Consumer 轴与四臂协议;新增护栏 G1-G5。
 
+## v1.1 增补(2026-08-29 01:2x,sol 四裁,措辞以入典条为准)
+
+1. **新鲜度两级终验(取代 D4 单级硬门)**:严格核心四条 = 正式考前冻结
+   Harness/预算/指标;Target held-out Outcome 一次性打开;开后不改不重跑;
+   A3/A5 同 Target 反馈预算。**F1 = 同族新 Target、Outcome 未见**(traffic
+   leftover 382 列合格),承担 A5 vs A3 主系统结果与同族泛化;**F2 = 新族、
+   Outcome 未见**(Solar 10 Minutes),仅承担 C5c 最强跨域主张(capstone),
+   不阻塞主实验。"整族从未碰过"作全局硬门废止。
+2. **触发富/fresh 角色分离批准**:KDD 含缺失版 = development 触发富池
+   (G1/Stage 3/硬档),永不冒充 fresh;Solar = 密封终验专用。
+3. **Stage 3 pilot 批准进入 Part 0**(协议见 §6 与冻结稿)。
+4. **两下载批准并执行**(冻结文档 `docs/D4_DOWNLOAD_FREEZE_2026-08-29.md`):
+   KDD Zenodo 4656719;Solar Zenodo 4656144(隔离令:完整性核验外一切分析禁止)。
+5. 治理:用户即 sol,裁定直达,无转呈环节。
+
 ## 1. 中心问题(论文措辞,采 sol)
 
 > 在不同 Task、Consumer 和 Pattern 下,同一 Harness 能否利用各任务自己的历史经验,
