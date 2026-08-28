@@ -1213,6 +1213,16 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### SA-1 收口裁定(主线):判词维持;**归因三分账**(轴规则 +0.6860 / 修订环 1 次避拒 / 安全零害);P4 第三路径入案;capstone 开封案呈用户+sol(2026-08-28 12:4x,主线)
+
+**裁定**:执行方判词 `SA1_DEVELOPMENT_SIGNAL`(单跑措辞)核可;四段全过、止损未触发;成本 78/150 LLM、69/300 fit、2227 s;提交 `cf2eb12`(代码)/`5ff76b5`(工件+台账)。回归 105 绿;`test_skill_revocation.py` py3.12 f-string 收集失败**先于本书**,挂账不修。
+
+**归因三分账(本条承重,三笔分立入典、禁互相挪用)**:**(a) 承重轴效应(sol 裁 ③)= +0.6860**——两带卡臂 distinct 五单元累计 regret **+0.0850** vs 无卡臂 **+0.7710**,与 v4 尾段同底可比:叶 Scope 卡(L1)回收 +0.2127,承重五轴卡回收 +0.6860,**多回收 +0.4733**,与 SA-0b 反事实预估同向且更优(GunPoint 实转 regret −0.0667,略优 oracle);development 级、GunPoint 族内、双门零害。**(b) 修订环效应(sol 裁 ②)= 恰 1 次避免挨拒**,位于预注册再遇位 PowerCons#2(A5-adaptive 零供给零挨拒,K0-fixed 再供给再挨拒;P5 干净成立);卡版本链 v0 `00503481`→v1(R1@GunPoint)→v2(R1@GPOvY)→v3 `89728a4a`(R2@PowerCons#1,排除 `period_change_score==very_low`),全走冻结 EditController、sha 版本化;probe 层归因为零(agent 自提回填空槽),raw"省 2 探 2 拒"中仅此 1 拒可归因,如实。**(c) 安全面**:harm 全零、regret 非劣(两带卡臂逐字同分)、无升档无扩 Scope(受引导计零红线未破)。**用户论题两半就此各有实证**:前半(经验初始化低权入场)= L1+轴规则;后半(按反馈持续修订)= 本跑版本链与再遇位读数。
+
+**书外三项入案**:(1) **P4 第三路径**——Herring 匹配在视野,agent 自提同一冻结程序,**候选去重吞掉机械供给**(池内无 `cand_skill_` 条目),非拒非排除;行为正确(防重复探测)但遮蔽供给归因,记仪器注意项:自提与供给同程序时应补写去重记号(小修,留后续,不阻塞)。(2) R3 离线只落降权未落排除(ECG200 害证与证据在 12 契约轴上不可区分,规则拒绝发明),live 零 harm 未现场考——R3 现场覆盖留待自然发生,不造 harm。(3) Q1 残留照令未动(收窄 PATCH 以 `RETRIEVAL_MISS` 作授权令牌,语义错位),留 sol 队列。
+
+**capstone 开封案(呈用户+sol)**:11:0x 冻结的开封条件——"SA-1 预注册信号成立(材料级改善 ∧ regret 非劣 ∧ harm 0)"——**字面已达**(P5 成立、非劣、零害),但修订环自身效应量 = 1 次避拒(计数型读数,无冻结材料线可援),且单跑措辞纪律在案。**主线建议:先跑 SA-1 采样 r2(~80 LLM / ~40 min,同课同协议冻结),两跑同向再开 Epilepsy2**——一次性密封靶配复合级证据;若用户+sol 认单跑已足,条件字面满足亦可直开。开封后终考形态建议:CAP-1 冻结件 + scope-v2 单例卡 + 修订环开启(A5-adaptive 形态)对照 A3。
+
 ### sol 三裁全采(capstone 缓开 / SA-1 最小版批 / Q9 承重轴规则);主线三条操作化;SA-1 发车(2026-08-28 11:0x,主线)
 
 **sol 裁定(全采)**:**①** capstone 暂不解锁——L1 +0.2127 认可为机制正结果,但系边界重放,未满足 CAP-1 原定完整演化条件;Epilepsy2 唯一,留待 Skill 修订产生正信号后开封(主线撤回昨日"capstone 先跑"推荐,资源论+门完整性论均成立)。**②** SA-1 批最小版:先补四归因字段,再只接三种写回(**正向→追加证据 / 冲突→收窄 Scope / 负向→降权-排除**);不同时处理 12 问,不建新平台;离线 replay 过后直接跑一次短 A3 / K0-fixed / A5-adaptive。**③** Q9 采**预冻结承重轴规则**:供给卡初始 Scope = Task × Consumer × Metric × **Pattern family** × Program geometry,不塞偶然 observation 叶;后续冲突/负反馈由 Slow 加排除条件;单例卡仍仅候选建议权,不能执行。
