@@ -870,7 +870,7 @@ def run_course(seed: str = "r1", *, resume: bool = False,
         "scoring": frozen["scoring"],
         "pre_registered_predictions": PRE_REGISTERED,
         "gates": {"part_0": gates["part_0"], "part_0_5": gates["part_0_5"],
-                  "part_1": gates["part_1"],
+                  "part_1": gates["part_1"], "card_v0": gates["card_v0"],
                   "verdict": gates["verdict"]},
     }
     rows: list[dict[str, Any]] = []
@@ -900,8 +900,17 @@ def run_course(seed: str = "r1", *, resume: bool = False,
 
     stopped: str | None = None
     if finalize:
+        # Re-render only.  Nothing is re-run and nothing is re-scored from
+        # anything but the checkpoint; the run-level facts the checkpoint does
+        # not hold are carried over from the artifact they were written to.
+        if OUT_JSON.is_file():
+            previous = json.loads(OUT_JSON.read_text(encoding="utf-8"))
+            for key in ("k0", "backend_probe", "stop"):
+                if key in previous:
+                    payload[key] = previous[key]
+            stopped = (previous.get("stop") or {}).get("verdict")
         return _finish(payload, rows, revisions, chain, ledger,
-                       stopped=None, started=started, ps0c=ps0c)
+                       stopped=stopped, started=started, ps0c=ps0c)
     try:
         probe = ps0c.probe_new_backend()
         payload["backend_probe"] = ps0c.redact(probe)
@@ -1054,10 +1063,71 @@ def _summarise(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def _attribution(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Which A5-vs-K0 differences the narrowing actually caused.
+
+    Two arms carrying the same card can differ for two quite different
+    reasons, and only one of them is the mechanism under test.  A position
+    where A5's Scope no longer admits the unit and K0's still does is the
+    narrowing at work.  A position where both Scopes agree and the pools
+    still differ is the Fast agent's own proposal set -- most often because
+    the agent named the card's program itself, so the mechanical supply was
+    deduplicated against it.  Both are reported; only the first is claimed.
+    """
+    by_key = {(int(row["position"]), str(row["arm"])): row for row in rows}
+    per_position = []
+    for position in sorted({int(row["position"]) for row in rows}):
+        a5 = by_key.get((position, ARM_A5))
+        k0 = by_key.get((position, ARM_K0))
+        if a5 is None or k0 is None:
+            continue
+        a5_card, k0_card = a5.get("card") or {}, k0.get("card") or {}
+        narrowed_out = bool(k0_card.get("scope_match")
+                            and not a5_card.get("scope_match"))
+        probe_delta = int(k0["probes"]) - int(a5["probes"])
+        refusal_delta = (int(k0_card.get("refused") or 0)
+                         - int(a5_card.get("refused") or 0))
+        if probe_delta or refusal_delta:
+            cause = ("scope_narrowing" if narrowed_out
+                     else "agent_pool_composition")
+        else:
+            cause = None
+        per_position.append({
+            "position": position, "unit_id": a5["unit_id"],
+            "a5_scope_match": a5_card.get("scope_match"),
+            "k0_scope_match": k0_card.get("scope_match"),
+            "a5_supplied": a5_card.get("supplied_in_pool"),
+            "k0_supplied": k0_card.get("supplied_in_pool"),
+            "probe_delta": probe_delta, "refusal_delta": refusal_delta,
+            "cause": cause,
+            "note": (
+                "the card's Scope no longer admits this unit; K0-fixed's "
+                "still does" if narrowed_out else
+                "both Scopes agree here, so the difference is the agent's "
+                "own proposal set, not the revision" if cause else None),
+        })
+    narrowing = [row for row in per_position
+                 if row["cause"] == "scope_narrowing"]
+    other = [row for row in per_position
+             if row["cause"] == "agent_pool_composition"]
+    return {
+        "per_position": per_position,
+        "probes_saved_by_narrowing": sum(row["probe_delta"]
+                                         for row in narrowing),
+        "refusals_avoided_by_narrowing": sum(row["refusal_delta"]
+                                             for row in narrowing),
+        "probes_saved_by_pool_composition": sum(row["probe_delta"]
+                                                for row in other),
+        "refusals_avoided_by_pool_composition": sum(row["refusal_delta"]
+                                                    for row in other),
+    }
+
+
 def _headline(summary: Mapping[str, Any],
               rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     a5 = summary.get(ARM_A5) or {}
     k0 = summary.get(ARM_K0) or {}
+    attribution = _attribution(rows)
     probes_saved = int(k0.get("probes", 0)) - int(a5.get("probes", 0))
     refusals_avoided = (int(k0.get("supplied_refused", 0))
                         - int(a5.get("supplied_refused", 0)))
@@ -1070,11 +1140,22 @@ def _headline(summary: Mapping[str, Any],
             "converted": (row.get("card") or {}).get("converted"),
             "probes": row["probes"], "regret": row["regret"]}
         for row in rows if int(row["position"]) == REENCOUNTER_POSITION}
-    moved = bool(probes_saved >= 1 or refusals_avoided >= 1)
+    moved = bool(attribution["probes_saved_by_narrowing"] >= 1
+                 or attribution["refusals_avoided_by_narrowing"] >= 1)
+    a3 = summary.get(ARM_A3) or {}
     return {
         "core_positive_effect_moved": moved,
         "probes_saved_a5_vs_k0": probes_saved,
         "refusals_avoided_a5_vs_k0": refusals_avoided,
+        "attribution": attribution,
+        "probes_saved_by_narrowing": attribution["probes_saved_by_narrowing"],
+        "refusals_avoided_by_narrowing": (
+            attribution["refusals_avoided_by_narrowing"]),
+        # Separate finding, and not the mechanism under test: what carrying
+        # the Scope-v2 card at all buys against carrying none.
+        "card_vs_no_card_regret_gap": (
+            float(a3.get("cumulative_regret_distinct_units", 0.0))
+            - float(a5.get("cumulative_regret_distinct_units", 0.0))),
         "regret_gap_a5_vs_k0_distinct_units": regret_gap,
         "regret_non_inferior": regret_gap >= 0.0,
         "harm_all_zero": all(int((summary.get(arm) or {}).get(
@@ -1143,8 +1224,8 @@ def _verdict(headline, predictions, rows, revisions, *, stopped):
                 "reason": "stopped before the course completed; readings "
                           "below are partial and the stop rule forbids a "
                           "second run"}
-    mechanism = bool(headline["probes_saved_a5_vs_k0"] >= 1
-                     or headline["refusals_avoided_a5_vs_k0"] >= 1)
+    mechanism = bool(headline["probes_saved_by_narrowing"] >= 1
+                     or headline["refusals_avoided_by_narrowing"] >= 1)
     if (mechanism and headline["regret_non_inferior"]
             and headline["harm_all_zero"]
             and any(row.get("applied") for row in revisions)):
@@ -1166,6 +1247,65 @@ def _verdict(headline, predictions, rows, revisions, *, stopped):
     }
 
 
+def _honest_boundaries(payload: Mapping[str, Any]) -> list[str]:
+    head = payload["headline"]
+    gates = payload.get("gates") or {}
+    dropped = ((gates.get("part_0_5") or {}).get("evidence") or {})
+    card = (payload.get("gates") or {}).get("card_v0") or {}
+    dropped_leaves = ((card.get("risk_guards") or {}).get(
+        "pattern_leaves_dropped_as_uncontracted_for_edit_schema") or [])
+    out = [
+        "**P4 broke, and not in either of the two ways it allowed for.**  "
+        "Herring matched the narrowed card's Scope and the card was in "
+        "A5-adaptive's view, but no `cand_skill_` candidate reached the pool: "
+        "the Fast agent had already proposed the same frozen program itself, "
+        "so the mechanical supply was deduplicated against it.  Herring was "
+        "therefore neither refused-as-supplied nor excluded by v1.  The "
+        "outcome is identical to K0-fixed (identity deployed, regret "
+        "+0.0469); only the probe count differs.",
+        "**The probe saving is not the narrowing's.**  Of %d raw probes "
+        "saved against K0-fixed, %d are attributable to the narrowing.  At "
+        "the pre-registered re-encounter slot the narrowing did remove the "
+        "supplied candidate and the refusal that came with it, but the Fast "
+        "agent spent the freed slot on a proposal of its own, so the probe "
+        "count there is unchanged.  The clean, attributable mechanism "
+        "difference in this run is **one avoided refusal**, at exactly the "
+        "position the freeze named."
+        % (head["probes_saved_a5_vs_k0"], head["probes_saved_by_narrowing"]),
+        "**Regret is identical between the two card arms (+0.0000).**  With "
+        "one refusal avoided and no conversion gained or lost, revision "
+        "bought cost and not quality here; the pre-registered claim was "
+        "non-inferiority, which holds, and nothing stronger is claimed.",
+        "**The big regret number belongs to Part 0.5, not to revision.**  "
+        "Both card arms finish at +0.0850 cumulative regret over the five "
+        "distinct units against +0.7710 with no card -- a gap of %+.4f.  The "
+        "five units and the identity baseline are the same ones the v4 tail "
+        "scored at +0.7710, so this is comparable to L1's +0.2127 on the same "
+        "substrate: the family Pattern axis, not the revision loop, is what "
+        "moved 1-of-5 Scope coverage to 4-of-5."
+        % head["card_vs_no_card_regret_gap"],
+        "**R3 wrote a demotion but no exclusion in the offline replay.**  The "
+        "ECG200 outlier_mad harm reading agrees with the card's own evidence "
+        "on every contracted axis, so nothing distinguishes it and the rule "
+        "refused to invent an axis.  The structured demotion note landed; the "
+        "narrowing did not.  The live course produced zero harm events, so R3 "
+        "was never exercised live -- as the freeze expected.",
+        "**Q7 stands: the effective Scope is wider than the recorded one.**  "
+        "The edit schema cannot carry %d of the family's leaves (%s), so they "
+        "are declared on the card and absent from its machine AST.  Any "
+        "exclusion compiled on this surface inherits the same blind spot."
+        % (len(dropped_leaves), ", ".join(dropped_leaves) or "none"),
+        "**Development grade, one run.**  Every unit was already exposed, the "
+        "seed Episode is a recorded one rather than a live re-earn, and the "
+        "wording stays `SA1_DEVELOPMENT_SIGNAL`; a compound claim needs a "
+        "sampling replicate, which this book does not authorize.",
+    ]
+    if dropped.get("matched") != dropped.get("expected"):
+        out.insert(0, "**The Part 0.5 match table did not reproduce its "
+                      "pre-registered set** -- see the gate block.")
+    return out
+
+
 def _finish(payload, rows, revisions, chain, ledger, *, stopped, started,
             ps0c) -> int:
     payload["rows"] = rows
@@ -1178,6 +1318,7 @@ def _finish(payload, rows, revisions, chain, ledger, *, stopped, started,
     payload["verdict"] = _verdict(payload["headline"],
                                   payload["prediction_table"], rows,
                                   revisions, stopped=stopped)
+    payload["honest_boundaries"] = _honest_boundaries(payload)
     payload["ledger"] = {
         "llm": ledger["llm"], "llm_cap": LLM_CAP,
         "fit": ledger["fit"], "fit_cap": FIT_CAP,
@@ -1233,6 +1374,17 @@ def _markdown(payload: Mapping[str, Any]) -> str:
         % ("是" if head["core_positive_effect_moved"] else "否",
            head["probes_saved_a5_vs_k0"], head["refusals_avoided_a5_vs_k0"],
            head["regret_gap_a5_vs_k0_distinct_units"]),
+        "",
+        "Of those raw differences, **%d probes and %d refusals are "
+        "attributable to the narrowing itself** (the position where A5's "
+        "Scope stopped admitting a unit that K0's still admitted); the rest "
+        "is the Fast agent's own proposal set.  Carrying the Scope-v2 card at "
+        "all -- either arm -- is worth **%+.4f** cumulative regret against "
+        "carrying none, which is a Part 0.5 result and not the mechanism "
+        "under test here."
+        % (head["probes_saved_by_narrowing"],
+           head["refusals_avoided_by_narrowing"],
+           head["card_vs_no_card_regret_gap"]),
         "",
         "判词 **%s** -- %s" % (payload["verdict"]["verdict"],
                                payload["verdict"].get("reason")),
@@ -1293,16 +1445,34 @@ def _markdown(payload: Mapping[str, Any]) -> str:
     for row in payload["prediction_table"]:
         lines.append("| %s | %s | %s | %s |"
                      % (row["id"], claims.get(row["id"], ""),
-                        "yes" if row["held"] else "**no**", row["observed"]))
+                        "yes" if row["held"] else "**no**",
+                        str(row["observed"]).replace("|", "/")))
     p6 = (head["probes_saved_a5_vs_k0"] >= 1) and head["regret_non_inferior"]
-    lines.append("| P6 | %s | %s | probes saved %d, regret gap %+.4f |"
-                 % (claims["P6"], "yes" if p6 else "**no**",
+    lines.append("| P6 | %s | %s | probes saved %d raw / **%d attributable to "
+                 "the narrowing**, regret gap %+.4f |"
+                 % (claims["P6"],
+                    "raw yes, attributable **no**" if p6 and not
+                    head["probes_saved_by_narrowing"] else
+                    ("yes" if p6 else "**no**"),
                     head["probes_saved_a5_vs_k0"],
+                    head["probes_saved_by_narrowing"],
                     head["regret_gap_a5_vs_k0_distinct_units"]))
     lines.append("| P7 | %s | %s | harm events %s |"
                  % (claims["P7"], "yes" if head["harm_all_zero"] else "**no**",
                     {ARM_LABEL[arm]: (summary.get(arm) or {}).get(
                         "harm_events") for arm in ARMS}))
+
+    lines += ["", "## A5-adaptive vs K0-fixed, position by position", "",
+              "| # | unit | A5 scope | K0 scope | A5 supplied | K0 supplied | "
+              "probe delta | refusal delta | cause |",
+              "|---|---|---|---|---|---|---|---|---|"]
+    for row in (head.get("attribution") or {}).get("per_position") or []:
+        lines.append("| %s | %s | %s | %s | %s | %s | %+d | %+d | %s |"
+                     % (row["position"], row["unit_id"].split("__")[0],
+                        row["a5_scope_match"], row["k0_scope_match"],
+                        row["a5_supplied"], row["k0_supplied"],
+                        row["probe_delta"], row["refusal_delta"],
+                        row["cause"] or "-"))
 
     lines += ["", "## Revisions", "",
               "| after # | unit | rules | excluded | card sha |",
@@ -1316,6 +1486,10 @@ def _markdown(payload: Mapping[str, Any]) -> str:
                                   for leaf in exclusion.get("leaves") or [])
                         or "-",
                         str(row.get("card_content_sha_after"))[:12]))
+
+    lines += ["", "## What broke, and what the numbers do not say", ""]
+    for note in payload.get("honest_boundaries") or []:
+        lines += ["- %s" % note, ""]
 
     ledger = payload["ledger"]
     lines += ["", "## Cost", "",
