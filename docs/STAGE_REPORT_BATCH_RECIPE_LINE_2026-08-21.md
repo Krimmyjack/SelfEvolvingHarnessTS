@@ -1221,6 +1221,22 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **机制债核对(sol 清单 vs 实况)**:候选去重记录已落地(`b95a853`);余三笔规格清晰——Q1(SCOPE_OVERREACH 因码替换收窄授权令牌)、Q7(不可达轴卡面声明)、Q11(交集编译器重复 task_kind 叶去重)——按 15:0x 路由令发 **grok**(v1 冻结准备书:三修复+聚焦测试+冻结清单 sha 落册);py3.12 测试债系他线 untracked 文件,不碰,冻结文注明。**终态报告** `docs/CLS_LINE_FINAL_REPORT_2026-08-28.md` 主线自写入库。
 
+### Skill/Memory v1 冻结准备(执行方):Q1/Q7/Q11 三笔机制债落地;冻结清单 29 文件;0 LLM(2026-08-28 15:5x,执行方)
+
+**首行读数:三笔规格债已修、Skill/Memory v1 冻结清单已落册。** 授权链 = sol 裁 B + 台账 15:5x 条(显式解除此前"禁触 fault_routes/router"令)。成本 **0 LLM / 0 fit / 下载 0**。提交 `edefd15`(三修复+3 项聚焦测试)/ `8645739`(冻结清单)。
+
+**Q1 授权令牌**:`fault_routes.json:15` 新增因码 `SCOPE_OVERREACH`(target_class 仅 `applicability`);`router.py:22-25`/`71-77` 映射收窄方向,非 applicability 即拒。SA-1 借用点 `skill_revision.py:54` `APPLICABILITY_CAUSE` 从 `RETRIEVAL_MISS` 换成它;R2/R3 收窄 PATCH 走新令牌。`RETRIEVAL_MISS` 路由字节未改,扩方向原义保留。
+
+**Q7 不可达轴**:供给卡编译器 `source_skill.py:665` 把 edit schema 丢弃的 pattern 轴写入卡面新字段 `risk_guards.scope_unreachable_axes`(纯增,匹配仍只读机器 AST);n≥2 交集路径与 n=1 同字段。
+
+**Q11 重复叶**:交集编译器 `source_skill.py:570-571` 对 `task_kind` 叶去重;只影响此后新编卡,历史卡零追改。聚焦测试断言新卡叶数 = 去重后值。
+
+**测试**:3 项新聚焦 + SA-1 5 项聚焦 + 供给/检索既有 + 105 相关套件(含 first_fault 路由)合计 **146 passed**;未跑全仓 pytest。`tests/functional/test_skill_revocation.py` 他线 untracked、py3.12 f-string 收集债,未碰,冻结文挂账。
+
+**冻结清单**:`artifacts/functional/e2/skill_memory_v1_freeze.json/.md`。29 个 Skill/Memory 机制面承载文件(种子 + import 图补全:retrieval/fast/online/experience/ordering/method/compiler/store/surfaces、contracts/harness+observables+canonical+三 schema、source_skill/risk_skill、三写回落点 skill_revision/runner/e1、fault_routes/router/edit_controller、public_features)。**inventory_sha256 `a5c98d40384b342d059d943296676b455fa155baff4b8db212c4b98fb4475fc7`**。冻结声明:"结构性改动须 sol 级修订案;Stage 3 许可触碰面 = instruction/决策策略层;Stage 2 只读 Skill 层"。
+
+**义务**:阈值/门/菜单/prompt/模板零改;三写回语义本体(R1 追加 / R2 收窄 / R3 降权)零改;密封件与他线文件(`AGENTS.md`/`README`/`PROJECT_STATE*`/`SUCCESSOR_BRIEF*`/`ROADMAP`)未碰;零子代理;零下载;未跑全仓 pytest。**first fault:无。**
+
 ### CAP-2 收口裁定(主线):`CAP2_CANDIDATE_POOL_EMPTY` 核可;**公开档案该格资源耗尽入典为结构性事实**;放宽案与 r3a 先例正面冲突,呈 sol 裁(2026-08-28 15:2x,主线)
 
 **裁定**:执行方停手正确、判名正确(既非"三件全不匹"亦非"结构全灭",另名呈裁合规);**反钓鱼自证核可**——`DodgerLoopGame` 只差 TRAIN 带一条(20 vs 下限 40)即可凑出候选,执行者点名而不动手,纪律满分;成本 0 下载 / 0 LLM / 0 fit / 12 min;提交 `c37948f`/`9fa0c79`。**first fault 归属主线**:CAP-2 §1 合取与"字典序取前 3"在当前档案上不相容,冻结件缺零候选分支——起草缺口,自认。
