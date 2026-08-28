@@ -1223,6 +1223,16 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2 续跑(执行方):请求体放行后 K0 inspect 仍死;16KB 体未超 32KB 门;两掷未闭合(2026-08-28 21:0x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 21:04「32KB 探测 200、请求体上限已放行」+ 停表 `--resume --seed r2`。未换后端。未改模板/门/菜单。下载 0。0 新 LLM / 0 新 fit。
+
+**live**:探测 wave1 200、`gpt-5.6-sol`;跳过 `1/Static`+`1/A3-reset` 后,产例 K0 inspect 再报 `AgentTransportError: InternalServerError`(约 70s,内层 3×2s)。checkpoint 未前进。
+
+**0-LLM 体测量**(拦截 `complete`、不发网):产例 A3/K0 首个 inspect POST 均为 **16100 B**,远低于主线放行的 ~32KB。故本死不是「仍超新上限」;短探测通 + 16KB inspect 仍 5xx,属中继对正式 inspect 请求不稳定。不得把 r1 `TREATMENT_EMPTY` 升格为两掷系统性结论。
+
+**两掷合并判定:未成立。** 续跑仍 `--resume --seed r2`。累计 LLM 72/120、fit 76/200。工件 `s2a_g1_run1_r2.json/.md`。**first fault:BACKEND_UNAVAILABLE — 16KB inspect 中继仍 5xx。**
+
 ### S2a 末段 Part P r2 续跑(执行方):隧道短探测通、K0 inspect 两次仍死;两掷未闭合(2026-08-28 20:5x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 20:5x 隧道恢复令 + 停表 `--resume --seed r2`。未换后端。未改模板/门/菜单。下载 0。0 新 LLM / 0 新 fit(checkpoint 仍 3/2)。
