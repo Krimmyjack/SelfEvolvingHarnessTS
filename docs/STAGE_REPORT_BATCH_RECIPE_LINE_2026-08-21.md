@@ -1363,6 +1363,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **工件**:`s2a_natural_pool_sweep.json/.md`、`s2a_course_frozen.json/.md`。**first fault:无。** 续 Part P G1/G2 live。
 
+### Part 0 审计收口 + 机制翻案(主线一手复核):种子失败更名 **SUPPLY_STARVATION**——供给卡从未被探测,非"挤占";两处旧措辞更正;可编辑面不变,sol 批文照常覆盖(2026-08-29 02:1x,主线)
+
+**审计核可**(Grok 执行,工件 `s3_part0_wiring_audit.{json,md}`;主线抽验 `online_loop.py:399-472` 与 r2 `rows/15/rounds/0` 一手记录):r2 单元 4 A5 格,池=[identity, 自提 mad, 供给 hampel 卡],Fast select 选 mad,首个 Support 阳性即停探(`:465-472`),供给卡 outcome=`not_reached_support_budget_exhausted`——**供给到池,未到探测**。被部署者=自提 mad(+3.7863);A3/K0 自发现 hampel(+3.9069);−0.1206 反事实的真机制 = **更优的供给候选从未被评估**,而非"供给被采、挤掉自发现"。
+
+**更正**:23:0x 条"入池并转化"、23:3x 条"供给卡入池被采,挤掉更优自发现"两处机制措辞作废,以本条为准(S2A_PORTABLE_REDUCED 判词不受影响:其承重主张为产例自发现+隔离+铸卡,均真)。种子失败更名 SUPPLY_DISPLACEMENT → **SUPPLY_STARVATION**(供给饥饿:chosen-first 探测序 + 首正停探使供给候选饿死于预算),pilot 冻结稿 §1 同步改写;**可编辑面不变**(probe 分配/排序/停探/胜者比较——恰为审计产出的八具名参数),sol"只编辑候选探索分配策略"批文照常覆盖。
+
+**审计要点入账**:de facto 策略=预算 2、池 identity+2 PROGRAM、DRAFT 供给不占强制位、chosen 先探、首正即停无增益比较;八参数合法域=Random 臂采样空间,与 G3 七门(双门/容量/harm 阈/越权/隔离/阶梯 v2/Scope 语义)无交叉写入;**既存 E1 ordering-card 重排钩子(`online_loop.py:404-421`)须与参数化共存**;课程原料=电 impulsive 00/02 + traffic impulsive 00-05(未入课)。下一步:冻结中立参数化(主线亲改,默认值精确复现现行为,测试前后对照)→ pilot 细案终冻 → 三臂发车。
+
 ### G1 普查收口(主线核可):**KDD 含缺失池过 G1 门**——四 cell 全员有缺口冲突几何,只计缺口已 5/课(拟门 ≥2);C5b 受测性首次在设计期获证(2026-08-29 01:5x,主线)
 
 **普查核可**(Grok 执行,工件 `g1_kdd_trigger_census.{json,md}`):4 满员 cell(60 列/cell,240 用 30 备)均有缺口冲突几何——可打包组合 28/29/24/46,cell 内缺失率跨度 34-57pp、测项混合(异质性=冲突场结构前提,与注入同质性教训正相对);叠尖峰/位移与供给挤占后事件代理上限 15/课。**判读采认:过 ≥2/课 拟门**。**边界照录**:计数为结构性事件代理(几何可构),非 consumer 实证触发率(零 fit,普查纪律);实际触发率在 pilot/主实验运行中落账;"15/课"为类型上限非独立 episode 数。**方法论意义**:S2a 当年"跑完才发现冲突场不可得"的教训,首次以设计门形态在运行前闭合——traffic leftover(≈0/课)被 G1 拦下,KDD(5+/课)放行,**G1 门本身完成了第一次实战筛选**。执行序照 sol:下一步 Stage 3 Part 0 接线审计(审计工件先行,呈核后方改码)。

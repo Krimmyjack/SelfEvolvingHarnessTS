@@ -9,12 +9,17 @@ sol 核准后即为 Phase 1 唯一协议。与池决策(D4)解耦:本 pilot 只�
 (C6,论文次级主张)。单轮,不重掷,成败均照录入论文。**不主张**:跨任务迁移、
 多面演化、持续策略学习——均出关键路径。
 
-## 1. 种子失败(已发生,不另造)
+## 1. 种子失败(已发生,不另造;2026-08-29 02:1x 依 Part 0 审计改写)
 
-S2a r2 受益单元 4(`electricity_impulsive_outlier_04`):供给卡 `s2a_forecast_supply_v0`
-入池并被采,挤掉更优自发现 `robust_mad_outlier_repair`,反事实 −0.1206
-(`artifacts/functional/e2/s2a_g1_run1_r2.json`;裁定入典 2026-08-28 23:3x)。
-失败类型命名:**SUPPLY_DISPLACEMENT**(供给挤占)。
+S2a r2 受益单元 4(`electricity_impulsive_outlier_04`),A5 格一手记录
+(`s2a_g1_run1_r2.json` rows/15/rounds/0):池=[identity, 自提
+`robust_mad_outlier_repair`, 供给 `cand_skill_s2a_forecast_supply_v0`(hampel)];
+Fast select 选自提 mad;首个 Support 阳性即停探;供给卡
+`not_reached_support_budget_exhausted`——**到池未到探测**。部署 mad(+3.7863),
+而 A3/K0 自发现 hampel(+3.9069)。反事实 −0.1206 的真机制 = **更优的供给候选
+从未被评估**(chosen-first 序 + 首正停探饿死供给)。
+失败类型命名:**SUPPLY_STARVATION**(供给饥饿;原名 SUPPLY_DISPLACEMENT 作废,
+更正入典 02:1x)。可编辑面不受更名影响。
 
 ## 2. 可编辑 Surface(功能定义 + 接线审计前置)
 
