@@ -1223,6 +1223,16 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P(执行方):字段二分撤回;传输退避落地;r2 探测五波 530 未开臂(2026-08-28 21:3x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 21:1x「utls TLS handshake EOF、字段二分作废」+ 退避修正令。未换后端。下载 0。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。
+
+**诊断撤回**:先前「体积/请求字段」客户侧假说作废,不报二分结果;owner 日志铁证为中继出口 `utls: TLS handshake: EOF` 间歇窗。诊断文件仅留 `_scratch/` 不提交。
+
+**退避修正**(基础设施韧性,零协议语义):`evaluation/functional/task_episode_harness/agentic/runner.py` `_RetryingTransport` `:204-242`——默认 `attempts=5`、`backoff_seconds=10`、`backoff_cap_seconds=30`(`:219-221`);失败后 sleep `min(30, 10×2^attempt)`(`:236-241`),窗 10+20+30+30=90s。失败传输尝试仍不计 LLM 账。提交 `d77e705`。
+
+**r2 续跑**:`--resume --seed r2`。探测 5 波全 Cloudflare **530/1033**,未进入 K0,新退避未触发。两掷合并判定仍未成立。续跑仍 `--resume --seed r2`。累计 LLM 72/120、fit 76/200。**first fault:BACKEND_UNAVAILABLE — 授权中继隧道 530,探测未过。**
+
 ### S2a 末段 Part P r2 续跑(执行方):请求体放行后 K0 inspect 仍死;16KB 体未超 32KB 门;两掷未闭合(2026-08-28 21:0x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 21:04「32KB 探测 200、请求体上限已放行」+ 停表 `--resume --seed r2`。未换后端。未改模板/门/菜单。下载 0。0 新 LLM / 0 新 fit。
