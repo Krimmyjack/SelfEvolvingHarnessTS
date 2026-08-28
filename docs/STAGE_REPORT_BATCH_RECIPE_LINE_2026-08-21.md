@@ -1223,6 +1223,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2(执行方):出站节点更换后续跑;K0 inspect 退避再打满;两掷未闭合(2026-08-28 22:0x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线「chatgpt.com 出站节点已换」+ `--resume --seed r2`。未换后端。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。
+
+**live**:探测 wave1 200、`gpt-5.6-sol`。产例 K0 inspect 再报 `AgentTransportError: InternalServerError`;墙钟约 177s,退避窗再次打满。按令停表。两掷合并判定仍未成立。累计 LLM 72/120、fit 76/200。工件 `s2a_g1_run1_r2.json/.md`。**first fault:BACKEND_UNAVAILABLE — 换节点后 K0 inspect 退避窗仍打满。**
+
 ### S2a 末段 Part P r2(执行方):链路双通后续跑;K0 inspect 退避窗打满仍死;两掷未闭合(2026-08-28 21:3x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 21:35 双通令 + 退避 `d77e705`。未换后端。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。
