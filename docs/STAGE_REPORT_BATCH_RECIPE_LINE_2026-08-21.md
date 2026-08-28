@@ -1213,6 +1213,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### SA-1 r2 收口裁定(主线):出口 A 核可;**复合措辞解锁**;"修订确定性"入典;两处更正记档;capstone 按出口 A 发车(2026-08-28 13:5x,主线)
+
+**裁定**:执行方判定 CAP-1b **出口 A**(G0/G1/G2 全立,拒绝事件 exercised)核可;提交 `0f10ec4`,代码零改动自证(`git diff cf2eb12 HEAD` 实验面全空)。**复合措辞就此解锁(两跑同向)**:"反馈驱动的 Skill 修订在固定协议下可复现"——r2 且比 r1 更干净(可归因 probe 省 0→1;Herring 真实被拒触发第二次收窄,P4 在 r2 立,七预测全立)。**新性质入典,定名"修订确定性"**:两跑卡版本链前四版**内容 sha 逐字节相同且同序**——修订体是触发读数的确定性函数,系统随机性只在 LLM 提案层,治理层可审计可复现。regret 不变量逐字节复现(卡对无卡 +0.6860;臂间 +0.0000)。
+
+**两处更正记档**:(1) **CAP-1b 第 13 行前提更正(执行方对主线,成立)**:"现 HEAD 代码面未变"字面不成立——`5ff76b5` 对 SA-1 runner 跑后判分/渲染区有 +182/−8(含 `_verdict` 一处**收紧**:机制差须可归因于收窄);实验面未动,r1 工件系同一 HEAD 重渲,两跑同字节判分,可比性成立;冻结件本体不追改,以本条为准。(2) r2 输出路径 workaround(runner 硬编码 r1 路径,产物事后搬移、r1 件恢复并逐字节校验)记仪器债,capstone 走独立 runner(PREP-1)不受累。**诚实边界三条带入终考**:修订环两跑只买到成本未买到质量(臂间 regret 恰 0);R3 仅离线背书;v4 无过度排除课程内未受检。
+
+**capstone 发车(出口 A,开封 Epilepsy2)**:授权链 = CAP-1b + 本条 + sol 令("无论结果停止重复,进终考")。**沿 CAP-1 冻结骨架逐字执行**(TEST 476 行种子 20260827/sha `7e1c4088…`、TRAIN mod-4 对半双门、材料线 0.025/0.025、consumer ridge、菜单 sha `48e09ec4…`、每臂 LLM ≤15 / fit ≤25 / 合计 ≤90 min、判词 `CAPSTONE_POSITIVE/NEGATIVE/NEUTRAL` 阈值照冻结),**仅按 CAP-1b 替换两处**:解锁条件(§7 旧条款作废)与 A5 池(原"S1-v2 正序终态池"随线退役,改装 **SA-1 同源 scope-v2 单例供给卡 + R1-R3 修订环开启**);三臂骨架保留(Static / A3 冷 h0 / A5-adaptive)。**去重记号仪器**按 CAP-1b 预声明先行落地(评估层从既有字段推导:scope 匹配 ∧ 池无 `cand_skill_` ∧ 自提同程序 → `dedup_swallowed=true`,禁改 methods)。**预注册预测**:密封校验过(TEST 清单 sha 对上);A5 harm=0、零越权;卡 Scope 家族轴按注入族判定匹配(可证伪);头条 A5−A3 = 考题本身,不预测。开封动作与密封复核一并入执行方条目。
+
 ### sol 裁定采纳(r2 一次→无论结果停→进终考);主线程序性自纠(CAP-1 冻结件为准);CAP-1b 前置冻结(三出口);r2 发车(2026-08-28 12:5x,主线)
 
 **sol 裁定(全采)**:SA-1 定性 = "生成→使用→反馈→修订→再使用闭环首次真实跑通,'持续修订带来稳定提升'未充分证明";**只重复一次 r2,协议/Scope/课程/阈值零改,无论结果停止重复,立即进 capstone,无 r3**;r2 通过门放宽到机制级(反馈驱动更新发生 + 行为按预期改变 + 零害零越权),**不要求数字复现**;r2 未复现则记"适应机制可运行但稳定性不足",capstone 改考"带 Scope 经验卡端到端收益"。**重要纠正(sol 对主线,成立)**:CAP-1 冻结件要求"S1-v2 正序两次信号+反序确认",单次 SA-1 未字面满足,不得立即开 Epilepsy2。
