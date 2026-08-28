@@ -1223,6 +1223,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a Part B(执行方):考场重切+oracle 已跑;**S2_HOST_READY 不过,全书停**(2026-08-28 16:5x,执行方)
+
+**首行读数:S2_HOST_READY 失败;first fault = 机械 6+1 cell 全强 LEARNABLE,缺贴线弱受益与 identity 场。** 授权链 = 台账 16:5x 条。成本 **0 LLM / 105 fit / 下载 0 / 78.8s**。未改数据、未改门、未开 Part C。
+
+**重切**:`monash:traffic_hourly` 经 `shared_tsq_datasets/traffic/traffic.csv` 文件序,7 cell × (40 train / 20+20 对半 / 20 official held-out);材料线 `max(0.005,1/20)=0.05`,2×=0.10;注入现役 `impulsive_outlier`×6 + `gap`×1(`injection.py` 原件未改);Consumer = pooled ridge + sMASE,origin 1104/1800。oracle 密封于 `artifacts/functional/e2/s2a_oracle/`。
+
+**资格**:6/6 impulse 均 LEARNABLE 且 headroom 0.88–1.27(远超 2×);0 贴线弱;0 identity;`gap_00` 亦 LEARNABLE(headroom 0.148)。缺课形所需「强+贴线弱+identity」。**禁改数据/门凑格,停呈。** 工件 `s2a_host_ready.json/.md`。**first fault:S2_HOST_READY — no_near_line_weak_beneficiary; no_identity_field。**
+
 ### S2a Part A(执行方):v1.1 三处分发落地;分类 146 原封全绿;冻结清单升 v1.1(2026-08-28 16:5x,执行方)
 
 **首行读数:v1.1 适配过门;分类 146 绿;清单 sha `68ea0f07…`。** 授权链 = 台账 16:5x 条 sol 核准 v1.1 受限修订。成本 **0 LLM / 0 fit / 下载 0**。
