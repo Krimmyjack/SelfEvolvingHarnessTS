@@ -1,33 +1,16 @@
-# S2a G0 electricity sweep
+# S2a reduced course freeze
 
-**status: S2_HOST_READY_FAIL_BOTH_SOURCES**
+**branch: reduced. R2 forecast 未考(冲突场在注入与 #31 自然池下均不可得)**
 
-reasons: no_near_line_weak_beneficiary, no_identity_field
-electricity impulse: 5  producer: 5  strong: 5  weak: 0  identity: 0
-merged impulse: 11  producer: 11  strong: 11  weak: 0  identity: 0  gap: 1
-fits this sweep: 75  prior traffic: 105  total: 180  elapsed_s: 24.9
+Zero four-conjunction hits after #31 remount attempt. sol pre-authorised the reduced shape. Defect source is labelled per cell. Verdict vocabulary: S2A_PORTABLE_REDUCED / S2A_PARTIAL / TREATMENT_EMPTY.
 
-## Pre-declared cut
+Δ_material = 0.10 (two strong beneficiaries × 0.05).
 
-TSL electricity.csv is the in-service UCI-family loader (321 numeric channels). Registry 370x1024 cannot host isomorphic origins 1104/1800. Pre-declared: 5 impulse cells x 60 = 300; leftover unused; gap reused from traffic.
-usable=321 leftover=21 gap_reuse=traffic_gap_00 origins=1104/1800
+Live units (boundary is compile, not a cell):
 
-## Merged headroom table
-
-| unit | learnability | oracle | headroom | two_x | near_line |
-| --- | --- | --- | ---: | --- | --- |
-| `traffic_gap_00` | LEARNABLE | outlier_iqr | 0.1481 | True | False |
-| `traffic_impulsive_outlier_00` | LEARNABLE | winsorize | 1.1599 | True | False |
-| `traffic_impulsive_outlier_01` | LEARNABLE | winsorize | 1.1012 | True | False |
-| `traffic_impulsive_outlier_02` | LEARNABLE | winsorize | 0.8828 | True | False |
-| `traffic_impulsive_outlier_03` | LEARNABLE | winsorize | 1.2690 | True | False |
-| `traffic_impulsive_outlier_04` | LEARNABLE | winsorize | 1.2617 | True | False |
-| `traffic_impulsive_outlier_05` | LEARNABLE | winsorize | 1.1169 | True | False |
-| `electricity_impulsive_outlier_00` | LEARNABLE | winsorize | 1.2053 | True | False |
-| `electricity_impulsive_outlier_01` | LEARNABLE | winsorize | 1.3905 | True | False |
-| `electricity_impulsive_outlier_02` | LEARNABLE | winsorize | 1.1421 | True | False |
-| `electricity_impulsive_outlier_03` | LEARNABLE | winsorize | 1.5000 | True | False |
-| `electricity_impulsive_outlier_04` | LEARNABLE | winsorize | 1.2807 | True | False |
-
-Oracle files live under `artifacts/functional/e2/s2a_oracle/` and must not enter any arm prompt, store, or retrieval view.
-
+- producer: `electricity_impulsive_outlier_03` (injected)
+- clean_identity: `traffic_clean_identity_00` (clean) — 无缺陷条件下的 identity 场
+- [boundary] ladder v2 compile on producer `electricity_impulsive_outlier_03` (injected)
+- strong_beneficiary_1: `electricity_impulsive_outlier_01` (injected)
+- strong_beneficiary_2: `electricity_impulsive_outlier_04` (injected)
+- gap_out_of_family_guard: `traffic_gap_00` (injected)

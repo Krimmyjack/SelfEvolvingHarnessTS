@@ -1255,6 +1255,18 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **测试**:3 新聚焦(`test_s2a_v11_adapter.py`) + 分类原 146 套件 = **149 passed**;未跑全仓 pytest。冻结清单 `skill_memory_v1_freeze.json/.md` 升 v1.1,`inventory_sha256 68ea0f07dc12e57b4c623d94979dfbff7b7a926fc6a9b1d05fccb7bc04f11494`。**first fault:无。** 续 Part B 考场重切。
 
+### S2a 末段 Part N/O(执行方):#31 自然池 12/12 结构性排除;零命中转 A 缩形课已冻结(2026-08-28 19:0x,执行方)
+
+**S2a 状态:缩形课冻结;自然冲突场:零命中。** 授权链 = 台账 18:5x 条「sol 裁有界 B……S2a 末段发车」。成本 **0 LLM / 0 fit / 下载 0**。旧 #31 读数只圈池,一律不作证据。未改模板/门/菜单。未开 G1。
+
+**候选池**:#31 去重 21→12(`shared_capability_candidate_v1.md:17`;编译器 `run_e2_shared_capability_candidate.py:51-163`)。traffic 8 + noaa 4。聚合藏害 5 条定位:`shared_capability_candidate_v1.json:822-880`(traffic 14/16/17; NOAA 99999904140 / 99999923908 / 99999963862),均在原 eval 面。
+
+**重装**:现行门 TRAIN≥40、对半每面≥20。traffic roster 12+8、NOAA 12+4,半面=6。12/12 **结构性排除**(非挑数);藏害序列无法在不加池外序列的前提下落入 TRAIN≥40 的 Support/delayed。四合取表空(无可重装 cell)。候选程序集 {winsorize, outlier_mad} 未计分——无 cell 可评。
+
+**分支**:零命中 → sol 预授权 A 缩形。课程 = 产例 `electricity_impulsive_outlier_03`(injected) → 无缺陷条件下的 identity 场 `traffic_clean_identity_00`(clean) → [边界产卡] → 强受益×2 `electricity_impulsive_outlier_01/04`(injected) → gap 守卫 `traffic_gap_00`(injected)。冻结件写明「R2 forecast 未考(冲突场在注入与 #31 自然池下均不可得)」。判词词表:`S2A_PORTABLE_REDUCED / S2A_PARTIAL / TREATMENT_EMPTY`。Δ_material = 0.10。
+
+**工件**:`s2a_natural_pool_sweep.json/.md`、`s2a_course_frozen.json/.md`。**first fault:无。** 续 Part P G1/G2 live。
+
 ### sol 裁有界 B(#31 自然池最后一次资格检查,零命中即转 A);"机制正控 vs 能力考"二分入典;跨任务回归站规立;S2a 末段发车(2026-08-28 18:5x,主线)
 
 **sol 裁定(全采)**:定位确认——"预测线机制没有失败,失败的是统一人工注入无法制造修订所需的冲突反馈"。**有界 B**:只查预声明的 #31 traffic/NOAA 自然 cell;全量报告,不新增数据源;须当前待修订卡**同一 Program**;Task/Consumer/Metric/Scope 全匹配;**旧 #31 结果仅用于指定候选池,须按现行 v1.1 Support/delayed 协议重新判定**;零命中立即转 A,不再找冲突场。后续序:自然池资格清扫 → 命中合法 CONFLICT 即跑完整 S2a 修订环;零命中即跑缩形 S2a(候选供应/Scope/双门/跨任务隔离)。**S2a 定性:受控机制正控,非能力考**——成功只证"机制在预测任务可运行 + 任务边界有效",不证"自然未知数据上必提性能";跑完即停搭特殊考场,转自然数据跨任务实验、冻结框架主实验、fresh 端到端 A3/A5。
