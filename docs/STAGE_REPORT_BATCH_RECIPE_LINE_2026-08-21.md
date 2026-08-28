@@ -1247,6 +1247,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **测试**:3 新聚焦(`test_s2a_v11_adapter.py`) + 分类原 146 套件 = **149 passed**;未跑全仓 pytest。冻结清单 `skill_memory_v1_freeze.json/.md` 升 v1.1,`inventory_sha256 68ea0f07dc12e57b4c623d94979dfbff7b7a926fc6a9b1d05fccb7bc04f11494`。**first fault:无。** 续 Part B 考场重切。
 
+### sol 终批:采 iv+iii;**冲突场四合取合法性**与 clean identity 命名纪律;零命中扩源预授权;ii 否(不收缩修订环);S2a 续车(2026-08-28 18:0x,主线)
+
+**sol 裁定(全采)**:修正案性质确认——"修的是设计概念对机制的错误映射,不是结果门槛,不是改 Harness,不是为凑正结果放宽"。**批 iv**:预冻结对 11 个预声明 cell 的全量逐序列分析、**固定 CONFLICT 阈值**(用现役 `classify_relation`/harm 杠语义,引行,禁自造)、确定性角色选择。**合法冲突场四合取(缺一不可)**:待修订卡 Scope 匹配 ∧ **同一 Program**(禁拿他算子的冲突充当本卡修订素材)∧ pooled 正收益 ∧ ≥1 序列 harm 越冻结阈值。**批 iii**:clean 条件 cell 作安全控制,**必须命名"无缺陷条件下的 identity 场"**,不得冒充"存在污染但无需处理"的自然 identity。命中后直接进 G1/G2;**若 iv 零命中 → 扩源 metr_la/nn5(预授权);不收缩修订环(ii 否)**。
+
+**主线操作化(课程内自产的程序不确定性)**:发车时不知卡将携何 Program → (a) 角色指派**按程序条件化**:对全部产例资格 cell 的 oracle 程序族逐一算四合取分解(全 11 cell × 各候选程序,fit 计总帽);(b) **预注册事后重判规则**:若 A5 实际学出的程序 ≠ 预期族,冲突场对实际程序按已算分解重判四合取,不满足即如实标"R2 本跑未考",禁现场改指派;(c) 课程按选定产例的预期族组装,冻结件写明条件化依据。执行发 grok 续话:iv 分解 → 角色组装 → (命中)课程冻结 → G1/G2 live 按原书;(零命中)metr_la/nn5 同规清扫一次 → 再零命中判 `S2A_CONFLICT_FIELD_UNAVAILABLE` 停呈。
+
 ### S2a-G0 判 `FAIL_BOTH_SOURCES` 收口(主线);**冲突场定义的移植修正案 (iv) 成型**:CONFLICT 语义系承重触发,"贴线余量"系分类底物偶然形态;四选呈 sol(2026-08-28 17:1x,主线)
 
 **清扫核可**:electricity 一次切完 5/5 全强 LEARNABLE(oracle 均 `winsorize`,余量 1.14–1.50),两源合并 **11/11 impulse 强 LEARNABLE、贴线 0、identity 0**(提交 `951d85a`);执行者禁凑格纪律守住,未开 Part C+D。**书外正向注记**:electricity oracle 均 winsorize 而 traffic 侧非同一算子——两源程序几何有别,Scope 轴素材更富。
