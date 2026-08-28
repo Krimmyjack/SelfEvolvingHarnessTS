@@ -1223,6 +1223,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2 续跑(执行方):隧道短探测通、K0 inspect 两次仍死;两掷未闭合(2026-08-28 20:5x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 20:5x 隧道恢复令 + 停表 `--resume --seed r2`。未换后端。未改模板/门/菜单。下载 0。0 新 LLM / 0 新 fit(checkpoint 仍 3/2)。
+
+**两次续跑同构**:wave1 探测(真聊天 pong)均 200、`gpt-5.6-sol`;跳过 `1/Static`+`1/A3-reset` 后,产例 K0 `fast_agent.prepare` inspect 阶段 `AgentTransportError: relay transport failed (InternalServerError)`(内层 3×2s 已耗尽)。checkpoint 未前进。`/v1/models` 与短探测不能代表 inspect 长请求可达。
+
+**两掷合并判定:未成立。** r1 `TREATMENT_EMPTY` 仍立,但 r2 未完整跑完,不得升格为「两掷仍空→系统性移交 Stage 3」。续跑仍是 `--resume --seed r2`。累计 LLM 72/120、fit 76/200。工件 `s2a_g1_run1_r2.json/.md`。**first fault:BACKEND_UNAVAILABLE — inspect 长请求中继不可达。**
+
 ### S2a 末段 Part P r2(执行方):两掷采样中继再死;停表 `BACKEND_UNAVAILABLE`(2026-08-28 20:3x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = r1 `88a6c63` + 两掷帽。未换后端。未改模板/门/菜单/prompt/模型。下载 0。

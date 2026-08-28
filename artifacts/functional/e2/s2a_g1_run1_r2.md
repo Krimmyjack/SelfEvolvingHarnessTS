@@ -4,10 +4,6 @@
 
 run stopped before judging
 
-## First fault
-
-BACKEND_UNAVAILABLE — 授权中继隧道不可达
-
 ## Predictions
 
 - **P1**: predicted hold; observed already landed (149 green)
@@ -31,3 +27,7 @@ BACKEND_UNAVAILABLE — 授权中继隧道不可达
 | 3 | electricity_impulsive_outlier_01 | strong_beneficiary_1 | - | - | - | - | {} |
 | 4 | electricity_impulsive_outlier_04 | strong_beneficiary_2 | - | - | - | - | {} |
 | 5 | traffic_gap_00 | gap_out_of_family_guard | - | - | - | - | {} |
+
+## First fault
+
+BACKEND_UNAVAILABLE — 授权中继隧道不可达
