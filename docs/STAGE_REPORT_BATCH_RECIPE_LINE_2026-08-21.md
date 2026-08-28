@@ -1239,6 +1239,26 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-1 发车(opus 续话,四段)**:Part 0 四归因字段(`episodes[].source_skill_id` / `source_skill_revision`=卡内容 sha / `round.scope_match_by_skill_id` / `guidance_conditioned_by_skill_id`)+聚焦测试 → Part 0.5 Scope v2 编译器,离线重编单例卡并出新匹配表(**门:尾段 impulse 四单元全匹、BirdChicken-burst 不匹**)→ Part 1 三写回接通(证据追加走 `risk_guards` PATCH append-only;收窄走 `observable_applicability` PATCH,排除叶限特征契约保证轴、只许由实拒单元编译;负向降权/排除同面)+离线 replay 门(含 R3 历史负例)→ Part 2 live 短课 r1。**课程冻结(六位,全为已审计单元,零新数据)**:GunPoint → GPOvY → PowerCons(#1) → Herring → **PowerCons(#2 再遇,机制探针)** → BirdChicken(族外对照)。三臂 = A3-reset(无卡)/ K0-fixed(scope-v2 单例卡,冻结不修订)/ A5-adaptive(同卡 + R1-R3);卡种子 = v4 GPMvF 记录 Episode(单例、供给权限、ITT 主判);**再遇位读数单列为机制读数,不计首行 regret(首行只算 distinct 单元)**。**预注册预测(可证伪)**:v2 卡匹 GunPoint/GPOvY/PowerCons/Herring、不匹 BirdChicken;GunPoint+GPOvY 供给转化;PowerCons#1 被拒 → **恰一次收窄 PATCH(卡 v1,内容 sha 版本化)**;Herring 被拒或被 v1 排除(均合法,如实报);**PowerCons#2:A5-adaptive 零供给零挨拒,K0-fixed 再供给再挨拒(核心机制差)**;A5 对 K0 probe ≥1 省、regret 非劣、harm 全零。**预算**:LLM ≤150 / fit ≤300 / 墙钟 ≤5h / 下载 0。**止损**:离线门任一不过即停呈 first fault;live 中 PowerCons#1 意外转化 → 机制读数改由 Herring 拒绝承载,如实报;拒绝发生而 R2 未触发 → 单一尸检,禁改课禁调门禁 r2。
 
+### SA-1 r2 收口(执行方,纯采样重复):**CAP-1b 出口 A** — G0/G1/G2 三门全立;七条预注册全立(r1 破的 P4 在 r2 立);无 r3(2026-08-28 13:5x,执行方)
+
+**首行读数:CAP-1b 出口 = A;G0 立 / G1 立 / G2 立(exercised)。** capstone 形态按 CAP-1b 表 = **A3-reset vs A5-adaptive**(scope-v2 单例卡 + R1-R3),头条主张 = 带 Scope 经验卡 + 反馈修订的端到端收益。工件 `artifacts/functional/e2/sa1_minimal_r2.json/.md`(+ `.checkpoint.json`),r1 三件未覆写(见下自证)。成本 **80 LLM(书面帽 120)、71/300 fit、2580 s / 10800 s、下载 0**。
+
+**卡版本链 v0 `00503481` → v1 `0eae563f`(R1@GunPoint) → v2 `3ef7202e`(R1@GPOvY) → v3 `89728a4a`(R2@PowerCons#1) → v4 `64c1cb59`(R2@Herring)。** 与 r1 链**前四版内容 sha 逐字节相同且同序**,r2 多出 v4 —— 这不是分歧而是多走了一步:**同样的读数编出同样的修订内容**,说明修订体是触发它的读数的确定性函数;而 r1 从未见到 Herring 的拒绝(其供给被去重吃掉)。
+
+**三门逐项**:**G0** harm 全零、三臂 worst-class 最差均 0.0000;**零扩 Scope**(A5 逐单元 Scope 判定是 K0 冻结卡的子集,无一处反向);无非阶梯规则、无非写回产出的版本、两处授权面之外零 PATCH;卡在视野的每个单元均记 `guidance_conditioned=true`,受引导计零红线未破。**G1** 4 次写回(R1×2、R2×2),版本链长 5,五个内容 sha 互异。**G2 exercised**:两个 Scope 匹配单元发生供给候选被拒(PowerCons#1、Herring,均 CONFLICT),**两次 R2 均如期触发**;首遇拒发生于 PowerCons#1,故读再遇位——**PowerCons#2:A5-adaptive scope=False / 零供给 / 零挨拒 / 1 probe;K0-fixed scope=True / 再供给 / 再挨拒 / 2 probe**,条件式子项成立。
+
+**预测对表:七条全立(r1 为 6 立 1 破)。** P1 匹四不匹一、P2 GunPoint+GPOvY 双转化、P3 恰一次首遇收窄且 sha 版本化、**P4 立**(Herring 走了 P4 明文允许的"被拒"支路:供给入池、Target 判 CONFLICT)、P5 再遇位机制差、P6 probe ≥1 省且 regret 非劣(**本跑 1 省 1 拒全部可归因于收窄**)、P7 harm 全零。
+
+**r1-r2 并排(数字不复现不构成失败,按 CAP-1b)**:**复现的**——三臂累计 regret 逐字节相同(A3 +0.7710 / K0 +0.0850 / A5 +0.0850)、regret 差 +0.0000、卡对无卡差 +0.6860、harm 全零、K0 供给 5 / 转化 2 / 挨拒 3、避免挨拒可归因数 1。**未复现的**——raw probe 省 2→1、raw 避免挨拒 2→1(r1 那额外一次来自 Herring 去重,r2 无去重);**可归因 probe 省 0→1**(r1 收窄腾出的槽被 agent 自己的提案填回,r2 没有);A5 供给 3→4、挨拒 1→2;逐 cell 有 8/18 格 probe 数不同(采样)。**去重普查本跑为空**——P4 第三路径未再现;去重不是拒绝,不入 G2 条件式。
+
+**两条必须留档的边界**:(1) **v4 的"无过度排除"在课程内未受检**。两条排除子句对六个单元各自恰好只排除其触发单元(#3 只排 PowerCons、#4 只排 Herring,均按冻结 pattern view 逐叶核算),但 v4 落在位置 4,其后唯一的族内单元 PowerCons#2 已被 v3 排除,故"v4 单独会保留的活单元"本课不存在——该性质只对六份冻结视图成立,未经 live 检验。(2) **修订环本跑仍只买到成本、没买到质量**:两个带卡臂 regret 恰好相同(+0.0000),预注册只声称非劣;而 +0.6860 那个大数与 r1 逐字节相同,归 **Part 0.5 家族 Pattern 轴**(把 Scope 覆盖从 L1 n=1 卡的 1/5 抬到 4/5),不归修订环。R3 两跑均未现场触发(harm 全零、无 NEGATIVE 供给),仍只有离线历史重放背书——CAP-1b 已预声明不读 R3。
+
+**协议同一性自证 + 一处对冻结件的事实更正**:课程冻结件、种子卡(v0 sha `00503481…`)、阈值、预算口径、后端协议逐字节同 r1;`git diff cf2eb12 HEAD` 在 `methods/`、`contracts/`、`runtime/`、`operators/`、`evaluation/minipipe/`、`run_e2_s1_curriculum_four_arms.py`、`task_episode_harness/`(含 `source_skill.py`/`skill_revision.py`)**全空**——实验面零改动。**但 CAP-1b 第 13 行"现 HEAD 代码面未变"字面不成立**:`5ff76b5` 对 `run_e2_sa1_minimal.py` 有 +182/-8,全部落在跑后判分/渲染区(`_attribution`、`_headline`、`_honest_boundaries`、`_markdown`、`--finalize` 承接,以及 `_verdict` 一处**收紧**——机制差须可归因于收窄而非仅 raw);live 回路、修订步与逐单元判分未动。**决定性的一点:r1 已入库工件本身就是用这同一份 HEAD 代码重渲的**,故 r1 与 r2 由同一字节判分,并排表可比。此为对冻结件前提的事实更正,不是协议变更。**工件路径系事后搬移而非参数化**(runner 硬编码 r1 路径,改之即代码改动,为本书所禁):r2 写在 r1 文件名上,产物随后搬为 `sa1_minimal_r2.*`,r1 三件由 `5ff76b5` 恢复并与跑前副本**逐字节校验相同**(json/md/checkpoint 三项 hash 全等)。
+
+**判分脚本声明**:CAP-1b 三门读数与并排表由一份**未入库**的 `_scratch` 分析脚本算出,输入全部是两份跑件里已有的字段(逐单元 `scope_match_by_skill_id`、`card` 读数、`revisions[].receipts`、`card_version_chain`、冻结 `pattern_views`),因此每条判定都可只凭 JSON 复核;不入库正是为了守住"代码零 diff"这条义务。runner 生成的 `honest_boundaries` 系按 r1 结局写的静态模板,其中数句对 r2 为假(P4 第三路径、probe 归因),已在 r2 件中替换为 r2 自己的边界,模板原文完整保留在 `honest_boundaries_from_r1_template` 键下,未静默丢弃。
+
+**收口与交接**:按 sol 令 **r2 后无论出口即停,不跑第三次**;capstone 不在本书内,待主线按 CAP-1b 出口 A 另书发车(预声明的去重记号仪器为 r2 后、capstone 前落地项)。证据等级 development,单元均已曝光,种子系 v4 记录 Episode;**两跑买到的是机制三门同向两次**(CAP-1b 所求),不是数字复现(CAP-1b 明文不要求)。**义务**:代码零改动零提交;阈值/TRY/RISK/执行/部署门与 prompt-模型-预算协议零改;`fault_routes.json`/`router.py` 零改;密封件(Epilepsy2、s1_oracle 键)零读;零新数据/单元/算子/Consumer;零下载;零子代理;未跑全仓 pytest;他线文件未碰。
+
 ### SA-1 最小闭环收口(执行方):四段全过,判词 `SA1_DEVELOPMENT_SIGNAL`;**核心正效果移动:是,但只值 1 次避免挨拒**(2026-08-28 12:1x,执行方)
 
 **首行读数:核心正效果移动 = 是,probe 省 2(raw)/ 避免挨拒 2(raw)/ regret 差 +0.0000。归因后**:2 次 probe 省**零条**归因于收窄,2 次避免挨拒中**恰 1 次**归因于收窄——即预注册的再遇位 PowerCons#2。工件 `artifacts/functional/e2/sa1_minimal_r1.json/.md`(+ 门件 `sa1_minimal_gates.json`、冻结件 `sa1_course_freeze.json`);成本 **78/150 LLM、69/300 fit、2227 s / 15120 s、下载 0**;Part 0/0.5/1 全程 0 LLM / 0 fit。
