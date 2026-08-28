@@ -1213,6 +1213,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### sol 裁 B 采纳:CAP-2 以 `POOL_EXHAUSTED` 终局收口,不放宽 TRAIN 门;措辞修正入典;分类开发线转入收口与 Skill/Memory v1 冻结(2026-08-28 15:5x,主线)
+
+**裁定(sol,全采;主线自认 A 倾向失当)**:不放宽 TRAIN 门。理由系机制级而非程序级,**优于主线 15:2x 的 A 案辩护**——M-1 已证反馈可读性是转化前提;DodgerLoopGame 20 行 TRAIN 对半后 Support/delayed 各 ~10 行、材料线 0.10,系已实测"贴线不可读"区域(PowerCons 在 40 行面尚且贴线 0/2);主动选弱反馈靶大概率再得不可解读 neutral,偶然为正亦难逃"看池改门"质疑。主线低估自家 M-1 仪器质量先验,记档。**CAP-2 终判**:`POOL_EXHAUSTED / EVIDENCE_UNAVAILABLE_UNDER_RESOURCE_CONSTRAINT`。**措辞修正入典(论文口径)**:非"方法无法进行密封正迁移",而是"**当前公开 UCR、既定规模与新鲜度约束下,无可用 Scope 匹配密封靶,该证据当前 unavailable**"——记资源约束,不记方法负结果。
+
+**路线图(sol,采)**:① 分类开发线正式收口(能力复证/修订复证/密封安全成立)→ ② 冻结 Skill/Memory v1,不再围绕单个数据集改结构 → ③ 补 Stage 2(跨任务程序知识迁移)与 Stage 3(Gain/Harm 驱动 Instruction/策略自修订)→ ④ 论文级主实验(足量反馈样本、多独立 family、新鲜池、独立开发/密封测试集)统一承担密封正迁移。**主线两点增益(入主实验设计输入)**:(a) **密封正迁移槽位不必由分类线补**——主实验多任务,预测线数据资源(Monash)充裕且已有 A5>A3 +31.7% 成本优势正账,能力级密封考应设计在反馈样本天然充足的任务线;分类线以四行终态定格贡献。(b) **v1 冻结令须同时划定 Stage 3 许可触碰面**(instruction/策略层),防 S3 开工即撞冻结墙。
+
+**机制债核对(sol 清单 vs 实况)**:候选去重记录已落地(`b95a853`);余三笔规格清晰——Q1(SCOPE_OVERREACH 因码替换收窄授权令牌)、Q7(不可达轴卡面声明)、Q11(交集编译器重复 task_kind 叶去重)——按 15:0x 路由令发 **grok**(v1 冻结准备书:三修复+聚焦测试+冻结清单 sha 落册);py3.12 测试债系他线 untracked 文件,不碰,冻结文注明。**终态报告** `docs/CLS_LINE_FINAL_REPORT_2026-08-28.md` 主线自写入库。
+
 ### CAP-2 收口裁定(主线):`CAP2_CANDIDATE_POOL_EMPTY` 核可;**公开档案该格资源耗尽入典为结构性事实**;放宽案与 r3a 先例正面冲突,呈 sol 裁(2026-08-28 15:2x,主线)
 
 **裁定**:执行方停手正确、判名正确(既非"三件全不匹"亦非"结构全灭",另名呈裁合规);**反钓鱼自证核可**——`DodgerLoopGame` 只差 TRAIN 带一条(20 vs 下限 40)即可凑出候选,执行者点名而不动手,纪律满分;成本 0 下载 / 0 LLM / 0 fit / 12 min;提交 `c37948f`/`9fa0c79`。**first fault 归属主线**:CAP-2 §1 合取与"字典序取前 3"在当前档案上不相容,冻结件缺零候选分支——起草缺口,自认。
