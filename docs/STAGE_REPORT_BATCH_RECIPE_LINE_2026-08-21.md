@@ -1213,6 +1213,18 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### L1 收口裁定(主线):判词维持 `L1_SIGNAL`×2;阶梯 v2 机制证成;缺口定名"Scope 面积价";SA-0b 反事实简报;三项待裁呈用户+sol(2026-08-28 10:3x,主线)
+
+**裁定**:执行方两跑判词与门核算全部核可(**+0.2127 ≥ Δ 0.088462,2.4×;harm/worst-class 全零或正向;两跑读数逐字同向,复合措辞许可**;成本 40/120 LLM、24 min)。**里程碑定名**:首次完整落地"课程内自产 Episode → 单例供给卡 → Scope 检索 → 机械供给 → 当前 Target 双门 → 材料级 regret 改善"的端到端复利链(development 级、GunPoint 族内、单场转化、重放级对照,四注记照录)。用户论题前半("Skill 由经验初始化、天然窄、低权入场、由当前数据检验")就此有实证;**methods 本夜零改动**(惰性谓词天然放行供给卡,carve-out 未动用)。网络中断致执行者终回执未达,工作已全部入库(`74978c0`/`ecbe116`),按工件收口,无缺口。
+
+**新知识入典(比 SIGNAL 更重要的定价发现)**:低价的真实代价是 **Scope 面积**——n=1 退化交集把预测 4 场压到 1 场(`period_change_score` 一叶决定 GunPoint/PowerCons 两次未匹)。阶梯 v2 的完整定价画像 = **通道稳定(两跑逐字同向)、入口稀缺(产例 0.29/位)、面积按价收缩(1 证据 = 1 场)**。
+
+**SA-0b 反事实简报(主线自算,0 LLM,基于 r1/r2 + v4 账本;原 Part C 任务就此收口)**:(a) "冲突→收窄"反事实在本账本**空转**——唯一匹配场两跑均转化,零拒绝事件,无可修订素材;SA-1 须自带冲突场(设计稿 §5 已按此把 PowerCons 前置)。(b) 钝撤权反事实同空转(供给候选零 CONFLICT/NEGATIVE)。(c) **Scope 面积机会成本可量化**:GunPoint 若匹配(差一叶)并按其强余量转化,尾段 regret ≈0.15,预注册 ≤0.20 即达——**残余 0.5583 中 +0.4067(73%)由一叶之差解释**;PowerCons(Support 贴线 0/2)与 Herring(held-in=0)即便匹配也大概率零转化。损失集中度 100% 在 GunPoint,此即 Q9(单例卡初始 Scope 宽度定价)的实账输入。
+
+**三项待裁(呈用户+sol)**:(A) **capstone 开封**——"两跑同向 SIGNAL"已达,但 CAP-1 冻结的开封条件系为 S1-v2 原判词设计,L1 系机制修订后的重放,判词等价性须 sol 核;开封另需用户确认(密封 Epilepsy2,下载条款照 2026-08-27 16:2x)。(B) **SA-1 发车**——设计稿 `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md` + 接线审计 `sa0_wiring_audit.*` 已呈,Q1-Q12 待裁;其中 Q6(四个归因字段,纯仪器)主线建议先行落地。(C) **Q9 Scope 宽度**——0.4067/一叶的实账入册后,是否为供给档定义事先冻结的轴选择规则(禁按结果挑轴)。主线推荐:A 与 B 并行呈裁,批后 capstone 先跑(头条),SA-1 Part 0 仪器随后。
+
+**提交**:`sa0_wiring_audit.json/.md` + `SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md` + 本节(主线提交)。
+
 ### L1 收口(执行方):两跑 `L1_SIGNAL` 同向;**核心正效果移动:是,+0.2127**(A5 尾段 regret 0.7710→0.5583,门 0.088462,harm 0)(2026-08-28 04:4x,执行方)
 
 **首行读数:核心正效果移动 = 是,+0.2127。** r1 与 r2 逐字相同(0.7710 → 0.5583,门 0.088462,harm 0),**两跑同向,准复合措辞**。成本合计 **40/120 LLM(每跑 20)、33/300 fit、1428 s / 14400 s、下载 0**。
