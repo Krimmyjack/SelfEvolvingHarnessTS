@@ -58,14 +58,23 @@ REVISION_LOG_KEY = "revision_log"
 DEMOTION_KEY = "demotions"
 
 
-def contracted_axes(legal_features: Sequence[str] | None = None
-                    ) -> frozenset[str]:
+def contracted_axes(legal_features: Sequence[str] | None = None,
+                    *,
+                    task_kind: str = "classification") -> frozenset[str]:
     """Axes an exclusion leaf may name.
 
     Computed, not listed: the public extractor is run once on a constant
     series and its mapping keys are the axes that are always present.  If the
     extractor ever stops emitting one of them, this set shrinks with it
     instead of going stale.
+
+    v1.1 (S2a, sol-authorized): ``task_kind`` dispatches the in-service
+    extractor.  The classification default is the historical call
+    (``task_kind="classification"``); the forecast branch uses the same
+    public extractor with ``task_kind="forecast"`` -- the in-service
+    forecast pattern / binned feature set
+    (``runtime/public_features.py:265-331``).  The axis set is still
+    whatever the extractor emits, minus ``task_kind``.
     """
     import numpy as np
 
@@ -73,9 +82,11 @@ def contracted_axes(legal_features: Sequence[str] | None = None
         extract_public_features,
     )
 
+    if task_kind not in ("classification", "forecast"):
+        raise ValueError("task_kind must be classification or forecast")
     probe = np.arange(128, dtype=np.float64)
     emitted = set(extract_public_features(
-        probe, task_kind="classification").mapping)
+        probe, task_kind=task_kind).mapping)
     emitted.discard("task_kind")
     if legal_features is not None:
         emitted &= {str(name) for name in legal_features}

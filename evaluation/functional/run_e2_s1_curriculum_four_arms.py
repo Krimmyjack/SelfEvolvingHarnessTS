@@ -272,9 +272,16 @@ ARMS = (ARM_STATIC, ARM_A3, ARM_K0, ARM_A5)
 ADAPTIVE_ARMS = (ARM_A3, ARM_K0, ARM_A5)
 
 CONDITION = s1a.CONDITION                 # fit_only_artifact
+# v1.1 (S2a, sol-authorized): the three identity constants stay the
+# classification triple by default.  bind_curriculum_identity is the only
+# mutation; classification tests never call it, so their bytes are unchanged.
 CONSUMER_ID = s1a.CONSUMER_ID             # ridge-raw-plus-difference-v1
 METRIC = s1a.METRIC                       # accuracy
 TASK_KIND = s1a.TASK_KIND                 # classification
+ALLOWED_TASK_KINDS = frozenset({"classification", "forecast"})
+FORECAST_TASK_KIND = "forecast"
+FORECAST_CONSUMER_ID = "pooled_ridge_a1"
+FORECAST_METRIC = "sMASE"
 DATA_DIR = cls.DATA_DIR
 MATERIAL = cls.MATERIAL                   # 0.005
 FRACTION_SCOPE = "cohort"                 # matches the sealed oracle legality
@@ -1675,12 +1682,44 @@ def _scope_v1_of(consolidation: Mapping[str, Any],
     }
 
 
+def bind_curriculum_identity(
+    *,
+    task_kind: str | None = None,
+    consumer_id: str | None = None,
+    metric: str | None = None,
+) -> dict[str, str]:
+    """S2a v1.1: bind the three identity constants.  Defaults stay classification.
+
+    Passing nothing restores the classification triple.  ``forecast`` is a
+    legal task_kind; any other value is rejected so the axis cannot drift.
+    """
+    global CONSUMER_ID, METRIC, TASK_KIND
+    if task_kind is None and consumer_id is None and metric is None:
+        TASK_KIND = s1a.TASK_KIND
+        CONSUMER_ID = s1a.CONSUMER_ID
+        METRIC = s1a.METRIC
+    else:
+        kind = s1a.TASK_KIND if task_kind is None else str(task_kind)
+        if kind not in ALLOWED_TASK_KINDS:
+            raise ValueError("task_kind must be classification or forecast")
+        TASK_KIND = kind
+        CONSUMER_ID = (
+            s1a.CONSUMER_ID if consumer_id is None else str(consumer_id))
+        METRIC = s1a.METRIC if metric is None else str(metric)
+    return {"task_kind": TASK_KIND, "consumer_id": CONSUMER_ID,
+            "metric": METRIC}
+
+
 def _scope_v1_admits(scope: Mapping[str, Any] | None,
                      next_pattern: Mapping[str, Any]) -> dict[str, Any]:
     if not scope:
         return {"admits": False, "why": "no scope recorded"}
     reasons: list[str] = []
-    if scope.get("task_kind") != TASK_KIND:
+    # v1.1: forecast is a legal axis value.  The axis still matches the
+    # card's task_kind against the bound TASK_KIND -- it does not become
+    # a wildcard.
+    card_kind = scope.get("task_kind")
+    if card_kind not in ALLOWED_TASK_KINDS or card_kind != TASK_KIND:
         reasons.append("task_kind")
     if scope.get("consumer_id") != CONSUMER_ID:
         reasons.append("consumer_id")

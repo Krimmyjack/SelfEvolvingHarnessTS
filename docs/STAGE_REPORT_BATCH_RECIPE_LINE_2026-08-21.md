@@ -1223,6 +1223,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a Part A(执行方):v1.1 三处分发落地;分类 146 原封全绿;冻结清单升 v1.1(2026-08-28 16:5x,执行方)
+
+**首行读数:v1.1 适配过门;分类 146 绿;清单 sha `68ea0f07…`。** 授权链 = 台账 16:5x 条 sol 核准 v1.1 受限修订。成本 **0 LLM / 0 fit / 下载 0**。
+
+**三处**:① `run_e2_s1_curriculum_four_arms.py` 三常数经 `bind_curriculum_identity` 参数化,缺省仍 classification;② `_scope_v1_admits` 放行 forecast 为合法轴值,仍按卡 `task_kind` 对绑定身份匹配;③ `skill_revision.contracted_axes` 按 `task_kind` 分发现役 `extract_public_features`(forecast 分支 `runtime/public_features.py:265-331`;分类默认 = 历史调用)。29 文件清单仅 `skill_revision.py` 字节变(`88bec25c…` → `f1c856e8…`)。
+
+**测试**:3 新聚焦(`test_s2a_v11_adapter.py`) + 分类原 146 套件 = **149 passed**;未跑全仓 pytest。冻结清单 `skill_memory_v1_freeze.json/.md` 升 v1.1,`inventory_sha256 68ea0f07dc12e57b4c623d94979dfbff7b7a926fc6a9b1d05fccb7bc04f11494`。**first fault:无。** 续 Part B 考场重切。
+
 ### sol 核准 S2 设计并更名 **S2a**(机制可移植性+跨任务隔离);v1.1 修订案批;S2b/G3 条件排队;S2a 发车(2026-08-28 16:5x,主线)
 
 **sol 裁定(全采)**:方向对,批 v1.1 受限适配与 S2-G0/G1/G2,但**证据等级定名 S2a**——预测 Skill 系预测任务内重学,证"同一机制服务不同任务";分类卡沉默证"任务边界有效";**未证"分类中学到的任务中立程序知识正向帮助预测"**,后者系缓议 G3(例:"先查反馈可读性、证据不足弃权"→减少无效 probe/降适应成本,而非把 hampel 动作迁过去),预测闭环跑通后另做小型 **S2b**;**S2a+S2b 合起来才算闭合 Stage 2 多任务承诺**。冷发现风险确认:两掷帽合理,仍空则**候选发现正式移交 Stage 3 决策策略进化**,不再改课。设计稿头部已加核准记录并更名。

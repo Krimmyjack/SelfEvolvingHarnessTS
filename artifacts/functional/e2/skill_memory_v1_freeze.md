@@ -1,15 +1,18 @@
-# Skill/Memory v1 freeze
+# Skill/Memory v1.1 freeze
 
-Book = Skill/Memory v1 freeze prep. 2026-08-28. Hash basis = working-tree bytes after Q1/Q7/Q11.
+Book = S2a Part A, sol-authorized restricted adapter. 2026-08-28. Supersedes v1 (`a5c98d40…`). Hash basis = working-tree bytes after the three authorized dispatch sites; classification 146 still green.
 
 ## Freeze declaration
 
-结构性改动须 sol 级修订案;Stage 3 许可触碰面 = instruction/决策策略层;Stage 2 只读 Skill 层
+结构性改动须 sol 级修订案;Stage 3 许可触碰面 = instruction/决策策略层;Stage 2 只读 Skill 层;v1.1 仅授权三处分发(四臂三常数参数化 / `_scope_v1_admits` 放行 forecast / `contracted_axes` 按 task_kind 分发),语义零改
+
+修订授权 = 台账 16:5x 条(sol 核准 S2a v1.1)。
 
 ## Inventory
 
 - file_count: **29**
-- inventory_sha256: `a5c98d40384b342d059d943296676b455fa155baff4b8db212c4b98fb4475fc7`
+- prior_inventory_sha256: `a5c98d40384b342d059d943296676b455fa155baff4b8db212c4b98fb4475fc7`
+- inventory_sha256: `68ea0f07dc12e57b4c623d94979dfbff7b7a926fc6a9b1d05fccb7bc04f11494`
 - listing format: `sha256  relative_path` newline-joined, trailing newline, utf-8
 
 Selection = the listed seeds plus their Skill/Memory import graph (write-back landings, fault router, EditController, compiler/store/surfaces, public feature extractor). Execution-only operator/runtime pool files omitted.
@@ -38,7 +41,7 @@ Selection = the listed seeds plus their Skill/Memory import graph (write-back la
 | `contracts/schemas/observable_feature_v1.json` | 4530 | `9af721ceff7d5b37191c928ecb72f14e491fc3abc4603750943bbaf5e584b6bc` |
 | `evaluation/functional/task_episode_harness/agentic/source_skill.py` | 46833 | `d4062eb6fbda3b3a0dffc700966efef1cc70ff7a948f2f26e9f7808c27e0f06e` |
 | `evaluation/functional/task_episode_harness/agentic/risk_skill.py` | 10490 | `e8b64943cdb29ab2b066487724173a009ce33151d8eb4242c2d616d23a48299c` |
-| `evaluation/functional/task_episode_harness/agentic/skill_revision.py` | 13140 | `88bec25cee1f875f1108b94a10c6ca1e0cfa9ba964296b4786aae859d5446ab8` |
+| `evaluation/functional/task_episode_harness/agentic/skill_revision.py` | 13776 | `f1c856e811e7a43115a73bbf922a0798d3ff7b28fbb45e37401e2a464a5badef` |
 | `evaluation/functional/task_episode_harness/agentic/runner.py` | 94312 | `be5e96cacdbd8f1ff518ee551cada2d366e119cdb9a2b37a03ff1548009adaa5` |
 | `evaluation/functional/task_episode_harness/e1.py` | 99786 | `e5501fe94ad7efd777ed9c67e30dfc6d7eed7df4b0ab2616f7857fe45341097f` |
 | `evaluation/minipipe/feedback/fault_routes.json` | 4313 | `b9e05a9535c941f0da7cfc3295c8266b82658066da5e7b44f648ba33f5857e36` |
@@ -51,6 +54,7 @@ Selection = the listed seeds plus their Skill/Memory import graph (write-back la
 - Q1: `SCOPE_OVERREACH` authorizes monotone applicability PATCH; `RETRIEVAL_MISS` stays the widening token.
 - Q7: new card-face field `risk_guards.scope_unreachable_axes` (pure addition).
 - Q11: n>=2 intersection compiler drops the duplicate `task_kind` leaf. Historical cards are not rewritten.
+- v1.1: `contracted_axes` dispatches `extract_public_features` by `task_kind` (classification default is the historical call). Runner identity bind + scope-axis forecast admit live in `run_e2_s1_curriculum_four_arms.py` (not on the 29-file surface). Classification 146 + 3 focused = 149 passed.
 
 ## Hanging debt
 
