@@ -1213,6 +1213,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### sol 裁 ① 采纳(密封条件考批次);CAP-2 协议前置冻结(含反钓鱼硬条款);发车(2026-08-28 15:0x,主线)
+
+**sol 判读与裁定(全采)**:capstone NEUTRAL 语义确认 = "安全侧成功,能力侧未被考到,不是正迁移失败也不是成功";证据版图四行确认(卡收益 dev 已复证 / 修订 dev 已复证但收益主为避免重复错误 / 密封条件化+安全已证 / **密封 Scope 匹配场正迁移仍缺**);**选 ①:预冻结三候选密封批**,一次写死候选/顺序/停止规则,所有开封结果全报,首个 Scope 匹配靶进行能力考,三件全不匹即停止并承认 Scope 覆盖有限;CatsDogs 不用(计算规模不适配,维持原令)。
+
+**CAP-2 冻结**(`artifacts/functional/e2/cap2_sealed_batch_protocol_freeze.md`,先于任何档案元数据浏览):结构盲选(二分类/等长/单变量/TRAIN∈[40,400]/**总点数≤10万**/长度过模板相容门[机械导出引行]/名称排除本地 40+ROSTER 全名单),字典序前 3 一次写死,过滤轨迹先于下载入工件;每 zip 落库记 sha256(新基线纪律);顺序考:结构失败=槽死亡不递补;不匹=记逐叶差异停用顺延;首匹=能力考(CAP-1 骨架,TEST 子集 min(官方,500) 行种子 20260828,材料线随 n 换算,三臂与卡照旧);**反钓鱼硬条款(主线加于 sol 四条之上):首匹靶考完即停批,判词不满意亦不得续开下一候选**;三件全不匹 → `SCOPE_COVERAGE_LIMITED` 书面承认,不追加第 4 件。预算:下载 ≤3 / LLM ≤60 / fit ≤80 / 墙钟 ≤3h。授权链 = sol 裁 ① + 用户转达 + 本条。发车(opus 续话)。
+
 ### capstone 收口裁定(主线):`CAPSTONE_NEUTRAL` 核可;**密封域条件化+安全面全过,能力侧未被考(靶在族外)**;sha 缺基线裁定;三主张证据状态定格;下一步菜单呈用户+sol(2026-08-28 14:5x,主线)
 
 **裁定**:判词 `CAPSTONE_NEUTRAL`(A5−A3 = +0.000000,harm 0,三臂同 accuracy 0.5336)按 CAP-1 §6 核可;开封记录清洁(单次,授权链全,首读范围最小);成本 9 LLM / 9 fit / 5.6 min(帽 45/75/90);预测对表 P1/P2 立、**P3 破如实**(卡 Scope 差且仅差一叶:`estimated_level_offset` 卡要 low、靶读 zero);提交 `b95a853`/`8568ca8`。
