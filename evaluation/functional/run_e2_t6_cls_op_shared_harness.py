@@ -633,6 +633,7 @@ class _CountingBackend:
         self._shared = factory() if share_inner else None
         self.cap = int(cap)
         self.calls = 0
+        self.first_returned_model: str | None = None
         self._live: Any = None
 
     def new_arm_backend(self) -> Any:
@@ -654,7 +655,12 @@ class _ArmBackend:
             raise Stop("LLM_BUDGET_EXCEEDED",
                        "LLM cap %d reached" % self._ledger.cap)
         self._ledger.calls += 1
-        return self._inner.complete(request)
+        response = self._inner.complete(request)
+        meta = getattr(response, "provider_metadata", None) or {}
+        returned = meta.get("returned_model")
+        if returned and self._ledger.first_returned_model is None:
+            self._ledger.first_returned_model = str(returned)
+        return response
 
 
 def _live_backend(cap: int) -> _CountingBackend:
@@ -679,11 +685,14 @@ def _live_agent(block: Any, backend: Any) -> Any:
     from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
         LocalPublicToolGateway,
     )
-    from evaluation.functional.task_episode_harness.e1 import NF_BASE_URL
+    from evaluation.functional.task_episode_harness.agentic.runner import (
+        live_transport,
+    )
 
+    target = live_transport(default_model=SLOW_MODEL)
     core = TTHAAgentCore(
         backend, LocalPublicToolGateway(block, task_kind="classification"),
-        model=SLOW_MODEL, base_url=NF_BASE_URL)
+        model=target["model"], base_url=target["base_url"])
     return TTHAFastAgent(core)
 
 

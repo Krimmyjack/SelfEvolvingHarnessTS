@@ -283,6 +283,27 @@ def _config_for_cohort() -> Mapping[str, Any]:
     return dict(_config())
 
 
+def live_transport(*, default_model: str | None = None) -> dict[str, str]:
+    """Resolve the live chat-completions target from ``M0_AGENT_*``.
+
+    Evaluation-layer transport only.  Host and model are mapped together:
+    both env vars must be set, otherwise the historical module defaults stay
+    in force (backward compatible).  Callers must not hardcode a host or
+    model name on the inspect path.
+    """
+    import os
+
+    env_base = (os.environ.get("M0_AGENT_BASE_URL") or "").strip()
+    env_model = (os.environ.get("M0_AGENT_MODEL") or "").strip()
+    if env_base and env_model:
+        return {"base_url": env_base, "model": env_model, "source": "M0_AGENT_*"}
+    return {
+        "base_url": NF_BASE_URL,
+        "model": default_model or NF_MODEL,
+        "source": "module_default",
+    }
+
+
 def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
     import os
 
@@ -296,10 +317,11 @@ def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
     )
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY or AGICTO_API_KEY is required")
+    target = live_transport()
     return BudgetedAgentBackend(
         _RetryingTransport(
             AgictoChatCompletionsBackend(
-                api_key=api_key, base_url=NF_BASE_URL, timeout_seconds=240
+                api_key=api_key, base_url=target["base_url"], timeout_seconds=240
             )
         ),
         maximum_calls=maximum_calls,
@@ -781,8 +803,9 @@ def _run_arm(
         maximum_calls=int(workspace_tool_budget),
     )
     backend = backend_factory(LLM_CALL_BUDGET_PER_ARM_TASK)
+    target = live_transport()
     core = TTHAAgentCore(
-        backend, gateway, model=NF_MODEL, base_url=NF_BASE_URL
+        backend, gateway, model=target["model"], base_url=target["base_url"]
     )
     harness_view = resolve_harness_view(
         arm_state.active_snapshot,

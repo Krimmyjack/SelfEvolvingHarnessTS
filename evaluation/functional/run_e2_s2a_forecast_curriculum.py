@@ -148,11 +148,14 @@ def _live_agent(block: Any, backend: Any) -> Any:
     from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
         LocalPublicToolGateway,
     )
-    from evaluation.functional.task_episode_harness.e1 import NF_BASE_URL
+    from evaluation.functional.task_episode_harness.agentic.runner import (
+        live_transport,
+    )
 
+    target = live_transport(default_model=cls.SLOW_MODEL)
     core = TTHAAgentCore(
         backend, LocalPublicToolGateway(block, task_kind="forecast"),
-        model=cls.SLOW_MODEL, base_url=NF_BASE_URL)
+        model=target["model"], base_url=target["base_url"])
     return TTHAFastAgent(core)
 
 
@@ -872,6 +875,22 @@ def _markdown(payload: Mapping[str, Any]) -> str:
         "",
         v.get("why", ""),
         "",
+    ]
+    transport = payload.get("transport") or {}
+    if transport:
+        lines += [
+            "## Transport (not part of verdict)",
+            "",
+            "- source: %s" % transport.get("source"),
+            "- request: %s @ %s" % (
+                transport.get("request_model"), transport.get("request_base_url")),
+            "- first_returned_model: %s" % transport.get("first_returned_model"),
+            "- r1_inspect: %s" % transport.get("r1_inspect"),
+            "- r2_inspect: %s" % transport.get("r2_inspect"),
+            "- note: %s" % transport.get("note"),
+            "",
+        ]
+    lines += [
         "## Predictions",
         "",
     ]
@@ -1011,6 +1030,18 @@ def run_course(seed: str = "r1", *, resume: bool = False) -> int:
             "k0_skill_ids": sorted(str(s.skill_id) for s in k0_fixed.skills),
         }
         backend = cls._live_backend(LLM_CAP)
+        from evaluation.functional.task_episode_harness.agentic.runner import (
+            live_transport,
+        )
+        target = live_transport(default_model=cls.SLOW_MODEL)
+        payload["transport"] = {
+            "request_base_url": target["base_url"],
+            "request_model": target["model"],
+            "source": target["source"],
+            "r1_inspect": "api.agicto.cn + gpt-5.6-sol (agicto direct)",
+            "r2_inspect": "CPA relay when M0_AGENT_* set (host+model mapped together)",
+            "note": "transport-layer difference only; not part of the verdict",
+        }
         forecast_sha = None
         g2_faces: list[dict[str, Any]] = []
 
@@ -1153,6 +1184,10 @@ def run_course(seed: str = "r1", *, resume: bool = False) -> int:
             if faces else None),
     }
     verdict = _verdict(rows, chain, g2, stopped=stopped)
+    transport = payload.setdefault("transport", {})
+    if "backend" in locals():
+        transport["first_returned_model"] = getattr(
+            backend, "first_returned_model", None)
     payload.update({
         "rows": rows,
         "revisions": revisions,
