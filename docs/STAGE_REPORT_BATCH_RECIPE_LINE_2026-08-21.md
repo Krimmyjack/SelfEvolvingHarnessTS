@@ -1223,6 +1223,20 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r2(执行方):健康链路再试仍死;inspect 走 agicto TLS EOF;两掷未闭合(2026-08-28 22:2x,执行方)
+
+**S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线 22:15「小请求/32KB/65s 长生成均 200」+ 用户再试。未换后端。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。两掷合并判定仍未成立。
+
+**live**:探测 wave1 200、`gpt-5.6-sol`(CPA)。产例 K0 inspect 再报 `AgentTransportError: InternalServerError`;墙钟约 187s,退避窗打满。按令停表后做 ≤15 min 归因。
+
+**inspect 请求体**(仅 `_scratch/`,密钥只在 header):SDK 原样 `model`+`messages`,16090 字节。`stream`/`response_format`/`tools`/`max_tokens`/`temperature` 均缺席,与探测相同。
+
+**字段级 diff(探测 vs K0 inspect)**:
+- 不同:host `cpa.cpa-lab.me` vs `api.agicto.cn`;model `cpa-gpt-5.6-sol` vs `gpt-5.6-sol`;timeout 60 vs 240;messages 1×短 pong vs system+user ~16KB。
+- 相同:无 stream / 无 response_format / 无 tools / 无 max_tokens / 无温度。
+
+**原样重放**:同一 16090 字节 POST `https://api.agicto.cn/v1/chat/completions`(inspect 真主机)→ **无状态码**,0.3s `ConnectError: SSL UNEXPECTED_EOF_WHILE_READING`。对照同一字节打 CPA → **HTTP 400** `unknown provider for model gpt-5.6-sol`(链路通、拒模型名)。主线 22:15 健康面覆盖的是 CPA,不是 inspect 出站。累计 LLM 72/120、fit 76/200。工件 `s2a_g1_run1_r2.json/.md`。**first fault:BACKEND_UNAVAILABLE — 健康 CPA 下 inspect 仍走 api.agicto.cn 并 TLS EOF。**
+
 ### S2a 末段 Part P r2(执行方):出站节点更换后续跑;K0 inspect 退避再打满;两掷未闭合(2026-08-28 22:0x,执行方)
 
 **S2a 判词:BACKEND_UNAVAILABLE;自产卡:否;守卫三面:未考;核心数字 LLM 3 / fit 2。** 授权链 = 主线「chatgpt.com 出站节点已换」+ `--resume --seed r2`。未换后端。0 新 LLM / 0 新 fit。checkpoint 仍 `1/Static`+`1/A3-reset`。
