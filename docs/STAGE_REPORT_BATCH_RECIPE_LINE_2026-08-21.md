@@ -1213,6 +1213,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### Skill/Memory v1 冻结生效(主线):三债清、146 绿、29 文件清单入册;S2 设计进入资产盘点(2026-08-28 16:0x,主线)
+
+**裁定**:执行方三笔修复核可——Q1 `SCOPE_OVERREACH` 因码语义正确(扩/缩方向分离,`RETRIEVAL_MISS` 原义不动,fault_routes.json:15 / router.py:22-25/71-77 / skill_revision.py:54);Q7 卡面 `scope_unreachable_axes` 纯增声明(source_skill.py:665);Q11 交集编译器 task_kind 去重仅及新卡(source_skill.py:570-571)。146 测试绿;0 LLM/0 fit;提交 `edefd15`/`8645739`/`0e5a2bf`;py3.12 测试债(他线文件)挂账注明。**冻结即时生效**:`skill_memory_v1_freeze.json/.md`,29 文件,总 sha `a5c98d40…`;此后 Skill/Memory 结构性改动须 sol 级修订案;**Stage 3 许可面 = instruction/决策策略层;Stage 2 只读 Skill 层**(照 15:5x 条边界)。
+
+**S2 设计前置(发 grok,0 LLM 只读盘点)**:预测线资产清点——forecast 任务的 runner/harness 入口与 task_kind 支持现状(引行)、数据资产与反馈样本容量(对照"对半后每面 ≥20 行"新门)、A5>A3 +31.7% 正账的工件与机制年代、预测侧 Episode/store/卡现状、缺陷注入族实现、Consumer 实现。盘点回来主线出 S2 设计稿:主探 = **机制任务可移植性**(阶梯/承重轴/修订环在 forecast cell 上重挣,兼为主实验预测线密封考铺路)+ **跨任务惰性守卫**(分类卡在 forecast cell 零检索零供给,task_kind 轴负控);"算子中立程序性迁移"机制选项与双 Consumer 0-LLM oracle 扫描选项一并呈 sol。
+
 ### sol 裁 B 采纳:CAP-2 以 `POOL_EXHAUSTED` 终局收口,不放宽 TRAIN 门;措辞修正入典;分类开发线转入收口与 Skill/Memory v1 冻结(2026-08-28 15:5x,主线)
 
 **裁定(sol,全采;主线自认 A 倾向失当)**:不放宽 TRAIN 门。理由系机制级而非程序级,**优于主线 15:2x 的 A 案辩护**——M-1 已证反馈可读性是转化前提;DodgerLoopGame 20 行 TRAIN 对半后 Support/delayed 各 ~10 行、材料线 0.10,系已实测"贴线不可读"区域(PowerCons 在 40 行面尚且贴线 0/2);主动选弱反馈靶大概率再得不可解读 neutral,偶然为正亦难逃"看池改门"质疑。主线低估自家 M-1 仪器质量先验,记档。**CAP-2 终判**:`POOL_EXHAUSTED / EVIDENCE_UNAVAILABLE_UNDER_RESOURCE_CONSTRAINT`。**措辞修正入典(论文口径)**:非"方法无法进行密封正迁移",而是"**当前公开 UCR、既定规模与新鲜度约束下,无可用 Scope 匹配密封靶,该证据当前 unavailable**"——记资源约束,不记方法负结果。
