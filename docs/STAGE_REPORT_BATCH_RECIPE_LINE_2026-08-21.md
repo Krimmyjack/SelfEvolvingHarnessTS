@@ -1213,6 +1213,10 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### 常备纪律澄清:模型分层优先于续话惯性(用户提醒,主线自认偏离,2026-08-28 15:0x,主线)
+
+用户重申 2026-08-25 17:41 分层令。主线自认:今日全部委派走同一 opus 续话线,其中 SA-1 r2(纯采样重复)与 CAP-2 选靶/下载/顺序开封段按纪律属 grok 任务,用贵了;根因 = 把"子代理复用(同模型 resume)"排在了"难度分层"之前。**裁定优先级:难度分层 > 续话惯性——线内任务难度降级时新开 grok,不续 opus;例外仅限一次性密封操作或紧接手术的验证需护栏连续性**。opus 另有配额可用性风险(SA-0 前科)。在飞 CAP-2 不中途换手(协议中段换手风险大于算力成本),此后机械类书一律 grok。
+
 ### sol 裁 ① 采纳(密封条件考批次);CAP-2 协议前置冻结(含反钓鱼硬条款);发车(2026-08-28 15:0x,主线)
 
 **sol 判读与裁定(全采)**:capstone NEUTRAL 语义确认 = "安全侧成功,能力侧未被考到,不是正迁移失败也不是成功";证据版图四行确认(卡收益 dev 已复证 / 修订 dev 已复证但收益主为避免重复错误 / 密封条件化+安全已证 / **密封 Scope 匹配场正迁移仍缺**);**选 ①:预冻结三候选密封批**,一次写死候选/顺序/停止规则,所有开封结果全报,首个 Scope 匹配靶进行能力考,三件全不匹即停止并承认 Scope 覆盖有限;CatsDogs 不用(计算规模不适配,维持原令)。
@@ -1264,6 +1268,28 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **主线操作化(三条,防日后重议)**:(1) **capstone 开封条件即时冻结**:SA-1 预注册信号成立(A5-adaptive 对 K0-fixed 在 probe 浪费/重复挨拒上材料级改善 ∧ regret 非劣 ∧ harm 0)→ 呈用户+sol 终批;单跑只记 `SA1_DEVELOPMENT_SIGNAL`,复合措辞仍须采样重复(既有纪律)。(2) **Scope 规则 v2(供给档承重五轴)**:Pattern family 轴必须引用**先于 L1 冻结**的既有定义(S1a 簇资格判定的 Pattern 交集/缺陷族分类),执行者引 file:line 注明来源;无机械定义即停呈,禁按 L1 结果挑叶、禁现场发明。Q11 重复 task_kind 叶随新编译器自然消失;`period_change_score` 类偶然叶不再入初始 Scope。(3) **收窄 PATCH 走既有冻结 EditController 通道**(L1 装卡同路),不触 minipipe fault 路由(Q1 无需新因码,零新平台);**R3 负向分支以历史负例离线 replay 验证**(v3 PowerCons CONFLICT、ECG200 outlier_mad 害证),live 短课预期零 harm、不承担 R3 测试。
 
 **SA-1 发车(opus 续话,四段)**:Part 0 四归因字段(`episodes[].source_skill_id` / `source_skill_revision`=卡内容 sha / `round.scope_match_by_skill_id` / `guidance_conditioned_by_skill_id`)+聚焦测试 → Part 0.5 Scope v2 编译器,离线重编单例卡并出新匹配表(**门:尾段 impulse 四单元全匹、BirdChicken-burst 不匹**)→ Part 1 三写回接通(证据追加走 `risk_guards` PATCH append-only;收窄走 `observable_applicability` PATCH,排除叶限特征契约保证轴、只许由实拒单元编译;负向降权/排除同面)+离线 replay 门(含 R3 历史负例)→ Part 2 live 短课 r1。**课程冻结(六位,全为已审计单元,零新数据)**:GunPoint → GPOvY → PowerCons(#1) → Herring → **PowerCons(#2 再遇,机制探针)** → BirdChicken(族外对照)。三臂 = A3-reset(无卡)/ K0-fixed(scope-v2 单例卡,冻结不修订)/ A5-adaptive(同卡 + R1-R3);卡种子 = v4 GPMvF 记录 Episode(单例、供给权限、ITT 主判);**再遇位读数单列为机制读数,不计首行 regret(首行只算 distinct 单元)**。**预注册预测(可证伪)**:v2 卡匹 GunPoint/GPOvY/PowerCons/Herring、不匹 BirdChicken;GunPoint+GPOvY 供给转化;PowerCons#1 被拒 → **恰一次收窄 PATCH(卡 v1,内容 sha 版本化)**;Herring 被拒或被 v1 排除(均合法,如实报);**PowerCons#2:A5-adaptive 零供给零挨拒,K0-fixed 再供给再挨拒(核心机制差)**;A5 对 K0 probe ≥1 省、regret 非劣、harm 全零。**预算**:LLM ≤150 / fit ≤300 / 墙钟 ≤5h / 下载 0。**止损**:离线门任一不过即停呈 first fault;live 中 PowerCons#1 意外转化 → 机制读数改由 Herring 拒绝承载,如实报;拒绝发生而 R2 未触发 → 单一尸检,禁改课禁调门禁 r2。
+
+### CAP-2 Stage 1 停手呈报(执行方):**候选池为空**(`CAP2_CANDIDATE_POOL_EMPTY`),零下载、零开封;§1 合取在官方档案上无一名通过;**冻结件无"零候选"分支,需主线裁定**(2026-08-28 15:4x,执行方)
+
+**首行读数:CAP-2 结局 = 三候选名单无法组成——`CAP2_CANDIDATE_POOL_EMPTY`(既非"三件全不匹",也非"结构全灭")。** 工件 `artifacts/functional/e2/cap2_selection.json/.md`(全轨迹 190 行逐名放行/排除)+ `cap2_sequential_exam.json/.md`(状态 `NOT_ENTERED`)。成本 **下载 0 zip、LLM 0、fit 0、墙钟约 12 min**;ROSTER.md 未追加(无落库对象);`data/ucr_conf_downloaded/` 无新目录。
+
+**元数据可复现性(先说这条,因为它决定结论强度)**:本次现拉 `https://timeseriesclassification.com/aeon-toolkit/metadata.csv` 与 2026-08-25 CLS-CONF-dl 归档副本**逐字节相同**(同 7253 B、同 sha256 `1e336629…`,190 行),故该普查稳定、选靶可由同一公开表复现。
+
+**§1 合取逐项(全部公开元数据机械判定,零数值零标签)**:二分类 ∧ 等长(`Length != 0`)∧ 单变量(`Channels == 1`)∧ TRAIN∈[40,400] ∧ 总点数 `(TrainSize+TestSize)×Length ≤ 100,000` ∧ 注入模板相容门 ∧ 名称 ∉ 本地 40 ∪ ROSTER 全名单。**相容门系调用现役实现导出而非现场复述**(引行:`run_e2_t6_cls_op_shared_harness.py:430`(`_v2_segment_length` = `round(length/150)`)、`:455`(segment≤0 即 raise)、`:464`(段尾溢出即 raise)、`run_e2_task_context_label_evidence_witness.py:88`(`_bound_positions` 四点互异且距两端 ≥3)、`:37`(`SPIKE_FRACTIONS` 四值)、`run_e2_t6_cls_op_shared_harness.py:301`(`maximum_modified_fraction` = 0.10))。**注记:0.10 修改帽这一支从不单独决定任何候选**——伪影足迹恒为 `4×round(L/150)/L ≈ 0.027`,远在帽内;真正承重的是段长(L 需 ≥76)与端距几何。
+
+**结果:池 190 → 二分类 58 → 二分类∧等长∧单变量 48 → 合格 0。** 其中 39 名"已在本地 40 件",4 名"已在 ROSTER"(BinaryHeartbeat / CatsDogs / Epilepsy2 / ItalyPowerDemand),其余均折于 TRAIN 带或点数或相容门。
+
+**"全新可封"名单只有 5 个,逐一如实报(全在工件)**:`Chinatown`(TRAIN 20 < 40;且 L=24 段长 0、端距被拒)、**`DodgerLoopGame`(TRAIN 20 < 40 —— 唯一失败项,相容门与点数均过)**、`ElectricDeviceDetection`(TRAIN 623 > 400;1,123,840 点)、`RightWhaleCalls`(TRAIN 10934;51.6M 点)、`SharePriceIncrease`(TRAIN 965;115,800 点;L=60 段长 0)。
+
+**空池是真的,不是解析口径造成的(反事实三行已入工件)**:按冻结口径合格 0;**完全撤掉 ROSTER 排除仍为 0**;同时撤掉两处名称排除也只重新放行 11 个**本线早已本地持有**的名字(ECG200/GunPoint 四件/Ham/Herring/Lightning2/PowerCons/ToeSegmentation1/Wine)。即:公开档案里"二分类∧等长∧单变量∧小规模"这一格已被本线基本用尽,这是结构性事实而非过滤实现缺陷。
+
+**为何不套用 `SCOPE_COVERAGE_LIMITED`(重要,防日后误引)**:§3.6 的该判词是**关于卡 Scope 的**结论,须在三候选各自开封并算出 pattern view 之后才成立。本次零开封、零 Scope 判定,套用它会主张本跑并不具备的证据。同理也不是"结构全灭"(§3.1 的结构失败须在下载后由 loader 判定)。故另名 `CAP2_CANDIDATE_POOL_EMPTY` 呈裁。
+
+**明确未做的那一步(反钓鱼自证)**:`DodgerLoopGame` 只差 TRAIN 带一条(20 vs 下限 40),把带宽放宽到 20 即可立刻凑出候选——**这正是本书明令禁止的动作,故未做,改为如实呈报**。执行方对"放宽 §1 某条 / 更换池 / 记为结构性缺口"三条路径均无裁量权。
+
+**预测对表(4 条)**:P1 过滤轨迹完整且选靶工件先于任何下载提交 ✔(下载恒为 0,轨迹 190 行全文入册);P2 开封密封纪律 —— **不适用**(零开封,故无 sha256 入册对象,首读范围为空);P3 能力考 A5 harm=0 且零越权 —— **不适用**(未跑臂);P4 匹配与否与头条判词不预测 —— 如实报为"未进入匹配判定阶段"。
+
+**义务**:`methods/` `contracts/` `runtime/` `operators/` 零改;阈值/菜单/模板/prompt/模型零改;新增仅 CAP-2 选靶壳层(`evaluation/functional/run_e2_cap2_sealed_batch.py`,提交 `c37948f`);未按值或按预期族挑候选(每一条均为公开元数据字段或冻结模板的机械后果);未越字典序(无可取者);下载 0;`s1_oracle` 与既有密封件未碰;未跑全仓 pytest;零子代理;他线文件未碰。
 
 ### CAPSTONE 终考收口(执行方):Epilepsy2 已开封,判词 **`CAPSTONE_NEUTRAL`**;A5−A3 = +0.000000;harm = 0;**卡 Scope 差一叶未匹,条件未进入**(2026-08-28 14:3x,执行方)
 
