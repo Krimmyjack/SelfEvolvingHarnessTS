@@ -81,8 +81,10 @@ ARM_K0 = s1.ARM_K0
 ARM_A5 = s1.ARM_A5
 ARMS = (ARM_STATIC, ARM_A3, ARM_K0, ARM_A5)
 ADAPTIVE = (ARM_A3, ARM_K0, ARM_A5)
-SUPPORT_TOKEN = 1
-DELAYED_TOKEN = 2
+# Origin tokens must be prefix lengths of request.values: run_online_round
+# rebinds the tool gateway from series0[:origin] (online_loop.py:373-380),
+# so a small token rebuilds the gateway on a 1-point slice and prepare's
+# verify_context refuses. The S1 shape (block.size / block.size+1) is kept.
 SUPPORT_TRIAL_BUDGET = 2
 LLM_CAP = 120
 FIT_CAP = 200
@@ -349,6 +351,9 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
     spec = _task_spec()
     ctx = _task_context(spec)
     ev = ForecastEval(fit_budget, fit_ledger)
+    block = np.asarray(cell["observation_block"], dtype=np.float64)
+    support_origin = int(block.size)
+    delayed_origin = support_origin + 1
     support_ex = ScopeExecutor(
         _roster(cell["delayed"], cell["support"]), values, cfg,
         evaluate_fn=ev, max_modified_fraction=0.35)
@@ -356,9 +361,8 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
         _roster(cell["support"], cell["delayed"]), values, cfg,
         evaluate_fn=ev, max_modified_fraction=0.35)
     executor = FaceExecutor(
-        {SUPPORT_TOKEN: support_ex, DELAYED_TOKEN: delayed_ex},
+        {support_origin: support_ex, delayed_origin: delayed_ex},
         traffic.ORIGIN_HELDIN)
-    block = np.asarray(cell["observation_block"], dtype=np.float64)
     observed = dict(resolver.window_context(values, traffic.ORIGIN_HELDIN,
                                             traffic.PERIOD))
     observed["bound_period"] = float(traffic.PERIOD)
@@ -374,7 +378,7 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
     skills_before = set(entries_before)
     result = run_online_round(
         method, executor, request, values,
-        origin=SUPPORT_TOKEN, slow_agent=None,
+        origin=support_origin, slow_agent=None,
         controller=state["controller"], store=state["store"],
         card_builder=_card_builder,
         round_name="%s_%s_r1" % (arm.lower(), unit_id),
@@ -382,7 +386,7 @@ def _run_round(*, state: Mapping[str, Any], cell: Mapping[str, Any],
         domain=unit_id,
         period=traffic.PERIOD, fast_features=features,
         allow_fast_skill=True, runtime_prior_slot=False)
-    open_delayed(result, executor, delayed_origin=DELAYED_TOKEN,
+    open_delayed(result, executor, delayed_origin=delayed_origin,
                  store=state["store"])
     activated = False
     if result.approved_skill_id is not None:
@@ -856,8 +860,11 @@ def _markdown(payload: Mapping[str, Any]) -> str:
     lines = [
         "# S2a G1/G2 live (reduced course)",
         "",
-        "**S2a 判词:%s(缩形);自然冲突场:零命中;守卫三面:%s;核心数字 LLM %s / fit %s**"
+        "**S2a 判词:%s;自产卡:%s;守卫三面:%s;核心数字 LLM %s / fit %s**"
         % (v.get("label"),
+           ("是" if any(c.get("skill_id") == FORECAST_SKILL_ID
+                        for c in (payload.get("version_chain") or []))
+            else "否"),
            ("全零" if g2.get("all_zero") else "非零")
            if g2.get("tested") else "未考",
            (payload.get("ledger") or {}).get("llm"),

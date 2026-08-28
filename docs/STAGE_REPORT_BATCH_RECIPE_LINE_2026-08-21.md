@@ -1223,6 +1223,18 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a 末段 Part P r1(执行方):缩形课四臂 live 落盘;`TREATMENT_EMPTY`;自产卡否;守卫全零;两掷续 r2(2026-08-28 20:3x,执行方)
+
+**S2a 判词:TREATMENT_EMPTY;自产卡:否;守卫三面:全零;核心数字 LLM 69 / fit 74。** 授权链 = 台账 18:5x/19:3x + 主线 20:2x 隧道恢复令。未改模板/门/菜单/prompt/模型。未碰 Skill/Memory。下载 0。判词词表 `S2A_PORTABLE_REDUCED / S2A_PARTIAL / TREATMENT_EMPTY`。P4/P7 = N/A。
+
+**live(r1)**:点 `_scratch/agent_backend.ps1` 后续跑 `--resume --seed r1`(checkpoint 仅预载 `1/Static`;与停表 `--run --seed r1` 等价)。探测 wave1 200,`returned_model=gpt-5.6-sol`。五单元跑完。墙钟 803s。工件 `s2a_g1_run1.json/.md`。
+
+**产例** `electricity_impulsive_outlier_03`:A3/A5 自提 0,仅 identity,边界扣 `no_positive_local_active`,无 forecast 卡。K0 自提 `localized_outlier_mad`/`iqr`,Support POSITIVE(+1.17,逐序列最小 +0.56)但 `local_status=LOCAL_DRAFT`、`delayed_gain=null`,部署仍 identity。
+
+**其余**:clean identity 三臂 identity(A3/K0 Support CONFLICT 9 序列害,delayed 拒)。强受益×2 靠**自提**双门转化并部署(非供卡):U3 三臂 +1.5522;`U4` A3/K0 +3.7863 / A5 +3.1667。gap 守卫三臂 identity。G2 10 面(K0/A5×5)retrieval/scope_match/supply **全零**。harm 0。P6 材料级分歧 none。卡版本链空。
+
+**两掷帽**:r1 空 → 一次采样 r2(本条提交后发车)。累计预算 LLM 69/120、fit 74/200。**first fault:无。**
+
 ### S2a iv(执行方):逐序列分解+扩源已穷尽;**S2A_CONFLICT_FIELD_UNAVAILABLE**(2026-08-28 18:0x,执行方)
 
 **S2a 状态: CONFLICT_FIELD_UNAVAILABLE;冲突场:无。** 授权链 = 台账 18:0x 条「sol 终批:采 iv+iii」。成本 **0 LLM / 本段 44+10+44=98 fit(累计 278/300) / 下载 0**。未开 G1/G2。未改模板/门/菜单。
