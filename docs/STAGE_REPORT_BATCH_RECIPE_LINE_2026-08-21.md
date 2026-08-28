@@ -1363,6 +1363,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **工件**:`s2a_natural_pool_sweep.json/.md`、`s2a_course_frozen.json/.md`。**first fault:无。** 续 Part P G1/G2 live。
 
+### D4 普查+夜间清点落账(主线):traffic leftover 6/6 缺陷贫瘠;KDD 缓存 270 条容量全过但系去缺失变体;**触发富池与 fresh 池角色分离**,授权包收敛(2026-08-29 01:0x,主线)
+
+**普查核可**(Grok 执行,工件 `d4_leftover_defect_census.{json,md}`):traffic leftover 382/382 零缺失(registry 族标齐验),零值为占有率结构非缺失(中位零率 0.445%),MAD-8 机械 rich 判为右尾混淆照录不采,周跳变 0-3 条/cell,**6/6 cell = poor**;electricity 21 列 moderate 但不足一 cell。判读采认:**F1 只能承担易档,天然触发期望 ≈0/课**(低于 G1 拟 ≥2/课)——00:3x 条耦合警示由数据证实。
+
+**主线夜间自查三发现**:(i) KDD `series_cache.npz` 实为 **270 序列**(盘点未开 npz 之疑解除),长度 9504-10920 全过同构线,可构 ≥4 cell,容量库内最佳;(ii) 但缺失率 0/270——本地 tsf 与 zip 均为 Monash `without_missing_values` 预填补变体,天然缺口源头即不存在,不可本地恢复;含缺失变体为小体积外部下载;(iii) **架构澄清(修正 00:3x 合并表述):Phase 2 硬档/G1 需要"触发富"池(不要求 fresh);Phase 3 验收需要"fresh"池——两种角色,分开冻结**。
+
+**池架构 v1.1**:触发富主选 = **KDD 含缺失变体**(下载后 270×10.9k + 真实缺口,无需几何修正案,族级曝光如实披露、与其角色无碍);**NOAA 几何变体修正案自关键路径降为后备**(仅当 KDD 不可用时再呈);fresh 侧照旧 F1 traffic leftover(实例级,易档)+ **F2 Solar-Energy**(族级,C5c 主承重)。**授权包收敛**:用户——两项小体积下载(Solar-Energy;KDD `with_missing_values`);sol——新鲜度三级披露分类 + 触发富/fresh 角色分离核准。夜间余队列:Stage 3 pilot 冻结稿(与池决策解耦,先行成文)。
+
 ### D4 池盘点收口(主线核可):**库内无四标准全满足池**——新鲜度×容量结构性反相关;三层池架构建议成形,两项授权待批(2026-08-29 00:3x,主线)
 
 **盘点核可**(Grok 执行,全引证):32 资产/25 候选池;容量门定位 `run_e2_s2a_forecast_oracle.py:45-48`(TRAIN 40/半 20/heldout 20,cell=60 列,同构最短 L≥1848);工件 `d4_fresh_pool_inventory.{json,md}`,不确定项照录。**结构性发现:④新鲜度与①②容量反相关**——够大的池(TSL electricity/traffic 与 registry 同族)族级全开,处女池(ETT/exchange/ILI/weather)全部 <40 序列过不了容量门。四标准合取在库内为空,机器自证;与 CAP-2 同象但成因不同:非耗尽,是**从未存在过合格的 fresh 大池**。仓内纪律自证:`g3_sourcing.py:211-215` 已写明 TSL 与 UCI 族重叠不能扛跨域 fresh 主张。
