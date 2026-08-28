@@ -307,17 +307,22 @@ def live_transport(*, default_model: str | None = None) -> dict[str, str]:
 def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
     import os
 
+    target = live_transport()
+    key_names = (
+        ("CPA_API_KEY", "AGICTO_API_KEY", "OPENAI_API_KEY")
+        if target["source"] == "M0_AGENT_*"
+        else ("OPENAI_API_KEY", "AGICTO_API_KEY")
+    )
     api_key = next(
         (
             os.environ.get(name, "").strip()
-            for name in ("OPENAI_API_KEY", "AGICTO_API_KEY")
+            for name in key_names
             if os.environ.get(name, "").strip()
         ),
         None,
     )
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY or AGICTO_API_KEY is required")
-    target = live_transport()
     return BudgetedAgentBackend(
         _RetryingTransport(
             AgictoChatCompletionsBackend(
