@@ -1,0 +1,1021 @@
+{
+  "schema_version": "d4_fresh_pool_inventory/1",
+  "book": "D4 forecast fresh sealed-pool read-only inventory",
+  "written": "2026-08-28",
+  "authority": [
+    "docs/MAIN_EXPERIMENT_DESIGN_SKELETON_2026-08-28.md:36-38 (D4 four criteria)",
+    "evaluation/functional/run_e2_s2a_forecast_oracle.py:45-48 (frozen forecast cell constants)",
+    "evaluation/functional/run_e2_s2a_natural_pool.py:31-32,110-115 (gate that applies those constants)",
+    "docs/CLS_LINE_FINAL_REPORT_2026-08-28.md:43 (policy: TRAIN half-split each face >=20)"
+  ],
+  "constraints_honored": {
+    "code_changes_outside_these_two_artifacts": false,
+    "experiments_run": false,
+    "llm_backend_calls": 0,
+    "downloads": 0,
+    "git_commit": false
+  },
+  "capacity_gate": {
+    "unit": "series-as-row (forecast analog of CLS TRAIN instance)",
+    "n_train_min": 40,
+    "n_face_min": 20,
+    "n_heldout": 20,
+    "cell_width": 60,
+    "material_line_at_n_face_20": 0.05,
+    "frozen_definition": {
+      "file": "evaluation/functional/run_e2_s2a_forecast_oracle.py",
+      "lines": "45-48",
+      "constants": {
+        "N_TRAIN": 40,
+        "N_FACE": 20,
+        "N_HELDOUT": 20,
+        "CELL_WIDTH": 60
+      },
+      "material_line_fn": {
+        "lines": "65-66",
+        "formula": "max(0.005, 1.0 / n_half)"
+      },
+      "isomorphic_origins": {
+        "ORIGIN_HELDIN": 1104,
+        "ORIGIN_HELDOUT": 1800,
+        "lines": "51-52",
+        "min_length_for_isomorphic_cell": 1848,
+        "note": "usable filter is series.size >= ORIGIN_HELDOUT + 48 at :79"
+      }
+    },
+    "gate_application": {
+      "file": "evaluation/functional/run_e2_s2a_natural_pool.py",
+      "lines": "31-32,110-115",
+      "constants": {
+        "N_TRAIN_GATE": 40,
+        "N_FACE_GATE": 20
+      },
+      "docstring": "Capacity gate is the current forecast cell rule (TRAIN>=40, half>=20). (:4)"
+    },
+    "policy_cite": {
+      "file": "docs/CLS_LINE_FINAL_REPORT_2026-08-28.md",
+      "line": 43,
+      "text": "TRAIN 对半后每面 >=20 行(材料线 <=0.05)作为选靶硬门"
+    },
+    "not_the_d4_gate": {
+      "g3_min_series_length": 5760,
+      "cite": "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:34-38",
+      "note": "older G3 screen; not the D4 capacity-gate constant"
+    },
+    "window_supplement": {
+      "formula": "n_windows = max(0, (L - context - horizon) // stride + 1)",
+      "context": 192,
+      "horizon": 48,
+      "stride_period_hourly": 24,
+      "note": "Supplementary. The frozen D4 gate is series-as-row N_FACE=20, not window-as-row. Window counts are reported so a long series can be judged if a future protocol recuts origins."
+    }
+  },
+  "counts": {
+    "n_assets": 32,
+    "n_candidates": 25,
+    "n_candidates_all_four_pass": 0,
+    "n_missing_benchmarks": 6
+  },
+  "assets": [
+    {
+      "id": "tsl_electricity",
+      "task": "forecast",
+      "dataset": "TSL/LSTF electricity (UCI ElectricityLoadDiagrams family, 321 channels)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/electricity/electricity.csv",
+      "in_git_repo_data": false,
+      "n_series": 321,
+      "typical_length": 26304,
+      "measured": "csv header 322 (date+321), n_data_rows=26304, bytes=95581762",
+      "loader": [
+        "evaluation/functional/run_e2_s2a_electricity_sweep.py:46-60",
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:70-111 (load_csv_columns)",
+        "evaluation/functional/task_episode_harness/agentic/runner.py:143-174"
+      ]
+    },
+    {
+      "id": "tsl_traffic",
+      "task": "forecast",
+      "dataset": "TSL/LSTF traffic (PeMS Bay Area / monash:traffic_hourly family, 862 sensors)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/traffic/traffic.csv",
+      "in_git_repo_data": false,
+      "n_series": 862,
+      "typical_length": 17544,
+      "measured": "csv header 863 (date+862), n_data_rows=17544, bytes=136478119",
+      "loader": [
+        "evaluation/functional/run_batch_composition_headroom.py:169-190",
+        "evaluation/functional/run_e2_s2a_forecast_oracle.py:69-85",
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:70-111"
+      ]
+    },
+    {
+      "id": "tsl_weather_jena",
+      "task": "forecast",
+      "dataset": "TSL weather (Jena, 10-min; hourly via stride 6)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/weather/weather.csv",
+      "in_git_repo_data": false,
+      "n_series": 21,
+      "typical_length": 52696,
+      "typical_length_hourly": 8783,
+      "measured": "csv header 22, n_data_rows=52696; hourly = [::6] at g1.py:3373,3410",
+      "loader": [
+        "evaluation/functional/task_episode_harness/g1.py:3372-3384,3387-3493",
+        "evaluation/functional/task_episode_harness/agentic/runner.py:179-183"
+      ]
+    },
+    {
+      "id": "ett_small",
+      "task": "forecast",
+      "dataset": "ETT-small (ETTh1/h2/m1/m2)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/ETT-small/",
+      "in_git_repo_data": false,
+      "n_series_per_file": 7,
+      "typical_length": {"ETTh1": 17420, "ETTh2": 17420, "ETTm1": 69680, "ETTm2": 69680},
+      "loader": "no in-repo forecast cell loader found; g3_sourcing.py has no ETT entry; s0 listed it as paper-disqualified (run_e2_shared_capability_s0_census.py:256-263)"
+    },
+    {
+      "id": "exchange_rate",
+      "task": "forecast",
+      "dataset": "LSTF exchange_rate (8 countries)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/exchange_rate/exchange_rate.csv",
+      "in_git_repo_data": false,
+      "n_series": 8,
+      "typical_length": 7588,
+      "loader": [
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:248-256 (SOURCE_PROVENANCE only; no live S2a cell loader)"
+      ]
+    },
+    {
+      "id": "illness_ili",
+      "task": "forecast",
+      "dataset": "LSTF ILI / national_illness",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/illness/national_illness.csv",
+      "in_git_repo_data": false,
+      "n_series": 7,
+      "typical_length": 966,
+      "loader": [
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:239-247 (SOURCE_PROVENANCE only)"
+      ]
+    },
+    {
+      "id": "m4",
+      "task": "forecast",
+      "dataset": "M4 (TSL dump: Yearly/Quarterly/Monthly/Weekly/Daily/Hourly train/test)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/m4/",
+      "in_git_repo_data": false,
+      "n_series": {
+        "Hourly-train": 414,
+        "Daily-train": 4227,
+        "Weekly-train": 359,
+        "Monthly-train": 48000,
+        "Quarterly-train": 24000,
+        "Yearly-train": 23000
+      },
+      "typical_length": {
+        "Hourly-train_first20": "700",
+        "Daily-train_first20": "130-1006",
+        "Weekly-train_first20": "457-2597",
+        "Monthly-train_first20": "82-918",
+        "Yearly-train_first20": "19-31",
+        "note": "first-20 sample only; full min/max not computed this book"
+      },
+      "loader": "no S2a-style loader; historical M4 Hourly/Daily reports exist under artifacts/functional/e2/"
+    },
+    {
+      "id": "registry_uci_electricity_load_diagrams",
+      "task": "forecast",
+      "dataset": "uci_electricity_load_diagrams (benchmark v0.2 npy, 1024-pt prefix)",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 370,
+      "n_series_on_disk": 171,
+      "typical_length": 1024,
+      "exposure_class_in_registry": {"certified_virgin": 370},
+      "natural_missing": {"n_with_missing": 0, "max_rate": 0.0},
+      "loader": [
+        "evaluation/benchmark_v02/registry.py:660-668",
+        "evaluation/functional/run_e2_s2a_iv_expand.py:52-97"
+      ]
+    },
+    {
+      "id": "registry_monash_traffic_hourly",
+      "task": "forecast",
+      "dataset": "monash:traffic_hourly (benchmark v0.2 npy, 1024-pt prefix)",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 862,
+      "n_series_on_disk": 391,
+      "typical_length": 1024,
+      "exposure_class_in_registry": {"certified_virgin": 806, "probe_consumed": 56},
+      "natural_missing": {"n_with_missing": 0, "max_rate": 0.0},
+      "loader": [
+        "evaluation/benchmark_v02/registry.py:660-668",
+        "evaluation/functional/run_e2_s2a_iv_expand.py:52-97"
+      ]
+    },
+    {
+      "id": "registry_metr_la",
+      "task": "forecast",
+      "dataset": "metr_la",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 207,
+      "n_series_on_disk": 89,
+      "typical_length": 1024,
+      "exposure_class_in_registry": {"certified_virgin": 207},
+      "natural_missing": {"n_with_missing": 0, "max_rate": 0.0},
+      "loader": [
+        "evaluation/functional/run_e2_s2a_iv_expand.py:47-97,72-97",
+        "evaluation/benchmark_v02/sources.py:160-172"
+      ]
+    },
+    {
+      "id": "registry_monash_nn5_daily",
+      "task": "forecast",
+      "dataset": "monash:nn5_daily",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 91,
+      "n_series_on_disk": 48,
+      "typical_length": "714-791",
+      "exposure_class_in_registry": {"certified_virgin": 91},
+      "natural_missing": {"n_with_missing": 91, "max_rate": 0.03666245259165613},
+      "loader": ["evaluation/functional/run_e2_s2a_iv_expand.py:52-97"]
+    },
+    {
+      "id": "registry_monash_covid_deaths",
+      "task": "forecast",
+      "dataset": "monash:covid_deaths",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 246,
+      "n_series_on_disk": 104,
+      "typical_length": 212,
+      "exposure_class_in_registry": {"certified_virgin": 246},
+      "natural_missing": {"n_with_missing": 0, "max_rate": 0.0},
+      "loader": ["evaluation/benchmark_v02/registry.py:660-668"]
+    },
+    {
+      "id": "registry_gefcom2012_load",
+      "task": "forecast",
+      "dataset": "gefcom2012_load",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 20,
+      "n_series_on_disk": 10,
+      "typical_length": 1024,
+      "exposure_class_in_registry": {"certified_virgin": 20},
+      "natural_missing": {"n_with_missing": 20, "max_rate": 0.017578125},
+      "loader": ["evaluation/benchmark_v02/sources.py:208-219"]
+    },
+    {
+      "id": "registry_noaa_global_hourly_v02",
+      "task": "forecast",
+      "dataset": "noaa_global_hourly (benchmark v0.2 1024-pt)",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 40,
+      "n_series_on_disk": 19,
+      "typical_length": 1024,
+      "exposure_class_in_registry": {"certified_virgin": 40},
+      "natural_missing": {"n_with_missing": 40, "max_rate": 0.517578125},
+      "loader": [
+        "evaluation/functional/run_e2_noaa_health_check.py:58-61",
+        "evaluation/benchmark_v02/sources.py:187-195"
+      ]
+    },
+    {
+      "id": "registry_legacy_monash",
+      "task": "forecast",
+      "dataset": "legacy_monash:{nn5_daily,covid_deaths,fred_md,tourism_monthly,saugeenday,sunspot,us_births}",
+      "path": "data/benchmark_v0_2/clean_base + artifacts/frozen/benchmark_v02/series_registry.jsonl",
+      "n_series_registry": 83,
+      "n_series_on_disk": 36,
+      "typical_length": "187-1024 (dataset-dependent)",
+      "exposure_class_in_registry": "all confirmed_exposed",
+      "loader": ["evaluation/benchmark_v02/registry.py:660-668"]
+    },
+    {
+      "id": "noaa_fresh_v1",
+      "task": "forecast",
+      "dataset": "noaa_global_hourly_fresh_v1",
+      "path": "data/benchmark_noaa_fresh_v1/series/ (20 stations) + confirmation_2025/ + raw_2025/",
+      "n_series": 20,
+      "typical_length": 8760,
+      "cite_length": "data/benchmark_noaa_fresh_v1/series/72422093820/record.json:6",
+      "loader": [
+        "evaluation/functional/run_e2_noaa_fresh_materialize.py:120-121",
+        "evaluation/functional/run_e2_fresh_confirmation.py:479"
+      ]
+    },
+    {
+      "id": "noaa_raw_v0",
+      "task": "forecast",
+      "dataset": "NOAA ISD raw station CSVs (acquisition pool)",
+      "path": "data/benchmark_v0/raw/noaa_global_hourly/{2024,2025}/",
+      "n_series": "not fully counted this book; sources.py NOAA_STATION_COUNT=64 (:67)",
+      "typical_length": "irregular hourly native; fresh v1 grids to 8760",
+      "loader": ["evaluation/functional/run_e2_noaa_fresh_materialize.py:121"]
+    },
+    {
+      "id": "kdd2018_t233",
+      "task": "forecast",
+      "dataset": "KDD Cup 2018 air quality (T233 development cohort)",
+      "path": "data/kdd2018/series_cache.npz",
+      "n_series_roster": 20,
+      "n_series_cache_total": "uncertain (npz names not opened this book)",
+      "typical_length": "uncertain this book; G3/recipe origins imply long enough for 3072+",
+      "loader": [
+        "evaluation/functional/task_episode_harness/g1.py:1881-1908",
+        "evaluation/functional/task_episode_harness/e1.py:289"
+      ]
+    },
+    {
+      "id": "m3_quarterly_zip",
+      "task": "forecast",
+      "dataset": "M3 quarterly archive (unextracted zip)",
+      "path": "data/m3_quarterly_dataset.zip",
+      "n_series": "not extracted; zip bytes=96124",
+      "typical_length": "unknown (zip not opened)",
+      "loader": "none found"
+    },
+    {
+      "id": "tourism_quarterly_zip",
+      "task": "forecast",
+      "dataset": "Tourism quarterly archive (unextracted zip)",
+      "path": "data/tourism_quarterly_dataset.zip",
+      "n_series": "not extracted; zip bytes=93833",
+      "typical_length": "unknown (zip not opened)",
+      "loader": "none found"
+    },
+    {
+      "id": "ucr_task_context",
+      "task": "classification",
+      "dataset": "UCR/UEA local zip pack (40 datasets)",
+      "path": "data/ucr_task_context/*.zip",
+      "n_datasets": 40,
+      "n_series": "per-dataset TRAIN/TEST; not forecast series",
+      "typical_length": "dataset-dependent (e.g. GunPoint L=150; not re-measured)",
+      "loader": [
+        "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:117",
+        "evaluation/functional/run_e2_action_credit_candidate_ordering.py:33,265-267"
+      ]
+    },
+    {
+      "id": "ucr_conf_downloaded",
+      "task": "classification",
+      "dataset": "CLS-CONF download isolation (D1/D2/D3)",
+      "path": "data/ucr_conf_downloaded/",
+      "n_datasets": 3,
+      "note": "D1 BinaryHeartbeat values loaded then compute-stopped; D2 CatsDogs and D3 Epilepsy2 remain sealed (ROSTER.md:17-21,33-46)",
+      "loader": [
+        "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:2605",
+        "evaluation/functional/run_e2_capstone_epilepsy2.py:103"
+      ]
+    },
+    {
+      "id": "yahoo_s5_a1",
+      "task": "anomaly_detection",
+      "dataset": "Yahoo S5 A1Benchmark",
+      "path": "data/benchmark_yahoo_s5_v1/{work,vaults/held_in,vaults/held_out}/",
+      "n_files_downloaded": 67,
+      "n_roster": 65,
+      "n_exposed_dev": 24,
+      "n_sealed": 41,
+      "typical_length": "~1420 (freeze real_1.csv n=1420); dropped real_54/62 n=741",
+      "loader": [
+        "evaluation/functional/run_e2_t6_natural_a5_a3.py:297,5482-5486",
+        "evaluation/functional/run_e2_t6_44a_r2_yahoo_positive_control.py:96,170-177"
+      ]
+    },
+    {
+      "id": "nab_v1_1",
+      "task": "anomaly_detection",
+      "dataset": "NAB v1.1 (AWS/known_cause/realTraffic/realTweets + AdExchange)",
+      "path": "data/benchmark_nab_v1_1/raw/",
+      "n_series": 37,
+      "breakdown": {"realAWSCloudwatch": 8, "realKnownCause": 6, "realTraffic": 7, "realTweets": 10, "realAdExchange": 6},
+      "typical_length": "file-dependent; not re-measured this book",
+      "loader": [
+        "evaluation/functional/run_e2_t6_natural_a5_a3.py:123,540-544"
+      ]
+    },
+    {
+      "id": "smd",
+      "task": "anomaly_detection",
+      "dataset": "SMD (multivariate 28 machines x 38 channels)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/SMD/",
+      "n_series": "28 entities x 38 channels (PROJECT_STATE_AND_DATA_MAP_2026-08-23.md:74)",
+      "typical_length": "official train 708405 rows cited in PROJECT_STATE :74",
+      "loader": [
+        "evaluation/functional/run_e2_smd_entity_structure.py:33-34"
+      ]
+    },
+    {
+      "id": "psm",
+      "task": "anomaly_detection",
+      "dataset": "eBay PSM",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/PSM/",
+      "n_series": 25,
+      "typical_length": "not measured this book (train.csv 63628087 bytes)",
+      "loader": [
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:257-266"
+      ]
+    },
+    {
+      "id": "swat",
+      "task": "anomaly_detection",
+      "dataset": "SWaT",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/SWaT/",
+      "n_series": 51,
+      "typical_length": "not measured this book",
+      "loader": [
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:267-274"
+      ]
+    },
+    {
+      "id": "msl",
+      "task": "anomaly_detection",
+      "dataset": "MSL",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/MSL/",
+      "n_series": "uncertain this book (packed npy)",
+      "typical_length": "uncertain",
+      "loader": "no in-repo AD exam loader found"
+    },
+    {
+      "id": "smap",
+      "task": "anomaly_detection",
+      "dataset": "SMAP",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/SMAP/",
+      "n_series": "uncertain this book (packed npy)",
+      "typical_length": "uncertain",
+      "loader": "no in-repo AD exam loader found"
+    },
+    {
+      "id": "uea_classification_shared",
+      "task": "classification",
+      "dataset": "UEA .ts corpora in shared_tsq (PEMS-SF, FaceDetection, Handwriting, Heartbeat, JapaneseVowels, SpokenArabicDigits, UWaveGestureLibrary, SelfRegulationSCP1/2, EthanolConcentration)",
+      "path": "C:/Users/辉/Desktop/Agent/shared_tsq_datasets/{name}/",
+      "n_series": "classification samples, not forecast series",
+      "typical_length": "PEMS-SF stored as 144-step samples (s0_census.py:278-281)",
+      "loader": "no forecast loader; classification .ts only"
+    },
+    {
+      "id": "shared_empty_placeholders",
+      "task": "none",
+      "dataset": "empty sibling dirs (present, zero files)",
+      "path": "shared_tsq_datasets/{electricity_15min,electricity_weekly,energy,m4_daily,m4_monthly,m4_yearly,m5,monash_m3_monthly,monash_traffic,weatherbench_daily,wiki_daily_100k,fiannce,healthcare,other,synthetic}",
+      "n_series": 0,
+      "cite": "artifacts/functional/e2/shared_capability_s0_census_v1.md:39; this book re-confirmed n_files=0",
+      "loader": "none"
+    },
+    {
+      "id": "dataset_manifest_v02",
+      "task": "forecast",
+      "dataset": "frozen dataset-level manifest (not bytes)",
+      "path": "artifacts/frozen/benchmark_v02/dataset_manifest.json",
+      "n_series": "see datasets.* n_series fields",
+      "loader": [
+        "evaluation/benchmark_v02/datasets.py:75+",
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:277-291 (EXPOSED_FAMILIES)"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "tsl_electricity_used_300",
+      "asset_id": "tsl_electricity",
+      "slice": "S2a recut columns 0-299 (5 cells x 60)",
+      "n_series": 300,
+      "typical_length": 26304,
+      "n_complete_cells": 5,
+      "n_windows_per_series_stride24": 1086,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "artifacts/functional/e2/s2a_g0_electricity_sweep.json:9-15,51-56 (5 impulse cells LEARNABLE; outcomes scored)",
+        "artifacts/functional/e2/s2a_course_frozen.json:17-45 (course uses electricity_impulsive_outlier_01/03/04)",
+        "evaluation/functional/task_episode_harness/agentic/runner.py:143-149 (G3_DEVELOPMENT_SOURCE_FAMILY_OVERLAP)"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "300 >= 40; 5 complete 60-wide cells"},
+        "feedback_capacity": {"score": "满足", "why": "each cell Support/Delayed = 20/20 (N_FACE=20); L=26304 >= 1848; n_windows=(26304-192-48)//24+1=1086"},
+        "natural_heterogeneity": {"score": "不满足", "why": "S2a cells are impulsive_outlier injections (s2a_g0_electricity_sweep.json:49); TSL electricity is interpolated clean occupancy-of-load, not a natural-defect pool"},
+        "freshness": {"score": "不满足", "why": "outcomes already scored in S2a G0/curriculum"}
+      }
+    },
+    {
+      "id": "tsl_electricity_leftover_21",
+      "asset_id": "tsl_electricity",
+      "slice": "leftover unused columns 300-319 + OT (n=21)",
+      "n_series": 21,
+      "typical_length": 26304,
+      "n_complete_cells": 0,
+      "n_windows_per_series_stride24": 1086,
+      "opened_status": "已在 development 使用",
+      "slice_note": "本切片未入任何 S2a cell、未评 Outcome; 族已开封; _load_pool 读入全部 321 列 (INSTANCE_SEEN)",
+      "opened_evidence": [
+        "artifacts/functional/e2/s2a_g0_electricity_sweep.json:20-43 leftover_unused n=21",
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:217-223 prior_outcome_exposure_in_family=True"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "21 < N_TRAIN_GATE 40"},
+        "feedback_capacity": {"score": "不满足", "why": "series-as-row half of 21 is 10 < 20; window capacity on L=26304 would pass if rows were windows, but the frozen gate is series-as-row"},
+        "natural_heterogeneity": {"score": "不满足", "why": "same clean TSL electricity family; leftover not a natural-defect census"},
+        "freshness": {"score": "部分", "why": "slice never scored; family and file already Outcome-exposed / INSTANCE_SEEN"}
+      }
+    },
+    {
+      "id": "tsl_traffic_recipe_0_19",
+      "asset_id": "tsl_traffic",
+      "slice": "recipe screening roster columns 0-19 (12 train + 8 eval)",
+      "n_series": 20,
+      "typical_length": 17544,
+      "n_complete_cells": 0,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "evaluation/functional/run_batch_composition_headroom.py:163-164,190-203",
+        "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md:70"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "20 < 40"},
+        "feedback_capacity": {"score": "不满足", "why": "current 12+8 cell; half of 12 is 6 < 20 (s2_forecast_asset_inventory.md:65)"},
+        "natural_heterogeneity": {"score": "部分", "why": "same PeMS occupancy; recipe used injected/natural mix historically; this 20-series face is the opened development cell"},
+        "freshness": {"score": "不满足", "why": "batch recipe / m0a / #31 outcomes opened"}
+      }
+    },
+    {
+      "id": "tsl_traffic_s2a_recut_0_419",
+      "asset_id": "tsl_traffic",
+      "slice": "S2a recut 7 cells x 60 = columns 0-419 (6 impulsive_outlier + 1 gap)",
+      "n_series": 420,
+      "typical_length": 17544,
+      "n_complete_cells": 7,
+      "n_windows_per_series_stride24": 722,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "evaluation/functional/run_e2_s2a_forecast_oracle.py:45-50,88-114",
+        "artifacts/functional/e2/s2a_course_frozen.json:49 (traffic_gap_00 on course)"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "420 >= 40"},
+        "feedback_capacity": {"score": "满足", "why": "each cell 20/20; L=17544 >= 1848; n_windows=(17544-192-48)//24+1=722"},
+        "natural_heterogeneity": {"score": "不满足", "why": "cells are injected impulsive_outlier / gap, not natural defects"},
+        "freshness": {"score": "不满足", "why": "S2a oracle + curriculum scored these cells"}
+      }
+    },
+    {
+      "id": "tsl_traffic_clean_420_479",
+      "asset_id": "tsl_traffic",
+      "slice": "S2a clean identity cell columns 420-479",
+      "n_series": 60,
+      "typical_length": 17544,
+      "n_complete_cells": 1,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "artifacts/functional/e2/s2a_course_frozen.json:53-167 (traffic_clean_identity_00 train 420-459 / heldout 460-479)"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "60 = one full cell"},
+        "feedback_capacity": {"score": "满足", "why": "Support 420-439 / Delayed 440-459 = 20/20"},
+        "natural_heterogeneity": {"score": "不满足", "why": "named 无缺陷条件下的 identity 场 (s2a_course_frozen.json:27-29); explicitly not a natural-defect field"},
+        "freshness": {"score": "不满足", "why": "frozen onto the S2a reduced course"}
+      }
+    },
+    {
+      "id": "tsl_traffic_leftover_480_861",
+      "asset_id": "tsl_traffic",
+      "slice": "columns 480-861 after S2a recut+clean (862-480=382)",
+      "n_series": 382,
+      "typical_length": 17544,
+      "n_complete_cells": 6,
+      "n_windows_per_series_stride24": 722,
+      "opened_status": "已在 development 使用",
+      "slice_note": "本切片未入 recipe/S2a cell、未评 Outcome; 族与文件已开封; _load_pool 读入全部可用列 (INSTANCE_SEEN)",
+      "opened_evidence": [
+        "evaluation/functional/run_e2_s2a_forecast_oracle.py:73-85 loads max_columns=900 then filters length; all long columns enter the pool dict",
+        "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py:225-237 prior_outcome_exposure_in_family=True (same PeMS / monash:traffic_hourly)",
+        "artifacts/functional/e2/s2a_course_frozen.json:53-167 uses only through 479"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "382 >= 40; 6 complete cells (360) plus 22 remainder"},
+        "feedback_capacity": {"score": "满足", "why": "series-as-row: 6x 20/20; L=17544 >= 1848; n_windows=722"},
+        "natural_heterogeneity": {"score": "部分", "why": "same Bay Area occupancy network (dataset_manifest.json:96-102). Registry npy missing_rate=0 for this family. Leftover columns were not separately defect-censused this book. Natural-defect heterogeneity is unproven; domain variety is only sensor-to-sensor occupancy."},
+        "freshness": {"score": "部分", "why": "slice never scored; family already Outcome-exposed; entire CSV INSTANCE_SEEN during S2a load"}
+      }
+    },
+    {
+      "id": "registry_uci_electricity_370x1024",
+      "asset_id": "registry_uci_electricity_load_diagrams",
+      "slice": "v0.2 npy 370 x 1024 (171 on disk)",
+      "n_series": 370,
+      "n_on_disk": 171,
+      "typical_length": 1024,
+      "n_complete_cells_on_disk": 2,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "g3_sourcing.py:217-223 family overlap with TSL electricity",
+        "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md:70 electricity cohort EXPOSED"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "registry 370 / on-disk 171 >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "series-as-row on-disk 171 => 2 cells. L=1024 < 1848 so cannot host S2a origins 1104/1800 (electricity_sweep.py:5-6). Window n=(1024-192-48)//24+1=33; half of 33 is 16 < 20 if one series is split into windows."},
+        "natural_heterogeneity": {"score": "部分", "why": "4 regime tags in registry (seasonal_high 306); natural_missing_rate all 0"},
+        "freshness": {"score": "不满足", "why": "same UCI electricity family already Outcome-exposed"}
+      }
+    },
+    {
+      "id": "registry_traffic_hourly_862x1024",
+      "asset_id": "registry_monash_traffic_hourly",
+      "slice": "v0.2 npy 862 x 1024 (391 on disk; 56 probe_consumed)",
+      "n_series": 862,
+      "n_on_disk": 391,
+      "typical_length": 1024,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "series_registry exposure_class probe_consumed=56 / certified_virgin=806 (this book census)",
+        "g3_sourcing.py:225-237 same network as TSL traffic.csv"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "862/391 >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "series-as-row passes; L=1024 cannot host 1104/1800"},
+        "natural_heterogeneity": {"score": "部分", "why": "4 regimes; missing_rate 0"},
+        "freshness": {"score": "不满足", "why": "same PeMS family already opened; 56 probe_consumed in registry"}
+      }
+    },
+    {
+      "id": "metr_la",
+      "asset_id": "registry_metr_la",
+      "slice": "full registry 207 / on-disk 89; S2a iv used 1 cell of 60",
+      "n_series": 207,
+      "n_on_disk": 89,
+      "typical_length": 1024,
+      "opened_status": "已密封使用",
+      "opened_evidence": [
+        "artifacts/functional/e2/s2a_iv_decomposition.json:14-25 (metr_la_impulsive_outlier_00; origins 792/888)",
+        "docs/V1_CROSS_DOMAIN_CLOSED_LOOP_PLAN.md:1071-1211 (sealed A5/A3 metr_la offsets 0/40/80/120)",
+        "artifacts/functional/e2/w1_guidance_evolution_report.json cites w1_sealed_a5_a3_metr_la_* reports"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "207 registry; 89 on disk >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "on-disk 89 => 1 cell (60) + 29 remainder. L=1024 cannot host 1104/1800; S2a iv used 792/888 (min L=936) which 1024 passes."},
+        "natural_heterogeneity": {"score": "部分", "why": "3 regimes (low_structure 159); missing_rate 0; S2a cell was injected impulsive_outlier"},
+        "freshness": {"score": "不满足", "why": "sealed A5/A3 + S2a iv already opened outcomes"}
+      }
+    },
+    {
+      "id": "metr_la_unused_remainder",
+      "asset_id": "registry_metr_la",
+      "slice": "on-disk 89 minus S2a cell 60 = 29; plus 118 registry-not-on-disk",
+      "n_series_unused_on_disk": 29,
+      "n_registry_not_on_disk": 118,
+      "typical_length": 1024,
+      "opened_status": "已密封使用",
+      "slice_note": "29 leftover on-disk never in the S2a iv cell; older sealed runs used offsets into the 207, so leftover identity vs those offsets is uncertain without re-opening those rosters",
+      "opened_evidence": [
+        "s2a_iv_decomposition.json:14-25 n_cells=1 usable_n=89",
+        "docs/V1_CROSS_DOMAIN_CLOSED_LOOP_PLAN.md metr_la offset series"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "29 leftover on disk < 40; 118 not materialized"},
+        "feedback_capacity": {"score": "不满足", "why": "29 < 40"},
+        "natural_heterogeneity": {"score": "部分", "why": "same LA freeway network"},
+        "freshness": {"score": "部分", "why": "this 29-slice not in S2a iv cell; family already sealed-used; offset overlap uncertain"}
+      }
+    },
+    {
+      "id": "monash_nn5_daily",
+      "asset_id": "registry_monash_nn5_daily",
+      "slice": "registry 91 / on-disk 48; S2a iv structural skip",
+      "n_series": 91,
+      "n_on_disk": 48,
+      "typical_length": "714-791",
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "s2a_iv_decomposition.json:27-35 (usable=48 < CELL_WIDTH=60; skip, not a hunt)",
+        "run_e2_shared_capability_s0_census.py:190-199 outcome_exposure=EXPOSED (autonomous_natural_workflow_generation_nn5_*)",
+        "docs/P2_NATURAL_BATCH_MISSINGNESS_PREREGISTRATION.md:9"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "91 registry / 48 on disk >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "series-as-row on-disk 48 => half 24 >= 20 but cannot form a 60-wide cell. L<=791 < 1848. n_windows=(791-192-48)//24+1=23; window-half 11 < 20."},
+        "natural_heterogeneity": {"score": "部分", "why": "4 regimes; all 91 have natural_missing_rate>0 (max 0.0367) — the only headline registry set besides NOAA/GEFCom with natural missing"},
+        "freshness": {"score": "不满足", "why": "v6/nn5 reports + s0 EXPOSED family"}
+      }
+    },
+    {
+      "id": "monash_covid_deaths",
+      "asset_id": "registry_monash_covid_deaths",
+      "slice": "registry 246 / on-disk 104",
+      "n_series": 246,
+      "n_on_disk": 104,
+      "typical_length": 212,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "g3_sourcing.py:284 EXPOSED_FAMILIES epidemiology = monash:covid_deaths",
+        "run_e2_shared_capability_s0_census.py:190-199"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "246/104 >= 40"},
+        "feedback_capacity": {"score": "不满足", "why": "L=212 < 240 G1 / 1848 S2a; n_windows=(212-192-48)//24+1=0"},
+        "natural_heterogeneity": {"score": "部分", "why": "3 regimes; near-monotone death counts (dataset_manifest.json:80-86); missing_rate 0"},
+        "freshness": {"score": "不满足", "why": "family listed EXPOSED"}
+      }
+    },
+    {
+      "id": "gefcom2012_load",
+      "asset_id": "registry_gefcom2012_load",
+      "slice": "registry 20 / on-disk 10",
+      "n_series": 20,
+      "n_on_disk": 10,
+      "typical_length": 1024,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "run_e2_shared_capability_s0_census.py:203-210",
+        "docs/V1_SEQUENTIAL_VALIDATION_PLAN.md:83"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "20 < 40; on-disk 10"},
+        "feedback_capacity": {"score": "不满足", "why": "half of 20 = 10 < 20"},
+        "natural_heterogeneity": {"score": "部分", "why": "20/20 have natural missing (max 0.0176); 2 regimes"},
+        "freshness": {"score": "不满足", "why": "GEFCom is a long-standing development/P0 domain"}
+      }
+    },
+    {
+      "id": "noaa_registry_40x1024",
+      "asset_id": "registry_noaa_global_hourly_v02",
+      "slice": "v0.2 40 x 1024 (19 on disk)",
+      "n_series": 40,
+      "n_on_disk": 19,
+      "typical_length": 1024,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "g3_sourcing.py:283 weather family includes noaa_global_hourly",
+        "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md:71"
+      ],
+      "qualification": {
+        "series_count": {"score": "部分", "why": "registry 40 == N_TRAIN_GATE but leaves 0 heldout; on-disk 19 < 40"},
+        "feedback_capacity": {"score": "部分", "why": "20/20 split of 40 is borderline if no heldout; L=1024 cannot host 1104/1800"},
+        "natural_heterogeneity": {"score": "满足", "why": "40/40 have natural missing; max_rate 0.5176; dataset_manifest.json:104-110 calls this the natural-missing U pool"},
+        "freshness": {"score": "不满足", "why": "NOAA family opened (Frep / #31 / recipe)"}
+      }
+    },
+    {
+      "id": "noaa_fresh_v1",
+      "asset_id": "noaa_fresh_v1",
+      "slice": "20 stations x 8760 (2024) + 2025 confirmation; Frep roster 12+4",
+      "n_series": 20,
+      "typical_length": 8760,
+      "opened_status": "已密封使用",
+      "opened_evidence": [
+        "AGENTS.md:232 (NOAA 2025 EXPOSED; beyond_17520 still sealed)",
+        "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md:71",
+        "artifacts/functional/e2/t6_45_frep_a5a3_replay.md (Frep 12+4)"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "20 < 40"},
+        "feedback_capacity": {"score": "不满足", "why": "half of 20 = 10; current 12+4 faces 6 and 2. L=8760 window-rich (n_windows=(8760-192-48)//24+1=356) but frozen gate is series-as-row."},
+        "natural_heterogeneity": {"score": "满足", "why": "record.json shows native missing/unparsed TMP (e.g. 72422093820 missing_rate_development=0.0018, n_missing_or_unparsed=714)"},
+        "freshness": {"score": "不满足", "why": "2024+2025 EXPOSED; beyond_17520 sealed but same stations already opened"}
+      }
+    },
+    {
+      "id": "kdd_t233",
+      "asset_id": "kdd2018_t233",
+      "slice": "A5A3_COHORT 12 train + 8 eval",
+      "n_series": 20,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "evaluation/functional/task_episode_harness/g1.py:1881-1887",
+        "g3_sourcing.py:286 air_quality = kdd2018"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "20 < 40"},
+        "feedback_capacity": {"score": "不满足", "why": "12+8 cell; half of 12 = 6"},
+        "natural_heterogeneity": {"score": "部分", "why": "natural air-quality; roster is a fixed 20-series development cohort"},
+        "freshness": {"score": "不满足", "why": "T233/e31 long-standing development"}
+      }
+    },
+    {
+      "id": "weather_jena",
+      "asset_id": "tsl_weather_jena",
+      "slice": "21 numeric columns; weather cohort uses 11+8 of columns that pass both guards",
+      "n_series": 21,
+      "typical_length_hourly": 8783,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "evaluation/functional/task_episode_harness/g1.py:3460-3493",
+        "g3_sourcing.py:1-8 Weather lesson; EXPOSED_FAMILIES weather includes tsl_weather_jena (:283)",
+        "run_e2_shared_capability_s0_census.py:153-162"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "21 < 40; leftover after 11+8 is at most 2"},
+        "feedback_capacity": {"score": "不满足", "why": "11/8 roster; half of 11 < 20. Hourly L=8783 would pass a window-as-row protocol."},
+        "natural_heterogeneity": {"score": "部分", "why": "Weather lesson is about unreadable eval-loss spread (solar channels), not a defect-heterogeneity census"},
+        "freshness": {"score": "不满足", "why": "development weather cohort + EXPOSED family"}
+      }
+    },
+    {
+      "id": "ett_small",
+      "asset_id": "ett_small",
+      "slice": "4 files x 7 channels; energy family overlap",
+      "n_series_per_file": 7,
+      "typical_length": "17420 hourly / 69680 15-min",
+      "opened_status": "从未开封",
+      "opened_evidence": [
+        "run_e2_shared_capability_s0_census.py:256-263 already_screened=False; disqualified on paper; 'cost nothing' (no measurement run)",
+        "artifacts 检索 ETTh1/ETTm1 作为 forecast exam 零命中 (only s0 census + this inventory)",
+        "g3_sourcing.py:281 energy family already exposed (uci_electricity / gefcom) — family overlap, not an opened ETT exam"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "7 per file; pooling two hourly files = 14 < 40; pooling all four mixes 1h and 15min (s0:260-262)"},
+        "feedback_capacity": {"score": "不满足", "why": "series-as-row 7 < 20. Per-channel L=17420/69680 window-rich (n_windows hourly=(17420-192-48)//24+1=717) but the frozen gate is series-as-row."},
+        "natural_heterogeneity": {"score": "部分", "why": "transformer oil temperature; natural-defect census not run; typically treated as clean LSTF data"},
+        "freshness": {"score": "部分", "why": "no ETT exam opened; energy family already exposed so g3 would refuse a fresh-family claim"}
+      }
+    },
+    {
+      "id": "exchange_rate",
+      "asset_id": "exchange_rate",
+      "slice": "8 series x 7588",
+      "n_series": 8,
+      "typical_length": 7588,
+      "opened_status": "从未开封",
+      "opened_evidence": [
+        "s0_census.py:241-247 paper-disqualified; no exam runner",
+        "g3_sourcing.py:248-256 prior_outcome_exposure_in_family=True (finance overlap with nn5), n too small"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "8 < 40"},
+        "feedback_capacity": {"score": "不满足", "why": "8 < 20. L=7588 window n=(7588-192-48)//24+1=307."},
+        "natural_heterogeneity": {"score": "部分", "why": "8 FX series; no defect census"},
+        "freshness": {"score": "部分", "why": "no exam opened; finance family already exposed"}
+      }
+    },
+    {
+      "id": "illness_ili",
+      "asset_id": "illness_ili",
+      "slice": "7 series x 966",
+      "n_series": 7,
+      "typical_length": 966,
+      "opened_status": "从未开封",
+      "opened_evidence": [
+        "s0_census.py:250-254 paper-disqualified",
+        "g3_sourcing.py:239-247 epidemiology overlap with covid_deaths"
+      ],
+      "qualification": {
+        "series_count": {"score": "不满足", "why": "7 < 40"},
+        "feedback_capacity": {"score": "不满足", "why": "7 < 20; L=966 < 1848; n_windows=(966-192-48)//24+1=31"},
+        "natural_heterogeneity": {"score": "部分", "why": "ILI weekly surveillance; no defect census this book"},
+        "freshness": {"score": "部分", "why": "no exam opened; epidemiology family exposed"}
+      }
+    },
+    {
+      "id": "m4_hourly",
+      "asset_id": "m4",
+      "slice": "Hourly-train 414 x ~700",
+      "n_series": 414,
+      "typical_length": 700,
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "artifacts/functional/e2/m4_hourly_stop_rule_fresh_cohort_report.json:256-268 (Ridge/sMASE; origins 604/652; query 700-748)",
+        "artifacts/functional/e2/m4_hourly_historical_policy_context_promotion_report.json:253"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "414 >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "series-as-row passes. L~700 < 1848; historical protocol used origins 604/652 and cutoff 700. n_windows=(700-192-48)//24+1=20 — window-half 10 < 20."},
+        "natural_heterogeneity": {"score": "部分", "why": "M4 competition series are typically cleaned; heterogeneity is frequency/domain mix, not natural defects"},
+        "freshness": {"score": "不满足", "why": "Hourly outcomes already opened in those reports"}
+      }
+    },
+    {
+      "id": "m4_daily",
+      "asset_id": "m4",
+      "slice": "Daily-train 4227; lengths heterogeneous (first20 130-1006)",
+      "n_series": 4227,
+      "typical_length": "heterogeneous; first20 130-1006; full min/max not computed",
+      "opened_status": "已在 development 使用",
+      "opened_evidence": [
+        "artifacts/functional/e2/cross_series_workflow_m4_daily_target_plan.json:75"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "4227 >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "series-as-row passes. Lengths mostly < 1848 (s0:268-271 Daily tops near 9933 for some; first20 max 1006). Fraction with L>=1848 uncertain without a full length census."},
+        "natural_heterogeneity": {"score": "部分", "why": "competition-clean; domain mix inside Daily"},
+        "freshness": {"score": "不满足", "why": "M4 Daily target plan / confirmation artifact exists"}
+      }
+    },
+    {
+      "id": "m4_weekly",
+      "asset_id": "m4",
+      "slice": "Weekly-train 359; first20 lengths 457-2597",
+      "n_series": 359,
+      "typical_length": "first20 457-2597; full min/max not computed",
+      "opened_status": "从未开封",
+      "opened_evidence": [
+        "artifacts/functional/e2 文件名检索 M4 Weekly / Weekly-train 作为独立 exam 零命中 (only Hourly and Daily M4 artifacts found)",
+        "s0_census.py:266-272 listed M4 as unconsumed-on-paper; that line is stale for Hourly/Daily but Weekly still has no dedicated exam artifact"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "359 >= 40"},
+        "feedback_capacity": {"score": "部分", "why": "series-as-row passes. Some first20 series have L>=1848 (e.g. 2179/2597); fraction uncertain. No in-repo S2a-isomorphic loader."},
+        "natural_heterogeneity": {"score": "部分", "why": "competition-clean; no defect census"},
+        "freshness": {"score": "部分", "why": "no Weekly exam found; M4 family Hourly/Daily already opened"}
+      }
+    },
+    {
+      "id": "m4_monthly",
+      "asset_id": "m4",
+      "slice": "Monthly-train 48000; first20 82-918",
+      "n_series": 48000,
+      "typical_length": "first20 82-918; full min/max not computed",
+      "opened_status": "从未开封",
+      "opened_evidence": [
+        "artifacts/functional/e2 检索 M4 Monthly exam 零命中"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "48000 >= 40"},
+        "feedback_capacity": {"score": "不满足", "why": "first20 max 918 < 1848; monthly series are typically hundreds of points. n_windows at L=918 = (918-192-48)//24+1=29; window-half 14 < 20."},
+        "natural_heterogeneity": {"score": "部分", "why": "competition-clean"},
+        "freshness": {"score": "部分", "why": "no Monthly exam found; M4 family already opened on Hourly/Daily"}
+      }
+    },
+    {
+      "id": "m4_yearly",
+      "asset_id": "m4",
+      "slice": "Yearly-train 23000; first20 19-31",
+      "n_series": 23000,
+      "typical_length": "first20 19-31",
+      "opened_status": "从未开封",
+      "opened_evidence": [
+        "artifacts/functional/e2 检索 M4 Yearly exam 零命中"
+      ],
+      "qualification": {
+        "series_count": {"score": "满足", "why": "23000 >= 40"},
+        "feedback_capacity": {"score": "不满足", "why": "L~19-31; n_windows=0"},
+        "natural_heterogeneity": {"score": "部分", "why": "competition-clean"},
+        "freshness": {"score": "部分", "why": "no Yearly exam found; M4 family opened elsewhere"}
+      }
+    }
+  ],
+  "missing_benchmarks": [
+    {
+      "name": "Solar-Energy (LSTF / Informer)",
+      "scale": "~137 photovoltaic plants, hourly, on the order of 5e4 points (literature typical; not on disk here)",
+      "how_to_get": "Time-Series-Library dataset/solar/ or thuml TSL data release; also NREL/LSTF mirrors",
+      "univariate_ok": true,
+      "status": "需外部下载",
+      "evidence": "shared_tsq_datasets 顶层无 solar/Solar; 仓内 data/ 无; evaluation/ 检索 solar-energy 数据集加载器零命中于本盘点"
+    },
+    {
+      "name": "PEMS-BAY",
+      "scale": "~325 Bay Area sensors, 5-min, ~5e4 steps (DCRNN release typical)",
+      "how_to_get": "DCRNN / Li et al. Google Drive release (distinct from metr_la HDF5 and from PEMS-SF .ts)",
+      "univariate_ok": true,
+      "note": "traffic family already exposed; would fail freshness even after download unless treated as a new network (Bay vs LA). PEMS-SF in shared_tsq is 144-step classification samples, not this corpus.",
+      "status": "需外部下载",
+      "evidence": "shared_tsq 无 PEMS-BAY; sources.py has metr_la only (:160-172)"
+    },
+    {
+      "name": "GEFCom2014 load",
+      "scale": "hourly load, zone/task tracks; typically tens of series x ~2-3 years",
+      "how_to_get": "Kaggle global-energy-forecasting-competition-2014-load-forecasting (manual; sources.py:221-234)",
+      "univariate_ok": true,
+      "status": "需外部下载",
+      "evidence": "SOURCE_SPECS lists gefcom2014 incoming_subdir; clean_base/registry have gefcom2012_load only, not 2014"
+    },
+    {
+      "name": "Wind / WindPower (LSTF-adjacent)",
+      "scale": "typically 1-7 channels x 1e4-5e4 hourly points depending on release",
+      "how_to_get": "NREL / TSL wind packs",
+      "univariate_ok": true,
+      "status": "需外部下载",
+      "evidence": "shared_tsq 与 data/ 无 wind 目录"
+    },
+    {
+      "name": "ENTSO-E actual total load",
+      "scale": "country-level hourly; n_series = number of bidding zones exported",
+      "how_to_get": "https://transparency.entsoe.eu/ manual export (sources.py:196-206)",
+      "univariate_ok": true,
+      "status": "需外部下载",
+      "evidence": "manual spec only; no incoming files found this book"
+    },
+    {
+      "name": "Official UCI ElectricityLoadDiagrams 2011-2014 15-min zip (370 clients)",
+      "scale": "370 meters x 15-min x 4 years (far longer than the 1024-pt npy prefix)",
+      "how_to_get": "https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014 (sources.py:174-185)",
+      "univariate_ok": true,
+      "note": "TSL electricity.csv is the 321-channel hourly redistribution, already opened. Official 370x15min is a different resolution of the same family — freshness would still fail family-level D4.",
+      "status": "需外部下载",
+      "evidence": "local live loader is TSL 321-channel csv; registry npy is 370x1024 prefix only"
+    }
+  ],
+  "ad_note": {
+    "summary": "AD 可用数据以 Yahoo S5 A1 为正式 Target、NAB 为已封顶 Source、SMD/PSM/SWaT 为结构/筛选旁路。Yahoo 下载 67、长度门后 roster 65、前 24 EXPOSED、余 41 SEALED（AGENTS.md:213-214; t6_42f_yahoo_a1_freeze.json:11-16）。路径 data/benchmark_yahoo_s5_v1/{work,vaults/held_in,vaults/held_out}，三处各 65 个 real_*.csv；加载器 evaluation/functional/run_e2_t6_natural_a5_a3.py:5482-5486。典型长度约 1420（freeze real_1.csv n=1420），MIN_LENGTH=1000，real_54/62 因 741 被弃。NAB v1.1 在 data/benchmark_nab_v1_1/raw：AWS 8 + known_cause 6 + realTraffic 7 + realTweets 10 + AdExchange 6 = 37，加载器同文件 :123,:540-544；Source 4 cohort / Target AdExchange 均已打开，不能再称 fresh。SMD 为 28x38 多变量，official test 仍 sealed，但单变量协议形态不匹配（PROJECT_STATE:74）。#43 M0-C 在已曝光 24 条上 12/12 宏效用为负，关闭的是该菜单上的正效应探针，不是 AD 任务。41 条 sealed 按 AGENTS 须等 development 管线可冻结后再一次性验收；以 D1「安全弃权」角色看，41 条规模够做四臂正确弃权验收，前提是不再打开这 24 条冒充 fresh、也不为凑数追加程序。不够的是「未曝光的第二自然 AD 域」——NAB 已用尽，SMD 形态不匹配。",
+    "yahoo_enough_for_safety_abstain_exam": true,
+    "yahoo_enough_caveat": "41 sealed are the reserved exam after the development pipeline freezes; do not open them in this book. They are enough for a one-shot Static/A3/(A5) correct-abstain readout, not for a new positive-control hunt.",
+    "cites": [
+      "AGENTS.md:205-231",
+      "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md:72-75",
+      "artifacts/functional/e2/t6_42f_yahoo_a1_freeze.json:11-16,50-54"
+    ]
+  },
+  "closest_to_all_four": {
+    "id": "tsl_traffic_leftover_480_861",
+    "missing": [
+      "④ 新鲜度只到「切片未评 Outcome」，族与文件已开封 / INSTANCE_SEEN",
+      "③ 自然缺陷异质性未单独实测；同网占用率、registry missing_rate=0"
+    ]
+  }
+}
