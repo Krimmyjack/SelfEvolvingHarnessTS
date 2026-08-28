@@ -1223,6 +1223,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### S2a iv(执行方):逐序列分解+扩源已穷尽;**S2A_CONFLICT_FIELD_UNAVAILABLE**(2026-08-28 18:0x,执行方)
+
+**S2a 状态: CONFLICT_FIELD_UNAVAILABLE;冲突场:无。** 授权链 = 台账 18:0x 条「sol 终批:采 iv+iii」。成本 **0 LLM / 本段 44+10+44=98 fit(累计 278/300) / 下载 0**。未开 G1/G2。未改模板/门/菜单。
+
+**Part 1**:候选 P = 产例资格 cell oracle 去重。初集 `{winsorize}`。CONFLICT/harm 杠 = 现役 `classify_relation`(`experience_memory.py`:411-471)+ `signed_radius.py`:40 `M=0.005`。11 cell × winsorize 全 `POSITIVE`、逐序列 harm 0(最小增益 0.068–0.830,均 > −0.005)。四合取 0 命中。
+
+**扩源(预授权)**:metr_la 注册表 207、盘上 89、切 1 cell(origin 792/888,`run_v1_sealed_a5_a3.py`:74-76);nn5 盘上 48 < 60,**结构性跳过**(非挑数)。metr_la oracle = `outlier_mad`(余量 10.35),winsorize 亦 POSITIVE 零害。候选集扩为 `{outlier_mad,winsorize}` 后对原 11 cell 重跑 mad:仍全 POSITIVE 零害。四合取表 24 行全否。工件 `s2a_iv_decomposition.json/.md`。**禁再扩。G1 未开。first fault:S2A_CONFLICT_FIELD_UNAVAILABLE — 现役 impulsive_outlier 下菜单程序聚合正且无序列越 harm 杠。**
+
 ### S2a G0 第二源清扫(执行方):electricity 一次切完;**S2_HOST_READY_FAIL_BOTH_SOURCES**(2026-08-28 17:0x,执行方)
 
 **S2a 状态: FAIL_BOTH_SOURCES**。授权链 = 台账 17:0x 条「S2a-G0 首败裁定……第二源清扫续令」。成本 **0 LLM / 75 本扫 fit(累计 180/300) / 下载 0 / 24.9s**。未改模板/门/菜单,未按读数增删,未开 Part C。
