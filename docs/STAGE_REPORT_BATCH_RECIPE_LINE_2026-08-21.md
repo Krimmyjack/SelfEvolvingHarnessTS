@@ -1223,6 +1223,12 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **义务**:只读 + 两新工件 + 本条;methods/contracts/runtime/operators 与密封件(Epilepsy2/s1_oracle/D2)未碰;未跑全仓 pytest;零子代理。**first fault:无。**
 
+### sol 核准 S2 设计并更名 **S2a**(机制可移植性+跨任务隔离);v1.1 修订案批;S2b/G3 条件排队;S2a 发车(2026-08-28 16:5x,主线)
+
+**sol 裁定(全采)**:方向对,批 v1.1 受限适配与 S2-G0/G1/G2,但**证据等级定名 S2a**——预测 Skill 系预测任务内重学,证"同一机制服务不同任务";分类卡沉默证"任务边界有效";**未证"分类中学到的任务中立程序知识正向帮助预测"**,后者系缓议 G3(例:"先查反馈可读性、证据不足弃权"→减少无效 probe/降适应成本,而非把 hampel 动作迁过去),预测闭环跑通后另做小型 **S2b**;**S2a+S2b 合起来才算闭合 Stage 2 多任务承诺**。冷发现风险确认:两掷帽合理,仍空则**候选发现正式移交 Stage 3 决策策略进化**,不再改课。设计稿头部已加核准记录并更名。
+
+**主线两点执行细化(入书)**:(a) K0-fixed 在 forecast 上 K0 为空,**预注册其读数 ≡ A3-reset(构造性等价,P6)**,充当免费采样方差复本——若两臂材料级分歧,即为方差尺度警报,不作能力读数;(b) 族外守卫场用 **gap 缺陷族 cell**(forecast 内的 BirdChicken 对应物)。**S2a-G0/G1/G2 一书发车(grok 续话,盘点同线)**:Part A v1.1 修订(三处分发,146 项分类回归原封全绿为生效条件,冻结清单升 v1.1)→ Part B 考场重切 + 双层 oracle 资格门(`S2_HOST_READY`,不过即停)→ Part C 四臂 live(两掷帽,ITT)→ Part D 分类卡三面全零守卫随跑(非零即机制级 first fault)。预算:A/B 0 LLM;C+D ≤120 LLM / ≤300 fit / ≤6h。
+
 ### S2 设计稿定稿呈 sol(主线):机制任务可移植性 + 跨任务条件化守卫;含唯一一处冻结修订案请求(2026-08-28 16:4x,主线)
 
 **盘点收口**(执行方 `cc8e045`,七项全引证):S1 四臂 runner 系分类特化(三常数写死 + `_scope_v1_admits :1683` 拒他任务 + `skill_revision.py:78` 特征提取写死)——**S2 必须付适配成本**;现役 forecast cell(12+8/12+4)反馈容量全部不过新门,须从 monash traffic_hourly(862)/UCI electricity(370)重切;+31.7% 正账系 v1 前 Guidance 卡年代,只作历史参照不得与 S2 读数并写;无现成 forecast Episode 库(冷发现率未知 = 最大风险);注入用现役 `impulsive_outlier`;#31 AD 卡无 task_kind 轴不能作守卫,跨任务负控由分类 supply 卡独任。
