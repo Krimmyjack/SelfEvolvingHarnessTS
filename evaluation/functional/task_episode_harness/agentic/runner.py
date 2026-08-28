@@ -209,13 +209,20 @@ class _RetryingTransport:
     AgentTransportError for them; nobody was retrying.  Retries are counted
     separately from stage requests so LLM cost stays honest -- a retried
     request is one stage decision and more than one API call.
+
+    2026-08-28 infrastructure resilience: five attempts, exponential backoff
+    from 10s capped at 30s (sleep window 10+20+30+30=90s) so a 1-2 min
+    egress TLS-EOF flap can be ridden out.  Failed transport tries are not
+    extra LLM-ledger decisions.
     """
 
-    def __init__(self, delegate: Any, *, attempts: int = 3,
-                 backoff_seconds: float = 2.0) -> None:
+    def __init__(self, delegate: Any, *, attempts: int = 5,
+                 backoff_seconds: float = 10.0,
+                 backoff_cap_seconds: float = 30.0) -> None:
         self.delegate = delegate
         self.attempts = int(attempts)
         self.backoff_seconds = float(backoff_seconds)
+        self.backoff_cap_seconds = float(backoff_cap_seconds)
         self.transport_retries = 0
 
     def complete(self, request: Any) -> Any:
@@ -227,7 +234,11 @@ class _RetryingTransport:
                 last = exc
                 self.transport_retries += 1
                 if attempt + 1 < self.attempts:
-                    time.sleep(self.backoff_seconds * (attempt + 1))
+                    delay = min(
+                        self.backoff_cap_seconds,
+                        self.backoff_seconds * (2 ** attempt),
+                    )
+                    time.sleep(delay)
         raise last  # type: ignore[misc]
 
 
