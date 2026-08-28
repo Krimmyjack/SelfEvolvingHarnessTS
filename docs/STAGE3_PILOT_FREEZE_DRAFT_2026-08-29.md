@@ -45,14 +45,36 @@ Surface = **probe 位在「历史供给候选」与「自主探索候选」间�
 三臂共用同一预冻结课程与预算;编辑在课程开始前一次性生效,课程中不再改
 (单轮纪律;在线持续策略学习不在本 pilot 范围)。
 
-## 4. 课程与预算(待冻结空位,Part 0 后填)
+## 4. 课程与预算(2026-08-29 02:2x 终冻,依 Part 0 审计原料)
 
-- 课程:从**已开 development 池**预冻结组成,优先复用已切但未入 S2a 课程的 cell
-  (electricity 0-299 余格、traffic recut 余格);须含 ≥2 个「供给可达且存在自主
-  候选竞争」的单元(种子失败的结构性复现位),组成与顺序在运行前冻结并入工件。
-- 预算:课程级 LLM 调用与 fit 硬帽,数值随课程冻结(参照 S2a 缩形课实测
-  LLM 60/fit 88 标定)。
-- G2 防火墙:本 pilot 触碰的全部域记录入工件,永久排除出 Phase 3 密封池。
+**课程(5 单元,双产例对冲,顺序即冻结顺序)**:
+
+| 位 | 单元 | 角色 |
+| --- | --- | --- |
+| 1 | `electricity_impulsive_outlier_00` | producer(电族) |
+| 2 | `electricity_impulsive_outlier_02` | beneficiary(电族匹配位) |
+| 3 | `traffic_impulsive_outlier_00` | producer(traffic 族) |
+| 4 | `traffic_impulsive_outlier_01` | beneficiary |
+| 5 | `traffic_impulsive_outlier_02` | beneficiary |
+
+设计依据:全部取自 Part 0 审计的未入课原料清单;双产例使「供给可达 + 自主候选
+竞争」的复现机会 ≥3(单元 2/4/5);若全程 Scope 未命中或无竞争结构,按 §5
+`S3_SEED_UNREPRODUCED` 收口,不重掷。r2 先例:同族相邻 cell 匹配非必然
+(elec_03 卡中 _04 不中 _01),故对冲而非单押。
+
+**三臂策略绑定**:No-edit = DEFAULT 策略(= 现行为);Random-legal-edit =
+以种子 **20260829** 从八参数合法域(见审计工件 proposed_params)均匀抽一条
+非 DEFAULT 单参数改动,运行前落盘;LLM-edit = Slow Agent 读 §5 种子轨迹字段
+后输出一组参数赋值(限合法域),提案全文落盘。三臂共用课程、预算、
+memory 初始化(冻结 post-S2a 活性态 + 空课程内记忆,同 r2 协议)。
+
+**预算(课程级硬帽)**:每臂 LLM ≤40、fit ≤120;三臂合计 LLM ≤120。
+LLM-edit 臂的提案调用单列(≤2 次),不占课程预算。
+
+**判分单元**:beneficiary 位(2/4/5)承担接受门读数;producer 位只供铸卡。
+
+**G2 防火墙**:pilot 触碰 cell = 电 impulsive 00/02 + traffic impulsive
+00/01/02,记录入工件,永久排除出 Phase 3 密封池。
 
 ## 5. 接受门(预注册,不可事后放宽)
 
