@@ -1213,6 +1213,14 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **SA-0 发车(opus,0 LLM,只读代码 + 新建文件,零 git 操作)**:Part A 接线审计四项(全部引 file:line):① 归因面完整性(supplied 候选逐单元结果对卡的记账:source_skill_id/candidate_origin/双门结果,W-1/G-3 仪器是否足以支撑修订归因)② 修订面(SkillEntry.revision 语义;`restricted_by_target_feedback` 的 PATCH 由谁写/触发条件/粒度;observable_applicability 可否 PATCH 收窄;版本可回滚性)③ 混合反馈现状(卡在 X/Y 转化、Z 被拒时今日系统行为)④ 撤权钝度(一次被拒是否会废掉他处正向的卡)。Part B `docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md`:Skill=可更新假设的字段定义;按反馈类型的修订规则(正向→证据累计;冲突→结构化 Scope 排除,自失败单元 frozen pattern view 机械编译,禁自由文本;负向/害→分域限制;verifier 拒→几何注记);治理(收窄自主/扩权定价/版本化/回滚);SA-1 实验设计(K0-fixed v0 冻结 vs A5-adaptive v0+修订,主读数=修订后单元的 probe 浪费/regret/harm 差)与可证伪预测。Part C(仅当 `l1_ladder_v2_replay_r1.json` 届时已落,不等待):实账反事实量化(单调收窄能省什么、钝撤权会亏什么)。**防撞分工**:L1 执行者独占 methods+runner+工件提交+STAGE_REPORT 执行方条目;SA-0 零 git、只写自有新文件、禁触 STAGE_REPORT/密封件。晨间主线统一裁定与汇总;capstone 开封与 SA-1 发车均待用户+sol。
 
+### sol 裁定采纳(r2 一次→无论结果停→进终考);主线程序性自纠(CAP-1 冻结件为准);CAP-1b 前置冻结(三出口);r2 发车(2026-08-28 12:5x,主线)
+
+**sol 裁定(全采)**:SA-1 定性 = "生成→使用→反馈→修订→再使用闭环首次真实跑通,'持续修订带来稳定提升'未充分证明";**只重复一次 r2,协议/Scope/课程/阈值零改,无论结果停止重复,立即进 capstone,无 r3**;r2 通过门放宽到机制级(反馈驱动更新发生 + 行为按预期改变 + 零害零越权),**不要求数字复现**;r2 未复现则记"适应机制可运行但稳定性不足",capstone 改考"带 Scope 经验卡端到端收益"。**重要纠正(sol 对主线,成立)**:CAP-1 冻结件要求"S1-v2 正序两次信号+反序确认",单次 SA-1 未字面满足,不得立即开 Epilepsy2。
+
+**主线程序性自纠(记档)**:12:4x 条"开封条件字面已达"以主线 11:0x 自立条目为参照系——主线条目不能悄悄顶替冻结工件,属越权表述,**收回**;且 CAP-1 原条件引用已退役的 S1-v2 线,字面不可满足,唯一合法路径 = 另立修订件。
+
+**主线一处收紧(在 sol 方案上)**:新解锁规则**前置冻结**于 r2 结果可见之前(sol 原步骤 2 在 r2 后冻结,残留"按结果写门"风险),并补第三出口——**`unexercised`**(全课程无拒绝事件,PowerCons#1 采样转化即触发):既非复现亦非反证,机制证据维持 n=1,走 B 形态但判词不得写 refuted。P4 已示范"没写下来的第三条路"必然发生,故三出口全部预声明。**CAP-1b 冻结件已落**:`artifacts/functional/e2/cap1b_capstone_unlock_amendment.md`——r2 机制门 G0(安全,必须)/G1(≥1 写回且 sha 变化,必须)/G2(条件式:拒绝发生→R2 必触发+再遇位行为差);出口 A = capstone 考 A3 vs A5-adaptive(完整主张)/ B = 拒绝发生但 G2 破 → A3 vs K0-fixed(仅卡主张)/ C = unexercised → 同 B 判词有别;capstone 靶/骨架/预算/判分沿 CAP-1,仅解锁条件替换;去重记号仪器(P4)预声明为 r2 后 capstone 前落地;Epilepsy2 开封以 CAP-1b + r2 收口裁定为记录授权。**r2 发车(opus 续话,纯采样重复,LLM ≤120)。**
+
 ### SA-1 收口裁定(主线):判词维持;**归因三分账**(轴规则 +0.6860 / 修订环 1 次避拒 / 安全零害);P4 第三路径入案;capstone 开封案呈用户+sol(2026-08-28 12:4x,主线)
 
 **裁定**:执行方判词 `SA1_DEVELOPMENT_SIGNAL`(单跑措辞)核可;四段全过、止损未触发;成本 78/150 LLM、69/300 fit、2227 s;提交 `cf2eb12`(代码)/`5ff76b5`(工件+台账)。回归 105 绿;`test_skill_revocation.py` py3.12 f-string 收集失败**先于本书**,挂账不修。
