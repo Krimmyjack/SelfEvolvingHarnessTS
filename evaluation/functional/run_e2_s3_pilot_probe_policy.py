@@ -97,6 +97,16 @@ class Stop(Exception):
         self.reason = reason
 
 
+INSTRUMENT_STOPS = (
+    "BACKEND_UNAVAILABLE",
+    "COMPUTE_BUDGET_EXCEEDED",
+    "INSTRUMENT_UNREADABLE",
+    "S3_G2_LEAK",
+    "ENVIRONMENT_MISMATCH",
+    "IMPORT_PATH_SPLIT",
+)
+
+
 class CellBank(s2a.CellBank):
     def get(self, unit_id: str, freeze: Mapping[str, Any] | None = None
             ) -> dict[str, Any]:
@@ -637,6 +647,25 @@ def _accepted_vs_control(arm: Mapping[str, Any],
     }
 
 
+def _instrument_gate(rows: Sequence[Mapping[str, Any]], *,
+                     stopped: str, llm_edit_illegal: bool) -> dict[str, Any]:
+    return {
+        "candidate": None,
+        "instrument_stop": stopped,
+        "note": "instrument/backend stop; not a scientific verdict",
+        "beneficiary_positions": list(BENEFICIARY_POSITIONS),
+        "tol": TOL,
+        "llm_edit_ran": False,
+        "llm_edit_proposal_illegal": bool(llm_edit_illegal),
+        "seed_reproduced": False,
+        "arms": {arm: _arm_metrics(rows, arm) for arm in ARMS},
+        "comparisons": {
+            "llm_vs_no_edit": None,
+            "random_vs_no_edit": None,
+        },
+    }
+
+
 def _judge(rows: Sequence[Mapping[str, Any]], *,
            llm_edit_illegal: bool) -> dict[str, Any]:
     metrics = {arm: _arm_metrics(rows, arm) for arm in ARMS}
@@ -670,6 +699,7 @@ def _judge(rows: Sequence[Mapping[str, Any]], *,
         candidate = "S3_EDIT_ACCEPTED"
     return {
         "candidate": candidate,
+        "instrument_stop": None,
         "note": (
             "三臂同课程,菜单 oracle 项对消,Σgain 高 ⟺ 累计 regret 低"),
         "beneficiary_positions": list(BENEFICIARY_POSITIONS),
@@ -699,6 +729,7 @@ def _markdown(payload: Mapping[str, Any]) -> str:
         "",
         "protocol: %s" % payload.get("protocol"),
         "gate candidate: %s" % gate.get("candidate"),
+        "instrument_stop: %s" % gate.get("instrument_stop"),
         "note: %s" % gate.get("note"),
         "",
         "## Random-legal-edit draw",
@@ -984,9 +1015,14 @@ def run_course(*, resume: bool = False) -> int:
         reset_policy()
         s2a.s1.bind_curriculum_identity()
 
-    gate = _judge(
-        rows,
-        llm_edit_illegal=bool(payload.get("llm_edit_proposal_illegal")))
+    if stopped in INSTRUMENT_STOPS:
+        gate = _instrument_gate(
+            rows, stopped=stopped,
+            llm_edit_illegal=bool(payload.get("llm_edit_proposal_illegal")))
+    else:
+        gate = _judge(
+            rows,
+            llm_edit_illegal=bool(payload.get("llm_edit_proposal_illegal")))
     payload.update({
         "rows": rows,
         "version_chains": version_chains,
@@ -994,6 +1030,7 @@ def run_course(*, resume: bool = False) -> int:
                    "wall_seconds": round(time.time() - started, 1)},
         "gate": gate,
     })
+    _save()
     if "backend" in locals():
         payload["first_returned_model"] = getattr(
             backend, "first_returned_model", None)
@@ -1002,8 +1039,9 @@ def run_course(*, resume: bool = False) -> int:
                    ensure_ascii=False, default=str) + "\n",
         encoding="utf-8")
     OUT_MD.write_text(_markdown(payload), encoding="utf-8")
+    printed = gate.get("instrument_stop") or gate.get("candidate")
     print("GATE %s; llm=%s fit=%s"
-          % (gate.get("candidate"), ledger["llm"], ledger["fit"]),
+          % (printed, ledger["llm"], ledger["fit"]),
           flush=True)
     return 0 if not stopped else 1
 

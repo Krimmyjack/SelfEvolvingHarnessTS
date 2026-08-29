@@ -371,6 +371,16 @@ def test_g3_material_threshold_and_conflict_classifier_untouched():
     assert positive["relation"] == "POSITIVE"
 
 
+def test_instrument_stop_is_not_a_scientific_verdict():
+    import run_e2_s3_pilot_probe_policy as s3
+    gate = s3._instrument_gate(
+        [], stopped="BACKEND_UNAVAILABLE", llm_edit_illegal=False)
+    assert gate["candidate"] is None
+    assert gate["instrument_stop"] == "BACKEND_UNAVAILABLE"
+    judged = s3._judge([], llm_edit_illegal=False)
+    assert judged["candidate"] == "S3_SEED_UNREPRODUCED"
+
+
 def test_legal_domains_do_not_include_g3_knobs():
     forbidden = (
         "material_threshold", "harm_threshold", "maximum_candidates",

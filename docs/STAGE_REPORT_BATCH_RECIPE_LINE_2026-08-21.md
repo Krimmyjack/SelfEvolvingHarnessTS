@@ -2069,3 +2069,17 @@ TEST 子集改 seed=20260827 确定性随机 476 行(清单 sha256 7e1c4088…,�
 ### #31(2026-08-22,S2)
 
 检查点 46ed5e2(8 files)。**CANDIDATE_COMPILES + LODO_TRANSFER_SUPPORTED(双向)**。Part A 硬门过:官方 OmniAnomaly 28 机文件获取(242.3 MB 仅 scratchpad),内容匹配定位(精确字节索引查表,非信号推断),28/28 逐元素一致、无缝铺满 [0,708405),拼接序非数字非字典(machine-1-5 起 machine-3-1 终,在册禁重推);官方 train=dev/held-in、test=sealed(仅报总行数 708420);#30 悬案澄清:[0,8760) 整块落在 machine-1-5 train 内,系一台机器 24 通道被当 24 序列报。Part B:证据池去重 21→12(traffic 8 + noaa 4;13→4 塌掉的 9 条全为同键重放);卡 shared_outlier_repair_with_per_series_guard_v1,四固定字段照裁定(SHARED_CANDIDATE/GUIDANCE/support_required/no_free_try),programs=[hampel,iqr,mad,winsorize]+算子无关 per-series guard(VETO+RESCOPE),适用条件全部部署时可观察(缺失可为零/z峰≥4/outlier_fraction>0/离散度即需 guard),插补+阶跃 out-of-scope 带底物指针。Part C:执行方自查废掉首版两条循环判据后,C1 traffic→noaa 4/4 SUPPORTED(3 条聚合藏害全被 guard 抓)、C2 noaa→traffic 置险 4/4 SUPPORTED(2/2)、C3 12/12 仅标 INTERNAL_CONSISTENCY_ONLY。**跨域量化副产品(升入 C8 证据链):12 行证据 5 条受害全部聚合为正,聚合单独捕获 0 次**。主线裁定:(a) C1 几乎不可证伪、C2 为信息方向,两向 SUPPORTED 挂 n=4 caveat;(b) 两侧证据均 in-selection,卡方向读数不得表述为 out-of-selection,该级证据只能来自 S3/S4;(c) #18/#19 缺口经核为零成本(去重键下与已入池行同票),提取器形状留案不修;(d) 242 MB 不入库,补记 28 文件 sha256 + 来源 ref 使重获取确定;(e) 实体粒度(NOAA 单变量实体 vs SMD 38 通道实体)为 S1b 第一项。S1b 预算解锁(0 LLM / ≤100 重训),书已发。
+
+### S3-R1(2026-08-29,Stage 3 probe-policy pilot)
+
+**核心正效果移动:否。** 判词 `S3_EDIT_REJECTED`。Harness v2 ≡ v1 DEFAULT。
+
+Part 0: Windows Conda `D:\Anaconda_envs\envs\project\python.exe` 3.10.19; import 指向本仓库 `methods/ttha/fast_agent.py` 与 `online_loop.py`; HEAD 当时 `2bd47da`。未 reset/clean,未跑全仓 pytest。
+
+Part A: 新增 `tests/functional/test_s3_exploration_policy.py`; 聚焦集 `test_candidate_pool` + `test_supply_rung_wiring` + `test_source_skill_default_bytes` + `test_delayed_rejected_winner_not_deployed` + `test_s2a_v11_adapter` + 本文件 **45 passed**。DEFAULT = Agent-before-DRAFT + chosen-first + first-POSITIVE-stop; 非法值 fail-closed; install/reset 不串臂; 保留 supply probe 时总预算仍为 2; supply-first / max-gain / tie-break 按参数生效; MATERIAL=0.005 与 CONFLICT 分类器未动。
+
+Part B: `--smoke` 五 cell 可构造、随机编辑 seed=20260829 可读(`tie_break_rule=prefer_supplied`)、三 Policy install/reset、**0 LLM / 0 fit**。代码提交 `ec33a29`(allowlist,无 `git add -A`)。
+
+Part C: 首次 `--run` 被墙钟截断后,只对同一 checkpoint `--resume`(两次)。`first_returned_model=gpt-5.6-sol`。三臂 15 行齐。LLM-edit 提案合法:`supply_reserved_probe_slots=1`(1 attempt)。接受门:llm vs no_edit gain 非劣失败(beneficiary cum_gain 1.5334 vs 3.3301, Δ −1.7967),harm 0,G2 0。Random 臂同等未过门,不进入归因对照。种子结构在 no_edit 位 4 复现(supplied=1 且 self_proposed=1)。**不是** `S3_SEED_UNREPRODUCED`。仪器故障单列纪律已补:BACKEND_UNAVAILABLE 不得写成科学判词(修复后重跑覆盖)。预算 LLM 62/120、fit 97、墙钟 1047s、下载 0。
+
+Part D: `S3_EDIT_REJECTED` → v2 ≡ v1,生产态继续 DEFAULT; Random-edit 永不进生产。冻结件 `artifacts/functional/e2/s3_harness_v2_freeze.json` inventory_sha256 `dc11b19c63ce1519dc29571d727fed3ea6b971bc86872a9526b4e16611af2e34`(30 files,含 `exploration_policy.py`)。未开 Solar/KDD,未发四臂主实验。
