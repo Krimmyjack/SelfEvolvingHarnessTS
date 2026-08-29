@@ -55,6 +55,10 @@ from .experience_memory import (
     task_consumer_key,
     workflow_signature_of,
 )
+from .exploration_policy import (
+    active_policy as _exploration_policy,
+    is_supplied_candidate as _is_supplied,
+)
 from .fast_agent import public_operator_contract
 from .signed_radius import MATERIAL_THRESHOLD, window_context
 
@@ -398,9 +402,22 @@ def run_online_round(
         getattr(trace, "memory_resolution_status", "no_memory"))
     # 2. 探测顺序：Agent chosen（non-identity 且非空——空 chosen 表示
     #    select 输出异常——不入探测序）→ 其余候选池顺序
-    probe_order = [
-        c for c in ([chosen] if chosen and chosen != "identity" else [])
-    ] + [c for c in pool if c != chosen]
+    # Stage 3 Part 0（2026-08-29）：探测序参数化。DEFAULT
+    # （chosen_first_then_pool）= 参数化前行为；非 DEFAULT 序按供给/自主
+    # 分组重排（identity 归入非供给组，保持池内相对序），不增不删。
+    _policy = _exploration_policy()
+    if _policy.probe_order_rule == "pool_as_built":
+        probe_order = list(pool)
+    elif _policy.probe_order_rule == "supply_first_then_agent":
+        probe_order = ([c for c in pool if _is_supplied(c)]
+                       + [c for c in pool if not _is_supplied(c)])
+    elif _policy.probe_order_rule == "agent_first_then_supply":
+        probe_order = ([c for c in pool if not _is_supplied(c)]
+                       + [c for c in pool if _is_supplied(c)])
+    else:  # chosen_first_then_pool（DEFAULT）
+        probe_order = [
+            c for c in ([chosen] if chosen and chosen != "identity" else [])
+        ] + [c for c in pool if c != chosen]
     # 2b. E1（2026-08-16）Runtime ordering consumer——只重排，不增不删。
     #     无卡 / scope 不匹配 → probe_order 原样通过（默认行为不变）。
     result.probe_order_before_card = list(probe_order)
@@ -421,9 +438,26 @@ def run_online_round(
     result.probe_order_after_card = list(probe_order)
     result.proposal_count = len(pool)
     triggered = False
-    for cand in probe_order:
+    # Stage 3 Part 0：supply_reserved_probe_slots（DEFAULT=0 时本守卫从不
+    # 触发）——剩余合法 receipt ≤ 保留数且后方仍有未探供给候选时，跳过
+    # 非供给候选（不评估、不耗 receipt），把预算位留给供给候选。
+    # winner_compare_rule=max_support_gain_among_probed_positive 时在已探
+    # POSITIVE 内按 displacement_margin/tie_break_rule 比较（_best_positive）；
+    # DEFAULT=first_positive_in_probe_order 保持首正即胜。
+    _best_positive: tuple[str, tuple, float] | None = None
+    for _probe_idx, cand in enumerate(probe_order):
         if result.target_support_receipts_used >= budget:
             break
+        if (_policy.supply_reserved_probe_slots > 0
+                and not _is_supplied(cand)
+                and (budget - result.target_support_receipts_used
+                     <= _policy.supply_reserved_probe_slots)
+                and any(_is_supplied(later)
+                        for later in probe_order[_probe_idx + 1:])):
+            result.actual_probed_programs.append({
+                "candidate_id": cand, "kind": "skipped_reserved_for_supply",
+                "gain": None, "passed": None})
+            continue
         steps = steps_map[cand]
         rr = executor.evaluate(tuple(steps), origin)
         if not rr.verification.passed or rr.gain is None:
@@ -463,13 +497,39 @@ def run_online_round(
         # T5 #41 A4：Support = POSITIVE 才形成 winner/Draft。聚合过线但
         # 逐序列有害（CONFLICT）不再取得部署权——证据照写，执行权不发。
         if str(ep.relation) == "POSITIVE":
-            result.winner_program = [
-                {"op": o, "params": dict(p)} for o, p in steps]
-            result._winner_candidate_id = str(cand)
-            result._winner_steps = tuple(steps)
-            result.first_positive_support_receipt_index = (
-                result.target_support_receipts_used)
-            break
+            if result.first_positive_support_receipt_index is None:
+                result.first_positive_support_receipt_index = (
+                    result.target_support_receipts_used)
+            if _policy.winner_compare_rule == (
+                    "max_support_gain_among_probed_positive"):
+                # 只比已探 POSITIVE；margin 域与 ±0.005 双门线分立。
+                # 挑战者需超出 best 达 margin 以上才置换；|Δ|≤margin 视为
+                # 打平，交 tie_break_rule（probe_order = 保持先到者）。
+                if _best_positive is None:
+                    _best_positive = (str(cand), tuple(steps), gain)
+                else:
+                    _delta = gain - _best_positive[2]
+                    if _delta > _policy.displacement_margin:
+                        _best_positive = (str(cand), tuple(steps), gain)
+                    elif abs(_delta) <= _policy.displacement_margin:
+                        _tie = _policy.tie_break_rule
+                        _best_is_supplied = _is_supplied(_best_positive[0])
+                        if (_tie == "prefer_self_proposed"
+                                and _best_is_supplied
+                                and not _is_supplied(cand)):
+                            _best_positive = (str(cand), tuple(steps), gain)
+                        elif (_tie == "prefer_supplied"
+                                and not _best_is_supplied
+                                and _is_supplied(cand)):
+                            _best_positive = (str(cand), tuple(steps), gain)
+            elif result.winner_program is None:
+                result.winner_program = [
+                    {"op": o, "params": dict(p)} for o, p in steps]
+                result._winner_candidate_id = str(cand)
+                result._winner_steps = tuple(steps)
+            if _policy.first_positive_stop:
+                break
+            continue
         if gain < -M:
             result.harm_count += 1
             result.harm_magnitude += -gain
@@ -567,6 +627,14 @@ def run_online_round(
                                     for o, p in _steps_of_patch(sev)]
                                 result._winner_steps = _steps_of_patch(sev)
                                 break
+    # Stage 3 Part 0：max-gain 比较规则的收尾——从已探 POSITIVE 的最优者
+    # 铸 winner。Slow replay 若已按 E2.5-B 取得 winner（pending），不覆盖。
+    if _best_positive is not None and result.winner_program is None:
+        _bp_cand, _bp_steps, _bp_gain = _best_positive
+        result.winner_program = [
+            {"op": o, "params": dict(p)} for o, p in _bp_steps]
+        result._winner_candidate_id = _bp_cand
+        result._winner_steps = tuple(_bp_steps)
     result.abstained = result.winner_program is None
     # GROUP_FAULT 自动触发（用户裁决 2026-08-12）：失败 Episode 积累 →
     # 轻量分组（≥group_min 同算子同 sign）→ 组级 Slow（方法层

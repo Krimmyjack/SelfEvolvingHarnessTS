@@ -42,6 +42,7 @@ from .agent_core import (
     StagePostValidationError,
     TTHAAgentCore,
 )
+from .exploration_policy import active_policy as _exploration_policy
 from .public_tools import extract_public_features
 from .retrieval import EffectiveHarnessView, resolve_harness_view
 
@@ -1109,16 +1110,40 @@ class TTHAFastAgent:
                 draft = [c for c in skill_candidates
                          if _is_draft(c) and not _degraded(c)]
                 degraded = [c for c in skill_candidates if _degraded(c)]
+                # Stage 3 Part 0（2026-08-29）：合并序参数化。DEFAULT
+                # （draft_does_not_displace_agent, agent_proposals_kept=1）
+                # 逐分支复现参数化前行为；非 DEFAULT 只能由 pilot runner
+                # install_policy 显式安装。全降级分支是 signed 反馈控制
+                # （CONFLICT/RISK），不在可编辑面内——永远先于规则分派。
+                _policy = _exploration_policy()
+                _kept = int(_policy.agent_proposals_kept)
+                _rule = str(_policy.skill_slot_merge_rule)
                 if degraded and not active and not draft:
                     # 全部降级：Agent 候选优先、Skill 排最后（预算截断语义）
                     supplied = (*supplied, *degraded)
+                elif _rule == "supply_then_agent":
+                    supplied = (*active[:1], *draft[:1],
+                                *supplied[:_kept], *degraded[:1])
+                elif _rule == "agent_then_supply":
+                    supplied = (*supplied[:_kept], *active[:1],
+                                *draft[:1], *degraded[:1])
+                elif _rule == "interleave_one_each":
+                    _skill_q = [*active[:1], *draft[:1]]
+                    _agent_q = list(supplied[:_kept])
+                    _merged: list = []
+                    while _skill_q or _agent_q:
+                        if _skill_q:
+                            _merged.append(_skill_q.pop(0))
+                        if _agent_q:
+                            _merged.append(_agent_q.pop(0))
+                    supplied = (*_merged, *degraded[:1])
                 elif active:
                     # ACTIVE 在前保留 slot（原 NORMAL_ENTRY 语义）
-                    supplied = (*active[:1], *supplied[:1],
+                    supplied = (*active[:1], *supplied[:_kept],
                                 *draft[:1], *degraded[:1])
                 else:
                     # 无 ACTIVE：Agent 候选在前——DRAFT 不挤 Agent
-                    supplied = (*supplied[:1], *draft[:1], *degraded[:1])
+                    supplied = (*supplied[:_kept], *draft[:1], *degraded[:1])
             # E2.5-A（用户裁决 2026-08-12）：Runtime-owned 双槽——
             # Slot P：从 signed Source Experience 的结构化结果（resolve_
             # order per_op verdict——不解析 Reference 文本）生成**最多一个**

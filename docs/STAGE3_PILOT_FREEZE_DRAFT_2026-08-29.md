@@ -40,7 +40,7 @@ Surface = **probe 位在「历史供给候选」与「自主探索候选」间�
 | --- | --- |
 | No-edit | 冻结 v1 策略原样 |
 | Random-legal-edit | 合法编辑空间内均匀随机一次编辑(种子预注册) |
-| LLM-edit | Slow Agent 读种子失败轨迹(SUPPLY_DISPLACEMENT 工件),提出一次编辑;提案全文入工件 |
+| LLM-edit | Slow Agent 读种子失败轨迹(SUPPLY_STARVATION 工件),提出一次编辑;提案全文入工件 |
 
 三臂共用同一预冻结课程与预算;编辑在课程开始前一次性生效,课程中不再改
 (单轮纪律;在线持续策略学习不在本 pilot 范围)。
