@@ -1,0 +1,46 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "slow-scope-clause/1",
+ "$comment": "P4U-v3: the risk-refusal Slow call writes one Scope clause and nothing else. The EditManifest around it -- ids, SHAs, preconditions, the frozen program body, the Runtime-owned applicability -- is assembled by the Runtime, because none of it is under test and every field of it was a way for a valid revision to be thrown away for a protocol error. Three of five rounds of the v2 live run died that way without ever reaching a Scope judgement.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "scope_clause"
+ ],
+ "properties": {
+  "scope_clause": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "feature",
+    "op",
+    "threshold"
+   ],
+   "properties": {
+    "feature": {
+     "$comment": "must be one of failure_pattern_card.deployment_visible_features; the pattern also refuses UID shapes such as 's0' or 'T140', which could not transfer to the next Target",
+     "type": "string",
+     "minLength": 4,
+     "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+    },
+    "op": {
+     "enum": [
+      "<=",
+      ">=",
+      "<",
+      ">"
+     ]
+    },
+    "threshold": {
+     "type": "number"
+    }
+   }
+  },
+  "rationale": {
+   "$comment": "recorded, never gated on: no downstream decision reads it.",
+   "type": "string",
+   "minLength": 1,
+   "maxLength": 600
+  }
+ }
+}

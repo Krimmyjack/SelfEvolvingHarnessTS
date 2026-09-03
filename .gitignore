@@ -24,3 +24,97 @@ data/benchmark_noaa_fresh_v1/*
 
 # Scratch skill-store forks and runtime caches from functional runs.
 _scratch/
+
+# --- local-only: do not upload to GitHub ---
+# Secrets. Tracked files stay tracked; this only blocks new adds.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json
+id_rsa
+id_ed25519
+
+# Virtualenvs and Python build noise.
+.venv/
+.venv*/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Editors / OS junk.
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Local datasets and caches. Already-tracked NOAA manifest and UCR roster stay tracked.
+data/**
+!data/benchmark_noaa_fresh_v1/
+!data/benchmark_noaa_fresh_v1/manifest.json
+!data/ucr_conf_downloaded/
+!data/ucr_conf_downloaded/ROSTER.md
+
+# Large arrays. The already-tracked legacy npz stays tracked.
+*.npz
+
+# Local experiment dumps. Already-tracked frozen/manifests/compatibility/releases
+# and already-tracked e2 files stay tracked; this only blocks new adds.
+artifacts/main_protocol/
+artifacts/visualization/
+artifacts/experience/
+artifacts/functional/e1p/
+artifacts/functional/e1t/
+artifacts/functional/e1tr/
+artifacts/functional/e2/
+
+# Root runtime skill-stores / experiment state (hidden dirs).
+.*_store/
+.*_store_*/
+.*_state/
+.*_cache/
+.harness_forks/
+.hec1_runs/
+.jspace/
+.grok/
+.aris/
+.guidance_store/
+.p4_debug/
+.g3d1_source_skill/
+.g3d1_src_ext/
+.auto_replay_state/
+
+# Content-addressed caches dumped at repo root (64-char lowercase hex).
+/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]/
+
+# Logs and one-off scratch at repo root.
+*.log
+/_*.log
+/_*.py
+/_*.ps1
+/_*.txt
+/_*.json
+/_tmp_*
+_tmp_*
+**/_tmp_*
+*\tmp_*
+*\*_tmp_*
+/CLAIMS_FROM_RESULTS.json
+/CLAIMS_FROM_RESULTS.md
+/active.json
+/harness_snapshot_provenance/
+
+# Accidental nested checkout / Windows path copy. Do not recurse the repo into itself.
+/SelfEvolvingHarnessTS
+/Users/

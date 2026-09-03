@@ -62,7 +62,22 @@ def _plain(value: Any) -> Any:
 
 
 def skill_entry_to_dict(skill: SkillEntry) -> dict[str, Any]:
-    return {
+    """Serialize a Skill, including the Scope it is only allowed to serve under.
+
+    ``serving_scope`` was added to the schema and to :class:`SkillEntry` by the
+    SCOPE work on 2026-09-01, but this writer was never updated with them.  The
+    read side parsed the field and the write side silently dropped it, so the
+    predicate survived inside one round and was gone from the next: a Skill
+    gated as "this program, on these series" was persisted as "this program",
+    and every later round retrieved and deployed it globally.  Two live Source
+    runs are affected -- p4w2 and p4w3 -- and the p4w3 verdict in particular
+    cannot be read as a statement about a *scoped* Skill.
+
+    The key is omitted when the Skill has no Scope, so every snapshot that
+    never carried one -- H0 and its lock included -- serializes to exactly the
+    bytes it did before, and its content SHA is unchanged.
+    """
+    payload = {
         "schema_version": skill.schema_version,
         "skill_id": skill.skill_id,
         "skill_kind": skill.skill_kind.value,
@@ -72,6 +87,9 @@ def skill_entry_to_dict(skill: SkillEntry) -> dict[str, Any]:
         "allowed_tools": list(skill.allowed_tools),
         "risk_guards": _plain(skill.risk_guards),
     }
+    if skill.serving_scope is not None:
+        payload["serving_scope"] = _plain(skill.serving_scope)
+    return payload
 
 
 def memory_entry_to_dict(memory: MemoryEntry) -> dict[str, Any]:

@@ -55,7 +55,14 @@ from typing import Any
 
 import numpy as np
 
-from consumers.ad_scope_adapter import compiled_steps
+try:
+    # Normal repository/package import.
+    from .ad_scope_adapter import compiled_steps
+except ImportError:  # pragma: no cover - legacy direct-run sys.path entry
+    # Existing functional runners also load this module as
+    # ``consumers.cls_scope_adapter`` after adding ``evaluation/functional``
+    # to sys.path.  Keep that entry form working during the transition.
+    from consumers.ad_scope_adapter import compiled_steps
 
 SUPPORT = "support"
 DELAYED = "delayed"

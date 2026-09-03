@@ -323,11 +323,20 @@ def _default_backend_factory(maximum_calls: int) -> BudgetedAgentBackend:
     )
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY or AGICTO_API_KEY is required")
+    # Opt-in only: the default envelope (5 attempts / 90s) is unchanged, so no
+    # existing run behaves differently.  Some relays refuse with 503
+    # "system cpu overloaded" for load windows longer than 90s, and riding one
+    # of those out is an infrastructure concern -- a retried transport failure
+    # is still one stage decision, never an extra LLM-ledger entry.
+    attempts = int(os.environ.get("M0_TRANSPORT_ATTEMPTS", "") or 5)
+    backoff_cap = float(os.environ.get("M0_TRANSPORT_BACKOFF_CAP", "") or 30.0)
     return BudgetedAgentBackend(
         _RetryingTransport(
             AgictoChatCompletionsBackend(
                 api_key=api_key, base_url=target["base_url"], timeout_seconds=240
-            )
+            ),
+            attempts=attempts,
+            backoff_cap_seconds=backoff_cap,
         ),
         maximum_calls=maximum_calls,
     )

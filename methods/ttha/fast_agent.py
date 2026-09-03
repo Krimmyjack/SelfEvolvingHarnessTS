@@ -783,7 +783,7 @@ class TTHAFastAgent:
         # signed 渲染的可执行 Reference 过滤。Memory Episode 可保留非可执行算子，
         # 但不渲染为"建议优先探测"。
         actionable_ops: tuple[str, ...] = ()
-        if request.task_spec is not None:
+        if request.task_spec is not None and pool_mode == "actionable":
             actionable_ops = _actionable_operators(
                 request, np.asarray(request.values, dtype=float), view,
                 _allowed_operators(request))
@@ -880,7 +880,7 @@ class TTHAFastAgent:
                         allowed_operators=allowed_operators or (),
                     )
                     _rendered = render_signed_instruction(
-                        _signed, _order, executable_ops=actionable_ops)
+                        _signed, _order, executable_ops=supply_ops)
                     if _rendered:
                         view = dataclasses.replace(
                             view, instruction=_rendered + view.instruction

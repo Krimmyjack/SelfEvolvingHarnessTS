@@ -63,9 +63,10 @@ def _require_exact_fields(
     expected: frozenset[str],
     *,
     artifact: str,
+    optional: frozenset[str] = frozenset(),
 ) -> None:
     missing = expected - set(payload)
-    extra = set(payload) - expected
+    extra = set(payload) - expected - optional
     if missing:
         raise ValueError(f"{artifact} missing required fields: {sorted(missing)}")
     if extra:
@@ -113,6 +114,13 @@ class SkillEntry:
     observable_applicability: Mapping[str, object]
     allowed_tools: tuple[str, ...]
     risk_guards: Mapping[str, object]
+    # SCOPE (2026-09-01): which *served* series this Skill treats, stated as a
+    # predicate over deployment-visible features.  Optional, so every entry
+    # written before this field still constructs.  The resolved UID set is
+    # deliberately absent: those names do not exist in the next Target, so a
+    # Skill that stored them would resolve to nothing there and look like a
+    # deliberate abstention rather than a Scope that no longer transfers.
+    serving_scope: Mapping[str, object] | None = None
 
 
 @dataclass(frozen=True)
@@ -273,6 +281,54 @@ _SKILL_FIELDS = frozenset(
         "risk_guards",
     }
 )
+#: SCOPE (2026-09-01): permitted but not required, so every entry written
+#: before the field still loads unchanged.
+_SKILL_OPTIONAL_FIELDS = frozenset({"serving_scope"})
+_SCOPE_KINDS = frozenset(
+    {"all_serving_series", "serving_series_predicate", "none"})
+_SCOPE_OPERATORS = frozenset({"<=", ">=", "<", ">"})
+
+
+def _require_serving_scope(value: object) -> Mapping[str, object]:
+    """A Scope over deployment-visible features, never over series names.
+
+    The UID check is not decoration: a Skill that named series would resolve to
+    nothing in the next Target and present as a deliberate abstention rather
+    than as a Scope that failed to transfer.
+    """
+    if not isinstance(value, Mapping):
+        raise ValueError("serving_scope must be an object")
+    kind = value.get("scope_type")
+    if kind not in _SCOPE_KINDS:
+        raise ValueError("serving_scope scope_type must be one of %s"
+                         % sorted(_SCOPE_KINDS))
+    clauses = value.get("predicate") or ()
+    if not isinstance(clauses, Sequence) or isinstance(clauses, (str, bytes)):
+        raise ValueError("serving_scope predicate must be a list")
+    if kind == "serving_series_predicate" and not clauses:
+        raise ValueError("a predicate Scope needs at least one clause")
+    if kind != "serving_series_predicate" and clauses:
+        raise ValueError("%s takes no predicate clauses" % kind)
+    for clause in clauses:
+        if not isinstance(clause, Mapping):
+            raise ValueError("each Scope clause must be an object")
+        if set(clause) != {"feature", "op", "threshold"}:
+            raise ValueError(
+                "a Scope clause takes exactly feature, op and threshold")
+        feature = clause["feature"]
+        if not isinstance(feature, str) or len(feature) < 4:
+            raise ValueError(
+                "a Scope clause must name a deployment-visible feature, not a "
+                "series")
+        if clause["op"] not in _SCOPE_OPERATORS:
+            raise ValueError("Scope clause op must be one of %s"
+                             % sorted(_SCOPE_OPERATORS))
+        if isinstance(clause["threshold"], bool) or not isinstance(
+                clause["threshold"], (int, float)):
+            raise ValueError("Scope clause threshold must be numeric")
+    return value
+
+
 _MEMORY_FIELDS = frozenset(
     {
         "schema_version",
@@ -289,7 +345,8 @@ def load_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
     if not isinstance(payload, Mapping):
         raise ValueError("SkillEntry must be an object")
     _reject_forbidden_fields(payload)
-    _require_exact_fields(payload, _SKILL_FIELDS, artifact="SkillEntry")
+    _require_exact_fields(payload, _SKILL_FIELDS, artifact="SkillEntry",
+                          optional=_SKILL_OPTIONAL_FIELDS)
     if payload["schema_version"] != "skill-entry/1":
         raise ValueError("SkillEntry schema_version must be skill-entry/1")
     skill_id = _require_canonical_id(payload["skill_id"], field="skill_id")
@@ -319,6 +376,9 @@ def load_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
         observable_applicability=_freeze_json(applicability),
         allowed_tools=allowed_tools,
         risk_guards=_freeze_json(risk_guards),
+        serving_scope=(
+            _freeze_json(_require_serving_scope(payload["serving_scope"]))
+            if payload.get("serving_scope") is not None else None),
     )
 
 

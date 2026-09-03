@@ -55,6 +55,7 @@ from .experience_memory import (
     task_consumer_key,
     workflow_signature_of,
 )
+from .admission_policy import decide as _admission_decide
 from .exploration_policy import (
     active_policy as _exploration_policy,
     is_supplied_candidate as _is_supplied,
@@ -63,6 +64,68 @@ from .fast_agent import public_operator_contract
 from .signed_radius import MATERIAL_THRESHOLD, window_context
 
 M = MATERIAL_THRESHOLD  # 0.005
+
+#: 准入闸门因**尾部预算**（而非聚合水平）拒绝时给出的理由。这两类拒绝说的
+#: 是"程序有用但作用面太宽"——正是 Scope 修订要处理的证据；聚合不过线或
+#: fail-closed 的拒绝不在此列，它们不是 Scope 能修的。
+RISK_REFUSAL_REASONS = (
+    "harmed_fraction_over_budget",
+    "single_series_harm_over_budget",
+)
+
+#: P4U-v2：风险拒绝的归因。RISK_GAP 而非 SKILL_LIBRARY_GAP——故障不是"缺
+#: Skill"，是已找到的候选因 Scope/Risk 冲突拿不到部署权。
+RISK_REFUSAL_CAUSE = "RISK_GAP"
+
+#: 本轮暴露的唯一面。RISK_GAP 的路由还授权 risk-guard 与 verification 面；
+#: 只放出 Skill ADD，是为了让"授权一次归因"不等于"授权改 H0 全局风险守卫"。
+#: 该面 precondition=ABSENT，所以 ADD 不需要已存在的 Skill——这正是原先
+#: SCOPE_OVERREACH 走不通的地方（0/9 探针带 source_skill_id）。
+RISK_REFUSAL_SURFACES = ("skill_library.entries/{skill_id}",)
+
+#: 被拒探针的程序以此 id 进入卡片的 Runtime-owned 白名单，Slow 只能绑定它。
+RISK_REFUSAL_PATCH_ID = "risk_refusal_scope_revision"
+
+
+class _ProgramSupplyVerifierBudgetExhausted(RuntimeError):
+    program_supply_budget_exhausted = True
+
+
+class _CountedProgramSupplyVerifier:
+    """Pre-call guard for verifier-only Program Supply probes."""
+
+    def __init__(self, inner: Any, maximum_requests: int | None) -> None:
+        self.inner = inner
+        self.maximum_requests = (
+            None if maximum_requests is None else int(maximum_requests)
+        )
+        if self.maximum_requests is not None and self.maximum_requests < 0:
+            raise ValueError("program_supply_verifier_budget must be non-negative")
+        self.requests = 0
+        self.blocked = 0
+
+    def verify(self, steps: Any, origin: int) -> Any:
+        return self._call("verify", steps, origin)
+
+    def verify_without_behavior_hashes(self, steps: Any, origin: int) -> Any:
+        method_name = (
+            "verify_without_behavior_hashes"
+            if callable(getattr(self.inner, "verify_without_behavior_hashes", None))
+            else "verify"
+        )
+        return self._call(method_name, steps, origin)
+
+    def _call(self, method_name: str, steps: Any, origin: int) -> Any:
+        if (
+            self.maximum_requests is not None
+            and self.requests >= self.maximum_requests
+        ):
+            self.blocked += 1
+            raise _ProgramSupplyVerifierBudgetExhausted(
+                "Program Supply verifier budget exhausted before verify()"
+            )
+        self.requests += 1
+        return getattr(self.inner, method_name)(steps, origin)
 
 
 @dataclass
@@ -79,6 +142,11 @@ class RoundResult:
     first_positive_support_receipt_index: int | None = None
     harm_count: int = 0
     harm_magnitude: float = 0.0
+    # 聚合过线、却被准入闸门以尾部预算拒绝的候选。与 harm_count 分立：
+    # 后者的语义是"聚合为负"，改写它会让历史读数不可比。此前这类事件
+    # 不被任何计数器记录，一轮全是风险拒绝时账面上是零故障。
+    risk_refusal_count: int = 0
+    risk_refusals: list = field(default_factory=list)
     abstained: bool = True
     episode_ids: list = field(default_factory=list)
     pending_patch_id: str | None = None
@@ -98,6 +166,8 @@ class RoundResult:
     # 候选（= winner_program）。DRAFT 被 chosen 只表示申请一次 Support。
     chosen_proposal: str | None = None
     memory_resolution_status: str = "no_memory"
+    program_supply_verifier_requests: int = 0
+    program_supply_verifier_blocked: int = 0
     # E1（2026-08-16）Runtime ordering consumer：Domain Ordering Card 只重排
     # Fast 已供应的候选——不注入候选、不改 Program Supply、不做 suppression。
     ordering_card_id: str | None = None
@@ -106,8 +176,27 @@ class RoundResult:
     # ---- 内部状态（open_delayed 消费；不对外）----
     _episodes: list = field(default_factory=list, repr=False)  # (episode, steps)
     _winner_candidate_id: str | None = field(default=None, repr=False)
+    # SCOPE：winner 的**谓词**（可进 Skill）与本 cell 的解析结果
+    # （只作执行证据）。两者分开存，正是因为只有前者能迁移。
+    _winner_serving_scope: dict | None = field(default=None, repr=False)
+    _winner_resolved_series: frozenset | None = field(
+        default=None, repr=False)
+    # 每次 Slow 修订谓词就 +1；re-encounter 要能说出执行的是哪一版。
+    _winner_scope_revision: int = field(default=1, repr=False)
     _winner_steps: tuple | None = field(default=None, repr=False)
+    # P4U-v2：注入的收窄 preflight 对本轮修订的裁决（None = 未注入）。
+    _scope_revision_preflight: dict | None = field(default=None, repr=False)
     _slow_event: dict | None = field(default=None, repr=False)
+    # 哪一类故障点着了 Slow：aggregate_negative（历史唯一入口）或
+    # risk_refusal（聚合过线、尾部超预算）。None = 本轮未触发。
+    _slow_trigger: str | None = field(default=None, repr=False)
+    # P4U-v3：一轮可能有多个风险拒绝，而 Slow 只有一次。选中哪一个、
+    # 完整排名如何，必须与选择规则一起进工件——v2 按探测序取第一个，
+    # 而探测序是 Fast 的顺序，跟"可不可修"无关。
+    _risk_refusal_selection: dict | None = field(default=None, repr=False)
+    # 由 Runner 重新供给的候选 id（restricted Draft 回场）。Fast 池不变，
+    # 这些 id 追加在池尾，只为让被限制的 Draft 能在新 origin 再被探一次。
+    _resupplied_candidate_ids: list = field(default_factory=list, repr=False)
     _trigger_episode_id: str | None = field(default=None, repr=False)
     _delayed_event: dict | None = field(default=None, repr=False)
     _method: Any = field(default=None, repr=False)
@@ -124,6 +213,12 @@ class RoundResult:
     _fast_skill_episode_id: str | None = field(default=None, repr=False)
     _group_slow_event: dict | None = field(default=None, repr=False)
     _group_slow_done: bool = field(default=False, repr=False)
+    # SCOPE delayed：delayed 闸门实际评价的是哪一批 serving 序列。
+    # None = 未限定（历史语义）；frozenset = 谓词在 delayed origin 上重解析
+    # 的结果。批准一个带 Scope 的 Skill 却按全局读数裁决，等于用它从不打算
+    # 处理的序列去否决它——所以这个读数必须能被看见。
+    delayed_serving_series: frozenset | None = field(default=None, repr=False)
+    delayed_scope_reresolved: bool = field(default=False, repr=False)
 
 
 def _per_series_gains(per_view_gain: Sequence[float] | None,
@@ -171,7 +266,10 @@ def _write_target_episode(*, domain: str, op: str,
                           task_spec: Any = None,
                           series_uids: Sequence[str] | None = None,
                           consumer_id: str | None = None,
-                          source_skill_id: str | None = None) -> Any:
+                          source_skill_id: str | None = None,
+                          serving_scope: Mapping[str, object] | None = None,
+                          resolved_serving_series: Sequence[str] | None = None,
+                          ) -> Any:
     """与 run_v1_target_local_loop.write_target_episode 同构（生产路径
     直接复用 experience_memory.build_episode）。
 
@@ -199,6 +297,14 @@ def _write_target_episode(*, domain: str, op: str,
         consumer_id=consumer_id,
     )
     relation = str(facts["relation"])
+    # P4b：Draft/accepted 的授予条件与 winner 走同一个准入判定，避免"赢下
+    # 该轮却不被保留"。identity 从不取得执行权（strict 与 bounded 同）。
+    _support_admitted = bool(
+        op != "identity"
+        and _admission_decide(
+            relation=relation,
+            aggregate_gain=support_gain,
+            per_series_gains=per_view_gain).admitted)
     return build_episode(
         episode_id=f"{domain}_target_{op}{episode_id_suffix}",
         task_consumer_key=key,
@@ -224,8 +330,22 @@ def _write_target_episode(*, domain: str, op: str,
             "local_pattern": {"support_gain": support_gain,
                               **(dict(support_context) if support_context else {})},
             "delayed_pattern": {},
-            "program_geometry": {"scope": "training_rows",
-                                 "program_steps": list(program_steps)},
+            # SCOPE（2026-09-01）：serving_scope 为 None 时逐字段与历史相同
+            # （scope="training_rows"）。给出谓词时记两样东西——**谓词**是
+            # Skill 可以携带的部分，**resolved 序列**只是本 cell 的执行证据：
+            # UID 在下一个 Target 不存在，存进 Skill 会让它静默解析成空集，
+            # 看起来像一次合法弃权。
+            "program_geometry": (
+                {"scope": "training_rows",
+                 "program_steps": list(program_steps)}
+                if serving_scope is None else
+                {"scope": "serving_series_predicate",
+                 "serving_scope": dict(serving_scope),
+                 "resolved_serving_series": [
+                     str(u) for u in (resolved_serving_series or ())],
+                 "resolved_is_skill_field": False,
+                 "program_steps": list(program_steps)}
+            ),
             "per_view_gain": list(per_view_gain)
             if per_view_gain is not None else [],
             # T5 #41 A3：逐 view 读数的 uid 序一并留痕——delayed 侧与
@@ -235,14 +355,18 @@ def _write_target_episode(*, domain: str, op: str,
         },
         workflow_signature=full_sig,
         support_response={"gain": support_gain,
-                          "accepted": relation == "POSITIVE",
+                          "accepted": _support_admitted,
                           MEASURED_EFFECT_KEY: dict(facts)},
         delayed_response={"evaluated": False, "gain": None},
         relation=relation,
         evidence_level="SUPPORT",
         # Support = POSITIVE 才形成 Draft；CONFLICT/NEGATIVE/NEUTRAL/ABSTAIN
         # 只写 Episode，不扩执行权。
-        local_status=STATUS_LOCAL_DRAFT if relation == "POSITIVE"
+        # P4b：授予条件与 winner 同源（admission_policy）。strict 下
+        # _support_admitted ⟺ relation == POSITIVE，与上一行行为逐位相同；
+        # bounded 下预算内的 CONFLICT 一并取得 Target-local Draft——否则
+        # 它会"赢下该轮却不被保留"，放宽门等于没放。
+        local_status=STATUS_LOCAL_DRAFT if _support_admitted
         else STATUS_EPISODE_ONLY,
         evidence_refs=["online_loop"],
     )
@@ -274,7 +398,14 @@ def _update_delayed_status(episode: Any, delayed_gain: float,
         consumer_id=consumer_id,
     )
     relation = str(facts["relation"])
-    if relation == "POSITIVE":
+    # P4b：delayed 侧是 §1 规则的"独立确认"半边，用同一个准入判定。
+    # strict 下 admitted ⟺ relation == POSITIVE，三分支与参数化前逐位相同。
+    # bounded 下预算内的 delayed CONFLICT 不再撤销（否则批准即被自己收回），
+    # 但越界的 CONFLICT 仍然 RESTRICTED——反号与重损照旧否决。
+    if _admission_decide(
+            relation=relation,
+            aggregate_gain=delayed_gain,
+            per_series_gains=per_view_gain).admitted:
         status = "LOCAL_ACTIVE"
     elif relation == "CONFLICT":
         status = "RESTRICTED"
@@ -328,6 +459,197 @@ def _select_ordering_card(method, public_features, scope_now):
     return matches[0] if matches else None
 
 
+def _fire_risk_refusal_slow(
+    *,
+    result: Any,
+    method: Any,
+    executor: Any,
+    trace: Any,
+    contexts: Sequence[Mapping[str, Any]],
+    selector: Callable[[Sequence[Mapping[str, Any]]], int] | None,
+    card_builder: Callable[[object], Mapping[str, object]],
+    slow_agent: Any,
+    controller: Any,
+    store: Any,
+    origin: int,
+    budget: int,
+    fast_features: Mapping[str, object] | None,
+    request: Any,
+    scope_resolver: Callable[[Mapping[str, object], int],
+                             frozenset[str]] | None,
+    scope_revision_preflight: Callable[
+        [Mapping[str, object] | None, Mapping[str, object], int],
+        Mapping[str, object]] | None,
+    steps_map: Mapping[str, Any],
+) -> None:
+    """The one Slow call a round spends on a risk refusal, after choosing which.
+
+    P4U-v3 moves this out of the probe loop.  v2 fired on the first refusal it
+    met, and the first refusal is whichever candidate the Fast agent happened to
+    propose earliest -- an ordering that knows nothing about whether the refusal
+    can be repaired at all.  Deferring to the end of the round is what makes a
+    choice possible; the choice itself belongs to the injected ``selector``, so
+    the method layer holds no policy about which fault is worth an LLM call.
+
+    Everything downstream of the choice is v2's chain, unchanged: RISK_GAP, one
+    authorized surface (the Skill ADD), the probe's own program frozen into the
+    card's Runtime whitelist, the refusal facts supplied by the Runtime, the
+    Support replay read under the revised predicate, and the narrowing preflight
+    as the only thing in the chain that inspects what the revision says.
+    """
+    from .program_supply import (  # noqa: PLC0415
+        ProgramSupplyDecision,
+        build_single_surface_catalog,
+    )
+
+    index = 0
+    if selector is not None:
+        try:
+            index = int(selector([dict(row) for row in result.risk_refusals]))
+        except Exception:  # noqa: BLE001 - a broken selector must not decide
+            index = 0
+    if not 0 <= index < len(contexts):
+        index = 0
+    chosen = contexts[index]
+    result._risk_refusal_selection = {
+        "selected_probe_index": index,
+        "selected_candidate_id": chosen["candidate_id"],
+        "candidates_considered": len(contexts),
+        "selector_injected": selector is not None,
+    }
+
+    if result.target_support_receipts_used >= budget:
+        result._deferred_slow = "SLOW_UPDATE_DEFERRED_NO_TARGET_BUDGET"
+        return
+    result._slow_trigger = "risk_refusal"
+    if slow_agent is None or controller is None or store is None:
+        result._slow_event = {
+            "stage": "slow_dependencies_unavailable",
+            "case_id": trace.case_id,
+            "missing": [name for name, value in (("slow_agent", slow_agent),
+                                                 ("controller", controller),
+                                                 ("store", store))
+                        if value is None],
+        }
+        return
+
+    # 归因记 RISK_GAP，不是 SKILL_LIBRARY_GAP：候选已经找到、聚合也过线，
+    # 拿不到部署权是因为作用面太宽。cause code 就是那条被记录的主张。
+    # 本轮只暴露 Skill ADD 一个面——RISK_GAP 同时授权 risk-guard 与
+    # verification 面，一并放出就等于顺带授权改 H0 全局 scope_risk_guards。
+    _decision = ProgramSupplyDecision(
+        case_id=trace.case_id,
+        cause_code=RISK_REFUSAL_CAUSE,
+        actionability="EDITABLE_M0",
+        surface_templates=RISK_REFUSAL_SURFACES,
+    )
+    catalog = build_single_surface_catalog(
+        decision=_decision, parent=store.materialize(method._active_snapshot()),
+        controller=controller, retrieved_capability_skill_ids=())
+    if not catalog:
+        result._slow_event = {
+            "stage": "abstained_by_route",
+            "case_id": _decision.case_id,
+            "cause_code": _decision.cause_code,
+            "actionability": _decision.actionability,
+            "surface_templates": list(_decision.surface_templates),
+        }
+        return
+
+    frozen_steps = [{"op": op, "params": dict(params)}
+                    for op, params in chosen["steps"]]
+    facts = {
+        "reason": chosen["reason"],
+        "aggregate_gain": chosen["aggregate_gain"],
+        "harmed_fraction": chosen["harmed_fraction"],
+        "max_single_series_harm": chosen["max_single_series_harm"],
+        "serving_scope": chosen["scope_spec"],
+        "per_series_gain": chosen["per_series_gain"],
+    }
+
+    def _risk_card_builder(_episode, _base=card_builder, _steps=frozen_steps,
+                           _facts=facts):
+        _card = dict(_base(_episode) or {})
+        # Program 冻结不靠自觉：被拒探针自己的 steps 进 Runtime-owned
+        # 白名单，而 _steps_for_patch_id 只认这张表，也禁止从自然语言里
+        # 猜算子。所以 Slow 能绑定的程序有且只有这一个。
+        _card["typed_patch_options"] = [{
+            "patch_id": RISK_REFUSAL_PATCH_ID,
+            "program_steps": _steps,
+        }]
+        # 逐序列 gain 按**位置**给，不带 UID；Runner 供的逐序列特征行
+        # 同样按位置，两边靠下标对齐，没有任何序列名字进入卡片。
+        _card["risk_refusal"] = dict(_facts)
+        return _card
+
+    def _replay_eval(s, _mode, _scope=None):
+        # Support 重验必须在**修订后**的谓词下读：照历史调用形状读全局，
+        # 复现的恰恰是刚被尾部预算拒掉的那个配置。
+        if _scope is not None and scope_resolver is not None:
+            return executor.evaluate(
+                tuple(s), origin, serving_scope=scope_resolver(_scope, origin))
+        return executor.evaluate(tuple(s), origin)
+
+    _replay_eval.accepts_serving_scope = scope_resolver is not None
+
+    contracts = tuple(public_operator_contract(op)
+                      for op in sorted({op for steps in steps_map.values()
+                                        for op, _p in steps}))
+    sev = method.handle_feedback_support(
+        chosen["episode"], slow_agent=slow_agent, controller=controller,
+        store=store, surface_catalog=catalog,
+        card_builder=_risk_card_builder, evaluator=_replay_eval,
+        fast_features=fast_features, allowed_operator_contracts=contracts,
+        confirmed_cause=_decision.cause_code,
+        task_context=getattr(request, "task_context", None))
+    result._slow_event = sev
+    result._trigger_episode_id = chosen["episode"].episode_id
+    if sev.get("stage") not in ("pending", "support_rejected"):
+        return
+
+    result.slow_replay_receipts_used += 1
+    result.target_support_receipts_used += 1
+    _rg = sev.get("support_gain")
+    result.actual_probed_programs.append({
+        "candidate_id": "replay:" + str(sev.get("patch_id") or "?"),
+        "kind": "slow_replay",
+        "gain": (float(_rg) if _rg is not None else None),
+        "passed": bool(sev.get("support_passed"))})
+    if _rg is not None and float(_rg) < -M:
+        result.harm_count += 1
+        result.harm_magnitude += -float(_rg)
+    if sev.get("stage") != "pending":
+        return
+
+    result.pending_patch_id = sev.get("patch_id")
+    result.winner_program = [{"op": op, "params": dict(params)}
+                             for op, params in _steps_of_patch(sev)]
+    result._winner_steps = _steps_of_patch(sev)
+    _patch_scope = _scope_of_patch(sev)
+    # 谓词内容没有任何现成检查：路由表的"单调收窄"是目标类闸门，从不看
+    # 谓词，RISK_GAP 更不在方向表里。一次修订是不是真收窄只能在这里判。
+    _pf = (dict(scope_revision_preflight(
+               chosen["scope_spec"], _patch_scope, origin) or {})
+           if (_patch_scope is not None
+               and scope_revision_preflight is not None) else None)
+    result._scope_revision_preflight = _pf
+    if _pf is not None and not _pf.get("accepted"):
+        # 修订不是收窄 → 整次修订作废。不能退回原谓词就发部署权：那正是
+        # 刚刚被尾部预算拒掉的那个配置。
+        result.winner_program = None
+        result._winner_steps = None
+        result.pending_patch_id = None
+        result._slow_event = {**sev, "stage": "scope_revision_refused",
+                              "scope_revision_preflight": _pf}
+        return
+    if _patch_scope is not None:
+        result._winner_serving_scope = _patch_scope
+        result._winner_resolved_series = (
+            scope_resolver(_patch_scope, origin)
+            if scope_resolver is not None else None)
+        result._winner_scope_revision = int(result._winner_scope_revision) + 1
+
+
 def run_online_round(
     method: Any,
     executor: Any,
@@ -349,12 +671,28 @@ def run_online_round(
     surface_catalog: Sequence[Mapping[str, object]] | None = None,
     allow_fast_skill: bool = False,
     runtime_prior_slot: bool = False,
+    pool_mode: str = "actionable",
     allow_group_slow: bool = False,
     group_min: int = 2,
     group_card_builder: Callable[[Mapping[str, object]],
                                  Mapping[str, object]] | None = None,
     group_holdout_origin: int | None = None,
     ordering_program_family: str | None = None,
+    slow_typed_patch_options: Sequence[Mapping[str, object]] | None = None,
+    program_supply_verifier: Any | None = None,
+    program_supply_verifier_budget: int | None = None,
+    constrained_proposal_succeeds: bool | None = None,
+    candidate_scopes: Mapping[str, Mapping[str, object]] | None = None,
+    scope_resolver: Callable[
+        [Mapping[str, object], int], frozenset[str]] | None = None,
+    scope_revision_preflight: Callable[
+        [Mapping[str, object] | None, Mapping[str, object], int],
+        Mapping[str, object]] | None = None,
+    resupplied_programs: Mapping[
+        str, Sequence[tuple[str, Mapping[str, object]]]] | None = None,
+    risk_refusal_selector: Callable[[Sequence[Mapping[str, object]]],
+                                    int] | None = None,
+    risk_refusal_slow_agent: Any | None = None,
 ) -> RoundResult:
     """一轮在线（14 条固定语义——见模块 docstring）。
     E2.5-A/B（用户裁决 2026-08-12）：runtime_prior_slot=Runtime-owned
@@ -382,10 +720,27 @@ def run_online_round(
     # 不会命中，只会在字段真的读不到时把异常检测轮次静默当预测轮跑。
     method.bind_round_data(series0[:origin],
                            task_kind=request.task_spec.task_type)
-    method.prepare(request, runtime_prior_slot=runtime_prior_slot)
+    method.prepare(
+        request,
+        runtime_prior_slot=runtime_prior_slot,
+        pool_mode=pool_mode,
+    )
     trace = method.last_trace
     steps_map = dict(trace.candidate_program_steps or {})
     pool = [c for c in (trace.candidate_ids or ()) if c in steps_map]
+    # P4U-v3：Runtime 重新供给的候选（被 delayed 门拒后保留为 restricted
+    # Draft 的那个程序）追加在 Fast 池**之后**。Fast 提了什么、按什么顺序
+    # 提，一位不动；重供候选不参与 chosen，也不排到任何自主候选之前。
+    # 不注入时 pool/steps_map 逐位与历史相同。
+    for _resupplied_id, _resupplied_steps in sorted(
+            (resupplied_programs or {}).items()):
+        _resupplied_id = str(_resupplied_id)
+        if _resupplied_id in steps_map:
+            continue
+        steps_map[_resupplied_id] = tuple(
+            (str(op), dict(params)) for op, params in _resupplied_steps)
+        pool.append(_resupplied_id)
+        result._resupplied_candidate_ids.append(_resupplied_id)
     chosen = trace.chosen_candidate_id or ""
     result.chosen_proposal = chosen if chosen != "identity" else None
     # P1/P2（rev3）：Program Supply 在线归因只走公开纯路由；当前 view 用
@@ -445,6 +800,8 @@ def run_online_round(
     # POSITIVE 内按 displacement_margin/tie_break_rule 比较（_best_positive）；
     # DEFAULT=first_positive_in_probe_order 保持首正即胜。
     _best_positive: tuple[str, tuple, float] | None = None
+    # P4U-v3：风险拒绝先攒起来，轮末统一选一个。见下方点火处的理由。
+    _risk_contexts: list[dict[str, Any]] = []
     for _probe_idx, cand in enumerate(probe_order):
         if result.target_support_receipts_used >= budget:
             break
@@ -459,18 +816,44 @@ def run_online_round(
                 "gain": None, "passed": None})
             continue
         steps = steps_map[cand]
-        rr = executor.evaluate(tuple(steps), origin)
+        _plain_steps = [{"op": o, "params": dict(p)} for o, p in steps]
+        # SCOPE：候选携带的是**谓词**；Runtime 在这里把它解析成本 cell 的
+        # serving 序列集合。两者都缺 → serving_scope=None → 逐字节走历史路径。
+        _scope_spec = (candidate_scopes or {}).get(cand)
+        _resolved = (
+            scope_resolver(_scope_spec, origin)
+            if _scope_spec is not None and scope_resolver is not None else None
+        )
+        # 没有解析出 Scope 时连**调用形状**都保持历史原样：注入的
+        # executor 可能只认两参签名，多传一个关键字就是 TypeError。
+        rr = (executor.evaluate(tuple(steps), origin,
+                                serving_scope=_resolved)
+              if _resolved is not None else
+              executor.evaluate(tuple(steps), origin))
         if not rr.verification.passed or rr.gain is None:
             # 4. verifier 拒绝/仪器失败：单独记 proposal，不计合法 receipt
             result.actual_probed_programs.append({
                 "candidate_id": cand, "kind": "verifier_rejected",
-                "gain": None, "passed": False})
+                "gain": None, "passed": False,
+                "program_steps": _plain_steps})
             continue
         result.target_support_receipts_used += 1
         gain = float(rr.gain)
+        # P4c（2026-09-01）：被拒候选也必须带走完整程序与逐序列风险。
+        # 只有 winner 记 program_steps 时，"strict 拒 / bounded 准"这类
+        # 配对事后无法比程序，Slow 也没有可分析的失败材料——它要改的正是
+        # Workflow / targeting / 强度，那都在 steps 里。纯记录，不改判定。
         result.actual_probed_programs.append({
             "candidate_id": cand, "kind": "probe", "gain": gain,
-            "passed": True})
+            "passed": True,
+            "program_steps": _plain_steps,
+            "serving_scope": dict(_scope_spec) if _scope_spec else None,
+            "resolved_serving_series": (
+                sorted(_resolved) if _resolved is not None else None),
+            "per_series_gain": _per_series_list(
+                getattr(rr, "per_view_gain", None)),
+            "risk_profile": _risk_profile(getattr(rr, "per_view_gain", None)),
+            "source_skill_id": source_skill_of_candidate(cand)})
         # 5. 每次合法 Action-Response 立即写 Episode
         # GROUP_FAULT（用户裁决 2026-08-12）：保留 per-view（per-series）
         # gain——多轨迹共同归因的细粒度证据（学习证据——不进 instruction）
@@ -486,23 +869,38 @@ def run_online_round(
             task_spec=result._task_spec,
             series_uids=result._series_uids,
             consumer_id=result._consumer_id,
-            source_skill_id=source_skill_of_candidate(cand))
+            source_skill_id=source_skill_of_candidate(cand),
+            serving_scope=_scope_spec,
+            resolved_serving_series=(
+                sorted(_resolved) if _resolved is not None else None))
         method.append_experience_episode(ep)
         result.episode_ids.append(ep.episode_id)
         result._episodes.append((ep, tuple(steps)))
-        # 6. 第一个正向候选成为 winner（= authorized deployment——
+        # 6. 第一个获准入的候选成为 winner（= authorized deployment——
         # 经当前 Target Support 探测确认；停止探测）。
         # E0：first-positive index 用合法 Support receipt 计数（不含
         # verifier_rejected 条目——原 len(actual_probed_programs) 会算入）。
         # T5 #41 A4：Support = POSITIVE 才形成 winner/Draft。聚合过线但
         # 逐序列有害（CONFLICT）不再取得部署权——证据照写，执行权不发。
+        # P4b（2026-08-31）：执行权判定参数化到 admission_policy。DEFAULT
+        # （strict_positive_only）逐位复现上一行的行为——strict 下
+        # admitted ⟺ relation == POSITIVE，控制流不变。非 DEFAULT 只能由
+        # 实验 runner 显式 install，且不在 exploration_policy 的
+        # Random-legal-edit 采样空间内。
+        _adm = _admission_decide(
+            relation=str(ep.relation),
+            aggregate_gain=gain,
+            per_series_gains=getattr(rr, "per_view_gain", None))
+        result.actual_probed_programs[-1]["admission"] = _adm.to_dict()
         if str(ep.relation) == "POSITIVE":
             if result.first_positive_support_receipt_index is None:
                 result.first_positive_support_receipt_index = (
                     result.target_support_receipts_used)
+        if _adm.admitted:
             if _policy.winner_compare_rule == (
                     "max_support_gain_among_probed_positive"):
-                # 只比已探 POSITIVE；margin 域与 ±0.005 双门线分立。
+                # 只比已准入者（strict 下即已探 POSITIVE）；margin 域与
+                # ±0.005 双门线分立。
                 # 挑战者需超出 best 达 margin 以上才置换；|Δ|≤margin 视为
                 # 打平，交 tie_break_rule（probe_order = 保持先到者）。
                 if _best_positive is None:
@@ -527,9 +925,56 @@ def run_online_round(
                     {"op": o, "params": dict(p)} for o, p in steps]
                 result._winner_candidate_id = str(cand)
                 result._winner_steps = tuple(steps)
+                result._winner_serving_scope = (
+                    dict(_scope_spec) if _scope_spec else None)
+                result._winner_resolved_series = _resolved
             if _policy.first_positive_stop:
                 break
             continue
+        # SCOPE/RISK 路由缺口（2026-09-02 修复）：准入闸门在上面已经算出
+        # 拒绝理由并写进 probe 行，而下面的故障路由器只读聚合 gain。于是
+        # "聚合过线、因尾部预算被拒"的候选两个分支都不进——不成为 winner，
+        # 也不进 Slow，连 harm_count 都不加，这一轮在系统自己的账本上
+        # "什么都没出错"。它恰恰是最该被修订的那类证据：程序有用，只是
+        # 作用面太宽。harm_count 的语义（聚合为负）保持不变，风险拒绝
+        # 单独计数，两条路径的读数不混。
+        _risk_refused = (
+            not _adm.admitted
+            and gain >= M
+            and str(_adm.reason) in RISK_REFUSAL_REASONS)
+        if _risk_refused:
+            result.risk_refusal_count += 1
+            result.risk_refusals.append({
+                "candidate_id": str(cand),
+                "reason": str(_adm.reason),
+                "aggregate_gain": float(gain),
+                "harmed_fraction": _adm.harmed_fraction,
+                "max_single_series_harm": _adm.max_single_series_harm,
+                "program_steps": [
+                    {"op": o, "params": dict(p)} for o, p in steps],
+                "serving_scope": dict(_scope_spec) if _scope_spec else None,
+                "per_series_gain": _per_series_list(
+                    getattr(rr, "per_view_gain", None)),
+                "episode_id": ep.episode_id,
+            })
+            # P4U-v3：这里**不**点火。v2 在第一个风险拒绝上就调 Slow，
+            # 而"第一个"是 Fast 的探测序，跟这条拒绝能不能修没有关系。
+            # 实测代价：一轮里两个被拒探针，Slow 拿到的那个在预注册的
+            # oracle 上界里根本没有可行的单条收窄，另一个有十一条。
+            # 所以攒到轮末，由注入的选择规则确定性地挑一个。
+            _risk_contexts.append({
+                "probe_index": len(_risk_contexts),
+                "candidate_id": str(cand),
+                "episode": ep,
+                "steps": tuple(steps),
+                "scope_spec": dict(_scope_spec) if _scope_spec else None,
+                "reason": str(_adm.reason),
+                "aggregate_gain": float(gain),
+                "harmed_fraction": _adm.harmed_fraction,
+                "max_single_series_harm": _adm.max_single_series_harm,
+                "per_series_gain": _per_series_list(
+                    getattr(rr, "per_view_gain", None)),
+            })
         if gain < -M:
             result.harm_count += 1
             result.harm_magnitude += -gain
@@ -541,30 +986,208 @@ def run_online_round(
                         "SLOW_UPDATE_DEFERRED_NO_TARGET_BUDGET")
                 else:
                     triggered = True
+                    # 聚合为负是这条内联路径唯一的入口。P4U-v3 把风险
+                    # 拒绝移出循环——它要在看过本轮**全部**拒绝之后才能
+                    # 选，见轮末的 _fire_risk_refusal_slow。
+                    result._slow_trigger = "aggregate_negative"
                     # P2（rev3）：归因 → 单一授权 Surface → Slow 或显式
                     # ABSTAIN。默认 catalog 不再由调用方先验写死为 ADD。
                     from .program_supply import (  # noqa: PLC0415
                         build_single_surface_catalog,
                         route_online_program_supply_fault,
+                        route_verified_program_supply_fault,
                     )
 
-                    _decision = route_online_program_supply_fault(
-                        trace, ep, _route_view)
-                    _retrieved_capability_ids = [
-                        str(skill.skill_id)
-                        for skill in _route_view.skills
-                        if (getattr(skill, "skill_kind", None)
-                            .value == "capability"
-                            and skill.skill_id
-                            in tuple(trace.retrieved_skill_ids or ()))
-                    ]
-                    _authorized_catalog = build_single_surface_catalog(
-                        decision=_decision,
-                        parent=store.materialize(
-                            method._active_snapshot()),
-                        controller=controller,
-                        retrieved_capability_skill_ids=(
-                            _retrieved_capability_ids))
+                    _slow_options = tuple(slow_typed_patch_options or ())
+                    _effective_card_builder = card_builder
+                    _verified_route: dict[str, Any] | None = None
+                    if _slow_options:
+                        if slow_agent is None or controller is None or store is None:
+                            result._slow_event = {
+                                "stage": "slow_dependencies_unavailable",
+                                "case_id": trace.case_id,
+                                "missing": [
+                                    name for name, value in (
+                                        ("slow_agent", slow_agent),
+                                        ("controller", controller),
+                                        ("store", store),
+                                    ) if value is None
+                                ],
+                            }
+                            continue
+                        _raw_verifier = (
+                            program_supply_verifier
+                            if program_supply_verifier is not None
+                            else executor
+                        )
+                        if not callable(getattr(_raw_verifier, "verify", None)):
+                            result._slow_event = {
+                                "stage": "verified_supply_verifier_unavailable",
+                                "case_id": trace.case_id,
+                            }
+                            continue
+                        _verifier = _CountedProgramSupplyVerifier(
+                            _raw_verifier, program_supply_verifier_budget
+                        )
+                        _raw_card = card_builder(ep)
+                        if not isinstance(_raw_card, Mapping):
+                            result._slow_event = {
+                                "stage": "card_not_mapping",
+                                "case_id": trace.case_id,
+                            }
+                            continue
+                        _route_card = dict(_raw_card)
+                        _route_card["typed_patch_options"] = list(
+                            _slow_options
+                        )
+                        from .program_supply import (  # noqa: PLC0415
+                            bind_verified_program_options,
+                            retrieved_relevant_capability_skill_ids,
+                        )
+
+                        try:
+                            _assessment = route_verified_program_supply_fault(
+                                trace=trace,
+                                episode=ep,
+                                view=_route_view,
+                                executor=_verifier,
+                                typed_patch_options=_route_card[
+                                    "typed_patch_options"
+                                ],
+                                origin=origin,
+                                constrained_proposal_succeeds=(
+                                    constrained_proposal_succeeds
+                                ),
+                            )
+                        except _ProgramSupplyVerifierBudgetExhausted:
+                            result.program_supply_verifier_requests += (
+                                _verifier.requests
+                            )
+                            result.program_supply_verifier_blocked += (
+                                _verifier.blocked
+                            )
+                            result._slow_event = {
+                                "stage": (
+                                    "program_supply_verifier_budget_exhausted"
+                                ),
+                                "case_id": trace.case_id,
+                                "requests": _verifier.requests,
+                                "reached_verifier": False,
+                            }
+                            continue
+                        result.program_supply_verifier_requests += (
+                            _verifier.requests
+                        )
+                        result.program_supply_verifier_blocked += (
+                            _verifier.blocked
+                        )
+
+                        _filtered_card, _verified_ids, _route_error = (
+                            bind_verified_program_options(
+                                _route_card, _assessment
+                            )
+                        )
+                        if _route_error is not None:
+                            result._slow_event = {
+                                **dict(_route_error),
+                                "case_id": trace.case_id,
+                                "verified_patch_ids": list(_verified_ids),
+                            }
+                            continue
+                        if _filtered_card is None:
+                            result._slow_event = {
+                                "stage": "no_verified_options",
+                                "case_id": trace.case_id,
+                                "verified_patch_ids": list(_verified_ids),
+                            }
+                            continue
+                        _decision = _assessment.decision
+                        _effective_card_builder = (
+                            lambda _episode, _card=_filtered_card: _card
+                        )
+                        _retrieved_capability_ids = list(
+                            retrieved_relevant_capability_skill_ids(
+                                _assessment, trace
+                            )
+                        )
+                        _verified_route = {
+                            "verified_patch_ids": list(_verified_ids),
+                            "relevant_capability_skill_ids": list(
+                                _assessment.relevant_capability_skill_ids
+                            ),
+                            "retrieved_relevant_capability_skill_ids": list(
+                                _retrieved_capability_ids
+                            ),
+                            "verified_choice_offered": bool(
+                                _assessment.verification.choice_offered
+                            ),
+                            "invalid_option_count": int(
+                                _assessment.verification.invalid_option_count
+                            ),
+                            "program_supply_verifier_requests": (
+                                _verifier.requests
+                            ),
+                        }
+                        _skill_body_patch = any(
+                            template == "skill_library.entries/{skill_id}.body"
+                            for template in _assessment.decision.surface_templates
+                        )
+                        if (
+                            _skill_body_patch
+                            and len(_retrieved_capability_ids) != 1
+                        ):
+                            result._slow_event = {
+                                "stage": "ambiguous_skill_patch_target",
+                                "case_id": trace.case_id,
+                                **_verified_route,
+                            }
+                            continue
+                    else:
+                        _decision = route_online_program_supply_fault(
+                            trace, ep, _route_view)
+                        _retrieved_capability_ids = [
+                            str(skill.skill_id)
+                            for skill in _route_view.skills
+                            if (getattr(skill, "skill_kind", None)
+                                .value == "capability"
+                                and skill.skill_id
+                                in tuple(trace.retrieved_skill_ids or ()))
+                        ]
+                    if (
+                        _decision.actionability == "EDITABLE_M0"
+                        and _decision.surface_templates
+                        and (
+                            slow_agent is None
+                            or controller is None
+                            or store is None
+                        )
+                    ):
+                        result._slow_event = {
+                            "stage": "slow_dependencies_unavailable",
+                            "case_id": trace.case_id,
+                            "missing": [
+                                name for name, value in (
+                                    ("slow_agent", slow_agent),
+                                    ("controller", controller),
+                                    ("store", store),
+                                ) if value is None
+                            ],
+                            **(_verified_route or {}),
+                        }
+                        continue
+                    if (
+                        _decision.actionability != "EDITABLE_M0"
+                        or not _decision.surface_templates
+                    ):
+                        _authorized_catalog = ()
+                    else:
+                        _authorized_catalog = build_single_surface_catalog(
+                            decision=_decision,
+                            parent=store.materialize(
+                                method._active_snapshot()),
+                            controller=controller,
+                            retrieved_capability_skill_ids=(
+                                _retrieved_capability_ids))
                     if not _authorized_catalog:
                         # 空 surface 集 = 路由层 ABSTAIN：不调 Slow，不
                         # 计入 slow_replay_receipts_used，不算 protocol
@@ -578,26 +1201,51 @@ def run_online_round(
                             "actionability": _decision.actionability,
                             "surface_templates": list(
                                 _decision.surface_templates),
+                            **(_verified_route or {}),
                         }
                     else:
                         # E0：Slow 调用透传合法 Operator contracts 与现有
                         # TaskContext（不再空传）。
+                        _contract_ops = {
+                            op for steps in steps_map.values()
+                            for op, _p in steps
+                        }
+                        if _verified_route is not None:
+                            _contract_ops.update(
+                                op
+                                for alternative in (
+                                    _assessment.verification.alternatives
+                                )
+                                for op, _params in alternative.steps
+                            )
                         _contracts = tuple(
                             public_operator_contract(op)
-                            for op in sorted({
-                                op for steps in steps_map.values()
-                                for op, _p in steps}))
+                            for op in sorted(_contract_ops))
+                        # SCOPE（P4U-v2）：修订面是 serving_scope 时，
+                        # Support 重验要在**修订后**的谓词下读，且谓词在本
+                        # origin 重解析——不复用探测时那份 UID 名单。未注入
+                        # resolver 时不声明该能力，调用形状与历史逐位一致。
+                        def _replay_eval(s, _mode, _scope=None):
+                            if _scope is not None and scope_resolver is not None:
+                                return executor.evaluate(
+                                    tuple(s), origin,
+                                    serving_scope=scope_resolver(_scope, origin))
+                            return executor.evaluate(tuple(s), origin)
+
+                        _replay_eval.accepts_serving_scope = (
+                            scope_resolver is not None)
                         sev = method.handle_feedback_support(
                             ep, slow_agent=slow_agent, controller=controller,
                             store=store,
                             surface_catalog=_authorized_catalog,
-                            card_builder=card_builder,
-                            evaluator=lambda s, _mode: executor.evaluate(
-                                tuple(s), origin),
+                            card_builder=_effective_card_builder,
+                            evaluator=_replay_eval,
                             fast_features=fast_features,
                             allowed_operator_contracts=_contracts,
                             confirmed_cause=_decision.cause_code,
                             task_context=getattr(request, "task_context", None))
+                        if _verified_route is not None:
+                            sev = {**sev, **_verified_route}
                         result._slow_event = sev
                         result._trigger_episode_id = ep.episode_id
                         if sev.get("stage") in ("pending", "support_rejected"):
@@ -626,6 +1274,46 @@ def run_online_round(
                                     {"op": o, "params": dict(p)}
                                     for o, p in _steps_of_patch(sev)]
                                 result._winner_steps = _steps_of_patch(sev)
+                                # SCOPE 步骤 7：PATCH 可以原子地同时改
+                                # Program 与 Scope 谓词。两者必须一起换——
+                                # 换了程序却留着旧谓词，等于用新处理去作用
+                                # 一批为旧处理挑出来的序列。缺 scope 字段
+                                # 时保留探测时的谓词，行为与历史一致。
+                                _patch_scope = _scope_of_patch(sev)
+                                # P4U-v2：谓词内容没有任何现成检查。路由表的
+                                # "单调收窄"是目标类闸门，从不看谓词；RISK_GAP
+                                # 更不在方向表里。所以一次修订是不是真收窄，
+                                # 只能在这里判。preflight 由调用方注入（与
+                                # scope_resolver 同样的注入方式——methods 层
+                                # 不反向依赖 evaluation 层）；不注入时逐位保持
+                                # 历史行为。
+                                _pf = (
+                                    dict(scope_revision_preflight(
+                                        _scope_spec, _patch_scope, origin) or {})
+                                    if (_patch_scope is not None
+                                        and scope_revision_preflight is not None)
+                                    else None)
+                                result._scope_revision_preflight = _pf
+                                if _pf is not None and not _pf.get("accepted"):
+                                    # 修订不是收窄 → 整次修订作废。不能退回原
+                                    # 谓词就发部署权：那正是刚刚被尾部预算拒掉
+                                    # 的那个配置。
+                                    result.winner_program = None
+                                    result._winner_steps = None
+                                    result.pending_patch_id = None
+                                    result._slow_event = {
+                                        **sev,
+                                        "stage": "scope_revision_refused",
+                                        "scope_revision_preflight": _pf,
+                                    }
+                                    break
+                                if _patch_scope is not None:
+                                    result._winner_serving_scope = _patch_scope
+                                    result._winner_resolved_series = (
+                                        scope_resolver(_patch_scope, origin)
+                                        if scope_resolver is not None else None)
+                                    result._winner_scope_revision = (
+                                        int(result._winner_scope_revision) + 1)
                                 break
     # Stage 3 Part 0：max-gain 比较规则的收尾——从已探 POSITIVE 的最优者
     # 铸 winner。Slow replay 若已按 E2.5-B 取得 winner（pending），不覆盖。
@@ -635,6 +1323,23 @@ def run_online_round(
             {"op": o, "params": dict(p)} for o, p in _bp_steps]
         result._winner_candidate_id = _bp_cand
         result._winner_steps = tuple(_bp_steps)
+    # P4U-v3：风险拒绝的 Slow 在这里点火——要看过本轮全部拒绝才选得了。
+    # 只有本轮没有任何候选拿到部署权时才花这一次：有 winner 说明这一轮
+    # 已经找到了可部署的策略，把 Slow 花在被拒者上就不再是"修这一轮的
+    # 故障"，而是另一件本协议没有授权的事。
+    if (not triggered and allow_slow and _risk_contexts
+            and result.winner_program is None):
+        _fire_risk_refusal_slow(
+            result=result, method=method, executor=executor, trace=trace,
+            contexts=_risk_contexts, selector=risk_refusal_selector,
+            card_builder=card_builder,
+            slow_agent=(risk_refusal_slow_agent
+                        if risk_refusal_slow_agent is not None else slow_agent),
+            controller=controller, store=store, origin=origin, budget=budget,
+            fast_features=fast_features, request=request,
+            scope_resolver=scope_resolver,
+            scope_revision_preflight=scope_revision_preflight,
+            steps_map=steps_map)
     result.abstained = result.winner_program is None
     # GROUP_FAULT 自动触发（用户裁决 2026-08-12）：失败 Episode 积累 →
     # 轻量分组（≥group_min 同算子同 sign）→ 组级 Slow（方法层
@@ -755,12 +1460,28 @@ def run_online_round(
             (p.get("gain") for p in reversed(result.actual_probed_programs)
              if p.get("kind") == "probe" and p.get("gain") is not None),
             None)
+        # SCOPE：只有真的带了谓词才把新参数传下去。Runner 与测试可以注入
+        # 只认历史签名的 method / executor，无条件传参会把它们打成 TypeError——
+        # 加法式改动的默认分支必须连**调用形状**都保持不变。
+        _scoped = result._winner_resolved_series is not None
+        _winner_evaluator = (
+            (lambda s, _mode: executor.evaluate(
+                tuple(s), origin,
+                serving_scope=result._winner_resolved_series))
+            if _scoped else
+            (lambda s, _mode: executor.evaluate(tuple(s), origin))
+        )
+        _winner_scope_kwargs = (
+            {"serving_scope": result._winner_serving_scope}
+            if result._winner_serving_scope else {}
+        )
         ev = method.handle_fast_winner(
             _winner_ep, result._winner_steps,
             controller=controller, store=store,
             card=card_builder(_winner_ep),
-            evaluator=lambda s, _mode: executor.evaluate(tuple(s), origin),
+            evaluator=_winner_evaluator,
             fast_features=fast_features,
+            **_winner_scope_kwargs,
             support_gain=_winner_gain,
             confirmed_cause="SKILL_LIBRARY_GAP")
         result._fast_skill_event = ev
@@ -837,14 +1558,39 @@ def revoke_deployed_skill(result: RoundResult, store: Any | None) -> bool:
 def open_delayed(result: RoundResult, executor: Any, *,
                  delayed_origin: int | None = None,
                  horizon: int = 48,
-                 store: Any | None = None) -> RoundResult:
+                 store: Any | None = None,
+                 scope_resolver: Callable[
+                     [Mapping[str, object], int], frozenset[str]] | None = None,
+                 ) -> RoundResult:
     """delayed 到达后（时间边界）：更新所有 Episode 的 delayed 状态 +
     匹配 episode_id 的 handle_feedback_delayed（批准 → snapshot 更新；
-    拒绝 → snapshot 不变）。"""
+    拒绝 → snapshot 不变）。
+
+    SCOPE delayed（2026-09-01）：winner 带谓词时，delayed 闸门必须在**同一个
+    Scope 下**读数。否则批准判据来自一条与将要部署的策略不同的策略——被拒的
+    序列也进了平均，而该 Skill 从不打算处理它们；这正是"程序全局施用"那条
+    已被否掉的口径。谓词按定义随 origin 重解析（结构特征本身会变），所以只有
+    拿到 ``scope_resolver`` 才限定；拿不到就逐字节走历史路径，绝不拿旧 origin
+    上解析出的序列名单冒充新读数。"""
     d_origin = delayed_origin if delayed_origin is not None \
         else result.origin + horizon
     method = result._method
     values = result._values
+    _d_scope = (
+        scope_resolver(result._winner_serving_scope, d_origin)
+        if result._winner_serving_scope and scope_resolver is not None
+        else None
+    )
+    result.delayed_serving_series = _d_scope
+    result.delayed_scope_reresolved = _d_scope is not None
+    # 加法式改动的默认分支必须连**调用形状**都保持不变：注入了只认历史签名
+    # 的 executor 的 Runner/测试，无条件传参会被打成 TypeError。
+    _at_d = (
+        (lambda s: executor.evaluate(tuple(s), d_origin,
+                                     serving_scope=_d_scope))
+        if _d_scope is not None else
+        (lambda s: executor.evaluate(tuple(s), d_origin))
+    )
     # 11/12. 先更新本轮的 Episode delayed 状态
     # E0：delayed gain None（verifier 失败/仪器失败）不得转为 0.0——
     # 保持"未评估"状态（不掩盖协议失败）。
@@ -859,7 +1605,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
             continue  # 本轮无部署——不打开任何 delayed
         if tuple(steps) != tuple(result._winner_steps):
             continue  # 非 winner 探测——不部署——不获得 delayed
-        rd = executor.evaluate(tuple(steps), d_origin)
+        rd = _at_d(steps)
         dg = (float(rd.gain) if rd.gain is not None else None)
         if dg is None:
             continue  # 未评估——不更新 delayed 状态
@@ -875,7 +1621,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
     if result._slow_event is not None \
             and result._slow_event.get("stage") == "pending":
         dev = method.handle_feedback_delayed(
-            lambda s, _mode: executor.evaluate(tuple(s), d_origin),
+            lambda s, _mode: _at_d(s),
             episode_id=result._trigger_episode_id)
         result._delayed_event = dev
         if dev.get("stage") == "approved":
@@ -884,7 +1630,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
     if result._fast_skill_event is not None \
             and result._fast_skill_event.get("stage") == "pending":
         dev = method.handle_feedback_delayed(
-            lambda s, _mode: executor.evaluate(tuple(s), d_origin),
+            lambda s, _mode: _at_d(s),
             episode_id=result._fast_skill_episode_id)
         result._delayed_event = dev
         if dev.get("stage") == "approved":
@@ -895,7 +1641,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
             and result._group_slow_event.get("stage") == "pending":
         _gid = result._group_slow_event.get("episode_id")
         dev = method.handle_feedback_delayed(
-            lambda s, _mode: executor.evaluate(tuple(s), d_origin),
+            lambda s, _mode: _at_d(s),
             episode_id=_gid)
         result._delayed_event = dev
         if dev.get("stage") == "approved":
@@ -903,7 +1649,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
                 result._group_slow_event.get("edit_id"))
     # delayed_utility = 实际 winner 的 delayed gain
     if result._winner_steps is not None:
-        wd = executor.evaluate(result._winner_steps, d_origin)
+        wd = _at_d(result._winner_steps)
         result.delayed_utility = (
             float(wd.gain) if wd.gain is not None else None)
     # P0（2026-08-15 评审裁定）：部署已有 Skill 的轮次，delayed < −M 必须
@@ -990,6 +1736,41 @@ def current_status(store: Any, method: Any, *,
     }
 
 
+def _per_series_list(per_view_gain) -> list | None:
+    """Per-series readings as a plain list, whichever shape the executor used."""
+    if per_view_gain is None:
+        return None
+    if isinstance(per_view_gain, Mapping):
+        return [float(per_view_gain[key]) for key in sorted(per_view_gain)]
+    try:
+        return [float(value) for value in per_view_gain]
+    except TypeError:
+        return None
+
+
+def _risk_profile(per_view_gain) -> dict | None:
+    """The risk summary a rejected candidate has to carry for Slow to read.
+
+    Recording only the aggregate loses exactly what a Patch would act on: which
+    fraction of series a program hurt and how badly it hurt the worst one.
+    Derived here from the same readings the gate uses, so nothing new is
+    measured and no decision is taken.
+    """
+    values = _per_series_list(per_view_gain)
+    if not values:
+        return None
+    threshold = M  # the module's material line, not a second copy of it
+    harmed = [value for value in values if value < -threshold]
+    return {
+        "series_read": len(values),
+        "harmed_count": len(harmed),
+        "harmed_fraction": len(harmed) / len(values),
+        "max_single_series_harm": -min(values) if min(values) < 0.0 else 0.0,
+        "min_per_series_gain": min(values),
+        "material_threshold": threshold,
+    }
+
+
 def _op_of(cand: str, steps: Sequence[tuple[str, Mapping[str, object]]]
            ) -> str:
     if cand.startswith("cand_skill_"):
@@ -1006,6 +1787,18 @@ def _steps_of_patch(sev: Mapping[str, Any]) -> tuple[tuple[str, dict], ...]:
     return tuple(
         (str(st["op"]), dict(st.get("params") or {}))
         for st in frozen if isinstance(st, Mapping) and st.get("op"))
+
+
+def _scope_of_patch(sev: Mapping[str, Any]) -> dict | None:
+    """PATCH 携带的修订后 Scope 谓词，没有则 None（保留探测时的谓词）。
+
+    与 ``_steps_of_patch`` 对称：Slow 修订的可能是 Workflow、可能是作用
+    范围，也可能两者同时。只存谓词，不存解析出的 UID。
+    """
+    scope = sev.get("serving_scope")
+    if not isinstance(scope, Mapping) or not scope:
+        return None
+    return dict(scope)
 
 
 def np_values(request: Any, values: Mapping[str, Any]):

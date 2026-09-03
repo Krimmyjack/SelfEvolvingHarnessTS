@@ -16,6 +16,7 @@ from .agent_core import AgentProtocolError
 from .fast_agent import TTHAFastAgent
 from .retrieval import evaluate_applicability
 from .signed_radius import MATERIAL_THRESHOLD
+from .admission_policy import decide_from_facts as _admission_from_facts
 from .experience_memory import classify_relation as _classify_relation
 
 
@@ -317,6 +318,22 @@ def _applicability_reachable(
     return True, "ok"
 
 
+
+def _serving_scope_of(proposal: object) -> dict | None:
+    """PATCH 提出的修订后 Scope 谓词，没有则 None。
+
+    Slow 修订的可能是 Workflow、可能是作用范围，也可能两者同时；只有把
+    谓词一并带进 slow_event，在线回路才能原子地换掉两者。**只取谓词**——
+    解析出的 UID 不进 Skill，也不进 PATCH。
+    """
+    new_value = getattr(proposal, "new_value", None)
+    if not isinstance(new_value, Mapping):
+        return None
+    scope = new_value.get("serving_scope")
+    if not isinstance(scope, Mapping) or not scope:
+        return None
+    return dict(scope)
+
 class TTHAMethod:
     """正常方法入口（审查 2026-08-08 接线：显式持有 Episode 集合）。
 
@@ -493,6 +510,9 @@ class TTHAMethod:
             return ev
         ev["frozen_program"] = [{"op": o, "params": dict(p)} for o, p in steps]
         ev["patch_id"] = manifest.patch_id
+        _scope = _serving_scope_of(manifest)
+        if _scope is not None:
+            ev["serving_scope"] = _scope
         # P0（rev3）：capability Skill .body PATCH 的 minimal_patch.value
         # 由 Runtime 从 typed_patch_options 白名单覆写；Slow 文本一律忽略。
         from .slow_agent import (  # noqa: PLC0415
@@ -631,6 +651,11 @@ class TTHAMethod:
         # winner 形成 Skill 的语义即"skill library gap 填充"。P2：必填，
         # 调用方必须显式给出 Runtime 授权的 cause。
         confirmed_cause: str,
+        # SCOPE（2026-09-01）：Skill 只携带**部署可见特征谓词**。解析出的
+        # UID 集合不进 Skill——那些名字在下一个 Target 不存在，存进去会让
+        # Skill 静默解析成空集，看起来像一次合法弃权。None 时逐字段与历史
+        # 相同（宽 Scope）。
+        serving_scope: Mapping[str, object] | None = None,
     ) -> dict[str, Any]:
         """E2.5-B（用户裁决 2026-08-12）：Fast 正向 winner → Target-local
         Draft Skill 生命周期——**精确使用 trace.candidate_program_steps**
@@ -656,6 +681,8 @@ class TTHAMethod:
                 "skill_id": _fast_winner_skill_id(episode),
                 "skill_kind": "capability",
                 "revision": 1,
+                **({"serving_scope": dict(serving_scope)}
+                   if serving_scope else {}),
                 "body": "Frozen program steps: " + _json.dumps(
                     [{"op": o, "params": dict(p)} for o, p in steps]),
                 "observable_applicability": dict(applicability),
@@ -750,7 +777,13 @@ class TTHAMethod:
                 consumer_id=_consumer)
         ev["support_relation"] = support_facts["relation"]
         ev["support_evidence"] = dict(support_facts)
-        if support_facts["relation"] != "POSITIVE":
+        # P4b：持久化门与 online_loop 的执行权门走同一个 admission_policy。
+        # strict 下 admitted ⟺ relation == POSITIVE，与上一版逐位相同；
+        # bounded 下预算内的 CONFLICT 也能形成 pending——否则候选获准执行却
+        # 无法持久化，下一 origin 没有 Skill 可复用，RQ3 依旧不可达。
+        _support_admission = _admission_from_facts(support_facts)
+        ev["support_admission"] = _support_admission.to_dict()
+        if not _support_admission.admitted:
             ev["stage"] = "support_rejected"
             ev["support_reject_reason"] = "relation_%s" % str(
                 support_facts["relation"]).lower()
@@ -975,6 +1008,9 @@ class TTHAMethod:
         ev["frozen_program"] = [{"op": o, "params": dict(p)}
                                 for o, p in steps]
         ev["patch_id"] = proposed.patch_id
+        _scope = _serving_scope_of(proposed)
+        if _scope is not None:
+            ev["serving_scope"] = _scope
         # Runtime-owned 绑定（B2 + P1——同 handle_feedback_support）
         if proposed.new_value is not None and "body" in proposed.new_value:
             nv = dict(proposed.new_value)
@@ -1133,6 +1169,9 @@ class TTHAMethod:
             return ev
         ev["frozen_program"] = [{"op": o, "params": dict(p)} for o, p in steps]
         ev["patch_id"] = manifest.patch_id
+        _scope = _serving_scope_of(manifest)
+        if _scope is not None:
+            ev["serving_scope"] = _scope
         # P0（rev3）：capability Skill .body PATCH 由 Runtime 覆写 body。
         from .slow_agent import (  # noqa: PLC0415
             bind_frozen_patch_program,
@@ -1209,7 +1248,17 @@ class TTHAMethod:
             ev["error"] = f"{type(exc).__name__}: {exc}"
             return ev
         # ---- Support replay（沿冻结 steps）----
-        support = evaluator(steps, 0)
+        # SCOPE（P4U-v2）：当修订的内容**就是** serving_scope 时，Support
+        # 重验必须在修订后的谓词下读。照历史调用形状 evaluator(steps, 0)
+        # 去读，复现的恰恰是刚被尾部预算拒掉的那个全局配置——修订于是
+        # 永远无法证明自己，读数还会被记成"Slow 提不出有效修订"。
+        # 历史 evaluator 只接受 (steps, mode)，所以只有显式声明能接 scope
+        # 的调用方才拿得到它；未声明者的调用形状逐位不变。
+        if _scope is not None and getattr(
+                evaluator, "accepts_serving_scope", False):
+            support = evaluator(steps, 0, _scope)
+        else:
+            support = evaluator(steps, 0)
         sg = (float(support.gain) if support.gain is not None else None)
         ev["support_gain"] = sg
         ev["support_passed"] = bool(support.verification.passed)
@@ -1481,7 +1530,12 @@ class TTHAMethod:
         )
         ev["delayed_relation"] = facts["relation"]
         ev["delayed_evidence"] = dict(facts)
-        if facts["relation"] != "POSITIVE":
+        # P4b：独立 delayed 批准门同源（§1 规则的 Support-B 半边）。strict 下
+        # 与上一版逐位相同；bounded 下预算内的 delayed CONFLICT 才批准，反号
+        # 与越界（受害比例或最坏单序列损失出界）仍然丢弃 pending。
+        _delayed_admission = _admission_from_facts(facts)
+        ev["delayed_admission"] = _delayed_admission.to_dict()
+        if not _delayed_admission.admitted:
             ev["stage"] = "delayed_rejected"
             ev["delayed_reject_reason"] = "relation_%s" % str(
                 facts["relation"]).lower()

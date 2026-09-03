@@ -195,6 +195,39 @@ class ScopeExecutor:
 
     def verify(self, steps: Sequence[tuple[str, Mapping[str, object]]],
                origin: int) -> WindowVerification:
+        return self._verify(
+            steps,
+            origin,
+            collect_behavior_hashes=True,
+            collect_program_supply_values=False,
+        )
+
+    def verify_without_behavior_hashes(
+        self,
+        steps: Sequence[tuple[str, Mapping[str, object]]],
+        origin: int,
+    ) -> WindowVerification:
+        """Run the same mechanical verifier without candidate SHA output.
+
+        Program-supply routing consumes the explicit legality/effect fields and
+        therefore must not create per-candidate hashes.  The historical
+        ``verify`` surface is kept byte-compatible for existing callers.
+        """
+        return self._verify(
+            steps,
+            origin,
+            collect_behavior_hashes=False,
+            collect_program_supply_values=True,
+        )
+
+    def _verify(
+        self,
+        steps: Sequence[tuple[str, Mapping[str, object]]],
+        origin: int,
+        *,
+        collect_behavior_hashes: bool,
+        collect_program_supply_values: bool,
+    ) -> WindowVerification:
         """对**实际将执行的每个训练窗口**独立 verify_candidate；保持 H0
         max_modified_fraction（0.35）。窗口即候选作用区域：inspected_regions
         覆盖整个窗口，窗口外修改不在此协议内（Workflow 只在窗口上执行）。
@@ -217,6 +250,7 @@ class ScopeExecutor:
         rejected: list[dict[str, Any]] = []
         checked = 0
         behavior_hashes: list[str] = []
+        program_supply_values: list[np.ndarray | None] = []
         modified_flags: list[bool] = []
         identity_equivalent_flags: list[bool] = []
         window_fractions: list[float] = []
@@ -233,10 +267,19 @@ class ScopeExecutor:
                 require_finite_output=False,
             )
             prepared = artifact.prepared_values
-            behavior_hashes.append(
-                hashlib.sha256(np.asarray(prepared).tobytes(order="C")).hexdigest()
-                if prepared is not None else ""
-            )
+            if collect_behavior_hashes:
+                behavior_hashes.append(
+                    hashlib.sha256(
+                        np.asarray(prepared).tobytes(order="C")
+                    ).hexdigest()
+                    if prepared is not None else ""
+                )
+            if collect_program_supply_values:
+                program_supply_values.append(
+                    None
+                    if prepared is None
+                    else np.asarray(prepared).copy()
+                )
             modified_flags.append(bool(artifact.modified_indices))
             identity_equivalent_flags.append(
                 artifact.receipt.effect_equivalent_to_identity
@@ -259,7 +302,7 @@ class ScopeExecutor:
                 "cohort_modified_fraction": cohort_fraction,
                 "maximum_modified_fraction": self.max_modified_fraction,
             })
-        return WindowVerification(
+        result = WindowVerification(
             passed=not rejected,
             checked_windows=checked,
             rejected_windows=rejected,
@@ -273,6 +316,14 @@ class ScopeExecutor:
             cohort_total_points=total_points,
             cohort_modified_fraction=cohort_fraction,
         )
+        if collect_program_supply_values:
+            # Transient verifier evidence only.  It is deliberately neither a
+            # dataclass/report field nor a hash and is discarded with this
+            # in-memory routing assessment.
+            result._program_supply_prepared_values = tuple(
+                program_supply_values
+            )
+        return result
 
     # -- 评估（v6._evaluate 协议：逐窗口执行 + cohort Ridge）------------------
 
@@ -286,11 +337,19 @@ class ScopeExecutor:
                 "per_view_smase": self._per_view_cache[origin]}
 
     def evaluate(self, steps: Sequence[tuple[str, Mapping[str, object]]],
-                 origin: int) -> SupportReceipt:
+                 origin: int,
+                 serving_scope: frozenset[str] | set[str] | None = None,
+                 ) -> SupportReceipt:
         """同一组件：窗口 verifier → 逐窗口执行 → cohort Support receipt。
 
         gain = baseline_mean_smase − candidate_mean_smase（处理后训练数据 →
         原始未来评价，与 V1 gain 语义一致）。
+
+        ``serving_scope`` 为 None 时行为与历史逐字节相同：程序只准备训练语料，
+        评价 context 保持 raw。给出 serving 序列集合时改走双管线——选中序列走
+        ``prepared train → program model → prepared serve context``，未选序列走
+        ``raw train → raw model → raw serve context``，因此未选序列的预测与
+        Static 逐位相等。代价是第二次 Consumer fit。
         """
         verification = self.verify(steps, origin)
         if not verification.passed:
@@ -301,9 +360,19 @@ class ScopeExecutor:
 
         try:
             baseline = self._baseline(origin)
-            candidate_result = self._evaluate(
-                self.roster, self.values, self._compiled(steps), self.config,
-                origin=origin)
+            if serving_scope is None:
+                candidate_result = self._evaluate(
+                    self.roster, self.values, self._compiled(steps), self.config,
+                    origin=origin)
+            else:
+                from evaluation.main_protocol_p4.scoped_serving_evaluator import (
+                    scoped_evaluate,
+                )
+
+                candidate_result = scoped_evaluate(
+                    self.roster, self.values, self._compiled(steps), self.config,
+                    origin=origin, scope=frozenset(serving_scope),
+                    serving_mode="scoped")
         except Exception as exc:  # 仪器失败不伪装成负经验
             return SupportReceipt(
                 origin=origin, verification=verification, gain=None,

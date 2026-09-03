@@ -731,6 +731,49 @@ class EditController:
         if not isinstance(document, dict):
             raise ValueError("editable JSON surface must have an object root")
         updated = _pointer_set(document, definition.json_pointer, replacement)
+        if (
+            definition.surface_template_id
+            == "skill_library.entries/{skill_id}.body"
+        ):
+            revision = document.get("revision")
+            if (
+                isinstance(revision, bool)
+                or not isinstance(revision, int)
+                or revision < 1
+            ):
+                raise ValueError(
+                    "learned Skill body PATCH requires a positive revision"
+                )
+            # Version bookkeeping belongs to this same atomic Program-body
+            # edit; it is not a second surface or an Agent-selected value.
+            updated["revision"] = revision + 1
+            # A frozen capability Program is represented by its executable
+            # body plus two machine-owned mirrors.  Leaving either mirror at
+            # the old operator would produce a self-contradictory revision:
+            # Fast executes ``body`` while inventory/risk diagnostics report
+            # another Program.  Slow still edits exactly one Program surface;
+            # these values are deterministically derived from the Runtime-
+            # bound body and are not additional Agent-selected surfaces.
+            from SelfEvolvingHarnessTS.methods.ttha.fast_agent import (  # noqa: PLC0415
+                _parse_frozen_steps,
+            )
+
+            parsed_steps = _parse_frozen_steps(str(replacement))
+            if parsed_steps is not None:
+                updated["allowed_tools"] = list(
+                    dict.fromkeys(str(op) for op, _params in parsed_steps)
+                )
+                risk_guards = dict(updated.get("risk_guards") or {})
+                frozen_plan = risk_guards.get("frozen_plan")
+                if (
+                    isinstance(frozen_plan, Mapping)
+                    and "program" in frozen_plan
+                    and len(parsed_steps) == 1
+                ):
+                    synchronized_plan = dict(frozen_plan)
+                    synchronized_plan["program"] = str(parsed_steps[0][0])
+                    risk_guards["frozen_plan"] = synchronized_plan
+                    updated["risk_guards"] = risk_guards
         if definition.surface_template_id == "candidate_policy.agent_program_slots":
             if isinstance(replacement, bool) or not isinstance(replacement, int):
                 raise ValueError("agent_program_slots must be an integer")

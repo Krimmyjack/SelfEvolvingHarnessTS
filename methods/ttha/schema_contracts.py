@@ -24,6 +24,10 @@ _STAGE_SCHEMA_FILES = {
     "fast_propose_v1": "fast_propose_v1.json",
     "fast_select_v1": "fast_select_v1.json",
     "slow_edit_v1": "slow_edit_v1.json",
+    # P4U-v3：风险拒绝路径上 Slow 只写一条 Scope clause，manifest 骨架由
+    # Runtime 装配。自足 schema，无注入点——它不描述 manifest，所以
+    # slow_edit_v1 的四处 $defs 注入与它无关。
+    "slow_scope_clause_v1": "slow_scope_clause_v1.json",
 }
 
 

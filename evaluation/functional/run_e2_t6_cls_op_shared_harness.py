@@ -616,6 +616,31 @@ def _card_builder(_episode: object) -> Mapping[str, object]:
 # =========================================================================== #
 # agents
 # =========================================================================== #
+def _budget_call_purpose(request: Any) -> str:
+    """Classify one stage request without inspecting private model output."""
+    if int(getattr(request, "call_index", 0) or 0) == 0:
+        return "stage_initial"
+    messages = tuple(getattr(request, "messages", ()) or ())
+    if not messages:
+        return "stage_followup"
+    last = messages[-1]
+    content = last.get("content") if isinstance(last, Mapping) else None
+    if not isinstance(content, str):
+        return "stage_followup"
+    try:
+        payload = json.loads(content)
+    except (TypeError, ValueError):
+        return "stage_followup"
+    if not isinstance(payload, Mapping):
+        return "stage_followup"
+    schema_version = str(payload.get("schema_version") or "")
+    if schema_version == "tool-result/1":
+        return "tool_followup"
+    if schema_version == "stage-validation-error/2":
+        return "validation_retry"
+    return "stage_followup"
+
+
 class _CountingBackend:
     """One shared call ledger, however many backend objects sit behind it.
 
@@ -627,34 +652,161 @@ class _CountingBackend:
     a new inner object per arm and this ledger keeps the single count.
     """
 
-    def __init__(self, factory: Any, cap: int, *, share_inner: bool) -> None:
+    def __init__(
+        self,
+        factory: Any,
+        cap: int,
+        *,
+        share_inner: bool,
+        resume_state: Mapping[str, Any] | None = None,
+        on_budget_change: Any = None,
+    ) -> None:
         self._factory = factory
         self._share = bool(share_inner)
-        self._shared = factory() if share_inner else None
         self.cap = int(cap)
-        self.calls = 0
+        if self.cap < 1:
+            raise ValueError("LLM cap must be positive")
+        restored = dict(resume_state or {})
+        self.calls = int(restored.get("global_calls") or 0)
+        self._scope_calls = {
+            str(scope): int(count)
+            for scope, count in dict(restored.get("scope_calls") or {}).items()
+        }
+        self._scope_caps = {
+            str(scope): int(limit)
+            for scope, limit in dict(restored.get("scope_caps") or {}).items()
+        }
+        self.call_records = [
+            dict(record) for record in (restored.get("call_records") or ())
+        ]
+        self.blocked_records = [
+            dict(record) for record in (restored.get("blocked_records") or ())
+        ]
+        if (
+            self.calls < 0
+            or self.calls > self.cap
+            or any(count < 0 for count in self._scope_calls.values())
+            or sum(self._scope_calls.values()) > self.calls
+        ):
+            raise ValueError("invalid resumed LLM budget state")
+        self._on_budget_change = on_budget_change
+        self._next_scope_index = 0
+        self._shared = factory() if share_inner else None
+        if self._shared is not None and hasattr(self._shared, "calls"):
+            # Keep the inner global guard aligned after a process resume.
+            self._shared.calls = self.calls
         self.first_returned_model: str | None = None
         self._live: Any = None
 
-    def new_arm_backend(self) -> Any:
+    def budget_state(self) -> dict[str, Any]:
+        return {
+            "global_cap": self.cap,
+            "global_calls": self.calls,
+            "scope_calls": dict(self._scope_calls),
+            "scope_caps": dict(self._scope_caps),
+            "call_records": [dict(record) for record in self.call_records],
+            "blocked_records": [
+                dict(record) for record in self.blocked_records
+            ],
+        }
+
+    def _notify(self) -> None:
+        if self._on_budget_change is not None:
+            self._on_budget_change(self.budget_state())
+
+    def new_arm_backend(
+        self,
+        *,
+        scope_id: str | None = None,
+        maximum_calls: int | None = None,
+    ) -> Any:
+        if scope_id is None:
+            self._next_scope_index += 1
+            scope_id = "legacy-arm-%d" % self._next_scope_index
+        scope_id = str(scope_id)
+        if not scope_id:
+            raise ValueError("LLM budget scope_id must be non-empty")
+        limit = None if maximum_calls is None else int(maximum_calls)
+        if limit is not None and limit < 1:
+            raise ValueError("per-scope LLM cap must be positive")
+        prior_limit = self._scope_caps.get(scope_id)
+        if prior_limit is not None and limit is not None and prior_limit != limit:
+            raise ValueError("resumed LLM scope cap changed")
+        if prior_limit is not None and limit is None:
+            limit = prior_limit
+        if limit is not None:
+            self._scope_caps[scope_id] = limit
         self._live = self._shared if self._share else self._factory()
-        return _ArmBackend(self._live, self)
+        return _ArmBackend(self._live, self, scope_id, limit)
 
 
 class _ArmBackend:
-    def __init__(self, inner: Any, ledger: _CountingBackend) -> None:
+    def __init__(
+        self,
+        inner: Any,
+        ledger: _CountingBackend,
+        scope_id: str,
+        maximum_calls: int | None,
+    ) -> None:
         self._inner = inner
         self._ledger = ledger
+        self._scope_id = scope_id
+        self._maximum_calls = maximum_calls
 
     @property
     def calls(self) -> int:
         return self._ledger.calls
 
     def complete(self, request: Any) -> Any:
+        scope_used = int(self._ledger._scope_calls.get(self._scope_id, 0))
+        record = {
+            "scope_id": self._scope_id,
+            "scope_call": scope_used + 1,
+            "role": str(getattr(request, "role", "") or ""),
+            "stage": str(getattr(request, "stage", "") or ""),
+            "stage_call_index": int(
+                getattr(request, "call_index", 0) or 0
+            ),
+            "purpose": _budget_call_purpose(request),
+        }
+        if self._maximum_calls is not None and scope_used >= self._maximum_calls:
+            self._ledger.blocked_records.append(
+                {
+                    **record,
+                    "reached_backend": False,
+                    "budget_charged": False,
+                }
+            )
+            self._ledger._notify()
+            raise Stop(
+                "LLM_CELL_BUDGET_EXHAUSTED",
+                "%s reached frozen cap %d before backend call"
+                % (self._scope_id, self._maximum_calls),
+            )
         if self._ledger.calls >= self._ledger.cap:
+            self._ledger.blocked_records.append(
+                {
+                    **record,
+                    "reached_backend": False,
+                    "budget_charged": False,
+                }
+            )
+            self._ledger._notify()
             raise Stop("LLM_BUDGET_EXCEEDED",
                        "LLM cap %d reached" % self._ledger.cap)
         self._ledger.calls += 1
+        self._ledger._scope_calls[self._scope_id] = scope_used + 1
+        self._ledger.call_records.append(
+            {
+                **record,
+                "global_call": self._ledger.calls,
+                "reached_backend": True,
+                "budget_charged": True,
+            }
+        )
+        # Persist before entering the relay so resume cannot grant this call
+        # to the same scope a second time after a process loss.
+        self._ledger._notify()
         response = self._inner.complete(request)
         meta = getattr(response, "provider_metadata", None) or {}
         returned = meta.get("returned_model")
@@ -663,20 +815,39 @@ class _ArmBackend:
         return response
 
 
-def _live_backend(cap: int) -> _CountingBackend:
+def _live_backend(
+    cap: int,
+    *,
+    resume_state: Mapping[str, Any] | None = None,
+    on_budget_change: Any = None,
+) -> _CountingBackend:
     from evaluation.functional.task_episode_harness.agentic.runner import (
         _default_backend_factory,
     )
-    return _CountingBackend(lambda: _default_backend_factory(cap), cap,
-                            share_inner=True)
+    return _CountingBackend(
+        lambda: _default_backend_factory(cap),
+        cap,
+        share_inner=True,
+        resume_state=resume_state,
+        on_budget_change=on_budget_change,
+    )
 
 
-def _scripted_backend(cap: int) -> _CountingBackend:
+def _scripted_backend(
+    cap: int,
+    *,
+    resume_state: Mapping[str, Any] | None = None,
+    on_budget_change: Any = None,
+) -> _CountingBackend:
     return _CountingBackend(
         lambda: sealed.SealedProbeBackend(
             explore=True, operators=tuple(SMOKE_OPERATORS),
             max_propose_candidates=2),
-        cap, share_inner=False)
+        cap,
+        share_inner=False,
+        resume_state=resume_state,
+        on_budget_change=on_budget_change,
+    )
 
 
 def _live_agent(block: Any, backend: Any) -> Any:

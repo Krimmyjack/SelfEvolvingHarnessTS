@@ -1,6 +1,18 @@
-# 继任主线恢复提示(2026-08-22)
+# 继任主线恢复提示（2026-08-22 历史快照）
 
-把本文件整段贴给继任"大脑"(sol 或新会话)即可无损接手。
+> **状态：OBSOLETE FOR CURRENT ROUTING。** 不得再把本文件整段贴给继任 Agent
+> 作为当前任务书。当前权威依次为仓库 `AGENTS.md`、
+> `docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`、
+> `docs/ROADMAP_POST_V1_2026-08-22.md` 的顶部“当前活动路线”，以及逐轮台账。
+>
+> 截至 2026-08-24：#42l 已收口，#43 M0-C 在 Yahoo 已曝光 24 条 × 三个 AD
+> Consumer × 当前五清洗程序上未确认预注册翻转或安全 headroom。当前下一门为
+> #44a：在受控 held-in 污染上先验证真实 repair 效应与反馈可读性；通过后才进入
+> 合同因果、Experience replay 和 41 条 sealed 验收。Yahoo A1 为 67 文件、roster
+> 65，其中 24 条已曝光、41 条 sealed。最终产品仍是 A5（跨域积累 + Target
+> held-in 多轮校准）。
+
+## 以下为 2026-08-22 历史内容（仅供考古）
 
 ---
 
