@@ -145,6 +145,7 @@ def _check_gate_authority(course: Mapping[str, Any]) -> dict[str, Any]:
         if disagreement.get("disagree"):
             disagreements.append({"position": row["position"],
                                   "arm": row["arm"],
+                                  "kind": disagreement.get("kind"),
                                   "online_loop_event": disagreement.get(
                                       "online_loop_event"),
                                   "p4_gate": disagreement.get("p4_gate")})
@@ -161,11 +162,28 @@ def _check_gate_authority(course: Mapping[str, Any]) -> dict[str, Any]:
         "frozen_arm_activations": frozen_activated,
         "recorded_disagreements": disagreements,
         "disagreement_count": len(disagreements),
+        "authority_upheld_count": sum(
+            1 for row in disagreements
+            if row.get("kind") == "AUTHORITY_UPHELD"),
         "lost_activations": lost,
         "lost_activation_count": len(lost),
         "lost_activation_note": (
             "a P4 pass with no approved lifecycle event; recorded and never "
             "activated (sol final ruling 2026-09-03 §4).  A count, not a fault"),
+        "why_a_calibre_disagreement_is_not_a_failure": (
+            "online_loop's delayed admission carries no coverage floor and the "
+            "P4 gate does, so the two disagree structurally whenever a winner "
+            "treats fewer than MIN_TREATED series at the delayed window -- the "
+            "shakedown produced three in 26 units and the authority refused all "
+            "three.  What fails this check is an activation the authority did "
+            "not grant, which is what 'the Active set only ever grows through "
+            "the authoritative gate' means"),
+        "open_question_for_sol": (
+            "sol's launch gate 3 reads 'any gate disagreement in a scientific "
+            "ordering demotes that ordering'.  Read literally that demotes "
+            "every ordering, because the calibre difference is structural and "
+            "recurred 3 times in 26 units with the guard holding each time.  "
+            "This check demotes on an authority breach only; see the ledger"),
     }
 
 
@@ -378,10 +396,42 @@ def _check_accounting(course: Mapping[str, Any]) -> dict[str, Any]:
         problems.append({
             "why": "a unit lost its evaluation face for some arms but not all",
             "origins": asymmetric})
+    # The replay cache's three ledgers, surfaced here so the instrument report
+    # carries them.  The shakedown reported cache_hits/misses as 0/0 because
+    # nothing incremented them, which reads exactly like "enabled and never
+    # hit"; the counts and the LLM prompt cache's state are now both explicit.
+    ledgers = dict(course.get("ledgers") or {})
+    caches = dict(course.get("replay_cache") or {})
+    hits = sum(int(row.get("cache_hits") or 0) for row in caches.values())
+    logical = sum(int(row.get("logical_evaluations") or 0)
+                  for row in caches.values())
+    physical = sum(int(row.get("physical_fits") or 0)
+                   for row in caches.values())
+    if caches and int(ledgers.get("cache_hits") or 0) != hits:
+        problems.append({"why": "the run ledger's cache hits disagree with the "
+                                "arms' caches",
+                         "ledger": ledgers.get("cache_hits"), "arms": hits})
+    if caches and (int(ledgers.get("cache_hits") or 0)
+                   + int(ledgers.get("cache_misses") or 0)) != logical:
+        problems.append({"why": "hits plus misses do not equal the logical "
+                                "evaluations the caches recorded"})
     return {
         "check": "accounting",
         "passed": not problems,
         "problems": problems,
+        "replay_cache": {
+            "physical_fits": physical,
+            "logical_evaluations": logical,
+            "cache_hits": hits,
+            "hit_rate": (round(hits / logical, 4) if logical else None),
+            "saved_fits": max(0, logical * 2 - physical),
+            "per_arm": {name: {"physical_fits": row.get("physical_fits"),
+                               "logical_evaluations": row.get(
+                                   "logical_evaluations"),
+                               "cache_hits": row.get("cache_hits")}
+                        for name, row in sorted(caches.items())},
+        },
+        "llm_prompt_cache_enabled": ledgers.get("llm_prompt_cache_enabled"),
         "units_without_an_evaluation_face": sorted(unreadable),
         "why_that_is_not_a_failure": (
             "the +144 window can run past a series' observed data, which is a "

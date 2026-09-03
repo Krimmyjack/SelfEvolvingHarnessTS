@@ -76,6 +76,11 @@ FACE = "support_a"
 DELAYED_OFFSET = 48
 EVALUATION_OFFSET = contract.EVALUATION_FACE["offset"]
 
+#: The one Task/Consumer HEC-1 runs.  Named once so the census key, the bank
+#: rows and the lineage map cannot disagree about what the Task half of the key
+#: is.
+TASK_CONSUMER_KEY = "forecast|pooled-ridge-a1|sMASE"
+
 #: A well-formed origin that resolves to nothing.  ``TTHAAgentCore`` validates
 #: the URL shape before the first stage runs, so the offline path cannot simply
 #: pass a word; and ``.invalid`` is reserved by RFC 2606, so if a request ever
@@ -90,6 +95,13 @@ FITS_PER_SCORED_FACE = 3
 
 #: Faces scored per unit-arm: the delayed gate and the evaluation face.
 SCORED_FACES_PER_CELL = 2
+
+#: What one cell costs a replay screen **through the cache**: a single
+#: ``scoped_evaluate`` call, which fits the raw and the program model and
+#: returns both prediction sets.  Measured from ``consumer_fits``, not assumed,
+#: and lower than ``FITS_PER_SCORED_FACE`` because the cached path needs no
+#: separate Static reference -- the raw vector is already in the entry.
+CACHE_FITS_PER_CELL = 2
 
 #: The classification every Fast call gets, so a zero-candidate round can say
 #: which of four very different things happened.  "Abstained with a reason" is
@@ -137,10 +149,23 @@ class Ledgers:
             "shadow_fits": self.shadow_fits,
             "course_fits": self.course_fits,
             "baseline_fits": self.baseline_fits,
+            # These count the **replay prediction cache** (arm x cell x face x
+            # Consumer x Program), aggregated over the online arms.  The
+            # shakedown reported 0/0 because nothing ever incremented them,
+            # which reads identically to "enabled and never hit" -- so the LLM
+            # prompt cache's state is stated separately rather than inferred
+            # from a zero.
             "cache_hits": self.cache_hits,
             "cache_misses": self.cache_misses,
             "cache_hit_rate": (round(self.cache_hits / total, 4)
                                if total else None),
+            "cache_counts": "the replay prediction cache",
+            "llm_prompt_cache_enabled": False,
+            "why_no_llm_prompt_cache": (
+                "wiring CachedAgentBackend would change what the arms are "
+                "charged for and how their proposals diverge; it is not "
+                "enabled for HEC-1 and its absence is recorded rather than "
+                "left as a zero that looks like a miss rate"),
             "wall_seconds": round(self.wall_seconds, 1),
         }
 
@@ -328,6 +353,172 @@ def _policy_reading(ctx: UnitContext, origin: int,
     }
 
 
+class ReplayPredictionCache:
+    """Fit each (cell, face, Consumer, Program) once; let Scope only re-mask.
+
+    Why this is exact rather than an approximation
+    ----------------------------------------------
+    In ``scoped_evaluate`` neither model depends on the Scope.  The raw model is
+    fitted on the raw training rows and the program model on the *prepared*
+    training rows -- all of them, whatever the Scope selects -- and both predict
+    every served series.  The Scope enters at one line:
+
+        prediction = where(in_scope, program_prediction, raw_prediction)
+
+    and each series' loss is computed from its own prediction row alone.  So a
+    series' scored value under any Scope is one of exactly two numbers that were
+    already computed, and selecting between them reproduces the full evaluation
+    bit for bit.  That is what makes a cache legitimate here instead of a
+    shortcut: nothing is re-derived, only re-selected.
+
+    The one Scope-dependent thing is legality.  Preparing a served context can
+    flatten it, and ``scoped_evaluate`` raises only when such a series is *in*
+    the Scope.  The degenerate set is therefore recorded with the entry and the
+    original rule is re-applied on every query, so a Scope that reaches a
+    degenerate series is refused exactly as it would have been.
+
+    What the key does not contain
+    -----------------------------
+    The Scope, deliberately -- re-masking is the whole point.  The arm **is** in
+    the key: a cache shared between arms would let one arm's fits pay for
+    another's reading, and the arms are the contrast.  So is the face origin, so
+    is the Consumer configuration, and so is the typed Program with its
+    parameters.
+
+    Three ledgers, because they answer three different questions: how much
+    Consumer time was actually spent (``physical_fits``), how many readings the
+    protocol took (``logical_evaluations``), and how much the cache saved
+    (``cache_hits``).
+    """
+
+    def __init__(self, arm_name: str) -> None:
+        self.arm = str(arm_name)
+        self._entries: dict[tuple, dict[str, Any]] = {}
+        self.physical_fits = 0
+        self.logical_evaluations = 0
+        self.cache_hits = 0
+
+    @staticmethod
+    def _consumer_signature(config: Mapping[str, Any]) -> str:
+        return json.dumps(
+            {key: config.get(key) for key in
+             ("dataset_id", "period", "support_origin", "selection_origin")},
+            sort_keys=True, default=str)
+
+    def key(self, unit: Mapping[str, Any], face_origin: int,
+            config: Mapping[str, Any], steps: Sequence[tuple]) -> tuple:
+        return (
+            self.arm,
+            json.dumps(unit, sort_keys=True, default=str),
+            int(face_origin),
+            self._consumer_signature(config),
+            outer_loop._program_signature(
+                [{"op": op, "params": dict(params)} for op, params in steps]),
+        )
+
+    def _build(self, ctx: "UnitContext", origin: int,
+               steps: Sequence[tuple]) -> dict[str, Any]:
+        """Two fits, once: the raw model and the program model on this cell."""
+        at = ctx.cell_at(origin)
+        config = forecast_p4._config(origin)
+        roster = at.roster(FACE)
+        executor = _executor(roster, at.values, config)
+        verified = executor.verify(tuple(steps), int(origin)).passed
+        if not verified:
+            return {"verifier_passed": False, "eval_uids": list(ctx.eval_uids)}
+
+        compiled = executor._compiled(tuple(steps))
+        # Which served series the program would flatten.  Computed the same way
+        # scoped_evaluate computes it, so the refusal rule is identical.
+        degenerate = []
+        for uid in ctx.eval_uids:
+            raw = np.asarray(at.values[uid], dtype=np.float64)
+            window = raw[int(origin) - scoped.CONTEXT_LENGTH:int(origin)]
+            served, _moved, _trace = scoped._prepare(window, compiled)
+            _c, _s, method = scoped.forecast_runtime._center_scale(np, served)
+            if method == "scale_floor_fallback":
+                degenerate.append(uid)
+        legal = frozenset(uid for uid in ctx.eval_uids if uid not in degenerate)
+        reading = _guarded(lambda: scoped.scoped_evaluate(
+            roster, at.values, compiled, config, origin=int(origin),
+            scope=legal))
+        self.physical_fits += int(reading["consumer_fits"])
+        return {
+            "verifier_passed": True,
+            "eval_uids": list(ctx.eval_uids),
+            "raw_per_view": [float(v) for v in reading["static_per_view_smase"]],
+            # Program values are defined only for the series the program may
+            # legally treat; a degenerate one can never be in a legal Scope.
+            "program_per_view": [float(v) for v in reading["per_view_smase"]],
+            "degenerate_uids": list(degenerate),
+            "consumer_fits": int(reading["consumer_fits"]),
+        }
+
+    def reading(self, ctx: "UnitContext", origin: int,
+                steps: Sequence[tuple] | None,
+                resolved: frozenset[str] | None) -> dict[str, Any]:
+        """A ``_policy_reading``-shaped result, re-masked from cached models."""
+        self.logical_evaluations += 1
+        key = self.key(ctx.unit, origin, forecast_p4._config(origin),
+                       steps or ())
+        entry = self._entries.get(key)
+        if entry is None:
+            entry = self._build(ctx, origin, steps or ())
+            self._entries[key] = entry
+        else:
+            self.cache_hits += 1
+        if not entry.get("verifier_passed"):
+            raise UnitFault("WINDOW_VERIFIER_REJECTED at origin %d" % origin)
+
+        selected = set(resolved or ())
+        reached = sorted(selected & set(entry["degenerate_uids"]))
+        if reached:
+            raise UnitFault(
+                "SERVING_CONTEXT_DEGENERATE: preparing the served context "
+                "flattened %d scoped series (%s)"
+                % (len(reached), ", ".join(reached[:6])))
+
+        uids = entry["eval_uids"]
+        raw = np.asarray(entry["raw_per_view"], dtype=np.float64)
+        program = np.asarray(entry["program_per_view"], dtype=np.float64)
+        mask = np.array([uid in selected for uid in uids], dtype=bool)
+        per_view = np.where(mask, program, raw)
+        gains = raw - per_view
+        material = contract.RISK["material"]
+        return {
+            "identity": not selected,
+            "treated": int(mask.sum()),
+            "served": len(uids),
+            "per_series_gain": {uid: round(float(value), 6)
+                                for uid, value in zip(uids, gains)},
+            "aggregate_gain": round(float(gains.mean()), 6),
+            "harmed_fraction": round(float((gains < -material).mean()), 4),
+            "max_single_series_harm": round(max(0.0, float(-gains.min())), 6),
+            "consumer_fits": 0,   # billed once, at build time
+            "mean_smase": float(per_view.mean()),
+            "static_mean_smase": float(raw.mean()),
+        }
+
+    def to_dict(self) -> dict[str, Any]:
+        total = self.logical_evaluations
+        return {
+            "arm": self.arm,
+            "entries": len(self._entries),
+            "physical_fits": self.physical_fits,
+            "logical_evaluations": total,
+            "cache_hits": self.cache_hits,
+            "hit_rate": (round(self.cache_hits / total, 4) if total else None),
+            "key": ["arm", "unit", "face_origin", "consumer_config",
+                    "typed_program"],
+            "scope_is_not_in_the_key": (
+                "re-masking is the point; both models are Scope-independent and "
+                "each series' loss depends only on its own prediction row"
+            ),
+            "never_shared": ["across arms", "across Consumers", "with future "
+                             "cells"],
+        }
+
+
 class FaceNotEvaluable(UnitFault):
     """This window has no observed truth to score against, for any arm.
 
@@ -379,30 +570,135 @@ def authoritative_gate(reading: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+#: The two ways the authoritative gate and the lifecycle event can differ, which
+#: are not the same event and must not be counted as one.
+#:
+#: ``AUTHORITY_UPHELD`` -- the P4 gate refused and ``online_loop`` approved, and
+#: nothing activated.  This is **structural**: ``online_loop``'s delayed
+#: admission has no coverage floor and the P4 gate does, so the two disagree
+#: whenever a winner treats fewer than ``MIN_TREATED`` series at the delayed
+#: window.  The resolution worked; the record exists so the calibre difference
+#: stays visible.  The shakedown produced three of these in 26 units.
+#:
+#: ``AUTHORITY_BYPASSED`` -- something activated that the authority refused, or
+#: the Active set grew without the authority approving.  This is a real fault and
+#: it is what "the Active set only ever grows through the authoritative gate"
+#: exists to catch.
+AUTHORITY_UPHELD = "AUTHORITY_UPHELD"
+AUTHORITY_BYPASSED = "AUTHORITY_BYPASSED"
+LOST_ACTIVATION = "LOST_ACTIVATION"
+
+#: A disagreement on the coverage floor alone is the structural calibre
+#: difference.  A disagreement that touches a **risk** line is not: it means the
+#: two gates read the harm differently, and that is a demotion.
+COVERAGE_ONLY_LINE = "coverage_floor"
+RISK_LINES = ("aggregate", "harmed_fraction", "single_series_harm")
+
+
+def _store_active_sha(store: Any) -> str | None:
+    """The Store's active pointer, or None when it has never been set."""
+    path = getattr(store, "active_path", None)
+    if path is None or not Path(path).is_file():
+        return None
+    try:
+        return str(json.loads(Path(path).read_text(encoding="utf-8")).get(
+            "runtime_bundle_sha") or "") or None
+    except (OSError, ValueError):
+        return None
+
+
 def resolve_gate_disagreement(p4_gate: Mapping[str, Any],
                               online_loop_event: Mapping[str, Any] | None,
+                              state: Mapping[str, Any] | None = None,
                               ) -> dict[str, Any]:
-    """Record both gates and say which one decided.  Only one ever does.
+    """Record both gates, say which one decided, and classify the difference.
 
     Recording the disagreement rather than reconciling it is deliberate: the two
     calibres differ on the coverage floor, and quietly picking whichever agreed
     with the run would delete the evidence that they differ.
+
+    The classification matters because the two directions are different events.
+    ``online_loop`` approving what the P4 gate refused is the *structural*
+    calibre difference and the authority holding is the system working.  The P4
+    gate approving what ``online_loop`` did not is a ``lost_activation``: a Skill
+    that earned its rights and did not get them.  Neither is the fault the
+    contract is guarding against, which is the Active set growing through
+    anything other than the authority.
     """
     online = str((online_loop_event or {}).get("stage") or "none")
     authoritative = bool(p4_gate.get("passes"))
+    online_approved = online == "approved"
+    failed = [str(name) for name in (p4_gate.get("failed_lines") or ())]
+    risk_lines = [name for name in failed if name in RISK_LINES]
+    leaked = state is not None and not state.get("unchanged", True)
+
+    kind = None
+    if online_approved and not authoritative:
+        # sol's classification, in order of severity.  State first: a leak is a
+        # leak whatever line it happened on.
+        if leaked:
+            kind = AUTHORITY_BYPASSED
+        elif risk_lines:
+            # The two gates read the *harm* differently.  That is not the
+            # coverage-floor calibre difference and it is not disclosable-only.
+            kind = AUTHORITY_BYPASSED
+        elif failed == [COVERAGE_ONLY_LINE]:
+            kind = AUTHORITY_UPHELD
+        else:
+            kind = AUTHORITY_BYPASSED
+    elif authoritative and not online_approved:
+        kind = LOST_ACTIVATION
+    elif leaked:
+        # Agreement is no defence: if state moved while the authority refused,
+        # something committed outside the gate.
+        kind = AUTHORITY_BYPASSED if not authoritative else None
+
     return {
-        "p4_gate": {"passes": authoritative,
-                    "failed_lines": list(p4_gate.get("failed_lines") or ())},
+        "p4_gate": {"passes": authoritative, "failed_lines": failed},
         "online_loop_event": online,
         "resolved_by": "p4_gate",
-        "disagree": (online == "approved") != authoritative,
+        "disagree": online_approved != authoritative,
+        "kind": kind,
+        "failed_risk_lines": risk_lines,
+        "state": dict(state) if state else None,
+        "state_unchanged": (None if state is None
+                            else bool(state.get("unchanged"))),
         "may_activate": authoritative,
+        "demotes_the_ordering": kind == AUTHORITY_BYPASSED,
         "note": (
             "an online_loop approval never triggers activate_approved on its "
-            "own; the coverage floor is part of the authority and not of the "
-            "online_loop event"
+            "own, and the P4 gate is now consulted *before* the snapshot is "
+            "committed; a coverage-floor-only disagreement with no state "
+            "movement is the structural calibre difference and is disclosed, "
+            "while a risk-line disagreement or any state movement demotes"
         ),
     }
+
+
+def classify_authority_breach(cell: Mapping[str, Any]) -> str | None:
+    """Did anything escape the authority on this cell?
+
+    Three ways, and the first is the one the P0 leak took: **state moved while
+    the gate refused**.  An activation the gate refused, or an activation with
+    no authority record at all, are the other two.  ``AUTHORITY_UPHELD`` means
+    the guard fired and nothing moved.
+    """
+    disagreement = cell.get("gate_disagreement")
+    state = cell.get("authority_state")
+    if state is not None and not state.get("unchanged", True):
+        may = (disagreement or {}).get("may_activate")
+        if not may:
+            return AUTHORITY_BYPASSED
+    if disagreement is not None and disagreement.get(
+            "kind") == AUTHORITY_BYPASSED:
+        return AUTHORITY_BYPASSED
+    if not cell.get("activated"):
+        return None
+    if disagreement is None:
+        return AUTHORITY_BYPASSED  # activated with no authority record at all
+    if not disagreement.get("may_activate"):
+        return AUTHORITY_BYPASSED
+    return None
 
 
 def h_readings(*, window: int, treated_prev: Sequence[str] | None,
@@ -507,7 +803,42 @@ def classify_fast_decision(payload: Mapping[str, Any] | None,
 # the replay screen the outer loop is handed
 # ---------------------------------------------------------------------------
 
-def replay_screen_for(contexts: Sequence[UnitContext], ledgers: Ledgers):
+def reserve_for_future_steps(k_index: int, total_steps: int, *,
+                             period: int,
+                             fits_per_cell: int = CACHE_FITS_PER_CELL) -> int:
+    """Hold back one screen's worth of **fits** for every outer step to come.
+
+    sol v1.1 C.  A screen at step *j* re-scores ``j x period`` already-processed
+    cells, so the conservative cost is that many first sightings; over a
+    five-step course the cell counts are 5 + 10 + 15 + 20 + 25 = 75.  The
+    reservation is that sum for the steps *after* this one, converted to fits at
+    the cache's measured build cost.
+
+    The unit conversion is the whole point of this function.  sol states the
+    reservation in cells and the budget is denominated in fits, and subtracting
+    one from the other reserves a third of what was intended -- which lets an
+    early step spend most of the allowance and starves exactly the later steps
+    the reservation exists to protect.
+
+    The arithmetic closes: at ``fits_per_cell = 2`` a 26-unit course reserves
+    140 of its 156 fits before step 1, leaving 16 -- eight cells, against the
+    five that step 1's screen needs -- and the whole course's five screens cost
+    150 of 156.
+
+    What it guarantees is narrow and worth stating exactly: **if a later step
+    has a candidate, the budget will not block its first one.**  It does not
+    promise every candidate is screened, and it adds no per-step candidate cap
+    and no new ordering -- the frozen deterministic order is untouched, and a
+    candidate the budget could not reach is recorded rather than dropped.
+    """
+    if total_steps <= 0:
+        return 0
+    return sum(step * int(period) * int(fits_per_cell)
+               for step in range(int(k_index) + 1, int(total_steps) + 1))
+
+
+def replay_screen_for(contexts: Sequence[UnitContext], ledgers: Ledgers,
+                      cache: ReplayPredictionCache | None = None):
     """Re-score a candidate on cells this arm has already processed.
 
     Only those cells.  A screen that reached a unit the arm has not run yet
@@ -517,12 +848,16 @@ def replay_screen_for(contexts: Sequence[UnitContext], ledgers: Ledgers):
 
     def replay(*, steps, scope):
         cells: list[dict[str, Any]] = []
+        spent_before = cache.physical_fits if cache is not None else 0
         fits = 0
         for ctx in contexts:
             resolved = (ctx.resolve(scope, ctx.origin)
                         if scope else frozenset(ctx.eval_uids))
             try:
-                reading = _policy_reading(ctx, ctx.origin, steps, resolved)
+                if cache is not None:
+                    reading = cache.reading(ctx, ctx.origin, steps, resolved)
+                else:
+                    reading = _policy_reading(ctx, ctx.origin, steps, resolved)
             except UnitFault as exc:
                 cells.append({"unit": ctx.unit, "unusable": str(exc)[:160],
                               "aggregate_gain": None})
@@ -535,15 +870,22 @@ def replay_screen_for(contexts: Sequence[UnitContext], ledgers: Ledgers):
                 "harmed_fraction": reading["harmed_fraction"],
                 "max_single_series_harm": reading["max_single_series_harm"],
             })
+        if cache is not None:
+            fits = cache.physical_fits - spent_before
         ledgers.replay_fits += fits
         return {"cells": cells, "fits": fits}
 
     # What one screen costs, published so ``consolidate`` can refuse *before*
-    # spending it.  Three per cell, not two: the reading needs a Static
-    # reference (one fit) and the scoped evaluator itself fits both a raw and a
-    # program model so a declined series is bit-identical to Static (two more).
-    replay.estimated_fits_per_candidate = FITS_PER_SCORED_FACE * len(
-        list(contexts))
+    # spending it.  This is the **worst case** -- every cell a first sight of
+    # this (program, face) -- and a screen that hits the cache costs nothing.
+    # Reserving the worst case is deliberate: a reservation that assumed hits
+    # would let the first genuinely new program overrun the budget.  The per
+    # cell figure differs by path: the cached build is one scoped_evaluate call,
+    # the uncached reading additionally re-derives its Static reference.
+    per_cell = CACHE_FITS_PER_CELL if cache is not None else FITS_PER_SCORED_FACE
+    replay.estimated_fits_per_candidate = per_cell * len(list(contexts))
+    replay.fits_per_cell = per_cell
+    replay.cells = len(list(contexts))
     return replay
 
 
@@ -785,7 +1127,7 @@ def _smoke_outer_loop() -> dict[str, Any]:
     def bank_row(origin: int, gains: Mapping[str, float]) -> dict[str, Any]:
         return {
             "unit": {"block": "[0:40]", "origin": origin},
-            "task_consumer_key": "forecast|pooled-ridge-a1|sMASE",
+            "task_consumer_key": TASK_CONSUMER_KEY,
             "program_steps": [{"op": "outlier_mad", "params": {}}],
             "features": {uid: {"local_robust_z_peak": 9.0} for uid in gains},
             "per_series_gain": dict(gains),
@@ -1214,6 +1556,16 @@ class Arm:
         #: course.  ``deployed_via`` reads it so that a unit that re-proposes
         #: an already-Active program from scratch is not booked as a search.
         self.active_program_signatures: dict[str, str] = {}
+        #: The same cards under the **full** census key -- Task x Consumer x
+        #: typed Program x root Scope (sol v1.1 A).  Kept beside the signature
+        #: map rather than replacing it because the two answer different
+        #: questions: "is this program already deployed" (attribution) and "does
+        #: this key already have a lineage" (deduplication).  The same program
+        #: under a different root Scope is a different lineage.
+        self.active_lineage_keys: set[str] = set()
+        #: One cache per arm.  Sharing it would let one arm's fits pay for
+        #: another's reading, and the arms are the contrast.
+        self.replay_cache = ReplayPredictionCache(spec.name)
         #: Skill ids the arm's snapshot held when it was last (re)built, so a
         #: newly minted card is found by difference and K0's cards are never
         #: booked as minted in this course.
@@ -1248,11 +1600,18 @@ class Arm:
             self.m["TTHAFastAgent"](self._core), self.start_snapshot, ())
         self.known_skill_ids = set(self.snapshot_skill_ids())
 
-    def seed_active_programs(self, signatures: Mapping[str, str]) -> None:
-        """K0's program -> skill map, from the Phase S receipt."""
+    def seed_active_programs(self, signatures: Mapping[str, str],
+                             lineage_keys: Sequence[str] = ()) -> None:
+        """K0's program -> skill map and lineage keys, from the Phase S receipt.
+
+        K0's keys are seeded as held so the outer loop cannot propose an ADD for
+        a card the arm already starts with -- which would open a second lineage
+        for one card and give it fresh revision counters.
+        """
         for signature, skill_id in dict(signatures or {}).items():
             self.active_program_signatures.setdefault(str(signature),
                                                       str(skill_id))
+        self.active_lineage_keys.update(str(key) for key in (lineage_keys or ()))
 
     def begin_unit(self, position: int) -> dict[str, Any]:
         """Build once for an online arm; rebuild every unit for a frozen one."""
@@ -1297,29 +1656,37 @@ class Arm:
 
     # ---- the outer loop --------------------------------------------------
 
-    def outer_step(self, k_index: int, *, replay_fit_allowance: int
-                   ) -> dict[str, Any] | None:
+    def outer_step(self, k_index: int, *, replay_fit_allowance: int,
+                   total_steps: int = 0) -> dict[str, Any] | None:
         if not self.spec.outer:
             return None
         slow = (self.outer_slow_factory(self._core, self.guard)
                 if self.outer_slow_factory is not None else None)
+        screen = replay_screen_for(self.processed, self.ledgers,
+                                   self.replay_cache)
+        reserved = reserve_for_future_steps(
+            k_index, total_steps,
+            period=int(contract.OUTER_LOOP["period_k_units"]))
+        remaining = (int(replay_fit_allowance) - self.replay_fits_spent
+                     - reserved)
         budget = outer_loop.OuterBudget(
             outer_llm_per_step=contract.OUTER_LLM_PER_STEP,
-            # Against this arm's projected course fits, not the fits spent so
-            # far: a share of a running total is smallest exactly when the first
-            # outer step needs it, and a cap that only becomes computable at the
-            # end cannot gate anything during the run.
-            replay_fits_remaining=max(
-                1, int(replay_fit_allowance) - self.replay_fits_spent),
+            # Against this arm's projected course fits, minus one screen held
+            # back for each outer step still to come (sol v1.1 C).  Without the
+            # reservation an early step with several candidates can spend the
+            # whole allowance and every later step is budget-blocked before it
+            # sees its first candidate -- which is what the shakedown's
+            # allowance arithmetic would have produced.
+            replay_fits_remaining=max(0, remaining),
         )
         record = outer_loop.consolidate(
             bank=self.bank, ledger=self.draft_ledger, k_index=k_index,
-            slow=slow, replay=replay_screen_for(self.processed, self.ledgers),
+            slow=slow, replay=screen,
             budget=budget,
-            active_program_signatures=[
-                outer_loop._program_signature(row.get("program_steps"))
-                for row in self.bank
-                if row.get("source_skill_id")],
+            # The lineage this arm actually holds, not an inference from which
+            # bank rows happen to carry a source_skill_id: a card can hold a key
+            # without any row in this window naming it (sol v1.1 A).
+            held_lineage_keys=sorted(self.active_lineage_keys),
             bank_boundary={
                 "arm": self.spec.name,
                 "units": [ctx.unit for ctx in self.processed],
@@ -1356,7 +1723,7 @@ def _bank_rows_from_round(ctx: UnitContext, result: Any) -> list[dict[str, Any]]
             continue
         rows.append({
             "unit": ctx.unit,
-            "task_consumer_key": "forecast|pooled-ridge-a1|sMASE",
+            "task_consumer_key": TASK_CONSUMER_KEY,
             "candidate_id": probe.get("candidate_id"),
             "program_steps": probe.get("program_steps"),
             "serving_scope": probe.get("serving_scope"),
@@ -1543,17 +1910,46 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
             return record
         ledgers.course_fits += int(delayed["consumer_fits"])
         gate = authoritative_gate(delayed)
+        # The state the authority is protecting, sampled before the lifecycle
+        # runs, so a leak is detected rather than assumed absent.
+        snapshot_before = sorted(arm.snapshot_skill_ids())
+        active_before = _store_active_sha(arm._store)
         try:
+            # The P4 gate goes in **as the authorizer**, not as an afterwards
+            # check.  handle_feedback_delayed used to commit the new snapshot
+            # the moment its own admission passed, and _active_snapshot() is
+            # what the Fast Path retrieves from -- so a Skill the P4 gate
+            # refused was still visible, retrievable and deployable on the next
+            # unit.  Declining to call activate_approved only held the Store's
+            # active pointer; it never held the in-memory snapshot.
             machinery["online_loop"].open_delayed(
                 result, ctx.executor, delayed_origin=delayed_origin,
-                store=arm._store, scope_resolver=ctx.resolve)
+                store=arm._store, scope_resolver=ctx.resolve,
+                delayed_authorizer=lambda _evidence: bool(gate["passes"]))
         except Exception as exc:  # noqa: BLE001 - the lifecycle event is a reading
             record["faults"].append({
                 "kind": "UnitFault",
                 "why": "open_delayed: %s" % str(exc)[:200]})
-        disagreement = resolve_gate_disagreement(gate, result._delayed_event)
+        # Did any protected state move while the authority was refusing?  This
+        # is measured, not argued: the snapshot's Skill set and the Store's
+        # active pointer, before and after.
+        state = {
+            "snapshot_before": snapshot_before,
+            "snapshot_after": sorted(arm.snapshot_skill_ids()),
+            "store_active_before": active_before,
+            "store_active_after": _store_active_sha(arm._store),
+        }
+        state["snapshot_unchanged"] = (
+            state["snapshot_before"] == state["snapshot_after"])
+        state["store_active_unchanged"] = (
+            state["store_active_before"] == state["store_active_after"])
+        state["unchanged"] = (state["snapshot_unchanged"]
+                              and state["store_active_unchanged"])
+        disagreement = resolve_gate_disagreement(
+            gate, result._delayed_event, state=state)
         record["delayed"] = {**_scored(delayed, delayed_origin), "gate": gate}
         record["gate_disagreement"] = disagreement
+        record["authority_state"] = state
 
         activated = False
         if disagreement["may_activate"] and arm.spec.write_back:
@@ -1585,6 +1981,15 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
             if signature and len(new_ids) == 1:
                 arm.active_program_signatures.setdefault(signature, new_ids[0])
             record["skills_minted_this_unit"] = new_ids
+            # The lineage this card now holds, under the full census key.  The
+            # root Scope is the predicate it was *initialised* with, not the one
+            # it reached: a narrowed revision is the same lineage.
+            if steps:
+                key = outer_loop.census_key(
+                    TASK_CONSUMER_KEY, steps,
+                    record.get("deployed_root_scope") or scope)
+                arm.active_lineage_keys.add(key)
+                record["lineage_key"] = key
         record["h_readings"] = h_readings(
             window=delayed_origin,
             treated_prev=sorted(result._winner_resolved_series or ()),
@@ -1928,7 +2333,8 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
             for spec in specs]
     for arm in arms:
         if arm.spec.start == "k0":
-            arm.seed_active_programs(k0.get("program_signatures") or {})
+            arm.seed_active_programs(k0.get("program_signatures") or {},
+                                     k0.get("lineage_keys") or ())
 
     checkpoints = root / "checkpoints"
     checkpoints.mkdir(parents=True, exist_ok=True)
@@ -1962,6 +2368,10 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
     replay_fit_allowance = int(contract.REPLAY_FITS_SHARE
                                * projected_fits_per_llm_arm)
     replay_fit_allowance_total = replay_fit_allowance * online_arms
+    # How many outer steps this course will run, so each step can hold back a
+    # screen for the ones after it (sol v1.1 C).
+    total_outer_steps = len(sequence) // int(
+        contract.OUTER_LOOP["period_k_units"])
     rows: list[dict[str, Any]] = []
     run_fault: str | None = None
     for position, unit in enumerate(sequence):
@@ -1998,7 +2408,8 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
                 step = arm.outer_step(
                     k_index=(position + 1)
                     // int(contract.OUTER_LOOP["period_k_units"]),
-                    replay_fit_allowance=replay_fit_allowance)
+                    replay_fit_allowance=replay_fit_allowance,
+                    total_steps=total_outer_steps)
                 if step is not None:
                     _heartbeat(root, {
                         "phase": phase, "ordering": ordering_name,
@@ -2016,6 +2427,16 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
         arm.spec.name: arm.draft_ledger.close_unreencountered()
         for arm in arms if arm.spec.write_back and not run_fault
     }
+
+    # The replay caches' hit/miss counts, aggregated onto the run ledger so the
+    # course artifact carries them instead of a pair of zeros.
+    for arm in arms:
+        if not arm.spec.outer:
+            continue
+        cache = arm.replay_cache
+        ledgers.cache_hits += cache.cache_hits
+        ledgers.cache_misses += max(
+            0, cache.logical_evaluations - cache.cache_hits)
 
     by_unit: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -2049,6 +2470,18 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
         "fast_decisions": [row["fast_decision"] for row in rows
                            if row.get("fast_decision")],
         "ledgers": ledgers.to_dict(),
+        "replay_cache": {arm.spec.name: arm.replay_cache.to_dict()
+                         for arm in arms if arm.spec.outer},
+        "future_step_reservation": {
+            "rule": "one screen per outer step still to come",
+            "total_outer_steps": total_outer_steps,
+            "period_units": int(contract.OUTER_LOOP["period_k_units"]),
+            "fits_per_cell": CACHE_FITS_PER_CELL,
+            "guarantees": (
+                "if a later step has a candidate, the budget does not block "
+                "its first one"),
+            "does_not_guarantee": "that every candidate is screened",
+        },
         "replay_fit_allowance": {
             "share": contract.REPLAY_FITS_SHARE,
             "projected_course_fits": projected_course_fits,
@@ -2187,12 +2620,22 @@ def phase_s_k0(report: Mapping[str, Any]) -> dict[str, Any]:
     # program signature -> skill id for every card minted in Phase S, read off
     # the cells that activated: the winner's program is the card's program.
     program_signatures: dict[str, str] = {}
+    lineage_keys: set[str] = set()
     for cell in report.get("cells") or ():
         minted = list(cell.get("skills_minted_this_unit") or ())
         steps = cell.get("deployed")
         if cell.get("activated") and len(minted) == 1 and steps:
             program_signatures.setdefault(
                 outer_loop._program_signature(steps), str(minted[0]))
+        # The full census key of every card K0 carries, so Phase T can seed it
+        # as held and the outer loop cannot open a second lineage for a card the
+        # A5 arms already start with (sol v1.1 A).
+        if cell.get("activated") and steps:
+            key = cell.get("lineage_key") or outer_loop.census_key(
+                TASK_CONSUMER_KEY, steps,
+                cell.get("deployed_root_scope")
+                or cell.get("deployed_serving_scope"))
+            lineage_keys.add(str(key))
     run_root = PROJECT_ROOT / str(report.get("run_root") or "")
     store_root = run_root / PHASE_S_ARM / "store_online"
     active_pointer = store_root.parent / "active.json"
@@ -2215,6 +2658,7 @@ def phase_s_k0(report: Mapping[str, Any]) -> dict[str, Any]:
         "snapshot_resolved": bool(
             active and sha and (store_root / str(sha)).is_dir()),
         "program_signatures": program_signatures,
+        "lineage_keys": sorted(lineage_keys),
         "unmapped_active_skill_ids": sorted(
             set(active) - set(program_signatures.values())),
     }
