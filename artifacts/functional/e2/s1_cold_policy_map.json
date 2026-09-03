@@ -1,0 +1,5171 @@
+{
+ "protocol_version": "s1_cold_policy_map_v2_arbitration",
+ "arbitration": "Part B full-menu ranking voided.  Part A is a behavior funnel.  Part B is a candidate-cap pairing.  Book is capped; no diag-r2/r3.",
+ "git_head": "258c28d66fb1029b1ab8eaf552c4136368f463c5",
+ "python": "D:\\Anaconda_envs\\envs\\project\\python.exe",
+ "seconds": 303.36,
+ "ranking_probe": "voided_not_run: the full-menu ranking probe was never executed in this session; there is no exploratory ranking material to archive",
+ "part_a": {
+  "instrument_census": {
+   "persisted_round_fields_sampled": [
+    "abstained",
+    "activated",
+    "approved_skill_id",
+    "arm",
+    "candidate_executions",
+    "chosen",
+    "consumer_fits_after",
+    "dataset",
+    "delayed_utility",
+    "domain_namespace",
+    "episodes",
+    "guard_readout",
+    "harm_count",
+    "incumbent_after_round",
+    "incumbent_before_round",
+    "llm_calls_this_round",
+    "memory_resolution",
+    "minted_skill_ids",
+    "pool",
+    "probes",
+    "proposal_count",
+    "retrieved_skill_ids",
+    "risk_lifecycle",
+    "round",
+    "seconds",
+    "support_receipts",
+    "task_consumer_key",
+    "unit_id",
+    "winner_delayed_approved",
+    "winner_program"
+   ],
+   "raw_proposal_fields_found": [],
+   "raw_proposals_persisted": false,
+   "earliest_available_layer": "compiled_verified_pool",
+   "gap": "S1c and the listed historical runners persist DecisionTrace.candidate_ids as `pool` after compile + noop filter + CandidatePool.build(total_k) + verifier selectable filter.  They do not persist the propose-stage payload (all raw Agent candidates before truncation/verify).  `proposal_count` is len(non-identity pool after that filter).  Funnel therefore starts at compiled_verified_pool, not at the raw LLM list.  Operator names on unexecuted pool members are recovered from candidate_id aliases; executed members have workflow_signature."
+  },
+  "s1c": {
+   "stratum": {
+    "stratum_id": "s1c_course_forward_run1",
+    "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+    "protocol_version": "s1_curriculum_four_arms_v1",
+    "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+    "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+    "task_context_id": "classification-fixed-consumer-v1",
+    "backend": "live_fast_agent",
+    "returned_model": "gpt-5.6-sol"
+   },
+   "n_round_events": 42,
+   "events": [
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "repair_level_shift",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_level_shift_repair",
+       "extreme_deviation_mad_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "extreme_deviation_mad_repair",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "extreme_deviation_mad_repair",
+      "abstained": false,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "extreme_deviation_mad_repair",
+        "kind": "probe",
+        "gain": 0.20000000000000007,
+        "passed": true,
+        "operators": []
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "kind": "probe",
+        "gain": 0.022222222222222254,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad",
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "CONFLICT",
+        "gain": 0.20000000000000007
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": "POSITIVE",
+        "gain": 0.022222222222222254
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": "NEGATIVE",
+        "gain": -0.04444444444444451,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "executed_not_passed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "repair_level_shift",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_level_shift_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "repair_level_shift",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "executed_not_passed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "repair_level_shift",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "outlier_mad_local"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "outlier_mad_local",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "outlier_mad_local",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "outlier_mad_local",
+        "kind": "probe",
+        "gain": 0.20000000000000007,
+        "passed": true,
+        "operators": [
+         "outlier_mad"
+        ]
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "CONFLICT",
+        "gain": 0.20000000000000007
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "repair_level_shift",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_local_level_shift"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_local_level_shift",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "repair_local_level_shift",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "repair_level_shift",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "executed_not_passed",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "repair_level_shift",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_level_excursion",
+       "repair_extreme_deviation"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "repair_extreme_deviation",
+        "operators": [],
+        "id_resolution": "family_unspecified_outlier"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "repair_extreme_deviation",
+      "abstained": false,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "repair_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.20000000000000007,
+        "passed": true,
+        "operators": []
+       },
+       {
+        "candidate_id": "repair_level_excursion",
+        "kind": "probe",
+        "gain": 0.022222222222222254,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad",
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "CONFLICT",
+        "gain": 0.20000000000000007
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": "POSITIVE",
+        "gain": 0.022222222222222254
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": "NEGATIVE",
+        "gain": -0.04444444444444451,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "executed_not_passed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "repair_level_shift",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "local_level_shift_repair",
+       "localized_mad_outlier_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "local_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "localized_mad_outlier_repair",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "localized_mad_outlier_repair",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "localized_mad_outlier_repair",
+        "kind": "probe",
+        "gain": 0.24444444444444446,
+        "passed": true,
+        "operators": []
+       },
+       {
+        "candidate_id": "local_level_shift_repair",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad",
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "CONFLICT",
+        "gain": 0.24444444444444446
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "executed_not_passed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 6
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "dataset": "DistalPhalanxOutlineCorrect",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "outlier_iqr",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "mad_extreme_deviation",
+       "burst_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "mad_extreme_deviation",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "burst_level_excursion",
+        "operators": [
+         "repair_burst_segment",
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_ambiguous"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "mad_extreme_deviation",
+      "abstained": false,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "mad_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.021739130434782594,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "POSITIVE",
+        "gain": 0.021739130434782594
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": "NEUTRAL",
+        "gain": 0.0,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "dataset": "DistalPhalanxOutlineCorrect",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "outlier_iqr",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_narrow_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_narrow_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "repair_narrow_level_excursion",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "repair_level_shift",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 6
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "dataset": "DistalPhalanxOutlineCorrect",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "outlier_iqr",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_narrow_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_narrow_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "repair_narrow_level_excursion",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "repair_level_shift",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "dataset": "DistalPhalanxOutlineCorrect",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "outlier_iqr",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_level_shift_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "repair_level_shift",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 6
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "dataset": "DistalPhalanxOutlineCorrect",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "outlier_iqr",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_outlier_mad"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_outlier_mad",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "localized_outlier_mad",
+      "abstained": false,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "localized_outlier_mad",
+        "kind": "probe",
+        "gain": 0.021739130434782594,
+        "passed": true,
+        "operators": [
+         "outlier_mad"
+        ]
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "POSITIVE",
+        "gain": 0.021739130434782594
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": "NEUTRAL",
+        "gain": 0.0,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "dataset": "DistalPhalanxOutlineCorrect",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "outlier_iqr",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_extreme_deviation_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_extreme_deviation_repair",
+        "operators": [],
+        "id_resolution": "family_unspecified_outlier"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "localized_extreme_deviation_repair",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "localized_extreme_deviation_repair",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 6
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "PowerCons__impulse_v2",
+     "dataset": "PowerCons",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_level_shift_repair",
+       "intrinsic_extreme_deviation_filter"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "intrinsic_extreme_deviation_filter",
+        "operators": [],
+        "id_resolution": "family_unspecified_outlier"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "intrinsic_extreme_deviation_filter",
+      "abstained": false,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_extreme_deviation_filter",
+        "kind": "probe",
+        "gain": 0.0714285714285714,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "hampel_filter"
+      ],
+      "support": [
+       {
+        "program": "hampel_filter",
+        "relation": "POSITIVE",
+        "gain": 0.0714285714285714
+       }
+      ],
+      "delayed": [
+       {
+        "program": "hampel_filter",
+        "relation": "POSITIVE",
+        "gain": 0.49999999999999994,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": true,
+      "frozen_deployed": {
+       "source": "FROZEN_ACTIVE_SKILL_RECALL",
+       "program": [
+        "hampel_filter"
+       ]
+      }
+     },
+     "breakpoint": "deployed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "PowerCons__impulse_v2",
+     "dataset": "PowerCons",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "hampel_extreme_deviation"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "hampel_extreme_deviation",
+        "operators": [
+         "hampel_filter"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "hampel_extreme_deviation",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "hampel_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.0,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "hampel_filter"
+      ],
+      "support": [
+       {
+        "program": "hampel_filter",
+        "relation": "NEUTRAL",
+        "gain": 0.0
+       }
+      ],
+      "delayed": [
+       {
+        "program": "hampel_filter",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_ACTIVE_SKILL_RECALL",
+       "program": [
+        "hampel_filter"
+       ]
+      }
+     },
+     "breakpoint": "deployed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "PowerCons__impulse_v2",
+     "dataset": "PowerCons",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "intrinsic_iqr_outlier_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "intrinsic_iqr_outlier_repair",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "kind": "probe",
+        "gain": -0.3571428571428572,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.3571428571428572
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "PowerCons__impulse_v2",
+     "dataset": "PowerCons",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "iqr_extreme_deviation",
+       "level_shift_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "iqr_extreme_deviation",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "iqr_extreme_deviation",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "iqr_extreme_deviation",
+        "kind": "probe",
+        "gain": -0.28571428571428575,
+        "passed": true,
+        "operators": []
+       },
+       {
+        "candidate_id": "level_shift_repair",
+        "kind": "probe",
+        "gain": -0.3571428571428572,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr",
+       "repair_level_shift"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.28571428571428575
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": "NEGATIVE",
+        "gain": -0.3571428571428572
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       },
+       {
+        "program": "repair_level_shift",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "PowerCons__impulse_v2",
+     "dataset": "PowerCons",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       }
+      ],
+      "proposal_count_persisted": 0,
+      "selected": "",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 3
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "PowerCons__impulse_v2",
+     "dataset": "PowerCons",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       }
+      ],
+      "proposal_count_persisted": 0,
+      "selected": "",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 3
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "FreezerRegularTrain__burst_cls2",
+     "dataset": "FreezerRegularTrain",
+     "round": "r1",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "intrinsic_outlier_correction"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "intrinsic_outlier_correction",
+        "operators": [],
+        "id_resolution": "family_unspecified_outlier"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_outlier_correction",
+        "kind": "probe",
+        "gain": -0.25,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.25
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "FreezerRegularTrain__burst_cls2",
+     "dataset": "FreezerRegularTrain",
+     "round": "r2",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "outlier_iqr_extreme_deviation"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "outlier_iqr_extreme_deviation",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "outlier_iqr_extreme_deviation",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "outlier_iqr_extreme_deviation",
+        "kind": "probe",
+        "gain": -0.09999999999999998,
+        "passed": true,
+        "operators": [
+         "outlier_iqr"
+        ]
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.09999999999999998
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "FreezerRegularTrain__burst_cls2",
+     "dataset": "FreezerRegularTrain",
+     "round": "r1",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "intrinsic_iqr_outlier_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "kind": "probe",
+        "gain": -0.25,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.25
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "FreezerRegularTrain__burst_cls2",
+     "dataset": "FreezerRegularTrain",
+     "round": "r2",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "intrinsic_outlier_iqr"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "intrinsic_outlier_iqr",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_outlier_iqr",
+        "kind": "probe",
+        "gain": -0.09999999999999998,
+        "passed": true,
+        "operators": [
+         "outlier_iqr"
+        ]
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.09999999999999998
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "FreezerRegularTrain__burst_cls2",
+     "dataset": "FreezerRegularTrain",
+     "round": "r1",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "intrinsic_iqr_outlier_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "intrinsic_iqr_outlier_repair",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "kind": "probe",
+        "gain": -0.25,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "NEGATIVE",
+        "gain": -0.25
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "FreezerRegularTrain__burst_cls2",
+     "dataset": "FreezerRegularTrain",
+     "round": "r2",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       }
+      ],
+      "proposal_count_persisted": 0,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "dataset": "GunPointOldVersusYoung",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       }
+      ],
+      "proposal_count_persisted": 0,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 3
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "dataset": "GunPointOldVersusYoung",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "outlier_mad_regime_ambiguity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "outlier_mad_regime_ambiguity",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "outlier_mad_regime_ambiguity",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "outlier_mad_regime_ambiguity",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": [
+         "outlier_mad"
+        ]
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "dataset": "GunPointOldVersusYoung",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "intrinsic_mad_outlier_repair",
+       "intrinsic_iqr_outlier_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "intrinsic_mad_outlier_repair",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "operators": [
+         "outlier_iqr"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "intrinsic_mad_outlier_repair",
+      "abstained": false,
+      "verifier_rejected": [
+       {
+        "candidate_id": "intrinsic_mad_outlier_repair",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_iqr_outlier_repair",
+        "kind": "probe",
+        "gain": 0.09090909090909088,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_iqr"
+      ],
+      "support": [
+       {
+        "program": "outlier_iqr",
+        "relation": "POSITIVE",
+        "gain": 0.09090909090909088
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_iqr",
+        "relation": "CONFLICT",
+        "gain": 0.09999999999999998,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "dataset": "GunPointOldVersusYoung",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "mad_extreme_deviation",
+       "burst_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "mad_extreme_deviation",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "burst_level_excursion",
+        "operators": [
+         "repair_burst_segment",
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_ambiguous"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "mad_extreme_deviation",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       },
+       {
+        "candidate_id": "burst_level_excursion",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "dataset": "GunPointOldVersusYoung",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "outlier_mad_localized_extreme_deviation"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "outlier_mad_localized_extreme_deviation",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "outlier_mad_localized_extreme_deviation",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "outlier_mad_localized_extreme_deviation",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": [
+         "outlier_mad"
+        ]
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "dataset": "GunPointOldVersusYoung",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "hampel_filter",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "outlier_mad_localized_extremes"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "outlier_mad_localized_extremes",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "outlier_mad_localized_extremes",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "outlier_mad_localized_extremes",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": [
+         "outlier_mad"
+        ]
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 6
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "ECG200__impulse_v2",
+     "dataset": "ECG200",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "repair_burst_segment",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_level_shift_repair",
+       "intrinsic_mad_outlier_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "intrinsic_mad_outlier_repair",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "intrinsic_mad_outlier_repair",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [
+       {
+        "candidate_id": "intrinsic_mad_outlier_repair",
+        "kind": "probe",
+        "gain": 0.11111111111111116,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "CONFLICT",
+        "gain": 0.11111111111111116
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "ECG200__impulse_v2",
+     "dataset": "ECG200",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "repair_burst_segment",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_level_shift_local"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_level_shift_local",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair_level_shift_local",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": [
+         "repair_level_shift"
+        ]
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "ECG200__impulse_v2",
+     "dataset": "ECG200",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "repair_burst_segment",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "outlier_mad_extreme_deviation",
+       "repair_localized_level_shift"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "outlier_mad_extreme_deviation",
+        "operators": [
+         "outlier_mad"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "repair_localized_level_shift",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "outlier_mad_extreme_deviation",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair_localized_level_shift",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [
+       {
+        "candidate_id": "outlier_mad_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.11111111111111116,
+        "passed": true,
+        "operators": [
+         "outlier_mad"
+        ]
+       }
+      ],
+      "executed_operators": [
+       "outlier_mad"
+      ],
+      "support": [
+       {
+        "program": "outlier_mad",
+        "relation": "CONFLICT",
+        "gain": 0.11111111111111116
+       }
+      ],
+      "delayed": [
+       {
+        "program": "outlier_mad",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "ECG200__impulse_v2",
+     "dataset": "ECG200",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "repair_burst_segment",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "localized_level_shift_repair"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "localized_level_shift_repair",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "ECG200__impulse_v2",
+     "dataset": "ECG200",
+     "round": "r1",
+     "menu_oracle_program_posthoc": "repair_burst_segment",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       }
+      ],
+      "proposal_count_persisted": 0,
+      "selected": "",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 3
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "ECG200__impulse_v2",
+     "dataset": "ECG200",
+     "round": "r2",
+     "menu_oracle_program_posthoc": "repair_burst_segment",
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": true,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_level_shift_early"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_level_shift_early",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair_level_shift_early",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": [
+         "repair_level_shift"
+        ]
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "not_proposed",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 6
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "Ham__impulse_v2",
+     "dataset": "Ham",
+     "round": "r1",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 1,
+      "selected": "repair_level_excursion",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair_level_excursion",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A3-reset",
+     "unit_id": "Ham__impulse_v2",
+     "dataset": "Ham",
+     "round": "r2",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       }
+      ],
+      "proposal_count_persisted": 0,
+      "selected": "identity",
+      "abstained": true,
+      "verifier_rejected": [],
+      "executed_probes": [],
+      "executed_operators": [],
+      "support": [],
+      "delayed": [],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "Ham__impulse_v2",
+     "dataset": "Ham",
+     "round": "r1",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "repair_narrow_level_excursion",
+       "filter_broad_extreme_deviation"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "repair_narrow_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "filter_broad_extreme_deviation",
+        "operators": [],
+        "id_resolution": "family_unspecified_outlier"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "repair_narrow_level_excursion",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair_narrow_level_excursion",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [
+       {
+        "candidate_id": "filter_broad_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.11111111111111105,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "hampel_filter"
+      ],
+      "support": [
+       {
+        "program": "hampel_filter",
+        "relation": "CONFLICT",
+        "gain": 0.11111111111111105
+       }
+      ],
+      "delayed": [
+       {
+        "program": "hampel_filter",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "no_memory",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "K0-fixed",
+     "unit_id": "Ham__impulse_v2",
+     "dataset": "Ham",
+     "round": "r2",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "hampel-extreme-deviation",
+       "repair-level-excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "hampel-extreme-deviation",
+        "operators": [
+         "hampel_filter"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "repair-level-excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "repair-level-excursion",
+      "abstained": false,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair-level-excursion",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [
+       {
+        "candidate_id": "hampel-extreme-deviation",
+        "kind": "probe",
+        "gain": 0.125,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "hampel_filter"
+      ],
+      "support": [
+       {
+        "program": "hampel_filter",
+        "relation": "POSITIVE",
+        "gain": 0.125
+       }
+      ],
+      "delayed": [
+       {
+        "program": "hampel_filter",
+        "relation": "CONFLICT",
+        "gain": 0.25,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 5
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "Ham__impulse_v2",
+     "dataset": "Ham",
+     "round": "r1",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "hampel_extreme_deviation",
+       "repair_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "hampel_extreme_deviation",
+        "operators": [
+         "hampel_filter"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "repair_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "repair_level_excursion",
+      "abstained": true,
+      "verifier_rejected": [
+       {
+        "candidate_id": "repair_level_excursion",
+        "kind": "verifier_rejected",
+        "gain": null,
+        "passed": false,
+        "operators": []
+       }
+      ],
+      "executed_probes": [
+       {
+        "candidate_id": "hampel_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.11111111111111105,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "hampel_filter"
+      ],
+      "support": [
+       {
+        "program": "hampel_filter",
+        "relation": "CONFLICT",
+        "gain": 0.11111111111111105
+       }
+      ],
+      "delayed": [
+       {
+        "program": "hampel_filter",
+        "relation": null,
+        "gain": null,
+        "evidence_level": "SUPPORT"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered_empty",
+     "llm_calls_this_round": 4
+    },
+    {
+     "stratum_id": "s1c_course_forward_run1",
+     "runner": "evaluation/functional/run_e2_s1_curriculum_four_arms.py --run-course --order forward",
+     "protocol_version": "s1_curriculum_four_arms_v1",
+     "git_head": "987a13c0c06eed2f37e123d3f75a3272977c8fc7",
+     "prompt_surface": "h0 instruction.md + three bootstrap Skills; Fast stages inspect/propose/select; live gpt-5.6-sol @ agicto; classification TaskContext maximum_candidates=3; fast_propose_v1 maxItems=3; h0 agent_program_slots=3; effective pool min(total_k=4, maximum_candidates=3) = identity + 2 program slots",
+     "task_context_id": "classification-fixed-consumer-v1",
+     "arm": "A5-online",
+     "unit_id": "Ham__impulse_v2",
+     "dataset": "Ham",
+     "round": "r2",
+     "menu_oracle_program_posthoc": null,
+     "agent_visible_observation": {
+      "what_agent_saw_persisted": false,
+      "available": "observation_block is reconstructible from the same UCR TRAIN + injection used to build the cell; public features are deterministic from that block.  The live inspect payload (inspected_region_fractions, pattern_hypotheses) and the per-round rendered Memory/Skill view were not saved.",
+      "posthoc_oracle_label": "menu_oracle_program is a judge-time label from the sealed oracle / frozen course.  It was not in the Agent prompt."
+     },
+     "layers": {
+      "menu_available": null,
+      "raw_proposals_persisted": false,
+      "compiled_verified_pool": [
+       "identity",
+       "hampel_extreme_deviation",
+       "repair_level_excursion"
+      ],
+      "compiled_pool_inferred": [
+       {
+        "candidate_id": "identity",
+        "operators": [
+         "identity"
+        ],
+        "id_resolution": "identity"
+       },
+       {
+        "candidate_id": "hampel_extreme_deviation",
+        "operators": [
+         "hampel_filter"
+        ],
+        "id_resolution": "alias_unique"
+       },
+       {
+        "candidate_id": "repair_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "id_resolution": "alias_unique"
+       }
+      ],
+      "proposal_count_persisted": 2,
+      "selected": "hampel_extreme_deviation",
+      "abstained": false,
+      "verifier_rejected": [],
+      "executed_probes": [
+       {
+        "candidate_id": "hampel_extreme_deviation",
+        "kind": "probe",
+        "gain": 0.125,
+        "passed": true,
+        "operators": []
+       }
+      ],
+      "executed_operators": [
+       "hampel_filter"
+      ],
+      "support": [
+       {
+        "program": "hampel_filter",
+        "relation": "POSITIVE",
+        "gain": 0.125
+       }
+      ],
+      "delayed": [
+       {
+        "program": "hampel_filter",
+        "relation": "CONFLICT",
+        "gain": 0.25,
+        "evidence_level": "DELAYED"
+       }
+      ],
+      "winner_delayed_approved": false,
+      "frozen_deployed": {
+       "source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+       "program": []
+      }
+     },
+     "breakpoint": "no_oracle_on_unit",
+     "memory_resolution": "rendered",
+     "llm_calls_this_round": 5
+    }
+   ],
+   "menu_oracle_opportunities": {
+    "n_adaptive_menu_oracle_opportunities": 15,
+    "n_deployed_hits": 1,
+    "n_executed_hits": 4,
+    "n_proposed_or_executed_hits": 4,
+    "wording_required": "在当前课程、当前 Prompt、当前候选预算、这一次随机运行中，15 个含菜单正解的臂-单元机会命中 1 次（冻结部署口径）。同一 15 个机会里，菜单正解被执行 4 次、在编译池/执行层出现 4 次。这是这一次冷提案策略的召回读数，不是数据就绪的固有难度，也不是稳定概率。",
+    "opportunities": [
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "arm": "A3-reset",
+      "oracle": "repair_level_shift",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": true,
+      "oracle_executed": true,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "executed_not_passed"
+     },
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "arm": "K0-fixed",
+      "oracle": "repair_level_shift",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": true,
+      "oracle_executed": true,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "executed_not_passed"
+     },
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "arm": "A5-online",
+      "oracle": "repair_level_shift",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": true,
+      "oracle_executed": true,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "executed_not_passed"
+     },
+     {
+      "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+      "arm": "A3-reset",
+      "oracle": "outlier_iqr",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+      "arm": "K0-fixed",
+      "oracle": "outlier_iqr",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+      "arm": "A5-online",
+      "oracle": "outlier_iqr",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "PowerCons__impulse_v2",
+      "arm": "A3-reset",
+      "oracle": "hampel_filter",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": true,
+      "oracle_executed": true,
+      "oracle_deployed": true,
+      "deepest_breakpoint": "deployed"
+     },
+     {
+      "unit_id": "PowerCons__impulse_v2",
+      "arm": "K0-fixed",
+      "oracle": "hampel_filter",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "PowerCons__impulse_v2",
+      "arm": "A5-online",
+      "oracle": "hampel_filter",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "GunPointOldVersusYoung__impulse_v2",
+      "arm": "A3-reset",
+      "oracle": "hampel_filter",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "GunPointOldVersusYoung__impulse_v2",
+      "arm": "K0-fixed",
+      "oracle": "hampel_filter",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "GunPointOldVersusYoung__impulse_v2",
+      "arm": "A5-online",
+      "oracle": "hampel_filter",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "ECG200__impulse_v2",
+      "arm": "A3-reset",
+      "oracle": "repair_burst_segment",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "ECG200__impulse_v2",
+      "arm": "K0-fixed",
+      "oracle": "repair_burst_segment",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     },
+     {
+      "unit_id": "ECG200__impulse_v2",
+      "arm": "A5-online",
+      "oracle": "repair_burst_segment",
+      "n_rounds": 2,
+      "oracle_proposed_at_pool_or_executed": false,
+      "oracle_executed": false,
+      "oracle_deployed": false,
+      "deepest_breakpoint": "not_proposed"
+     }
+    ]
+   },
+   "funnel_summary": {
+    "counts_by_deepest_breakpoint": {
+     "executed_not_passed": 3,
+     "not_proposed": 11,
+     "deployed": 1
+    },
+    "attribution": {
+     "not_proposed": "提案召回问题",
+     "proposed_not_selected": "选择或弃权问题",
+     "selected_rejected": "合法性问题",
+     "executed_not_passed": "反馈或效果问题",
+     "passed_not_deployed": "部署规则问题",
+     "deployed": "漏斗走通",
+     "no_round_recorded": "该臂-单元没有适应轮（例如 A5 在某单元 0 probe）"
+    }
+   },
+   "slow": {
+    "n_boundaries": 6,
+    "slow_llm_used": 6,
+    "slow_llm_cap_per_boundary": 6,
+    "empty_carry_reason": "each boundary spent 1 of 6 allowed Slow LLM calls and wrote source_investigation_cls_v1 (already in K0, dropped at the next-unit wall).  authorized_try and risk_authorized stayed empty because the census had no unguided positive and no two-Task same-operator harm.  The empty carry is missing compilable evidence, not a Slow-budget starve.",
+    "boundaries": [
+     {
+      "after_unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "into_unit": "DistalPhalanxOutlineCorrect__burst_cls2",
+      "slow_llm_calls": 1,
+      "slow_llm_cap": 6,
+      "skill_written": true,
+      "entry_skill_id": "source_investigation_cls_v1",
+      "authorized_try_operators": [],
+      "risk_authorized_operators": [],
+      "execution_right_granted": false,
+      "withheld": [
+       "no_unguided_positive",
+       "no_unguided_positive"
+      ]
+     },
+     {
+      "after_unit": "DistalPhalanxOutlineCorrect__burst_cls2",
+      "into_unit": "PowerCons__impulse_v2",
+      "slow_llm_calls": 1,
+      "slow_llm_cap": 6,
+      "skill_written": true,
+      "entry_skill_id": "source_investigation_cls_v1",
+      "authorized_try_operators": [],
+      "risk_authorized_operators": [],
+      "execution_right_granted": false,
+      "withheld": [
+       "no_unguided_positive",
+       "no_unguided_positive"
+      ]
+     },
+     {
+      "after_unit": "PowerCons__impulse_v2",
+      "into_unit": "FreezerRegularTrain__burst_cls2",
+      "slow_llm_calls": 1,
+      "slow_llm_cap": 6,
+      "skill_written": true,
+      "entry_skill_id": "source_investigation_cls_v1",
+      "authorized_try_operators": [],
+      "risk_authorized_operators": [],
+      "execution_right_granted": false,
+      "withheld": [
+       "no_unguided_positive",
+       "no_unguided_positive"
+      ]
+     },
+     {
+      "after_unit": "FreezerRegularTrain__burst_cls2",
+      "into_unit": "GunPointOldVersusYoung__impulse_v2",
+      "slow_llm_calls": 1,
+      "slow_llm_cap": 6,
+      "skill_written": true,
+      "entry_skill_id": "source_investigation_cls_v1",
+      "authorized_try_operators": [],
+      "risk_authorized_operators": [],
+      "execution_right_granted": false,
+      "withheld": [
+       "no_unguided_positive",
+       "no_unguided_positive",
+       "no_unguided_positive"
+      ]
+     },
+     {
+      "after_unit": "GunPointOldVersusYoung__impulse_v2",
+      "into_unit": "ECG200__impulse_v2",
+      "slow_llm_calls": 1,
+      "slow_llm_cap": 6,
+      "skill_written": true,
+      "entry_skill_id": "source_investigation_cls_v1",
+      "authorized_try_operators": [],
+      "risk_authorized_operators": [],
+      "execution_right_granted": false,
+      "withheld": [
+       "no_unguided_positive",
+       "no_unguided_positive",
+       "no_unguided_positive"
+      ]
+     },
+     {
+      "after_unit": "ECG200__impulse_v2",
+      "into_unit": "Ham__impulse_v2",
+      "slow_llm_calls": 1,
+      "slow_llm_cap": 6,
+      "skill_written": true,
+      "entry_skill_id": "source_investigation_cls_v1",
+      "authorized_try_operators": [],
+      "risk_authorized_operators": [],
+      "execution_right_granted": false,
+      "withheld": [
+       "no_unguided_positive",
+       "no_unguided_positive",
+       "no_unguided_positive"
+      ]
+     }
+    ]
+   }
+  },
+  "historical_strata": [
+   {
+    "stratum_id": "t6_cls_op_r2_three_arms",
+    "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+    "protocol_version": "t6_cls_op_r2_three_arms_v1",
+    "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+    "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+    "task_context_id": "classification-fixed-consumer-v1",
+    "run_id": "t6_cls_op_r2_run1",
+    "entry": "--r2-run",
+    "path": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+    "n_rounds": 8,
+    "instrument": {
+     "persisted_round_fields_sampled": [
+      "abstained",
+      "activated",
+      "adapter_calls",
+      "approved_skill_id",
+      "arm",
+      "candidate_executions",
+      "chosen",
+      "condition",
+      "consumer_fits_after",
+      "dataset",
+      "delayed_event",
+      "delayed_origin",
+      "delayed_utility",
+      "episodes",
+      "fast_skill_event",
+      "harm_count",
+      "llm_calls_after",
+      "llm_calls_before",
+      "llm_calls_this_round",
+      "memory_resolution",
+      "modification_fraction_scope",
+      "pool",
+      "probes",
+      "proposal_count",
+      "retrieved_skill_ids",
+      "round",
+      "seconds",
+      "support_origin",
+      "support_receipts",
+      "task_consumer_key",
+      "winner_program"
+     ],
+     "raw_proposal_fields_found": [],
+     "raw_proposals_persisted": false,
+     "earliest_available_layer": "compiled_verified_pool",
+     "gap": "S1c and the listed historical runners persist DecisionTrace.candidate_ids as `pool` after compile + noop filter + CandidatePool.build(total_k) + verifier selectable filter.  They do not persist the propose-stage payload (all raw Agent candidates before truncation/verify).  `proposal_count` is len(non-identity pool after that filter).  Funnel therefore starts at compiled_verified_pool, not at the raw LLM list.  Operator names on unexecuted pool members are recovered from candidate_id aliases; executed members have workflow_signature."
+    },
+    "events": [
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A3",
+      "unit_id": "PhalangesOutlinesCorrect",
+      "dataset": "PhalangesOutlinesCorrect",
+      "round": "r1",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_local_level_shift",
+        "repair_intrinsic_extreme_deviation"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_local_level_shift",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        },
+        {
+         "candidate_id": "repair_intrinsic_extreme_deviation",
+         "operators": [],
+         "id_resolution": "family_unspecified_outlier"
+        }
+       ],
+       "proposal_count_persisted": 2,
+       "selected": "repair_intrinsic_extreme_deviation",
+       "abstained": true,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "repair_intrinsic_extreme_deviation",
+         "kind": "probe",
+         "gain": 0.0222222222222222
+        },
+        {
+         "candidate_id": "repair_local_level_shift",
+         "kind": "probe",
+         "gain": 0.01481481481481478
+        }
+       ],
+       "executed_operators": [
+        "outlier_mad",
+        "repair_level_shift"
+       ],
+       "support": [
+        {
+         "program": "outlier_mad",
+         "relation": "CONFLICT",
+         "gain": 0.0222222222222222
+        },
+        {
+         "program": "repair_level_shift",
+         "relation": "CONFLICT",
+         "gain": 0.01481481481481478
+        }
+       ],
+       "delayed": [
+        {
+         "program": "outlier_mad",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        },
+        {
+         "program": "repair_level_shift",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 5
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A3",
+      "unit_id": "PhalangesOutlinesCorrect",
+      "dataset": "PhalangesOutlinesCorrect",
+      "round": "r2",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_level_shift_local"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_level_shift_local",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "identity",
+       "abstained": true,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "repair_level_shift_local",
+         "kind": "probe",
+         "gain": -0.029629629629629617
+        }
+       ],
+       "executed_operators": [
+        "repair_level_shift"
+       ],
+       "support": [
+        {
+         "program": "repair_level_shift",
+         "relation": "NEGATIVE",
+         "gain": -0.029629629629629617
+        }
+       ],
+       "delayed": [
+        {
+         "program": "repair_level_shift",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "rendered_empty",
+      "llm_calls_this_round": 5
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A5",
+      "unit_id": "PhalangesOutlinesCorrect",
+      "dataset": "PhalangesOutlinesCorrect",
+      "round": "r1",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_level_excursion"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_level_excursion",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "identity",
+       "abstained": true,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "repair_level_excursion",
+         "kind": "probe",
+         "gain": 0.01481481481481478
+        }
+       ],
+       "executed_operators": [
+        "repair_level_shift"
+       ],
+       "support": [
+        {
+         "program": "repair_level_shift",
+         "relation": "CONFLICT",
+         "gain": 0.01481481481481478
+        }
+       ],
+       "delayed": [
+        {
+         "program": "repair_level_shift",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 4
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A5",
+      "unit_id": "PhalangesOutlinesCorrect",
+      "dataset": "PhalangesOutlinesCorrect",
+      "round": "r2",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_localized_level_excursion"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_localized_level_excursion",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "identity",
+       "abstained": true,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "repair_localized_level_excursion",
+         "kind": "probe",
+         "gain": -0.029629629629629617
+        }
+       ],
+       "executed_operators": [
+        "repair_level_shift"
+       ],
+       "support": [
+        {
+         "program": "repair_level_shift",
+         "relation": "NEGATIVE",
+         "gain": -0.029629629629629617
+        }
+       ],
+       "delayed": [
+        {
+         "program": "repair_level_shift",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "rendered_empty",
+      "llm_calls_this_round": 6
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A3",
+      "unit_id": "GunPointAgeSpan",
+      "dataset": "GunPointAgeSpan",
+      "round": "r1",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "local_hampel_exploration"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "local_hampel_exploration",
+         "operators": [
+          "hampel_filter"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "identity",
+       "abstained": false,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "local_hampel_exploration",
+         "kind": "probe",
+         "gain": 0.5
+        }
+       ],
+       "executed_operators": [
+        "hampel_filter"
+       ],
+       "support": [
+        {
+         "program": "hampel_filter",
+         "relation": "POSITIVE",
+         "gain": 0.5
+        }
+       ],
+       "delayed": [
+        {
+         "program": "hampel_filter",
+         "relation": "POSITIVE",
+         "gain": 0.4,
+         "evidence_level": "DELAYED"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 6
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A3",
+      "unit_id": "GunPointAgeSpan",
+      "dataset": "GunPointAgeSpan",
+      "round": "r2",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "hampel_extreme_deviation"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "hampel_extreme_deviation",
+         "operators": [
+          "hampel_filter"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "identity",
+       "abstained": false,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "hampel_extreme_deviation",
+         "kind": "probe",
+         "gain": 0.4
+        }
+       ],
+       "executed_operators": [
+        "hampel_filter"
+       ],
+       "support": [
+        {
+         "program": "hampel_filter",
+         "relation": "POSITIVE",
+         "gain": 0.4
+        }
+       ],
+       "delayed": [
+        {
+         "program": "hampel_filter",
+         "relation": "POSITIVE",
+         "gain": 0.4,
+         "evidence_level": "DELAYED"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "rendered",
+      "llm_calls_this_round": 4
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A5",
+      "unit_id": "GunPointAgeSpan",
+      "dataset": "GunPointAgeSpan",
+      "round": "r1",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "localized_level_shift_repair"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "localized_level_shift_repair",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "localized_level_shift_repair",
+       "abstained": true,
+       "verifier_rejected": [
+        {
+         "candidate_id": "localized_level_shift_repair",
+         "kind": "verifier_rejected",
+         "gain": null
+        }
+       ],
+       "executed_probes": [],
+       "executed_operators": [],
+       "support": [],
+       "delayed": [],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 4
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_three_arms",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-run",
+      "protocol_version": "t6_cls_op_r2_three_arms_v1",
+      "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A5",
+      "unit_id": "GunPointAgeSpan",
+      "dataset": "GunPointAgeSpan",
+      "round": "r2",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_local_level_excursion"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_local_level_excursion",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "repair_local_level_excursion",
+       "abstained": true,
+       "verifier_rejected": [
+        {
+         "candidate_id": "repair_local_level_excursion",
+         "kind": "verifier_rejected",
+         "gain": null
+        }
+       ],
+       "executed_probes": [],
+       "executed_operators": [],
+       "support": [],
+       "delayed": [],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 5
+     }
+    ],
+    "do_not_mix_into_s1c_hit_rate": true
+   },
+   {
+    "stratum_id": "t6_cls_op_r2_a5_replay",
+    "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-replay-a5",
+    "protocol_version": "t6_cls_op_r2_a5_replay_v1",
+    "git_head": "03f2c1bc8eb42216935b4aabd7f02895279927ca",
+    "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+    "task_context_id": "classification-fixed-consumer-v1",
+    "run_id": "t6_cls_op_r2_a5_replay1",
+    "entry": "--r2-replay-a5",
+    "path": "artifacts/functional/e2/t6_cls_op_r2_a5_replay.json",
+    "n_rounds": 2,
+    "instrument": {
+     "persisted_round_fields_sampled": [
+      "abstained",
+      "activated",
+      "adapter_calls",
+      "approved_skill_id",
+      "arm",
+      "candidate_executions",
+      "chosen",
+      "condition",
+      "consumer_fits_after",
+      "dataset",
+      "delayed_event",
+      "delayed_origin",
+      "delayed_utility",
+      "episodes",
+      "fast_skill_event",
+      "harm_count",
+      "llm_calls_after",
+      "llm_calls_before",
+      "llm_calls_this_round",
+      "memory_resolution",
+      "modification_fraction_scope",
+      "pool",
+      "probes",
+      "proposal_count",
+      "retrieved_skill_ids",
+      "round",
+      "seconds",
+      "support_origin",
+      "support_receipts",
+      "task_consumer_key",
+      "winner_program"
+     ],
+     "raw_proposal_fields_found": [],
+     "raw_proposals_persisted": false,
+     "earliest_available_layer": "compiled_verified_pool",
+     "gap": "S1c and the listed historical runners persist DecisionTrace.candidate_ids as `pool` after compile + noop filter + CandidatePool.build(total_k) + verifier selectable filter.  They do not persist the propose-stage payload (all raw Agent candidates before truncation/verify).  `proposal_count` is len(non-identity pool after that filter).  Funnel therefore starts at compiled_verified_pool, not at the raw LLM list.  Operator names on unexecuted pool members are recovered from candidate_id aliases; executed members have workflow_signature."
+    },
+    "events": [
+     {
+      "stratum_id": "t6_cls_op_r2_a5_replay",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-replay-a5",
+      "protocol_version": "t6_cls_op_r2_a5_replay_v1",
+      "git_head": "03f2c1bc8eb42216935b4aabd7f02895279927ca",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A5",
+      "unit_id": "GunPointAgeSpan",
+      "dataset": "GunPointAgeSpan",
+      "round": "r1",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_local_level_shift"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_local_level_shift",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "repair_local_level_shift",
+       "abstained": true,
+       "verifier_rejected": [
+        {
+         "candidate_id": "repair_local_level_shift",
+         "kind": "verifier_rejected",
+         "gain": null
+        }
+       ],
+       "executed_probes": [],
+       "executed_operators": [],
+       "support": [],
+       "delayed": [],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 5
+     },
+     {
+      "stratum_id": "t6_cls_op_r2_a5_replay",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --r2-replay-a5",
+      "protocol_version": "t6_cls_op_r2_a5_replay_v1",
+      "git_head": "03f2c1bc8eb42216935b4aabd7f02895279927ca",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A5",
+      "unit_id": "GunPointAgeSpan",
+      "dataset": "GunPointAgeSpan",
+      "round": "r2",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "intrinsic_iqr_outlier_repair"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "intrinsic_iqr_outlier_repair",
+         "operators": [
+          "outlier_iqr"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "intrinsic_iqr_outlier_repair",
+       "abstained": true,
+       "verifier_rejected": [],
+       "executed_probes": [
+        {
+         "candidate_id": "intrinsic_iqr_outlier_repair",
+         "kind": "probe",
+         "gain": 0.0
+        }
+       ],
+       "executed_operators": [
+        "outlier_iqr"
+       ],
+       "support": [
+        {
+         "program": "outlier_iqr",
+         "relation": "NEUTRAL",
+         "gain": 0.0
+        }
+       ],
+       "delayed": [
+        {
+         "program": "outlier_iqr",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 4
+     }
+    ],
+    "do_not_mix_into_s1c_hit_rate": true
+   },
+   {
+    "stratum_id": "t6_cls_conf_dev_ecg200",
+    "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --conf-dev-run",
+    "protocol_version": "t6_cls_conf_dev_v1",
+    "git_head": "168cc99a39873ae8c1f7c51e9a6d0aa76186474c",
+    "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+    "task_context_id": "classification-fixed-consumer-v1",
+    "run_id": "t6_cls_conf_dev_ecg200_run1",
+    "entry": "--conf-dev-run",
+    "path": "artifacts/functional/e2/t6_cls_conf_dev_ecg200.json",
+    "n_rounds": 2,
+    "instrument": {
+     "persisted_round_fields_sampled": [
+      "abstained",
+      "activated",
+      "adapter_calls",
+      "approved_skill_id",
+      "arm",
+      "candidate_executions",
+      "chosen",
+      "condition",
+      "consumer_fits_after",
+      "dataset",
+      "delayed_event",
+      "delayed_origin",
+      "delayed_utility",
+      "episodes",
+      "fast_skill_event",
+      "harm_count",
+      "llm_calls_after",
+      "llm_calls_before",
+      "llm_calls_this_round",
+      "memory_resolution",
+      "modification_fraction_scope",
+      "pool",
+      "probes",
+      "proposal_count",
+      "retrieved_skill_ids",
+      "round",
+      "seconds",
+      "support_origin",
+      "support_receipts",
+      "task_consumer_key",
+      "winner_program"
+     ],
+     "raw_proposal_fields_found": [],
+     "raw_proposals_persisted": false,
+     "earliest_available_layer": "compiled_verified_pool",
+     "gap": "S1c and the listed historical runners persist DecisionTrace.candidate_ids as `pool` after compile + noop filter + CandidatePool.build(total_k) + verifier selectable filter.  They do not persist the propose-stage payload (all raw Agent candidates before truncation/verify).  `proposal_count` is len(non-identity pool after that filter).  Funnel therefore starts at compiled_verified_pool, not at the raw LLM list.  Operator names on unexecuted pool members are recovered from candidate_id aliases; executed members have workflow_signature."
+    },
+    "events": [
+     {
+      "stratum_id": "t6_cls_conf_dev_ecg200",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --conf-dev-run",
+      "protocol_version": "t6_cls_conf_dev_v1",
+      "git_head": "168cc99a39873ae8c1f7c51e9a6d0aa76186474c",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A3",
+      "unit_id": "ECG200",
+      "dataset": "ECG200",
+      "round": "r1",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_level_excursion"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_level_excursion",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        }
+       ],
+       "proposal_count_persisted": 1,
+       "selected": "identity",
+       "abstained": true,
+       "verifier_rejected": [
+        {
+         "candidate_id": "repair_level_excursion",
+         "kind": "verifier_rejected",
+         "gain": null
+        }
+       ],
+       "executed_probes": [],
+       "executed_operators": [],
+       "support": [],
+       "delayed": [],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 6
+     },
+     {
+      "stratum_id": "t6_cls_conf_dev_ecg200",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py --conf-dev-run",
+      "protocol_version": "t6_cls_conf_dev_v1",
+      "git_head": "168cc99a39873ae8c1f7c51e9a6d0aa76186474c",
+      "prompt_surface": "CLS-OP shared Fast path; classification TaskContext maximum_candidates=3; not the S1c course",
+      "task_context_id": "classification-fixed-consumer-v1",
+      "arm": "A3",
+      "unit_id": "ECG200",
+      "dataset": "ECG200",
+      "round": "r2",
+      "menu_oracle_program_posthoc": null,
+      "agent_visible_observation": {
+       "what_agent_saw_persisted": false,
+       "available": "same instrument gap as S1c: pool/chosen/probes/episodes only; inspect payload not saved"
+      },
+      "layers": {
+       "menu_available": null,
+       "raw_proposals_persisted": false,
+       "compiled_verified_pool": [
+        "identity",
+        "repair_early_level_shift",
+        "remove_broad_extreme_deviations"
+       ],
+       "compiled_pool_inferred": [
+        {
+         "candidate_id": "identity",
+         "operators": [
+          "identity"
+         ],
+         "id_resolution": "identity"
+        },
+        {
+         "candidate_id": "repair_early_level_shift",
+         "operators": [
+          "repair_level_shift"
+         ],
+         "id_resolution": "alias_unique"
+        },
+        {
+         "candidate_id": "remove_broad_extreme_deviations",
+         "operators": [],
+         "id_resolution": "family_unspecified_outlier"
+        }
+       ],
+       "proposal_count_persisted": 2,
+       "selected": "remove_broad_extreme_deviations",
+       "abstained": true,
+       "verifier_rejected": [
+        {
+         "candidate_id": "repair_early_level_shift",
+         "kind": "verifier_rejected",
+         "gain": null
+        }
+       ],
+       "executed_probes": [
+        {
+         "candidate_id": "remove_broad_extreme_deviations",
+         "kind": "probe",
+         "gain": -0.1428571428571429
+        }
+       ],
+       "executed_operators": [
+        "outlier_mad"
+       ],
+       "support": [
+        {
+         "program": "outlier_mad",
+         "relation": "NEGATIVE",
+         "gain": -0.1428571428571429
+        }
+       ],
+       "delayed": [
+        {
+         "program": "outlier_mad",
+         "relation": null,
+         "gain": null,
+         "evidence_level": "SUPPORT"
+        }
+       ],
+       "winner_delayed_approved": null,
+       "frozen_deployed": null
+      },
+      "breakpoint": "no_oracle_on_unit",
+      "memory_resolution": "no_memory",
+      "llm_calls_this_round": 4
+     }
+    ],
+    "do_not_mix_into_s1c_hit_rate": true
+   }
+  ],
+  "mixing_rule": "S1c 的 15 机会读数只在 s1c_course_forward_run1 层内计算。historical_strata 各自成层，不得并入一个总命中率。"
+ },
+ "part_b": {
+  "cap": 12,
+  "original_k": 3,
+  "expanded_k": 5,
+  "k_operationalization": "one variable K, realized jointly by fast_propose_v1 maxItems, harness-view candidate_policy.agent_program_slots/total_k, and TaskContext.deployment_constraints.maximum_candidates.  Original K=3 is the S1c live cap (schema maxItems=3 and TaskContext maximum_candidates=3).  Expanded K=5 is the same observation, instruction text, menu contracts, and frozen inspect, with only those three K fields raised.  methods/h0 files were not written.",
+  "inspect_note": "inspect was frozen from public features and shared across the pair.  S1c's stochastic inspect payload was not persisted, so a live inspect replay would have added a second random variable and would have exhausted the 12-call cap (inspect+tools+two proposes).  This isolates K; it is not a claim that the inspect equals S1c's inspect.",
+  "llm_calls": 12,
+  "seconds": 303.27,
+  "stop_reason": "LLM_CAP_REACHED_BEFORE_MiddlePhalanxOutlineCorrect__impulse_v2_k5",
+  "isolation": {
+   "probe_dir": "artifacts/functional/e2/s1_cold_policy_map_probes",
+   "declaration": "Part B outputs are diagnostic isolation material.  They must not enter any future arm Fast view, Skill store, Memory, or prompt.  They are not a ranking of the menu and they do not authorize a program."
+  },
+  "pairs": [
+   {
+    "unit_id": "PowerCons__impulse_v2",
+    "dataset": "PowerCons",
+    "injection": "impulse_v2",
+    "oracle_posthoc": "hampel_filter",
+    "oracle_in_prompt": false,
+    "shared": {
+     "observation_block_sha": "6a8d7a16b1283ac1706014e95878d43b92c9a5ffa8f4778fabf5a30baa67ffcc",
+     "n_observation_points": 3312,
+     "inspect_payload": {
+      "inspected_region_fractions": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "requested_public_tools": [],
+      "uncertainty": "medium",
+      "pattern_hypotheses": [
+       {
+        "hypothesis_id": "pub_level_excursion",
+        "pattern_type": "level_excursion",
+        "region_fractions": [
+         0.0,
+         0.6316425120772947
+        ],
+        "evidence_features": [
+         "level_region_fraction"
+        ],
+        "confidence": "low"
+       }
+      ]
+     },
+     "menu_operator_names": [
+      "denoise_median",
+      "outlier_iqr",
+      "hampel_filter",
+      "repair_level_shift",
+      "resample_uniform"
+     ],
+     "task_spec": {
+      "task_type": "classification",
+      "target_semantics": "class_label",
+      "label_availability": "train_labels",
+      "metric": {
+       "name": "accuracy",
+       "direction": "higher_is_better"
+      },
+      "horizon": null,
+      "downstream_model_class": "ridge-raw-plus-difference-v1",
+      "forbidden_modifications": []
+     },
+     "system_instruction": "You are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n"
+    },
+    "conditions": {
+     "k5": {
+      "k": 5,
+      "label": "k5",
+      "llm_calls": 3,
+      "llm_calls_cumulative": 3,
+      "n_candidates": 1,
+      "candidates": [
+       {
+        "candidate_id": "repair_level_shift_local",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "addresses_hypothesis_id": "pub_level_excursion"
+       }
+      ],
+      "oracle_hit_posthoc": false,
+      "error": null
+     },
+     "k_original": {
+      "k": 3,
+      "label": "k_original",
+      "llm_calls": 1,
+      "llm_calls_cumulative": 4,
+      "n_candidates": 1,
+      "candidates": [
+       {
+        "candidate_id": "repair_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "addresses_hypothesis_id": "pub_level_excursion"
+       }
+      ],
+      "oracle_hit_posthoc": false,
+      "error": null
+     }
+    }
+   },
+   {
+    "unit_id": "GunPointOldVersusYoung__impulse_v2",
+    "dataset": "GunPointOldVersusYoung",
+    "injection": "impulse_v2",
+    "oracle_posthoc": "hampel_filter",
+    "oracle_in_prompt": false,
+    "shared": {
+     "observation_block_sha": "8ad8ed2d1546104c2a45fb09d2d0a801cf123b9a9e6407339cc2493f6b163591",
+     "n_observation_points": 3300,
+     "inspect_payload": {
+      "inspected_region_fractions": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "requested_public_tools": [],
+      "uncertainty": "medium",
+      "pattern_hypotheses": [
+       {
+        "hypothesis_id": "pub_level_excursion",
+        "pattern_type": "level_excursion",
+        "region_fractions": [
+         0.0,
+         0.7524242424242424
+        ],
+        "evidence_features": [
+         "level_region_fraction"
+        ],
+        "confidence": "low"
+       }
+      ]
+     },
+     "menu_operator_names": [
+      "denoise_median",
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad",
+      "repair_burst_segment",
+      "resample_uniform"
+     ],
+     "task_spec": {
+      "task_type": "classification",
+      "target_semantics": "class_label",
+      "label_availability": "train_labels",
+      "metric": {
+       "name": "accuracy",
+       "direction": "higher_is_better"
+      },
+      "horizon": null,
+      "downstream_model_class": "ridge-raw-plus-difference-v1",
+      "forbidden_modifications": []
+     },
+     "system_instruction": "You are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n"
+    },
+    "conditions": {
+     "k5": {
+      "k": 5,
+      "label": "k5",
+      "llm_calls": 3,
+      "llm_calls_cumulative": 7,
+      "n_candidates": 0,
+      "candidates": [],
+      "oracle_hit_posthoc": false,
+      "error": null
+     },
+     "k_original": {
+      "k": 3,
+      "label": "k_original",
+      "llm_calls": 1,
+      "llm_calls_cumulative": 8,
+      "n_candidates": 0,
+      "candidates": [],
+      "oracle_hit_posthoc": false,
+      "error": null
+     }
+    }
+   },
+   {
+    "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+    "dataset": "DistalPhalanxOutlineCorrect",
+    "injection": "burst_cls2",
+    "oracle_posthoc": "outlier_iqr",
+    "oracle_in_prompt": false,
+    "shared": {
+     "observation_block_sha": "5ddf52be61dd9cab5979938d69dec1c08e2ab3dc7caf650715332e8e5466373b",
+     "n_observation_points": 3200,
+     "inspect_payload": {
+      "inspected_region_fractions": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "requested_public_tools": [],
+      "uncertainty": "medium",
+      "pattern_hypotheses": [
+       {
+        "hypothesis_id": "pub_level_excursion",
+        "pattern_type": "level_excursion",
+        "region_fractions": [
+         0.0,
+         0.21625
+        ],
+        "evidence_features": [
+         "level_region_fraction"
+        ],
+        "confidence": "low"
+       }
+      ]
+     },
+     "menu_operator_names": [
+      "denoise_median",
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad",
+      "hampel_filter",
+      "repair_level_shift",
+      "repair_burst_segment",
+      "resample_uniform"
+     ],
+     "task_spec": {
+      "task_type": "classification",
+      "target_semantics": "class_label",
+      "label_availability": "train_labels",
+      "metric": {
+       "name": "accuracy",
+       "direction": "higher_is_better"
+      },
+      "horizon": null,
+      "downstream_model_class": "ridge-raw-plus-difference-v1",
+      "forbidden_modifications": []
+     },
+     "system_instruction": "You are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n"
+    },
+    "conditions": {
+     "k5": {
+      "k": 5,
+      "label": "k5",
+      "llm_calls": 3,
+      "llm_calls_cumulative": 11,
+      "n_candidates": 1,
+      "candidates": [
+       {
+        "candidate_id": "repair_level_excursion",
+        "operators": [
+         "repair_level_shift"
+        ],
+        "addresses_hypothesis_id": "pub_level_excursion"
+       }
+      ],
+      "oracle_hit_posthoc": false,
+      "error": null
+     },
+     "k_original": {
+      "k": 3,
+      "label": "k_original",
+      "llm_calls": 1,
+      "llm_calls_cumulative": 12,
+      "n_candidates": 0,
+      "candidates": [],
+      "oracle_hit_posthoc": false,
+      "error": "Stop: LLM_BUDGET_EXCEEDED: LLM cap 12 reached"
+     }
+    }
+   },
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "injection": "impulse_v2",
+    "oracle_posthoc": "repair_level_shift",
+    "oracle_in_prompt": false,
+    "shared": {
+     "observation_block_sha": "4afee0344865601d49def04915fd6e4a00abfaeee4e52e75e755df751673cc45",
+     "n_observation_points": 3200,
+     "inspect_payload": {
+      "inspected_region_fractions": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "requested_public_tools": [],
+      "uncertainty": "medium",
+      "pattern_hypotheses": [
+       {
+        "hypothesis_id": "pub_level_excursion",
+        "pattern_type": "level_excursion",
+        "region_fractions": [
+         0.0,
+         0.716875
+        ],
+        "evidence_features": [
+         "level_region_fraction"
+        ],
+        "confidence": "low"
+       }
+      ]
+     },
+     "menu_operator_names": [
+      "denoise_median",
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad",
+      "hampel_filter",
+      "repair_level_shift",
+      "repair_burst_segment",
+      "resample_uniform"
+     ],
+     "task_spec": {
+      "task_type": "classification",
+      "target_semantics": "class_label",
+      "label_availability": "train_labels",
+      "metric": {
+       "name": "accuracy",
+       "direction": "higher_is_better"
+      },
+      "horizon": null,
+      "downstream_model_class": "ridge-raw-plus-difference-v1",
+      "forbidden_modifications": []
+     },
+     "system_instruction": "You are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n"
+    },
+    "conditions": {}
+   }
+  ],
+  "reading": {
+   "per_unit": [
+    {
+     "unit_id": "PowerCons__impulse_v2",
+     "oracle_posthoc": "hampel_filter",
+     "original_k_hit": false,
+     "k5_hit": false,
+     "label": "proposal_semantics_insufficient"
+    },
+    {
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "oracle_posthoc": "hampel_filter",
+     "original_k_hit": false,
+     "k5_hit": false,
+     "label": "proposal_semantics_insufficient"
+    },
+    {
+     "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "oracle_posthoc": "outlier_iqr",
+     "original_k_hit": false,
+     "k5_hit": false,
+     "label": "proposal_semantics_insufficient"
+    },
+    {
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "oracle_posthoc": "repair_level_shift",
+     "original_k_hit": false,
+     "k5_hit": false,
+     "label": "incomplete_pair"
+    }
+   ],
+   "label_counts": {
+    "proposal_semantics_insufficient": 3,
+    "incomplete_pair": 1
+   },
+   "frozen_reading": "proposal_semantics_insufficient",
+   "frozen_text": "K=5 在本次已完成的 3 个单元抽签中均未出现菜单正解（PowerCons/GPOVY/Distal；ECG200 未跑，MiddlePhalanx 因帽满未提案）。扩大帽也没有把候选数从 0–1 抬到接近 5——槽位未被用满，本次看不到截断解释。按冻结判读只写「提案语义不足」，不得再拆成 observation 不足或策略偏置。n=1 对/单元，不是稳定概率。",
+   "do_not_split_semantics": "If the reading is proposal_semantics_insufficient, do not subdivide into observation insufficiency vs policy bias.  That needs a future observation-expansion ablation.  This book does not run it."
+  },
+  "ranking_probe": "voided_not_run: the full-menu ranking probe was never executed in this session; there is no exploratory ranking material to archive"
+ },
+ "s1c_original_k_column": {
+  "note": "S1c A3-reset is the already-paid original-K live propose under the course Prompt and cap.  It is not byte-paired to Part B's frozen inspect; it is the historical original-K column.",
+  "a3_reset": [
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "oracle": "repair_level_shift",
+    "oracle_proposed_or_executed_in_s1c_a3": true,
+    "oracle_executed_in_s1c_a3": true,
+    "oracle_deployed_in_s1c_a3": false,
+    "deepest_breakpoint": "executed_not_passed"
+   },
+   {
+    "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+    "oracle": "outlier_iqr",
+    "oracle_proposed_or_executed_in_s1c_a3": false,
+    "oracle_executed_in_s1c_a3": false,
+    "oracle_deployed_in_s1c_a3": false,
+    "deepest_breakpoint": "not_proposed"
+   },
+   {
+    "unit_id": "PowerCons__impulse_v2",
+    "oracle": "hampel_filter",
+    "oracle_proposed_or_executed_in_s1c_a3": true,
+    "oracle_executed_in_s1c_a3": true,
+    "oracle_deployed_in_s1c_a3": true,
+    "deepest_breakpoint": "deployed"
+   },
+   {
+    "unit_id": "GunPointOldVersusYoung__impulse_v2",
+    "oracle": "hampel_filter",
+    "oracle_proposed_or_executed_in_s1c_a3": false,
+    "oracle_executed_in_s1c_a3": false,
+    "oracle_deployed_in_s1c_a3": false,
+    "deepest_breakpoint": "not_proposed"
+   },
+   {
+    "unit_id": "ECG200__impulse_v2",
+    "oracle": "repair_burst_segment",
+    "oracle_proposed_or_executed_in_s1c_a3": false,
+    "oracle_executed_in_s1c_a3": false,
+    "oracle_deployed_in_s1c_a3": false,
+    "deepest_breakpoint": "not_proposed"
+   }
+  ]
+ },
+ "graded_track_paragraph": "在这一次 S1c 课程里，15 个含菜单正解的臂-单元机会有 11 个断在「未提出」、3 个断在「执行后未过」（MiddlePhalanx 三臂都执行了 repair_level_shift 但 delayed 未批准）、1 个走通部署。因此「一张 Scope 匹配的 hypothesis 卡提高正确族进入有限帽的概率」是针对召回断点的合理假设，待因果实验验证，不是本诊断或 S1c 已经证明的事实。仍须走完：合法独立 Episode → 机器 Scope 匹配 → 专用 prior 槽 → 提案分布实测改变 → Target 自批 Support/delayed → 成本或 regret 改善且 harm 不升。本书封顶，无 diag-r2/r3。",
+ "obligations": {
+  "methods_runtime_contracts_operators_unmodified": true,
+  "existing_runners_unmodified": true,
+  "course_and_budgets_unmodified": true,
+  "downloads": 0,
+  "consumer_fits": 0,
+  "llm_part_a": 0,
+  "llm_part_b": 12,
+  "llm_cap": 12,
+  "ranking_probe_not_run": true,
+  "probe_outputs_isolated": true,
+  "sealed_oracles_not_rewritten": true,
+  "full_repo_pytest_not_run": true,
+  "no_diag_r2_r3": true,
+  "wording_1_of_15_is_this_run_only": true,
+  "graded_hypothesis_is_hypothesis_not_fact": true
+ }
+}

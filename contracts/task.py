@@ -48,7 +48,13 @@ PRESERVATION_VOCABULARY = (
     "series_length",
     "forecast_relevant_structure",
     "class_relevant_structure",
-    "anomaly_events",
+    "anomaly_events",  # #42i: refers to the evidence required for downstream
+    # event discrimination; does NOT mean every suspected anomaly inside the
+    # training region is forbidden from being deleted by an operator.
+    # normal_boundary_fidelity #42i: a preparation must not pull non-anomalous
+    # boundary points toward the suspect region in a way that erases the
+    # "background looks normal" signature the Consumer reads.
+    "normal_boundary_fidelity",
 )
 HARM_VOCABULARY = (
     "unnecessary_modification",
@@ -56,6 +62,13 @@ HARM_VOCABULARY = (
     "future_information_use",
     "out_of_scope_change",
     "event_erasure",
+    # normal_boundary_shrinkage #42i: preparation compresses the non-anomalous
+    # boundary band so the Consumer's negative examples disappear.
+    "normal_boundary_shrinkage",
+    # false_alarm_amplification #42i: preparation makes non-anomalous points
+    # look anomalous to the Consumer, raising background alarm rate without
+    # adding real events.
+    "false_alarm_amplification",
 )
 EVIDENCE_VOCABULARY = (
     "public_observation",
@@ -412,9 +425,10 @@ def deployment_constraints_v1(
     maximum_candidates: int = 3,
     maximum_modified_fraction: float = 0.35,
     fixed_downstream_model_id: str = "fixed:m0",
+    constraint_id: str = "forecast-fixed-m0-v1",
 ) -> DeploymentConstraintSpec:
     return DeploymentConstraintSpec(
-        constraint_id="forecast-fixed-m0-v1",
+        constraint_id=constraint_id,
         model_policy="fixed",
         fixed_downstream_model_id=fixed_downstream_model_id,
         maximum_candidates=maximum_candidates,
@@ -459,6 +473,121 @@ def classification_task_spec_v1(
     )
 
 
+def classification_global_coarse_task_quality_contract_v1() -> TaskQualityContract:
+    """Classification quality where class evidence is global/coarse and repairable."""
+
+    return TaskQualityContract(
+        contract_id="classification-global-coarse-quality-v1",
+        task_type="classification",
+        objective="preserve_class_evidence",
+        preserve=(
+            "observed_values_outside_suspect_region",
+            "temporal_order",
+            "series_length",
+            "class_relevant_structure",
+        ),
+        harms=(
+            "unnecessary_modification",
+            "global_over_smoothing",
+            "future_information_use",
+            "out_of_scope_change",
+        ),
+        evidence_expectations=(
+            "public_observation",
+            "fixed_public_probe_panel",
+            "candidate_execution_receipt",
+        ),
+        verification_dimensions=(
+            "operator_legality",
+            "execution_success",
+            "finite_output",
+            "shape_preservation",
+            "effect_distinctness",
+            "modification_scope",
+        ),
+        abstention_conditions=(
+            "insufficient_public_evidence",
+            "no_effect_distinct_candidate",
+            "risk_guard_failure",
+            "capability_unavailable",
+        ),
+    )
+
+
+def classification_local_event_task_quality_contract_v1() -> TaskQualityContract:
+    """Classification quality where local events are evidence and erasure is harmful."""
+
+    return TaskQualityContract(
+        contract_id="classification-local-event-quality-v1",
+        task_type="classification",
+        objective="preserve_class_evidence",
+        preserve=(
+            "temporal_order",
+            "series_length",
+            "class_relevant_structure",
+        ),
+        harms=(
+            "event_erasure",
+            "unnecessary_modification",
+            "global_over_smoothing",
+            "future_information_use",
+            "out_of_scope_change",
+        ),
+        evidence_expectations=(
+            "public_observation",
+            "fixed_public_probe_panel",
+            "candidate_execution_receipt",
+        ),
+        verification_dimensions=(
+            "operator_legality",
+            "execution_success",
+            "finite_output",
+            "shape_preservation",
+            "effect_distinctness",
+            "modification_scope",
+        ),
+        abstention_conditions=(
+            "risk_guard_failure",
+            "insufficient_public_evidence",
+            "no_effect_distinct_candidate",
+            "capability_unavailable",
+        ),
+    )
+
+
+def classification_task_context_v1(
+    *,
+    task_spec: TaskSpec | None = None,
+    quality_contract: TaskQualityContract | None = None,
+    deployment_constraints: DeploymentConstraintSpec | None = None,
+) -> TaskContext:
+    """Build a classification context using only the existing closed vocabulary."""
+
+    resolved_task = task_spec or classification_task_spec_v1()
+    if resolved_task.task_type != "classification":
+        raise ValueError(
+            "classification_task_context_v1 requires a classification TaskSpec"
+        )
+    resolved_quality = (
+        quality_contract or classification_global_coarse_task_quality_contract_v1()
+    )
+    if resolved_quality.task_type != "classification":
+        raise ValueError(
+            "classification_task_context_v1 requires a classification quality contract"
+        )
+    return TaskContext(
+        task_spec=resolved_task,
+        quality_contract=resolved_quality,
+        deployment_constraints=deployment_constraints
+        or deployment_constraints_v1(
+            constraint_id="classification-fixed-consumer-v1",
+            fixed_downstream_model_id="fixed:classification-consumer-v1",
+            maximum_candidates=2,
+            maximum_modified_fraction=0.1,
+        ),
+    )
+
+
 def anomaly_task_spec_v1(
     *,
     downstream_model_class: str = "residual_zscore_detector",
@@ -477,6 +606,116 @@ def anomaly_task_spec_v1(
     )
 
 
+def anomaly_background_model_quality_contract_v1() -> TaskQualityContract:
+    """#42i Part A — the AD-line background-model quality contract.
+
+    objective = preserve_anomaly_evidence: a preparation is good iff the
+    Consumer can still read the events that would otherwise have been
+    detected on the identity baseline.  The contract fixes the deployment
+    Consumer (aegists_iforest_v1 — the T6 frozen AD Consumer, named here so
+    the contract is auditable against the actual scoring code rather than a
+    generic placeholder).
+
+    preserve = observed_values_outside_suspect_region + temporal_order +
+        series_length + anomaly_events + normal_boundary_fidelity.
+    harms    = event_erasure + normal_boundary_shrinkage +
+        false_alarm_amplification + unnecessary_modification +
+        future_information_use + out_of_scope_change.
+
+    Red line: this contract carries **zero** Pattern→Program rules.  It
+    names no operator, no candidate, no program step.  A test enforces the
+    red line by enumerating the contract's to_dict() fields.
+    """
+    return TaskQualityContract(
+        contract_id="anomaly-background-model-quality-v1",
+        task_type="anomaly_detection",
+        objective="preserve_anomaly_evidence",
+        preserve=(
+            "observed_values_outside_suspect_region",
+            "temporal_order",
+            "series_length",
+            "anomaly_events",
+            "normal_boundary_fidelity",
+        ),
+        harms=(
+            "event_erasure",
+            "normal_boundary_shrinkage",
+            "false_alarm_amplification",
+            "unnecessary_modification",
+            "future_information_use",
+            "out_of_scope_change",
+        ),
+        evidence_expectations=(
+            "public_observation",
+            "fixed_public_probe_panel",
+            "candidate_execution_receipt",
+        ),
+        verification_dimensions=(
+            "operator_legality",
+            "execution_success",
+            "finite_output",
+            "shape_preservation",
+            "effect_distinctness",
+            "modification_scope",
+        ),
+        abstention_conditions=(
+            "insufficient_public_evidence",
+            "no_effect_distinct_candidate",
+            "risk_guard_failure",
+            "capability_unavailable",
+        ),
+    )
+
+
+def anomaly_task_context_v1(
+    *,
+    task_spec: TaskSpec | None = None,
+    quality_contract: TaskQualityContract | None = None,
+    deployment_constraints: DeploymentConstraintSpec | None = None,
+) -> TaskContext:
+    """#42i Part A — bundle the AD spec + quality contract + deployment limits.
+
+    Deployment constraints stay frozen for the AD line: fixed Consumer,
+    maximum_candidates = 2 (the held-in adaptation protocol explores at
+    most two non-identity probe candidates per round; the identity control
+    is kept by the runtime and is not charged against this cap),
+    maximum_modified_fraction = 0.20 (a tighter cap than forecast's 0.35 —
+    AD tolerates less mass rewrite because the Consumer reads raw values
+    directly).
+
+    #42k Part A: the cap is an *adaptation-window* exploration limit, not a
+    restatement of the deployment protocol.  "One frozen Workflow per series
+    in held-out deployment" is guaranteed by the protocol (freeze → Fast-only,
+    zero feedback), not by a candidate cap; writing it as maximum_candidates=1
+    silently truncated the held-in probe pool that fast_agent really consumes.
+    """
+    resolved_task = task_spec or anomaly_task_spec_v1(
+        downstream_model_class="aegists_iforest_v1",
+    )
+    if resolved_task.task_type != "anomaly_detection":
+        raise ValueError(
+            "anomaly_task_context_v1 requires an anomaly_detection TaskSpec"
+        )
+    resolved_quality = (
+        quality_contract or anomaly_background_model_quality_contract_v1()
+    )
+    if resolved_quality.task_type != "anomaly_detection":
+        raise ValueError(
+            "anomaly_task_context_v1 requires an anomaly_detection quality contract"
+        )
+    return TaskContext(
+        task_spec=resolved_task,
+        quality_contract=resolved_quality,
+        deployment_constraints=deployment_constraints
+        or deployment_constraints_v1(
+            constraint_id="anomaly-fixed-aegists-iforest-v2",
+            fixed_downstream_model_id="fixed:aegists_iforest_v1",
+            maximum_candidates=2,
+            maximum_modified_fraction=0.20,
+        ),
+    )
+
+
 __all__ = [
     "ABSTENTION_VOCABULARY",
     "DeploymentConstraintSpec",
@@ -492,7 +731,12 @@ __all__ = [
     "VERIFICATION_VOCABULARY",
     "MetricSpec",
     "TaskSpec",
+    "anomaly_background_model_quality_contract_v1",
+    "anomaly_task_context_v1",
     "anomaly_task_spec_v1",
+    "classification_global_coarse_task_quality_contract_v1",
+    "classification_local_event_task_quality_contract_v1",
+    "classification_task_context_v1",
     "classification_task_spec_v1",
     "deployment_constraints_v1",
     "forecast_task_context_v1",

@@ -1,0 +1,2300 @@
+{
+  "protocol_version": "warm_vs_cold_recipe_search_v1",
+  "role": "warm vs cold budgeted recipe search: does other-batch Experience buy a cheaper route to the same processing plan under a binding evaluation budget",
+  "not_authorization_evidence": "no Skill is written, no TRY right is granted, no Episode is promoted, no Fast or Slow path is entered, no snapshot pointer moves",
+  "overall_verdict": "WARM_NO_BENEFIT",
+  "per_target": {
+    "A": {
+      "target": {
+        "target_id": "A",
+        "cohort": "T233",
+        "consumer_variant": "pooled",
+        "window_id": "W2",
+        "why": "a cell whose full search settles on a full-batch plan"
+      },
+      "window": {
+        "window_id": "W2",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_02, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "origin_source": "quoted from the frozen roster",
+        "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+        "reference_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "winsorize",
+          "excluded_series": []
+        },
+        "reference_support_aggregate_gain": 0.25057492749462806,
+        "reference_delayed_aggregate_gain": 0.2704229678659038,
+        "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two"
+      },
+      "verdict": "WARM_NO_BENEFIT",
+      "reason": "warm spent 4 evaluations against cold's 4 and captured 0.962 against cold's 0.367",
+      "cold_capture_ratio": 0.36736456179616866,
+      "warm_capture_ratio": 0.9617071117525001,
+      "cold_evaluations_used": 4,
+      "warm_evaluations_used": 4,
+      "capture_quality_bar": 0.9
+    },
+    "B": {
+      "target": {
+        "target_id": "B",
+        "cohort": "traffic",
+        "consumer_variant": "per_channel",
+        "window_id": "W2",
+        "why": "a deliberately hard transfer: the other cohorts' per_channel experience points at denoise_median and winsorize, while this cell's own full search settles on outlier_iqr with one series reverted"
+      },
+      "window": {
+        "window_id": "W2",
+        "support_origins": [
+          1584,
+          1848
+        ],
+        "delayed_origins": [
+          2280
+        ],
+        "origin_provenance": "chosen, not quoted: window 1's shape and spacing shifted by +480 inside the same pre-sealed development region declared by g3_candidate_screening_v2.json (sealed_from_index = 3072)",
+        "origin_source": "chosen inside the declared pre-sealed region",
+        "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+        "reference_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "8"
+          ]
+        },
+        "reference_support_aggregate_gain": 0.2894029356859919,
+        "reference_delayed_aggregate_gain": 0.4392405194866649,
+        "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two"
+      },
+      "verdict": "WARM_NO_BENEFIT",
+      "reason": "warm spent 4 evaluations against cold's 4 and captured 0.902 against cold's 0.871",
+      "cold_capture_ratio": 0.8713028764670958,
+      "warm_capture_ratio": 0.9017399417968548,
+      "cold_evaluations_used": 4,
+      "warm_evaluations_used": 4,
+      "capture_quality_bar": 0.9
+    }
+  },
+  "pre_registered": {
+    "fixed_before_the_first_llm_call": true,
+    "episode_order": [
+      "A cold",
+      "A warm",
+      "B cold",
+      "B warm"
+    ],
+    "budget": {
+      "full_batch_support_evaluations": 4,
+      "mask_search_rounds": 1,
+      "mask_search_internal_evaluations": "instrument fixed cost, not counted against the budget, as in the frozen recipe",
+      "identity_baseline": "instrument overhead, computed once per cell and window, charged to neither arm",
+      "delayed_gate_evaluation": "one per episode, paid by both arms, not counted, revealed only after the plan is fixed",
+      "llm_calls_total": 40,
+      "llm_calls_per_episode": 6,
+      "validation_retries_per_stage": 2
+    },
+    "cost_metric": "evaluations_used = the number of shortlisted programs, i.e. the number of full-batch Support evaluations the instrument had to run",
+    "quality_metric": "capture_ratio = the adopted plan's delayed aggregate gain divided by the delayed aggregate gain the frozen full search reached on the same cell and window, quoted verbatim from batch_recipe_windows_v1",
+    "per_target_verdict_first_match_wins": [
+      "WARM_HARMS_QUALITY: the warm arm's capture ratio is below the cold arm's",
+      "WARM_REDUCES_COST_AT_QUALITY: the warm arm used strictly fewer evaluations and its capture ratio is at least 0.90",
+      "WARM_NO_BENEFIT: anything else"
+    ],
+    "overall_verdict": "both targets agreeing gives that verdict; otherwise MIXED, reported per target",
+    "behaviour_is_read_from_the_payload": "shortlist, mask request and adopted plan are read from the stage payloads and the instrument's own log, never from the Agent's prose",
+    "circuit_breaker": "stop and report if the first episode produces no payload",
+    "experience_relation_rule": "POSITIVE if the adopted plan's support and delayed gains are both positive; CONFLICT if they disagree in sign; NEGATIVE if both are non-positive and the plan treats something; ABSTAIN if the plan is identity"
+  },
+  "model": {
+    "model": "gpt-5.6-luna",
+    "base_url": "https://api.agicto.cn/v1"
+  },
+  "arms": {
+    "cold": "no other-batch record is shown",
+    "warm": "the 18 verified records minus every row measured on the target's own cohort (leave-one-cohort-out)",
+    "everything_else_identical": "same public observation table, same menu, same budget, same instrument, same schemas, same wording; the prompt differs only in the prior_batch_experience section"
+  },
+  "experience_corpus": {
+    "rows": [
+      {
+        "record_id": "electricity|pooled|W1",
+        "cohort": "electricity",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:electricity|consumer:pooled",
+        "window_id": "W1",
+        "support_origins": [
+          3072,
+          3120,
+          3168
+        ],
+        "delayed_origins": [
+          3216,
+          3264,
+          3312
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "1",
+            "2",
+            "6"
+          ]
+        },
+        "support_aggregate_gain": 0.03464312207313532,
+        "delayed_aggregate_gain": 0.016342695212762604,
+        "harmed_eval_series_count": 1,
+        "best_full_batch": {
+          "program": "winsorize",
+          "support_aggregate_gain": 0.01174051526581559,
+          "delayed_aggregate_gain": 2.1940316504781104e-05
+        },
+        "full_batch_menu_scan_support_gain": {
+          "repair_level_shift": -0.12956038373797243,
+          "hampel_filter": -0.06052950112696737,
+          "outlier_iqr": -0.002188087866944091,
+          "outlier_mad": -0.03361449867183316,
+          "winsorize": 0.01174051526581559,
+          "denoise_median": -0.02307629338259733,
+          "smooth_ma": -0.476227330031177
+        }
+      },
+      {
+        "record_id": "electricity|pooled|W2",
+        "cohort": "electricity",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:electricity|consumer:pooled",
+        "window_id": "W2",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "winsorize",
+          "excluded_series": [
+            "1",
+            "10",
+            "11",
+            "4",
+            "5",
+            "7",
+            "8"
+          ]
+        },
+        "support_aggregate_gain": 0.06838349184544888,
+        "delayed_aggregate_gain": 0.06350195164437798,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "outlier_mad",
+          "support_aggregate_gain": 0.0368221950531343,
+          "delayed_aggregate_gain": 0.0047377540783703305
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "electricity|pooled|W3",
+        "cohort": "electricity",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:electricity|consumer:pooled",
+        "window_id": "W3",
+        "support_origins": [
+          3648,
+          3696,
+          3744
+        ],
+        "delayed_origins": [
+          3792,
+          3840,
+          3888
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "winsorize",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.05765955525139644,
+        "delayed_aggregate_gain": 0.01610270708100586,
+        "harmed_eval_series_count": 2,
+        "best_full_batch": {
+          "program": "winsorize",
+          "support_aggregate_gain": 0.05765955525139644,
+          "delayed_aggregate_gain": 0.01610270708100586
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "electricity|per_channel|W1",
+        "cohort": "electricity",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:electricity|consumer:per_channel",
+        "window_id": "W1",
+        "support_origins": [
+          3072,
+          3120,
+          3168
+        ],
+        "delayed_origins": [
+          3216,
+          3264,
+          3312
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "denoise_median",
+          "excluded_series": [
+            "10",
+            "3",
+            "4"
+          ]
+        },
+        "support_aggregate_gain": 0.12935877470240767,
+        "delayed_aggregate_gain": 0.13852340221127663,
+        "harmed_eval_series_count": 1,
+        "best_full_batch": {
+          "program": "denoise_median",
+          "support_aggregate_gain": 0.11477706660792286,
+          "delayed_aggregate_gain": 0.1182090602454432
+        },
+        "full_batch_menu_scan_support_gain": {
+          "repair_level_shift": 0.0023615762973234894,
+          "hampel_filter": -0.12848888635565492,
+          "outlier_iqr": 0.03692363255891631,
+          "outlier_mad": 0.0026765822872424996,
+          "winsorize": 0.036621313766056506,
+          "denoise_median": 0.11477706660792286,
+          "smooth_ma": 0.03975481495772511
+        }
+      },
+      {
+        "record_id": "electricity|per_channel|W2",
+        "cohort": "electricity",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:electricity|consumer:per_channel",
+        "window_id": "W2",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "denoise_median",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.09112400157929097,
+        "delayed_aggregate_gain": 0.1341711497037197,
+        "harmed_eval_series_count": 1,
+        "best_full_batch": {
+          "program": "denoise_median",
+          "support_aggregate_gain": 0.09112400157929097,
+          "delayed_aggregate_gain": 0.1341711497037197
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "electricity|per_channel|W3",
+        "cohort": "electricity",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:electricity|consumer:per_channel",
+        "window_id": "W3",
+        "support_origins": [
+          3648,
+          3696,
+          3744
+        ],
+        "delayed_origins": [
+          3792,
+          3840,
+          3888
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "denoise_median",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.1198081321531685,
+        "delayed_aggregate_gain": 0.10067226362445664,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "denoise_median",
+          "support_aggregate_gain": 0.1198081321531685,
+          "delayed_aggregate_gain": 0.10067226362445664
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "T233|pooled|W1",
+        "cohort": "T233",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:T233|consumer:pooled",
+        "window_id": "W1",
+        "support_origins": [
+          3072,
+          3120,
+          3168
+        ],
+        "delayed_origins": [
+          3216,
+          3264,
+          3312
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "winsorize",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.07215558404058357,
+        "delayed_aggregate_gain": 0.11662707574145732,
+        "harmed_eval_series_count": 2,
+        "best_full_batch": {
+          "program": "winsorize",
+          "support_aggregate_gain": 0.07215558404058357,
+          "delayed_aggregate_gain": 0.11662707574145732
+        },
+        "full_batch_menu_scan_support_gain": {
+          "repair_level_shift": -0.06375800799060438,
+          "hampel_filter": -0.1656714947605187,
+          "outlier_iqr": 0.05857635738302062,
+          "outlier_mad": 0.023297891680744903,
+          "winsorize": 0.07215558404058357,
+          "denoise_median": -0.5280725741067012,
+          "smooth_ma": -0.6631969164901438
+        }
+      },
+      {
+        "record_id": "T233|pooled|W2",
+        "cohort": "T233",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:T233|consumer:pooled",
+        "window_id": "W2",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "winsorize",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.25057492749462806,
+        "delayed_aggregate_gain": 0.2704229678659038,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "winsorize",
+          "support_aggregate_gain": 0.25057492749462806,
+          "delayed_aggregate_gain": 0.2704229678659038
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "T233|pooled|W3",
+        "cohort": "T233",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:T233|consumer:pooled",
+        "window_id": "W3",
+        "support_origins": [
+          3648,
+          3696,
+          3744
+        ],
+        "delayed_origins": [
+          3792,
+          3840,
+          3888
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.31681336360035944,
+        "delayed_aggregate_gain": 0.22579028231367881,
+        "harmed_eval_series_count": 1,
+        "best_full_batch": {
+          "program": "outlier_iqr",
+          "support_aggregate_gain": 0.31681336360035944,
+          "delayed_aggregate_gain": 0.22579028231367881
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "T233|per_channel|W1",
+        "cohort": "T233",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:T233|consumer:per_channel",
+        "window_id": "W1",
+        "support_origins": [
+          3072,
+          3120,
+          3168
+        ],
+        "delayed_origins": [
+          3216,
+          3264,
+          3312
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "winsorize",
+          "excluded_series": [
+            "T233",
+            "T234",
+            "T241",
+            "T247",
+            "T256"
+          ]
+        },
+        "support_aggregate_gain": 0.01902193029912629,
+        "delayed_aggregate_gain": 0.030409829728196905,
+        "harmed_eval_series_count": 2,
+        "best_full_batch": {
+          "program": "smooth_ma",
+          "support_aggregate_gain": 0.016909569200764744,
+          "delayed_aggregate_gain": -0.14627536986412382
+        },
+        "full_batch_menu_scan_support_gain": {
+          "repair_level_shift": 0.004499533144557939,
+          "hampel_filter": -0.010929058950794511,
+          "outlier_iqr": 0.00491496202605773,
+          "outlier_mad": -0.0001661190563091002,
+          "winsorize": 0.008666229329661579,
+          "denoise_median": 0.0043421990330570785,
+          "smooth_ma": 0.016909569200764744
+        }
+      },
+      {
+        "record_id": "T233|per_channel|W2",
+        "cohort": "T233",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:T233|consumer:per_channel",
+        "window_id": "W2",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "T235",
+            "T244",
+            "T256"
+          ]
+        },
+        "support_aggregate_gain": 0.007415794789236013,
+        "delayed_aggregate_gain": 0.051322498773402093,
+        "harmed_eval_series_count": 1,
+        "best_full_batch": {
+          "program": "repair_level_shift",
+          "support_aggregate_gain": 0.0034053770430312303,
+          "delayed_aggregate_gain": -0.00547060384629448
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "T233|per_channel|W3",
+        "cohort": "T233",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:T233|consumer:per_channel",
+        "window_id": "W3",
+        "support_origins": [
+          3648,
+          3696,
+          3744
+        ],
+        "delayed_origins": [
+          3792,
+          3840,
+          3888
+        ],
+        "adopted_plan": {
+          "kind": "IDENTITY",
+          "program": "identity",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 0.0,
+        "delayed_aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "smooth_ma",
+          "support_aggregate_gain": 0.0204754750428925,
+          "delayed_aggregate_gain": -0.06819092365133249
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "traffic|pooled|W1",
+        "cohort": "traffic",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:traffic|consumer:pooled",
+        "window_id": "W1",
+        "support_origins": [
+          1104,
+          1368
+        ],
+        "delayed_origins": [
+          1800
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "6"
+          ]
+        },
+        "support_aggregate_gain": 0.6652773536462215,
+        "delayed_aggregate_gain": 1.0470750569907492,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "outlier_iqr",
+          "support_aggregate_gain": 0.6074409393531839,
+          "delayed_aggregate_gain": 1.0197743357219498
+        },
+        "full_batch_menu_scan_support_gain": {
+          "repair_level_shift": 0.06088266223877638,
+          "hampel_filter": -0.07570365930916216,
+          "outlier_iqr": 0.6074409393531839,
+          "outlier_mad": 0.550278583934095,
+          "winsorize": 0.4514954300949744,
+          "denoise_median": -0.6353743618225942,
+          "smooth_ma": -0.25922061661485607
+        }
+      },
+      {
+        "record_id": "traffic|pooled|W2",
+        "cohort": "traffic",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:traffic|consumer:pooled",
+        "window_id": "W2",
+        "support_origins": [
+          1584,
+          1848
+        ],
+        "delayed_origins": [
+          2280
+        ],
+        "adopted_plan": {
+          "kind": "BEST_FULL_BATCH",
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "support_aggregate_gain": 1.3006989387592602,
+        "delayed_aggregate_gain": 0.5470079644428341,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "outlier_iqr",
+          "support_aggregate_gain": 1.3006989387592602,
+          "delayed_aggregate_gain": 0.5470079644428341
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "traffic|pooled|W3",
+        "cohort": "traffic",
+        "consumer_variant": "pooled",
+        "cell_key": "batch:traffic|consumer:pooled",
+        "window_id": "W3",
+        "support_origins": [
+          2064,
+          2328
+        ],
+        "delayed_origins": [
+          2760
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3",
+            "5",
+            "7"
+          ]
+        },
+        "support_aggregate_gain": 0.9495787449025421,
+        "delayed_aggregate_gain": 1.0371011514814654,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "outlier_mad",
+          "support_aggregate_gain": 0.8640620607659373,
+          "delayed_aggregate_gain": 0.955590959759959
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "traffic|per_channel|W1",
+        "cohort": "traffic",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:traffic|consumer:per_channel",
+        "window_id": "W1",
+        "support_origins": [
+          1104,
+          1368
+        ],
+        "delayed_origins": [
+          1800
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3",
+            "8"
+          ]
+        },
+        "support_aggregate_gain": 0.3031836970220849,
+        "delayed_aggregate_gain": 0.35547178578423166,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "outlier_iqr",
+          "support_aggregate_gain": 0.2993128092600331,
+          "delayed_aggregate_gain": 0.3482156275538379
+        },
+        "full_batch_menu_scan_support_gain": {
+          "repair_level_shift": 0.008035752752639298,
+          "hampel_filter": 0.10359081635912801,
+          "outlier_iqr": 0.2993128092600331,
+          "outlier_mad": 0.2540717739299928,
+          "winsorize": 0.26546990327561126,
+          "denoise_median": 0.15845516869085957,
+          "smooth_ma": 0.20523161623814568
+        }
+      },
+      {
+        "record_id": "traffic|per_channel|W2",
+        "cohort": "traffic",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:traffic|consumer:per_channel",
+        "window_id": "W2",
+        "support_origins": [
+          1584,
+          1848
+        ],
+        "delayed_origins": [
+          2280
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "8"
+          ]
+        },
+        "support_aggregate_gain": 0.2894029356859919,
+        "delayed_aggregate_gain": 0.4392405194866649,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "winsorize",
+          "support_aggregate_gain": 0.30197649597473764,
+          "delayed_aggregate_gain": 0.3960807204767255
+        },
+        "full_batch_menu_scan_support_gain": null
+      },
+      {
+        "record_id": "traffic|per_channel|W3",
+        "cohort": "traffic",
+        "consumer_variant": "per_channel",
+        "cell_key": "batch:traffic|consumer:per_channel",
+        "window_id": "W3",
+        "support_origins": [
+          2064,
+          2328
+        ],
+        "delayed_origins": [
+          2760
+        ],
+        "adopted_plan": {
+          "kind": "MASKED_PLAN",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3"
+          ]
+        },
+        "support_aggregate_gain": 0.5147523618556838,
+        "delayed_aggregate_gain": 0.386971680105862,
+        "harmed_eval_series_count": 0,
+        "best_full_batch": {
+          "program": "outlier_iqr",
+          "support_aggregate_gain": 0.5083898301262475,
+          "delayed_aggregate_gain": 0.38039760868835465
+        },
+        "full_batch_menu_scan_support_gain": null
+      }
+    ],
+    "row_count": 18,
+    "sources": {
+      "records": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+      "menu_scans_for_window_1": "artifacts/functional/e2/batch_recipe_v2_all_cells_v1.json",
+      "v1_rule_ancestors": [
+        {
+          "artifact": "artifacts/functional/e2/batch_recipe_electricity_v1.json",
+          "cohort": "electricity",
+          "adoption_rule_version": "v1",
+          "menu_scan_matches_v2_pooled": true,
+          "adds_a_distinct_record": false
+        },
+        {
+          "artifact": "artifacts/functional/e2/batch_recipe_T233_v1.json",
+          "cohort": "T233",
+          "adoption_rule_version": "v1",
+          "menu_scan_matches_v2_pooled": true,
+          "adds_a_distinct_record": false
+        },
+        {
+          "artifact": "artifacts/functional/e2/batch_recipe_traffic_v1.json",
+          "cohort": "traffic",
+          "adoption_rule_version": "v1",
+          "menu_scan_matches_v2_pooled": true,
+          "adds_a_distinct_record": false
+        }
+      ]
+    },
+    "menu_scan_coverage": "recorded for the six window-1 rows; the twelve W2/W3 rows carry their window's best full-batch program and both of its gains instead"
+  },
+  "target_windows": {
+    "A": {
+      "window_id": "W2",
+      "support_origins": [
+        3360,
+        3408,
+        3456
+      ],
+      "delayed_origins": [
+        3504,
+        3552,
+        3600
+      ],
+      "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_02, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+      "origin_source": "quoted from the frozen roster",
+      "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+      "reference_plan": {
+        "kind": "BEST_FULL_BATCH",
+        "program": "winsorize",
+        "excluded_series": []
+      },
+      "reference_support_aggregate_gain": 0.25057492749462806,
+      "reference_delayed_aggregate_gain": 0.2704229678659038,
+      "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two"
+    },
+    "B": {
+      "window_id": "W2",
+      "support_origins": [
+        1584,
+        1848
+      ],
+      "delayed_origins": [
+        2280
+      ],
+      "origin_provenance": "chosen, not quoted: window 1's shape and spacing shifted by +480 inside the same pre-sealed development region declared by g3_candidate_screening_v2.json (sealed_from_index = 3072)",
+      "origin_source": "chosen inside the declared pre-sealed region",
+      "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "8"
+        ]
+      },
+      "reference_support_aggregate_gain": 0.2894029356859919,
+      "reference_delayed_aggregate_gain": 0.4392405194866649,
+      "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two"
+    }
+  },
+  "llm_call_count": 11,
+  "llm_call_budget_total": 40,
+  "stopped_early": null,
+  "experience_entries_written": [
+    {
+      "episode_id": "A_cold",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:pooled",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled",
+          "window_id": "W2"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "evaluations_used": 4
+        }
+      },
+      "workflow_signature": "outlier_mad",
+      "support_response": {
+        "gain": 0.1426669926712155,
+        "window": "support",
+        "program": "outlier_mad",
+        "excluded_series": [],
+        "arm": "cold",
+        "evaluations_used": 4,
+        "harmed_eval_series_count": 2,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "delayed_response": {
+        "gain": 0.09934381508967716,
+        "window": "delayed",
+        "capture_ratio": 0.36736456179616866,
+        "window_role": "revealed only after the plan was fixed; it took no part in the search",
+        "harmed_eval_series_count": 3,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "budgeted_search_engineering"
+      ]
+    },
+    {
+      "episode_id": "A_warm",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:pooled",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled",
+          "window_id": "W2"
+        },
+        "program_geometry": {
+          "excluded_count": 1,
+          "evaluations_used": 4
+        }
+      },
+      "workflow_signature": "winsorize",
+      "support_response": {
+        "gain": 0.2704328473226926,
+        "window": "support",
+        "program": "winsorize",
+        "excluded_series": [
+          "T234"
+        ],
+        "arm": "warm",
+        "evaluations_used": 4,
+        "harmed_eval_series_count": 0,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "delayed_response": {
+        "gain": 0.2600676913778575,
+        "window": "delayed",
+        "capture_ratio": 0.9617071117525001,
+        "window_role": "revealed only after the plan was fixed; it took no part in the search",
+        "harmed_eval_series_count": 1,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "budgeted_search_engineering"
+      ]
+    },
+    {
+      "episode_id": "B_cold",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:per_channel",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "window_id": "W2"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "evaluations_used": 4
+        }
+      },
+      "workflow_signature": "outlier_mad",
+      "support_response": {
+        "gain": 0.26447652686230655,
+        "window": "support",
+        "program": "outlier_mad",
+        "excluded_series": [],
+        "arm": "cold",
+        "evaluations_used": 4,
+        "harmed_eval_series_count": 0,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "delayed_response": {
+        "gain": 0.3827115280896326,
+        "window": "delayed",
+        "capture_ratio": 0.8713028764670958,
+        "window_role": "revealed only after the plan was fixed; it took no part in the search",
+        "harmed_eval_series_count": 0,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "budgeted_search_engineering"
+      ]
+    },
+    {
+      "episode_id": "B_warm",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:per_channel",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "window_id": "W2"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "evaluations_used": 4
+        }
+      },
+      "workflow_signature": "winsorize",
+      "support_response": {
+        "gain": 0.30197649597473764,
+        "window": "support",
+        "program": "winsorize",
+        "excluded_series": [],
+        "arm": "warm",
+        "evaluations_used": 4,
+        "harmed_eval_series_count": 0,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "delayed_response": {
+        "gain": 0.3960807204767255,
+        "window": "delayed",
+        "capture_ratio": 0.9017399417968548,
+        "window_role": "revealed only after the plan was fixed; it took no part in the search",
+        "harmed_eval_series_count": 0,
+        "provenance": "budgeted_search_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "budgeted_search_engineering"
+      ]
+    }
+  ],
+  "experience_provenance": "budgeted_search_engineering",
+  "experience_entries_are_not_fed_back": true,
+  "episodes": [
+    {
+      "episode_id": "A_cold",
+      "target_id": "A",
+      "arm": "cold",
+      "cohort": "T233",
+      "consumer_variant": "pooled",
+      "window_id": "W2",
+      "support_origins": [
+        3360,
+        3408,
+        3456
+      ],
+      "delayed_origins": [
+        3504,
+        3552,
+        3600
+      ],
+      "experience_rows_visible": 0,
+      "experience_cohorts_visible": [],
+      "stages": [
+        {
+          "stage": "budgeted_shortlist",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "budgeted_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 1,
+          "validation_error_codes": [
+            "MASK_NOT_MEASURED"
+          ],
+          "first_pass_valid": false
+        }
+      ],
+      "shortlist_payload": {
+        "shortlist": [
+          "repair_level_shift",
+          "hampel_filter",
+          "outlier_mad",
+          "denoise_median"
+        ],
+        "request_mask_search": true,
+        "reason": "The public features show repeated substantial level excursions across the training series, together with concentrated robust local deviations and no missingness. Shortlist level-shift repair first, then robust local outlier and median-based alternatives; request the free exclusion-mask round to localize harmful series effects."
+      },
+      "adopted_plan": {
+        "program": "outlier_mad",
+        "excluded_series": []
+      },
+      "support": {
+        "aggregate_gain": 0.1426669926712155,
+        "harmed_eval_series_count": 2,
+        "harmed_eval_series_total_harm": 0.03954073177328177,
+        "harmed_eval_series": [
+          "T259",
+          "T261"
+        ]
+      },
+      "delayed": {
+        "aggregate_gain": 0.09934381508967716,
+        "harmed_eval_series_count": 3,
+        "harmed_eval_series_total_harm": 0.2796317150231566,
+        "harmed_eval_series": [
+          "T259",
+          "T262",
+          "T264"
+        ]
+      },
+      "capture_ratio": 0.36736456179616866,
+      "evaluations_used": 4,
+      "shortlist": [
+        "repair_level_shift",
+        "hampel_filter",
+        "outlier_mad",
+        "denoise_median"
+      ],
+      "request_mask_search": true,
+      "best_shortlisted_program": "outlier_mad",
+      "support_results": {
+        "repair_level_shift": {
+          "aggregate_gain": 0.025516042182184433,
+          "harmed_eval_series_count": 3,
+          "harmed_eval_series_total_harm": 0.6063034224619474,
+          "harmed_eval_series": [
+            "T260",
+            "T261",
+            "T262"
+          ]
+        },
+        "hampel_filter": {
+          "aggregate_gain": -0.048227970985966206,
+          "harmed_eval_series_count": 3,
+          "harmed_eval_series_total_harm": 1.2745849616982643,
+          "harmed_eval_series": [
+            "T260",
+            "T261",
+            "T262"
+          ]
+        },
+        "outlier_mad": {
+          "aggregate_gain": 0.1426669926712155,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.03954073177328177,
+          "harmed_eval_series": [
+            "T259",
+            "T261"
+          ]
+        },
+        "denoise_median": {
+          "aggregate_gain": -0.430582477639593,
+          "harmed_eval_series_count": 6,
+          "harmed_eval_series_total_harm": 3.6568269938980045,
+          "harmed_eval_series": [
+            "T257",
+            "T259",
+            "T261",
+            "T262",
+            "T264",
+            "T266"
+          ]
+        }
+      },
+      "mask_search": {
+        "program": "outlier_mad",
+        "final_excluded": [],
+        "support": {
+          "aggregate_gain": 0.1426669926712155,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.03954073177328177,
+          "harmed_eval_series": [
+            "T259",
+            "T261"
+          ]
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "T234",
+            "support_aggregate_gain": 0.1259366175576546,
+            "delta": -0.016730375113560902,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "T234",
+          "T241",
+          "T233",
+          "T239",
+          "T236",
+          "T244",
+          "T254",
+          "T246",
+          "T235",
+          "T240",
+          "T247",
+          "T256"
+        ],
+        "charged": false
+      },
+      "shortlist_reason": "The public features show repeated substantial level excursions across the training series, together with concentrated robust local deviations and no missingness. Shortlist level-shift repair first, then robust local outlier and median-based alternatives; request the free exclusion-mask round to localize harmful series effects.",
+      "adoption_payload": {
+        "program": "outlier_mad",
+        "excluded_series": [],
+        "reason": "outlier_mad has the strongest positive full-batch Support gain among the shortlisted programs (0.1427), with fewer harmed evaluation series than the other positively supported option. The measured mask-search result reverted no series, so no exclusions are adopted."
+      },
+      "llm_calls": 3,
+      "adoption_reason": "outlier_mad has the strongest positive full-batch Support gain among the shortlisted programs (0.1427), with fewer harmed evaluation series than the other positively supported option. The measured mask-search result reverted no series, so no exclusions are adopted.",
+      "reference_delayed_aggregate_gain": 0.2704229678659038,
+      "reference_plan": {
+        "kind": "BEST_FULL_BATCH",
+        "program": "winsorize",
+        "excluded_series": []
+      },
+      "matches_reference_plan": false,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 4,
+        "budget": 4,
+        "instrument_internal_evaluations_not_charged": 15,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "repair_level_shift",
+            "charged": true,
+            "aggregate_gain": 0.025516042182184433
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "hampel_filter",
+            "charged": true,
+            "aggregate_gain": -0.048227970985966206
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_mad",
+            "charged": true,
+            "aggregate_gain": 0.1426669926712155
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "denoise_median",
+            "charged": true,
+            "aggregate_gain": -0.430582477639593
+          },
+          {
+            "kind": "mask_search",
+            "program": "outlier_mad",
+            "charged": false,
+            "final_excluded": [],
+            "aggregate_gain": 0.1426669926712155
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_mad",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.09934381508967716
+          }
+        ]
+      },
+      "wall_seconds": 41.77551249996759,
+      "negative_experience_use": {
+        "not_applicable": "the cold arm sees no other-batch record"
+      },
+      "experience_written": {
+        "episode_id": "A_cold",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:pooled",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled",
+            "window_id": "W2"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "evaluations_used": 4
+          }
+        },
+        "workflow_signature": "outlier_mad",
+        "support_response": {
+          "gain": 0.1426669926712155,
+          "window": "support",
+          "program": "outlier_mad",
+          "excluded_series": [],
+          "arm": "cold",
+          "evaluations_used": 4,
+          "harmed_eval_series_count": 2,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "delayed_response": {
+          "gain": 0.09934381508967716,
+          "window": "delayed",
+          "capture_ratio": 0.36736456179616866,
+          "window_role": "revealed only after the plan was fixed; it took no part in the search",
+          "harmed_eval_series_count": 3,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "budgeted_search_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "A_warm",
+      "target_id": "A",
+      "arm": "warm",
+      "cohort": "T233",
+      "consumer_variant": "pooled",
+      "window_id": "W2",
+      "support_origins": [
+        3360,
+        3408,
+        3456
+      ],
+      "delayed_origins": [
+        3504,
+        3552,
+        3600
+      ],
+      "experience_rows_visible": 12,
+      "experience_cohorts_visible": [
+        "electricity",
+        "traffic"
+      ],
+      "stages": [
+        {
+          "stage": "budgeted_shortlist",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "budgeted_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        }
+      ],
+      "shortlist_payload": {
+        "shortlist": [
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize",
+          "repair_level_shift"
+        ],
+        "request_mask_search": true,
+        "reason": "The public evidence shows repeated extreme local deviations alongside substantial level excursions, so robust outlier treatments are the safest first checks, with level-shift repair as a targeted alternative. The series-level evidence is heterogeneous, making a greedy exclusion-mask round useful for limiting harm in the pooled consumer."
+      },
+      "adopted_plan": {
+        "program": "winsorize",
+        "excluded_series": [
+          "T234"
+        ]
+      },
+      "support": {
+        "aggregate_gain": 0.2704328473226926,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.2600676913778575,
+        "harmed_eval_series_count": 1,
+        "harmed_eval_series_total_harm": 0.024016989963426976,
+        "harmed_eval_series": [
+          "T259"
+        ]
+      },
+      "capture_ratio": 0.9617071117525001,
+      "evaluations_used": 4,
+      "shortlist": [
+        "outlier_iqr",
+        "outlier_mad",
+        "winsorize",
+        "repair_level_shift"
+      ],
+      "request_mask_search": true,
+      "best_shortlisted_program": "winsorize",
+      "support_results": {
+        "outlier_iqr": {
+          "aggregate_gain": 0.19628808511814608,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.0400791950493854,
+          "harmed_eval_series": [
+            "T261"
+          ]
+        },
+        "outlier_mad": {
+          "aggregate_gain": 0.1426669926712155,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.03954073177328177,
+          "harmed_eval_series": [
+            "T259",
+            "T261"
+          ]
+        },
+        "winsorize": {
+          "aggregate_gain": 0.25057492749462806,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "repair_level_shift": {
+          "aggregate_gain": 0.025516042182184433,
+          "harmed_eval_series_count": 3,
+          "harmed_eval_series_total_harm": 0.6063034224619474,
+          "harmed_eval_series": [
+            "T260",
+            "T261",
+            "T262"
+          ]
+        }
+      },
+      "mask_search": {
+        "program": "winsorize",
+        "final_excluded": [
+          "T234"
+        ],
+        "support": {
+          "aggregate_gain": 0.2704328473226926,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "T234",
+            "support_aggregate_gain": 0.2704328473226926,
+            "delta": 0.019857919828064563,
+            "decision": "ACCEPTED"
+          },
+          {
+            "step": 2,
+            "reverted_series": "T246",
+            "support_aggregate_gain": 0.2641400414993577,
+            "delta": -0.006292805823334913,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "T234",
+          "T246",
+          "T233",
+          "T240",
+          "T235",
+          "T241",
+          "T244",
+          "T254",
+          "T256",
+          "T236",
+          "T239",
+          "T247"
+        ],
+        "charged": false
+      },
+      "shortlist_reason": "The public evidence shows repeated extreme local deviations alongside substantial level excursions, so robust outlier treatments are the safest first checks, with level-shift repair as a targeted alternative. The series-level evidence is heterogeneous, making a greedy exclusion-mask round useful for limiting harm in the pooled consumer.",
+      "adoption_payload": {
+        "program": "winsorize",
+        "excluded_series": [
+          "T234"
+        ],
+        "reason": "Winsorize had the highest full-batch Support gain (0.2506) among the shortlisted programs and harmed no evaluation series. The mask search accepted it for the unfiltered set after reverting T234; T246 was rejected and is therefore not excluded."
+      },
+      "llm_calls": 2,
+      "adoption_reason": "Winsorize had the highest full-batch Support gain (0.2506) among the shortlisted programs and harmed no evaluation series. The mask search accepted it for the unfiltered set after reverting T234; T246 was rejected and is therefore not excluded.",
+      "reference_delayed_aggregate_gain": 0.2704229678659038,
+      "reference_plan": {
+        "kind": "BEST_FULL_BATCH",
+        "program": "winsorize",
+        "excluded_series": []
+      },
+      "matches_reference_plan": false,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 4,
+        "budget": 4,
+        "instrument_internal_evaluations_not_charged": 16,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_iqr",
+            "charged": true,
+            "aggregate_gain": 0.19628808511814608
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_mad",
+            "charged": true,
+            "aggregate_gain": 0.1426669926712155
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "winsorize",
+            "charged": true,
+            "aggregate_gain": 0.25057492749462806
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "repair_level_shift",
+            "charged": true,
+            "aggregate_gain": 0.025516042182184433
+          },
+          {
+            "kind": "mask_search",
+            "program": "winsorize",
+            "charged": false,
+            "final_excluded": [
+              "T234"
+            ],
+            "aggregate_gain": 0.2704328473226926
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "winsorize",
+            "charged": false,
+            "excluded_series": [
+              "T234"
+            ],
+            "aggregate_gain": 0.2600676913778575
+          }
+        ]
+      },
+      "wall_seconds": 37.07268290000502,
+      "negative_experience_use": {
+        "menu_scan_rows_visible": 4,
+        "programs_seen_losing_somewhere": [
+          "denoise_median",
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad",
+          "repair_level_shift",
+          "smooth_ma"
+        ],
+        "programs_seen_losing_everywhere_they_were_measured": [],
+        "shortlisted": [
+          "outlier_iqr",
+          "outlier_mad",
+          "repair_level_shift",
+          "winsorize"
+        ],
+        "losing_programs_shortlisted": [
+          "outlier_iqr",
+          "outlier_mad",
+          "repair_level_shift"
+        ],
+        "losing_everywhere_programs_shortlisted": [],
+        "losing_everywhere_programs_skipped": [],
+        "per_program_negative_rows": {
+          "denoise_median": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.02307629338259733
+            },
+            {
+              "cell_key": "batch:traffic|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.6353743618225942
+            }
+          ],
+          "hampel_filter": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.06052950112696737
+            },
+            {
+              "cell_key": "batch:electricity|consumer:per_channel",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.12848888635565492
+            },
+            {
+              "cell_key": "batch:traffic|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.07570365930916216
+            }
+          ],
+          "outlier_iqr": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.002188087866944091
+            }
+          ],
+          "outlier_mad": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.03361449867183316
+            }
+          ],
+          "repair_level_shift": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.12956038373797243
+            }
+          ],
+          "smooth_ma": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.476227330031177
+            },
+            {
+              "cell_key": "batch:traffic|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.25922061661485607
+            }
+          ]
+        }
+      },
+      "experience_written": {
+        "episode_id": "A_warm",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:pooled",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled",
+            "window_id": "W2"
+          },
+          "program_geometry": {
+            "excluded_count": 1,
+            "evaluations_used": 4
+          }
+        },
+        "workflow_signature": "winsorize",
+        "support_response": {
+          "gain": 0.2704328473226926,
+          "window": "support",
+          "program": "winsorize",
+          "excluded_series": [
+            "T234"
+          ],
+          "arm": "warm",
+          "evaluations_used": 4,
+          "harmed_eval_series_count": 0,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "delayed_response": {
+          "gain": 0.2600676913778575,
+          "window": "delayed",
+          "capture_ratio": 0.9617071117525001,
+          "window_role": "revealed only after the plan was fixed; it took no part in the search",
+          "harmed_eval_series_count": 1,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "budgeted_search_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "B_cold",
+      "target_id": "B",
+      "arm": "cold",
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "window_id": "W2",
+      "support_origins": [
+        1584,
+        1848
+      ],
+      "delayed_origins": [
+        2280
+      ],
+      "experience_rows_visible": 0,
+      "experience_cohorts_visible": [],
+      "stages": [
+        {
+          "stage": "budgeted_shortlist",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "budgeted_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 1,
+          "validation_error_codes": [
+            "MASK_NOT_MEASURED"
+          ],
+          "first_pass_valid": false
+        }
+      ],
+      "shortlist_payload": {
+        "shortlist": [
+          "repair_level_shift",
+          "hampel_filter",
+          "outlier_mad",
+          "denoise_median"
+        ],
+        "request_mask_search": true,
+        "reason": "The public features show strong localized level excursions and extreme local robust deviations across many series, with no missingness. These programs target level shifts or isolated/local noise while covering distinct repair mechanisms; exclusion-mask search can address the heterogeneous strength and localization across series."
+      },
+      "adopted_plan": {
+        "program": "outlier_mad",
+        "excluded_series": []
+      },
+      "support": {
+        "aggregate_gain": 0.26447652686230655,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.3827115280896326,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "capture_ratio": 0.8713028764670958,
+      "evaluations_used": 4,
+      "shortlist": [
+        "repair_level_shift",
+        "hampel_filter",
+        "outlier_mad",
+        "denoise_median"
+      ],
+      "request_mask_search": true,
+      "best_shortlisted_program": "outlier_mad",
+      "support_results": {
+        "repair_level_shift": {
+          "aggregate_gain": 0.019407601424690592,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.019821426946394605,
+          "harmed_eval_series": [
+            "19"
+          ]
+        },
+        "hampel_filter": {
+          "aggregate_gain": 0.16114118039354974,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "outlier_mad": {
+          "aggregate_gain": 0.26447652686230655,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "denoise_median": {
+          "aggregate_gain": 0.15329569650855773,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        }
+      },
+      "mask_search": {
+        "program": "outlier_mad",
+        "final_excluded": [],
+        "support": {
+          "aggregate_gain": 0.26447652686230655,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "3",
+            "support_aggregate_gain": 0.26159974658511287,
+            "delta": -0.00287678027719368,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "3",
+          "8",
+          "2",
+          "7",
+          "10",
+          "6",
+          "4",
+          "11",
+          "5",
+          "1",
+          "0",
+          "9"
+        ],
+        "charged": false
+      },
+      "shortlist_reason": "The public features show strong localized level excursions and extreme local robust deviations across many series, with no missingness. These programs target level shifts or isolated/local noise while covering distinct repair mechanisms; exclusion-mask search can address the heterogeneous strength and localization across series.",
+      "adoption_payload": {
+        "program": "outlier_mad",
+        "excluded_series": [],
+        "reason": "outlier_mad has the highest public full-batch Support gain among the shortlisted programs and harmed no evaluation series."
+      },
+      "llm_calls": 3,
+      "adoption_reason": "outlier_mad has the highest public full-batch Support gain among the shortlisted programs and harmed no evaluation series.",
+      "reference_delayed_aggregate_gain": 0.4392405194866649,
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "8"
+        ]
+      },
+      "matches_reference_plan": false,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 4,
+        "budget": 4,
+        "instrument_internal_evaluations_not_charged": 15,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "repair_level_shift",
+            "charged": true,
+            "aggregate_gain": 0.019407601424690592
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "hampel_filter",
+            "charged": true,
+            "aggregate_gain": 0.16114118039354974
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_mad",
+            "charged": true,
+            "aggregate_gain": 0.26447652686230655
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "denoise_median",
+            "charged": true,
+            "aggregate_gain": 0.15329569650855773
+          },
+          {
+            "kind": "mask_search",
+            "program": "outlier_mad",
+            "charged": false,
+            "final_excluded": [],
+            "aggregate_gain": 0.26447652686230655
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_mad",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.3827115280896326
+          }
+        ]
+      },
+      "wall_seconds": 33.196545199956745,
+      "negative_experience_use": {
+        "not_applicable": "the cold arm sees no other-batch record"
+      },
+      "experience_written": {
+        "episode_id": "B_cold",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:per_channel",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "window_id": "W2"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "evaluations_used": 4
+          }
+        },
+        "workflow_signature": "outlier_mad",
+        "support_response": {
+          "gain": 0.26447652686230655,
+          "window": "support",
+          "program": "outlier_mad",
+          "excluded_series": [],
+          "arm": "cold",
+          "evaluations_used": 4,
+          "harmed_eval_series_count": 0,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "delayed_response": {
+          "gain": 0.3827115280896326,
+          "window": "delayed",
+          "capture_ratio": 0.8713028764670958,
+          "window_role": "revealed only after the plan was fixed; it took no part in the search",
+          "harmed_eval_series_count": 0,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "budgeted_search_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "B_warm",
+      "target_id": "B",
+      "arm": "warm",
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "window_id": "W2",
+      "support_origins": [
+        1584,
+        1848
+      ],
+      "delayed_origins": [
+        2280
+      ],
+      "experience_rows_visible": 12,
+      "experience_cohorts_visible": [
+        "T233",
+        "electricity"
+      ],
+      "stages": [
+        {
+          "stage": "budgeted_shortlist",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "budgeted_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 1,
+          "validation_error_codes": [
+            "MASK_NOT_MEASURED"
+          ],
+          "first_pass_valid": false
+        }
+      ],
+      "shortlist_payload": {
+        "shortlist": [
+          "outlier_iqr",
+          "outlier_mad",
+          "denoise_median",
+          "winsorize"
+        ],
+        "request_mask_search": true,
+        "reason": "The public features show no missingness but widespread localized extreme deviations and level excursions, so robust outlier handling and median denoising are the most directly supported mechanisms. A free exclusion-mask round is worthwhile because the anomaly evidence varies substantially across training series."
+      },
+      "adopted_plan": {
+        "program": "winsorize",
+        "excluded_series": []
+      },
+      "support": {
+        "aggregate_gain": 0.30197649597473764,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.3960807204767255,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "capture_ratio": 0.9017399417968548,
+      "evaluations_used": 4,
+      "shortlist": [
+        "outlier_iqr",
+        "outlier_mad",
+        "denoise_median",
+        "winsorize"
+      ],
+      "request_mask_search": true,
+      "best_shortlisted_program": "winsorize",
+      "support_results": {
+        "outlier_iqr": {
+          "aggregate_gain": 0.28866681497058333,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "outlier_mad": {
+          "aggregate_gain": 0.26447652686230655,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "denoise_median": {
+          "aggregate_gain": 0.15329569650855773,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "winsorize": {
+          "aggregate_gain": 0.30197649597473764,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        }
+      },
+      "mask_search": {
+        "program": "winsorize",
+        "final_excluded": [],
+        "support": {
+          "aggregate_gain": 0.30197649597473764,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "8",
+            "support_aggregate_gain": 0.3018048049035834,
+            "delta": -0.000171691071154223,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "8",
+          "6",
+          "2",
+          "3",
+          "7",
+          "10",
+          "4",
+          "5",
+          "11",
+          "0",
+          "9",
+          "1"
+        ],
+        "charged": false
+      },
+      "shortlist_reason": "The public features show no missingness but widespread localized extreme deviations and level excursions, so robust outlier handling and median denoising are the most directly supported mechanisms. A free exclusion-mask round is worthwhile because the anomaly evidence varies substantially across training series.",
+      "adoption_payload": {
+        "program": "winsorize",
+        "excluded_series": [],
+        "reason": "Adopt winsorize because it achieved the highest full-batch Support aggregate gain among the shortlisted programs (0.30198) with no harmed evaluation series."
+      },
+      "llm_calls": 3,
+      "adoption_reason": "Adopt winsorize because it achieved the highest full-batch Support aggregate gain among the shortlisted programs (0.30198) with no harmed evaluation series.",
+      "reference_delayed_aggregate_gain": 0.4392405194866649,
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "8"
+        ]
+      },
+      "matches_reference_plan": false,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 4,
+        "budget": 4,
+        "instrument_internal_evaluations_not_charged": 15,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_iqr",
+            "charged": true,
+            "aggregate_gain": 0.28866681497058333
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_mad",
+            "charged": true,
+            "aggregate_gain": 0.26447652686230655
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "denoise_median",
+            "charged": true,
+            "aggregate_gain": 0.15329569650855773
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "winsorize",
+            "charged": true,
+            "aggregate_gain": 0.30197649597473764
+          },
+          {
+            "kind": "mask_search",
+            "program": "winsorize",
+            "charged": false,
+            "final_excluded": [],
+            "aggregate_gain": 0.30197649597473764
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "winsorize",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.3960807204767255
+          }
+        ]
+      },
+      "wall_seconds": 36.61091980000492,
+      "negative_experience_use": {
+        "menu_scan_rows_visible": 4,
+        "programs_seen_losing_somewhere": [
+          "denoise_median",
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad",
+          "repair_level_shift",
+          "smooth_ma"
+        ],
+        "programs_seen_losing_everywhere_they_were_measured": [
+          "hampel_filter"
+        ],
+        "shortlisted": [
+          "denoise_median",
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize"
+        ],
+        "losing_programs_shortlisted": [
+          "denoise_median",
+          "outlier_iqr",
+          "outlier_mad"
+        ],
+        "losing_everywhere_programs_shortlisted": [],
+        "losing_everywhere_programs_skipped": [
+          "hampel_filter"
+        ],
+        "per_program_negative_rows": {
+          "denoise_median": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.02307629338259733
+            },
+            {
+              "cell_key": "batch:T233|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.5280725741067012
+            }
+          ],
+          "hampel_filter": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.06052950112696737
+            },
+            {
+              "cell_key": "batch:electricity|consumer:per_channel",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.12848888635565492
+            },
+            {
+              "cell_key": "batch:T233|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.1656714947605187
+            },
+            {
+              "cell_key": "batch:T233|consumer:per_channel",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.010929058950794511
+            }
+          ],
+          "outlier_iqr": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.002188087866944091
+            }
+          ],
+          "outlier_mad": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.03361449867183316
+            },
+            {
+              "cell_key": "batch:T233|consumer:per_channel",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.0001661190563091002
+            }
+          ],
+          "repair_level_shift": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.12956038373797243
+            },
+            {
+              "cell_key": "batch:T233|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.06375800799060438
+            }
+          ],
+          "smooth_ma": [
+            {
+              "cell_key": "batch:electricity|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.476227330031177
+            },
+            {
+              "cell_key": "batch:T233|consumer:pooled",
+              "window_id": "W1",
+              "full_batch_support_gain": -0.6631969164901438
+            }
+          ]
+        }
+      },
+      "experience_written": {
+        "episode_id": "B_warm",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:per_channel",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "window_id": "W2"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "evaluations_used": 4
+          }
+        },
+        "workflow_signature": "winsorize",
+        "support_response": {
+          "gain": 0.30197649597473764,
+          "window": "support",
+          "program": "winsorize",
+          "excluded_series": [],
+          "arm": "warm",
+          "evaluations_used": 4,
+          "harmed_eval_series_count": 0,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "delayed_response": {
+          "gain": 0.3960807204767255,
+          "window": "delayed",
+          "capture_ratio": 0.9017399417968548,
+          "window_role": "revealed only after the plan was fixed; it took no part in the search",
+          "harmed_eval_series_count": 0,
+          "provenance": "budgeted_search_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from a budget-constrained recipe search arm; not authorization evidence and not an unguided probe, and not fed back into either arm of this run"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "budgeted_search_engineering"
+        ]
+      }
+    }
+  ],
+  "wall_seconds": 148.6796990999719
+}

@@ -248,7 +248,194 @@ class LocalPublicToolGateway:
         )
 
 
+def _observed_runs(mask: np.ndarray) -> list[tuple[int, int]]:
+    """Return half-open runs for one boolean missing mask."""
+
+    padded = np.concatenate(([False], mask.astype(bool, copy=False), [False]))
+    edges = np.flatnonzero(padded[1:] != padded[:-1])
+    return [(int(start), int(stop)) for start, stop in edges.reshape(-1, 2)]
+
+
+def _robust_center_scale(values: np.ndarray) -> tuple[float | None, float | None]:
+    observed = values[np.isfinite(values)]
+    if observed.size == 0:
+        return None, None
+    center = float(np.median(observed))
+    scale = float(1.4826 * np.median(np.abs(observed - center)))
+    if not math.isfinite(scale) or scale <= 1e-12:
+        scale = float(np.std(observed))
+    if not math.isfinite(scale) or scale <= 1e-12:
+        scale = 1.0
+    return center, scale
+
+
+def _observed_lag_pairs(values: np.ndarray, lag: int) -> tuple[np.ndarray, np.ndarray]:
+    if lag >= values.size:
+        return np.asarray([], dtype=np.float64), np.asarray([], dtype=np.float64)
+    left = values[:-lag]
+    right = values[lag:]
+    valid = np.isfinite(left) & np.isfinite(right)
+    return left[valid], right[valid]
+
+
+def _window_summary(windows: Sequence[np.ndarray], *, calendar_period: int) -> dict[str, object]:
+    centers: list[float] = []
+    scales: list[float] = []
+    acfs: list[float] = []
+    seasonal_residuals: list[float] = []
+    missing_runs: list[tuple[int, int]] = []
+    observed_points = 0
+    total_points = 0
+    for window in windows:
+        mask = ~np.isfinite(window)
+        missing_runs.extend(_observed_runs(mask))
+        observed_points += int((~mask).sum())
+        total_points += int(window.size)
+        center, scale = _robust_center_scale(window)
+        if center is not None and scale is not None:
+            centers.append(center)
+            scales.append(scale)
+        left, right = _observed_lag_pairs(window, calendar_period)
+        if left.size >= 3:
+            left_centered = left - float(np.mean(left))
+            right_centered = right - float(np.mean(right))
+            denominator = float(np.linalg.norm(left_centered) * np.linalg.norm(right_centered))
+            if denominator > 0.0:
+                acfs.append(float(np.dot(left_centered, right_centered) / denominator))
+            if scale is not None:
+                seasonal_residuals.append(float(np.median(np.abs(right - left)) / scale))
+    run_lengths = [stop - start for start, stop in missing_runs]
+    return {
+        "coverage": float(observed_points / total_points) if total_points else 0.0,
+        "missing_run_count": len(missing_runs),
+        "maximum_missing_run_length": max(run_lengths, default=0),
+        "median_robust_center": float(np.median(centers)) if centers else None,
+        "median_robust_scale": float(np.median(scales)) if scales else None,
+        "median_acf_at_calendar_period": float(np.median(acfs)) if acfs else None,
+        "median_normalized_seasonal_residual": (
+            float(np.median(seasonal_residuals)) if seasonal_residuals else None
+        ),
+    }
+
+
+def _numeric_change(recent: Mapping[str, object], early: Mapping[str, object]) -> dict[str, object]:
+    changes: dict[str, object] = {}
+    for key in early:
+        early_value = early[key]
+        recent_value = recent[key]
+        if (
+            isinstance(early_value, (int, float))
+            and not isinstance(early_value, bool)
+            and isinstance(recent_value, (int, float))
+            and not isinstance(recent_value, bool)
+        ):
+            changes[f"{key}_delta"] = float(recent_value) - float(early_value)
+        else:
+            changes[f"{key}_delta"] = None
+    return changes
+
+
+class CohortHistoryPublicToolGateway:
+    """One deploy-visible, argument-free comparison of two historical windows.
+
+    Values must already be cut at the decision/Support boundary.  The gateway
+    never accepts identifiers, paths, arbitrary intervals, clean references, or
+    downstream outcomes; it returns cohort aggregates only.
+    """
+
+    def __init__(
+        self,
+        series_values: Sequence[object],
+        *,
+        calendar_period: int,
+        window_length: int = 192,
+    ) -> None:
+        if (
+            isinstance(calendar_period, bool)
+            or not isinstance(calendar_period, int)
+            or calendar_period < 1
+        ):
+            raise ValueError("calendar_period must be a positive integer")
+        if (
+            isinstance(window_length, bool)
+            or not isinstance(window_length, int)
+            or window_length < 2
+        ):
+            raise ValueError("window_length must be an integer of at least two")
+        arrays = tuple(np.asarray(values, dtype=np.float64).ravel().copy() for values in series_values)
+        if not arrays or any(values.size < 2 * window_length for values in arrays):
+            raise ValueError("each history series requires two complete fixed windows")
+        for values in arrays:
+            values.setflags(write=False)
+        self._series_values = arrays
+        self._calendar_period = calendar_period
+        self._window_length = window_length
+        serial_values = [
+            [float(value) if math.isfinite(float(value)) else None for value in values]
+            for values in arrays
+        ]
+        self._context_sha = canonical_sha256(
+            {
+                "schema_version": "cohort-history-public-tool-context/1",
+                "calendar_period": calendar_period,
+                "window_length": window_length,
+                "series_values": serial_values,
+            }
+        )
+
+    @property
+    def context_sha(self) -> str:
+        return self._context_sha
+
+    def schemas_for(
+        self,
+        *,
+        role: "AgentRole | str",
+        stage: str,
+    ) -> tuple[Mapping[str, object], ...]:
+        if str(role) not in {"fast", "AgentRole.FAST"} or stage != "observe":
+            return ()
+        return (
+            _freeze_json(
+                {
+                    "name": "compare_history_windows",
+                    "description": (
+                        "Compare the fixed earlier and recent deploy-visible history "
+                        "windows using cohort aggregates only."
+                    ),
+                    "input_schema": {"type": "object", "additionalProperties": False},
+                }
+            ),
+        )
+
+    def call(self, name: str, arguments: Mapping[str, object]) -> PublicToolReceipt:
+        if name != "compare_history_windows":
+            raise PermissionError(f"undeclared public tool: {name}")
+        if not isinstance(arguments, Mapping) or arguments:
+            raise PermissionError("compare_history_windows accepts no arguments")
+        length = self._window_length
+        early = tuple(values[-2 * length : -length] for values in self._series_values)
+        recent = tuple(values[-length:] for values in self._series_values)
+        early_summary = _window_summary(early, calendar_period=self._calendar_period)
+        recent_summary = _window_summary(recent, calendar_period=self._calendar_period)
+        result = {
+            "window_length": length,
+            "calendar_period": self._calendar_period,
+            "series_count": len(self._series_values),
+            "early": early_summary,
+            "recent": recent_summary,
+            "early_to_recent_change": _numeric_change(recent_summary, early_summary),
+        }
+        return PublicToolReceipt.create(
+            tool_name=name,
+            arguments=arguments,
+            public_result=result,
+            context_sha=self.context_sha,
+        )
+
+
 __all__ = [
+    "CohortHistoryPublicToolGateway",
     "LocalPublicToolGateway",
     "PublicToolGateway",
     "PublicToolReceipt",

@@ -1,0 +1,153 @@
+{
+ "schema_version": "skill-entry/1",
+ "skill_id": "ps1_source_hypothesis_scoped_v1",
+ "skill_kind": "capability",
+ "revision": 1,
+ "body": "WHEN: task_kind == classification, consumer ridge-raw-plus-difference-v1, metric accuracy, and the deployment-visible pattern reads clipping_probe_direction=unknown, denoising_probe_direction=unknown, estimated_level_offset=low, estimated_region_end_fraction=high, estimated_region_start_fraction=very_low, imputation_probe_direction=unknown, level_excursion_score=high, level_only_post_shift_support_sufficient=True, level_probe_direction=unknown, level_region_end_fraction=very_low, level_region_fraction=very_low, local_robust_z_peak=high, longest_missing_run_fraction=zero, missing_fraction=zero, outlier_region_end_fraction=very_low, period_evidence_status=OK, period_reliability=high, period_repair_available=False, post_shift_support_sufficient=False.\nOBSERVE: before proposing, read those same pattern features in the current Workspace and check whether the localized extreme deviation they describe is present here too.\nTRY-HYPOTHESIS: prioritise exploring the hampel family (hampel_filter) among the candidates you propose. This is a ranking suggestion only and is not execution authority: it supplies one candidate for the same candidate budget and grants no right to deploy.\nEVIDENCE: two independent prior domains improved under this family in the same direction -- GunPointAgeSpan__impulse_v2 (Support +0.4000, delayed +0.4000); PowerCons__impulse_v2 (Support +0.0714, delayed +0.5000). n = 2. Two agreeing domains is weak evidence; it establishes a hypothesis worth one probe, not a fact.\nVERIFY: the hypothesis holds here only if this Target's own held-in Support reads materially positive and the delayed feedback approves the Draft. Neither is assumed from the prior domains.\nFALLBACK: if Support or delayed refuses, drop the hypothesis and return to identity rather than retrying the family.",
+ "observable_applicability": {
+  "all": [
+   {
+    "feature": "task_kind",
+    "op": "==",
+    "value": "classification"
+   },
+   {
+    "feature": "clipping_probe_direction",
+    "op": "==",
+    "value": "unknown"
+   },
+   {
+    "feature": "denoising_probe_direction",
+    "op": "==",
+    "value": "unknown"
+   },
+   {
+    "feature": "estimated_level_offset",
+    "op": "==",
+    "value": "low"
+   },
+   {
+    "feature": "estimated_region_end_fraction",
+    "op": "==",
+    "value": "high"
+   },
+   {
+    "feature": "estimated_region_start_fraction",
+    "op": "==",
+    "value": "very_low"
+   },
+   {
+    "feature": "imputation_probe_direction",
+    "op": "==",
+    "value": "unknown"
+   },
+   {
+    "feature": "level_excursion_score",
+    "op": "==",
+    "value": "high"
+   },
+   {
+    "feature": "level_probe_direction",
+    "op": "==",
+    "value": "unknown"
+   },
+   {
+    "feature": "local_robust_z_peak",
+    "op": "==",
+    "value": "high"
+   },
+   {
+    "feature": "longest_missing_run_fraction",
+    "op": "==",
+    "value": "zero"
+   },
+   {
+    "feature": "missing_fraction",
+    "op": "==",
+    "value": "zero"
+   },
+   {
+    "feature": "period_evidence_status",
+    "op": "==",
+    "value": "OK"
+   },
+   {
+    "feature": "period_reliability",
+    "op": "==",
+    "value": "high"
+   },
+   {
+    "feature": "period_repair_available",
+    "op": "==",
+    "value": false
+   },
+   {
+    "feature": "post_shift_support_sufficient",
+    "op": "==",
+    "value": false
+   }
+  ]
+ },
+ "allowed_tools": [],
+ "risk_guards": {
+  "card_kind": "ps1_source_hypothesis",
+  "authority": {
+   "reorders_supplied_candidates": false,
+   "supplies_candidates": true,
+   "suppresses_operators": false,
+   "grants_execution": false
+  },
+  "scope_v1": {
+   "task_kind": "classification",
+   "consumer_id": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "pattern_intersection": {
+    "clipping_probe_direction": "unknown",
+    "denoising_probe_direction": "unknown",
+    "estimated_level_offset": "low",
+    "estimated_region_end_fraction": "high",
+    "estimated_region_start_fraction": "very_low",
+    "imputation_probe_direction": "unknown",
+    "level_excursion_score": "high",
+    "level_only_post_shift_support_sufficient": true,
+    "level_probe_direction": "unknown",
+    "level_region_end_fraction": "very_low",
+    "level_region_fraction": "very_low",
+    "local_robust_z_peak": "high",
+    "longest_missing_run_fraction": "zero",
+    "missing_fraction": "zero",
+    "outlier_region_end_fraction": "very_low",
+    "period_evidence_status": "OK",
+    "period_reliability": "high",
+    "period_repair_available": false,
+    "post_shift_support_sufficient": false
+   },
+   "program_geometry": [
+    "hampel_filter"
+   ]
+  },
+  "evidence": {
+   "source_count": 2,
+   "sources": [
+    {
+     "unit_id": "GunPointAgeSpan__impulse_v2",
+     "run_id": "ps0_srcA_1",
+     "support_gain": 0.4,
+     "delayed_gain": 0.4,
+     "direction": "improved"
+    },
+    {
+     "unit_id": "PowerCons__impulse_v2",
+     "run_id": "ps0_srcB_4",
+     "support_gain": 0.0714285714285714,
+     "delayed_gain": 0.49999999999999994,
+     "direction": "improved"
+    }
+   ],
+   "uncertainty": "n=2 agreeing domains; a hypothesis worth one probe, not a fact"
+  },
+  "requires_target_support": true,
+  "execution_right": "withheld_supplies_candidate_only",
+  "counting_rule": "a positive earned under this card is a Target-local Skill only and counts zero toward any cross-domain authorization for this Source Skill"
+ }
+}

@@ -1,0 +1,3426 @@
+{
+ "protocol_version": "t6_cls_op_r2_prep_v1",
+ "entry": "--r2-prep",
+ "evidence_grade": "DEVELOPMENT",
+ "git_head": "1402b084873c5220c7bea7d8b392a74474ccaba1",
+ "llm_calls": 0,
+ "verifier_fix": {
+  "file": "methods/ttha/scope_executor.py",
+  "before": {
+   "where": "ScopeExecutor.verify, HEAD 1ba923c lines 153-197",
+   "semantics": "verify_candidate is called per training window with maximum_modified_fraction; any window whose own modified_fraction exceeds the cap sets MODIFICATION_FRACTION_EXCEEDED, and passed = not rejected, so one window vetoes the candidate for the whole cohort"
+  },
+  "after": {
+   "where": "ScopeExecutor.verify + WindowVerification + __init__",
+   "semantics": "modification_fraction_scope='cohort' passes 1.0 as the per-window cap so the fraction gate cannot fire per window, accumulates len(modified_indices) and window.size over every window, and rejects once if the ratio exceeds the cap.  Every other gate still vetoes per window.",
+   "diagnostics_kept": [
+    "window_modified_fractions",
+    "windows_over_maximum_fraction",
+    "cohort_modified_points",
+    "cohort_total_points",
+    "cohort_modified_fraction"
+   ],
+   "switch": "modification_fraction_scope defaults to 'per_window', so forecasting, AD and minipipe callers are unchanged; only this book's executor opts in",
+   "number_unchanged": "maximum_modified_fraction is still 0.10 here"
+  },
+  "why_not_a_number_change": "0.20 and 'share of rows over the line' were both suggested by the CLS-OP diagnostic table, so adopting either would import a result-derived constant.  Changing which quantity the existing constant measures imports nothing.",
+  "geometry_argument": "the contract limits how much of the data a preparation may rewrite.  With a dozen windows per cohort the per-window and cohort readings are close; with one window per fit row (42-1260 here) the per-window rule is dominated by the single worst row.",
+  "regression_subset": {
+   "selected": [
+    "tests/runtime (verify_candidate itself, the shared gate whose argument this change re-aims)",
+    "tests/methods (ScopeExecutor's own package; two files construct WindowVerification directly)",
+    "tests/integration (p4 runner binding + minipipe cycles, the deployment-constraint consumers)",
+    "tests/functional/test_p2_online_route_abstain.py and tests/functional/test_ordering_card.py (the functional tests that reach ScopeExecutor.verify on forecast geometry)"
+   ],
+   "excluded": [
+    "the rest of tests/functional and tests/contracts: grep shows no path to ScopeExecutor.verify or verify_candidate",
+    "tests/functional/test_skill_revocation.py: untracked and does not parse on this interpreter (f-string spanning lines, line 166) -- a pre-existing collection error, not this change"
+   ],
+   "before": "40 failed, 170 passed, 3 skipped, 1 xfailed",
+   "after": "40 failed, 170 passed, 3 skipped, 1 xfailed",
+   "failure_set_identical": true,
+   "failure_list_sha256_16": "9947c9ed623279f4",
+   "pre_existing_cause": "38 of the 40 are ValueError 'snapshot lock mismatch; run compiler with --write-lock' from methods/ttha/harness/compiler.py; the h0 lock was last regenerated at 29bed7e (2026-08-24 16:27) and operators/registry.py changed at 5ef9726 (2026-08-25 11:55), after it.  The lock carries an operator_bundle_sha, so the CLS-4 operator commit is the likely origin.  Not repaired here: it is another line's surface and this book is single-face.",
+   "method": "the same subset was run twice with only methods/ttha/scope_executor.py swapped between its HEAD bytes and the fixed bytes; nothing was stashed, so the other line's in-flight files were never touched"
+  },
+  "new_unit_tests": {
+   "file": "tests/methods/test_scope_executor_cohort_fraction.py",
+   "count": 8,
+   "result": "8 passed",
+   "covers": [
+    "default scope is still per_window",
+    "unknown scope raises at construction",
+    "the one divergence case: per_window rejects what cohort admits",
+    "cohort rejects when the aggregate is over",
+    "the two scopes agree above every per-window fraction",
+    "non-fraction gates still veto per window under cohort scope",
+    "diagnostics are produced under both scopes",
+    "windows_over_maximum_fraction has no veto power"
+   ]
+  },
+  "commit": "1402b08"
+ },
+ "binding": {
+  "source_cells": [
+   "ProximalPhalanxOutlineCorrect/fit_only_artifact",
+   "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+   "Lightning2/fit_only_artifact"
+  ],
+  "target_cells": [
+   "PhalangesOutlinesCorrect/fit_only_artifact",
+   "GunPointAgeSpan/fit_only_artifact"
+  ],
+  "round": "r1",
+  "surfaces": [
+   "support",
+   "delayed"
+  ],
+  "scope": "cohort",
+  "default_scope_elsewhere": "per_window",
+  "maximum_candidates": 3,
+  "unchanged_gates": "maximum_modified_fraction stays 0.10; maximum_candidates stays at the value C39 actually ran (3); selectable semantics and effect distinctness are untouched"
+ },
+ "menu": [
+  {
+   "program": "impute_linear",
+   "params": {
+    "strength": 1.0
+   }
+  },
+  {
+   "program": "impute_fft",
+   "params": {}
+  },
+  {
+   "program": "impute_ema",
+   "params": {}
+  },
+  {
+   "program": "period_complete",
+   "params": {}
+  },
+  {
+   "program": "period_median_complete",
+   "params": {
+    "period": 2,
+    "cycles": 3,
+    "min_donors": 2
+   }
+  },
+  {
+   "program": "impute_ssm",
+   "params": {}
+  },
+  {
+   "program": "impute_ar",
+   "params": {}
+  },
+  {
+   "program": "denoise_savgol",
+   "params": {}
+  },
+  {
+   "program": "denoise_wavelet",
+   "params": {}
+  },
+  {
+   "program": "denoise_median",
+   "params": {
+    "window": 1,
+    "strength": 1.0
+   }
+  },
+  {
+   "program": "smooth_ma",
+   "params": {}
+  },
+  {
+   "program": "denoise_stl",
+   "params": {}
+  },
+  {
+   "program": "winsorize",
+   "params": {}
+  },
+  {
+   "program": "outlier_iqr",
+   "params": {}
+  },
+  {
+   "program": "outlier_mad",
+   "params": {}
+  },
+  {
+   "program": "hampel_filter",
+   "params": {
+    "window": 3,
+    "n_sigmas": 0.1,
+    "global_z_min": 1.0
+   }
+  },
+  {
+   "program": "repair_level_shift",
+   "params": {}
+  },
+  {
+   "program": "repair_burst_segment",
+   "params": {}
+  },
+  {
+   "program": "stl_decompose",
+   "params": {}
+  },
+  {
+   "program": "fft_decompose",
+   "params": {}
+  },
+  {
+   "program": "smooth_ema",
+   "params": {}
+  },
+  {
+   "program": "resample_uniform",
+   "params": {}
+  },
+  {
+   "program": "znorm",
+   "params": {}
+  },
+  {
+   "program": "minmax_norm",
+   "params": {}
+  }
+ ],
+ "part_b_smoke": {
+  "question": "after the fix, can a non-identity candidate obtain a legal, non-no-op Support receipt on the same material?",
+  "no_op_rule": "a candidate is a numeric no-op when every window's prepared bytes are identity-equivalent to the raw bytes; such a candidate is excluded from the survivor list and never fitted",
+  "cells": [
+   {
+    "cell": "ProximalPhalanxOutlineCorrect/fit_only_artifact",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "survivor_count": 5,
+    "survivors_under_per_window_scope": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad"
+    ],
+    "unblocked_by_the_fix": [
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "repair_burst_segment",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ]
+   },
+   {
+    "cell": "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "survivor_count": 5,
+    "survivors_under_per_window_scope": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad"
+    ],
+    "unblocked_by_the_fix": [
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "repair_burst_segment",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ]
+   },
+   {
+    "cell": "Lightning2/fit_only_artifact",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize"
+    ],
+    "survivor_count": 1,
+    "survivors_under_per_window_scope": [
+     "winsorize"
+    ],
+    "unblocked_by_the_fix": [],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift",
+     "repair_burst_segment",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ]
+   },
+   {
+    "cell": "PhalangesOutlinesCorrect/fit_only_artifact",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "survivor_count": 5,
+    "survivors_under_per_window_scope": [
+     "winsorize",
+     "outlier_mad"
+    ],
+    "unblocked_by_the_fix": [
+     "outlier_iqr",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "repair_burst_segment",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ]
+   },
+   {
+    "cell": "GunPointAgeSpan/fit_only_artifact",
+    "menu_size": 24,
+    "survivors": [
+     "outlier_iqr",
+     "hampel_filter"
+    ],
+    "survivor_count": 2,
+    "survivors_under_per_window_scope": [],
+    "unblocked_by_the_fix": [
+     "outlier_iqr",
+     "hampel_filter"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "winsorize",
+     "outlier_mad",
+     "repair_level_shift",
+     "repair_burst_segment",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ]
+   }
+  ]
+ },
+ "part_c_headroom": {
+  "source_cells": [
+   {
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "fit_rows": 420,
+    "series_length": 80,
+    "surface_rows": {
+     "support": 46,
+     "delayed": 46
+    },
+    "material_lines": {
+     "support": 0.021739130434782608,
+     "delayed": 0.021739130434782608
+    },
+    "maximum_modified_fraction": 0.1,
+    "modification_fraction_scope": "cohort",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "survivors_under_per_window_scope": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad"
+    ],
+    "unblocked_by_the_fix": [
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "repair_burst_segment",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ],
+    "fit_cap_truncated": false,
+    "programs": [
+     {
+      "program": "impute_linear",
+      "params": {
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_fft",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ema",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_complete",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_median_complete",
+      "params": {
+       "period": 2,
+       "cycles": 3,
+       "min_donors": 2
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ssm",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ar",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_savgol",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_wavelet",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_median",
+      "params": {
+       "window": 1,
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ma",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.8976785714285714,
+      "cohort_modified_points": 30162,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_stl",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "winsorize",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0874702380952381,
+      "cohort_modified_points": 2939,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": -0.04347826086956519,
+        "per_class_recall_delta": [
+         0.6,
+         -0.3548387096774194
+        ],
+        "worst_class_recall_delta": -0.3548387096774194,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": -0.17391304347826086,
+        "per_class_recall_delta": [
+         0.4,
+         -0.45161290322580644
+        ],
+        "worst_class_recall_delta": -0.45161290322580644,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_iqr",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.05,
+      "cohort_modified_points": 1680,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": 0.28260869565217395,
+        "per_class_recall_delta": [
+         -0.33333333333333337,
+         0.5806451612903225
+        ],
+        "worst_class_recall_delta": -0.33333333333333337,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": 0.17391304347826086,
+        "per_class_recall_delta": [
+         -0.5333333333333333,
+         0.5161290322580645
+        ],
+        "worst_class_recall_delta": -0.5333333333333333,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_mad",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.05,
+      "cohort_modified_points": 1680,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": 0.30434782608695654,
+        "per_class_recall_delta": [
+         -0.4,
+         0.6451612903225806
+        ],
+        "worst_class_recall_delta": -0.4,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": 0.19565217391304346,
+        "per_class_recall_delta": [
+         -0.5333333333333333,
+         0.5483870967741935
+        ],
+        "worst_class_recall_delta": -0.5333333333333333,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "hampel_filter",
+      "params": {
+       "window": 3,
+       "n_sigmas": 0.1,
+       "global_z_min": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.07005952380952381,
+      "cohort_modified_points": 2354,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 59,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": 0.15217391304347827,
+        "per_class_recall_delta": [
+         0.0,
+         0.22580645161290325
+        ],
+        "worst_class_recall_delta": 0.0,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": -0.02173913043478265,
+        "per_class_recall_delta": [
+         -0.2,
+         0.06451612903225806
+        ],
+        "worst_class_recall_delta": -0.2,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_level_shift",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.0013690476190476191,
+      "cohort_modified_points": 46,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 1,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": 0.043478260869565244,
+        "per_class_recall_delta": [
+         0.06666666666666665,
+         0.032258064516129004
+        ],
+        "worst_class_recall_delta": 0.032258064516129004,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 46,
+        "material_line": 0.021739130434782608,
+        "delta_accuracy": -0.02173913043478265,
+        "per_class_recall_delta": [
+         0.0,
+         -0.032258064516129004
+        ],
+        "worst_class_recall_delta": -0.032258064516129004,
+        "material_positive": false,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_burst_segment",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "stl_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "fft_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ema",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9908630952380952,
+      "cohort_modified_points": 33293,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "resample_uniform",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "znorm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "minmax_norm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     }
+    ],
+    "consumer_fits_after": 12
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "fit_rows": 420,
+    "series_length": 80,
+    "surface_rows": {
+     "support": 45,
+     "delayed": 45
+    },
+    "material_lines": {
+     "support": 0.022222222222222223,
+     "delayed": 0.022222222222222223
+    },
+    "maximum_modified_fraction": 0.1,
+    "modification_fraction_scope": "cohort",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "survivors_under_per_window_scope": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad"
+    ],
+    "unblocked_by_the_fix": [
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "repair_burst_segment",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ],
+    "fit_cap_truncated": false,
+    "programs": [
+     {
+      "program": "impute_linear",
+      "params": {
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_fft",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ema",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_complete",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_median_complete",
+      "params": {
+       "period": 2,
+       "cycles": 3,
+       "min_donors": 2
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ssm",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ar",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_savgol",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_wavelet",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_median",
+      "params": {
+       "window": 1,
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ma",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.8960714285714285,
+      "cohort_modified_points": 30108,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_stl",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "winsorize",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0874404761904762,
+      "cohort_modified_points": 2938,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": 0.1333333333333333,
+        "per_class_recall_delta": [
+         0.25,
+         0.06896551724137934
+        ],
+        "worst_class_recall_delta": 0.06896551724137934,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": -0.11111111111111116,
+        "per_class_recall_delta": [
+         0.0625,
+         -0.20689655172413796
+        ],
+        "worst_class_recall_delta": -0.20689655172413796,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "outlier_iqr",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.05,
+      "cohort_modified_points": 1680,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": 0.0,
+        "per_class_recall_delta": [
+         -0.125,
+         0.06896551724137934
+        ],
+        "worst_class_recall_delta": -0.125,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": -0.1777777777777778,
+        "per_class_recall_delta": [
+         -0.0625,
+         -0.24137931034482762
+        ],
+        "worst_class_recall_delta": -0.24137931034482762,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_mad",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.05,
+      "cohort_modified_points": 1680,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": 0.20000000000000007,
+        "per_class_recall_delta": [
+         -0.5,
+         0.5862068965517242
+        ],
+        "worst_class_recall_delta": -0.5,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": 0.022222222222222254,
+        "per_class_recall_delta": [
+         -0.5,
+         0.31034482758620685
+        ],
+        "worst_class_recall_delta": -0.5,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "hampel_filter",
+      "params": {
+       "window": 3,
+       "n_sigmas": 0.1,
+       "global_z_min": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.06922619047619048,
+      "cohort_modified_points": 2326,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 61,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": 0.022222222222222254,
+        "per_class_recall_delta": [
+         0.0,
+         0.03448275862068967
+        ],
+        "worst_class_recall_delta": 0.0,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": -0.022222222222222254,
+        "per_class_recall_delta": [
+         0.1875,
+         -0.13793103448275867
+        ],
+        "worst_class_recall_delta": -0.13793103448275867,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_level_shift",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.0027380952380952383,
+      "cohort_modified_points": 92,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 2,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": 0.022222222222222254,
+        "per_class_recall_delta": [
+         0.0,
+         0.03448275862068967
+        ],
+        "worst_class_recall_delta": 0.0,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 45,
+        "material_line": 0.022222222222222223,
+        "delta_accuracy": -0.04444444444444451,
+        "per_class_recall_delta": [
+         0.0,
+         -0.06896551724137934
+        ],
+        "worst_class_recall_delta": -0.06896551724137934,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_burst_segment",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "stl_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "fft_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ema",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9918154761904762,
+      "cohort_modified_points": 33325,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "resample_uniform",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 420,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "znorm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "minmax_norm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 33600,
+      "cohort_total_points": 33600,
+      "windows_over_per_window_cap": 420,
+      "checked_windows": 420,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     }
+    ],
+    "consumer_fits_after": 24
+   },
+   {
+    "dataset": "Lightning2",
+    "condition": "fit_only_artifact",
+    "fit_rows": 42,
+    "series_length": 637,
+    "surface_rows": {
+     "support": 5,
+     "delayed": 5
+    },
+    "material_lines": {
+     "support": 0.2,
+     "delayed": 0.2
+    },
+    "maximum_modified_fraction": 0.1,
+    "modification_fraction_scope": "cohort",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize"
+    ],
+    "survivors_under_per_window_scope": [
+     "winsorize"
+    ],
+    "unblocked_by_the_fix": [],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift",
+     "repair_burst_segment",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ],
+    "fit_cap_truncated": false,
+    "programs": [
+     {
+      "program": "impute_linear",
+      "params": {
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_fft",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ema",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_complete",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_median_complete",
+      "params": {
+       "period": 2,
+       "cycles": 3,
+       "min_donors": 2
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ssm",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ar",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_savgol",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9988039171712642,
+      "cohort_modified_points": 26722,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_wavelet",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9976452119309263,
+      "cohort_modified_points": 26691,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_median",
+      "params": {
+       "window": 1,
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ma",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.8925020557673619,
+      "cohort_modified_points": 23878,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_stl",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9988039171712642,
+      "cohort_modified_points": 26722,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "winsorize",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.05337519623233909,
+      "cohort_modified_points": 1428,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 5,
+        "material_line": 0.2,
+        "delta_accuracy": 0.0,
+        "per_class_recall_delta": [
+         0.0,
+         0.0
+        ],
+        "worst_class_recall_delta": 0.0,
+        "material_positive": false,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 5,
+        "material_line": 0.2,
+        "delta_accuracy": 0.0,
+        "per_class_recall_delta": [
+         -0.5,
+         0.3333333333333333
+        ],
+        "worst_class_recall_delta": -0.5,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_iqr",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.12970023174104806,
+      "cohort_modified_points": 3470,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 26,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "outlier_mad",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.12745757643716826,
+      "cohort_modified_points": 3410,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 26,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "hampel_filter",
+      "params": {
+       "window": 3,
+       "n_sigmas": 0.1,
+       "global_z_min": 1.0
+      },
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.11157210136801973,
+      "cohort_modified_points": 2985,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 30,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "repair_level_shift",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.2681468191672273,
+      "cohort_modified_points": 7174,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 28,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "repair_burst_segment",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.10091948867459072,
+      "cohort_modified_points": 2700,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 21,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "stl_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9988039171712642,
+      "cohort_modified_points": 26722,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "fft_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 26754,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ema",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9446437915825671,
+      "cohort_modified_points": 25273,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "resample_uniform",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 42,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "znorm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 26754,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "minmax_norm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 26754,
+      "cohort_total_points": 26754,
+      "windows_over_per_window_cap": 42,
+      "checked_windows": 42,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     }
+    ],
+    "consumer_fits_after": 28
+   }
+  ],
+  "target_cells": [
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "fit_rows": 1260,
+    "series_length": 80,
+    "surface_rows": {
+     "support": 135,
+     "delayed": 135
+    },
+    "material_lines": {
+     "support": 0.007407407407407408,
+     "delayed": 0.007407407407407408
+    },
+    "maximum_modified_fraction": 0.1,
+    "modification_fraction_scope": "cohort",
+    "menu_size": 24,
+    "survivors": [
+     "winsorize",
+     "outlier_iqr",
+     "outlier_mad",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "survivors_under_per_window_scope": [
+     "winsorize",
+     "outlier_mad"
+    ],
+    "unblocked_by_the_fix": [
+     "outlier_iqr",
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "repair_burst_segment",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ],
+    "fit_cap_truncated": false,
+    "programs": [
+     {
+      "program": "impute_linear",
+      "params": {
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_fft",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ema",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_complete",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_median_complete",
+      "params": {
+       "period": 2,
+       "cycles": 3,
+       "min_donors": 2
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ssm",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ar",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_savgol",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_wavelet",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_median",
+      "params": {
+       "window": 1,
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ma",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.8989285714285714,
+      "cohort_modified_points": 90612,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_stl",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "winsorize",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.08745039682539682,
+      "cohort_modified_points": 8815,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": -0.014814814814814836,
+        "per_class_recall_delta": [
+         0.3191489361702127,
+         -0.19318181818181818
+        ],
+        "worst_class_recall_delta": -0.19318181818181818,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": -0.07407407407407407,
+        "per_class_recall_delta": [
+         0.19148936170212766,
+         -0.21590909090909088
+        ],
+        "worst_class_recall_delta": -0.21590909090909088,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_iqr",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.05007936507936508,
+      "cohort_modified_points": 5048,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.08888888888888885,
+        "per_class_recall_delta": [
+         0.3617021276595745,
+         -0.05681818181818182
+        ],
+        "worst_class_recall_delta": -0.05681818181818182,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.0,
+        "per_class_recall_delta": [
+         0.19148936170212766,
+         -0.10227272727272729
+        ],
+        "worst_class_recall_delta": -0.10227272727272729,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_mad",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.05001984126984127,
+      "cohort_modified_points": 5042,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.0222222222222222,
+        "per_class_recall_delta": [
+         0.4680851063829787,
+         -0.2159090909090909
+        ],
+        "worst_class_recall_delta": -0.2159090909090909,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": -0.05185185185185187,
+        "per_class_recall_delta": [
+         0.29787234042553196,
+         -0.23863636363636365
+        ],
+        "worst_class_recall_delta": -0.23863636363636365,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "hampel_filter",
+      "params": {
+       "window": 3,
+       "n_sigmas": 0.1,
+       "global_z_min": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.06552579365079365,
+      "cohort_modified_points": 6605,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 157,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.0222222222222222,
+        "per_class_recall_delta": [
+         0.17021276595744678,
+         -0.05681818181818182
+        ],
+        "worst_class_recall_delta": -0.05681818181818182,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.0222222222222222,
+        "per_class_recall_delta": [
+         0.12765957446808512,
+         -0.034090909090909116
+        ],
+        "worst_class_recall_delta": -0.034090909090909116,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_level_shift",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.006845238095238095,
+      "cohort_modified_points": 690,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 15,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.01481481481481478,
+        "per_class_recall_delta": [
+         -0.021276595744680882,
+         0.03409090909090906
+        ],
+        "worst_class_recall_delta": -0.021276595744680882,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 135,
+        "material_line": 0.007407407407407408,
+        "delta_accuracy": 0.0222222222222222,
+        "per_class_recall_delta": [
+         -0.021276595744680826,
+         0.045454545454545414
+        ],
+        "worst_class_recall_delta": -0.021276595744680826,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_burst_segment",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "stl_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "fft_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ema",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9914484126984127,
+      "cohort_modified_points": 99938,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "resample_uniform",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 1260,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "znorm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "minmax_norm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 100800,
+      "cohort_total_points": 100800,
+      "windows_over_per_window_cap": 1260,
+      "checked_windows": 1260,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     }
+    ],
+    "consumer_fits_after": 40
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "fit_rows": 95,
+    "series_length": 150,
+    "surface_rows": {
+     "support": 10,
+     "delayed": 10
+    },
+    "material_lines": {
+     "support": 0.1,
+     "delayed": 0.1
+    },
+    "maximum_modified_fraction": 0.1,
+    "modification_fraction_scope": "cohort",
+    "menu_size": 24,
+    "survivors": [
+     "outlier_iqr",
+     "hampel_filter"
+    ],
+    "survivors_under_per_window_scope": [],
+    "unblocked_by_the_fix": [
+     "outlier_iqr",
+     "hampel_filter"
+    ],
+    "numeric_no_ops": [
+     "impute_linear",
+     "impute_fft",
+     "impute_ema",
+     "period_complete",
+     "period_median_complete",
+     "impute_ssm",
+     "impute_ar",
+     "denoise_median",
+     "resample_uniform"
+    ],
+    "verifier_rejected": [
+     "denoise_savgol",
+     "denoise_wavelet",
+     "smooth_ma",
+     "denoise_stl",
+     "winsorize",
+     "outlier_mad",
+     "repair_level_shift",
+     "repair_burst_segment",
+     "stl_decompose",
+     "fft_decompose",
+     "smooth_ema",
+     "znorm",
+     "minmax_norm"
+    ],
+    "fit_cap_truncated": false,
+    "programs": [
+     {
+      "program": "impute_linear",
+      "params": {
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_fft",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ema",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_complete",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "period_median_complete",
+      "params": {
+       "period": 2,
+       "cycles": 3,
+       "min_donors": 2
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ssm",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "impute_ar",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_savgol",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_wavelet",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_median",
+      "params": {
+       "window": 1,
+       "strength": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ma",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "denoise_stl",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "winsorize",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.10666666666666667,
+      "cohort_modified_points": 1520,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "outlier_iqr",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.04687719298245614,
+      "cohort_modified_points": 668,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 12,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 10,
+        "material_line": 0.1,
+        "delta_accuracy": 0.09999999999999998,
+        "per_class_recall_delta": [
+         0.4,
+         -0.2
+        ],
+        "worst_class_recall_delta": -0.2,
+        "material_positive": false,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 10,
+        "material_line": 0.1,
+        "delta_accuracy": 0.19999999999999996,
+        "per_class_recall_delta": [
+         0.8,
+         -0.39999999999999997
+        ],
+        "worst_class_recall_delta": -0.39999999999999997,
+        "material_positive": true,
+        "class_guard_pass": false,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": false
+     },
+     {
+      "program": "outlier_mad",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.19508771929824562,
+      "cohort_modified_points": 2780,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 54,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "hampel_filter",
+      "params": {
+       "window": 3,
+       "n_sigmas": 0.1,
+       "global_z_min": 1.0
+      },
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": true,
+      "cohort_modified_fraction": 0.06828070175438597,
+      "cohort_modified_points": 973,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 18,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": false,
+      "survives": true,
+      "scored": true,
+      "readings": {
+       "support": {
+        "rows": 10,
+        "material_line": 0.1,
+        "delta_accuracy": 0.5,
+        "per_class_recall_delta": [
+         0.4,
+         0.6
+        ],
+        "worst_class_recall_delta": 0.4,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       },
+       "delayed": {
+        "rows": 10,
+        "material_line": 0.1,
+        "delta_accuracy": 0.29999999999999993,
+        "per_class_recall_delta": [
+         0.39999999999999997,
+         0.20000000000000007
+        ],
+        "worst_class_recall_delta": 0.20000000000000007,
+        "material_positive": true,
+        "class_guard_pass": true,
+        "verifier_passed": true,
+        "error": null
+       }
+      },
+      "headroom_here": true
+     },
+     {
+      "program": "repair_level_shift",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.6927017543859649,
+      "cohort_modified_points": 9871,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 85,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "repair_burst_segment",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.17101754385964912,
+      "cohort_modified_points": 2437,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 54,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "stl_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "fft_decompose",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "smooth_ema",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.9950175438596491,
+      "cohort_modified_points": 14179,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "resample_uniform",
+      "params": {},
+      "verifier_passed": true,
+      "verifier_passed_per_window_scope": true,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 0.0,
+      "cohort_modified_points": 0,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 0,
+      "checked_windows": 95,
+      "rejection_codes": [],
+      "numeric_no_op": true,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "znorm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     },
+     {
+      "program": "minmax_norm",
+      "params": {},
+      "verifier_passed": false,
+      "verifier_passed_per_window_scope": false,
+      "unblocked_by_the_fix": false,
+      "cohort_modified_fraction": 1.0,
+      "cohort_modified_points": 14250,
+      "cohort_total_points": 14250,
+      "windows_over_per_window_cap": 95,
+      "checked_windows": 95,
+      "rejection_codes": [
+       "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+      ],
+      "numeric_no_op": false,
+      "survives": false,
+      "scored": false
+     }
+    ],
+    "consumer_fits_after": 46
+   }
+  ]
+ },
+ "ledger": {
+  "llm_calls": 0,
+  "consumer_fits": 46,
+  "consumer_fit_cap": 120,
+  "wall_seconds": 49.7
+ },
+ "verdict": {
+  "verdict": "HEADROOM_EXISTS",
+  "target_headroom_hits": [
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "surface": "delayed",
+    "program": "hampel_filter",
+    "delta_accuracy": 0.0222222222222222,
+    "material_line": 0.007407407407407408,
+    "worst_class_recall_delta": -0.034090909090909116
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "surface": "support",
+    "program": "repair_level_shift",
+    "delta_accuracy": 0.01481481481481478,
+    "material_line": 0.007407407407407408,
+    "worst_class_recall_delta": -0.021276595744680882
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "surface": "delayed",
+    "program": "repair_level_shift",
+    "delta_accuracy": 0.0222222222222222,
+    "material_line": 0.007407407407407408,
+    "worst_class_recall_delta": -0.021276595744680826
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "surface": "support",
+    "program": "hampel_filter",
+    "delta_accuracy": 0.5,
+    "material_line": 0.1,
+    "worst_class_recall_delta": 0.4
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "surface": "delayed",
+    "program": "hampel_filter",
+    "delta_accuracy": 0.29999999999999993,
+    "material_line": 0.1,
+    "worst_class_recall_delta": 0.20000000000000007
+   }
+  ],
+  "any_candidate_survives_the_verifier": true,
+  "fit_cap_truncated_any_cell": false,
+  "rule": "HEADROOM_EXISTS iff at least one shared-menu candidate is materially positive on at least one Target held-in surface (delta accuracy >= max(0.005, 1/n) for that surface's own n) while no per-class recall falls more than 0.05.  Source cells are reported for context and cannot carry the verdict.",
+  "next": "r2 three-arm launch condition met"
+ },
+ "obligations": {
+  "llm_calls": 0,
+  "downloads": 0,
+  "forbidden_data_untouched": "no Yahoo, NOAA 2025, beyond_17520, NAB or SMD path is opened; the only data root is data/ucr_task_context",
+  "single_face": "maximum_modified_fraction stays 0.10, maximum_candidates stays 3, selectable semantics and effect distinctness are untouched; the verifier is modified once and only in the fraction scope",
+  "no_new_runner": "Part B and Part C are entries on the CLS-OP runner, which already owns the cell builder, the executor subclass and the Consumer adapter; a second runner would be a second dialect",
+  "artifact_not_committed": true,
+  "known_debts_not_paid_here": [
+   "verify_candidate.selectable still does not require effect distinctness, so a numeric no-op is still 'actionable' to the candidate supply; this book only excludes no-ops from its own survivor list",
+   "run_online_round still records a verifier rejection without its rejection code"
+  ]
+ }
+}

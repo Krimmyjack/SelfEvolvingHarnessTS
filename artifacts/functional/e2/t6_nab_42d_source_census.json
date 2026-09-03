@@ -1,0 +1,465 @@
+{
+  "protocol_version": "t6_nab_42d_census_v1",
+  "evidence_unit": "episode_id",
+  "vote_unit_for_authorization": "distinct Source cohort",
+  "relation_layer": "delayed_relation",
+  "boolean_features_enumerated": [
+    "level_only_post_shift_support_sufficient",
+    "post_shift_support_sufficient",
+    "period_repair_available"
+  ],
+  "unguided": {
+    "all_evidence_unguided": true,
+    "forbidden_literals_in_bank": [],
+    "construction_path": "evaluation/functional/run_e2_t6_natural_a5_a3.py::_build_source_bank",
+    "note": "UNGUIDED if the Source bank artifact carries no Fast-winner Skill id; conditioned otherwise (source_skill conservative default)"
+  },
+  "feature_proxy_audit": [
+    {
+      "feature": "level_only_post_shift_support_sufficient",
+      "values_to_cohorts": {
+        "True": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ]
+      },
+      "constant": true,
+      "perfect_cohort_proxy": false,
+      "usable_as_scope": false,
+      "note": "no resolving power"
+    },
+    {
+      "feature": "post_shift_support_sufficient",
+      "values_to_cohorts": {
+        "False": [
+          "source_aws_cloudwatch"
+        ],
+        "True": [
+          "source_known_cause"
+        ]
+      },
+      "constant": false,
+      "perfect_cohort_proxy": true,
+      "usable_as_scope": false,
+      "note": "perfect cohort proxy; forbidden as Scope"
+    },
+    {
+      "feature": "period_repair_available",
+      "values_to_cohorts": {
+        "False": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ]
+      },
+      "constant": true,
+      "perfect_cohort_proxy": false,
+      "usable_as_scope": false,
+      "note": "no resolving power"
+    }
+  ],
+  "legal_conditioning_structurally_unavailable": true,
+  "cells": [
+    {
+      "program": "hampel_filter",
+      "feature": "level_only_post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 1,
+      "immaterial_count": 2,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_hampel_filter"
+      ],
+      "conflict_episode_ids": [
+        "t6_source_known_cause_r2_hampel_filter"
+      ],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r2_hampel_filter",
+        "t6_source_known_cause_r1_hampel_filter"
+      ]
+    },
+    {
+      "program": "hampel_filter",
+      "feature": "period_repair_available",
+      "value": false,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 1,
+      "immaterial_count": 2,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_hampel_filter"
+      ],
+      "conflict_episode_ids": [
+        "t6_source_known_cause_r2_hampel_filter"
+      ],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r2_hampel_filter",
+        "t6_source_known_cause_r1_hampel_filter"
+      ]
+    },
+    {
+      "program": "hampel_filter",
+      "feature": "post_shift_support_sufficient",
+      "value": false,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 1,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_hampel_filter"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r2_hampel_filter"
+      ]
+    },
+    {
+      "program": "hampel_filter",
+      "feature": "post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 0,
+      "conflict_count": 1,
+      "immaterial_count": 1,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [],
+      "conflict_episode_ids": [
+        "t6_source_known_cause_r2_hampel_filter"
+      ],
+      "immaterial_episode_ids": [
+        "t6_source_known_cause_r1_hampel_filter"
+      ]
+    },
+    {
+      "program": "outlier_iqr",
+      "feature": "level_only_post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 3,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_outlier_iqr"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_outlier_iqr",
+        "t6_source_aws_cloudwatch_r2_outlier_iqr",
+        "t6_source_known_cause_r1_outlier_iqr"
+      ]
+    },
+    {
+      "program": "outlier_iqr",
+      "feature": "period_repair_available",
+      "value": false,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 3,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_outlier_iqr"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_outlier_iqr",
+        "t6_source_aws_cloudwatch_r2_outlier_iqr",
+        "t6_source_known_cause_r1_outlier_iqr"
+      ]
+    },
+    {
+      "program": "outlier_iqr",
+      "feature": "post_shift_support_sufficient",
+      "value": false,
+      "positive_count": 0,
+      "negative_count": 0,
+      "conflict_count": 0,
+      "immaterial_count": 2,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_outlier_iqr",
+        "t6_source_aws_cloudwatch_r2_outlier_iqr"
+      ]
+    },
+    {
+      "program": "outlier_iqr",
+      "feature": "post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 1,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_outlier_iqr"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_known_cause_r1_outlier_iqr"
+      ]
+    },
+    {
+      "program": "outlier_mad",
+      "feature": "level_only_post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 3,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_outlier_mad"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_outlier_mad",
+        "t6_source_aws_cloudwatch_r2_outlier_mad",
+        "t6_source_known_cause_r1_outlier_mad"
+      ]
+    },
+    {
+      "program": "outlier_mad",
+      "feature": "period_repair_available",
+      "value": false,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 3,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_outlier_mad"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_outlier_mad",
+        "t6_source_aws_cloudwatch_r2_outlier_mad",
+        "t6_source_known_cause_r1_outlier_mad"
+      ]
+    },
+    {
+      "program": "outlier_mad",
+      "feature": "post_shift_support_sufficient",
+      "value": false,
+      "positive_count": 0,
+      "negative_count": 0,
+      "conflict_count": 0,
+      "immaterial_count": 2,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_outlier_mad",
+        "t6_source_aws_cloudwatch_r2_outlier_mad"
+      ]
+    },
+    {
+      "program": "outlier_mad",
+      "feature": "post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 1,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_outlier_mad"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_known_cause_r1_outlier_mad"
+      ]
+    },
+    {
+      "program": "winsorize",
+      "feature": "level_only_post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 2,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 1,
+      "positive_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_winsorize",
+        "t6_source_aws_cloudwatch_r2_winsorize"
+      ],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_winsorize"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_known_cause_r1_winsorize"
+      ]
+    },
+    {
+      "program": "winsorize",
+      "feature": "period_repair_available",
+      "value": false,
+      "positive_count": 2,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 1,
+      "positive_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_winsorize",
+        "t6_source_aws_cloudwatch_r2_winsorize"
+      ],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_winsorize"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_known_cause_r1_winsorize"
+      ]
+    },
+    {
+      "program": "winsorize",
+      "feature": "post_shift_support_sufficient",
+      "value": false,
+      "positive_count": 2,
+      "negative_count": 0,
+      "conflict_count": 0,
+      "immaterial_count": 0,
+      "positive_episode_ids": [
+        "t6_source_aws_cloudwatch_r1_winsorize",
+        "t6_source_aws_cloudwatch_r2_winsorize"
+      ],
+      "negative_episode_ids": [],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": []
+    },
+    {
+      "program": "winsorize",
+      "feature": "post_shift_support_sufficient",
+      "value": true,
+      "positive_count": 0,
+      "negative_count": 1,
+      "conflict_count": 0,
+      "immaterial_count": 1,
+      "positive_episode_ids": [],
+      "negative_episode_ids": [
+        "t6_source_known_cause_r2_winsorize"
+      ],
+      "conflict_episode_ids": [],
+      "immaterial_episode_ids": [
+        "t6_source_known_cause_r1_winsorize"
+      ]
+    }
+  ],
+  "signed_summary_by_program": [
+    {
+      "program": "hampel_filter",
+      "positive_cohorts": [],
+      "negative_cohorts": [
+        "source_aws_cloudwatch"
+      ],
+      "conflict_cohorts": [
+        "source_known_cause"
+      ],
+      "immaterial_cohorts": [
+        "source_aws_cloudwatch",
+        "source_known_cause"
+      ],
+      "strict_harm_cohorts": [
+        "source_aws_cloudwatch"
+      ],
+      "extended_harm_cohorts": [
+        "source_aws_cloudwatch",
+        "source_known_cause"
+      ]
+    },
+    {
+      "program": "outlier_iqr",
+      "positive_cohorts": [],
+      "negative_cohorts": [
+        "source_known_cause"
+      ],
+      "conflict_cohorts": [],
+      "immaterial_cohorts": [
+        "source_aws_cloudwatch",
+        "source_known_cause"
+      ],
+      "strict_harm_cohorts": [
+        "source_known_cause"
+      ],
+      "extended_harm_cohorts": [
+        "source_known_cause"
+      ]
+    },
+    {
+      "program": "outlier_mad",
+      "positive_cohorts": [],
+      "negative_cohorts": [
+        "source_known_cause"
+      ],
+      "conflict_cohorts": [],
+      "immaterial_cohorts": [
+        "source_aws_cloudwatch",
+        "source_known_cause"
+      ],
+      "strict_harm_cohorts": [
+        "source_known_cause"
+      ],
+      "extended_harm_cohorts": [
+        "source_known_cause"
+      ]
+    },
+    {
+      "program": "winsorize",
+      "positive_cohorts": [
+        "source_aws_cloudwatch"
+      ],
+      "negative_cohorts": [
+        "source_known_cause"
+      ],
+      "conflict_cohorts": [],
+      "immaterial_cohorts": [
+        "source_known_cause"
+      ],
+      "strict_harm_cohorts": [
+        "source_known_cause"
+      ],
+      "extended_harm_cohorts": [
+        "source_known_cause"
+      ]
+    }
+  ],
+  "winsorize_positive_episode_ids": [
+    "t6_source_aws_cloudwatch_r1_winsorize",
+    "t6_source_aws_cloudwatch_r2_winsorize"
+  ],
+  "known_limits": [
+    "winsorize's two delayed POSITIVE episodes are both source_aws_cloudwatch (r1 and r2): same cohort, different round windows.  That is one cohort under the r3 vote unit, not two."
+  ],
+  "episode_count": 20,
+  "cost": {
+    "llm": 0,
+    "ad_fits": 0,
+    "forecast_retrains": 0
+  },
+  "authorization": {
+    "min_distinct_cohorts": 2,
+    "harm_definition": "delayed_relation in {NEGATIVE, CONFLICT}",
+    "harm_definition_strict": "delayed_relation == NEGATIVE",
+    "try_authorized": [],
+    "risk_authorized": [
+      "hampel_filter"
+    ],
+    "preregistered_expectation": {
+      "try": [],
+      "risk": [
+        "hampel_filter"
+      ]
+    },
+    "matches_preregistration": true,
+    "per_program": {
+      "hampel_filter": "RISK: >=2 cohort extended harm (NEGATIVE|CONFLICT), zero pool POSITIVE",
+      "outlier_iqr": "neither: positive_cohorts=[] extended_harm=['source_known_cause']",
+      "outlier_mad": "neither: positive_cohorts=[] extended_harm=['source_known_cause']",
+      "winsorize": "neither: positive_cohorts=['source_aws_cloudwatch'] extended_harm=['source_known_cause']"
+    }
+  }
+}

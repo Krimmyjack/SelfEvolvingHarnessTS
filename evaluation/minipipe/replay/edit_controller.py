@@ -112,6 +112,15 @@ class SurfaceDefinition:
     derived_outputs: tuple[str, ...]
     required_dependency_keys: tuple[str, ...]
 
+    def owner_class_follows_skill_kind(self) -> bool:
+        """Whether this surface holds a Skill whose kind decides the class.
+
+        True for the whole ``skill_library.entries`` family -- the entry ADD
+        and its per-field PATCHes -- and false everywhere else, so a bootstrap
+        or control surface keeps the class the catalog declares for it.
+        """
+        return self.surface_template_id.startswith("skill_library.entries/")
+
 
 @dataclass(frozen=True)
 class ResolvedSurface:
@@ -549,10 +558,20 @@ class EditController:
                 skill = load_skill_entry(value)
                 skill_kind = skill.skill_kind.value
 
+        # A skill-entry surface is authored once with a single target_class,
+        # but the class of an edit to it is a property of the Skill, not of
+        # the file it lives in: adding or guarding a *safety* Skill is a
+        # "safety" edit, which RISK_GAP authorizes, while the same surface
+        # holding a capability keeps its capability classes.  The route table
+        # already pairs safety/safety; only this hand-off was missing, which
+        # is why no SAFETY Skill could ever be written.
+        target_class = definition.target_class
+        if definition.owner_class_follows_skill_kind() and skill_kind == "safety":
+            target_class = "safety"
         try:
             self.router.authorize(
                 confirmed_cause,
-                target_class=definition.target_class,
+                target_class=target_class,
                 operation=manifest.operation.value,
                 skill_kind=skill_kind,
                 target_surface_id=manifest.target_surface_id,
@@ -712,6 +731,49 @@ class EditController:
         if not isinstance(document, dict):
             raise ValueError("editable JSON surface must have an object root")
         updated = _pointer_set(document, definition.json_pointer, replacement)
+        if (
+            definition.surface_template_id
+            == "skill_library.entries/{skill_id}.body"
+        ):
+            revision = document.get("revision")
+            if (
+                isinstance(revision, bool)
+                or not isinstance(revision, int)
+                or revision < 1
+            ):
+                raise ValueError(
+                    "learned Skill body PATCH requires a positive revision"
+                )
+            # Version bookkeeping belongs to this same atomic Program-body
+            # edit; it is not a second surface or an Agent-selected value.
+            updated["revision"] = revision + 1
+            # A frozen capability Program is represented by its executable
+            # body plus two machine-owned mirrors.  Leaving either mirror at
+            # the old operator would produce a self-contradictory revision:
+            # Fast executes ``body`` while inventory/risk diagnostics report
+            # another Program.  Slow still edits exactly one Program surface;
+            # these values are deterministically derived from the Runtime-
+            # bound body and are not additional Agent-selected surfaces.
+            from SelfEvolvingHarnessTS.methods.ttha.fast_agent import (  # noqa: PLC0415
+                _parse_frozen_steps,
+            )
+
+            parsed_steps = _parse_frozen_steps(str(replacement))
+            if parsed_steps is not None:
+                updated["allowed_tools"] = list(
+                    dict.fromkeys(str(op) for op, _params in parsed_steps)
+                )
+                risk_guards = dict(updated.get("risk_guards") or {})
+                frozen_plan = risk_guards.get("frozen_plan")
+                if (
+                    isinstance(frozen_plan, Mapping)
+                    and "program" in frozen_plan
+                    and len(parsed_steps) == 1
+                ):
+                    synchronized_plan = dict(frozen_plan)
+                    synchronized_plan["program"] = str(parsed_steps[0][0])
+                    risk_guards["frozen_plan"] = synchronized_plan
+                    updated["risk_guards"] = risk_guards
         if definition.surface_template_id == "candidate_policy.agent_program_slots":
             if isinstance(replacement, bool) or not isinstance(replacement, int):
                 raise ValueError("agent_program_slots must be an integer")

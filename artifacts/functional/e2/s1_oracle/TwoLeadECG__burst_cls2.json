@@ -1,0 +1,990 @@
+{
+ "isolation_banner": "本文件不得进入任何臂的 prompt/store/检索视野",
+ "isolation": "sealed exam key.  This file must not enter any arm prompt, store, or retrieval view.  Held-out per-operator scores are exam keys only.",
+ "do_not_load_into_harness": true,
+ "curriculum_name": "development positive-control curriculum",
+ "evidence_grade": "development",
+ "protocol_version": "s1a_curriculum_oracle_audit_v1",
+ "unit_id": "TwoLeadECG__burst_cls2",
+ "dataset": "TwoLeadECG",
+ "injection": "burst_cls2",
+ "condition": "fit_only_artifact",
+ "consumer": "ridge-raw-plus-difference-v1",
+ "metric": "accuracy",
+ "task_kind": "classification",
+ "series_length": 82,
+ "fit_rows": 16,
+ "n_heldin": 7,
+ "n_heldout": 1139,
+ "heldin_material_line": 0.14285714285714285,
+ "heldout_material_line": 0.005,
+ "class_harm_bar": 0.005,
+ "maximum_modified_fraction": 0.1,
+ "modification_fraction_scope": "cohort",
+ "heldout_is_official_clean_test": true,
+ "heldout_note": "fit_only_artifact == TARGET_CONDITION; _heldout_surface returns the official TEST split uninjected",
+ "legal_set": [
+  "identity",
+  "impute_linear",
+  "impute_fft",
+  "impute_ema",
+  "period_complete",
+  "period_median_complete",
+  "impute_ssm",
+  "impute_ar",
+  "denoise_median",
+  "outlier_mad",
+  "hampel_filter",
+  "repair_level_shift",
+  "repair_burst_segment",
+  "resample_uniform"
+ ],
+ "oracle_set": [
+  "identity"
+ ],
+ "oracle_set_empty": true,
+ "positive_unit": false,
+ "menu_oracle_program": "identity",
+ "menu_oracle_heldout_accuracy": 0.752414398595259,
+ "menu_oracle_heldout_utility": 0.0,
+ "identity_heldout_accuracy": 0.752414398595259,
+ "identity_heldout_recall_by_class": {
+  "0": 0.8453427065026362,
+  "1": 0.6596491228070176
+ },
+ "readiness_upper_bound_heldout_accuracy": 0.8665496049165935,
+ "readiness_upper_bound_recall_by_class": {
+  "0": 0.9209138840070299,
+  "1": 0.8122807017543859
+ },
+ "identity_residual_to_upper_bound": 0.11413520632133445,
+ "menu_best_residual_to_upper_bound": 0.11413520632133445,
+ "program_supply_gap": true,
+ "program_supply_gap_note": "menu-best residual to the exact-repair upper bound is the Program Supply gap.  An empty oracle set is identity, not 'the data needs no processing'.",
+ "public_features_binned": {
+  "task_kind": "classification",
+  "missing_fraction": "zero",
+  "longest_missing_run_fraction": "zero",
+  "local_robust_z_peak": "high",
+  "estimated_region_start_fraction": "low",
+  "estimated_region_end_fraction": "high",
+  "level_region_fraction": "very_low",
+  "level_region_end_fraction": "very_low",
+  "outlier_region_end_fraction": "very_low",
+  "level_only_post_shift_support_sufficient": true,
+  "post_shift_support_sufficient": false,
+  "level_excursion_score": "medium",
+  "estimated_level_offset": "low",
+  "period_change_score": "zero",
+  "period_reliability": "high",
+  "period_evidence_status": "OK",
+  "period_repair_available": false,
+  "imputation_probe_direction": "unknown",
+  "clipping_probe_direction": "unknown",
+  "denoising_probe_direction": "unknown",
+  "level_probe_direction": "unknown"
+ },
+ "pattern_view": {
+  "missing_fraction": "zero",
+  "longest_missing_run_fraction": "zero",
+  "local_robust_z_peak": "high",
+  "estimated_region_start_fraction": "low",
+  "estimated_region_end_fraction": "high",
+  "level_region_fraction": "very_low",
+  "level_region_end_fraction": "very_low",
+  "outlier_region_end_fraction": "very_low",
+  "level_excursion_score": "medium",
+  "estimated_level_offset": "low",
+  "period_change_score": "zero",
+  "period_reliability": "high",
+  "period_evidence_status": "OK"
+ },
+ "programs": [
+  {
+   "program": "identity",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": true,
+   "skip_reason": "identity_is_the_empty_oracle_fallback"
+  },
+  {
+   "program": "impute_linear",
+   "params": {
+    "strength": 1.0
+   },
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "impute_fft",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "impute_ema",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "period_complete",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "period_median_complete",
+   "params": {
+    "period": 2,
+    "cycles": 3,
+    "min_donors": 2
+   },
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "impute_ssm",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "impute_ar",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "denoise_savgol",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 1.0,
+   "cohort_modified_points": 1312,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "denoise_wavelet",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 1.0,
+   "cohort_modified_points": 1312,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "denoise_median",
+   "params": {
+    "window": 1,
+    "strength": 1.0
+   },
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "smooth_ma",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.9961890243902439,
+   "cohort_modified_points": 1307,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "denoise_stl",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.9939024390243902,
+   "cohort_modified_points": 1304,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "winsorize",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.11814024390243902,
+   "cohort_modified_points": 155,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 14,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "outlier_iqr",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.12271341463414634,
+   "cohort_modified_points": 161,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 11,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "outlier_mad",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.08307926829268293,
+   "cohort_modified_points": 109,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 8,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": false,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.7313432835820896,
+   "heldout_utility": -0.021071115013169495,
+   "heldout_recall_by_class": {
+    "0": 0.8787346221441125,
+    "1": 0.5842105263157895
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.033391915641476255,
+    "1": -0.07543859649122808
+   },
+   "heldout_worst_class_recall_delta": -0.07543859649122808,
+   "in_oracle_set": false,
+   "scored_heldin": true,
+   "scored_heldout": true,
+   "heldin_per_class_recall_delta": [
+    0.0,
+    0.0
+   ],
+   "evaluate_error": null
+  },
+  {
+   "program": "hampel_filter",
+   "params": {
+    "window": 3,
+    "n_sigmas": 0.1,
+    "global_z_min": 1.0
+   },
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.06326219512195122,
+   "cohort_modified_points": 83,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 2,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": false,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.7541703248463565,
+   "heldout_utility": 0.0017559262510974394,
+   "heldout_recall_by_class": {
+    "0": 0.8418277680140598,
+    "1": 0.6666666666666666
+   },
+   "heldout_recall_delta_by_class": {
+    "0": -0.0035149384885764245,
+    "1": 0.007017543859649034
+   },
+   "heldout_worst_class_recall_delta": -0.0035149384885764245,
+   "in_oracle_set": false,
+   "scored_heldin": true,
+   "scored_heldout": true,
+   "heldin_per_class_recall_delta": [
+    0.0,
+    0.0
+   ],
+   "evaluate_error": null
+  },
+  {
+   "program": "repair_level_shift",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.026676829268292682,
+   "cohort_modified_points": 35,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 2,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": false,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.7489025460930641,
+   "heldout_utility": -0.00351185250219499,
+   "heldout_recall_by_class": {
+    "0": 0.843585237258348,
+    "1": 0.6543859649122807
+   },
+   "heldout_recall_delta_by_class": {
+    "0": -0.0017574692442882123,
+    "1": -0.0052631578947368585
+   },
+   "heldout_worst_class_recall_delta": -0.0052631578947368585,
+   "in_oracle_set": false,
+   "scored_heldin": true,
+   "scored_heldout": true,
+   "heldin_per_class_recall_delta": [
+    0.0,
+    0.0
+   ],
+   "evaluate_error": null
+  },
+  {
+   "program": "repair_burst_segment",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.020579268292682928,
+   "cohort_modified_points": 27,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 3,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": false,
+   "heldin_headroom": -0.1428571428571428,
+   "heldin_worst_class_recall_delta": -0.3333333333333333,
+   "heldout_accuracy": 0.6417910447761194,
+   "heldout_utility": -0.11062335381913968,
+   "heldout_recall_by_class": {
+    "0": 0.8980667838312829,
+    "1": 0.38596491228070173
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0527240773286467,
+    "1": -0.27368421052631586
+   },
+   "heldout_worst_class_recall_delta": -0.27368421052631586,
+   "in_oracle_set": false,
+   "scored_heldin": true,
+   "scored_heldout": true,
+   "heldin_per_class_recall_delta": [
+    0.0,
+    -0.3333333333333333
+   ],
+   "evaluate_error": null
+  },
+  {
+   "program": "stl_decompose",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.9939024390243902,
+   "cohort_modified_points": 1304,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "fft_decompose",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 1.0,
+   "cohort_modified_points": 1312,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "smooth_ema",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.9908536585365854,
+   "cohort_modified_points": 1300,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "resample_uniform",
+   "params": {},
+   "legal": true,
+   "verifier_passed": true,
+   "cohort_modified_fraction": 0.0,
+   "cohort_modified_points": 0,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 0,
+   "checked_windows": 16,
+   "rejection_codes": [],
+   "numeric_no_op": true,
+   "heldin_headroom": 0.0,
+   "heldin_worst_class_recall_delta": 0.0,
+   "heldout_accuracy": 0.752414398595259,
+   "heldout_utility": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.8453427065026362,
+    "1": 0.6596491228070176
+   },
+   "heldout_recall_delta_by_class": {
+    "0": 0.0,
+    "1": 0.0
+   },
+   "heldout_worst_class_recall_delta": 0.0,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "numeric_no_op"
+  },
+  {
+   "program": "znorm",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 0.7995426829268293,
+   "cohort_modified_points": 1049,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 15,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  },
+  {
+   "program": "minmax_norm",
+   "params": {},
+   "legal": false,
+   "verifier_passed": false,
+   "cohort_modified_fraction": 1.0,
+   "cohort_modified_points": 1312,
+   "cohort_total_points": 1312,
+   "windows_over_per_window_cap": 16,
+   "checked_windows": 16,
+   "rejection_codes": [
+    "COHORT_MODIFICATION_FRACTION_EXCEEDED"
+   ],
+   "numeric_no_op": false,
+   "heldin_headroom": null,
+   "heldin_worst_class_recall_delta": null,
+   "heldout_accuracy": null,
+   "heldout_utility": null,
+   "heldout_recall_by_class": null,
+   "heldout_recall_delta_by_class": null,
+   "heldout_worst_class_recall_delta": null,
+   "in_oracle_set": false,
+   "scored_heldin": false,
+   "scored_heldout": false,
+   "skip_reason": "verifier_rejected:COHORT_MODIFICATION_FRACTION_EXCEEDED"
+  }
+ ],
+ "cell": {
+  "dataset": "TwoLeadECG",
+  "condition": "fit_only_artifact",
+  "data_dir": "data/ucr_task_context",
+  "archive": "data/ucr_task_context/TwoLeadECG.zip",
+  "series_length": 82,
+  "official_train_rows": 23,
+  "fit_rows": 16,
+  "support_pool_rows": 7,
+  "slice_rows": {
+   "r1_support": 2,
+   "r1_delayed": 2,
+   "r2_support": 2,
+   "r2_delayed": 1
+  },
+  "controlled_impulse_positions": [],
+  "observer_localized_nodes": [
+   12,
+   18,
+   24,
+   32,
+   39,
+   46,
+   52,
+   62,
+   70,
+   76
+  ],
+  "observer_recovered_all_nodes": false,
+  "witness": {
+   "witness_id": "cross-cohort-local-label-evidence/1",
+   "inputs_used": [
+    "fit_inputs",
+    "fit_labels",
+    "support_inputs",
+    "support_labels",
+    "candidate_program_nodes"
+   ],
+   "query_values_or_labels_used": false,
+   "dataset_id_used": false,
+   "program_outcome_used": false,
+   "node_count": 10,
+   "normalized_node_positions": [
+    0.14814814814814814,
+    0.2222222222222222,
+    0.2962962962962963,
+    0.3950617283950617,
+    0.48148148148148145,
+    0.5679012345679012,
+    0.6419753086419753,
+    0.7654320987654321,
+    0.8641975308641975,
+    0.9382716049382716
+   ],
+   "fit_node_median_strength": 1.260375521680229,
+   "support_node_median_strength": 0.02310360415797902,
+   "support_to_fit_strength_ratio": 0.01833073046664052,
+   "direction_alignment": 0.3
+  },
+  "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+  "legacy_scope_reasons": [
+   "localized_fit_signal_not_reproduced_in_support"
+  ],
+  "support_reproduces_fit_signal": false,
+  "observation_rows": 16,
+  "injection_template": "burst_cls2",
+  "burst_ledger": {
+   "form": "row_subset_one_contiguous_additive_burst",
+   "row_fraction": 0.5,
+   "segment_fraction": [
+    0.15,
+    0.2
+   ],
+   "noise_sigma_multiplier": 5.0,
+   "seed": 202608254,
+   "n_rows": 16,
+   "series_length": 82,
+   "segment_length_bounds": [
+    13,
+    16
+   ],
+   "n_hit_rows": 8,
+   "n_clean_rows": 8,
+   "hit_rows": [
+    0,
+    1,
+    3,
+    5,
+    9,
+    10,
+    14,
+    15
+   ],
+   "clean_rows": [
+    2,
+    4,
+    6,
+    7,
+    8,
+    11,
+    12,
+    13
+   ],
+   "by_class": {
+    "0": {
+     "n": 8,
+     "n_hit": 4,
+     "rows": [
+      1,
+      5,
+      9,
+      10
+     ]
+    },
+    "1": {
+     "n": 8,
+     "n_hit": 4,
+     "rows": [
+      0,
+      3,
+      14,
+      15
+     ]
+    }
+   },
+   "distinct_from_w43": "W43 is isolated-point class-conditioned impulse; this is one contiguous segment of additive Gaussian burst noise"
+  },
+  "burst_seed": 202608254,
+  "burst_template_source": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py:inject_burst_noise / SEED_INJECT=202608254"
+ },
+ "consumer_fits_after_unit": 342,
+ "v2_invariance_at_150": {
+  "length": 150,
+  "v1_segment_length": 1,
+  "v2_segment_length": 1,
+  "positions": [
+   12,
+   30,
+   119,
+   137
+  ],
+  "source_constants": "evaluation/functional/run_e2_task_context_label_evidence_witness.py:37 SPIKE_FRACTIONS=(0.08, 0.20, 0.80, 0.92); :38 SPIKE_AMPLITUDE=16.0; :95-100 _inject writes one point per position so v1 segment length = 1",
+  "formula": "round(1/150 * L)",
+  "checks": {
+   "segment_length_equals_v1": true,
+   "positions_equal": true,
+   "amplitude_equals_v1": true,
+   "fractions_equal_v1": true,
+   "injected_values_equal": true
+  },
+  "passed": true
+ },
+ "census_round": "s1a-r3"
+}

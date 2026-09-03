@@ -4,6 +4,7 @@ from SelfEvolvingHarnessTS.contracts.candidate import Candidate
 from SelfEvolvingHarnessTS.contracts.program import Program
 from SelfEvolvingHarnessTS.methods.ttha.retrieval import EffectiveHarnessView
 from SelfEvolvingHarnessTS.operators.registry import (
+    OPERATOR_METADATA,
     OPERATOR_NAMES,
     OPERATOR_TARGETING_MODES,
     operator_targeting_mode,
@@ -91,19 +92,56 @@ def test_hampel_public_global_gate_only_changes_public_robust_z_hits():
     assert modified <= public_hits
 
 
-def test_external_region_targeter_must_remain_inside_inspected_interval():
+def test_no_canonical_operator_declares_external_region_targeting():
+    """Frozen design §7.3/§17.4: RUNTIME_BOUND and OPERATOR_INTRINSIC exclude
+    each other, and the one operator that declared ``external_region`` had a
+    contract its implementation contradicted.  It now declares the intrinsic
+    path it always had, so no operator asks the Runtime to localize for it and
+    no Runtime-side localizer needs to exist.
+    """
+    for operator_id in OPERATOR_NAMES:
+        assert operator_targeting_mode(operator_id) != "external_region"
+        metadata = OPERATOR_METADATA[operator_id]
+        assert not metadata.get("public_parameter_bindings")
+
+
+def test_intrinsic_level_repair_edits_only_the_excursion_it_finds_itself():
+    """The mechanical content of INTRINSIC_GEOMETRY_LOCALIZED.
+
+    Given a window with one transient excursion, the operator with no
+    parameters locates that excursion inside the unit it was handed.  The
+    legacy call, handed a foreign coordinate system's full-prefix region,
+    rewrites most of the same window instead.
+    """
     values = np.zeros(192, dtype=float)
     values[40:60] = 3.0
-    candidate = _candidate(
-        "repair_level_shift",
-        {
-            "region_start_fraction": 40 / 192,
-            "region_end_fraction": 60 / 192,
-            "estimated_offset": 3.0,
-        },
-    )
 
-    assert not _risk_allows(candidate, values, _view(), ((100, 120),))
+    intrinsic = run_pipeline(
+        [("repair_level_shift", {})], values, source="intrinsic-targeting-test"
+    )
+    assert intrinsic.ok and intrinsic.artifact is not None
+    intrinsic_modified = set(np.flatnonzero(intrinsic.artifact != values))
+
+    legacy = run_pipeline(
+        [
+            (
+                "repair_level_shift",
+                {
+                    "region_start_fraction": 0.001,
+                    "region_end_fraction": 0.997,
+                    "estimated_offset": 3.0,
+                },
+            )
+        ],
+        values,
+        source="legacy-targeting-test",
+    )
+    assert legacy.ok and legacy.artifact is not None
+    legacy_modified = set(np.flatnonzero(legacy.artifact != values))
+
+    assert intrinsic_modified
+    assert intrinsic_modified <= set(range(40, 60))
+    assert len(intrinsic_modified) < len(legacy_modified)
 
 
 def test_global_transform_still_obeys_external_scope_guard():

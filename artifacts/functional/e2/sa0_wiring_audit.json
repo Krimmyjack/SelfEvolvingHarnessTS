@@ -1,0 +1,268 @@
+{
+ "protocol_version": "sa0_wiring_audit_v1",
+ "evidence_grade": "code_audit_read_only",
+ "written_by": "SA-0 (adaptation line design + wiring audit)",
+ "date": "2026-08-28",
+ "llm_calls": 0,
+ "consumer_fits": 0,
+ "downloads": 0,
+ "git_operations": 0,
+ "audit_basis": {
+  "git_head_at_audit_time": "9894a5da2081a4a35d8a5cb6b75d20e0d9d39a00",
+  "why_the_dirty_table_matters": "the L1 execution line is editing source_skill.py and its test in parallel; every judgement below that touches the supply tier is pinned to the working-tree bytes at audit time, not to HEAD",
+  "dirty_tracked_files": [
+   "AGENTS.md",
+   "README.md",
+   "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md",
+   "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md",
+   "docs/SUCCESSOR_BRIEF_2026-08-22.md",
+   "evaluation/functional/task_episode_harness/agentic/source_skill.py",
+   "tests/functional/test_supply_tier_compiler.py"
+  ],
+  "load_bearing_working_tree_delta": {
+   "file_line": "evaluation/functional/task_episode_harness/agentic/source_skill.py:319",
+   "constant": "SUPPLY_TIER_MIN_DISTINCT_TASKS = 1",
+   "note": "ladder revision v2 (supply-tier evidence price 2 -> 1) is already in the working tree, not yet committed; the TRY tier's leave-one-out floor at source_skill.py:250-258 is untouched"
+  },
+  "untracked_note": "the untracked set is large (run state dirs, logs, prior artifacts) and none of it is read as authority here"
+ },
+
+ "A1_attribution_surface": {
+  "question": "after a supplied candidate is tested on one unit, what does the system record, and is that enough to attribute per-unit success and failure mechanically to a specific card?",
+  "verdict": "PARTIAL -- the card-to-Support join is mechanical, the card-to-delayed/deployment join is not; two additive fields close the gap",
+  "what_is_recorded_today": [
+   {
+    "field": "round.pool / round.proposals[].candidate_id",
+    "value_shape": "cand_skill_<skill_id>",
+    "written_at": "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1310-1320 (record assembly), from methods/ttha/fast_agent.py:365-369 (candidate minted with source=\"skill:<skill_id>\")",
+    "supports": "the supplying card id is recoverable per candidate by decoding the id prefix",
+    "gap": "the card id lives inside a string, not in a dedicated source_skill_id field; Candidate.source carries \"skill:<id>\" but the record keeps only candidate_id"
+   },
+   {
+    "field": "round.proposals[].outcome / .gain / .verifier_passed / .chosen_by_select / .compiled",
+    "written_at": "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1302-1320",
+    "supports": "Support-side per-candidate outcome: probed, verifier-rejected, dropped for no compiled steps, never reached the Support budget, chosen by select"
+   },
+   {
+    "field": "round.episodes[]",
+    "written_at": "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1398-1414",
+    "keys": ["episode_id", "domain_namespace", "task_episode_id", "workflow_signature", "relation", "evidence_level", "local_status", "support_gain", "delayed_gain", "support_effect", "delayed_effect"],
+    "gap": "no candidate_id and no source_skill_id -- the Episode joins back to the card only through workflow_signature, i.e. through program identity"
+   },
+   {
+    "field": "round.retrieved_skill_ids",
+    "written_at": "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1337-1338 and, in the agentic runner, evaluation/functional/task_episode_harness/agentic/runner.py:1021-1036",
+    "supports": "which cards were in view when the unit ran -- this is what makes guidance-conditioning auditable after the fact"
+   },
+   {
+    "field": "round.fast_features_binned",
+    "written_at": "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1362, compiled by :401-424 (_binned_contract_leaves)",
+    "supports": "the frozen, binned, oracle-free pattern view of the unit -- this is the mechanical source a Scope exclusion can be compiled from"
+   },
+   {
+    "field": "guidance conditioning of an Episode",
+    "computed_at": "evaluation/functional/run_e2_s1v2_forward_course.py:1616-1617 (position > card_installed_after -> conditioned_snapshot=true)",
+    "consumed_at": "evaluation/functional/task_episode_harness/agentic/source_skill.py:366 (conditioned positives bucket separately and count zero)",
+    "gap": "conditioning is derived at the Slow boundary from unit position, not stamped on the round record; it is therefore correct for a single card installed once and undefined for two cards installed at different boundaries"
+   },
+   {
+    "field": "deployment / held-out",
+    "written_at": "evaluation/functional/run_e2_s1v2_forward_course.py:1648-1670 (_score_unit: deploy_source, applied_program, heldout_utility, regret, heldout_recall_by_class, worst_class_delta, harm_event)",
+    "gap": "deploy_source names the route, not the card; attribution of a deployed gain to a card is again by program signature"
+   },
+   {
+    "field": "supply-side roll-up",
+    "written_at": "evaluation/functional/run_e2_s1v2_forward_course.py:1655-1657, 1678-1680 (supply_candidates_in_pool, supply_probed)",
+    "gap": "computed by string prefix over the pool, so it counts supplied candidates but does not separate two cards, and does not record which card version supplied them"
+   },
+   {
+    "field": "Scope match",
+    "recorded": false,
+    "note": "no per-unit scope_match boolean exists on the round record; it is only recoverable by re-evaluating the card AST offline, which is what the L1 offline gate does at run level (artifacts/functional/e2/l1_ladder_v2_replay_r1.json -> t1.scope_table)"
+   }
+  ],
+  "missing_fields_required_for_mechanical_revision_attribution": [
+   {
+    "field": "episodes[].source_skill_id",
+    "why": "without it, a card-supplied hampel_filter Episode and an agent-self-proposed hampel_filter Episode are the same record. v4 produced exactly this collision: K0-fixed self-proposed hampel on GPA (+0.2690) while A5 did not, so signature-level joins cannot separate card credit from sampling luck",
+    "cost": "additive field, no behaviour change"
+   },
+   {
+    "field": "episodes[].source_skill_revision (or card content sha)",
+    "why": "after a Scope revision there are two versions of the same skill_id; an evidence ledger that cannot say which version was in view cannot support per-version Gain/Harm accounting",
+    "cost": "additive field, requires a real version counter to exist first -- see A2"
+   },
+   {
+    "field": "round.scope_match_by_skill_id",
+    "why": "distinguishing 'the card did not match' from 'the card matched and was refused' is the whole difference between a Scope that is too narrow and a card that is wrong; today both read as an absent candidate",
+    "cost": "additive field, computed from the AST already evaluated by retrieval"
+   },
+   {
+    "field": "round.guidance_conditioned_by_skill_id",
+    "why": "makes the anti-bootstrap rule auditable per card rather than derived from unit position at one boundary",
+    "cost": "additive field"
+   }
+  ]
+ },
+
+ "A2_revision_surface": {
+  "SkillEntry_revision_semantics": {
+   "declared_at": "contracts/harness.py:107-115 (dataclass), :111 (revision: int)",
+   "validated_at": "contracts/harness.py:81-84 (_require_revision: positive integer), contracts/schemas/skill_entry_v1.json:12",
+   "verdict": "revision is a STATIC AUTHORING FIELD, not a runtime version counter",
+   "evidence": [
+    "every learned-card mint writes the literal 1: methods/ttha/method.py:658 and :896, methods/ttha/ordering_card.py:170/190, evaluation/functional/task_episode_harness/agentic/source_skill.py:484 (revision: int = 1) and :532",
+    "no code path anywhere increments an existing entry's revision -- the only non-1 values in the repo are hand-authored bootstrap procedures (methods/ttha/harness/h0/skills/bootstrap/build_contrastive_candidates.json:5 = 7, inspect_and_localize.json:5 = 2)",
+    "materialised evidence of the consequence: a card carrying restricted_by_target_feedback=true still reads revision:1 (e.g. .r2_indep_micro_state/A5/snapshots/<sha>/skills/learned/fast_winner_e1v2_outlier_mad.json)"
+   ],
+   "consequence": "a PATCH that retires or narrows a card leaves the version number unchanged, so per-card version history exists only at snapshot granularity"
+  },
+  "restricted_by_target_feedback_patch": {
+   "writer": "evaluation/functional/task_episode_harness/agentic/runner.py:636-687 (_restrict_skill)",
+   "operation": "EditOperation.PATCH on surface skill_library.entries/<skill_id>.risk_guards with a SHA precondition (runner.py:653-666)",
+   "sets": {"restricted_by_target_feedback": true, "restriction_reason": "delayed_window_disconfirmed_this_skill"},
+   "trigger": {
+    "site": "evaluation/functional/task_episode_harness/agentic/runner.py:947-958",
+    "condition": "lifecycle.delayed_event.stage == \"existing_skill_revalidated\" AND winner.local_status == \"RESTRICTED\" AND delayed_event.skill_id present",
+    "stage_producer": "evaluation/functional/task_episode_harness/e1.py:1334-1343 -- produced only on the reuse path",
+    "reuse_path_eligibility": "evaluation/functional/task_episode_harness/e1.py:1305 calls _existing_local_skill, whose first filter is _is_local_skill_id (e1.py:689-690, predicate at e1.py:133), i.e. an arm-local fast_winner_* entry",
+    "status_source": "methods/ttha/online_loop.py:218-264 (_update_delayed_status): classify_relation POSITIVE -> LOCAL_ACTIVE, CONFLICT -> RESTRICTED, NEGATIVE/NEUTRAL/ABSTAIN -> EPISODE_ONLY (:244-249)"
+   },
+   "granularity": "WHOLE CARD, ALL CONTEXTS -- no domain or Scope carve-out",
+   "reader": "methods/ttha/retrieval.py:263-270 -- the guard is checked before applicability is evaluated and the entry is skipped in BOTH roles (fast and slow); a second independent read enforces the same thing at evaluation/functional/task_episode_harness/e1.py:549-557",
+   "auditability": "the entry stays in the snapshot with the guard and the reason on it, so the claim and its refutation remain readable (runner.py:639-643)"
+  },
+  "second_and_harsher_revocation_path": {
+   "writer": "methods/ttha/online_loop.py:675-736 (revoke_deployed_skill)",
+   "operation": "not an edit at all -- it forks the materialised tree and unlinks the skill JSON (methods/ttha/online_loop.py:711-723, target.unlink() at :723), recompiles and re-points active",
+   "trigger": "methods/ttha/online_loop.py:814-817 -- deployed_skill_id is set (the winner was a cand_skill_* candidate, routed at :640-645) AND delayed_utility < -M, with M = MATERIAL_THRESHOLD = 0.005 (online_loop.py:61, methods/ttha/signed_radius.py:40)",
+   "granularity": "WHOLE CARD DELETED from the active tree, all contexts",
+   "reachability_in_the_production_line": "NOT WIRED -- online_loop.open_delayed is never called from evaluation/functional/task_episode_harness/**; the only caller of revoke_deployed_skill in the harness is the controlled check at evaluation/functional/task_episode_harness/t1.py:467-489"
+  },
+  "can_observable_applicability_be_patched_narrower": {
+   "verdict": "YES -- the surface, the AST vocabulary and the evaluator all already support it; nothing does it today",
+   "surface": "methods/ttha/harness/harness_surfaces.json:65-77 -- surface_template_id skill_library.entries/{skill_id}.observable_applicability, allowed_operations [PATCH], precondition SHA, target_class \"applicability\", derived_outputs [retrieval_index], allowed_skill_kinds [capability]",
+   "ast_vocabulary": "negation and boolean composition are legal: validator contracts/observables.py:167-193 accepts all / any / not / const / leaf; evaluator methods/ttha/retrieval.py:48-87 implements them (not at :66-68)",
+   "three_valued_logic_and_the_degenerate_case": "an unknown feature returns None (retrieval.py:70-71); not(None) stays None (:66-68); an all-node containing None returns None (:59-62); evaluate_applicability reports matched only when the state is exactly True (:95-96). So if the excluded unit's leaves are absent from the current unit's public features, the whole AST abstains and the card is withheld -- conservative, but it over-withholds rather than over-serves",
+   "no_current_writer": "no EditManifest anywhere targets .observable_applicability; every PATCH in the codebase targets .risk_guards (runner.py:653, e1.py:1152)",
+   "authorization_hole": "the only fault cause authorizing target_class \"applicability\" is RETRIEVAL_MISS (evaluation/minipipe/feedback/fault_routes.json:14, enforced at evaluation/minipipe/feedback/router.py:61-64). RETRIEVAL_MISS is named for the widening direction; there is no cause code whose name means 'this Scope reached too far'"
+  },
+  "version_history_and_rollback": {
+   "per_card_version": "absent -- see revision semantics above",
+   "per_snapshot_version": "present and content-addressed: every materialise writes an immutable tree under <store>/<runtime_bundle_sha> and a provenance record <store>/../harness_snapshot_provenance/<sha>/<parent_sha>.json (methods/ttha/harness/store.py:124-148, :150-170); collisions with different bytes are refused (:144-145, :160-161)",
+   "rollback": "mechanically available -- store.set_active(old_runtime_bundle_sha) succeeds for any still-materialised bundle (methods/ttha/harness/store.py:195-197); no method-level API exposes it as a revision rollback",
+   "roll_forward_restore": "a crude un-restrict exists: evaluation/functional/task_episode_harness/e1.py:1139-1183 (_lift_restriction) PATCHes the same risk_guards surface, drops the guard and the reason and sets restored_after_restriction=true (:1147-1151), gated on re-probing a restricted local skill (:1121-1136, :1186+). This is a new forward edit, not a rollback to a prior version"
+  },
+  "episode_immutability": {
+   "verdict": "the Episode VALUE is immutable; the Episode LEDGER is overwrite-in-place",
+   "value": "methods/ttha/experience_memory.py:113-114 -- @dataclass(frozen=True) class ExperienceEpisode",
+   "how_updates_happen": "methods/ttha/online_loop.py:250-264 builds a new object with dataclasses.replace (delayed_response, relation, evidence_level, local_status, context_summary)",
+   "the_overwrite": "evaluation/functional/task_episode_harness/agentic/runner.py:924-927 finds the episode by episode_id in arm_state.episodes and replaces the list slot, so the Support-only version of that Episode is not retained in the ledger",
+   "consequence_for_the_design": "'Episode never changes' holds for the frozen record but not for the ledger slot; a revision mechanism that wants an append-only evidence trail must not rely on the current in-memory ledger to provide it"
+  }
+ },
+
+ "A3_mixed_feedback_today": {
+  "question": "under current code, a card converts on units X and Y through both gates and is refused on unit Z by Support or by delayed. What does the system do to the card?",
+  "verdict": "NOTHING, in every branch that the production line can actually reach",
+  "branches": [
+   {
+    "branch": "refused at Support (the supplied candidate probes and does not clear the material line, or the verifier rejects it, or the Support budget never reaches it)",
+    "what_is_written_to_the_card": "nothing",
+    "what_is_written_at_all": "a proposals row with outcome and gain (run_e2_s1_curriculum_four_arms.py:1302-1320) and, if it probed, an Episode graded EPISODE_ONLY",
+    "consequence": "the card keeps the same Scope and is re-supplied at every later Scope-matching unit, spending one pool slot and one probe each time"
+   },
+   {
+    "branch": "delayed reads CONFLICT (aggregate positive, per-series harm)",
+    "episode_effect": "local_status becomes RESTRICTED (methods/ttha/online_loop.py:246-247)",
+    "card_effect": "none for a supply card. The restriction PATCH requires delayed_event.stage == existing_skill_revalidated (runner.py:949-954), which only the local-skill reuse path emits (e1.py:1305 -> _existing_local_skill -> _is_local_skill_id at e1.py:689-690/133). A source supply card id is not a fast_winner_* id, so the reuse path never fires for it",
+    "consequence": "the RESTRICTED verdict lands on the Episode and, at most, on the Target-local derivative -- never on the source card"
+   },
+   {
+    "branch": "delayed < -M outright",
+    "card_effect_in_principle": "whole-card deletion via methods/ttha/online_loop.py:814-817 -> :675-736",
+    "card_effect_in_the_production_line": "unreachable -- open_delayed is not called from the Task-Episode harness (see A2)",
+    "consequence": "no automatic response at all"
+   },
+   {
+    "branch": "converted on X",
+    "card_effect": "none. The win mints a NEW Target-local fast_winner_* skill through handle_fast_winner (evaluation/functional/task_episode_harness/e1.py:1362-1382) and stamps it to the unit (run_e2_s1_curriculum_four_arms.py:1283-1284). The source card's own evidence block is frozen at compile time (source_skill.py:554-569) and is never appended to",
+    "consequence": "positive feedback does not accumulate on the card either -- the evidence ledger is write-once at compile, so 'Skill as an updatable hypothesis' has no write path in any direction"
+   }
+  ],
+  "one_line_answer": "today a card is compiled once and then frozen: positives do not accumulate on it, a Support refusal is invisible to it, and a delayed refusal reaches it only through a path that the production harness does not call"
+ },
+
+ "A4_revocation_bluntness": {
+  "question": "does one refusal somewhere destroy a card that is positive elsewhere, and under exactly what condition and scope?",
+  "verdict": "the two revocation mechanisms are maximally blunt BY DESIGN, and are simultaneously UNREACHABLE for supply cards in the production line -- so the real present-day risk is the opposite one: no response at all",
+  "bluntness_analysis": [
+   {
+    "mechanism": "restricted_by_target_feedback",
+    "precise_condition": "one unit's delayed window grades the reused local skill's Episode CONFLICT or worse (RESTRICTED), on that single unit (runner.py:947-954; grading at online_loop.py:244-249)",
+    "scope_of_effect": "GLOBAL -- retrieval.py:269-270 skips the entry before applicability is evaluated, in both fast and slow roles; e1.py:549-557 enforces the same on a second channel",
+    "bluntness": "one unit's refusal removes the card everywhere, including in every context where it had already converted. There is no per-domain or per-Scope variant of this guard anywhere in the codebase",
+    "mitigations_present": "the entry and its restriction_reason stay in the snapshot (auditable), and a re-probe can lift the restriction forward (e1.py:1139-1183)",
+    "who_it_can_actually_hit_today": "arm-local fast_winner_* skills only (the _is_local_skill_id filter). Those are already domain-stamped to one unit, so in practice the blunt global guard currently acts on an entry whose reach was one unit anyway -- the bluntness is latent, not yet expressed"
+   },
+   {
+    "mechanism": "revoke_deployed_skill",
+    "precise_condition": "the winner was a cand_skill_* candidate and that round's delayed_utility < -0.005 (online_loop.py:814-817)",
+    "scope_of_effect": "GLOBAL AND DESTRUCTIVE -- the skill JSON is unlinked from the fork (online_loop.py:723) and the recompiled snapshot becomes active",
+    "bluntness": "strictly worse than the guard: a single delayed reading below the material line on one unit deletes the card from the active tree; prior snapshots keep the bytes, so history survives, but the card's Scope, evidence block and any accumulated ledger are gone from the live view",
+    "who_it_can_actually_hit_today": "nobody in this harness -- not called (see A2)"
+   }
+  ],
+  "the_finding_that_matters": "the ledger entry of 2026-08-28 02:3x records the single-Episode supply card's safety net as 'Target counter-evidence triggers restricted_by_target_feedback and pulls it out of retrieval (retrieval.py:143/269, in production)'. The READER is in production. The WRITER's trigger is gated on the local-skill reuse path and therefore cannot fire for a supply card, and the alternative writer is not called by this harness. The net for the n=1 card is, as wired, unarmed. This does not change the L1 verdict logic, because a card that is never revoked is not a card that is wrongly revoked -- but it does mean the low price is currently backed by the verifier plus the Support/delayed double gate plus the harm veto, and not by any after-the-fact withdrawal."
+ },
+
+ "cross_cutting_findings": [
+  {
+   "finding": "the supply card's compiled Scope carries a duplicated task_kind leaf",
+   "evidence": "evaluation/functional/task_episode_harness/agentic/source_skill.py:467-474 seeds the leaf list with task_kind and then iterates pattern_intersection, which already contains task_kind; the L1 compiled card therefore has 18 leaves over 17 distinct features (artifacts/functional/e2/l1_ladder_v2_replay_r1.json -> t1.card.observable_applicability)",
+   "impact": "cosmetic for matching (the duplicate is a tautology) but it inflates the leaf count in every scope_leaves readout and it double-counts in the applicability score used for capability ranking (retrieval.py:278-284, :290-299)"
+  },
+  {
+   "finding": "four pattern leaves are silently dropped from the Scope because the edit schema cannot carry them",
+   "evidence": "source_skill.py:459-475 with legal_features from :434-456; the L1 card records pattern_leaves_dropped_as_uncontracted_for_edit_schema = [level_only_post_shift_support_sufficient, level_region_end_fraction, level_region_fraction, outlier_region_end_fraction]",
+   "impact": "the effective Scope is WIDER than the recorded scope_v1 by exactly those four axes; a Scope-narrowing rule that compiles exclusions from the same schema will inherit the same blind spot, and it must say so rather than claim the intersection is exact"
+  },
+  {
+   "finding": "the intersection Scope at n=1 is too narrow to have anything to revise",
+   "evidence": "artifacts/functional/e2/l1_ladder_v2_replay_r1.json -> t1.scope_table: 1 of the 5 tail units machine-matches, against a pre-registered 4 of 5. Recomputed leaf-by-leaf against the v4 frozen pattern views: GunPoint misses on period_change_score alone (high vs zero), PowerCons on period_change_score alone (high vs very_low), Herring on 2 of 17, BirdChicken on 3 of 17",
+   "impact": "a single incidental leaf carried from one Episode decides two of the three non-matches. Before a revision loop can be measured, the Scope has to start wide enough to be worth narrowing"
+  }
+ ],
+
+ "open_questions_for_sol": [
+  {"id": "Q1", "question": "no fault cause means 'this Scope reached too far'. Do we reuse RETRIEVAL_MISS for a monotone narrowing PATCH (semantically wrong, zero contract change) or add a SCOPE_OVERREACH cause (semantically right, touches fault_routes.json and the router)?", "refs": ["evaluation/minipipe/feedback/fault_routes.json:14", "evaluation/minipipe/feedback/router.py:61-64"]},
+  {"id": "Q2", "question": "SkillEntry.revision is a static authoring field that nothing increments. Does a revision bump the counter (touching every mint site and any equality/sha assumption downstream), or do we version by content sha and leave revision alone?", "refs": ["contracts/harness.py:111", "methods/ttha/method.py:658", "evaluation/functional/task_episode_harness/agentic/source_skill.py:484"]},
+  {"id": "Q3", "question": "restricted_by_target_feedback is whole-card and global by construction. Is the per-domain variant a new guard key (retrieval reads a restriction with a Scope), or is it exactly the Scope-exclusion PATCH under a different name? If the latter, the negative branch and the conflict branch of the revision rules collapse into one mechanism.", "refs": ["methods/ttha/retrieval.py:263-270"]},
+  {"id": "Q4", "question": "the supply card's revocation net is not armed: the writer's trigger is gated on the local-skill reuse path and the destructive path is not called by this harness. Do we arm it (extend the trigger to supply cards), leave it unarmed and say so in the ladder's safety argument, or supersede it with the versioned narrowing mechanism?", "refs": ["evaluation/functional/task_episode_harness/agentic/runner.py:947-954", "evaluation/functional/task_episode_harness/e1.py:689-690", "methods/ttha/online_loop.py:814-817"]},
+  {"id": "Q5", "question": "an Episode's ledger slot is overwritten when delayed lands, so the Support-only version is not retained. Does the evidence ledger for a revisable Skill need an append-only Episode trail, and if so does that live in the store or in the artifact?", "refs": ["methods/ttha/experience_memory.py:113-114", "evaluation/functional/task_episode_harness/agentic/runner.py:924-927"]},
+  {"id": "Q6", "question": "the Episode record has no source_skill_id, so a card-supplied program and an agent-self-proposed identical program are the same record. v4 produced exactly that collision. Is adding the field a pure instrument change (no governance content) that SA-1 may land, or does it need the same review as a mechanism?", "refs": ["evaluation/functional/run_e2_s1_curriculum_four_arms.py:1398-1414"]},
+  {"id": "Q7", "question": "four pattern axes are dropped from the Scope because the edit schema cannot carry them, so the effective Scope is wider than the recorded one. Does a narrowing rule get to exclude on a dropped axis (it cannot -- the manifest would fail shape validation), and if not, must the design declare those axes permanently unreachable for both widening and narrowing?", "refs": ["evaluation/functional/task_episode_harness/agentic/source_skill.py:434-475"]},
+  {"id": "Q8", "question": "an exclusion built from a unit whose leaves are absent from a later unit's features makes the whole AST abstain, so the card is withheld from units it was never meant to be excluded from. Is silent over-withholding acceptable, or must the exclusion be restricted to leaves present in the source Episode AND guaranteed present by the feature contract?", "refs": ["methods/ttha/retrieval.py:59-71", "methods/ttha/retrieval.py:95-96"]},
+  {"id": "Q9", "question": "the intersection Scope at n=1 reaches 1 of 5 units, and a single incidental leaf (period_change_score) causes two of the three near-misses. A revision loop needs a Scope worth narrowing. Widening the initial Scope is a ladder repricing question, not a revision question -- does sol want it opened, and if so on which axis-selection rule?", "refs": ["artifacts/functional/e2/l1_ladder_v2_replay_r1.json"]},
+  {"id": "Q10", "question": "in this harness the supply card reaches the agent through a mechanical candidate injection at the methods layer (fast_agent.py:1014) and simultaneously through its prose body being rendered into the harness view. The ladder priced the mechanical channel only. Does the prose channel need separate pricing before a card is allowed to be revised (a revised card's prose changes what the agent reads), or does the Stage-3 deferral stand?", "refs": ["methods/ttha/fast_agent.py:1014", "evaluation/functional/task_episode_harness/agentic/source_skill.py:504-527"]},
+  {"id": "Q11", "question": "the duplicated task_kind leaf double-counts in the applicability score that orders capability retrieval. Trivial to fix, but it changes compiled card bytes and therefore every frozen card sha. Fix now, or record and freeze?", "refs": ["evaluation/functional/task_episode_harness/agentic/source_skill.py:467-474", "methods/ttha/retrieval.py:290-299"]},
+  {"id": "Q12", "question": "monotone narrowing is declared Slow-autonomous in the design. Narrowing is monotone in Scope but it is NOT monotone in outcome -- withholding a card can lose a gain the card would have earned. Does 'monotone narrowing is autonomous' need a bounded-loss clause, or is the asymmetry accepted deliberately (a lost gain is recoverable, a harm is not)?", "refs": []}
+ ],
+
+ "obligations": {
+  "files_written": [
+   "artifacts/functional/e2/sa0_wiring_audit.json",
+   "artifacts/functional/e2/sa0_wiring_audit.md",
+   "docs/SA1_SKILL_ADAPTATION_DESIGN_2026-08-28.md",
+   "artifacts/functional/e2/sa0_counterfactual.md"
+  ],
+  "files_overwritten": [],
+  "code_changed": "none -- methods/, runtime/, contracts/, operators/, evaluation/ untouched",
+  "git_operations": "none",
+  "sealed_material_touched": "none -- s1_oracle/, Epilepsy2, data/ucr_conf_downloaded/ not read",
+  "other_line_files_touched": "none -- STAGE_REPORT, AGENTS.md, README, PROJECT_STATE*, SUCCESSOR_BRIEF*, ROADMAP not written",
+  "llm_backend_calls": 0,
+  "scripts_run": "read-only json parsing of artifacts/functional/e2/l1_ladder_v2_replay_r1.json and artifacts/functional/e2/s1v2_v4_forward_run1.json via D:\\Anaconda_envs\\envs\\project\\python.exe; no store written",
+  "subagents_spawned": 0
+ }
+}

@@ -1,0 +1,3595 @@
+{
+ "protocol_version": "t6_cls_op_r2_three_arms_v1",
+ "run_id": "t6_cls_op_r2_run1",
+ "entry": "--r2-run",
+ "modification_fraction_scope": "cohort",
+ "evidence_grade": "DEVELOPMENT",
+ "git_head": "cb03eb688210f521c931895454b44d30048c1928",
+ "material_census": {
+  "capability_id": "controlled_classification_local_event_dynamic_binding_v1",
+  "legacy_runner": {
+   "path": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+   "target_roster_lines": "34-41",
+   "promoted_capability_card_lines": "53-67",
+   "source_admission_gate_lines": "77-110",
+   "arms_lines": "220-284",
+   "what_it_never_did": "no Episode, no experience_memory write, no Skill lifecycle, no run_online_round / open_delayed / activate_approved"
+  },
+  "injection_template": {
+   "path": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+   "spike_fractions_line": "37",
+   "spike_amplitude_line": "38 (SPIKE_AMPLITUDE = 16.0)",
+   "bound_positions_lines": "88-92",
+   "inject_lines": "95-100",
+   "row_znorm_in_loader_lines": "66-69",
+   "note": "the loader z-normalises each row, so amplitude 16 is 16 row standard deviations; the impulse sign is the class label"
+  },
+  "fit_support_split": {
+   "path": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+   "lines": "73-85",
+   "rule": "per class, evenly spaced round(30%) support; remainder fit"
+  },
+  "observer": {
+   "path": "evaluation/functional/run_e2_task_scoped_impulse_skill_transfer.py",
+   "symbol": "_observe_class_conditioned_impulse_topology",
+   "role": "class-conditioned impulse topology -> localized nodes"
+  },
+  "cross_cohort_witness": {
+   "path": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+   "lines": "113-154 (_build_witness), 195-202 (_compile_decision)",
+   "role": "support/fit strength ratio + direction alignment; the only deployment-legal signal that separates a fit-only acquisition artifact from a stable task event"
+  },
+  "program": {
+   "path": "evaluation/functional/run_e2_task_conditioned_bound_impulse_oracle.py",
+   "symbol": "_apply_bound_impulse_oracle",
+   "geometry": "center-excluded local median, radius 3, window 7",
+   "binding": "W55 dynamic binding to the observer-localized nodes (run_e2_program_binding_harness_update.py lines 107-170)"
+  },
+  "capability_cards": {
+   "H1_dynamic_binding": "bind the unchanged local-median Program to the current fit series' observer nodes",
+   "H0_fixed_binding": "reuse the Source instance's absolute positions (12, 36, 156, 180)",
+   "source": "run_e2_program_binding_harness_update.py lines 40-51"
+  },
+  "original_source_target_split": {
+   "W48_source": [
+    "Coffee",
+    "ECG200",
+    "FordA",
+    "GunPoint"
+   ],
+   "W55_admission_roster": [
+    "FordB",
+    "Lightning2",
+    "MoteStrain",
+    "SonyAIBORobotSurface1",
+    "ProximalPhalanxOutlineCorrect",
+    "MiddlePhalanxOutlineCorrect"
+   ],
+   "W56_promoted_transfer_roster": [
+    "BirdChicken",
+    "HouseTwenty",
+    "ToeSegmentation1",
+    "PhalangesOutlinesCorrect",
+    "SonyAIBORobotSurface2",
+    "GunPointAgeSpan"
+   ],
+   "W55_reference": "run_e2_program_binding_harness_update.py lines 32-39",
+   "W56_reference": "run_e2_promoted_binding_capability_transfer.py lines 34-41"
+  }
+ },
+ "wiring_check": {
+  "task_spec": {
+   "factory": "contracts.task.classification_task_spec_v1",
+   "downstream_model_class": "ridge-raw-plus-difference-v1",
+   "consumer_name_matches_legacy": true,
+   "metric": {
+    "name": "accuracy",
+    "direction": "higher_is_better"
+   },
+   "sha": "e64c73189b94a18e"
+  },
+  "task_context": {
+   "factory": "contracts.task.classification_task_context_v1",
+   "quality_contract": "classification-local-event-quality-v1",
+   "maximum_modified_fraction": 0.1,
+   "maximum_candidates": 3,
+   "sha": "7832f300e0eeca7caa7f06f4b6c9fd843f7fd761303ad73180c0540fd77fd3b4",
+   "carried_on_every_behaviour_request": true
+  },
+  "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+  "consumer_adapter": {
+   "path": "evaluation/functional/consumers/cls_scope_adapter.py",
+   "precedent": "evaluation/functional/consumers/ad_scope_adapter.py",
+   "decides_relation": false,
+   "decides_winner": false,
+   "reads_or_writes_skill": false,
+   "applies_risk_threshold": false
+  },
+  "classification_legal_operator_menu": [
+   "impute_linear",
+   "impute_fft",
+   "impute_ema",
+   "period_complete",
+   "period_median_complete",
+   "impute_ssm",
+   "impute_ar",
+   "denoise_savgol",
+   "denoise_wavelet",
+   "denoise_median",
+   "smooth_ma",
+   "denoise_stl",
+   "winsorize",
+   "outlier_iqr",
+   "outlier_mad",
+   "hampel_filter",
+   "repair_level_shift",
+   "repair_burst_segment",
+   "stl_decompose",
+   "fft_decompose",
+   "smooth_ema",
+   "resample_uniform",
+   "znorm",
+   "minmax_norm"
+  ],
+  "shared_lifecycle_entry": [
+   "methods/ttha/online_loop.run_online_round",
+   "methods/ttha/online_loop.open_delayed",
+   "methods/ttha/online_loop.activate_approved",
+   "methods/ttha/method.TTHAMethod.handle_fast_winner",
+   "methods/ttha/experience_memory.classify_relation"
+  ],
+  "methods_package_modified": false,
+  "known_supply_gap": "the shared operator registry carries no bound center-excluded local-median operator; the legacy C38 Program is an oracle-bound instance that only the legacy runner can construct.  The mechanism-matched member of the shared menu is hampel_filter (local median replacement at intrinsically detected impulse points).  This runner does not add an operator: the Agent must find its Workflow in the existing supply, which is the point."
+ },
+ "preflight": {
+  "consumer_feature_map_matches_legacy": true,
+  "legacy_feature_reference": "run_e2_task_context_label_evidence_witness.py lines 103-105",
+  "forbidden_data_roots_untouched": [
+   "benchmark_yahoo_s5_v1",
+   "benchmark_nab_v1_1",
+   "noaa",
+   "smd"
+  ]
+ },
+ "binding": {
+  "source_roster": [
+   "FordB",
+   "Lightning2",
+   "MoteStrain",
+   "SonyAIBORobotSurface1",
+   "ProximalPhalanxOutlineCorrect",
+   "MiddlePhalanxOutlineCorrect"
+  ],
+  "target_roster": [
+   "BirdChicken",
+   "HouseTwenty",
+   "ToeSegmentation1",
+   "PhalangesOutlinesCorrect",
+   "SonyAIBORobotSurface2",
+   "GunPointAgeSpan"
+  ],
+  "source_datasets": [
+   "ProximalPhalanxOutlineCorrect",
+   "MiddlePhalanxOutlineCorrect",
+   "Lightning2"
+  ],
+  "source_conditions": [
+   "fit_only_artifact",
+   "stable_task_event"
+  ],
+  "target_datasets": [
+   "PhalangesOutlinesCorrect",
+   "GunPointAgeSpan"
+  ],
+  "target_condition": "fit_only_artifact",
+  "selection_rule": "most official TRAIN rows first, within each frozen roster; fixed before any arm ran and independent of any outcome",
+  "held_in_rounds_source": [
+   "r1"
+  ],
+  "held_in_rounds_target": [
+   "r1",
+   "r2"
+  ],
+  "support_trial_budget_per_round": 2,
+  "held_out": "official UCR TEST split, opened once per Target arm"
+ },
+ "budgets": {
+  "llm_cap": 90,
+  "llm_fast_cap": 82,
+  "llm_slow_reserve": 8,
+  "consumer_fit_cap": 600
+ },
+ "part_b": {
+  "cells": [
+   {
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "archive": "data/ucr_task_context/ProximalPhalanxOutlineCorrect.zip",
+    "series_length": 80,
+    "official_train_rows": 600,
+    "fit_rows": 420,
+    "support_pool_rows": 180,
+    "slice_rows": {
+     "r1_support": 46,
+     "r1_delayed": 46,
+     "r2_support": 44,
+     "r2_delayed": 44
+    },
+    "controlled_impulse_positions": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_localized_nodes": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.0759493670886076,
+      0.20253164556962025,
+      0.7974683544303798,
+      0.9240506329113924
+     ],
+     "fit_node_median_strength": 31.998738442530147,
+     "support_node_median_strength": 0.0,
+     "support_to_fit_strength_ratio": 0.0,
+     "direction_alignment": 0.25
+    },
+    "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+    "legacy_scope_reasons": [
+     "localized_fit_signal_not_reproduced_in_support"
+    ],
+    "support_reproduces_fit_signal": false,
+    "observation_rows": 40
+   },
+   {
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "condition": "stable_task_event",
+    "archive": "data/ucr_task_context/ProximalPhalanxOutlineCorrect.zip",
+    "series_length": 80,
+    "official_train_rows": 600,
+    "fit_rows": 420,
+    "support_pool_rows": 180,
+    "slice_rows": {
+     "r1_support": 46,
+     "r1_delayed": 46,
+     "r2_support": 44,
+     "r2_delayed": 44
+    },
+    "controlled_impulse_positions": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_localized_nodes": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.0759493670886076,
+      0.20253164556962025,
+      0.7974683544303798,
+      0.9240506329113924
+     ],
+     "fit_node_median_strength": 31.998738442530147,
+     "support_node_median_strength": 31.995592549382934,
+     "support_to_fit_strength_ratio": 0.9999016866508071,
+     "direction_alignment": 1.0
+    },
+    "legacy_scope_decision": "ABSTAIN_KEEP_INCUMBENT",
+    "legacy_scope_reasons": [
+     "local_label_evidence_repeats_across_cohorts"
+    ],
+    "support_reproduces_fit_signal": true,
+    "observation_rows": 40
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "archive": "data/ucr_task_context/MiddlePhalanxOutlineCorrect.zip",
+    "series_length": 80,
+    "official_train_rows": 600,
+    "fit_rows": 420,
+    "support_pool_rows": 180,
+    "slice_rows": {
+     "r1_support": 45,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 45
+    },
+    "controlled_impulse_positions": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_localized_nodes": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.0759493670886076,
+      0.20253164556962025,
+      0.7974683544303798,
+      0.9240506329113924
+     ],
+     "fit_node_median_strength": 31.99590971827694,
+     "support_node_median_strength": 0.0053156962991110016,
+     "support_to_fit_strength_ratio": 0.00016613674511067777,
+     "direction_alignment": 0.25
+    },
+    "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+    "legacy_scope_reasons": [
+     "localized_fit_signal_not_reproduced_in_support"
+    ],
+    "support_reproduces_fit_signal": false,
+    "observation_rows": 40
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "stable_task_event",
+    "archive": "data/ucr_task_context/MiddlePhalanxOutlineCorrect.zip",
+    "series_length": 80,
+    "official_train_rows": 600,
+    "fit_rows": 420,
+    "support_pool_rows": 180,
+    "slice_rows": {
+     "r1_support": 45,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 45
+    },
+    "controlled_impulse_positions": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_localized_nodes": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.0759493670886076,
+      0.20253164556962025,
+      0.7974683544303798,
+      0.9240506329113924
+     ],
+     "fit_node_median_strength": 31.99590971827694,
+     "support_node_median_strength": 31.994867840601053,
+     "support_to_fit_strength_ratio": 0.999967436847874,
+     "direction_alignment": 1.0
+    },
+    "legacy_scope_decision": "ABSTAIN_KEEP_INCUMBENT",
+    "legacy_scope_reasons": [
+     "local_label_evidence_repeats_across_cohorts"
+    ],
+    "support_reproduces_fit_signal": true,
+    "observation_rows": 40
+   },
+   {
+    "dataset": "Lightning2",
+    "condition": "fit_only_artifact",
+    "archive": "data/ucr_task_context/Lightning2.zip",
+    "series_length": 637,
+    "official_train_rows": 60,
+    "fit_rows": 42,
+    "support_pool_rows": 18,
+    "slice_rows": {
+     "r1_support": 5,
+     "r1_delayed": 5,
+     "r2_support": 4,
+     "r2_delayed": 4
+    },
+    "controlled_impulse_positions": [
+     51,
+     127,
+     509,
+     585
+    ],
+    "observer_localized_nodes": [
+     51,
+     127,
+     509,
+     585
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.08018867924528301,
+      0.19968553459119498,
+      0.800314465408805,
+      0.9198113207547169
+     ],
+     "fit_node_median_strength": 31.924482073828557,
+     "support_node_median_strength": 0.0,
+     "support_to_fit_strength_ratio": 0.0,
+     "direction_alignment": 0.25
+    },
+    "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+    "legacy_scope_reasons": [
+     "localized_fit_signal_not_reproduced_in_support"
+    ],
+    "support_reproduces_fit_signal": false,
+    "observation_rows": 6
+   },
+   {
+    "dataset": "Lightning2",
+    "condition": "stable_task_event",
+    "archive": "data/ucr_task_context/Lightning2.zip",
+    "series_length": 637,
+    "official_train_rows": 60,
+    "fit_rows": 42,
+    "support_pool_rows": 18,
+    "slice_rows": {
+     "r1_support": 5,
+     "r1_delayed": 5,
+     "r2_support": 4,
+     "r2_delayed": 4
+    },
+    "controlled_impulse_positions": [
+     51,
+     127,
+     509,
+     585
+    ],
+    "observer_localized_nodes": [
+     51,
+     127,
+     509,
+     585
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.08018867924528301,
+      0.19968553459119498,
+      0.800314465408805,
+      0.9198113207547169
+     ],
+     "fit_node_median_strength": 31.924482073828557,
+     "support_node_median_strength": 31.985254601379438,
+     "support_to_fit_strength_ratio": 1.0019036336248557,
+     "direction_alignment": 1.0
+    },
+    "legacy_scope_decision": "ABSTAIN_KEEP_INCUMBENT",
+    "legacy_scope_reasons": [
+     "local_label_evidence_repeats_across_cohorts"
+    ],
+    "support_reproduces_fit_signal": true,
+    "observation_rows": 6
+   }
+  ],
+  "rounds": [
+   {
+    "round": "r1",
+    "arm": "SOURCE",
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "mad_extreme_deviation",
+     "repair_local_level_excursion"
+    ],
+    "chosen": "mad_extreme_deviation",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 2,
+    "support_receipts": 2,
+    "probes": [
+     {
+      "candidate_id": "mad_extreme_deviation",
+      "kind": "probe",
+      "gain": 0.30434782608695654
+     },
+     {
+      "candidate_id": "repair_local_level_excursion",
+      "kind": "probe",
+      "gain": 0.043478260869565244
+     }
+    ],
+    "winner_program": [
+     {
+      "op": "repair_level_shift",
+      "params": {}
+     }
+    ],
+    "abstained": false,
+    "harm_count": 0,
+    "delayed_utility": -0.02173913043478265,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "ProximalPhalanxOutlineCorrect/fit_only_artifact_target_outlier_mad_source_ProximalPhalanxOutlineCorrect_r1_p1",
+      "domain_namespace": "ProximalPhalanxOutlineCorrect/fit_only_artifact",
+      "workflow_signature": "outlier_mad",
+      "relation": "CONFLICT",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.30434782608695654,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "CONFLICT",
+       "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.30434782608695654,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_0"
+       ],
+       "min_per_series_gain": -0.4
+      },
+      "delayed_effect": null
+     },
+     {
+      "episode_id": "ProximalPhalanxOutlineCorrect/fit_only_artifact_target_repair_level_shift_source_ProximalPhalanxOutlineCorrect_r1_p2",
+      "domain_namespace": "ProximalPhalanxOutlineCorrect/fit_only_artifact",
+      "workflow_signature": "repair_level_shift",
+      "relation": "NEGATIVE",
+      "evidence_level": "DELAYED",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.043478260869565244,
+      "delayed_gain": -0.02173913043478265,
+      "support_effect": {
+       "relation": "POSITIVE",
+       "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.043478260869565244,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.032258064516129004
+      },
+      "delayed_effect": {
+       "relation": "NEGATIVE",
+       "classification_basis": "aggregate < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": -0.02173913043478265,
+       "aggregate_direction": "degraded",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_1"
+       ],
+       "min_per_series_gain": -0.032258064516129004
+      }
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.3695652173913043
+     },
+     {
+      "signature": "outlier_mad({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.6739130434782609
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.41304347826086957
+     },
+     {
+      "signature": "identity",
+      "surface": "delayed",
+      "origin": 3201,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4782608695652174
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "delayed",
+      "origin": 3201,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.45652173913043476
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "delayed",
+      "origin": 3201,
+      "cache": "hit",
+      "consumer_fits": 0
+     }
+    ],
+    "consumer_fits_after": 5,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 0,
+    "llm_calls_after": 5,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 2,
+    "seconds": 66.94
+   },
+   {
+    "round": "r1",
+    "arm": "SOURCE",
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "condition": "stable_task_event",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_local_level_excursion",
+     "filter_extreme_deviation"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 2,
+    "support_receipts": 2,
+    "probes": [
+     {
+      "candidate_id": "repair_local_level_excursion",
+      "kind": "probe",
+      "gain": 0.0
+     },
+     {
+      "candidate_id": "filter_extreme_deviation",
+      "kind": "probe",
+      "gain": 0.0
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "ProximalPhalanxOutlineCorrect/stable_task_event_target_repair_level_shift_source_ProximalPhalanxOutlineCorrect_r1_p1",
+      "domain_namespace": "ProximalPhalanxOutlineCorrect/stable_task_event",
+      "workflow_signature": "repair_level_shift",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.0
+      },
+      "delayed_effect": null
+     },
+     {
+      "episode_id": "ProximalPhalanxOutlineCorrect/stable_task_event_target_hampel_filter_source_ProximalPhalanxOutlineCorrect_r1_p2",
+      "domain_namespace": "ProximalPhalanxOutlineCorrect/stable_task_event",
+      "workflow_signature": "hampel_filter",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.0
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     }
+    ],
+    "consumer_fits_after": 8,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 5,
+    "llm_calls_after": 10,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 2,
+    "seconds": 64.28
+   },
+   {
+    "round": "r1",
+    "arm": "SOURCE",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "local_mad_outlier_repair",
+     "local_iqr_outlier_repair"
+    ],
+    "chosen": "local_mad_outlier_repair",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 2,
+    "support_receipts": 2,
+    "probes": [
+     {
+      "candidate_id": "local_mad_outlier_repair",
+      "kind": "probe",
+      "gain": 0.20000000000000007
+     },
+     {
+      "candidate_id": "local_iqr_outlier_repair",
+      "kind": "probe",
+      "gain": 0.0
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "MiddlePhalanxOutlineCorrect/fit_only_artifact_target_outlier_mad_source_MiddlePhalanxOutlineCorrect_r1_p1",
+      "domain_namespace": "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+      "workflow_signature": "outlier_mad",
+      "relation": "CONFLICT",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.20000000000000007,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "CONFLICT",
+       "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.20000000000000007,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_0"
+       ],
+       "min_per_series_gain": -0.5
+      },
+      "delayed_effect": null
+     },
+     {
+      "episode_id": "MiddlePhalanxOutlineCorrect/fit_only_artifact_target_outlier_iqr_source_MiddlePhalanxOutlineCorrect_r1_p2",
+      "domain_namespace": "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+      "workflow_signature": "outlier_iqr",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_0"
+       ],
+       "min_per_series_gain": -0.125
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4444444444444444
+     },
+     {
+      "signature": "outlier_mad({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.6444444444444445
+     },
+     {
+      "signature": "outlier_iqr({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4444444444444444
+     }
+    ],
+    "consumer_fits_after": 11,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 10,
+    "llm_calls_after": 15,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 2,
+    "seconds": 58.27
+   },
+   {
+    "round": "r1",
+    "arm": "SOURCE",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "stable_task_event",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "localized_level_shift_repair"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "localized_level_shift_repair",
+      "kind": "probe",
+      "gain": 0.0
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "MiddlePhalanxOutlineCorrect/stable_task_event_target_repair_level_shift_source_MiddlePhalanxOutlineCorrect_r1_p1",
+      "domain_namespace": "MiddlePhalanxOutlineCorrect/stable_task_event",
+      "workflow_signature": "repair_level_shift",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.0
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     }
+    ],
+    "consumer_fits_after": 13,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 15,
+    "llm_calls_after": 19,
+    "llm_calls_this_round": 4,
+    "candidate_executions": 1,
+    "seconds": 62.98
+   },
+   {
+    "round": "r1",
+    "arm": "SOURCE",
+    "dataset": "Lightning2",
+    "condition": "fit_only_artifact",
+    "support_origin": 3822,
+    "delayed_origin": 3823,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "winsorize_extreme_deviation",
+     "repair_local_level_excursion"
+    ],
+    "chosen": "repair_local_level_excursion",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 2,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "repair_local_level_excursion",
+      "kind": "verifier_rejected",
+      "gain": null
+     },
+     {
+      "candidate_id": "winsorize_extreme_deviation",
+      "kind": "probe",
+      "gain": 0.0
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "Lightning2/fit_only_artifact_target_winsorize_source_Lightning2_r1_p1",
+      "domain_namespace": "Lightning2/fit_only_artifact",
+      "workflow_signature": "winsorize",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.0
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3822,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4
+     },
+     {
+      "signature": "winsorize({})",
+      "surface": "support",
+      "origin": 3822,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4
+     }
+    ],
+    "consumer_fits_after": 15,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 19,
+    "llm_calls_after": 24,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 2,
+    "seconds": 84.21
+   },
+   {
+    "round": "r1",
+    "arm": "SOURCE",
+    "dataset": "Lightning2",
+    "condition": "stable_task_event",
+    "support_origin": 3822,
+    "delayed_origin": 3823,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "winsorize_extreme_deviation",
+     "repair_level_shift_local"
+    ],
+    "chosen": "repair_level_shift_local",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 2,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "repair_level_shift_local",
+      "kind": "verifier_rejected",
+      "gain": null
+     },
+     {
+      "candidate_id": "winsorize_extreme_deviation",
+      "kind": "probe",
+      "gain": 0.0
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "Lightning2/stable_task_event_target_winsorize_source_Lightning2_r1_p1",
+      "domain_namespace": "Lightning2/stable_task_event",
+      "workflow_signature": "winsorize",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.0
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3822,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     },
+     {
+      "signature": "winsorize({})",
+      "surface": "support",
+      "origin": 3822,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     }
+    ],
+    "consumer_fits_after": 17,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 24,
+    "llm_calls_after": 29,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 2,
+    "seconds": 72.96
+   }
+  ],
+  "episode_count": 9,
+  "episode_counts_by_relation": {
+   "CONFLICT": 2,
+   "NEGATIVE": 1,
+   "NEUTRAL": 6
+  },
+  "probes": [
+   {
+    "task_episode_id": "ProximalPhalanxOutlineCorrect/fit_only_artifact",
+    "arm": "SOURCE",
+    "program": "outlier_mad",
+    "context_condition": false,
+    "support_gain": 0.30434782608695654,
+    "relation": "CONFLICT",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "ProximalPhalanxOutlineCorrect/fit_only_artifact",
+    "arm": "SOURCE",
+    "program": "repair_level_shift",
+    "context_condition": false,
+    "support_gain": 0.043478260869565244,
+    "relation": "NEGATIVE",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "ProximalPhalanxOutlineCorrect/stable_task_event",
+    "arm": "SOURCE",
+    "program": "repair_level_shift",
+    "context_condition": true,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "ProximalPhalanxOutlineCorrect/stable_task_event",
+    "arm": "SOURCE",
+    "program": "hampel_filter",
+    "context_condition": true,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+    "arm": "SOURCE",
+    "program": "outlier_mad",
+    "context_condition": false,
+    "support_gain": 0.20000000000000007,
+    "relation": "CONFLICT",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+    "arm": "SOURCE",
+    "program": "outlier_iqr",
+    "context_condition": false,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "MiddlePhalanxOutlineCorrect/stable_task_event",
+    "arm": "SOURCE",
+    "program": "repair_level_shift",
+    "context_condition": true,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "Lightning2/fit_only_artifact",
+    "arm": "SOURCE",
+    "program": "winsorize",
+    "context_condition": false,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   },
+   {
+    "task_episode_id": "Lightning2/stable_task_event",
+    "arm": "SOURCE",
+    "program": "winsorize",
+    "context_condition": true,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": false,
+    "conditioned_served": false
+   }
+  ],
+  "census": [
+   {
+    "canonical_program": [
+     "hampel_filter"
+    ],
+    "support_reproduces_fit_signal": true,
+    "support_relation": "NEUTRAL",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "ProximalPhalanxOutlineCorrect/stable_task_event"
+    ]
+   },
+   {
+    "canonical_program": [
+     "outlier_iqr"
+    ],
+    "support_reproduces_fit_signal": false,
+    "support_relation": "NEUTRAL",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "MiddlePhalanxOutlineCorrect/fit_only_artifact"
+    ]
+   },
+   {
+    "canonical_program": [
+     "outlier_mad"
+    ],
+    "support_reproduces_fit_signal": false,
+    "support_relation": "CONFLICT",
+    "distinct_task_count": 2,
+    "distinct_task_episode_ids": [
+     "MiddlePhalanxOutlineCorrect/fit_only_artifact",
+     "ProximalPhalanxOutlineCorrect/fit_only_artifact"
+    ]
+   },
+   {
+    "canonical_program": [
+     "repair_level_shift"
+    ],
+    "support_reproduces_fit_signal": false,
+    "support_relation": "NEGATIVE",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "ProximalPhalanxOutlineCorrect/fit_only_artifact"
+    ]
+   },
+   {
+    "canonical_program": [
+     "repair_level_shift"
+    ],
+    "support_reproduces_fit_signal": true,
+    "support_relation": "NEUTRAL",
+    "distinct_task_count": 2,
+    "distinct_task_episode_ids": [
+     "MiddlePhalanxOutlineCorrect/stable_task_event",
+     "ProximalPhalanxOutlineCorrect/stable_task_event"
+    ]
+   },
+   {
+    "canonical_program": [
+     "winsorize"
+    ],
+    "support_reproduces_fit_signal": false,
+    "support_relation": "NEUTRAL",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "Lightning2/fit_only_artifact"
+    ]
+   },
+   {
+    "canonical_program": [
+     "winsorize"
+    ],
+    "support_reproduces_fit_signal": true,
+    "support_relation": "NEUTRAL",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "Lightning2/stable_task_event"
+    ]
+   }
+  ],
+  "consolidation": {
+   "authorization_audit": [
+    {
+     "program": "hampel_filter",
+     "context_condition": true,
+     "pooled_positive": 0,
+     "pooled_negative": 0,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 0,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    },
+    {
+     "program": "outlier_iqr",
+     "context_condition": false,
+     "pooled_positive": 0,
+     "pooled_negative": 0,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 0,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    },
+    {
+     "program": "outlier_mad",
+     "context_condition": false,
+     "pooled_positive": 0,
+     "pooled_negative": 0,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 0,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    },
+    {
+     "program": "repair_level_shift",
+     "context_condition": false,
+     "pooled_positive": 0,
+     "pooled_negative": 1,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 1,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    },
+    {
+     "program": "repair_level_shift",
+     "context_condition": true,
+     "pooled_positive": 0,
+     "pooled_negative": 0,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 0,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    },
+    {
+     "program": "winsorize",
+     "context_condition": false,
+     "pooled_positive": 0,
+     "pooled_negative": 0,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 0,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    },
+    {
+     "program": "winsorize",
+     "context_condition": true,
+     "pooled_positive": 0,
+     "pooled_negative": 0,
+     "pooled_immaterial": 0,
+     "unguided_positive": 0,
+     "unguided_negative": 0,
+     "conditioned_positive": 0,
+     "conditioned_negative": 0,
+     "leave_one_out_minimum_positive": 0,
+     "active_try_authorized": false,
+     "deprioritization_authorized": false,
+     "withheld_because": "no_unguided_positive"
+    }
+   ],
+   "authorized_try_operators": [],
+   "risk_authorized_operators": [],
+   "signed_summary_by_program": [
+    {
+     "program": "hampel_filter",
+     "context_condition": true,
+     "positive_tasks": 0,
+     "negative_tasks": 0,
+     "immaterial_tasks": 1,
+     "verdict": "IMMATERIAL_ONLY"
+    },
+    {
+     "program": "outlier_iqr",
+     "context_condition": false,
+     "positive_tasks": 0,
+     "negative_tasks": 0,
+     "immaterial_tasks": 1,
+     "verdict": "IMMATERIAL_ONLY"
+    },
+    {
+     "program": "outlier_mad",
+     "context_condition": false,
+     "positive_tasks": 0,
+     "negative_tasks": 0,
+     "immaterial_tasks": 2,
+     "verdict": "IMMATERIAL_ONLY"
+    },
+    {
+     "program": "repair_level_shift",
+     "context_condition": false,
+     "positive_tasks": 0,
+     "negative_tasks": 1,
+     "immaterial_tasks": 0,
+     "verdict": "NEGATIVE_ONLY"
+    },
+    {
+     "program": "repair_level_shift",
+     "context_condition": true,
+     "positive_tasks": 0,
+     "negative_tasks": 0,
+     "immaterial_tasks": 2,
+     "verdict": "IMMATERIAL_ONLY"
+    },
+    {
+     "program": "winsorize",
+     "context_condition": false,
+     "positive_tasks": 0,
+     "negative_tasks": 0,
+     "immaterial_tasks": 1,
+     "verdict": "IMMATERIAL_ONLY"
+    },
+    {
+     "program": "winsorize",
+     "context_condition": true,
+     "positive_tasks": 0,
+     "negative_tasks": 0,
+     "immaterial_tasks": 1,
+     "verdict": "IMMATERIAL_ONLY"
+    }
+   ],
+   "min_distinct_tasks": 2,
+   "slow_attempts": [
+    {
+     "attempt": 1,
+     "decision": "ADD",
+     "slow_response": {
+      "decision": "ADD",
+      "sections": {
+       "WHEN": "When task_kind == classification in a new cohort and a comparable context_condition can be observed.",
+       "OBSERVE": "Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.",
+       "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+       "RISK": "The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.",
+       "VERIFY": "Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.",
+       "FALLBACK": "If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator."
+      },
+      "reason": "ADD is authorized for source_investigation_cls_v1. The authorized TRY list is empty, and the census contains no unguided positive evidence supporting an active recommendation."
+     },
+     "audit": {
+      "pass": true,
+      "checks": {
+       "all_six_sections_present": true,
+       "no_extra_sections": true,
+       "no_invented_operator": true,
+       "no_invented_observable_feature": true,
+       "no_numeric_threshold": true,
+       "no_source_cohort_identity_leaked": true,
+       "try_clause_within_authorization": true
+      },
+      "missing_sections": [],
+      "extra_sections": [],
+      "invented_operators": [],
+      "invented_observable_features": [],
+      "numeric_literals": [],
+      "leaked_cohort_tokens": [],
+      "operators_named_in_try": [],
+      "unauthorized_operators_in_try": [],
+      "authorized_try_operators": [],
+      "try_abstained": true
+     }
+    }
+   ],
+   "slow_llm_calls": 1,
+   "skill_written": true,
+   "execution_right_granted": false,
+   "execution_right_rule": "a Source-derived card carries a frozen Workflow only when the deterministic authorization audit authorizes a TRY operator: unguided POSITIVE cells that survive leave-one-out at min_distinct_tasks=2 with no opposing evidence in the same observable Context.  Otherwise the card is advisory only and supplies no candidate."
+  },
+  "source_skill_sections": {
+   "WHEN": "When task_kind == classification in a new cohort and a comparable context_condition can be observed.",
+   "OBSERVE": "Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.",
+   "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+   "RISK": "The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.",
+   "VERIFY": "Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.",
+   "FALLBACK": "If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator."
+  },
+  "source_skill_entry": {
+   "schema_version": "skill-entry/1",
+   "skill_id": "source_investigation_cls_v1",
+   "skill_kind": "capability",
+   "revision": 1,
+   "body": "WHEN: When task_kind == classification in a new cohort and a comparable context_condition can be observed.\nOBSERVE: Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.\nTRY: NO_AUTHORIZED_ACTIVE_RECOMMENDATION\nRISK: The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.\nVERIFY: Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.\nFALLBACK: If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator.",
+   "observable_applicability": {
+    "feature": "task_kind",
+    "op": "==",
+    "value": "classification"
+   },
+   "allowed_tools": [],
+   "risk_guards": {
+    "carrier": "source_derived_general_skill",
+    "advises_the_proposal_stage_only": true,
+    "never_supplies_a_candidate": true,
+    "requires_target_support": true,
+    "sections": {
+     "WHEN": "When task_kind == classification in a new cohort and a comparable context_condition can be observed.",
+     "OBSERVE": "Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.",
+     "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+     "RISK": "The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.",
+     "VERIFY": "Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.",
+     "FALLBACK": "If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator."
+    },
+    "execution_right": "withheld_no_authorized_try_operator"
+   }
+  },
+  "snapshots": {
+   "h0_runtime_bundle_sha": "c3917fcc537e95a8aac3d94968ff9c38932665c9e513afe7fd536f35c00090e0",
+   "source_runtime_bundle_sha": "2c3f3fb83747ace806a5a8dee98eeb3ca7bae8d65a8e6cad97d9c42f06b2aad5",
+   "source_skill_on_snapshot": true,
+   "materialize_error": null,
+   "a5_equals_a3_by_construction": false
+  }
+ },
+ "part_c": {
+  "cells": [
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "archive": "data/ucr_task_context/PhalangesOutlinesCorrect.zip",
+    "series_length": 80,
+    "official_train_rows": 1800,
+    "fit_rows": 1260,
+    "support_pool_rows": 540,
+    "slice_rows": {
+     "r1_support": 135,
+     "r1_delayed": 135,
+     "r2_support": 135,
+     "r2_delayed": 135
+    },
+    "controlled_impulse_positions": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_localized_nodes": [
+     6,
+     16,
+     63,
+     73
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.0759493670886076,
+      0.20253164556962025,
+      0.7974683544303798,
+      0.9240506329113924
+     ],
+     "fit_node_median_strength": 31.992990441316174,
+     "support_node_median_strength": 0.0,
+     "support_to_fit_strength_ratio": 0.0,
+     "direction_alignment": 0.25
+    },
+    "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+    "legacy_scope_reasons": [
+     "localized_fit_signal_not_reproduced_in_support"
+    ],
+    "support_reproduces_fit_signal": false,
+    "observation_rows": 40
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "archive": "data/ucr_task_context/GunPointAgeSpan.zip",
+    "series_length": 150,
+    "official_train_rows": 135,
+    "fit_rows": 95,
+    "support_pool_rows": 40,
+    "slice_rows": {
+     "r1_support": 10,
+     "r1_delayed": 10,
+     "r2_support": 10,
+     "r2_delayed": 10
+    },
+    "controlled_impulse_positions": [
+     12,
+     30,
+     119,
+     137
+    ],
+    "observer_localized_nodes": [
+     12,
+     30,
+     119,
+     137
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.08053691275167785,
+      0.20134228187919462,
+      0.7986577181208053,
+      0.9194630872483222
+     ],
+     "fit_node_median_strength": 31.982042690601546,
+     "support_node_median_strength": 0.0,
+     "support_to_fit_strength_ratio": 0.0,
+     "direction_alignment": 0.0
+    },
+    "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+    "legacy_scope_reasons": [
+     "localized_fit_signal_not_reproduced_in_support"
+    ],
+    "support_reproduces_fit_signal": false,
+    "observation_rows": 22
+   }
+  ],
+  "rounds": [
+   {
+    "round": "r1",
+    "arm": "A3",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_local_level_shift",
+     "repair_intrinsic_extreme_deviation"
+    ],
+    "chosen": "repair_intrinsic_extreme_deviation",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 2,
+    "support_receipts": 2,
+    "probes": [
+     {
+      "candidate_id": "repair_intrinsic_extreme_deviation",
+      "kind": "probe",
+      "gain": 0.0222222222222222
+     },
+     {
+      "candidate_id": "repair_local_level_shift",
+      "kind": "probe",
+      "gain": 0.01481481481481478
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "PhalangesOutlinesCorrect/fit_only_artifact_target_outlier_mad_a3_PhalangesOutlinesCorrect_r1_p1",
+      "domain_namespace": "PhalangesOutlinesCorrect/fit_only_artifact",
+      "workflow_signature": "outlier_mad",
+      "relation": "CONFLICT",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0222222222222222,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "CONFLICT",
+       "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0222222222222222,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_1"
+       ],
+       "min_per_series_gain": -0.2159090909090909
+      },
+      "delayed_effect": null
+     },
+     {
+      "episode_id": "PhalangesOutlinesCorrect/fit_only_artifact_target_repair_level_shift_a3_PhalangesOutlinesCorrect_r1_p2",
+      "domain_namespace": "PhalangesOutlinesCorrect/fit_only_artifact",
+      "workflow_signature": "repair_level_shift",
+      "relation": "CONFLICT",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.01481481481481478,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "CONFLICT",
+       "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.01481481481481478,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_0"
+       ],
+       "min_per_series_gain": -0.021276595744680882
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.42962962962962964
+     },
+     {
+      "signature": "outlier_mad({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.45185185185185184
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4444444444444444
+     }
+    ],
+    "consumer_fits_after": 20,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 29,
+    "llm_calls_after": 34,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 2,
+    "seconds": 72.47
+   },
+   {
+    "round": "r2",
+    "arm": "A3",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_level_shift_local"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "rendered_empty",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "repair_level_shift_local",
+      "kind": "probe",
+      "gain": -0.029629629629629617
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 1,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "PhalangesOutlinesCorrect/fit_only_artifact_target_repair_level_shift_a3_PhalangesOutlinesCorrect_r2_p1",
+      "domain_namespace": "PhalangesOutlinesCorrect/fit_only_artifact",
+      "workflow_signature": "repair_level_shift",
+      "relation": "NEGATIVE",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": -0.029629629629629617,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEGATIVE",
+       "classification_basis": "aggregate < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": -0.029629629629629617,
+       "aggregate_direction": "degraded",
+       "series_read": 2,
+       "harmed_series_count": 2,
+       "harmed_series": [
+        "view_0",
+        "view_1"
+       ],
+       "min_per_series_gain": -0.04255319148936171
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.5259259259259259
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4962962962962963
+     }
+    ],
+    "consumer_fits_after": 22,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 34,
+    "llm_calls_after": 39,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 1,
+    "seconds": 52.5
+   },
+   {
+    "round": "r1",
+    "arm": "A5",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_level_excursion"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "repair_level_excursion",
+      "kind": "probe",
+      "gain": 0.01481481481481478
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "PhalangesOutlinesCorrect/fit_only_artifact_target_repair_level_shift_a5_PhalangesOutlinesCorrect_r1_p1",
+      "domain_namespace": "PhalangesOutlinesCorrect/fit_only_artifact",
+      "workflow_signature": "repair_level_shift",
+      "relation": "CONFLICT",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.01481481481481478,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "CONFLICT",
+       "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.01481481481481478,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_0"
+       ],
+       "min_per_series_gain": -0.021276595744680882
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.42962962962962964
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4444444444444444
+     }
+    ],
+    "consumer_fits_after": 26,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 39,
+    "llm_calls_after": 43,
+    "llm_calls_this_round": 4,
+    "candidate_executions": 1,
+    "seconds": 51.75
+   },
+   {
+    "round": "r2",
+    "arm": "A5",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "support_origin": 3200,
+    "delayed_origin": 3201,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_localized_level_excursion"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "memory_resolution": "rendered_empty",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "repair_localized_level_excursion",
+      "kind": "probe",
+      "gain": -0.029629629629629617
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 1,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "PhalangesOutlinesCorrect/fit_only_artifact_target_repair_level_shift_a5_PhalangesOutlinesCorrect_r2_p1",
+      "domain_namespace": "PhalangesOutlinesCorrect/fit_only_artifact",
+      "workflow_signature": "repair_level_shift",
+      "relation": "NEGATIVE",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": -0.029629629629629617,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEGATIVE",
+       "classification_basis": "aggregate < -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": -0.029629629629629617,
+       "aggregate_direction": "degraded",
+       "series_read": 2,
+       "harmed_series_count": 2,
+       "harmed_series": [
+        "view_0",
+        "view_1"
+       ],
+       "min_per_series_gain": -0.04255319148936171
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.5259259259259259
+     },
+     {
+      "signature": "repair_level_shift({})",
+      "surface": "support",
+      "origin": 3200,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4962962962962963
+     }
+    ],
+    "consumer_fits_after": 28,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 43,
+    "llm_calls_after": 49,
+    "llm_calls_this_round": 6,
+    "candidate_executions": 1,
+    "seconds": 86.46
+   },
+   {
+    "round": "r1",
+    "arm": "A3",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "support_origin": 3300,
+    "delayed_origin": 3301,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "local_hampel_exploration"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "local_hampel_exploration",
+      "kind": "probe",
+      "gain": 0.5
+     }
+    ],
+    "winner_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "abstained": false,
+    "harm_count": 0,
+    "delayed_utility": 0.4,
+    "fast_skill_event": {
+     "stage": "pending",
+     "support_gain": 0.5,
+     "support_passed": true,
+     "support_reused": true,
+     "support_relation": "POSITIVE",
+     "support_evidence": {
+      "relation": "POSITIVE",
+      "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+      "material_threshold": 0.005,
+      "consumer_id": "ridge-raw-plus-difference-v1",
+      "aggregate_gain": 0.5,
+      "aggregate_direction": "improved",
+      "series_read": 2,
+      "harmed_series_count": 0,
+      "harmed_series": [],
+      "min_per_series_gain": 0.4
+     },
+     "edit_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+    },
+    "delayed_event": {
+     "stage": "approved",
+     "delayed_gain": 0.4,
+     "delayed_relation": "POSITIVE",
+     "delayed_evidence": {
+      "relation": "POSITIVE",
+      "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+      "material_threshold": 0.005,
+      "consumer_id": "ridge-raw-plus-difference-v1",
+      "aggregate_gain": 0.4,
+      "aggregate_direction": "improved",
+      "series_read": 2,
+      "harmed_series_count": 0,
+      "harmed_series": [],
+      "min_per_series_gain": 0.20000000000000007
+     },
+     "snapshot_updated": true
+    },
+    "approved_skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter",
+    "activated": true,
+    "episodes": [
+     {
+      "episode_id": "GunPointAgeSpan/fit_only_artifact_target_hampel_filter_a3_GunPointAgeSpan_r1_p1",
+      "domain_namespace": "GunPointAgeSpan/fit_only_artifact",
+      "workflow_signature": "hampel_filter",
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "local_status": "LOCAL_ACTIVE",
+      "support_gain": 0.5,
+      "delayed_gain": 0.4,
+      "support_effect": {
+       "relation": "POSITIVE",
+       "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.5,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.4
+      },
+      "delayed_effect": {
+       "relation": "POSITIVE",
+       "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.4,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.20000000000000007
+      }
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3300,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.5
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "support",
+      "origin": 3300,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 1.0
+     },
+     {
+      "signature": "identity",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.8
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "hit",
+      "consumer_fits": 0
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "hit",
+      "consumer_fits": 0
+     }
+    ],
+    "consumer_fits_after": 33,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 49,
+    "llm_calls_after": 55,
+    "llm_calls_this_round": 6,
+    "candidate_executions": 1,
+    "seconds": 103.39
+   },
+   {
+    "round": "r2",
+    "arm": "A3",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "support_origin": 3300,
+    "delayed_origin": 3301,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "hampel_extreme_deviation"
+    ],
+    "chosen": "identity",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+    ],
+    "memory_resolution": "rendered",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "hampel_extreme_deviation",
+      "kind": "probe",
+      "gain": 0.4
+     }
+    ],
+    "winner_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "abstained": false,
+    "harm_count": 0,
+    "delayed_utility": 0.4,
+    "fast_skill_event": {
+     "stage": "apply_failed",
+     "error": "AddTargetExistsError: ADD target already exists: skill_library.entries/fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+    },
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "GunPointAgeSpan/fit_only_artifact_target_hampel_filter_a3_GunPointAgeSpan_r2_p1",
+      "domain_namespace": "GunPointAgeSpan/fit_only_artifact",
+      "workflow_signature": "hampel_filter",
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "local_status": "LOCAL_ACTIVE",
+      "support_gain": 0.4,
+      "delayed_gain": 0.4,
+      "support_effect": {
+       "relation": "POSITIVE",
+       "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.4,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.4
+      },
+      "delayed_effect": {
+       "relation": "POSITIVE",
+       "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.4,
+       "aggregate_direction": "improved",
+       "series_read": 2,
+       "harmed_series_count": 0,
+       "harmed_series": [],
+       "min_per_series_gain": 0.39999999999999997
+      }
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3300,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.5
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "support",
+      "origin": 3300,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.9
+     },
+     {
+      "signature": "identity",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.4
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.8
+     },
+     {
+      "signature": "hampel_filter({})",
+      "surface": "delayed",
+      "origin": 3301,
+      "cache": "hit",
+      "consumer_fits": 0
+     }
+    ],
+    "consumer_fits_after": 37,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 55,
+    "llm_calls_after": 59,
+    "llm_calls_this_round": 4,
+    "candidate_executions": 1,
+    "seconds": 90.61
+   },
+   {
+    "round": "r1",
+    "arm": "A5",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "support_origin": 3300,
+    "delayed_origin": 3301,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "localized_level_shift_repair"
+    ],
+    "chosen": "localized_level_shift_repair",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 0,
+    "probes": [
+     {
+      "candidate_id": "localized_level_shift_repair",
+      "kind": "verifier_rejected",
+      "gain": null
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [],
+    "adapter_calls": [],
+    "consumer_fits_after": 40,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 59,
+    "llm_calls_after": 63,
+    "llm_calls_this_round": 4,
+    "candidate_executions": 1,
+    "seconds": 110.31
+   },
+   {
+    "round": "r2",
+    "arm": "A5",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "support_origin": 3300,
+    "delayed_origin": 3301,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_local_level_excursion"
+    ],
+    "chosen": "repair_local_level_excursion",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 0,
+    "probes": [
+     {
+      "candidate_id": "repair_local_level_excursion",
+      "kind": "verifier_rejected",
+      "gain": null
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [],
+    "adapter_calls": [],
+    "consumer_fits_after": 40,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 63,
+    "llm_calls_after": 68,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 1,
+    "seconds": 125.16
+   }
+  ],
+  "deployments": [
+   {
+    "arm": "A3",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 858,
+    "heldout_identity_accuracy": 0.4696969696969697,
+    "heldout_accuracy": 0.4696969696969697,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.46686746987951805,
+     "1": 0.4714828897338403
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.46686746987951805,
+     "1": 0.4714828897338403
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 23,
+    "breach": [],
+    "pure": true
+   },
+   {
+    "arm": "A4",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 858,
+    "heldout_identity_accuracy": 0.4696969696969697,
+    "heldout_accuracy": 0.4696969696969697,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.46686746987951805,
+     "1": 0.4714828897338403
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.46686746987951805,
+     "1": 0.4714828897338403
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 24,
+    "breach": [],
+    "pure": true
+   },
+   {
+    "arm": "A5",
+    "dataset": "PhalangesOutlinesCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 858,
+    "heldout_identity_accuracy": 0.4696969696969697,
+    "heldout_accuracy": 0.4696969696969697,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.46686746987951805,
+     "1": 0.4714828897338403
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.46686746987951805,
+     "1": 0.4714828897338403
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 29,
+    "breach": [],
+    "pure": true
+   },
+   {
+    "arm": "A3",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+    "deploy_why": "Fast-only recall of a frozen Skill carrying a Workflow",
+    "active_skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter",
+    "recall_hit": true,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+    ],
+    "applied_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "scored_equals_applied": true,
+    "heldout_rows": 316,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy": 0.8512658227848101,
+    "heldout_accuracy_gain": 0.2689873417721519,
+    "heldout_recall_by_class": {
+     "0": 0.88125,
+     "1": 0.8205128205128205
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.28125,
+     "1": 0.2564102564102564
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 39,
+    "breach": [],
+    "pure": true
+   },
+   {
+    "arm": "A4",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 316,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 40,
+    "breach": [],
+    "pure": true
+   },
+   {
+    "arm": "A5",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify",
+     "source_investigation_cls_v1"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 316,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 41,
+    "breach": [],
+    "pure": true
+   }
+  ],
+  "arm_table": [
+   {
+    "dataset": "GunPointAgeSpan",
+    "arm": "A3",
+    "held_in_rounds": 2,
+    "support_receipts": 2,
+    "first_positive_support_receipt": 1,
+    "episodes": 2,
+    "held_in_delayed_utility": 0.4,
+    "held_in_delayed_utility_all": [
+     0.4,
+     0.4
+    ],
+    "approved_skill_ids": [
+     "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+    ],
+    "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+    "applied_program": [
+     {
+      "op": "hampel_filter",
+      "params": {}
+     }
+    ],
+    "heldout_accuracy": 0.8512658227848101,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.2689873417721519,
+    "harmed_classes_over_bar": []
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "arm": "A4",
+    "held_in_rounds": 0,
+    "support_receipts": 0,
+    "first_positive_support_receipt": null,
+    "episodes": 0,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "approved_skill_ids": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "heldout_accuracy": 0.5822784810126582,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.0,
+    "harmed_classes_over_bar": []
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "arm": "A5",
+    "held_in_rounds": 2,
+    "support_receipts": 0,
+    "first_positive_support_receipt": null,
+    "episodes": 0,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "approved_skill_ids": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "heldout_accuracy": 0.5822784810126582,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.0,
+    "harmed_classes_over_bar": [],
+    "A5_minus_A3_heldout_accuracy": -0.2689873417721519,
+    "A5_minus_A4_heldout_accuracy": 0.0
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "arm": "A3",
+    "held_in_rounds": 2,
+    "support_receipts": 3,
+    "first_positive_support_receipt": 1,
+    "episodes": 3,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "approved_skill_ids": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "heldout_accuracy": 0.4696969696969697,
+    "heldout_identity_accuracy": 0.4696969696969697,
+    "heldout_accuracy_gain": 0.0,
+    "harmed_classes_over_bar": []
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "arm": "A4",
+    "held_in_rounds": 0,
+    "support_receipts": 0,
+    "first_positive_support_receipt": null,
+    "episodes": 0,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "approved_skill_ids": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "heldout_accuracy": 0.4696969696969697,
+    "heldout_identity_accuracy": 0.4696969696969697,
+    "heldout_accuracy_gain": 0.0,
+    "harmed_classes_over_bar": []
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "arm": "A5",
+    "held_in_rounds": 2,
+    "support_receipts": 2,
+    "first_positive_support_receipt": 1,
+    "episodes": 2,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "approved_skill_ids": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "heldout_accuracy": 0.4696969696969697,
+    "heldout_identity_accuracy": 0.4696969696969697,
+    "heldout_accuracy_gain": 0.0,
+    "harmed_classes_over_bar": [],
+    "A5_minus_A3_heldout_accuracy": 0.0,
+    "A5_minus_A4_heldout_accuracy": 0.0
+   }
+  ],
+  "deploy_purity": {
+   "slots": {
+    "PhalangesOutlinesCorrect/A3": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    },
+    "PhalangesOutlinesCorrect/A4": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    },
+    "PhalangesOutlinesCorrect/A5": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    },
+    "GunPointAgeSpan/A3": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    },
+    "GunPointAgeSpan/A4": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    },
+    "GunPointAgeSpan/A5": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    }
+   },
+   "all_pure": true
+  },
+  "r2_readouts": {
+   "cells": {
+    "PhalangesOutlinesCorrect/A3": {
+     "dataset": "PhalangesOutlinesCorrect",
+     "arm": "A3",
+     "target_local_skill_formed": false,
+     "first_skill": null,
+     "llm_calls_total": 10,
+     "candidate_executions_total": 3,
+     "held_in_delayed_utility": null,
+     "held_in_delayed_utility_all": [],
+     "abstained_rounds": 2,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 0,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.4696969696969697,
+     "heldout_identity_accuracy": 0.4696969696969697,
+     "heldout_accuracy_gain": 0.0,
+     "heldout_recall_by_class": {
+      "0": 0.46686746987951805,
+      "1": 0.4714828897338403
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.0,
+      "1": 0.0
+     },
+     "worst_class_recall_delta": 0.0,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+     "applied_program": []
+    },
+    "PhalangesOutlinesCorrect/A4": {
+     "dataset": "PhalangesOutlinesCorrect",
+     "arm": "A4",
+     "target_local_skill_formed": false,
+     "first_skill": null,
+     "llm_calls_total": 0,
+     "candidate_executions_total": 0,
+     "held_in_delayed_utility": null,
+     "held_in_delayed_utility_all": [],
+     "abstained_rounds": 0,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 0,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.4696969696969697,
+     "heldout_identity_accuracy": 0.4696969696969697,
+     "heldout_accuracy_gain": 0.0,
+     "heldout_recall_by_class": {
+      "0": 0.46686746987951805,
+      "1": 0.4714828897338403
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.0,
+      "1": 0.0
+     },
+     "worst_class_recall_delta": 0.0,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+     "applied_program": []
+    },
+    "PhalangesOutlinesCorrect/A5": {
+     "dataset": "PhalangesOutlinesCorrect",
+     "arm": "A5",
+     "target_local_skill_formed": false,
+     "first_skill": null,
+     "llm_calls_total": 10,
+     "candidate_executions_total": 2,
+     "held_in_delayed_utility": null,
+     "held_in_delayed_utility_all": [],
+     "abstained_rounds": 2,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 0,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.4696969696969697,
+     "heldout_identity_accuracy": 0.4696969696969697,
+     "heldout_accuracy_gain": 0.0,
+     "heldout_recall_by_class": {
+      "0": 0.46686746987951805,
+      "1": 0.4714828897338403
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.0,
+      "1": 0.0
+     },
+     "worst_class_recall_delta": 0.0,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+     "applied_program": []
+    },
+    "GunPointAgeSpan/A3": {
+     "dataset": "GunPointAgeSpan",
+     "arm": "A3",
+     "target_local_skill_formed": true,
+     "first_skill": {
+      "skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter",
+      "round": "r1",
+      "program": [
+       {
+        "op": "hampel_filter",
+        "params": {}
+       }
+      ],
+      "non_identity": true,
+      "llm_calls_to_first_skill": 6,
+      "candidate_executions_to_first_skill": 1,
+      "support_receipts_to_first_skill": 1
+     },
+     "llm_calls_total": 10,
+     "candidate_executions_total": 2,
+     "held_in_delayed_utility": 0.4,
+     "held_in_delayed_utility_all": [
+      0.4,
+      0.4
+     ],
+     "abstained_rounds": 0,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 2,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.8512658227848101,
+     "heldout_identity_accuracy": 0.5822784810126582,
+     "heldout_accuracy_gain": 0.2689873417721519,
+     "heldout_recall_by_class": {
+      "0": 0.88125,
+      "1": 0.8205128205128205
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.28125,
+      "1": 0.2564102564102564
+     },
+     "worst_class_recall_delta": 0.2564102564102564,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+     "applied_program": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ]
+    },
+    "GunPointAgeSpan/A4": {
+     "dataset": "GunPointAgeSpan",
+     "arm": "A4",
+     "target_local_skill_formed": false,
+     "first_skill": null,
+     "llm_calls_total": 0,
+     "candidate_executions_total": 0,
+     "held_in_delayed_utility": null,
+     "held_in_delayed_utility_all": [],
+     "abstained_rounds": 0,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 0,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.5822784810126582,
+     "heldout_identity_accuracy": 0.5822784810126582,
+     "heldout_accuracy_gain": 0.0,
+     "heldout_recall_by_class": {
+      "0": 0.6,
+      "1": 0.5641025641025641
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.0,
+      "1": 0.0
+     },
+     "worst_class_recall_delta": 0.0,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+     "applied_program": []
+    },
+    "GunPointAgeSpan/A5": {
+     "dataset": "GunPointAgeSpan",
+     "arm": "A5",
+     "target_local_skill_formed": false,
+     "first_skill": null,
+     "llm_calls_total": 9,
+     "candidate_executions_total": 2,
+     "held_in_delayed_utility": null,
+     "held_in_delayed_utility_all": [],
+     "abstained_rounds": 2,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 0,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.5822784810126582,
+     "heldout_identity_accuracy": 0.5822784810126582,
+     "heldout_accuracy_gain": 0.0,
+     "heldout_recall_by_class": {
+      "0": 0.6,
+      "1": 0.5641025641025641
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.0,
+      "1": 0.0
+     },
+     "worst_class_recall_delta": 0.0,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+     "applied_program": []
+    }
+   },
+   "contrasts": {
+    "GunPointAgeSpan": {
+     "A5_minus_A3_heldout_accuracy": -0.2689873417721519,
+     "A5_minus_A4_heldout_accuracy": 0.0,
+     "A5_minus_A3_first_skill_executions": null,
+     "A5_minus_A3_worst_class_harm": 0.0,
+     "A4_beats_A5": false,
+     "A4_mechanism_note": null
+    },
+    "PhalangesOutlinesCorrect": {
+     "A5_minus_A3_heldout_accuracy": 0.0,
+     "A5_minus_A4_heldout_accuracy": 0.0,
+     "A5_minus_A3_first_skill_executions": null,
+     "A5_minus_A3_worst_class_harm": 0.0,
+     "A4_beats_A5": false,
+     "A4_mechanism_note": null
+    }
+   },
+   "material_threshold": 0.005,
+   "harm_bar": 0.05
+  }
+ },
+ "ledger": {
+  "llm_calls_fast": 68,
+  "llm_calls_slow": 1,
+  "llm_calls_total": 69,
+  "llm_cap": 90,
+  "llm_within_cap": true,
+  "consumer_fits": 41,
+  "consumer_fit_cap": 600,
+  "wall_seconds": 1225.9
+ },
+ "verdict": {
+  "verdict": "CLS_LIFECYCLE_OK_NO_ADVANTAGE",
+  "rule": "CLS_TRANSFER_POSITIVE iff a non-identity Target-local Skill formed and A5 beats A3 materially on at least one of {held-out accuracy, first-Skill candidate-execution cost, worst-class harm} with no item materially worse.",
+  "non_identity_target_local_skill_formed": true,
+  "skill_by_cell": {
+   "PhalangesOutlinesCorrect/A3": false,
+   "PhalangesOutlinesCorrect/A4": false,
+   "PhalangesOutlinesCorrect/A5": false,
+   "GunPointAgeSpan/A3": true,
+   "GunPointAgeSpan/A4": false,
+   "GunPointAgeSpan/A5": false
+  },
+  "comparison_items": [
+   {
+    "dataset": "GunPointAgeSpan",
+    "item": "heldout_accuracy",
+    "value": -0.2689873417721519,
+    "material_line": 0.005,
+    "better": false,
+    "worse": true
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "item": "target_local_skill_formed",
+    "value": "A3",
+    "material_line": null,
+    "better": false,
+    "worse": true
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "item": "worst_class_harm",
+    "value": 0.0,
+    "material_line": 0.005,
+    "better": false,
+    "worse": false
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "item": "heldout_accuracy",
+    "value": 0.0,
+    "material_line": 0.005,
+    "better": false,
+    "worse": false
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "item": "worst_class_harm",
+    "value": 0.0,
+    "material_line": 0.005,
+    "better": false,
+    "worse": false
+   }
+  ],
+  "better_items": [],
+  "worse_items": [
+   {
+    "dataset": "GunPointAgeSpan",
+    "item": "heldout_accuracy",
+    "value": -0.2689873417721519,
+    "material_line": 0.005,
+    "better": false,
+    "worse": true
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "item": "target_local_skill_formed",
+    "value": "A3",
+    "material_line": null,
+    "better": false,
+    "worse": true
+   }
+  ],
+  "contrasts": {
+   "GunPointAgeSpan": {
+    "A5_minus_A3_heldout_accuracy": -0.2689873417721519,
+    "A5_minus_A4_heldout_accuracy": 0.0,
+    "A5_minus_A3_first_skill_executions": null,
+    "A5_minus_A3_worst_class_harm": 0.0,
+    "A4_beats_A5": false,
+    "A4_mechanism_note": null
+   },
+   "PhalangesOutlinesCorrect": {
+    "A5_minus_A3_heldout_accuracy": 0.0,
+    "A5_minus_A4_heldout_accuracy": 0.0,
+    "A5_minus_A3_first_skill_executions": null,
+    "A5_minus_A3_worst_class_harm": 0.0,
+    "A4_beats_A5": false,
+    "A4_mechanism_note": null
+   }
+  },
+  "a4_bias_check": {
+   "GunPointAgeSpan": {
+    "A4_beats_A5": false,
+    "A5_minus_A4_heldout_accuracy": 0.0,
+    "mechanism_note": null
+   },
+   "PhalangesOutlinesCorrect": {
+    "A4_beats_A5": false,
+    "A5_minus_A4_heldout_accuracy": 0.0,
+    "mechanism_note": null
+   }
+  },
+  "deploy_purity_all_pure": true,
+  "claim_limit": "DEVELOPMENT.  Controlled impulse injection on UCR splits that W48/W55/W56 already opened.  A5 > A3 here is a development-grade reading and needs the frozen confirmation on an unused local UCR Target before it can be called classification transfer."
+ },
+ "lifecycle_closure": {
+  "verdict": "SECOND_TASK_LIFECYCLE_CLOSED",
+  "mechanical_failure": false,
+  "real_episodes": 9,
+  "episode_kinds": [
+   "CONFLICT",
+   "NEGATIVE",
+   "NEUTRAL"
+  ],
+  "episode_counts_by_relation": {
+   "CONFLICT": 2,
+   "NEGATIVE": 1,
+   "NEUTRAL": 6
+  },
+  "source_derived_skill_written": true,
+  "target_local_skills_approved": [
+   "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+  ],
+  "skill_formed": true,
+  "three_arm_cells": [
+   "GunPointAgeSpan/A3",
+   "GunPointAgeSpan/A4",
+   "GunPointAgeSpan/A5",
+   "PhalangesOutlinesCorrect/A3",
+   "PhalangesOutlinesCorrect/A4",
+   "PhalangesOutlinesCorrect/A5"
+  ],
+  "deploy_purity_all_pure": true,
+  "skill_formation_note": "Episodes and the three arms are the mechanical half of closure; an Experience->Skill lifecycle that never produces a Skill has not closed.  When this line is the only one missing, the failure is evidential (no POSITIVE Support relation to consolidate), not mechanical, and it is a user checkpoint rather than a bug.",
+  "claim_limit": "DEVELOPMENT.  Every UCR split here was already opened by W48/W55/W56 and the local event is a controlled injection, so this is a lifecycle-closure reading, not a fresh classification Capability claim.  Whether A5 beats A3 or A4 is reported as measured and is not part of the pass condition."
+ },
+ "obligations": {
+  "methods_package_unmodified": true,
+  "new_files": [
+   "evaluation/functional/consumers/cls_scope_adapter.py (the one permitted thin evaluate_fn adapter)",
+   "evaluation/functional/run_e2_t6_cls_op_shared_harness.py (the runner; a book that writes an artifact needs one, and the adapter deliberately holds no protocol -- reported for ruling)"
+  ],
+  "forbidden_data_untouched": "no Yahoo, NOAA 2025, beyond_17520, NAB or SMD path is opened by this runner; the only data root is data/ucr_task_context",
+  "legacy_capability_card_not_injected": "the W56 promoted Capability card was read for archaeology only and was never written into experience_memory or a snapshot",
+  "fast_never_saw_raw_source_episodes": "Source Episodes stayed in their own per-cell Method instances; the Target arms construct with empty Memory and receive Source evidence only as the audited Skill on the snapshot",
+  "deviations": [
+   "The family's fit/support split is reused byte-for-byte, but the legacy support pool is quartered into per-round Support and delayed surfaces, because the shared lifecycle needs a delayed surface the family never produced.",
+   "The deployment-visible observation is a fixed ~3200-point window of the fit cohort rather than the whole block; the executor still acts on every fit row.  Without it, one actionability probe cost 215 s.",
+   "Slow Path is off inside the held-in rounds; the only Slow call is the Source consolidation that authors the six-section card.",
+   "The per-view axis is the class axis, so CONFLICT means 'accuracy rose while a class recall fell'.  This is stricter than the family's accuracy-only gate and is the main reason POSITIVE is rare here."
+  ],
+  "backend": "live Fast Agent"
+ },
+ "prereg_check": {
+  "registered_before_the_run": true,
+  "items": [
+   {
+    "id": "P1",
+    "claim": "after the fix, hampel_filter or repair_level_shift enters the Source probe order",
+    "held": true,
+    "observed": [
+     "hampel_filter",
+     "repair_level_shift"
+    ],
+    "all_source_operators_probed": [
+     "hampel_filter",
+     "outlier_iqr",
+     "outlier_mad",
+     "repair_level_shift",
+     "winsorize"
+    ]
+   },
+   {
+    "id": "P2",
+    "claim": "and may form a POSITIVE Source Episode",
+    "held": false,
+    "observed": {
+     "CONFLICT": 2,
+     "NEGATIVE": 1,
+     "NEUTRAL": 6
+    }
+   },
+   {
+    "id": "P3",
+    "claim": "the Slow audit may then authorize a non-empty TRY, giving A5 a real prior",
+    "held": false,
+    "observed": [],
+    "try_clause": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION"
+   },
+   {
+    "id": "P4",
+    "claim": "on the Target, hampel_filter can become a non-identity candidate and compete for a Target-local Skill",
+    "held": true,
+    "hampel_probed_on_target": true,
+    "target_local_skills_approved": [
+     "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+    ]
+   }
+  ],
+  "held": [
+   "P1",
+   "P4"
+  ],
+  "falsified": [
+   "P2",
+   "P3"
+  ]
+ },
+ "a5_deficit_mechanism": {
+  "datasets_with_a5_below_a3": [
+   "GunPointAgeSpan"
+  ],
+  "classification": "prior_delivered_but_steered_the_proposal_elsewhere",
+  "source_card_retrieved_in_every_a5_round": true,
+  "source_card_supplied_an_executable_candidate": false,
+  "source_card_execution_right": "withheld_no_authorized_try_operator",
+  "a5_verifier_rejected_probes": [
+   {
+    "candidate_id": "localized_level_shift_repair",
+    "kind": "verifier_rejected",
+    "gain": null
+   },
+   {
+    "candidate_id": "repair_local_level_excursion",
+    "kind": "verifier_rejected",
+    "gain": null
+   }
+  ],
+  "a5_legal_receipts": [
+   {
+    "candidate_id": "repair_level_excursion",
+    "kind": "probe",
+    "gain": 0.01481481481481478
+   },
+   {
+    "candidate_id": "repair_localized_level_excursion",
+    "kind": "probe",
+    "gain": -0.029629629629629617
+   }
+  ],
+  "a3_winning_programs": [
+   [
+    {
+     "op": "hampel_filter",
+     "params": {}
+    }
+   ],
+   [
+    {
+     "op": "hampel_filter",
+     "params": {}
+    }
+   ]
+  ],
+  "reading": "the Source card was retrieved into every A5 round and carries no frozen Workflow, so it supplied no candidate and could only act on the proposal stage as text.  A5's proposals went to the level-shift family on both rounds and the deployment constraint rejected them, while A3 reached the local-median family in one round.  This is neither a retrieval miss nor feedback bias: the prior was delivered, read, and unhelpful."
+ },
+ "part0_lock_regen_confirmation": {
+  "subset": "tests/runtime + tests/methods + tests/integration + the two functional tests that reach ScopeExecutor.verify",
+  "before_regen": "40 failed, 170 passed, 3 skipped, 1 xfailed (38 x snapshot lock mismatch)",
+  "after_regen": "2 failed, 216 passed, 3 skipped, 1 xfailed (0:33:32)",
+  "lock_mismatch_failures_cleared": 38,
+  "remaining_pre_existing_failures": [
+   {
+    "test": "tests/methods/test_fault_cases.py::test_bootstrap_three_cases_sequential_ids",
+    "symptom": "expects three bootstrap fault cases, registry yields case-0004"
+   },
+   {
+    "test": "tests/methods/test_history_window_observation.py::test_generated_program_only_touches_training_windows",
+    "symptom": "x_train.shape[0] == 0 where 2 expected; was masked by the lock error before the regen"
+   }
+  ],
+  "attribution": "both remaining failures sat in the identical 40-failure set measured with HEAD bytes and with the verifier fix, and neither test file reaches ScopeExecutor.verify or verify_candidate, so neither is caused by the cohort scope change or by the lock regen"
+ }
+}

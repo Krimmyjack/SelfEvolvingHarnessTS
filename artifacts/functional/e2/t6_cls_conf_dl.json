@@ -1,0 +1,4618 @@
+{
+ "protocol_version": "t6_cls_conf_downloaded_target_v1",
+ "run_id": "t6_cls_conf_dl_run1",
+ "entry": "filter_trajectory_audit_gate_before_any_dataset_zip",
+ "evidence_grade": "DEVELOPMENT",
+ "stage": "AUDIT_GATE_ONLY",
+ "selection": {
+  "protocol_version": "t6_cls_conf_downloaded_target_v1",
+  "run_id": "t6_cls_conf_dl_run1",
+  "entry": "filter_trajectory_audit_gate_before_any_dataset_zip",
+  "evidence_grade": "DEVELOPMENT",
+  "rule": "pool = official UCR univariate archive as published on timeseriesclassification.com (aeon-toolkit/metadata.csv); keep rows with NumberClasses=2 AND Length!=0 (equal length; site lists variable length as 0) AND Channels=1 (univariate) AND official TrainSize in [40,400] AND name not among mechanically enumerated zip stems in local data/ucr_task_context; take lexicographic first 3 as D1/D2/D3. No extra archive-generation filter. Outcome-blind. Written before any dataset zip download.",
+  "metadata_source": {
+   "url": "https://timeseriesclassification.com/aeon-toolkit/metadata.csv",
+   "local_copy": "_scratch/tsc_metadata.csv",
+   "bytes": 7253,
+   "fetched_utc": "2026-08-25T13:20:15Z",
+   "columns": [
+    "Dataset",
+    "TrainSize",
+    "TestSize",
+    "Length",
+    "NumberClasses",
+    "Type",
+    "Channels"
+   ],
+   "n_rows": 190,
+   "note": "This is the official table the site publishes for the same aeon-toolkit per-dataset zip tree. Channels=1 is the univariate filter; Length=0 is the site equal-length convention."
+  },
+  "local_zip_enumeration": {
+   "directory": "data/ucr_task_context",
+   "method": "Path.iterdir + suffix .zip, stem = name, sorted",
+   "n_zips": 40,
+   "stems": [
+    "BeetleFly",
+    "BirdChicken",
+    "Coffee",
+    "Computers",
+    "DistalPhalanxOutlineCorrect",
+    "DodgerLoopWeekend",
+    "ECG200",
+    "ECGFiveDays",
+    "Earthquakes",
+    "FordA",
+    "FordB",
+    "FreezerRegularTrain",
+    "FreezerSmallTrain",
+    "GunPoint",
+    "GunPointAgeSpan",
+    "GunPointMaleVersusFemale",
+    "GunPointOldVersusYoung",
+    "Ham",
+    "HandOutlines",
+    "Herring",
+    "HouseTwenty",
+    "KeplerLightCurves",
+    "Lightning2",
+    "MiddlePhalanxOutlineCorrect",
+    "MoteStrain",
+    "PhalangesOutlinesCorrect",
+    "PowerCons",
+    "ProximalPhalanxOutlineCorrect",
+    "SemgHandGenderCh2",
+    "ShapeletSim",
+    "SonyAIBORobotSurface1",
+    "SonyAIBORobotSurface2",
+    "Strawberry",
+    "ToeSegmentation1",
+    "ToeSegmentation2",
+    "TwoLeadECG",
+    "Wafer",
+    "Wine",
+    "WormsTwoClass",
+    "Yoga"
+   ],
+   "filenames": [
+    "BeetleFly.zip",
+    "BirdChicken.zip",
+    "Coffee.zip",
+    "Computers.zip",
+    "DistalPhalanxOutlineCorrect.zip",
+    "DodgerLoopWeekend.zip",
+    "ECG200.zip",
+    "ECGFiveDays.zip",
+    "Earthquakes.zip",
+    "FordA.zip",
+    "FordB.zip",
+    "FreezerRegularTrain.zip",
+    "FreezerSmallTrain.zip",
+    "GunPoint.zip",
+    "GunPointAgeSpan.zip",
+    "GunPointMaleVersusFemale.zip",
+    "GunPointOldVersusYoung.zip",
+    "Ham.zip",
+    "HandOutlines.zip",
+    "Herring.zip",
+    "HouseTwenty.zip",
+    "KeplerLightCurves.zip",
+    "Lightning2.zip",
+    "MiddlePhalanxOutlineCorrect.zip",
+    "MoteStrain.zip",
+    "PhalangesOutlinesCorrect.zip",
+    "PowerCons.zip",
+    "ProximalPhalanxOutlineCorrect.zip",
+    "SemgHandGenderCh2.zip",
+    "ShapeletSim.zip",
+    "SonyAIBORobotSurface1.zip",
+    "SonyAIBORobotSurface2.zip",
+    "Strawberry.zip",
+    "ToeSegmentation1.zip",
+    "ToeSegmentation2.zip",
+    "TwoLeadECG.zip",
+    "Wafer.zip",
+    "Wine.zip",
+    "WormsTwoClass.zip",
+    "Yoga.zip"
+   ],
+   "hand_copy_forbidden": true
+  },
+  "filter_steps": [
+   {
+    "step": 1,
+    "predicate": "Channels == 1 (univariate)",
+    "n_pass": 150,
+    "n_fail": 40,
+    "pass": [
+     "Adiac",
+     "ArrowHead",
+     "Beef",
+     "BeetleFly",
+     "BirdChicken",
+     "Car",
+     "CBF",
+     "ChlorineConcentration",
+     "CinCECGTorso",
+     "Coffee",
+     "Computers",
+     "CricketX",
+     "CricketY",
+     "CricketZ",
+     "DiatomSizeReduction",
+     "DistalPhalanxOutlineAgeGroup",
+     "DistalPhalanxOutlineCorrect",
+     "DistalPhalanxTW",
+     "Earthquakes",
+     "ECG200",
+     "ECG5000",
+     "ECGFiveDays",
+     "ElectricDevices",
+     "FaceAll",
+     "FaceFour",
+     "FacesUCR",
+     "FiftyWords",
+     "Fish",
+     "FordA",
+     "FordB",
+     "GunPoint",
+     "Ham",
+     "HandOutlines",
+     "Haptics",
+     "Herring",
+     "InlineSkate",
+     "ItalyPowerDemand",
+     "LargeKitchenAppliances",
+     "Lightning2",
+     "Lightning7",
+     "Mallat",
+     "Meat",
+     "MedicalImages",
+     "MiddlePhalanxOutlineAgeGroup",
+     "MiddlePhalanxOutlineCorrect",
+     "MiddlePhalanxTW",
+     "MoteStrain",
+     "NonInvasiveFetalECGThorax1",
+     "NonInvasiveFetalECGThorax2",
+     "OliveOil",
+     "OSULeaf",
+     "PhalangesOutlinesCorrect",
+     "Phoneme",
+     "Plane",
+     "ProximalPhalanxOutlineAgeGroup",
+     "ProximalPhalanxOutlineCorrect",
+     "ProximalPhalanxTW",
+     "RefrigerationDevices",
+     "ScreenType",
+     "ShapeletSim",
+     "ShapesAll",
+     "SmallKitchenAppliances",
+     "SonyAIBORobotSurface1",
+     "SonyAIBORobotSurface2",
+     "StarLightCurves",
+     "Strawberry",
+     "SwedishLeaf",
+     "Symbols",
+     "SyntheticControl",
+     "ToeSegmentation1",
+     "ToeSegmentation2",
+     "Trace",
+     "TwoLeadECG",
+     "TwoPatterns",
+     "UWaveGestureLibraryAll",
+     "UWaveGestureLibraryX",
+     "UWaveGestureLibraryY",
+     "UWaveGestureLibraryZ",
+     "Wafer",
+     "Wine",
+     "WordSynonyms",
+     "Worms",
+     "WormsTwoClass",
+     "Yoga",
+     "ACSF1",
+     "AllGestureWiimoteX",
+     "AllGestureWiimoteY",
+     "AllGestureWiimoteZ",
+     "BME",
+     "EthanolLevel",
+     "FreezerRegularTrain",
+     "FreezerSmallTrain",
+     "GunPointAgeSpan",
+     "GunPointMaleVersusFemale",
+     "GunPointOldVersusYoung",
+     "InsectEPGRegularTrain",
+     "InsectEPGSmallTrain",
+     "PickupGestureWiimoteZ",
+     "PigAirwayPressure",
+     "PigArtPressure",
+     "PigCVP",
+     "PLAID",
+     "PowerCons",
+     "ShakeGestureWiimoteZ",
+     "SmoothSubspace",
+     "UMD",
+     "Fungi",
+     "GesturePebbleZ1",
+     "GesturePebbleZ2",
+     "HouseTwenty",
+     "DodgerLoopDay",
+     "DodgerLoopWeekend",
+     "DodgerLoopGame",
+     "SemgHandGenderCh2",
+     "SemgHandMovementCh2",
+     "SemgHandSubjectCh2",
+     "MixedShapes",
+     "MixedShapesSmallTrain",
+     "EOGHorizontalSignal",
+     "EOGVerticalSignal",
+     "GestureMidAirD1",
+     "GestureMidAirD2",
+     "GestureMidAirD3",
+     "Rock",
+     "Crop",
+     "Chinatown",
+     "MelbournePedestrian",
+     "AsphaltObstacles",
+     "AsphaltPavementType",
+     "AsphaltRegularity",
+     "AsphaltRegularityCoordinates",
+     "Colposcopy",
+     "RightWhaleCalls",
+     "SharePriceIncrease",
+     "CatsDogs",
+     "BinaryHeartbeat",
+     "DucksAndGeese",
+     "UrbanSound",
+     "FruitFlies",
+     "InsectSound",
+     "MosquitoSound",
+     "AbnormalHeartbeat",
+     "ElectricDeviceDetection",
+     "KeplerLightCurves",
+     "Sleep",
+     "FaultDetectionA",
+     "FaultDetectionB",
+     "NerveDamage",
+     "CardiacArrhythmia",
+     "Epilepsy2"
+    ],
+    "fail": [
+     "ArticularyWordRecognition",
+     "AtrialFibrillation",
+     "BasicMotions",
+     "CharacterTrajectories",
+     "Cricket",
+     "DuckDuckGeese",
+     "EigenWorms",
+     "Epilepsy",
+     "EthanolConcentration",
+     "ERing",
+     "FaceDetection",
+     "FingerMovements",
+     "HandMovementDirection",
+     "Handwriting",
+     "Heartbeat",
+     "InsectWingbeat",
+     "JapaneseVowels",
+     "Libras",
+     "LSST",
+     "MotorImagery",
+     "NATOPS",
+     "PenDigits",
+     "PEMS-SF",
+     "PhonemeSpectra",
+     "RacketSports",
+     "SelfRegulationSCP1",
+     "SelfRegulationSCP2",
+     "SpokenArabicDigits",
+     "StandWalkJump",
+     "UWaveGestureLibrary",
+     "AsphaltObstaclesCoordinates",
+     "AsphaltPavementTypeCoordinates",
+     "EyesOpenShut",
+     "CounterMovementJump",
+     "Tiselac",
+     "MindReading",
+     "MotionSenseHAR",
+     "EMOPain",
+     "Blink",
+     "WalkingSittingStanding"
+    ]
+   },
+   {
+    "step": 2,
+    "predicate": "NumberClasses == 2",
+    "n_pass": 58,
+    "n_fail": 132,
+    "pass": [
+     "BeetleFly",
+     "BirdChicken",
+     "Coffee",
+     "Computers",
+     "DistalPhalanxOutlineCorrect",
+     "Earthquakes",
+     "ECG200",
+     "ECGFiveDays",
+     "FordA",
+     "FordB",
+     "GunPoint",
+     "Ham",
+     "HandOutlines",
+     "Herring",
+     "ItalyPowerDemand",
+     "Lightning2",
+     "MiddlePhalanxOutlineCorrect",
+     "MoteStrain",
+     "PhalangesOutlinesCorrect",
+     "ProximalPhalanxOutlineCorrect",
+     "ShapeletSim",
+     "SonyAIBORobotSurface1",
+     "SonyAIBORobotSurface2",
+     "Strawberry",
+     "ToeSegmentation1",
+     "ToeSegmentation2",
+     "TwoLeadECG",
+     "Wafer",
+     "Wine",
+     "WormsTwoClass",
+     "Yoga",
+     "FreezerRegularTrain",
+     "FreezerSmallTrain",
+     "GunPointAgeSpan",
+     "GunPointMaleVersusFemale",
+     "GunPointOldVersusYoung",
+     "PowerCons",
+     "HouseTwenty",
+     "DodgerLoopWeekend",
+     "DodgerLoopGame",
+     "SemgHandGenderCh2",
+     "Chinatown",
+     "FaceDetection",
+     "FingerMovements",
+     "Heartbeat",
+     "MotorImagery",
+     "SelfRegulationSCP1",
+     "SelfRegulationSCP2",
+     "AsphaltRegularity",
+     "AsphaltRegularityCoordinates",
+     "EyesOpenShut",
+     "RightWhaleCalls",
+     "SharePriceIncrease",
+     "CatsDogs",
+     "BinaryHeartbeat",
+     "ElectricDeviceDetection",
+     "Blink",
+     "Epilepsy2"
+    ],
+    "fail": [
+     "Adiac",
+     "ArrowHead",
+     "Beef",
+     "Car",
+     "CBF",
+     "ChlorineConcentration",
+     "CinCECGTorso",
+     "CricketX",
+     "CricketY",
+     "CricketZ",
+     "DiatomSizeReduction",
+     "DistalPhalanxOutlineAgeGroup",
+     "DistalPhalanxTW",
+     "ECG5000",
+     "ElectricDevices",
+     "FaceAll",
+     "FaceFour",
+     "FacesUCR",
+     "FiftyWords",
+     "Fish",
+     "Haptics",
+     "InlineSkate",
+     "LargeKitchenAppliances",
+     "Lightning7",
+     "Mallat",
+     "Meat",
+     "MedicalImages",
+     "MiddlePhalanxOutlineAgeGroup",
+     "MiddlePhalanxTW",
+     "NonInvasiveFetalECGThorax1",
+     "NonInvasiveFetalECGThorax2",
+     "OliveOil",
+     "OSULeaf",
+     "Phoneme",
+     "Plane",
+     "ProximalPhalanxOutlineAgeGroup",
+     "ProximalPhalanxTW",
+     "RefrigerationDevices",
+     "ScreenType",
+     "ShapesAll",
+     "SmallKitchenAppliances",
+     "StarLightCurves",
+     "SwedishLeaf",
+     "Symbols",
+     "SyntheticControl",
+     "Trace",
+     "TwoPatterns",
+     "UWaveGestureLibraryAll",
+     "UWaveGestureLibraryX",
+     "UWaveGestureLibraryY",
+     "UWaveGestureLibraryZ",
+     "WordSynonyms",
+     "Worms",
+     "ACSF1",
+     "AllGestureWiimoteX",
+     "AllGestureWiimoteY",
+     "AllGestureWiimoteZ",
+     "BME",
+     "EthanolLevel",
+     "InsectEPGRegularTrain",
+     "InsectEPGSmallTrain",
+     "PickupGestureWiimoteZ",
+     "PigAirwayPressure",
+     "PigArtPressure",
+     "PigCVP",
+     "PLAID",
+     "ShakeGestureWiimoteZ",
+     "SmoothSubspace",
+     "UMD",
+     "Fungi",
+     "GesturePebbleZ1",
+     "GesturePebbleZ2",
+     "DodgerLoopDay",
+     "SemgHandMovementCh2",
+     "SemgHandSubjectCh2",
+     "MixedShapes",
+     "MixedShapesSmallTrain",
+     "EOGHorizontalSignal",
+     "EOGVerticalSignal",
+     "GestureMidAirD1",
+     "GestureMidAirD2",
+     "GestureMidAirD3",
+     "Rock",
+     "Crop",
+     "MelbournePedestrian",
+     "ArticularyWordRecognition",
+     "AtrialFibrillation",
+     "BasicMotions",
+     "CharacterTrajectories",
+     "Cricket",
+     "DuckDuckGeese",
+     "EigenWorms",
+     "Epilepsy",
+     "EthanolConcentration",
+     "ERing",
+     "HandMovementDirection",
+     "Handwriting",
+     "InsectWingbeat",
+     "JapaneseVowels",
+     "Libras",
+     "LSST",
+     "NATOPS",
+     "PenDigits",
+     "PEMS-SF",
+     "PhonemeSpectra",
+     "RacketSports",
+     "SpokenArabicDigits",
+     "StandWalkJump",
+     "UWaveGestureLibrary",
+     "AsphaltObstacles",
+     "AsphaltPavementType",
+     "AsphaltObstaclesCoordinates",
+     "AsphaltPavementTypeCoordinates",
+     "Colposcopy",
+     "CounterMovementJump",
+     "Tiselac",
+     "DucksAndGeese",
+     "UrbanSound",
+     "FruitFlies",
+     "InsectSound",
+     "MosquitoSound",
+     "AbnormalHeartbeat",
+     "MindReading",
+     "MotionSenseHAR",
+     "EMOPain",
+     "KeplerLightCurves",
+     "WalkingSittingStanding",
+     "Sleep",
+     "FaultDetectionA",
+     "FaultDetectionB",
+     "NerveDamage",
+     "CardiacArrhythmia"
+    ]
+   },
+   {
+    "step": 3,
+    "predicate": "Length != 0 (equal length; TSC lists variable as 0)",
+    "n_pass": 174,
+    "n_fail": 16,
+    "pass": [
+     "Adiac",
+     "ArrowHead",
+     "Beef",
+     "BeetleFly",
+     "BirdChicken",
+     "Car",
+     "CBF",
+     "ChlorineConcentration",
+     "CinCECGTorso",
+     "Coffee",
+     "Computers",
+     "CricketX",
+     "CricketY",
+     "CricketZ",
+     "DiatomSizeReduction",
+     "DistalPhalanxOutlineAgeGroup",
+     "DistalPhalanxOutlineCorrect",
+     "DistalPhalanxTW",
+     "Earthquakes",
+     "ECG200",
+     "ECG5000",
+     "ECGFiveDays",
+     "ElectricDevices",
+     "FaceAll",
+     "FaceFour",
+     "FacesUCR",
+     "FiftyWords",
+     "Fish",
+     "FordA",
+     "FordB",
+     "GunPoint",
+     "Ham",
+     "HandOutlines",
+     "Haptics",
+     "Herring",
+     "InlineSkate",
+     "ItalyPowerDemand",
+     "LargeKitchenAppliances",
+     "Lightning2",
+     "Lightning7",
+     "Mallat",
+     "Meat",
+     "MedicalImages",
+     "MiddlePhalanxOutlineAgeGroup",
+     "MiddlePhalanxOutlineCorrect",
+     "MiddlePhalanxTW",
+     "MoteStrain",
+     "NonInvasiveFetalECGThorax1",
+     "NonInvasiveFetalECGThorax2",
+     "OliveOil",
+     "OSULeaf",
+     "PhalangesOutlinesCorrect",
+     "Phoneme",
+     "Plane",
+     "ProximalPhalanxOutlineAgeGroup",
+     "ProximalPhalanxOutlineCorrect",
+     "ProximalPhalanxTW",
+     "RefrigerationDevices",
+     "ScreenType",
+     "ShapeletSim",
+     "ShapesAll",
+     "SmallKitchenAppliances",
+     "SonyAIBORobotSurface1",
+     "SonyAIBORobotSurface2",
+     "StarLightCurves",
+     "Strawberry",
+     "SwedishLeaf",
+     "Symbols",
+     "SyntheticControl",
+     "ToeSegmentation1",
+     "ToeSegmentation2",
+     "Trace",
+     "TwoLeadECG",
+     "TwoPatterns",
+     "UWaveGestureLibraryAll",
+     "UWaveGestureLibraryX",
+     "UWaveGestureLibraryY",
+     "UWaveGestureLibraryZ",
+     "Wafer",
+     "Wine",
+     "WordSynonyms",
+     "Worms",
+     "WormsTwoClass",
+     "Yoga",
+     "ACSF1",
+     "BME",
+     "EthanolLevel",
+     "FreezerRegularTrain",
+     "FreezerSmallTrain",
+     "GunPointAgeSpan",
+     "GunPointMaleVersusFemale",
+     "GunPointOldVersusYoung",
+     "InsectEPGRegularTrain",
+     "InsectEPGSmallTrain",
+     "PigAirwayPressure",
+     "PigArtPressure",
+     "PigCVP",
+     "PowerCons",
+     "SmoothSubspace",
+     "UMD",
+     "Fungi",
+     "HouseTwenty",
+     "DodgerLoopDay",
+     "DodgerLoopWeekend",
+     "DodgerLoopGame",
+     "SemgHandGenderCh2",
+     "SemgHandMovementCh2",
+     "SemgHandSubjectCh2",
+     "MixedShapes",
+     "MixedShapesSmallTrain",
+     "EOGHorizontalSignal",
+     "EOGVerticalSignal",
+     "GestureMidAirD1",
+     "GestureMidAirD2",
+     "GestureMidAirD3",
+     "Rock",
+     "Crop",
+     "Chinatown",
+     "MelbournePedestrian",
+     "ArticularyWordRecognition",
+     "AtrialFibrillation",
+     "BasicMotions",
+     "Cricket",
+     "DuckDuckGeese",
+     "EigenWorms",
+     "Epilepsy",
+     "EthanolConcentration",
+     "ERing",
+     "FaceDetection",
+     "FingerMovements",
+     "HandMovementDirection",
+     "Handwriting",
+     "Heartbeat",
+     "JapaneseVowels",
+     "Libras",
+     "LSST",
+     "MotorImagery",
+     "NATOPS",
+     "PenDigits",
+     "PEMS-SF",
+     "PhonemeSpectra",
+     "RacketSports",
+     "SelfRegulationSCP1",
+     "SelfRegulationSCP2",
+     "SpokenArabicDigits",
+     "StandWalkJump",
+     "UWaveGestureLibrary",
+     "EyesOpenShut",
+     "Colposcopy",
+     "CounterMovementJump",
+     "Tiselac",
+     "RightWhaleCalls",
+     "SharePriceIncrease",
+     "CatsDogs",
+     "BinaryHeartbeat",
+     "DucksAndGeese",
+     "UrbanSound",
+     "FruitFlies",
+     "InsectSound",
+     "MosquitoSound",
+     "AbnormalHeartbeat",
+     "ElectricDeviceDetection",
+     "MindReading",
+     "MotionSenseHAR",
+     "EMOPain",
+     "Blink",
+     "KeplerLightCurves",
+     "WalkingSittingStanding",
+     "Sleep",
+     "FaultDetectionA",
+     "FaultDetectionB",
+     "NerveDamage",
+     "CardiacArrhythmia",
+     "Epilepsy2"
+    ],
+    "fail": [
+     "AllGestureWiimoteX",
+     "AllGestureWiimoteY",
+     "AllGestureWiimoteZ",
+     "PickupGestureWiimoteZ",
+     "PLAID",
+     "ShakeGestureWiimoteZ",
+     "GesturePebbleZ1",
+     "GesturePebbleZ2",
+     "CharacterTrajectories",
+     "InsectWingbeat",
+     "AsphaltObstacles",
+     "AsphaltPavementType",
+     "AsphaltRegularity",
+     "AsphaltObstaclesCoordinates",
+     "AsphaltPavementTypeCoordinates",
+     "AsphaltRegularityCoordinates"
+    ]
+   },
+   {
+    "step": 4,
+    "predicate": "TrainSize in [40, 400]",
+    "n_pass": 100,
+    "n_fail": 90,
+    "pass": [
+     "Adiac",
+     "Car",
+     "CinCECGTorso",
+     "Computers",
+     "CricketX",
+     "CricketY",
+     "CricketZ",
+     "DistalPhalanxOutlineAgeGroup",
+     "DistalPhalanxTW",
+     "Earthquakes",
+     "ECG200",
+     "FacesUCR",
+     "Fish",
+     "GunPoint",
+     "Ham",
+     "Haptics",
+     "Herring",
+     "InlineSkate",
+     "ItalyPowerDemand",
+     "LargeKitchenAppliances",
+     "Lightning2",
+     "Lightning7",
+     "Mallat",
+     "Meat",
+     "MedicalImages",
+     "MiddlePhalanxOutlineAgeGroup",
+     "MiddlePhalanxTW",
+     "OSULeaf",
+     "Phoneme",
+     "Plane",
+     "ProximalPhalanxOutlineAgeGroup",
+     "ProximalPhalanxTW",
+     "RefrigerationDevices",
+     "ScreenType",
+     "SmallKitchenAppliances",
+     "SyntheticControl",
+     "ToeSegmentation1",
+     "Trace",
+     "Wine",
+     "WordSynonyms",
+     "Worms",
+     "WormsTwoClass",
+     "Yoga",
+     "ACSF1",
+     "AllGestureWiimoteX",
+     "AllGestureWiimoteY",
+     "AllGestureWiimoteZ",
+     "FreezerRegularTrain",
+     "GunPointAgeSpan",
+     "GunPointMaleVersusFemale",
+     "GunPointOldVersusYoung",
+     "InsectEPGRegularTrain",
+     "PickupGestureWiimoteZ",
+     "PigAirwayPressure",
+     "PigArtPressure",
+     "PigCVP",
+     "PowerCons",
+     "ShakeGestureWiimoteZ",
+     "SmoothSubspace",
+     "GesturePebbleZ1",
+     "GesturePebbleZ2",
+     "DodgerLoopDay",
+     "SemgHandGenderCh2",
+     "MixedShapesSmallTrain",
+     "EOGHorizontalSignal",
+     "EOGVerticalSignal",
+     "GestureMidAirD1",
+     "GestureMidAirD2",
+     "GestureMidAirD3",
+     "ArticularyWordRecognition",
+     "BasicMotions",
+     "Cricket",
+     "DuckDuckGeese",
+     "EigenWorms",
+     "Epilepsy",
+     "EthanolConcentration",
+     "FingerMovements",
+     "HandMovementDirection",
+     "Handwriting",
+     "Heartbeat",
+     "JapaneseVowels",
+     "Libras",
+     "MotorImagery",
+     "NATOPS",
+     "PEMS-SF",
+     "RacketSports",
+     "SelfRegulationSCP1",
+     "SelfRegulationSCP2",
+     "AsphaltObstacles",
+     "AsphaltObstaclesCoordinates",
+     "EyesOpenShut",
+     "Colposcopy",
+     "CatsDogs",
+     "BinaryHeartbeat",
+     "DucksAndGeese",
+     "AbnormalHeartbeat",
+     "MotionSenseHAR",
+     "FaultDetectionB",
+     "NerveDamage",
+     "Epilepsy2"
+    ],
+    "fail": [
+     "ArrowHead",
+     "Beef",
+     "BeetleFly",
+     "BirdChicken",
+     "CBF",
+     "ChlorineConcentration",
+     "Coffee",
+     "DiatomSizeReduction",
+     "DistalPhalanxOutlineCorrect",
+     "ECG5000",
+     "ECGFiveDays",
+     "ElectricDevices",
+     "FaceAll",
+     "FaceFour",
+     "FiftyWords",
+     "FordA",
+     "FordB",
+     "HandOutlines",
+     "MiddlePhalanxOutlineCorrect",
+     "MoteStrain",
+     "NonInvasiveFetalECGThorax1",
+     "NonInvasiveFetalECGThorax2",
+     "OliveOil",
+     "PhalangesOutlinesCorrect",
+     "ProximalPhalanxOutlineCorrect",
+     "ShapeletSim",
+     "ShapesAll",
+     "SonyAIBORobotSurface1",
+     "SonyAIBORobotSurface2",
+     "StarLightCurves",
+     "Strawberry",
+     "SwedishLeaf",
+     "Symbols",
+     "ToeSegmentation2",
+     "TwoLeadECG",
+     "TwoPatterns",
+     "UWaveGestureLibraryAll",
+     "UWaveGestureLibraryX",
+     "UWaveGestureLibraryY",
+     "UWaveGestureLibraryZ",
+     "Wafer",
+     "BME",
+     "EthanolLevel",
+     "FreezerSmallTrain",
+     "InsectEPGSmallTrain",
+     "PLAID",
+     "UMD",
+     "Fungi",
+     "HouseTwenty",
+     "DodgerLoopWeekend",
+     "DodgerLoopGame",
+     "SemgHandMovementCh2",
+     "SemgHandSubjectCh2",
+     "MixedShapes",
+     "Rock",
+     "Crop",
+     "Chinatown",
+     "MelbournePedestrian",
+     "AtrialFibrillation",
+     "CharacterTrajectories",
+     "ERing",
+     "FaceDetection",
+     "InsectWingbeat",
+     "LSST",
+     "PenDigits",
+     "PhonemeSpectra",
+     "SpokenArabicDigits",
+     "StandWalkJump",
+     "UWaveGestureLibrary",
+     "AsphaltPavementType",
+     "AsphaltRegularity",
+     "AsphaltPavementTypeCoordinates",
+     "AsphaltRegularityCoordinates",
+     "CounterMovementJump",
+     "Tiselac",
+     "RightWhaleCalls",
+     "SharePriceIncrease",
+     "UrbanSound",
+     "FruitFlies",
+     "InsectSound",
+     "MosquitoSound",
+     "ElectricDeviceDetection",
+     "MindReading",
+     "EMOPain",
+     "Blink",
+     "KeplerLightCurves",
+     "WalkingSittingStanding",
+     "Sleep",
+     "FaultDetectionA",
+     "CardiacArrhythmia"
+    ]
+   },
+   {
+    "step": 5,
+    "predicate": "Dataset name not in local data/ucr_task_context zip stems",
+    "n_pass": 150,
+    "n_fail": 40,
+    "pass": [
+     "Adiac",
+     "ArrowHead",
+     "Beef",
+     "Car",
+     "CBF",
+     "ChlorineConcentration",
+     "CinCECGTorso",
+     "CricketX",
+     "CricketY",
+     "CricketZ",
+     "DiatomSizeReduction",
+     "DistalPhalanxOutlineAgeGroup",
+     "DistalPhalanxTW",
+     "ECG5000",
+     "ElectricDevices",
+     "FaceAll",
+     "FaceFour",
+     "FacesUCR",
+     "FiftyWords",
+     "Fish",
+     "Haptics",
+     "InlineSkate",
+     "ItalyPowerDemand",
+     "LargeKitchenAppliances",
+     "Lightning7",
+     "Mallat",
+     "Meat",
+     "MedicalImages",
+     "MiddlePhalanxOutlineAgeGroup",
+     "MiddlePhalanxTW",
+     "NonInvasiveFetalECGThorax1",
+     "NonInvasiveFetalECGThorax2",
+     "OliveOil",
+     "OSULeaf",
+     "Phoneme",
+     "Plane",
+     "ProximalPhalanxOutlineAgeGroup",
+     "ProximalPhalanxTW",
+     "RefrigerationDevices",
+     "ScreenType",
+     "ShapesAll",
+     "SmallKitchenAppliances",
+     "StarLightCurves",
+     "SwedishLeaf",
+     "Symbols",
+     "SyntheticControl",
+     "Trace",
+     "TwoPatterns",
+     "UWaveGestureLibraryAll",
+     "UWaveGestureLibraryX",
+     "UWaveGestureLibraryY",
+     "UWaveGestureLibraryZ",
+     "WordSynonyms",
+     "Worms",
+     "ACSF1",
+     "AllGestureWiimoteX",
+     "AllGestureWiimoteY",
+     "AllGestureWiimoteZ",
+     "BME",
+     "EthanolLevel",
+     "InsectEPGRegularTrain",
+     "InsectEPGSmallTrain",
+     "PickupGestureWiimoteZ",
+     "PigAirwayPressure",
+     "PigArtPressure",
+     "PigCVP",
+     "PLAID",
+     "ShakeGestureWiimoteZ",
+     "SmoothSubspace",
+     "UMD",
+     "Fungi",
+     "GesturePebbleZ1",
+     "GesturePebbleZ2",
+     "DodgerLoopDay",
+     "DodgerLoopGame",
+     "SemgHandMovementCh2",
+     "SemgHandSubjectCh2",
+     "MixedShapes",
+     "MixedShapesSmallTrain",
+     "EOGHorizontalSignal",
+     "EOGVerticalSignal",
+     "GestureMidAirD1",
+     "GestureMidAirD2",
+     "GestureMidAirD3",
+     "Rock",
+     "Crop",
+     "Chinatown",
+     "MelbournePedestrian",
+     "ArticularyWordRecognition",
+     "AtrialFibrillation",
+     "BasicMotions",
+     "CharacterTrajectories",
+     "Cricket",
+     "DuckDuckGeese",
+     "EigenWorms",
+     "Epilepsy",
+     "EthanolConcentration",
+     "ERing",
+     "FaceDetection",
+     "FingerMovements",
+     "HandMovementDirection",
+     "Handwriting",
+     "Heartbeat",
+     "InsectWingbeat",
+     "JapaneseVowels",
+     "Libras",
+     "LSST",
+     "MotorImagery",
+     "NATOPS",
+     "PenDigits",
+     "PEMS-SF",
+     "PhonemeSpectra",
+     "RacketSports",
+     "SelfRegulationSCP1",
+     "SelfRegulationSCP2",
+     "SpokenArabicDigits",
+     "StandWalkJump",
+     "UWaveGestureLibrary",
+     "AsphaltObstacles",
+     "AsphaltPavementType",
+     "AsphaltRegularity",
+     "AsphaltObstaclesCoordinates",
+     "AsphaltPavementTypeCoordinates",
+     "AsphaltRegularityCoordinates",
+     "EyesOpenShut",
+     "Colposcopy",
+     "CounterMovementJump",
+     "Tiselac",
+     "RightWhaleCalls",
+     "SharePriceIncrease",
+     "CatsDogs",
+     "BinaryHeartbeat",
+     "DucksAndGeese",
+     "UrbanSound",
+     "FruitFlies",
+     "InsectSound",
+     "MosquitoSound",
+     "AbnormalHeartbeat",
+     "ElectricDeviceDetection",
+     "MindReading",
+     "MotionSenseHAR",
+     "EMOPain",
+     "Blink",
+     "WalkingSittingStanding",
+     "Sleep",
+     "FaultDetectionA",
+     "FaultDetectionB",
+     "NerveDamage",
+     "CardiacArrhythmia",
+     "Epilepsy2"
+    ],
+    "fail": [
+     "BeetleFly",
+     "BirdChicken",
+     "Coffee",
+     "Computers",
+     "DistalPhalanxOutlineCorrect",
+     "Earthquakes",
+     "ECG200",
+     "ECGFiveDays",
+     "FordA",
+     "FordB",
+     "GunPoint",
+     "Ham",
+     "HandOutlines",
+     "Herring",
+     "Lightning2",
+     "MiddlePhalanxOutlineCorrect",
+     "MoteStrain",
+     "PhalangesOutlinesCorrect",
+     "ProximalPhalanxOutlineCorrect",
+     "ShapeletSim",
+     "SonyAIBORobotSurface1",
+     "SonyAIBORobotSurface2",
+     "Strawberry",
+     "ToeSegmentation1",
+     "ToeSegmentation2",
+     "TwoLeadECG",
+     "Wafer",
+     "Wine",
+     "WormsTwoClass",
+     "Yoga",
+     "FreezerRegularTrain",
+     "FreezerSmallTrain",
+     "GunPointAgeSpan",
+     "GunPointMaleVersusFemale",
+     "GunPointOldVersusYoung",
+     "PowerCons",
+     "HouseTwenty",
+     "DodgerLoopWeekend",
+     "SemgHandGenderCh2",
+     "KeplerLightCurves"
+    ]
+   }
+  ],
+  "binary_rows": [
+   {
+    "dataset": "BeetleFly",
+    "train_size": 20,
+    "test_size": 20,
+    "length": 512,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "BirdChicken",
+    "train_size": 20,
+    "test_size": 20,
+    "length": 512,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Coffee",
+    "train_size": 28,
+    "test_size": 28,
+    "length": 286,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Computers",
+    "train_size": 250,
+    "test_size": 250,
+    "length": 720,
+    "n_classes": 2,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DistalPhalanxOutlineCorrect",
+    "train_size": 600,
+    "test_size": 276,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Earthquakes",
+    "train_size": 322,
+    "test_size": 139,
+    "length": 512,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ECG200",
+    "train_size": 100,
+    "test_size": 100,
+    "length": 96,
+    "n_classes": 2,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ECGFiveDays",
+    "train_size": 23,
+    "test_size": 861,
+    "length": 136,
+    "n_classes": 2,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FordA",
+    "train_size": 3601,
+    "test_size": 1320,
+    "length": 500,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FordB",
+    "train_size": 3636,
+    "test_size": 810,
+    "length": 500,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPoint",
+    "train_size": 50,
+    "test_size": 150,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Ham",
+    "train_size": 109,
+    "test_size": 105,
+    "length": 431,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "HandOutlines",
+    "train_size": 1000,
+    "test_size": 370,
+    "length": 2709,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Herring",
+    "train_size": 64,
+    "test_size": 64,
+    "length": 512,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ItalyPowerDemand",
+    "train_size": 67,
+    "test_size": 1029,
+    "length": 24,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   },
+   {
+    "dataset": "Lightning2",
+    "train_size": 60,
+    "test_size": 61,
+    "length": 637,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "train_size": 600,
+    "test_size": 291,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MoteStrain",
+    "train_size": 20,
+    "test_size": 1252,
+    "length": 84,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "train_size": 1800,
+    "test_size": 858,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "train_size": 600,
+    "test_size": 291,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ShapeletSim",
+    "train_size": 20,
+    "test_size": 180,
+    "length": 500,
+    "n_classes": 2,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SonyAIBORobotSurface1",
+    "train_size": 20,
+    "test_size": 601,
+    "length": 70,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SonyAIBORobotSurface2",
+    "train_size": 27,
+    "test_size": 953,
+    "length": 65,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Strawberry",
+    "train_size": 613,
+    "test_size": 370,
+    "length": 235,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ToeSegmentation1",
+    "train_size": 40,
+    "test_size": 228,
+    "length": 277,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ToeSegmentation2",
+    "train_size": 36,
+    "test_size": 130,
+    "length": 343,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "TwoLeadECG",
+    "train_size": 23,
+    "test_size": 1139,
+    "length": 82,
+    "n_classes": 2,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Wafer",
+    "train_size": 1000,
+    "test_size": 6164,
+    "length": 152,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Wine",
+    "train_size": 57,
+    "test_size": 54,
+    "length": 234,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "WormsTwoClass",
+    "train_size": 181,
+    "test_size": 77,
+    "length": 900,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Yoga",
+    "train_size": 300,
+    "test_size": 3000,
+    "length": 426,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FreezerRegularTrain",
+    "train_size": 150,
+    "test_size": 2850,
+    "length": 301,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FreezerSmallTrain",
+    "train_size": 28,
+    "test_size": 2850,
+    "length": 301,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "train_size": 135,
+    "test_size": 316,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPointMaleVersusFemale",
+    "train_size": 135,
+    "test_size": 316,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPointOldVersusYoung",
+    "train_size": 135,
+    "test_size": 316,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PowerCons",
+    "train_size": 180,
+    "test_size": 180,
+    "length": 144,
+    "n_classes": 2,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "HouseTwenty",
+    "train_size": 34,
+    "test_size": 101,
+    "length": 3000,
+    "n_classes": 2,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DodgerLoopWeekend",
+    "train_size": 20,
+    "test_size": 138,
+    "length": 288,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DodgerLoopGame",
+    "train_size": 20,
+    "test_size": 138,
+    "length": 288,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SemgHandGenderCh2",
+    "train_size": 300,
+    "test_size": 600,
+    "length": 1500,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Chinatown",
+    "train_size": 20,
+    "test_size": 345,
+    "length": 24,
+    "n_classes": 2,
+    "type": "TRAFFIC",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FaceDetection",
+    "train_size": 5890,
+    "test_size": 3524,
+    "length": 62,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 144,
+    "excluded_because": [
+     "not_univariate_channels_144",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FingerMovements",
+    "train_size": 316,
+    "test_size": 100,
+    "length": 50,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 28,
+    "excluded_because": [
+     "not_univariate_channels_28"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Heartbeat",
+    "train_size": 204,
+    "test_size": 205,
+    "length": 405,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 61,
+    "excluded_because": [
+     "not_univariate_channels_61"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MotorImagery",
+    "train_size": 278,
+    "test_size": 100,
+    "length": 3000,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 64,
+    "excluded_because": [
+     "not_univariate_channels_64"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SelfRegulationSCP1",
+    "train_size": 268,
+    "test_size": 293,
+    "length": 896,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SelfRegulationSCP2",
+    "train_size": 200,
+    "test_size": 180,
+    "length": 1152,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 7,
+    "excluded_because": [
+     "not_univariate_channels_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltRegularity",
+    "train_size": 751,
+    "test_size": 751,
+    "length": 0,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltRegularityCoordinates",
+    "train_size": 751,
+    "test_size": 751,
+    "length": 0,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EyesOpenShut",
+    "train_size": 56,
+    "test_size": 42,
+    "length": 128,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 14,
+    "excluded_because": [
+     "not_univariate_channels_14"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "RightWhaleCalls",
+    "train_size": 10934,
+    "test_size": 1962,
+    "length": 4000,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SharePriceIncrease",
+    "train_size": 965,
+    "test_size": 965,
+    "length": 60,
+    "n_classes": 2,
+    "type": "FINANCIAL",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CatsDogs",
+    "train_size": 138,
+    "test_size": 137,
+    "length": 14773,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   },
+   {
+    "dataset": "BinaryHeartbeat",
+    "train_size": 204,
+    "test_size": 205,
+    "length": 18530,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   },
+   {
+    "dataset": "ElectricDeviceDetection",
+    "train_size": 623,
+    "test_size": 3767,
+    "length": 256,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Blink",
+    "train_size": 500,
+    "test_size": 450,
+    "length": 510,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 4,
+    "excluded_because": [
+     "not_univariate_channels_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Epilepsy2",
+    "train_size": 80,
+    "test_size": 11420,
+    "length": 178,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   }
+  ],
+  "all_rows": [
+   {
+    "dataset": "Adiac",
+    "train_size": 390,
+    "test_size": 391,
+    "length": 176,
+    "n_classes": 37,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_37"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ArrowHead",
+    "train_size": 36,
+    "test_size": 175,
+    "length": 251,
+    "n_classes": 3,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Beef",
+    "train_size": 30,
+    "test_size": 30,
+    "length": 470,
+    "n_classes": 5,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "BeetleFly",
+    "train_size": 20,
+    "test_size": 20,
+    "length": 512,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "BirdChicken",
+    "train_size": 20,
+    "test_size": 20,
+    "length": 512,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Car",
+    "train_size": 60,
+    "test_size": 60,
+    "length": 577,
+    "n_classes": 4,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CBF",
+    "train_size": 30,
+    "test_size": 900,
+    "length": 128,
+    "n_classes": 3,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ChlorineConcentration",
+    "train_size": 467,
+    "test_size": 3840,
+    "length": 166,
+    "n_classes": 3,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CinCECGTorso",
+    "train_size": 40,
+    "test_size": 1380,
+    "length": 1639,
+    "n_classes": 4,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Coffee",
+    "train_size": 28,
+    "test_size": 28,
+    "length": 286,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Computers",
+    "train_size": 250,
+    "test_size": 250,
+    "length": 720,
+    "n_classes": 2,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CricketX",
+    "train_size": 390,
+    "test_size": 390,
+    "length": 300,
+    "n_classes": 12,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_12"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CricketY",
+    "train_size": 390,
+    "test_size": 390,
+    "length": 300,
+    "n_classes": 12,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_12"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CricketZ",
+    "train_size": 390,
+    "test_size": 390,
+    "length": 300,
+    "n_classes": 12,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_12"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DiatomSizeReduction",
+    "train_size": 16,
+    "test_size": 306,
+    "length": 345,
+    "n_classes": 4,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DistalPhalanxOutlineAgeGroup",
+    "train_size": 400,
+    "test_size": 139,
+    "length": 80,
+    "n_classes": 3,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DistalPhalanxOutlineCorrect",
+    "train_size": 600,
+    "test_size": 276,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DistalPhalanxTW",
+    "train_size": 400,
+    "test_size": 139,
+    "length": 80,
+    "n_classes": 6,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Earthquakes",
+    "train_size": 322,
+    "test_size": 139,
+    "length": 512,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ECG200",
+    "train_size": 100,
+    "test_size": 100,
+    "length": 96,
+    "n_classes": 2,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ECG5000",
+    "train_size": 500,
+    "test_size": 4500,
+    "length": 140,
+    "n_classes": 5,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ECGFiveDays",
+    "train_size": 23,
+    "test_size": 861,
+    "length": 136,
+    "n_classes": 2,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ElectricDevices",
+    "train_size": 8926,
+    "test_size": 7711,
+    "length": 96,
+    "n_classes": 7,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FaceAll",
+    "train_size": 560,
+    "test_size": 1690,
+    "length": 131,
+    "n_classes": 14,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_14",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FaceFour",
+    "train_size": 24,
+    "test_size": 88,
+    "length": 350,
+    "n_classes": 4,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FacesUCR",
+    "train_size": 200,
+    "test_size": 2050,
+    "length": 131,
+    "n_classes": 14,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_14"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FiftyWords",
+    "train_size": 450,
+    "test_size": 455,
+    "length": 270,
+    "n_classes": 50,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_50",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Fish",
+    "train_size": 175,
+    "test_size": 175,
+    "length": 463,
+    "n_classes": 7,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FordA",
+    "train_size": 3601,
+    "test_size": 1320,
+    "length": 500,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FordB",
+    "train_size": 3636,
+    "test_size": 810,
+    "length": 500,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPoint",
+    "train_size": 50,
+    "test_size": 150,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Ham",
+    "train_size": 109,
+    "test_size": 105,
+    "length": 431,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "HandOutlines",
+    "train_size": 1000,
+    "test_size": 370,
+    "length": 2709,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Haptics",
+    "train_size": 155,
+    "test_size": 308,
+    "length": 1092,
+    "n_classes": 5,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Herring",
+    "train_size": 64,
+    "test_size": 64,
+    "length": 512,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "InlineSkate",
+    "train_size": 100,
+    "test_size": 550,
+    "length": 1882,
+    "n_classes": 7,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ItalyPowerDemand",
+    "train_size": 67,
+    "test_size": 1029,
+    "length": 24,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   },
+   {
+    "dataset": "LargeKitchenAppliances",
+    "train_size": 375,
+    "test_size": 375,
+    "length": 720,
+    "n_classes": 3,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Lightning2",
+    "train_size": 60,
+    "test_size": 61,
+    "length": 637,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Lightning7",
+    "train_size": 70,
+    "test_size": 73,
+    "length": 319,
+    "n_classes": 7,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Mallat",
+    "train_size": 55,
+    "test_size": 2345,
+    "length": 1024,
+    "n_classes": 8,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_8"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Meat",
+    "train_size": 60,
+    "test_size": 60,
+    "length": 448,
+    "n_classes": 3,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MedicalImages",
+    "train_size": 381,
+    "test_size": 760,
+    "length": 99,
+    "n_classes": 10,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineAgeGroup",
+    "train_size": 400,
+    "test_size": 154,
+    "length": 80,
+    "n_classes": 3,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "train_size": 600,
+    "test_size": 291,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MiddlePhalanxTW",
+    "train_size": 399,
+    "test_size": 154,
+    "length": 80,
+    "n_classes": 6,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MoteStrain",
+    "train_size": 20,
+    "test_size": 1252,
+    "length": 84,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "NonInvasiveFetalECGThorax1",
+    "train_size": 1800,
+    "test_size": 1965,
+    "length": 750,
+    "n_classes": 42,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_42",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "NonInvasiveFetalECGThorax2",
+    "train_size": 1800,
+    "test_size": 1965,
+    "length": 750,
+    "n_classes": 42,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_42",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "OliveOil",
+    "train_size": 30,
+    "test_size": 30,
+    "length": 570,
+    "n_classes": 4,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "OSULeaf",
+    "train_size": 200,
+    "test_size": 242,
+    "length": 427,
+    "n_classes": 6,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "train_size": 1800,
+    "test_size": 858,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Phoneme",
+    "train_size": 214,
+    "test_size": 1896,
+    "length": 1024,
+    "n_classes": 39,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_39"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Plane",
+    "train_size": 105,
+    "test_size": 105,
+    "length": 144,
+    "n_classes": 7,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ProximalPhalanxOutlineAgeGroup",
+    "train_size": 400,
+    "test_size": 205,
+    "length": 80,
+    "n_classes": 3,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "train_size": 600,
+    "test_size": 291,
+    "length": 80,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ProximalPhalanxTW",
+    "train_size": 400,
+    "test_size": 205,
+    "length": 80,
+    "n_classes": 6,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "RefrigerationDevices",
+    "train_size": 375,
+    "test_size": 375,
+    "length": 720,
+    "n_classes": 3,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ScreenType",
+    "train_size": 375,
+    "test_size": 375,
+    "length": 720,
+    "n_classes": 3,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ShapeletSim",
+    "train_size": 20,
+    "test_size": 180,
+    "length": 500,
+    "n_classes": 2,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ShapesAll",
+    "train_size": 600,
+    "test_size": 600,
+    "length": 512,
+    "n_classes": 60,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_60",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SmallKitchenAppliances",
+    "train_size": 375,
+    "test_size": 375,
+    "length": 720,
+    "n_classes": 3,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SonyAIBORobotSurface1",
+    "train_size": 20,
+    "test_size": 601,
+    "length": 70,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SonyAIBORobotSurface2",
+    "train_size": 27,
+    "test_size": 953,
+    "length": 65,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "StarLightCurves",
+    "train_size": 1000,
+    "test_size": 8236,
+    "length": 1024,
+    "n_classes": 3,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Strawberry",
+    "train_size": 613,
+    "test_size": 370,
+    "length": 235,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SwedishLeaf",
+    "train_size": 500,
+    "test_size": 625,
+    "length": 128,
+    "n_classes": 15,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_15",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Symbols",
+    "train_size": 25,
+    "test_size": 995,
+    "length": 398,
+    "n_classes": 6,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SyntheticControl",
+    "train_size": 300,
+    "test_size": 300,
+    "length": 60,
+    "n_classes": 6,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ToeSegmentation1",
+    "train_size": 40,
+    "test_size": 228,
+    "length": 277,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ToeSegmentation2",
+    "train_size": 36,
+    "test_size": 130,
+    "length": 343,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Trace",
+    "train_size": 100,
+    "test_size": 100,
+    "length": 275,
+    "n_classes": 4,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "TwoLeadECG",
+    "train_size": 23,
+    "test_size": 1139,
+    "length": 82,
+    "n_classes": 2,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "TwoPatterns",
+    "train_size": 1000,
+    "test_size": 4000,
+    "length": 128,
+    "n_classes": 4,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UWaveGestureLibraryAll",
+    "train_size": 896,
+    "test_size": 3582,
+    "length": 945,
+    "n_classes": 8,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_8",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UWaveGestureLibraryX",
+    "train_size": 896,
+    "test_size": 3582,
+    "length": 315,
+    "n_classes": 8,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_8",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UWaveGestureLibraryY",
+    "train_size": 896,
+    "test_size": 3582,
+    "length": 315,
+    "n_classes": 8,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_8",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UWaveGestureLibraryZ",
+    "train_size": 896,
+    "test_size": 3582,
+    "length": 315,
+    "n_classes": 8,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_8",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Wafer",
+    "train_size": 1000,
+    "test_size": 6164,
+    "length": 152,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Wine",
+    "train_size": 57,
+    "test_size": 54,
+    "length": 234,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "WordSynonyms",
+    "train_size": 267,
+    "test_size": 638,
+    "length": 270,
+    "n_classes": 25,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_25"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Worms",
+    "train_size": 181,
+    "test_size": 77,
+    "length": 900,
+    "n_classes": 5,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "WormsTwoClass",
+    "train_size": 181,
+    "test_size": 77,
+    "length": 900,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Yoga",
+    "train_size": 300,
+    "test_size": 3000,
+    "length": 426,
+    "n_classes": 2,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ACSF1",
+    "train_size": 100,
+    "test_size": 100,
+    "length": 1460,
+    "n_classes": 10,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AllGestureWiimoteX",
+    "train_size": 300,
+    "test_size": 700,
+    "length": 0,
+    "n_classes": 10,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AllGestureWiimoteY",
+    "train_size": 300,
+    "test_size": 700,
+    "length": 0,
+    "n_classes": 10,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AllGestureWiimoteZ",
+    "train_size": 300,
+    "test_size": 700,
+    "length": 0,
+    "n_classes": 10,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "BME",
+    "train_size": 30,
+    "test_size": 150,
+    "length": 128,
+    "n_classes": 3,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EthanolLevel",
+    "train_size": 504,
+    "test_size": 500,
+    "length": 1751,
+    "n_classes": 4,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FreezerRegularTrain",
+    "train_size": 150,
+    "test_size": 2850,
+    "length": 301,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FreezerSmallTrain",
+    "train_size": 28,
+    "test_size": 2850,
+    "length": 301,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "train_size": 135,
+    "test_size": 316,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPointMaleVersusFemale",
+    "train_size": 135,
+    "test_size": 316,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GunPointOldVersusYoung",
+    "train_size": 135,
+    "test_size": 316,
+    "length": 150,
+    "n_classes": 2,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "InsectEPGRegularTrain",
+    "train_size": 62,
+    "test_size": 249,
+    "length": 601,
+    "n_classes": 3,
+    "type": "EPG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "InsectEPGSmallTrain",
+    "train_size": 17,
+    "test_size": 249,
+    "length": 601,
+    "n_classes": 3,
+    "type": "EPG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PickupGestureWiimoteZ",
+    "train_size": 50,
+    "test_size": 50,
+    "length": 0,
+    "n_classes": 10,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PigAirwayPressure",
+    "train_size": 104,
+    "test_size": 208,
+    "length": 2000,
+    "n_classes": 52,
+    "type": "HEMODYNAMICS",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_52"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PigArtPressure",
+    "train_size": 104,
+    "test_size": 208,
+    "length": 2000,
+    "n_classes": 52,
+    "type": "HEMODYNAMICS",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_52"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PigCVP",
+    "train_size": 104,
+    "test_size": 208,
+    "length": 2000,
+    "n_classes": 52,
+    "type": "HEMODYNAMICS",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_52"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PLAID",
+    "train_size": 537,
+    "test_size": 537,
+    "length": 0,
+    "n_classes": 11,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_11",
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PowerCons",
+    "train_size": 180,
+    "test_size": 180,
+    "length": 144,
+    "n_classes": 2,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ShakeGestureWiimoteZ",
+    "train_size": 50,
+    "test_size": 50,
+    "length": 0,
+    "n_classes": 10,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SmoothSubspace",
+    "train_size": 150,
+    "test_size": 150,
+    "length": 15,
+    "n_classes": 3,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UMD",
+    "train_size": 36,
+    "test_size": 144,
+    "length": 150,
+    "n_classes": 3,
+    "type": "SIMULATED",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Fungi",
+    "train_size": 18,
+    "test_size": 186,
+    "length": 201,
+    "n_classes": 18,
+    "type": "OTHER",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_18",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GesturePebbleZ1",
+    "train_size": 132,
+    "test_size": 172,
+    "length": 0,
+    "n_classes": 6,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GesturePebbleZ2",
+    "train_size": 146,
+    "test_size": 158,
+    "length": 0,
+    "n_classes": 6,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "HouseTwenty",
+    "train_size": 34,
+    "test_size": 101,
+    "length": 3000,
+    "n_classes": 2,
+    "type": "DEVICE",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DodgerLoopDay",
+    "train_size": 78,
+    "test_size": 80,
+    "length": 288,
+    "n_classes": 7,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DodgerLoopWeekend",
+    "train_size": 20,
+    "test_size": 138,
+    "length": 288,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DodgerLoopGame",
+    "train_size": 20,
+    "test_size": 138,
+    "length": 288,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SemgHandGenderCh2",
+    "train_size": 300,
+    "test_size": 600,
+    "length": 1500,
+    "n_classes": 2,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SemgHandMovementCh2",
+    "train_size": 450,
+    "test_size": 450,
+    "length": 1500,
+    "n_classes": 6,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SemgHandSubjectCh2",
+    "train_size": 450,
+    "test_size": 450,
+    "length": 1500,
+    "n_classes": 5,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MixedShapes",
+    "train_size": 500,
+    "test_size": 2425,
+    "length": 1024,
+    "n_classes": 5,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MixedShapesSmallTrain",
+    "train_size": 100,
+    "test_size": 2425,
+    "length": 1024,
+    "n_classes": 5,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EOGHorizontalSignal",
+    "train_size": 362,
+    "test_size": 362,
+    "length": 1250,
+    "n_classes": 12,
+    "type": "EOG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_12"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EOGVerticalSignal",
+    "train_size": 362,
+    "test_size": 362,
+    "length": 1250,
+    "n_classes": 12,
+    "type": "EOG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_12"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GestureMidAirD1",
+    "train_size": 208,
+    "test_size": 130,
+    "length": 360,
+    "n_classes": 26,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_26"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GestureMidAirD2",
+    "train_size": 208,
+    "test_size": 130,
+    "length": 360,
+    "n_classes": 26,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_26"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "GestureMidAirD3",
+    "train_size": 208,
+    "test_size": 130,
+    "length": 360,
+    "n_classes": 26,
+    "type": "HAR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_26"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Rock",
+    "train_size": 20,
+    "test_size": 50,
+    "length": 2844,
+    "n_classes": 4,
+    "type": "SPECTRO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Crop",
+    "train_size": 7200,
+    "test_size": 16800,
+    "length": 46,
+    "n_classes": 24,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_24",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Chinatown",
+    "train_size": 20,
+    "test_size": 345,
+    "length": 24,
+    "n_classes": 2,
+    "type": "TRAFFIC",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MelbournePedestrian",
+    "train_size": 1194,
+    "test_size": 2439,
+    "length": 24,
+    "n_classes": 10,
+    "type": "TRAFFIC",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ArticularyWordRecognition",
+    "train_size": 275,
+    "test_size": 300,
+    "length": 144,
+    "n_classes": 25,
+    "type": "MOTION",
+    "channels": 9,
+    "excluded_because": [
+     "not_univariate_channels_9",
+     "not_binary_classes_25"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AtrialFibrillation",
+    "train_size": 15,
+    "test_size": 15,
+    "length": 640,
+    "n_classes": 3,
+    "type": "ECG",
+    "channels": 2,
+    "excluded_because": [
+     "not_univariate_channels_2",
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "BasicMotions",
+    "train_size": 40,
+    "test_size": 40,
+    "length": 100,
+    "n_classes": 4,
+    "type": "HAR",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6",
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CharacterTrajectories",
+    "train_size": 1422,
+    "test_size": 1436,
+    "length": 0,
+    "n_classes": 20,
+    "type": "MOTION",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_20",
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Cricket",
+    "train_size": 108,
+    "test_size": 72,
+    "length": 1197,
+    "n_classes": 12,
+    "type": "HAR",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6",
+     "not_binary_classes_12"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "DuckDuckGeese",
+    "train_size": 60,
+    "test_size": 40,
+    "length": 270,
+    "n_classes": 5,
+    "type": "AUDIO",
+    "channels": 1345,
+    "excluded_because": [
+     "not_univariate_channels_1345",
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EigenWorms",
+    "train_size": 131,
+    "test_size": 128,
+    "length": 17984,
+    "n_classes": 5,
+    "type": "MOTION",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6",
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Epilepsy",
+    "train_size": 137,
+    "test_size": 138,
+    "length": 207,
+    "n_classes": 4,
+    "type": "HAR",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EthanolConcentration",
+    "train_size": 261,
+    "test_size": 263,
+    "length": 1751,
+    "n_classes": 4,
+    "type": "SPECTRO",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ERing",
+    "train_size": 30,
+    "test_size": 270,
+    "length": 65,
+    "n_classes": 6,
+    "type": "HAR",
+    "channels": 4,
+    "excluded_because": [
+     "not_univariate_channels_4",
+     "not_binary_classes_6",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FaceDetection",
+    "train_size": 5890,
+    "test_size": 3524,
+    "length": 62,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 144,
+    "excluded_because": [
+     "not_univariate_channels_144",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FingerMovements",
+    "train_size": 316,
+    "test_size": 100,
+    "length": 50,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 28,
+    "excluded_because": [
+     "not_univariate_channels_28"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "HandMovementDirection",
+    "train_size": 160,
+    "test_size": 74,
+    "length": 400,
+    "n_classes": 4,
+    "type": "EEG",
+    "channels": 10,
+    "excluded_because": [
+     "not_univariate_channels_10",
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Handwriting",
+    "train_size": 150,
+    "test_size": 850,
+    "length": 152,
+    "n_classes": 26,
+    "type": "HAR",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_26"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Heartbeat",
+    "train_size": 204,
+    "test_size": 205,
+    "length": 405,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 61,
+    "excluded_because": [
+     "not_univariate_channels_61"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "InsectWingbeat",
+    "train_size": 25000,
+    "test_size": 25000,
+    "length": 0,
+    "n_classes": 10,
+    "type": "AUDIO",
+    "channels": 200,
+    "excluded_because": [
+     "not_univariate_channels_200",
+     "not_binary_classes_10",
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "JapaneseVowels",
+    "train_size": 270,
+    "test_size": 370,
+    "length": 29,
+    "n_classes": 9,
+    "type": "AUDIO",
+    "channels": 12,
+    "excluded_because": [
+     "not_univariate_channels_12",
+     "not_binary_classes_9"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Libras",
+    "train_size": 180,
+    "test_size": 180,
+    "length": 45,
+    "n_classes": 15,
+    "type": "HAR",
+    "channels": 2,
+    "excluded_because": [
+     "not_univariate_channels_2",
+     "not_binary_classes_15"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "LSST",
+    "train_size": 2459,
+    "test_size": 2466,
+    "length": 36,
+    "n_classes": 14,
+    "type": "OTHER",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6",
+     "not_binary_classes_14",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MotorImagery",
+    "train_size": 278,
+    "test_size": 100,
+    "length": 3000,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 64,
+    "excluded_because": [
+     "not_univariate_channels_64"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "NATOPS",
+    "train_size": 180,
+    "test_size": 180,
+    "length": 51,
+    "n_classes": 6,
+    "type": "HAR",
+    "channels": 24,
+    "excluded_because": [
+     "not_univariate_channels_24",
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PenDigits",
+    "train_size": 7494,
+    "test_size": 3498,
+    "length": 8,
+    "n_classes": 10,
+    "type": "MOTION",
+    "channels": 2,
+    "excluded_because": [
+     "not_univariate_channels_2",
+     "not_binary_classes_10",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PEMS-SF",
+    "train_size": 267,
+    "test_size": 173,
+    "length": 144,
+    "n_classes": 7,
+    "type": "OTHER",
+    "channels": 963,
+    "excluded_because": [
+     "not_univariate_channels_963",
+     "not_binary_classes_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "PhonemeSpectra",
+    "train_size": 3315,
+    "test_size": 3353,
+    "length": 217,
+    "n_classes": 39,
+    "type": "AUDIO",
+    "channels": 11,
+    "excluded_because": [
+     "not_univariate_channels_11",
+     "not_binary_classes_39",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "RacketSports",
+    "train_size": 151,
+    "test_size": 152,
+    "length": 30,
+    "n_classes": 4,
+    "type": "HAR",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6",
+     "not_binary_classes_4"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SelfRegulationSCP1",
+    "train_size": 268,
+    "test_size": 293,
+    "length": 896,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 6,
+    "excluded_because": [
+     "not_univariate_channels_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SelfRegulationSCP2",
+    "train_size": 200,
+    "test_size": 180,
+    "length": 1152,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 7,
+    "excluded_because": [
+     "not_univariate_channels_7"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SpokenArabicDigits",
+    "train_size": 6599,
+    "test_size": 2199,
+    "length": 93,
+    "n_classes": 10,
+    "type": "SPEECH",
+    "channels": 13,
+    "excluded_because": [
+     "not_univariate_channels_13",
+     "not_binary_classes_10",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "StandWalkJump",
+    "train_size": 12,
+    "test_size": 15,
+    "length": 2500,
+    "n_classes": 3,
+    "type": "ECG",
+    "channels": 4,
+    "excluded_because": [
+     "not_univariate_channels_4",
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UWaveGestureLibrary",
+    "train_size": 2238,
+    "test_size": 2241,
+    "length": 315,
+    "n_classes": 8,
+    "type": "HAR",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_8",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltObstacles",
+    "train_size": 390,
+    "test_size": 391,
+    "length": 0,
+    "n_classes": 4,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_4",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltPavementType",
+    "train_size": 1055,
+    "test_size": 1056,
+    "length": 0,
+    "n_classes": 3,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltRegularity",
+    "train_size": 751,
+    "test_size": 751,
+    "length": 0,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltObstaclesCoordinates",
+    "train_size": 390,
+    "test_size": 391,
+    "length": 0,
+    "n_classes": 4,
+    "type": "MOTION",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_4",
+     "unequal_length_official_length_0"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltPavementTypeCoordinates",
+    "train_size": 1055,
+    "test_size": 1056,
+    "length": 0,
+    "n_classes": 3,
+    "type": "MOTION",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_3",
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AsphaltRegularityCoordinates",
+    "train_size": 751,
+    "test_size": 751,
+    "length": 0,
+    "n_classes": 2,
+    "type": "MOTION",
+    "channels": 1,
+    "excluded_because": [
+     "unequal_length_official_length_0",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EyesOpenShut",
+    "train_size": 56,
+    "test_size": 42,
+    "length": 128,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 14,
+    "excluded_because": [
+     "not_univariate_channels_14"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Colposcopy",
+    "train_size": 100,
+    "test_size": 100,
+    "length": 180,
+    "n_classes": 6,
+    "type": "IMAGE",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CounterMovementJump",
+    "train_size": 419,
+    "test_size": 179,
+    "length": 4250,
+    "n_classes": 3,
+    "type": "HAR",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Tiselac",
+    "train_size": 81714,
+    "test_size": 17973,
+    "length": 23,
+    "n_classes": 9,
+    "type": "IMAGE",
+    "channels": 10,
+    "excluded_because": [
+     "not_univariate_channels_10",
+     "not_binary_classes_9",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "RightWhaleCalls",
+    "train_size": 10934,
+    "test_size": 1962,
+    "length": 4000,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "SharePriceIncrease",
+    "train_size": 965,
+    "test_size": 965,
+    "length": 60,
+    "n_classes": 2,
+    "type": "FINANCIAL",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CatsDogs",
+    "train_size": 138,
+    "test_size": 137,
+    "length": 14773,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   },
+   {
+    "dataset": "BinaryHeartbeat",
+    "train_size": 204,
+    "test_size": 205,
+    "length": 18530,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   },
+   {
+    "dataset": "DucksAndGeese",
+    "train_size": 50,
+    "test_size": 50,
+    "length": 236784,
+    "n_classes": 5,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "UrbanSound",
+    "train_size": 2713,
+    "test_size": 2712,
+    "length": 44100,
+    "n_classes": 10,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FruitFlies",
+    "train_size": 17259,
+    "test_size": 17259,
+    "length": 5000,
+    "n_classes": 3,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "InsectSound",
+    "train_size": 25000,
+    "test_size": 25000,
+    "length": 600,
+    "n_classes": 10,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_10",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MosquitoSound",
+    "train_size": 139883,
+    "test_size": 139883,
+    "length": 3750,
+    "n_classes": 6,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_6",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "AbnormalHeartbeat",
+    "train_size": 303,
+    "test_size": 303,
+    "length": 3053,
+    "n_classes": 5,
+    "type": "AUDIO",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "ElectricDeviceDetection",
+    "train_size": 623,
+    "test_size": 3767,
+    "length": 256,
+    "n_classes": 2,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MindReading",
+    "train_size": 727,
+    "test_size": 653,
+    "length": 200,
+    "n_classes": 5,
+    "type": "MEG",
+    "channels": 204,
+    "excluded_because": [
+     "not_univariate_channels_204",
+     "not_binary_classes_5",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "MotionSenseHAR",
+    "train_size": 217,
+    "test_size": 144,
+    "length": 200,
+    "n_classes": 6,
+    "type": "HAR",
+    "channels": 12,
+    "excluded_because": [
+     "not_univariate_channels_12",
+     "not_binary_classes_6"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "EMOPain",
+    "train_size": 1093,
+    "test_size": 50,
+    "length": 180,
+    "n_classes": 3,
+    "type": "HAR",
+    "channels": 30,
+    "excluded_because": [
+     "not_univariate_channels_30",
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Blink",
+    "train_size": 500,
+    "test_size": 450,
+    "length": 510,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 4,
+    "excluded_because": [
+     "not_univariate_channels_4",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "KeplerLightCurves",
+    "train_size": 920,
+    "test_size": 399,
+    "length": 4767,
+    "n_classes": 7,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_7",
+     "train_rows_outside_40_400",
+     "name_in_local_ucr_task_context_zip"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "WalkingSittingStanding",
+    "train_size": 7352,
+    "test_size": 2947,
+    "length": 206,
+    "n_classes": 6,
+    "type": "HAR",
+    "channels": 3,
+    "excluded_because": [
+     "not_univariate_channels_3",
+     "not_binary_classes_6",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Sleep",
+    "train_size": 478785,
+    "test_size": 90315,
+    "length": 178,
+    "n_classes": 5,
+    "type": "EEG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_5",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FaultDetectionA",
+    "train_size": 10912,
+    "test_size": 2728,
+    "length": 5120,
+    "n_classes": 3,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "FaultDetectionB",
+    "train_size": 81,
+    "test_size": 13559,
+    "length": 5120,
+    "n_classes": 3,
+    "type": "SENSOR",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "NerveDamage",
+    "train_size": 163,
+    "test_size": 41,
+    "length": 1500,
+    "n_classes": 3,
+    "type": "EMG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "CardiacArrhythmia",
+    "train_size": 43673,
+    "test_size": 1904,
+    "length": 1500,
+    "n_classes": 3,
+    "type": "ECG",
+    "channels": 1,
+    "excluded_because": [
+     "not_binary_classes_3",
+     "train_rows_outside_40_400"
+    ],
+    "eligible": false
+   },
+   {
+    "dataset": "Epilepsy2",
+    "train_size": 80,
+    "test_size": 11420,
+    "length": 178,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 1,
+    "excluded_because": [],
+    "eligible": true
+   }
+  ],
+  "eligible": [
+   "BinaryHeartbeat",
+   "CatsDogs",
+   "Epilepsy2",
+   "ItalyPowerDemand"
+  ],
+  "selected": "BinaryHeartbeat",
+  "d1_d2_d3": [
+   {
+    "role": "D1",
+    "dataset": "BinaryHeartbeat",
+    "train_size": 204,
+    "test_size": 205,
+    "length": 18530,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "sealed": false
+   },
+   {
+    "role": "D2_sealed",
+    "dataset": "CatsDogs",
+    "train_size": 138,
+    "test_size": 137,
+    "length": 14773,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "sealed": true
+   },
+   {
+    "role": "D3_reserve",
+    "dataset": "Epilepsy2",
+    "train_size": 80,
+    "test_size": 11420,
+    "length": 178,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 1,
+    "sealed": true
+   }
+  ],
+  "selection_basis": "lexicographically first of 4 eligible",
+  "downloads_started": false,
+  "audit_gate": "PASSED_FILTER_TRAJECTORY_WRITTEN_BEFORE_DATASET_ZIPS"
+ },
+ "target": "BinaryHeartbeat",
+ "condition": "fit_only_artifact",
+ "arms": [
+  "A3",
+  "STATIC"
+ ],
+ "verdict": {
+  "verdict": "AUDIT_GATE_PASSED",
+  "eligible": [
+   "BinaryHeartbeat",
+   "CatsDogs",
+   "Epilepsy2",
+   "ItalyPowerDemand"
+  ],
+  "d1_d2_d3": [
+   {
+    "role": "D1",
+    "dataset": "BinaryHeartbeat",
+    "train_size": 204,
+    "test_size": 205,
+    "length": 18530,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "sealed": false
+   },
+   {
+    "role": "D2_sealed",
+    "dataset": "CatsDogs",
+    "train_size": 138,
+    "test_size": 137,
+    "length": 14773,
+    "n_classes": 2,
+    "type": "AUDIO",
+    "channels": 1,
+    "sealed": true
+   },
+   {
+    "role": "D3_reserve",
+    "dataset": "Epilepsy2",
+    "train_size": 80,
+    "test_size": 11420,
+    "length": 178,
+    "n_classes": 2,
+    "type": "EEG",
+    "channels": 1,
+    "sealed": true
+   }
+  ],
+  "note": "dataset zips not yet downloaded; arms not run"
+ },
+ "ledger": {
+  "llm_calls": 0,
+  "llm_cap": 40,
+  "consumer_fits": 0,
+  "consumer_fit_cap": 200,
+  "downloads": 0
+ },
+ "termination": {
+  "verdict": "COMPUTE_BUDGET_EXCEEDED",
+  "verdict_secondary": "INSTRUMENT_SCALE_MISMATCH",
+  "scientific_status": "not a scientific negative; CLS-CONF remains OPEN",
+  "r1_observation": "A3 BinaryHeartbeat r1 probes=1 winner=None delayed=None is a local observation only; must not be cited as non-replication evidence",
+  "timeline": {
+   "started_local": "2026-08-25T21:36+08:00",
+   "a3_started_local": "2026-08-25T22:02+08:00",
+   "terminated_local": "2026-08-26T09:55:06+08:00",
+   "wall_hours": 12.3,
+   "cpu_hours_approx": 11,
+   "authority": "user + sol wall-clock ruling; mainline terminated PID 15748 / terminal 931012"
+  },
+  "reason": "BinaryHeartbeat substrate is ~3.78e6 total points ((204+205)*18530) times a CLS-OP pipeline hot path that scales with point count. The frozen selection rule had no compute-scale gate.",
+  "final_payload": "not written",
+  "retained_artifacts": [
+   "selection census in this file (Part A audit gate; unchanged)",
+   "data/ucr_conf_downloaded/ROSTER.md",
+   "terminal trajectory of --conf-dl-run (A3 BinaryHeartbeat r1 probes=1 winner=None delayed=None)"
+  ],
+  "part_a": "selection / filter-trajectory audit remains valid and is left unmodified"
+ }
+}

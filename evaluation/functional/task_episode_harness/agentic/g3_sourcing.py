@@ -1,0 +1,442 @@
+"""G3 candidate screening.  Outcome-blind, and the final query stays sealed.
+
+The criteria below are fixed before any candidate is opened, because the point
+of screening is to reject a dataset the Judge cannot read -- not to search for
+one whose numbers flatter the method.  The Weather lesson is the reason this
+file exists: there, ``macro_gain`` was an unweighted mean over eval channels
+whose identity losses spanned 24.4x, so three unforecastable solar channels
+carried a result the two well-forecast channels contradicted.  T233, which
+reads cleanly, spans 2.0x.
+
+Information wall
+----------------
+Everything here reads either a public prefix ``raw[:origin]`` or a development
+time block strictly earlier than the G3 roster's first Support origin.  The
+substrate guards are outcome-blind by construction -- they look at
+``raw[origin-192:origin]`` and ``raw[anchor-192:anchor+48]`` at anchors far
+below the roster.  Judge readability is measured only on the development
+block.  The G3 roster's own Outcomes are never evaluated here; opening them is
+the single one-shot event the G3 run performs.
+
+Selecting on the final query loss is what this file is built to prevent, so it
+has no code path that can reach one.
+"""
+from __future__ import annotations
+
+
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+# ---- pre-registered screening criteria (fixed before any candidate opened) --
+MIN_TRAIN_SERIES = 12
+MIN_EVAL_SERIES = 8
+# 9 Task Episodes at the frozen roster stride reach index 5376 + 5*48 = 5616,
+# plus one horizon of truth.
+MIN_SERIES_LENGTH = 5760
+# Judge readability, measured on the development block only.  Weather failed
+# at 24.4x and T233 passes at 2.0x; 5x sits between them and is set here, once.
+MAX_EVAL_LOSS_SPREAD = 5.0
+# No single eval series may carry the aggregate.  With 8 eval series an even
+# split is 12.5%; 40% is three times that and still well short of dominance.
+MAX_SINGLE_SERIES_LOSS_SHARE = 0.40
+# The Operator DSL must have something publicly visible to act on.
+MIN_SERIES_WITH_PUBLIC_PHENOMENON = 4
+# Development origins.  Strictly below the roster's first Support origin, so
+# nothing measured here overlaps anything the G3 run will open.
+DEVELOPMENT_ORIGINS = (1104, 1368, 1800)
+SEALED_FROM_INDEX = 3072
+
+CRITERIA = {
+    "min_train_series": MIN_TRAIN_SERIES,
+    "min_eval_series": MIN_EVAL_SERIES,
+    "min_series_length": MIN_SERIES_LENGTH,
+    "max_eval_loss_spread": MAX_EVAL_LOSS_SPREAD,
+    "max_single_series_loss_share": MAX_SINGLE_SERIES_LOSS_SHARE,
+    "min_series_with_public_phenomenon": MIN_SERIES_WITH_PUBLIC_PHENOMENON,
+    "development_origins": list(DEVELOPMENT_ORIGINS),
+    "sealed_from_index": SEALED_FROM_INDEX,
+    "fixed_before_any_candidate_was_opened": True,
+    "rationale": (
+        "Weather's Judge was unreadable at a 24.4x eval-loss spread and T233 "
+        "reads at 2.0x; the bar is set once, between them, and is never moved "
+        "to make a candidate pass"
+    ),
+}
+
+
+def load_csv_columns(
+    path: Path,
+    *,
+    max_columns: int = 400,
+    max_rows: int = 20000,
+) -> tuple[list[str], dict[str, np.ndarray]]:
+    """Numeric columns of a wide CSV, truncated to a bounded prefix.
+
+    Only the first ``max_rows`` rows are read.  That is far more than the
+    roster needs and keeps the reader from touching the far tail of a large
+    file for no reason.
+    """
+    import csv
+
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        header = next(reader)
+        rows: list[list[str]] = []
+        for index, row in enumerate(reader):
+            if index >= max_rows:
+                break
+            rows.append(row)
+    names: list[str] = []
+    values: dict[str, np.ndarray] = {}
+    for column, name in enumerate(header[:max_columns]):
+        raw = np.array(
+            [row[column] if column < len(row) else "" for row in rows],
+            dtype=object,
+        )
+        try:
+            series = np.array(
+                [float(item) if item not in ("", None) else np.nan
+                 for item in raw],
+                dtype=np.float64,
+            )
+        except (TypeError, ValueError):
+            continue
+        if not np.isfinite(series).any():
+            continue
+        names.append(str(name))
+        values[str(name)] = series
+    return names, values
+
+
+def public_phenomenon_census(
+    values: Mapping[str, np.ndarray],
+    uids: Sequence[str],
+    cutoff: int,
+) -> dict[str, Any]:
+    """Does the Operator DSL have anything publicly visible to act on?
+
+    Reads the public prefix only, through the same extractor the Workspace
+    tools use, so this sees exactly what the Agent would be able to see.
+    """
+    from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
+        extract_public_features,
+    )
+
+    per_series: dict[str, Any] = {}
+    for uid in uids:
+        prefix = np.asarray(values[str(uid)], dtype=np.float64)[:cutoff]
+        features = dict(extract_public_features(prefix, task_kind="forecast"))
+        missing = float(features.get("missing_fraction", 0.0))
+        outlier = float(features.get("outlier_fraction", 0.0) or 0.0)
+        peak = float(features.get("local_robust_z_peak", 0.0) or 0.0)
+        region = (
+            float(features.get("estimated_region_end_fraction", 0.0))
+            - float(features.get("estimated_region_start_fraction", 0.0))
+        )
+        per_series[str(uid)] = {
+            "missing_fraction": missing,
+            "outlier_fraction": outlier,
+            "local_robust_z_peak": peak,
+            "estimated_region_width": region,
+            "has_public_phenomenon": bool(
+                missing > 0.0 or outlier > 0.0 or peak >= 4.0
+            ),
+        }
+    count = sum(1 for row in per_series.values() if row["has_public_phenomenon"])
+    return {
+        "series_with_public_phenomenon": count,
+        "pass": count >= MIN_SERIES_WITH_PUBLIC_PHENOMENON,
+        "per_series": per_series,
+    }
+
+
+def development_judge_readability(
+    roster: Sequence[Mapping[str, Any]],
+    values: Mapping[str, np.ndarray],
+    eval_uids: Sequence[str],
+    config: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Identity loss per eval series, on the development block only.
+
+    No candidate Program runs here and no roster Outcome is opened: this is
+    the identity baseline at development origins strictly below
+    ``SEALED_FROM_INDEX``.  It answers one question -- can the aggregate the
+    Judge reports be read at all, or is it a few broken channels in a trench
+    coat.
+    """
+    from evaluation.functional.task_episode_harness.runner import (
+        _evaluate_origins,
+    )
+
+    assert max(DEVELOPMENT_ORIGINS) < SEALED_FROM_INDEX
+    rows = _evaluate_origins(
+        list(roster), dict(values), None, dict(config), DEVELOPMENT_ORIGINS, None
+    )
+    losses = [
+        float(np.mean([row["per_view_smase"][index] for row in rows]))
+        for index in range(len(eval_uids))
+    ]
+    total = float(sum(losses))
+    spread = (max(losses) / min(losses)) if min(losses) > 0 else float("inf")
+    share = (max(losses) / total) if total > 0 else 1.0
+    return {
+        "development_origins": list(DEVELOPMENT_ORIGINS),
+        "sealed_from_index": SEALED_FROM_INDEX,
+        "per_series_identity_smase": {
+            str(uid): value for uid, value in zip(eval_uids, losses)
+        },
+        "min": min(losses), "max": max(losses),
+        "eval_loss_spread": spread,
+        "largest_single_series_loss_share": share,
+        "pass": bool(
+            spread <= MAX_EVAL_LOSS_SPREAD
+            and share <= MAX_SINGLE_SERIES_LOSS_SHARE
+        ),
+        "reason": (
+            "" if spread <= MAX_EVAL_LOSS_SPREAD
+            else f"eval loss spread {spread:.1f}x exceeds "
+                 f"{MAX_EVAL_LOSS_SPREAD}x; the aggregate would be carried by "
+                 "series the forecaster cannot read"
+        ),
+    }
+
+
+# Source-family provenance.  Three ordinary fields, filled in by hand from
+# what is known about where a file came from -- not a registry, not a hash, not
+# a platform.  They exist because the first screening pass asked "is this file
+# referenced by our code" and reported the answer as freshness.  It is not:
+# the local electricity.csv ships with the Time-Series-Library data pack, whose
+# 321-channel Electricity benchmark overlaps the UCI Electricity Load Diagrams
+# family, and this project has already opened Outcomes in that family.  A
+# candidate whose family has prior exposure can still be a sound development
+# cohort; it cannot carry a cross-domain fresh claim.
+SOURCE_PROVENANCE: dict[str, dict[str, Any]] = {
+    "electricity": {
+        "source_path": "shared_tsq_datasets/electricity/electricity.csv",
+        "original_source_family": (
+            "UCI ElectricityLoadDiagrams / LSTF Electricity (321 hourly "
+            "clients), redistributed via Time-Series-Library"
+        ),
+        "prior_outcome_exposure_in_family": True,
+    },
+    "traffic": {
+        "source_path": "shared_tsq_datasets/traffic/traffic.csv",
+        "original_source_family": (
+            "PeMS San Francisco Bay Area freeway occupancy / LSTF Traffic "
+            "(862 hourly sensors), redistributed via Time-Series-Library"
+        ),
+        # Corrected after checking the record rather than trusting this table:
+        # artifacts/frozen/benchmark_v02/dataset_manifest.json carries
+        # monash:traffic_hourly, 862 sensors, network_id
+        # bay_area_freeway_2015, claim_tier headline, and the dev reports hold
+        # its losses.  Same network, same sensors.  It is not merely the same
+        # broad domain -- it is the same data.
+        "prior_outcome_exposure_in_family": True,
+    },
+    "illness": {
+        "source_path": "shared_tsq_datasets/illness/national_illness.csv",
+        "original_source_family": (
+            "US CDC influenza-like illness weekly surveillance / LSTF ILI"
+        ),
+        # Different source and disease from monash:covid_deaths, but the same
+        # exposed broad domain (epidemiology).  Unresolved, not clean.
+        "prior_outcome_exposure_in_family": True,
+    },
+    "exchange_rate": {
+        "source_path": "shared_tsq_datasets/exchange_rate/exchange_rate.csv",
+        "original_source_family": (
+            "daily exchange rates of eight countries / LSTF Exchange"
+        ),
+        # Same exposed broad domain as monash:nn5_daily (finance), and only
+        # eight series -- too few for a roster regardless.
+        "prior_outcome_exposure_in_family": True,
+    },
+    "psm": {
+        "source_path": "shared_tsq_datasets/PSM/train.csv",
+        "original_source_family": (
+            "eBay Pooled Server Metrics: application server telemetry, 25 "
+            "channels, minute resolution"
+        ),
+        # Server/application telemetry appears nowhere in the frozen manifest:
+        # not energy, traffic, weather, epidemiology, finance or legacy_mixed.
+        "prior_outcome_exposure_in_family": False,
+    },
+    "swat": {
+        "source_path": "shared_tsq_datasets/SWaT/swat2.csv",
+        "original_source_family": (
+            "Secure Water Treatment testbed: industrial control sensors and "
+            "actuators, 51 channels, second resolution"
+        ),
+        "prior_outcome_exposure_in_family": False,
+    },
+}
+
+# The exposure record this table is checked against, read from
+# artifacts/frozen/benchmark_v02/dataset_manifest.json rather than recalled.
+# A candidate is only FRESH when its source family appears nowhere here.
+EXPOSED_FAMILIES = {
+    "energy": ("uci_electricity_load_diagrams", "gefcom2012_load"),
+    "traffic": ("metr_la", "monash:traffic_hourly"),
+    "weather": ("noaa_global_hourly", "tsl_weather_jena"),
+    "epidemiology": ("monash:covid_deaths",),
+    "finance": ("monash:nn5_daily",),
+    "air_quality": ("kdd2018",),
+    "legacy_mixed": (
+        "fred_md", "saugeenday", "sunspot", "tourism_monthly", "us_births",
+        "nn5_daily", "covid_deaths",
+    ),
+}
+
+
+def _drop_series_with_unusable_windows(
+    values: Mapping[str, np.ndarray],
+    uids: Sequence[str],
+    specs: Sequence[Mapping[str, Any]],
+    anchors: Sequence[int],
+) -> tuple[list[str], list[str]]:
+    """Split series into those every required window can be read on, and the rest.
+
+    "Readable" here is the weakest possible condition -- two observed values in
+    the window -- because that is what the integrity step needs before the
+    substrate guards can say anything at all.
+    """
+    import run_e2_autonomous_natural_workflow_generation as v6
+
+    context_length, horizon = int(v6.CONTEXT_LENGTH), int(v6.HORIZON)
+    windows: list[tuple[int, int]] = [
+        (int(anchor) - context_length, int(anchor) + horizon) for anchor in anchors
+    ]
+    for spec in specs:
+        for role in ("support", "delayed"):
+            for origin in spec[f"{role}_origins"]:
+                windows.append((int(origin) - context_length, int(origin)))
+    usable: list[str] = []
+    unusable: list[str] = []
+    for uid in uids:
+        raw = np.asarray(values[str(uid)], dtype=np.float64)
+        ok = True
+        for low, high in windows:
+            if low < 0 or high > raw.size:
+                continue
+            if int(np.isfinite(raw[low:high]).sum()) < 2:
+                ok = False
+                break
+        (usable if ok else unusable).append(str(uid))
+    return usable, unusable
+
+
+def screen_candidate(
+    name: str,
+    values: Mapping[str, np.ndarray],
+    names: Sequence[str],
+    repo_root: Path,
+) -> dict[str, Any]:
+    """One candidate, all criteria, in the order that fails cheapest first."""
+    from evaluation.functional.task_episode_harness import g1
+    from evaluation.functional.task_episode_harness.e1 import (
+        _frozen_task_roster,
+    )
+    from run_v1_kdd2018_natural_slow_update import _config
+
+    config = dict(_config())
+    anchors = [int(a) for a in config["anchors"]]
+    specs = list(_frozen_task_roster()[:9])
+    provenance = dict(SOURCE_PROVENANCE.get(name) or {
+        "source_path": "UNKNOWN",
+        "original_source_family": "UNKNOWN",
+        "prior_outcome_exposure_in_family": None,
+    })
+    result: dict[str, Any] = {
+        "candidate": name, "criteria": CRITERIA, "provenance": provenance,
+    }
+    exposure = provenance.get("prior_outcome_exposure_in_family")
+    result["fresh_identity"] = (
+        "FRESH_SOURCE_FAMILY" if exposure is False
+        else "SOURCE_FAMILY_EXPOSURE_UNRESOLVED"
+    )
+
+    long_enough = [
+        uid for uid in names
+        if np.asarray(values[uid]).size >= MIN_SERIES_LENGTH
+    ]
+    result["structure"] = {
+        "numeric_column_count": len(names),
+        "columns_long_enough": len(long_enough),
+        "series_length": (
+            int(np.asarray(values[names[0]]).size) if names else 0
+        ),
+        "pass": len(long_enough) >= MIN_TRAIN_SERIES + MIN_EVAL_SERIES,
+    }
+    if not result["structure"]["pass"]:
+        result["verdict"] = "REJECTED_STRUCTURE"
+        return result
+
+    # The substrate guards assume every window they touch has at least two
+    # observed values; a channel that is entirely missing over one window
+    # makes them raise rather than report.  PSM has such channels.  A
+    # candidate with unusable windows is eliminated, so drop those series
+    # first and let the guards judge the rest.
+    usable, unusable = _drop_series_with_unusable_windows(
+        values, long_enough, specs, anchors
+    )
+    result["window_coverage"] = {
+        "series_with_an_all_missing_window": len(unusable),
+        "examples": unusable[:8],
+    }
+    train_pf = g1.train_substrate_preflight(values, usable, anchors)
+    eval_pf = g1.eval_substrate_preflight(values, usable, specs)
+    clean = [
+        uid for uid in usable
+        if train_pf["per_series"][uid]["clean"]
+        and eval_pf["per_series"][uid]["clean"]
+    ]
+    result["substrate"] = {
+        "columns_clean_under_both_guards": len(clean),
+        "pass": len(clean) >= MIN_TRAIN_SERIES + MIN_EVAL_SERIES,
+        "zero_new_outcome": True,
+    }
+    if not result["substrate"]["pass"]:
+        result["verdict"] = "REJECTED_SUBSTRATE"
+        return result
+
+    train = clean[:MIN_TRAIN_SERIES]
+    ev = clean[MIN_TRAIN_SERIES:MIN_TRAIN_SERIES + MIN_EVAL_SERIES]
+    roster = (
+        [{"series_uid": uid, "role": "train"} for uid in train]
+        + [{"series_uid": uid, "role": "eval"} for uid in ev]
+    )
+    result["roster"] = {"train": train, "eval": ev}
+
+    phenomena = public_phenomenon_census(
+        values, train, int(specs[0]["support_origins"][0])
+    )
+    result["public_phenomena"] = phenomena
+    if not phenomena["pass"]:
+        result["verdict"] = "REJECTED_NO_PUBLIC_PHENOMENON"
+        return result
+
+    readability = development_judge_readability(roster, values, ev, config)
+    result["judge_readability"] = readability
+    if not readability["pass"]:
+        result["verdict"] = "REJECTED_JUDGE_UNREADABLE"
+        return result
+
+    result["verdict"] = (
+        "ACCEPTED_FRESH" if result["fresh_identity"] == "FRESH_SOURCE_FAMILY"
+        else "STRUCTURALLY_ACCEPTED_BUT_SOURCE_FAMILY_EXPOSURE_UNRESOLVED"
+    )
+    return result
+
+
+__all__ = [
+    "CRITERIA",
+    "EXPOSED_FAMILIES",
+    "SOURCE_PROVENANCE",
+    "development_judge_readability",
+    "load_csv_columns",
+    "public_phenomenon_census",
+    "screen_candidate",
+]

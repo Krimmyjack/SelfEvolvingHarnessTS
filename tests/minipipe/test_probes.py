@@ -239,23 +239,20 @@ def test_absent_complete_period_class_proves_unavailable():
     assert result.external_localization_required is False
 
 
-def test_witness_program_contract_distinguishes_internal_and_external_localization():
+def test_no_canonical_witness_program_requires_external_localization():
+    """参数所有权修复（AGENTIC_SKILL_HARNESS_GLOBAL_DESIGN_2026-08-19 §7.3/§17.4）后，没有 canonical 算子把定位外包给上游决策——
+    所有算子都在自己拿到的单元内部找命中点。该 grader 侧判据保留为回归闸：
+    任何重新引入 external_region 的契约都会让它变红。
+    """
     assert not program_requires_external_localization(
         [["hampel_filter", {"window": 7, "n_sigmas": 3.0}]]
     )
     assert not program_requires_external_localization([["impute_linear", {}]])
-    assert program_requires_external_localization(
-        [
-            [
-                "repair_level_shift",
-                {
-                    "region_start_fraction_from": "estimated_region_start_fraction",
-                    "region_end_fraction_from": "estimated_region_end_fraction",
-                    "estimated_offset_from": "estimated_level_offset",
-                },
-            ]
-        ]
+    assert not program_requires_external_localization(
+        [["repair_level_shift", {}]]
     )
+    for operator_id in OPERATOR_NAMES:
+        assert not program_requires_external_localization([[operator_id, {}]])
 
 
 def test_transformation_class_declaration_is_complete_for_canonical_registry():

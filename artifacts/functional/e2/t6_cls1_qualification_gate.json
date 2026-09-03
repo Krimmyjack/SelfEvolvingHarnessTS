@@ -1,0 +1,524 @@
+{
+  "arms": {
+    "clean_reference": {
+      "arm": "clean_reference",
+      "delayed": {
+        "accuracy": 0.82,
+        "n": 150,
+        "per_class_recall": {
+          "0": {
+            "n": 76,
+            "recall": 0.9342105263157895
+          },
+          "1": {
+            "n": 74,
+            "recall": 0.7027027027027027
+          }
+        },
+        "reason": null,
+        "scored": true
+      },
+      "drop_census_fit": {
+        "classes_kept": [
+          0,
+          1
+        ],
+        "n_dropped": 0,
+        "n_in": 35,
+        "n_kept": 35
+      },
+      "drop_census_support": {
+        "n_dropped": 0,
+        "n_in": 15,
+        "n_kept": 15
+      },
+      "fit": {
+        "classes": [
+          0,
+          1
+        ],
+        "fit": true,
+        "n_train": 35,
+        "reason": null
+      },
+      "support": {
+        "accuracy": 0.9333333333333333,
+        "n": 15,
+        "per_class_recall": {
+          "0": {
+            "n": 7,
+            "recall": 1.0
+          },
+          "1": {
+            "n": 8,
+            "recall": 0.875
+          }
+        },
+        "reason": null,
+        "scored": true
+      },
+      "workflow": "identity_on_clean"
+    },
+    "injected_identity": {
+      "arm": "injected_identity",
+      "delayed": {
+        "accuracy": null,
+        "n": 150,
+        "per_class_recall": {},
+        "reason": "NO_USABLE_TRAINING_ROWS",
+        "scored": false
+      },
+      "drop_census_fit": {
+        "classes_kept": [],
+        "n_dropped": 35,
+        "n_in": 35,
+        "n_kept": 0
+      },
+      "drop_census_support": {
+        "classes_kept": [],
+        "n_dropped": 15,
+        "n_in": 15,
+        "n_kept": 0
+      },
+      "fit": {
+        "classes": [],
+        "fit": false,
+        "n_train": 0,
+        "reason": "NO_USABLE_TRAINING_ROWS"
+      },
+      "support": {
+        "accuracy": null,
+        "n": 0,
+        "per_class_recall": {},
+        "reason": "NO_USABLE_TRAINING_ROWS",
+        "scored": false
+      },
+      "workflow": "identity_drop_nan_training_rows"
+    },
+    "injected_impute_ema": {
+      "arm": "injected_impute_ema",
+      "delayed": {
+        "accuracy": 0.7933333333333333,
+        "n": 150,
+        "per_class_recall": {
+          "0": {
+            "n": 76,
+            "recall": 0.868421052631579
+          },
+          "1": {
+            "n": 74,
+            "recall": 0.7162162162162162
+          }
+        },
+        "reason": null,
+        "scored": true
+      },
+      "drop_census_fit": {
+        "classes_kept": [
+          0,
+          1
+        ],
+        "n_dropped": 0,
+        "n_in": 35,
+        "n_kept": 35
+      },
+      "drop_census_support": {
+        "n_dropped": 0,
+        "n_in": 15,
+        "n_kept": 15
+      },
+      "fit": {
+        "classes": [
+          0,
+          1
+        ],
+        "fit": true,
+        "n_train": 35,
+        "reason": null
+      },
+      "support": {
+        "accuracy": 0.8666666666666667,
+        "n": 15,
+        "per_class_recall": {
+          "0": {
+            "n": 7,
+            "recall": 1.0
+          },
+          "1": {
+            "n": 8,
+            "recall": 0.75
+          }
+        },
+        "reason": null,
+        "scored": true
+      },
+      "workflow": "impute_ema"
+    },
+    "injected_impute_linear": {
+      "arm": "injected_impute_linear",
+      "delayed": {
+        "accuracy": 0.7933333333333333,
+        "n": 150,
+        "per_class_recall": {
+          "0": {
+            "n": 76,
+            "recall": 0.9210526315789473
+          },
+          "1": {
+            "n": 74,
+            "recall": 0.6621621621621622
+          }
+        },
+        "reason": null,
+        "scored": true
+      },
+      "drop_census_fit": {
+        "classes_kept": [
+          0,
+          1
+        ],
+        "n_dropped": 0,
+        "n_in": 35,
+        "n_kept": 35
+      },
+      "drop_census_support": {
+        "n_dropped": 0,
+        "n_in": 15,
+        "n_kept": 15
+      },
+      "fit": {
+        "classes": [
+          0,
+          1
+        ],
+        "fit": true,
+        "n_train": 35,
+        "reason": null
+      },
+      "support": {
+        "accuracy": 0.9333333333333333,
+        "n": 15,
+        "per_class_recall": {
+          "0": {
+            "n": 7,
+            "recall": 1.0
+          },
+          "1": {
+            "n": 8,
+            "recall": 0.875
+          }
+        },
+        "reason": null,
+        "scored": true
+      },
+      "workflow": "impute_linear"
+    }
+  },
+  "book": "CLS-1 classification qualification gate",
+  "claim_cap": "development positive control on an injected MCAR defect; not a natural UCR capability claim",
+  "cost": {
+    "fit_cap": 50,
+    "fits": 3,
+    "fits_by_arm": {
+      "clean_reference": 1,
+      "injected_impute_ema": 1,
+      "injected_impute_linear": 1
+    },
+    "llm": 0,
+    "verification_fits": 3
+  },
+  "dataset_choice": {
+    "ecg200_probe": {
+      "series_length": 96,
+      "test_class_counts_official": {
+        "-1": 36,
+        "1": 64
+      },
+      "test_n": 100,
+      "train_class_counts_official": {
+        "-1": 31,
+        "1": 69
+      },
+      "train_n": 100
+    },
+    "reason": "GunPoint TRAIN is class-balanced (24/26 after official labels mapped 1,2 -> 0,1) against ECG200 TRAIN 31/69; TEST n=150 gives quantization floor 1/150≈0.00667 so the 0.05 injury bar is 7.5 steps, versus ECG200 TEST n=100 (floor 0.01, 5 steps). Both zips are already on the in-service loader; Support 30% still leaves >=7 series per class.",
+    "rejected": "ECG200",
+    "selected": "GunPoint",
+    "series_length": 150,
+    "test_class_counts": {
+      "0": 76,
+      "1": 74
+    },
+    "test_n": 150,
+    "train_class_counts": {
+      "0": 24,
+      "1": 26
+    },
+    "train_n": 50
+  },
+  "determinism": {
+    "injected_sha": "ad3e433e8aa431c88d1271a3b1c7ddbbe0b441bc67af93f3d7f4373426e7f61d",
+    "official_fingerprint": "e7cfddeb0af193c0b70bfe793e31df6a126f6cd315b9a17421b0c7d17a634407",
+    "test_sha": "722f7f7cb2eb99b65d2276d1c0b394fb929e859a75d5f452de7b28f1e554ad01",
+    "test_sha_unchanged": true,
+    "two_run": "BITWISE_IDENTICAL",
+    "verification_fingerprint": "e7cfddeb0af193c0b70bfe793e31df6a126f6cd315b9a17421b0c7d17a634407",
+    "zip_sha": "d7513cfe222418fabfdb5a6434ffb21ac3de4923e637971e9388ebc857816803",
+    "zip_sha_unchanged": true
+  },
+  "development_only": true,
+  "evidence_class": "INSTRUMENT / POSITIVE_CONTROL",
+  "judgment": {
+    "b1": {
+      "best_impute_arm": null,
+      "best_recovery_fraction": null,
+      "injury_bar": -0.05,
+      "injury_delta_acc": null,
+      "injury_readable": false,
+      "legal_headroom": false,
+      "recoveries": {
+        "injected_impute_ema": {
+          "status": "INJURY_UNDEFINED"
+        },
+        "injected_impute_linear": {
+          "status": "INJURY_UNDEFINED"
+        }
+      }
+    },
+    "b2": {
+      "delayed_delta_acc": {
+        "clean_reference": 0.0,
+        "injected_identity": null,
+        "injected_impute_ema": -0.026666666666666616,
+        "injected_impute_linear": -0.026666666666666616
+      },
+      "delayed_order": null,
+      "full_order_match": false,
+      "identity_best_impute_direction_match": null,
+      "passed": false,
+      "support_delta_acc": {
+        "clean_reference": 0.0,
+        "injected_identity": null,
+        "injected_impute_ema": -0.06666666666666665,
+        "injected_impute_linear": 0.0
+      },
+      "support_order": null
+    },
+    "quantization": {
+      "injury_bar": -0.05,
+      "injury_bar_above_floor": true,
+      "injury_bar_abs_steps": 7.5,
+      "recall_harm_bar_above_floor": true,
+      "recovery_fraction_bar": 0.5,
+      "step": 0.006666666666666667,
+      "test_n": 150
+    },
+    "reason": "at least one arm could not produce a delayed accuracy; the B1 injury contrast is undefined",
+    "verdict": "INSTRUMENT_UNREADABLE"
+  },
+  "obligations": {
+    "agent_invoked": false,
+    "beyond_17520_reads": 0,
+    "fit_budget_cap": 50,
+    "fit_budget_respected": true,
+    "fit_budget_used": 3,
+    "fits_by_arm": {
+      "clean_reference": 1,
+      "injected_impute_ema": 1,
+      "injected_impute_linear": 1
+    },
+    "flying_files_untouched": [
+      "AGENTS.md",
+      "README.md",
+      "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md",
+      "docs/SUCCESSOR_BRIEF_2026-08-22.md"
+    ],
+    "injection_after_load": true,
+    "injection_ledger_path": "_scratch/cls1/cls1_v1/injection_ledger.json",
+    "llm_calls": 0,
+    "loader_output_unmutated": true,
+    "missing_signal_after_inject": true,
+    "missing_signal_on_clean": false,
+    "nab_reads": 0,
+    "noaa_2025_reads": 0,
+    "preregistered_gates_rewritten": false,
+    "rate_scan": false,
+    "smd_reads": 0,
+    "test_bytes_touched": false,
+    "test_sha_unchanged": true,
+    "third_impute": false,
+    "two_run": "BITWISE_IDENTICAL",
+    "verification_fits": 3,
+    "yahoo_all_reads": 0,
+    "zip_bytes_unchanged": true
+  },
+  "observation_clean": {
+    "impute_ops_would_be_skipped": true,
+    "mean_missing_fraction": 0.0,
+    "missing_run_count": 0,
+    "missing_signal_present": false,
+    "recent.coverage": 1.0,
+    "recent.maximum_missing_run_length": 0
+  },
+  "observation_injected": {
+    "fast_agent_missing_only_ops": [
+      "impute_ar",
+      "impute_ema",
+      "impute_fft",
+      "impute_linear",
+      "impute_ssm",
+      "period_complete",
+      "period_median_complete"
+    ],
+    "impute_ops_would_be_skipped": false,
+    "mean_missing_fraction": 0.14666666666666667,
+    "missing_run_count": 970,
+    "missing_signal_present": true,
+    "per_series_count": 50,
+    "recent.coverage": 0.8533333333333334,
+    "recent.maximum_missing_run_length": 5
+  },
+  "out_of_book": [
+    "per-row 15% point MCAR on L=150 makes P(complete series)=(0.85)^150≈2.587e-11; identity-as-drop-rows therefore kept 0 fit rows.  This is a structural collision between the pre-registered identity NaN policy and the pre-registered injection, not a rate scan.",
+    "CohortHistoryPublicToolGateway requires 2*192 points; GunPoint L=150 cannot enter that forecast history window.  Missing signal was read with the same _window_summary coverage / max-run formulas Fast Agent gates on, treating each held-in series as one window.",
+    "injected_impute_linear delayed acc=0.793333 vs clean 0.820000 (Δ=-0.026667); reported as a diagnostic only because identity delayed is null.",
+    "injected_impute_ema delayed acc=0.793333 vs clean 0.820000 (Δ=-0.026667); reported as a diagnostic only because identity delayed is null.",
+    "evaluation/functional/run_e2_t6_45_frep_a5a3_replay.py remains untracked; Part 0 allowlist listed the 45-frep artifacts and the 44-audit runner, not that replay runner."
+  ],
+  "protocol_version": "t6_cls1_qualification_gate_v1",
+  "run_id": "cls1_v1",
+  "site": {
+    "archive": "data/ucr_task_context/GunPoint.zip",
+    "dataset": "GunPoint",
+    "fit_idx": [
+      0,
+      1,
+      3,
+      6,
+      7,
+      8,
+      10,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      27,
+      28,
+      29,
+      30,
+      33,
+      34,
+      35,
+      37,
+      38,
+      39,
+      42,
+      45,
+      47,
+      48,
+      49
+    ],
+    "fit_n": 35,
+    "held_in": "official TRAIN (only injectable / processable region)",
+    "identity_nan_policy": "drop training rows that contain any NaN; honest no-treatment equals lost row count",
+    "inject_seed": 20260825,
+    "ledger_path": "_scratch/cls1/cls1_v1/injection_ledger.json",
+    "missing_form": "point_mcar",
+    "missing_rate": 0.15,
+    "n_missing_per_row": 22,
+    "query": "official TEST (delayed scoring; byte-zero-touch)",
+    "support_class_counts": {
+      "0": 7,
+      "1": 8
+    },
+    "support_fraction": 0.3,
+    "support_idx": [
+      2,
+      4,
+      5,
+      9,
+      11,
+      19,
+      26,
+      31,
+      32,
+      36,
+      40,
+      41,
+      43,
+      44,
+      46
+    ],
+    "support_n": 15,
+    "support_seed": 2026082501
+  },
+  "task_context": {
+    "deployment_constraints": {
+      "constraint_id": "classification-fixed-consumer-v1",
+      "fixed_downstream_model_id": "fixed:classification-consumer-v1",
+      "maximum_candidates": 2,
+      "maximum_modified_fraction": 0.1,
+      "model_policy": "fixed",
+      "schema_version": "deployment-constraint/1"
+    },
+    "quality_contract": {
+      "abstention_conditions": [
+        "insufficient_public_evidence",
+        "no_effect_distinct_candidate",
+        "risk_guard_failure",
+        "capability_unavailable"
+      ],
+      "contract_id": "classification-global-coarse-quality-v1",
+      "evidence_expectations": [
+        "public_observation",
+        "fixed_public_probe_panel",
+        "candidate_execution_receipt"
+      ],
+      "harms": [
+        "unnecessary_modification",
+        "global_over_smoothing",
+        "future_information_use",
+        "out_of_scope_change"
+      ],
+      "objective": "preserve_class_evidence",
+      "preserve": [
+        "observed_values_outside_suspect_region",
+        "temporal_order",
+        "series_length",
+        "class_relevant_structure"
+      ],
+      "schema_version": "task-quality-contract/1",
+      "task_type": "classification",
+      "verification_dimensions": [
+        "operator_legality",
+        "execution_success",
+        "finite_output",
+        "shape_preservation",
+        "effect_distinctness",
+        "modification_scope"
+      ]
+    },
+    "schema_version": "task-context/1",
+    "task_spec": {
+      "downstream_model_class": "ridge-raw-plus-difference-v1",
+      "forbidden_modifications": [],
+      "horizon": null,
+      "label_availability": "train_labels",
+      "metric": {
+        "direction": "higher_is_better",
+        "name": "accuracy"
+      },
+      "target_semantics": "class_label",
+      "task_type": "classification"
+    }
+  }
+}

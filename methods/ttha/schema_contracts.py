@@ -24,6 +24,10 @@ _STAGE_SCHEMA_FILES = {
     "fast_propose_v1": "fast_propose_v1.json",
     "fast_select_v1": "fast_select_v1.json",
     "slow_edit_v1": "slow_edit_v1.json",
+    # P4U-v3：风险拒绝路径上 Slow 只写一条 Scope clause，manifest 骨架由
+    # Runtime 装配。自足 schema，无注入点——它不描述 manifest，所以
+    # slow_edit_v1 的四处 $defs 注入与它无关。
+    "slow_scope_clause_v1": "slow_scope_clause_v1.json",
 }
 
 
@@ -154,7 +158,13 @@ def load_stage_schema(name: str) -> dict[str, Any]:
         memory_properties = memory_entry.get("properties")
         if not isinstance(learned_properties, dict) or not isinstance(memory_properties, dict):
             raise ValueError("deployable entry schema properties drifted")
-        learned_properties["skill_kind"] = {"const": "capability"}
+        # Two kinds are deployable into skills/learned/.  The narrowing to a
+        # bare const predated SkillKind.SAFETY having any writer, and it is
+        # what made the declared safety kind unreachable end to end.  The
+        # route table still decides authorization -- only RISK_GAP pairs
+        # target_class=safety with skill_kind=safety -- so widening the shape
+        # here does not widen what any cause may do.
+        learned_properties["skill_kind"] = {"enum": ["capability", "safety"]}
         learned_properties["observable_applicability"] = {
             "$ref": "#/$defs/applicability"
         }
@@ -324,6 +334,14 @@ def _validate_local_schema(
         minimum_length = schema.get("minLength")
         if isinstance(minimum_length, int) and len(value) < minimum_length:
             raise LocalSchemaError(f"{path} is too short")
+        # #21 CONTRACT_ENFORCEMENT_CHAIN_GAP: maxLength was advertised in
+        # stage schemas and enforced at the compiler, but never here, so a
+        # violation passed the retry loop that exists to teach the contract
+        # and died at a gate with no second attempt.  Implemented exactly as
+        # its minLength counterpart; no new kind of constraint is added.
+        maximum_length = schema.get("maxLength")
+        if isinstance(maximum_length, int) and len(value) > maximum_length:
+            raise LocalSchemaError(f"{path} is too long")
         pattern = schema.get("pattern")
         if isinstance(pattern, str) and re.fullmatch(pattern, value) is None:
             raise LocalSchemaError(f"{path} does not match pattern")

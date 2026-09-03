@@ -26,7 +26,12 @@ def _trend(noise=0.1, seed=2):
     return 0.02 * T + np.random.default_rng(seed).normal(0, noise, N)
 
 
-IMPUTERS = [imp.impute_linear, imp.impute_fft, imp.impute_kalman, imp.period_complete]
+IMPUTERS = [
+    imp.impute_linear,
+    imp.impute_fft,
+    imp.impute_kalman,
+    imp.period_complete,
+]
 DENOISERS = [den.denoise_savgol, den.denoise_median, den.denoise_stl, den.denoise_wavelet]
 
 
@@ -57,6 +62,27 @@ def test_imputer_preserves_observed(fn):
 def test_impute_fft_no_missing_is_identity():
     x = _season()
     assert np.allclose(imp.impute_fft(x), x), "impute_fft 无缺失时应恒等（不得低通改动已观测）"
+
+
+def test_period_median_uses_only_original_donors_and_pointwise_fallback():
+    x = np.array([100.0, np.nan, 1.0, 30.0, 3.0, 50.0, np.nan, 70.0, np.nan, 90.0])
+    out = imp.period_median_complete(x, period=2)
+    # t=6 is 3; t=8 must ignore that fill and use original donors (3, 1) -> 2.
+    assert out[6] == 3.0
+    assert out[8] == 2.0
+    assert out[1] == 50.5  # insufficient donors -> linear fallback only here
+    np.testing.assert_allclose(out, imp.period_median_complete(x, period=2))
+    np.testing.assert_array_equal(out[~np.isnan(x)], x[~np.isnan(x)])
+
+    for kwargs in (
+        {"period": 1},
+        {"period": 2.0},
+        {"period": 2, "cycles": 0},
+        {"period": 2, "min_donors": 0},
+        {"period": 2, "cycles": 2, "min_donors": 3},
+    ):
+        with pytest.raises(ValueError):
+            imp.period_median_complete(x, **kwargs)
 
 
 # ── 周期估计：恢复已知周期，纯趋势/白噪返回 0 ─────────────────────────────

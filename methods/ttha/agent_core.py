@@ -111,6 +111,27 @@ class AgentStageResult:
     validation_error_codes: tuple[str, ...] = ()
 
 
+def _assistant_turn(assistant_text: str) -> dict[str, object]:
+    """The model's own turn, written back into the conversation.
+
+    A relay can return an empty completion.  Appending that verbatim puts a
+    message with empty content into the history, and the *next* AgentRequest
+    then fails validation with "message content must be a non-empty string" --
+    so an empty response does not fail the stage it happened in, it kills the
+    whole run one call later.  Observed on the electricity development run,
+    which died at Task 7 of 9.
+
+    An empty turn is recorded as an explicit placeholder instead.  The
+    conversation stays well-formed, the retry still sees that the previous
+    answer was unusable, and nothing about the stage contract changes.
+    """
+    text = assistant_text if isinstance(assistant_text, str) else ""
+    return {
+        "role": "assistant",
+        "content": text if text.strip() else "(the previous response was empty)",
+    }
+
+
 def _skill_prompt(skill: object) -> dict[str, object]:
     return {
         "skill_id": skill.skill_id,
@@ -179,6 +200,29 @@ class TTHAAgentCore:
                 f'{output_schema_name}>}}'
             ),
         }
+        # Wave 4 修复（2026-08-13 checker/reviewer 裁决）：SLOW edit 阶段
+        # 教学 no_proposal 信封（后端要求字段集精确相等 + reason_code
+        # 下划线枚举——此前模型从未被教过该信封 → 弃权意图坍缩成
+        # manifest（Wave 4a edit_id=abstain-... 回退证据））
+        if role is AgentRole.SLOW and stage == "edit":
+            response_contract.update(
+                {
+                    "no_proposal_allowed": True,
+                    "no_proposal_rule": (
+                        "If the public evidence is insufficient to justify "
+                        "any edit, return a no_proposal envelope instead of "
+                        "a stage_result. Use the exact field set below."
+                    ),
+                    "no_proposal_template": {
+                        "schema_version": "agent-envelope/1",
+                        "kind": "no_proposal",
+                        "stage": "edit",
+                        "reason_code": (
+                            "insufficient_public_evidence | "
+                            "no_authorized_minimal_edit | risk_too_high"),
+                    },
+                }
+            )
         if tool_schemas:
             response_contract.update(
                 {
@@ -186,7 +230,12 @@ class TTHAAgentCore:
                     "tool_request_rule": (
                         "Request exactly one allowed tool, then stop the response "
                         "immediately and wait for its tool-result/1 message. Do not "
-                        "append another tool request or a stage result."
+                        "append another tool request or a stage result. "
+                        "A tool_request envelope carries exactly these four "
+                        "fields: schema_version, kind, call_id, tool_name, "
+                        "arguments. It must NOT carry a stage field -- only a "
+                        "stage_result does. Any extra field makes the envelope "
+                        "invalid."
                     ),
                     "tool_request_template": {
                         "schema_version": "agent-envelope/1",
@@ -286,16 +335,35 @@ class TTHAAgentCore:
             nonlocal messages, validation_failures, call_index
             if validation_failures >= validation_retries:
                 return False
+            outer_hint = (
+                '{"schema_version":"agent-envelope/1",'
+                '"kind":"stage_result",'
+                f'"stage":"{stage}","payload":{{...}}}}'
+            )
+            # 重试反馈必须保留工具这条路（2026-08-19）：此前只回显
+            # stage_result 模板，于是一次无效的 tool_request 之后，模型被
+            # 推去放弃工具调用直接交结果——实测表现为 tools=0、提案为空、
+            # 以 ABSTAIN 收尾。工具可用时把 tool_request 模板一并回显。
+            if tool_schemas:
+                outer_hint += (
+                    ' OR {"schema_version":"agent-envelope/1",'
+                    '"kind":"tool_request","call_id":"...",'
+                    '"tool_name":"...","arguments":{...}}'
+                    ' (a tool_request carries no stage field)'
+                )
+            if role is AgentRole.SLOW and stage == "edit":
+                outer_hint += (
+                    ' OR {"schema_version":"agent-envelope/1",'
+                    '"kind":"no_proposal","stage":"edit",'
+                    '"reason_code":"<one of: insufficient_public_evidence | '
+                    'no_authorized_minimal_edit | risk_too_high>"}'
+                )
             correction = {
                 "schema_version": "stage-validation-error/2",
                 "stage": stage,
                 "error_code": error_code,
                 "public_message": public_message,
-                "required_outer_format": (
-                    '{"schema_version":"agent-envelope/1",'
-                    '"kind":"stage_result",'
-                    f'"stage":"{stage}","payload":{{...}}}}'
-                ),
+                "required_outer_format": outer_hint,
                 "instruction": (
                     "Return exactly one corrected JSON envelope. Reuse the unchanged "
                     "public input and stage schema; do not explain the correction."
@@ -303,7 +371,7 @@ class TTHAAgentCore:
             }
             messages = (
                 *messages,
-                {"role": "assistant", "content": response.assistant_text},
+                _assistant_turn(response.assistant_text),
                 {
                     "role": "user",
                     "content": canonical_json_bytes(correction).decode("utf-8"),
@@ -314,9 +382,18 @@ class TTHAAgentCore:
             call_index += 1
             return True
 
-        def raise_with_validation_context(exc: Exception) -> None:
+        def raise_with_validation_context(
+            exc: Exception, response: AgentResponse | None = None
+        ) -> None:
             setattr(exc, "validation_retry_count", validation_failures)
             setattr(exc, "validation_error_codes", tuple(validation_error_codes))
+            # 诊断附件（2026-08-19）：信封失败时把模型最后一次输出的开头
+            # 带出来。此前只知道"invalid agent-envelope/1 response"，看不到
+            # 模型实际写了什么，于是无法把"格式退化"和"语义拒答"分开，只能
+            # 猜。附件不进入任何判据，只进报告。
+            if response is not None:
+                setattr(exc, "last_assistant_text",
+                        str(response.assistant_text or "")[:500])
             raise exc
 
         while True:
@@ -352,7 +429,8 @@ class TTHAAgentCore:
                 ):
                     continue
                 raise_with_validation_context(
-                    AgentProtocolError("invalid agent-envelope/1 response")
+                    AgentProtocolError("invalid agent-envelope/1 response"),
+                    response,
                 )
             envelope = response.parsed_envelope
             if envelope["kind"] == "stage_result":
@@ -442,7 +520,7 @@ class TTHAAgentCore:
             validate_local_schema(tool_result, tool_result_schema, path="tool_result")
             messages = (
                 *messages,
-                {"role": "assistant", "content": response.assistant_text},
+                _assistant_turn(response.assistant_text),
                 {
                     "role": "user",
                     "content": canonical_json_bytes(tool_result).decode("utf-8"),

@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 
 import numpy as np
+import pytest
 
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
 from SelfEvolvingHarnessTS.contracts.harness import EditManifest, EditOperation
@@ -249,6 +250,15 @@ def test_retrieval_miss_runs_a_positive_applicability_patch_cycle(tmp_path):
     )
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "LOCALIZATION integration route dormant since 2799d0f "
+        "(no external_region operators); unit coverage remains in "
+        "test_first_fault.py; re-arm requires production routing "
+        "redesign — mainline debt 2026-08-24"
+    ),
+)
 def test_bootstrap_patch_reaches_a_scientific_reject_verdict(tmp_path):
     seeded = _seed_broad_localization_procedure(tmp_path / "patch-seed")
     result = run_cycles(

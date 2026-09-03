@@ -40,10 +40,18 @@ def _freeze_json(value: Any) -> Any:
 
 
 def _modified_indices(raw: np.ndarray, prepared: np.ndarray) -> tuple[int, ...]:
+    """风险修改指数（Risk-contract apparatus repair，用户裁决
+    2026-08-13）：**只统计源窗口为有限观测且被改变的位置**——NaN 位置
+    被填成有限值不算"修改已有观测"（impute_* 契约=只填缺失、绝不改
+    已有观测；Consumer baseline 本就无条件线性填补——门不应阻止修复
+    原本就缺失的数据）。repair_level_shift/winsorize 等改已有观测的
+    算子照常计数（0.35 上限继续对其生效）。"""
     if raw.shape != prepared.shape:
         return tuple(range(max(raw.size, prepared.size)))
+    raw_finite = ~np.isnan(raw)
     equal = np.equal(raw, prepared) | (np.isnan(raw) & np.isnan(prepared))
-    return tuple(int(index) for index in np.flatnonzero(~equal))
+    changed = ~equal
+    return tuple(int(index) for index in np.flatnonzero(changed & raw_finite))
 
 
 def _contiguous_regions(indices: Sequence[int]) -> tuple[tuple[int, int], ...]:
@@ -271,6 +279,7 @@ def verify_candidate(
         return CandidateExecutionArtifact(candidate, receipt, output, trace)
 
     modified = _modified_indices(raw, output)
+    # 只计已观测值改写；缺失填补不计入（cap 语义 = 保护已观测数据）。
     modified_fraction = len(modified) / max(raw.size, 1)
     normalized_regions = _region_fractions(_contiguous_regions(modified), raw.size)
     targeting_modes = {

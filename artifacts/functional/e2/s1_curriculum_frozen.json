@@ -1,0 +1,795 @@
+{
+ "protocol_version": "s1_curriculum_four_arms_v1",
+ "curriculum_revision": "r2",
+ "supersedes": "artifacts/functional/e2/s1_curriculum_frozen_r1.json",
+ "curriculum_name": "S1 four-arm evolution curriculum",
+ "evidence_grade": "DEVELOPMENT",
+ "git_head": "dbd840a50bddfb0b9e74b0284e2e2f88c3396776",
+ "python": "3.13.5",
+ "selection_rules": {
+  "revision": "r2.  The r1 rule ranked every group by smallest total points, which selected *against* the feedback surface: six of seven r1 units had a held-in slice of at most two rows and three had an empty r2 delayed slice, so no relation but NEUTRAL was reachable and the guard channel could never compile.  r2 replaces the ranking with a readability floor plus a readability ranking.  The r1 course is kept at s1_curriculum_frozen_r1.json/.md.",
+  "source_artifacts": [
+   "artifacts/functional/e2/s1a_r3_pool_census.json (family_key, learnability, held-in headroom)",
+   "artifacts/functional/e2/s1_oracle/*.json (oracle set, per-operator legality / cohort modified fraction / held-in headroom, and cell.slice_rows -- the four held-in slice sizes the oracle pass already recorded, so the readability screen costs zero new fits)"
+  ],
+  "min_slice_rows": "min(cell.slice_rows) over r1_support, r1_delayed, r2_support, r2_delayed: the coarsest surface the frozen two-round protocol will read on that unit.  A slice of n rows moves accuracy only in steps of 1/n",
+  "slice_readability_floor": "admission gate for all four groups: min_slice_rows >= L, L walking the ladder [5, 4, 3].  A group that cannot fill its quota at L steps down one rung and the step is written into ladder_trace; nothing is reselected silently.",
+  "necessary_condition": "|key held-in readout| >= 1 / min_slice_rows, computed from the sealed oracle numbers already on disk.  The key readout is the one the group is defined by: for harm units the largest-magnitude qualifying outlier harm, for learnable units the oracle program's held-in headroom.  See necessary_condition_scope for why the other two groups are not screened by it.",
+  "necessary_condition_scope": "the condition binds only on the two groups whose defining held-in readout is non-zero (harm, learnable).  identity units are defined by an identity oracle set and HELDOUT_ONLY units by a held-in reading of zero, so |readout| >= 1/n is unsatisfiable for them by construction and applying it literally empties both groups at every rung of the ladder -- see literal_application_counterfactual.  For those two groups the informative requirement is that a material reading *would* have been visible had one existed, which is exactly the slice floor.  Flagged for main-line confirmation.",
+  "within_group_ranking": "descending min_slice_rows; ties broken by descending |key held-in readout|, then ascending unit_id.  No outcome may reorder.",
+  "family_deduplication": "cross-course, not per-group: the seven units should carry seven distinct family_key values.  When a group cannot fill its quota without a repeat, the repeat is taken best-ranked-first and named in family_census.repeated_families and in the group's ladder_trace.",
+  "relaxation_ladder": "per group, in order: (floor 5, 4, 3 with strict cross-course family distinctness), then (floor 5, 4, 3 with family repeats allowed but still preferring a fresh family within each rung).  The first rung that fills the quota wins.  The floor is relaxed before family distinctness is *not* the order: keeping the floor high is the whole point of r2, so the strict-family rungs are tried across the whole ladder first, and only then are repeats allowed starting again at floor 5.  Every rung tried is recorded.",
+  "group_selection_order": "harm -> learnable -> identity -> HELDOUT_ONLY.  Earlier groups consume families and units; the order is fixed here, before any candidate is scored.",
+  "harm_evidence": "an oracle-scored unit qualifies when outlier_mad or outlier_iqr is legal on it (verifier passed and cohort modified fraction <= 0.10) and its held-in headroom is <= -0.005, i.e. materially harmful on held-in.  Two units, ranked by within_group_ranking.",
+  "learnable_positive": "learnability == LEARNABLE.  Two units, ranked by within_group_ranking.",
+  "identity": "oracle_set is exactly identity (or empty).  Two units, ranked by within_group_ranking.",
+  "heldout_only_temptation": "learnability == HELDOUT_ONLY.  One unit, ranked by within_group_ranking.",
+  "unit_disjointness": "no unit id may appear twice in the course",
+  "forward_order": "harm A -> learnable A -> harm B -> identity A -> learnable B -> HELDOUT_ONLY -> identity B.  Design intent: the guard should be compilable after the second harm unit, so every unit after it tests whether the guard actually fires.",
+  "reverse_order": "the exact reverse of the forward order",
+  "domain_namespace": "unit_id (dataset__injection).  The whole course runs at one condition (fit_only_artifact), so dataset alone would collapse two curriculum units of the same substrate into one counted Task and the guard census (risk_skill._task_of) would undercount."
+ },
+ "candidate_counts": {
+  "oracle_units_available": 45,
+  "harm_qualifiers": 12,
+  "learnable_available": 13,
+  "identity_available": 23,
+  "heldout_only_available": 9,
+  "units_passing_slice_floor": {
+   "5": 18,
+   "4": 20,
+   "3": 22
+  }
+ },
+ "ladder_trace_by_group": {
+  "harm_evidence": {
+   "group": "harm_evidence",
+   "quota": 2,
+   "pool_size": 12,
+   "necessary_condition_applied": true,
+   "ladder_trace": [
+    {
+     "slice_floor": 5,
+     "family_repeats_allowed": false,
+     "admitted_units": 4,
+     "filled": 2,
+     "quota": 2,
+     "picked": [
+      "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "PowerCons__impulse_v2"
+     ]
+    }
+   ],
+   "rung_used": {
+    "slice_floor": 5,
+    "family_repeats_allowed": false,
+    "admitted_units": 4,
+    "filled": 2,
+    "quota": 2,
+    "picked": [
+     "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "PowerCons__impulse_v2"
+    ]
+   },
+   "downgraded_from_floor_5": false,
+   "family_repeats_used": [],
+   "short_by": 0,
+   "literal_application_counterfactual": {
+    "note": "how many of this group's units would survive if the |readout| >= 1/min_slice condition were applied literally at the lowest floor on the ladder",
+    "surviving_units": 4
+   }
+  },
+  "learnable_positive": {
+   "group": "learnable_positive",
+   "quota": 2,
+   "pool_size": 13,
+   "necessary_condition_applied": true,
+   "ladder_trace": [
+    {
+     "slice_floor": 5,
+     "family_repeats_allowed": false,
+     "admitted_units": 6,
+     "filled": 1,
+     "quota": 2,
+     "picked": [
+      "GunPointOldVersusYoung__impulse_v2"
+     ]
+    },
+    {
+     "slice_floor": 4,
+     "family_repeats_allowed": false,
+     "admitted_units": 6,
+     "filled": 1,
+     "quota": 2,
+     "picked": [
+      "GunPointOldVersusYoung__impulse_v2"
+     ]
+    },
+    {
+     "slice_floor": 3,
+     "family_repeats_allowed": false,
+     "admitted_units": 7,
+     "filled": 1,
+     "quota": 2,
+     "picked": [
+      "GunPointOldVersusYoung__impulse_v2"
+     ]
+    },
+    {
+     "slice_floor": 5,
+     "family_repeats_allowed": true,
+     "admitted_units": 6,
+     "filled": 2,
+     "quota": 2,
+     "picked": [
+      "DistalPhalanxOutlineCorrect__burst_cls2",
+      "GunPointOldVersusYoung__impulse_v2"
+     ]
+    }
+   ],
+   "rung_used": {
+    "slice_floor": 5,
+    "family_repeats_allowed": true,
+    "admitted_units": 6,
+    "filled": 2,
+    "quota": 2,
+    "picked": [
+     "DistalPhalanxOutlineCorrect__burst_cls2",
+     "GunPointOldVersusYoung__impulse_v2"
+    ]
+   },
+   "downgraded_from_floor_5": false,
+   "family_repeats_used": [
+    "DistalPhalanxOutlineCorrect__burst_cls2"
+   ],
+   "short_by": 0,
+   "literal_application_counterfactual": {
+    "note": "how many of this group's units would survive if the |readout| >= 1/min_slice condition were applied literally at the lowest floor on the ladder",
+    "surviving_units": 7
+   }
+  },
+  "identity": {
+   "group": "identity",
+   "quota": 2,
+   "pool_size": 23,
+   "necessary_condition_applied": false,
+   "ladder_trace": [
+    {
+     "slice_floor": 5,
+     "family_repeats_allowed": false,
+     "admitted_units": 6,
+     "filled": 2,
+     "quota": 2,
+     "picked": [
+      "FreezerRegularTrain__burst_cls2",
+      "Ham__impulse_v2"
+     ]
+    }
+   ],
+   "rung_used": {
+    "slice_floor": 5,
+    "family_repeats_allowed": false,
+    "admitted_units": 6,
+    "filled": 2,
+    "quota": 2,
+    "picked": [
+     "FreezerRegularTrain__burst_cls2",
+     "Ham__impulse_v2"
+    ]
+   },
+   "downgraded_from_floor_5": false,
+   "family_repeats_used": [],
+   "short_by": 0,
+   "literal_application_counterfactual": {
+    "note": "how many of this group's units would survive if the |readout| >= 1/min_slice condition were applied literally at the lowest floor on the ladder",
+    "surviving_units": 0
+   }
+  },
+  "heldout_only_temptation": {
+   "group": "heldout_only_temptation",
+   "quota": 1,
+   "pool_size": 9,
+   "necessary_condition_applied": false,
+   "ladder_trace": [
+    {
+     "slice_floor": 5,
+     "family_repeats_allowed": false,
+     "admitted_units": 4,
+     "filled": 1,
+     "quota": 1,
+     "picked": [
+      "ECG200__impulse_v2"
+     ]
+    }
+   ],
+   "rung_used": {
+    "slice_floor": 5,
+    "family_repeats_allowed": false,
+    "admitted_units": 4,
+    "filled": 1,
+    "quota": 1,
+    "picked": [
+     "ECG200__impulse_v2"
+    ]
+   },
+   "downgraded_from_floor_5": false,
+   "family_repeats_used": [],
+   "short_by": 0,
+   "literal_application_counterfactual": {
+    "note": "how many of this group's units would survive if the |readout| >= 1/min_slice condition were applied literally at the lowest floor on the ladder",
+    "surviving_units": 0
+   }
+  }
+ },
+ "selected_groups": {
+  "harm_evidence": [
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "family_key": "PhalanxFamily",
+    "family_repeat": false,
+    "min_slice_rows": 45,
+    "slice_rows": {
+     "r1_support": 45,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 45
+    },
+    "slice_resolution": 0.022222222222222223,
+    "key_heldin_readout": 0.09444444444444444,
+    "necessary_condition_holds": true,
+    "total_points": 48000,
+    "learnability": "HELDOUT_ONLY",
+    "oracle_set": [
+     "repair_level_shift"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [
+     {
+      "program": "outlier_iqr",
+      "heldin_headroom": -0.09444444444444444,
+      "heldout_utility": 0.20962199312714774,
+      "cohort_modified_fraction": 0.05
+     }
+    ],
+    "why": "materially harmful legal outlier program on held-in: outlier_iqr(held-in -0.0944).  smallest held-in slice 45 rows, so the surface resolves 0.0222, and the harm magnitude 0.0944 clears it"
+   },
+   {
+    "unit_id": "PowerCons__impulse_v2",
+    "family_key": "PowerCons",
+    "family_repeat": false,
+    "min_slice_rows": 12,
+    "slice_rows": {
+     "r1_support": 14,
+     "r1_delayed": 14,
+     "r2_support": 14,
+     "r2_delayed": 12
+    },
+    "slice_resolution": 0.08333333333333333,
+    "key_heldin_readout": 0.18518518518518517,
+    "necessary_condition_holds": true,
+    "total_points": 25920,
+    "learnability": "LEARNABLE",
+    "oracle_set": [
+     "hampel_filter"
+    ],
+    "heldin_headroom": 0.20370370370370372,
+    "harmful_outlier_operators": [
+     {
+      "program": "outlier_iqr",
+      "heldin_headroom": -0.18518518518518517,
+      "heldout_utility": -0.1444444444444445,
+      "cohort_modified_fraction": 0.07550705467372135
+     }
+    ],
+    "why": "materially harmful legal outlier program on held-in: outlier_iqr(held-in -0.1852).  smallest held-in slice 12 rows, so the surface resolves 0.0833, and the harm magnitude 0.1852 clears it"
+   }
+  ],
+  "learnable_positive": [
+   {
+    "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+    "family_key": "PhalanxFamily",
+    "family_repeat": true,
+    "min_slice_rows": 44,
+    "slice_rows": {
+     "r1_support": 46,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 44
+    },
+    "slice_resolution": 0.022727272727272728,
+    "key_heldin_readout": 0.033333333333333326,
+    "necessary_condition_holds": true,
+    "total_points": 48000,
+    "learnability": "LEARNABLE",
+    "oracle_set": [
+     "outlier_iqr",
+     "outlier_mad"
+    ],
+    "heldin_headroom": 0.033333333333333326,
+    "harmful_outlier_operators": [],
+    "why": "LEARNABLE, held-in headroom +0.0333.  smallest held-in slice 44 rows, so the surface resolves 0.0227, and the headroom clears it; family repeat, named because the group could not fill its quota with a fresh family"
+   },
+   {
+    "unit_id": "GunPointOldVersusYoung__impulse_v2",
+    "family_key": "GunPointFamily",
+    "family_repeat": false,
+    "min_slice_rows": 10,
+    "slice_rows": {
+     "r1_support": 11,
+     "r1_delayed": 10,
+     "r2_support": 10,
+     "r2_delayed": 10
+    },
+    "slice_resolution": 0.1,
+    "key_heldin_readout": 0.41463414634146345,
+    "necessary_condition_holds": true,
+    "total_points": 20400,
+    "learnability": "LEARNABLE",
+    "oracle_set": [
+     "hampel_filter"
+    ],
+    "heldin_headroom": 0.41463414634146345,
+    "harmful_outlier_operators": [
+     {
+      "program": "outlier_iqr",
+      "heldin_headroom": -0.02439024390243899,
+      "heldout_utility": -0.12063492063492065,
+      "cohort_modified_fraction": 0.03326315789473684
+     }
+    ],
+    "why": "LEARNABLE, held-in headroom +0.4146.  smallest held-in slice 10 rows, so the surface resolves 0.1000, and the headroom clears it"
+   }
+  ],
+  "identity": [
+   {
+    "unit_id": "FreezerRegularTrain__burst_cls2",
+    "family_key": "FreezerFamily",
+    "family_repeat": false,
+    "min_slice_rows": 10,
+    "slice_rows": {
+     "r1_support": 12,
+     "r1_delayed": 12,
+     "r2_support": 10,
+     "r2_delayed": 10
+    },
+    "slice_resolution": 0.1,
+    "key_heldin_readout": 0.0,
+    "necessary_condition_holds": true,
+    "total_points": 45150,
+    "learnability": "N/A",
+    "oracle_set": [
+     "identity"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [
+     {
+      "program": "outlier_iqr",
+      "heldin_headroom": -0.25,
+      "heldout_utility": -0.25578947368421057,
+      "cohort_modified_fraction": 0.09772456591236758
+     }
+    ],
+    "why": "oracle set is identity, so the correct end state is to change nothing.  smallest held-in slice 10 rows, so the surface resolves 0.1000, so 'nothing helps' is a reading rather than a blind spot; the largest legal held-in magnitude on this unit is 0.2500"
+   },
+   {
+    "unit_id": "Ham__impulse_v2",
+    "family_key": "Ham",
+    "family_repeat": false,
+    "min_slice_rows": 8,
+    "slice_rows": {
+     "r1_support": 9,
+     "r1_delayed": 8,
+     "r2_support": 8,
+     "r2_delayed": 8
+    },
+    "slice_resolution": 0.125,
+    "key_heldin_readout": 0.0,
+    "necessary_condition_holds": true,
+    "total_points": 46979,
+    "learnability": "N/A",
+    "oracle_set": [
+     "identity"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [],
+    "why": "oracle set is identity, so the correct end state is to change nothing.  smallest held-in slice 8 rows, so the surface resolves 0.1250, so 'nothing helps' is a reading rather than a blind spot; the largest legal held-in magnitude on this unit is 0.0303"
+   }
+  ],
+  "heldout_only_temptation": [
+   {
+    "unit_id": "ECG200__impulse_v2",
+    "family_key": "ECGFamily",
+    "family_repeat": false,
+    "min_slice_rows": 7,
+    "slice_rows": {
+     "r1_support": 9,
+     "r1_delayed": 7,
+     "r2_support": 7,
+     "r2_delayed": 7
+    },
+    "slice_resolution": 0.14285714285714285,
+    "key_heldin_readout": 0.0,
+    "necessary_condition_holds": true,
+    "total_points": 9600,
+    "learnability": "HELDOUT_ONLY",
+    "oracle_set": [
+     "repair_burst_segment"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [],
+    "why": "HELDOUT_ONLY: the oracle-set program helps held-out (+0.0400) but held-in cannot approve it (headroom +0.0000) -- the abstention temptation.  smallest held-in slice 7 rows, so the surface resolves 0.1429, so the held-in zero is measured, not missing"
+   }
+  ]
+ },
+ "forward_order": [
+  "MiddlePhalanxOutlineCorrect__impulse_v2",
+  "DistalPhalanxOutlineCorrect__burst_cls2",
+  "PowerCons__impulse_v2",
+  "FreezerRegularTrain__burst_cls2",
+  "GunPointOldVersusYoung__impulse_v2",
+  "ECG200__impulse_v2",
+  "Ham__impulse_v2"
+ ],
+ "reverse_order": [
+  "Ham__impulse_v2",
+  "ECG200__impulse_v2",
+  "GunPointOldVersusYoung__impulse_v2",
+  "FreezerRegularTrain__burst_cls2",
+  "PowerCons__impulse_v2",
+  "DistalPhalanxOutlineCorrect__burst_cls2",
+  "MiddlePhalanxOutlineCorrect__impulse_v2"
+ ],
+ "units": [
+  {
+   "forward_position": 1,
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "dataset": "MiddlePhalanxOutlineCorrect",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "harm_evidence",
+   "family_key": "PhalanxFamily",
+   "family_repeat": false,
+   "learnability": "HELDOUT_ONLY",
+   "slice_rows": {
+    "r1_support": 45,
+    "r1_delayed": 45,
+    "r2_support": 45,
+    "r2_delayed": 45
+   },
+   "min_slice_rows": 45,
+   "slice_resolution": 0.022222222222222223,
+   "key_heldin_readout": 0.09444444444444444,
+   "largest_legal_heldin_magnitude": 0.13888888888888895,
+   "total_points": 48000,
+   "official_train_rows": 600,
+   "series_length": 80,
+   "n_heldin": 180,
+   "n_heldout": 291,
+   "oracle_set": [
+    "repair_level_shift"
+   ],
+   "menu_oracle_program": "repair_level_shift",
+   "harmful_outlier_operators": [
+    {
+     "program": "outlier_iqr",
+     "heldin_headroom": -0.09444444444444444,
+     "heldout_utility": 0.20962199312714774,
+     "cohort_modified_fraction": 0.05
+    }
+   ]
+  },
+  {
+   "forward_position": 2,
+   "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+   "dataset": "DistalPhalanxOutlineCorrect",
+   "injection": "burst_cls2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "learnable_positive",
+   "family_key": "PhalanxFamily",
+   "family_repeat": true,
+   "learnability": "LEARNABLE",
+   "slice_rows": {
+    "r1_support": 46,
+    "r1_delayed": 45,
+    "r2_support": 45,
+    "r2_delayed": 44
+   },
+   "min_slice_rows": 44,
+   "slice_resolution": 0.022727272727272728,
+   "key_heldin_readout": 0.033333333333333326,
+   "largest_legal_heldin_magnitude": 0.033333333333333326,
+   "total_points": 48000,
+   "official_train_rows": 600,
+   "series_length": 80,
+   "n_heldin": 180,
+   "n_heldout": 276,
+   "oracle_set": [
+    "outlier_iqr",
+    "outlier_mad"
+   ],
+   "menu_oracle_program": "outlier_iqr",
+   "harmful_outlier_operators": []
+  },
+  {
+   "forward_position": 3,
+   "unit_id": "PowerCons__impulse_v2",
+   "dataset": "PowerCons",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "harm_evidence",
+   "family_key": "PowerCons",
+   "family_repeat": false,
+   "learnability": "LEARNABLE",
+   "slice_rows": {
+    "r1_support": 14,
+    "r1_delayed": 14,
+    "r2_support": 14,
+    "r2_delayed": 12
+   },
+   "min_slice_rows": 12,
+   "slice_resolution": 0.08333333333333333,
+   "key_heldin_readout": 0.18518518518518517,
+   "largest_legal_heldin_magnitude": 0.27777777777777773,
+   "total_points": 25920,
+   "official_train_rows": 180,
+   "series_length": 144,
+   "n_heldin": 54,
+   "n_heldout": 180,
+   "oracle_set": [
+    "hampel_filter"
+   ],
+   "menu_oracle_program": "hampel_filter",
+   "harmful_outlier_operators": [
+    {
+     "program": "outlier_iqr",
+     "heldin_headroom": -0.18518518518518517,
+     "heldout_utility": -0.1444444444444445,
+     "cohort_modified_fraction": 0.07550705467372135
+    }
+   ]
+  },
+  {
+   "forward_position": 4,
+   "unit_id": "FreezerRegularTrain__burst_cls2",
+   "dataset": "FreezerRegularTrain",
+   "injection": "burst_cls2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "identity",
+   "family_key": "FreezerFamily",
+   "family_repeat": false,
+   "learnability": "N/A",
+   "slice_rows": {
+    "r1_support": 12,
+    "r1_delayed": 12,
+    "r2_support": 10,
+    "r2_delayed": 10
+   },
+   "min_slice_rows": 10,
+   "slice_resolution": 0.1,
+   "key_heldin_readout": 0.0,
+   "largest_legal_heldin_magnitude": 0.25,
+   "total_points": 45150,
+   "official_train_rows": 150,
+   "series_length": 301,
+   "n_heldin": 44,
+   "n_heldout": 2850,
+   "oracle_set": [
+    "identity"
+   ],
+   "menu_oracle_program": "identity",
+   "harmful_outlier_operators": [
+    {
+     "program": "outlier_iqr",
+     "heldin_headroom": -0.25,
+     "heldout_utility": -0.25578947368421057,
+     "cohort_modified_fraction": 0.09772456591236758
+    }
+   ]
+  },
+  {
+   "forward_position": 5,
+   "unit_id": "GunPointOldVersusYoung__impulse_v2",
+   "dataset": "GunPointOldVersusYoung",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "learnable_positive",
+   "family_key": "GunPointFamily",
+   "family_repeat": false,
+   "learnability": "LEARNABLE",
+   "slice_rows": {
+    "r1_support": 11,
+    "r1_delayed": 10,
+    "r2_support": 10,
+    "r2_delayed": 10
+   },
+   "min_slice_rows": 10,
+   "slice_resolution": 0.1,
+   "key_heldin_readout": 0.41463414634146345,
+   "largest_legal_heldin_magnitude": 0.41463414634146345,
+   "total_points": 20400,
+   "official_train_rows": 136,
+   "series_length": 150,
+   "n_heldin": 41,
+   "n_heldout": 315,
+   "oracle_set": [
+    "hampel_filter"
+   ],
+   "menu_oracle_program": "hampel_filter",
+   "harmful_outlier_operators": [
+    {
+     "program": "outlier_iqr",
+     "heldin_headroom": -0.02439024390243899,
+     "heldout_utility": -0.12063492063492065,
+     "cohort_modified_fraction": 0.03326315789473684
+    }
+   ]
+  },
+  {
+   "forward_position": 6,
+   "unit_id": "ECG200__impulse_v2",
+   "dataset": "ECG200",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "heldout_only_temptation",
+   "family_key": "ECGFamily",
+   "family_repeat": false,
+   "learnability": "HELDOUT_ONLY",
+   "slice_rows": {
+    "r1_support": 9,
+    "r1_delayed": 7,
+    "r2_support": 7,
+    "r2_delayed": 7
+   },
+   "min_slice_rows": 7,
+   "slice_resolution": 0.14285714285714285,
+   "key_heldin_readout": 0.0,
+   "largest_legal_heldin_magnitude": 0.06666666666666665,
+   "total_points": 9600,
+   "official_train_rows": 100,
+   "series_length": 96,
+   "n_heldin": 30,
+   "n_heldout": 100,
+   "oracle_set": [
+    "repair_burst_segment"
+   ],
+   "menu_oracle_program": "repair_burst_segment",
+   "harmful_outlier_operators": []
+  },
+  {
+   "forward_position": 7,
+   "unit_id": "Ham__impulse_v2",
+   "dataset": "Ham",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "identity",
+   "family_key": "Ham",
+   "family_repeat": false,
+   "learnability": "N/A",
+   "slice_rows": {
+    "r1_support": 9,
+    "r1_delayed": 8,
+    "r2_support": 8,
+    "r2_delayed": 8
+   },
+   "min_slice_rows": 8,
+   "slice_resolution": 0.125,
+   "key_heldin_readout": 0.0,
+   "largest_legal_heldin_magnitude": 0.030303030303030276,
+   "total_points": 46979,
+   "official_train_rows": 109,
+   "series_length": 431,
+   "n_heldin": 33,
+   "n_heldout": 105,
+   "oracle_set": [
+    "identity"
+   ],
+   "menu_oracle_program": "identity",
+   "harmful_outlier_operators": []
+  }
+ ],
+ "family_census": {
+  "families_in_course": [
+   "ECGFamily",
+   "FreezerFamily",
+   "GunPointFamily",
+   "Ham",
+   "PhalanxFamily",
+   "PowerCons"
+  ],
+  "distinct_families": 6,
+  "repeated_families": [
+   "PhalanxFamily"
+  ],
+  "repeated_substrates": []
+ },
+ "shortfalls": [
+  {
+   "group": "learnable_positive",
+   "found": 2,
+   "fallback": "quota could not be filled at slice floor 5 with strict cross-course family distinctness; the rung actually used was floor 5 with family repeats allowed -- repeated: ['DistalPhalanxOutlineCorrect__burst_cls2']"
+  }
+ ],
+ "budgets": {
+  "llm_per_unit_per_adaptive_arm": 15,
+  "fit_per_unit_per_arm": 25,
+  "llm_per_slow_integration": 6,
+  "llm_total_cap": 400,
+  "fit_total_cap": 900,
+  "wall_seconds_cap": 10800,
+  "over_cap_verdict": "COMPUTE_BUDGET_EXCEEDED"
+ },
+ "arms": {
+  "Static": "no adaptation; identity frozen and deployed on every unit; only the scoring fit is spent",
+  "A3-reset": "cold start from h0 on every unit; zero carry between units",
+  "K0-fixed": "every unit starts from the same K0; normal in-unit held-in adaptation; no write-back between units",
+  "A5-online": "same K0 start and in-unit protocol; full Slow integration between units including the risk lifecycle; the pool evolves with the course"
+ },
+ "k0_definition": {
+  "base": "methods/ttha/harness/h0 (the three bootstrap Skills)",
+  "bootstrap_skills": [
+   "inspect_and_localize",
+   "build_contrastive_candidates",
+   "select_or_identity_and_verify"
+  ],
+  "inert_slow_card": {
+   "skill_id": "source_investigation_cls_v1",
+   "source": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+   "try_clause": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+   "allowed_tools": [],
+   "carries_frozen_steps": false
+  },
+  "excluded_on_purpose": "the C40 Target-local hampel capability is NOT in K0.  It is a frozen-steps capability bound to one Source domain; placing it in K0 would leak an answer across domains and contaminate both K0-fixed and A5-online."
+ },
+ "domain_binding_hooks": {
+  "1_stamp": "unit_id (dataset__injection).  The whole course runs at one condition (fit_only_artifact), so dataset alone would collapse two curriculum units of the same substrate into one counted Task and the guard census (risk_skill._task_of) would undercount.",
+  "2_carry_wall": "a Target-local capability (frozen program steps; not an experience card) is dropped at the unit boundary unless its stamp equals the next unit's domain_namespace",
+  "3_scope_v1": "a Source-derived experience card reaches the next unit's Fast surface only when task_kind, consumer_id and metric match, its authorizing pattern-view intersection is non-empty and is satisfied by the next unit's binned deployment-visible pattern view, and its Program geometry is a real operator.  Dataset name is not an axis."
+ },
+ "pre_registered_readout": {
+  "primary": "A5-online must be non-inferior to both A3-reset and K0-fixed on quality (cumulative held-out utility) and on harm (harm events, worst-class harm), and must improve at least one of cumulative regret or cumulative total cost by a material margin",
+  "material_threshold": 0.005,
+  "verdict_ceiling_for_a_single_order_single_run": "S1_DEVELOPMENT_EVOLUTION_SIGNAL",
+  "judged_in": "S1c.  This book freezes the readout and does not judge it."
+ },
+ "not_in_this_book": "the full course is not run here.  This entry freezes the course and the readout only; S1c runs it.",
+ "oracle_isolation": {
+  "mechanism": "builtins.open, io.open, os.open, Path.open, Path.read_text and Path.read_bytes are wrapped at module import; any path containing artifacts/functional/e2/s1_oracle/ raises OracleIsolationBreach while the phase is 'arm'",
+  "arm_phase_attempts": 0,
+  "arm_phase_attempts_blocked": 0,
+  "arm_phase_leaks": [],
+  "deliberate_probe_rows": [],
+  "judge_phase_keys_read": [],
+  "unblocked_reads_by_phase": {
+   "setup": 0,
+   "select": 45,
+   "judge": 0
+  },
+  "holds": true
+ },
+ "wall_seconds": 0.17,
+ "obligations": {
+  "methods_package_unmodified": true,
+  "runtime_contracts_operators_unmodified": true,
+  "shared_runner_unmodified": true,
+  "no_llm": true,
+  "no_arm_ran": true,
+  "no_oracle_rescore": true,
+  "sealed_artifacts_not_rewritten": true,
+  "full_curriculum_not_run": true,
+  "downloads": 0
+ }
+}

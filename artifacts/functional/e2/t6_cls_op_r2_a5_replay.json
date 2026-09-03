@@ -1,0 +1,721 @@
+{
+ "protocol_version": "t6_cls_op_r2_a5_replay_v1",
+ "run_id": "t6_cls_op_r2_a5_replay1",
+ "entry": "--r2-replay-a5",
+ "modification_fraction_scope": "cohort",
+ "evidence_grade": "MECHANISM",
+ "claim_limit": "MECHANISM only.  Governance-fix replay; no capability reading.",
+ "git_head": "03f2c1bc8eb42216935b4aabd7f02895279927ca",
+ "r2_source": {
+  "path": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+  "run_id": "t6_cls_op_r2_run1",
+  "protocol_version": "t6_cls_op_r2_three_arms_v1",
+  "git_head": "cb03eb688210f521c931895454b44d30048c1928"
+ },
+ "backend_lock": {
+  "artifact_field": "obligations.backend",
+  "artifact_value": "live Fast Agent",
+  "r2_git_head": "cb03eb688210f521c931895454b44d30048c1928",
+  "r2_entry": "--r2-run",
+  "code_path": {
+   "fast_factory": "evaluation.functional.task_episode_harness.agentic.runner._default_backend_factory",
+   "transport": "AgictoChatCompletionsBackend",
+   "model": "gpt-5.6-sol",
+   "base_url": "https://api.agicto.cn/v1",
+   "agent_constructor": "_live_agent -> TTHAAgentCore(model=SLOW_MODEL)"
+  },
+  "note": "r2 JSON has no model/base_url fields.  Replay locks the same unchanged --r2-run factories; no other relay or model is allowed."
+ },
+ "a5_budget_from_r2": {
+  "protocol_llm_cap": 90,
+  "protocol_llm_fast_cap": 82,
+  "protocol_llm_slow_reserve": 8,
+  "protocol_fit_cap": 600,
+  "r2_a5_gunpoint_llm": 9,
+  "r2_a5_all_targets_llm": 19,
+  "replay_uses_protocol_caps": true,
+  "note": "Replay keeps the r2 protocol Fast/fit caps (not a newly invented tighter A5-only number).  A5-only will underspend them."
+ },
+ "c40_a5_reference": [
+  {
+   "round": "r1",
+   "dataset": "GunPointAgeSpan",
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_cls_v1"
+   ],
+   "pool": [
+    "identity",
+    "localized_level_shift_repair"
+   ],
+   "chosen": "localized_level_shift_repair",
+   "families": [
+    "level-shift"
+   ],
+   "probes": [
+    {
+     "candidate_id": "localized_level_shift_repair",
+     "kind": "verifier_rejected",
+     "gain": null
+    }
+   ],
+   "support_receipts": 0,
+   "delayed_utility": null,
+   "abstained": true
+  },
+  {
+   "round": "r2",
+   "dataset": "GunPointAgeSpan",
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_cls_v1"
+   ],
+   "pool": [
+    "identity",
+    "repair_local_level_excursion"
+   ],
+   "chosen": "repair_local_level_excursion",
+   "families": [
+    "level-shift"
+   ],
+   "probes": [
+    {
+     "candidate_id": "repair_local_level_excursion",
+     "kind": "verifier_rejected",
+     "gain": null
+    }
+   ],
+   "support_receipts": 0,
+   "delayed_utility": null,
+   "abstained": true
+  }
+ ],
+ "wiring_check": {
+  "task_spec": {
+   "factory": "contracts.task.classification_task_spec_v1",
+   "downstream_model_class": "ridge-raw-plus-difference-v1",
+   "consumer_name_matches_legacy": true,
+   "metric": {
+    "name": "accuracy",
+    "direction": "higher_is_better"
+   },
+   "sha": "e64c73189b94a18e"
+  },
+  "task_context": {
+   "factory": "contracts.task.classification_task_context_v1",
+   "quality_contract": "classification-local-event-quality-v1",
+   "maximum_modified_fraction": 0.1,
+   "maximum_candidates": 3,
+   "sha": "7832f300e0eeca7caa7f06f4b6c9fd843f7fd761303ad73180c0540fd77fd3b4",
+   "carried_on_every_behaviour_request": true
+  },
+  "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+  "consumer_adapter": {
+   "path": "evaluation/functional/consumers/cls_scope_adapter.py",
+   "precedent": "evaluation/functional/consumers/ad_scope_adapter.py",
+   "decides_relation": false,
+   "decides_winner": false,
+   "reads_or_writes_skill": false,
+   "applies_risk_threshold": false
+  },
+  "classification_legal_operator_menu": [
+   "impute_linear",
+   "impute_fft",
+   "impute_ema",
+   "period_complete",
+   "period_median_complete",
+   "impute_ssm",
+   "impute_ar",
+   "denoise_savgol",
+   "denoise_wavelet",
+   "denoise_median",
+   "smooth_ma",
+   "denoise_stl",
+   "winsorize",
+   "outlier_iqr",
+   "outlier_mad",
+   "hampel_filter",
+   "repair_level_shift",
+   "repair_burst_segment",
+   "stl_decompose",
+   "fft_decompose",
+   "smooth_ema",
+   "resample_uniform",
+   "znorm",
+   "minmax_norm"
+  ],
+  "shared_lifecycle_entry": [
+   "methods/ttha/online_loop.run_online_round",
+   "methods/ttha/online_loop.open_delayed",
+   "methods/ttha/online_loop.activate_approved",
+   "methods/ttha/method.TTHAMethod.handle_fast_winner",
+   "methods/ttha/experience_memory.classify_relation"
+  ],
+  "methods_package_modified": false,
+  "known_supply_gap": "the shared operator registry carries no bound center-excluded local-median operator; the legacy C38 Program is an oracle-bound instance that only the legacy runner can construct.  The mechanism-matched member of the shared menu is hampel_filter (local median replacement at intrinsically detected impulse points).  This runner does not add an operator: the Agent must find its Workflow in the existing supply, which is the point."
+ },
+ "preflight": {
+  "consumer_feature_map_matches_legacy": true,
+  "legacy_feature_reference": "run_e2_task_context_label_evidence_witness.py lines 103-105",
+  "forbidden_data_roots_untouched": [
+   "benchmark_yahoo_s5_v1",
+   "benchmark_nab_v1_1",
+   "noaa",
+   "smd"
+  ]
+ },
+ "binding": {
+  "dataset": "GunPointAgeSpan",
+  "target_condition": "fit_only_artifact",
+  "held_in_rounds": [
+   "r1",
+   "r2"
+  ],
+  "support_trial_budget_per_round": 2,
+  "maximum_candidates": 3,
+  "modification_fraction_scope": "cohort",
+  "source_skill_id": "source_investigation_cls_v1",
+  "source_card_origin": "r2 part_b.source_skill_entry (same ledger)"
+ },
+ "budgets": {
+  "llm_cap": 90,
+  "llm_fast_cap": 82,
+  "llm_slow_reserve": 8,
+  "consumer_fit_cap": 600
+ },
+ "backend_probe": {
+  "ok": true,
+  "returned_model": "gpt-5.6-sol",
+  "completion_id": "resp_010bda91dee9a833016a8e55ea8e9887d0b1a0100769409063",
+  "probe_charged_to_a5_cap": false
+ },
+ "source_install": {
+  "skill_id": "source_investigation_cls_v1",
+  "store_skill_ids": [
+   "build_contrastive_candidates",
+   "inspect_and_localize",
+   "select_or_identity_and_verify",
+   "source_investigation_cls_v1"
+  ],
+  "card_in_store": true,
+  "preflight_fast_view": [
+   "build_contrastive_candidates",
+   "inspect_and_localize",
+   "select_or_identity_and_verify"
+  ],
+  "preflight_slow_view": [
+   "build_contrastive_candidates",
+   "inspect_and_localize",
+   "select_or_identity_and_verify",
+   "source_investigation_cls_v1"
+  ],
+  "card_in_preflight_fast_view": false,
+  "card_in_slow_view": true,
+  "h0_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+  "source_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+  "r2_h0_runtime_bundle_sha": "c3917fcc537e95a8aac3d94968ff9c38932665c9e513afe7fd536f35c00090e0",
+  "sha_note": "h0 runtime_bundle_sha may differ from r2 because T1 regenerated the lock after changing retrieval.py; harness_content_sha is unchanged.  The installed card bytes are the r2 ledger entry."
+ },
+ "part_b": {
+  "source_skill_entry": {
+   "schema_version": "skill-entry/1",
+   "skill_id": "source_investigation_cls_v1",
+   "skill_kind": "capability",
+   "revision": 1,
+   "body": "WHEN: When task_kind == classification in a new cohort and a comparable context_condition can be observed.\nOBSERVE: Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.\nTRY: NO_AUTHORIZED_ACTIVE_RECOMMENDATION\nRISK: The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.\nVERIFY: Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.\nFALLBACK: If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator.",
+   "observable_applicability": {
+    "feature": "task_kind",
+    "op": "==",
+    "value": "classification"
+   },
+   "allowed_tools": [],
+   "risk_guards": {
+    "carrier": "source_derived_general_skill",
+    "advises_the_proposal_stage_only": true,
+    "never_supplies_a_candidate": true,
+    "requires_target_support": true,
+    "sections": {
+     "WHEN": "When task_kind == classification in a new cohort and a comparable context_condition can be observed.",
+     "OBSERVE": "Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.",
+     "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+     "RISK": "The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.",
+     "VERIFY": "Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.",
+     "FALLBACK": "If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator."
+    },
+    "execution_right": "withheld_no_authorized_try_operator"
+   }
+  },
+  "source_skill_sections": {
+   "WHEN": "When task_kind == classification in a new cohort and a comparable context_condition can be observed.",
+   "OBSERVE": "Inspect task_kind and the applicable context_condition in the current Workspace, then check whether the available programs have distinct-task positive, negative, or immaterial Target Support.",
+   "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+   "RISK": "The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.",
+   "VERIFY": "Require this Task's own Target Support to establish a positive relation under the observed context_condition across distinct tasks before believing any active recommendation.",
+   "FALLBACK": "If observation does not support a guarded hypothesis, retain no active recommendation and gather task-local Target Support rather than selecting an operator."
+  },
+  "reused_r2_card": true,
+  "slow_not_re_run": true
+ },
+ "part_c": {
+  "cells": [
+   {
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "data_dir": "data/ucr_task_context",
+    "archive": "data/ucr_task_context/GunPointAgeSpan.zip",
+    "series_length": 150,
+    "official_train_rows": 135,
+    "fit_rows": 95,
+    "support_pool_rows": 40,
+    "slice_rows": {
+     "r1_support": 10,
+     "r1_delayed": 10,
+     "r2_support": 10,
+     "r2_delayed": 10
+    },
+    "controlled_impulse_positions": [
+     12,
+     30,
+     119,
+     137
+    ],
+    "observer_localized_nodes": [
+     12,
+     30,
+     119,
+     137
+    ],
+    "observer_recovered_all_nodes": true,
+    "witness": {
+     "witness_id": "cross-cohort-local-label-evidence/1",
+     "inputs_used": [
+      "fit_inputs",
+      "fit_labels",
+      "support_inputs",
+      "support_labels",
+      "candidate_program_nodes"
+     ],
+     "query_values_or_labels_used": false,
+     "dataset_id_used": false,
+     "program_outcome_used": false,
+     "node_count": 4,
+     "normalized_node_positions": [
+      0.08053691275167785,
+      0.20134228187919462,
+      0.7986577181208053,
+      0.9194630872483222
+     ],
+     "fit_node_median_strength": 31.982042690601546,
+     "support_node_median_strength": 0.0,
+     "support_to_fit_strength_ratio": 0.0,
+     "direction_alignment": 0.0
+    },
+    "legacy_scope_decision": "EXECUTE_BOUND_REPAIR",
+    "legacy_scope_reasons": [
+     "localized_fit_signal_not_reproduced_in_support"
+    ],
+    "support_reproduces_fit_signal": false,
+    "observation_rows": 22
+   }
+  ],
+  "rounds": [
+   {
+    "round": "r1",
+    "arm": "A5",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "support_origin": 3300,
+    "delayed_origin": 3301,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "repair_local_level_shift"
+    ],
+    "chosen": "repair_local_level_shift",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 0,
+    "probes": [
+     {
+      "candidate_id": "repair_local_level_shift",
+      "kind": "verifier_rejected",
+      "gain": null
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [],
+    "adapter_calls": [],
+    "consumer_fits_after": 0,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 0,
+    "llm_calls_after": 5,
+    "llm_calls_this_round": 5,
+    "candidate_executions": 1,
+    "seconds": 281.11
+   },
+   {
+    "round": "r2",
+    "arm": "A5",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "support_origin": 3300,
+    "delayed_origin": 3301,
+    "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+    "pool": [
+     "identity",
+     "intrinsic_iqr_outlier_repair"
+    ],
+    "chosen": "intrinsic_iqr_outlier_repair",
+    "retrieved_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "memory_resolution": "no_memory",
+    "proposal_count": 1,
+    "support_receipts": 1,
+    "probes": [
+     {
+      "candidate_id": "intrinsic_iqr_outlier_repair",
+      "kind": "probe",
+      "gain": 0.0
+     }
+    ],
+    "winner_program": null,
+    "abstained": true,
+    "harm_count": 0,
+    "delayed_utility": null,
+    "fast_skill_event": null,
+    "delayed_event": null,
+    "approved_skill_id": null,
+    "activated": false,
+    "episodes": [
+     {
+      "episode_id": "GunPointAgeSpan/fit_only_artifact_target_outlier_iqr_a5_GunPointAgeSpan_r2_p1",
+      "domain_namespace": "GunPointAgeSpan/fit_only_artifact",
+      "workflow_signature": "outlier_iqr",
+      "relation": "NEUTRAL",
+      "evidence_level": "SUPPORT",
+      "local_status": "EPISODE_ONLY",
+      "support_gain": 0.0,
+      "delayed_gain": null,
+      "support_effect": {
+       "relation": "NEUTRAL",
+       "classification_basis": "aggregate within +/-0.005 of zero",
+       "material_threshold": 0.005,
+       "consumer_id": "ridge-raw-plus-difference-v1",
+       "aggregate_gain": 0.0,
+       "aggregate_direction": "unchanged",
+       "series_read": 2,
+       "harmed_series_count": 1,
+       "harmed_series": [
+        "view_1"
+       ],
+       "min_per_series_gain": -0.4
+      },
+      "delayed_effect": null
+     }
+    ],
+    "adapter_calls": [
+     {
+      "signature": "identity",
+      "surface": "support",
+      "origin": 3300,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.5
+     },
+     {
+      "signature": "outlier_iqr({})",
+      "surface": "support",
+      "origin": 3300,
+      "cache": "miss",
+      "consumer_fits": 1,
+      "accuracy": 0.5
+     }
+    ],
+    "consumer_fits_after": 2,
+    "modification_fraction_scope": "cohort",
+    "llm_calls_before": 5,
+    "llm_calls_after": 9,
+    "llm_calls_this_round": 4,
+    "candidate_executions": 1,
+    "seconds": 196.87
+   }
+  ],
+  "deployments": [
+   {
+    "arm": "A5",
+    "dataset": "GunPointAgeSpan",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 316,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.6,
+     "1": 0.5641025641025641
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 3,
+    "breach": [],
+    "pure": true
+   }
+  ],
+  "arm_table": [
+   {
+    "dataset": "GunPointAgeSpan",
+    "arm": "A5",
+    "held_in_rounds": 2,
+    "support_receipts": 1,
+    "first_positive_support_receipt": null,
+    "episodes": 1,
+    "held_in_delayed_utility": null,
+    "held_in_delayed_utility_all": [],
+    "approved_skill_ids": [],
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "heldout_accuracy": 0.5822784810126582,
+    "heldout_identity_accuracy": 0.5822784810126582,
+    "heldout_accuracy_gain": 0.0,
+    "harmed_classes_over_bar": []
+   }
+  ],
+  "deploy_purity": {
+   "slots": {
+    "GunPointAgeSpan/A5": {
+     "open_delayed_calls": 0,
+     "slow_calls": 0,
+     "llm_calls": 0,
+     "new_skill_formed": false,
+     "store_unchanged": true,
+     "experience_unchanged": true,
+     "heldout_openings": 1,
+     "scored_equals_applied": true,
+     "breach": [],
+     "ok": true
+    }
+   },
+   "all_pure": true
+  },
+  "r2_readouts": {
+   "cells": {
+    "GunPointAgeSpan/A5": {
+     "dataset": "GunPointAgeSpan",
+     "arm": "A5",
+     "target_local_skill_formed": false,
+     "first_skill": null,
+     "llm_calls_total": 9,
+     "candidate_executions_total": 2,
+     "held_in_delayed_utility": null,
+     "held_in_delayed_utility_all": [],
+     "abstained_rounds": 2,
+     "abstain_episodes": 0,
+     "support_delayed_direction_agree": 0,
+     "support_delayed_direction_disagree": 0,
+     "heldout_accuracy": 0.5822784810126582,
+     "heldout_identity_accuracy": 0.5822784810126582,
+     "heldout_accuracy_gain": 0.0,
+     "heldout_recall_by_class": {
+      "0": 0.6,
+      "1": 0.5641025641025641
+     },
+     "heldout_recall_delta_by_class": {
+      "0": 0.0,
+      "1": 0.0
+     },
+     "worst_class_recall_delta": 0.0,
+     "worst_class_harm": 0.0,
+     "harmed_classes_over_bar": [],
+     "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+     "applied_program": []
+    }
+   },
+   "contrasts": {},
+   "material_threshold": 0.005,
+   "harm_bar": 0.05
+  }
+ },
+ "proposal_family_comparison": [
+  {
+   "dataset": "GunPointAgeSpan",
+   "round": "r1",
+   "side": "c40_a5",
+   "card_in_retrieved": true,
+   "non_identity_pool": [
+    "localized_level_shift_repair"
+   ],
+   "families": [
+    "level-shift"
+   ],
+   "probe_kinds": [
+    "verifier_rejected"
+   ],
+   "support_receipts": 0,
+   "delayed_utility": null
+  },
+  {
+   "dataset": "GunPointAgeSpan",
+   "round": "r1",
+   "side": "replay_a5",
+   "card_in_retrieved": false,
+   "non_identity_pool": [
+    "repair_local_level_shift"
+   ],
+   "families": [
+    "level-shift"
+   ],
+   "probe_kinds": [
+    "verifier_rejected"
+   ],
+   "support_receipts": 0,
+   "delayed_utility": null
+  },
+  {
+   "dataset": "GunPointAgeSpan",
+   "round": "r2",
+   "side": "c40_a5",
+   "card_in_retrieved": true,
+   "non_identity_pool": [
+    "repair_local_level_excursion"
+   ],
+   "families": [
+    "level-shift"
+   ],
+   "probe_kinds": [
+    "verifier_rejected"
+   ],
+   "support_receipts": 0,
+   "delayed_utility": null
+  },
+  {
+   "dataset": "GunPointAgeSpan",
+   "round": "r2",
+   "side": "replay_a5",
+   "card_in_retrieved": false,
+   "non_identity_pool": [
+    "intrinsic_iqr_outlier_repair",
+    "outlier_iqr"
+   ],
+   "families": [
+    "other",
+    "other"
+   ],
+   "probe_kinds": [
+    "probe"
+   ],
+   "support_receipts": 1,
+   "delayed_utility": null
+  }
+ ],
+ "retrieval_binding_miss_note": {
+  "classifier_location": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:r2_annotate a5_deficit_mechanism",
+  "would_classify_as": "retrieval_binding_miss",
+  "nature": "MISLABEL: the card is withheld by the Fast-visibility predicate, not a retrieval-binding failure",
+  "classifier_modified": false,
+  "shared_runner_logic_modified": false
+ },
+ "verdict": {
+  "verdict": "VISIBILITY_INVARIANT_HOLDS",
+  "claim_limit": "MECHANISM.  Tests the inertness invariant on the exposed C40 ledger after the Fast-visibility fix.  Held-out accuracy is recorded, not judged.  No capability claim.",
+  "card_absent_every_fast_view": true,
+  "card_present_in_any_fast_view": false,
+  "fast_views_checked": 3,
+  "c40_level_shift_only_pattern": false,
+  "legal_support_receipts": [
+   {
+    "round": "r2",
+    "probe": {
+     "candidate_id": "intrinsic_iqr_outlier_repair",
+     "kind": "probe",
+     "gain": 0.0
+    }
+   }
+  ],
+  "legal_support_receipt_count": 1,
+  "replay_proposal_families": [
+   "level-shift",
+   "other",
+   "other"
+  ],
+  "a3_cold_start_families": [
+   "hampel/local-median"
+  ],
+  "proposal_families_a3_same_type": false,
+  "exploration_restored": true,
+  "source_card_installed": true,
+  "source_card_in_slow_view": true,
+  "source_card_in_preflight_fast_view": false
+ },
+ "ledger": {
+  "llm_calls_fast": 9,
+  "llm_calls_slow": 0,
+  "llm_calls_total": 9,
+  "llm_cap": 90,
+  "llm_within_cap": true,
+  "consumer_fits": 3,
+  "consumer_fit_cap": 600,
+  "wall_seconds": 545.9,
+  "backend_probe_llm_calls": 1,
+  "backend_probe_charged_to_a5_cap": false,
+  "r2_a5_gunpoint_llm": 9,
+  "r2_a5_all_targets_llm": 19
+ },
+ "obligations": {
+  "methods_package_unmodified": true,
+  "runtime_contracts_operators_unmodified": true,
+  "other_line_files_untouched": true,
+  "forbidden_data_untouched": "no Yahoo, NOAA 2025, beyond_17520, NAB or SMD path is opened; the only data root is data/ucr_task_context",
+  "source_card_reused_from_r2_ledger": true,
+  "slow_not_re_run": true,
+  "deficit_classifier_unmodified": true,
+  "backend": "locked r2 Fast path gpt-5.6-sol @ https://api.agicto.cn/v1",
+  "full_repo_pytest_not_run": true,
+  "downloads": 0
+ }
+}

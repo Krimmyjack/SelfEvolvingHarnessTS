@@ -1,0 +1,2974 @@
+{
+  "protocol_version": "local_lifecycle_v1",
+  "role": "persist #11 ACTIVE Target-local Skills through handle_fast_winner and measure natural recall/reuse on frozen task_06",
+  "overall_verdict": "LOCAL_LIFECYCLE_CLOSES",
+  "overall_verdict_reason": "A5 had zero RECALL_MISS across T1/T2, reused at least one local Skill, and no reused plan crossed the -0.005 harm guard",
+  "pre_registered": {
+    "fixed_before_first_llm_call": true,
+    "one_changed_surface": "Target-local Skill persistence and recall lifecycle",
+    "frozen": [
+      "Source Guidance card bytes from skill_store_integration_v1",
+      "recipe compiler and program menu",
+      "ADOPTION_RULE_V2 semantics",
+      "Metric, Consumer, Support budget and #10 prompt templates"
+    ],
+    "stores": {
+      "A5": "the target's frozen Source Guidance card plus its own #11 ACTIVE local Skill",
+      "A3_T2": "its own #11 ACTIVE local Skill only",
+      "A3_T1": "no learned Skill; natural from-scratch control"
+    },
+    "next_window": "task_episode_harness.e1._frozen_task_roster()[5], required to be e1v2_task_06; support and delayed origins copied verbatim",
+    "reuse": "a naturally retrieved local Skill supplies exactly its frozen plan; the plan must first reach +0.005 on current Support and then pass the unchanged v2 delayed ladder. Failure is an honest abstention",
+    "masked_candidate_v2_correspondence": "a directly supplied masked candidate is the only measured plan, not a full-batch shortlist winner; therefore ADOPTION_RULE_V2 gives it the identity bar at zero. A direct full-batch candidate is its own Support winner and sets max(0, its delayed) as the bar",
+    "cost": "the primary evaluation count is total Consumer retrains, matching #10: identity baselines, direct confirmation or shortlist, mask internals, Support bookkeeping and every delayed read all count",
+    "experience": {
+      "provenance": "local_skill_recall",
+      "counts_as_unguided_exploration": false
+    },
+    "per_cell_verdicts": [
+      "RECALLED_REUSED_CHEAPER",
+      "RECALLED_REUSED_NOT_CHEAPER",
+      "RECALLED_NOT_REUSED",
+      "RECALL_MISS",
+      "NO_LOCAL_SKILL"
+    ],
+    "quality_guard": "a reused plan with delayed < -0.005 is also REUSE_HARMFUL",
+    "overall": "LOCAL_LIFECYCLE_CLOSES iff A5 has no RECALL_MISS on T1/T2, at least one A5 cell is RECALLED_REUSED_*, and none is REUSE_HARMFUL",
+    "llm_budget": 30,
+    "circuit_breaker": "stop if the first episode produces no LLM payload"
+  },
+  "task06_window": {
+    "window_id": "e1v2_task_06",
+    "support_origins": [
+      4512,
+      4560,
+      4608
+    ],
+    "delayed_origins": [
+      4656,
+      4704,
+      4752
+    ],
+    "horizon": 48,
+    "arm_order": "A5_A3",
+    "origin_source": "quoted from the frozen roster",
+    "origin_provenance": "task_episode_harness.e1._frozen_task_roster()[5], e1v2_task_06, support and delayed origins verbatim"
+  },
+  "source_artifacts_read_only": [
+    "artifacts/functional/e2/skill_store_integration_v1.json",
+    "artifacts/functional/e2/lifecycle_probe_v1.json"
+  ],
+  "aborted_preflight_note": "Before the first LLM call, an initial 0-LLM preflight implementation instantiated BridgeSearch while resolving task_06. BridgeSearch starts identity-baseline computation in __init__; the process was manually interrupted before it returned any metric. No value entered selection, no artifact was written, and no method/store decision used it. The corrected preflight below reads only values[:support_cutoff] and performs zero Consumer retrains. The final run rebuilds all stores and accounts every completed evaluation from scratch.",
+  "stores": {
+    "a3_t1": {
+      "slot": "a3_t1",
+      "store_root": "_scratch/skill_store/local_lifecycle_v1/a3_t1/snapshots",
+      "status": "REGISTERED",
+      "source_guidance": null,
+      "local_skill": null,
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "active_pointer": {
+        "runtime_bundle_sha": "c4cb24b84092bf3c7134ed1943b05e635c009fecb7dc40bd09efb2bb0c36b65d"
+      }
+    },
+    "a5_t1": {
+      "slot": "a5_t1",
+      "store_root": "_scratch/skill_store/local_lifecycle_v1/a5_t1/snapshots",
+      "status": "REGISTERED",
+      "source_guidance": {
+        "skill_id": "recipe_batch_guidance_t1_v1",
+        "loaded_verbatim_from": "artifacts/functional/e2/skill_store_integration_v1.json::registration.card_payloads/card_risk_guards.T1"
+      },
+      "local_skill": {
+        "skill_id": "fast_winner_e1v2_outlier_iqr",
+        "handle_fast_winner": {
+          "stage": "pending",
+          "support_gain": 0.10713881334229038,
+          "support_passed": true,
+          "support_reused": true,
+          "edit_id": "fast_winner_e1v2_outlier_iqr"
+        },
+        "cached_delayed_approval": {
+          "stage": "approved",
+          "delayed_gain": 0.09358275034111724,
+          "snapshot_updated": true
+        },
+        "cached_evidence_only_no_remeasurement": true,
+        "frozen_steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "frozen_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "lifecycle": {
+          "local_status": "LOCAL_ACTIVE",
+          "evidence_level": "DELAYED",
+          "evidence_refs": [
+            "artifacts/functional/e2/lifecycle_probe_v1.json",
+            "draft_id:T1_A5"
+          ],
+          "activation_probe_window": "e1v2_task_05",
+          "activation_probe_origins": [
+            4368,
+            4416,
+            4464
+          ],
+          "activation_probe_gain": 0.09358275034111724,
+          "activation_probe_se_block": 0.017572347707423764,
+          "activation_probe_gain_over_se": 5.325569007582377
+        }
+      },
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "fast_winner_e1v2_outlier_iqr",
+        "inspect_and_localize",
+        "recipe_batch_guidance_t1_v1",
+        "select_or_identity_and_verify"
+      ],
+      "active_pointer": {
+        "runtime_bundle_sha": "d69060f4070b24a803d5630bdedf0b6775950a2ec3eccfdd1a380d84e473dd1f"
+      }
+    },
+    "a3_t2": {
+      "slot": "a3_t2",
+      "store_root": "_scratch/skill_store/local_lifecycle_v1/a3_t2/snapshots",
+      "status": "REGISTERED",
+      "source_guidance": null,
+      "local_skill": {
+        "skill_id": "fast_winner_e1v2_repair_level_shift",
+        "handle_fast_winner": {
+          "stage": "pending",
+          "support_gain": 0.05207340468432272,
+          "support_passed": true,
+          "support_reused": true,
+          "edit_id": "fast_winner_e1v2_repair_level_shift"
+        },
+        "cached_delayed_approval": {
+          "stage": "approved",
+          "delayed_gain": 0.056719941465735134,
+          "snapshot_updated": true
+        },
+        "cached_evidence_only_no_remeasurement": true,
+        "frozen_steps": [
+          {
+            "op": "repair_level_shift",
+            "params": {}
+          }
+        ],
+        "frozen_plan": {
+          "program": "repair_level_shift",
+          "excluded_series": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "3"
+          ]
+        },
+        "lifecycle": {
+          "local_status": "LOCAL_ACTIVE",
+          "evidence_level": "DELAYED",
+          "evidence_refs": [
+            "artifacts/functional/e2/lifecycle_probe_v1.json",
+            "draft_id:T2_A3"
+          ],
+          "activation_probe_window": "e1v2_task_05",
+          "activation_probe_origins": [
+            4368,
+            4416,
+            4464
+          ],
+          "activation_probe_gain": 0.056719941465735134,
+          "activation_probe_se_block": 0.014913248535019888,
+          "activation_probe_gain_over_se": 3.8033257028167333
+        }
+      },
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "fast_winner_e1v2_repair_level_shift",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "active_pointer": {
+        "runtime_bundle_sha": "0963b7c3fce3c018398022eb3eaf2c9a5e7d543041ff9129fce9dd741e1be3a3"
+      }
+    },
+    "a5_t2": {
+      "slot": "a5_t2",
+      "store_root": "_scratch/skill_store/local_lifecycle_v1/a5_t2/snapshots",
+      "status": "REGISTERED",
+      "source_guidance": {
+        "skill_id": "recipe_batch_guidance_t2_v1",
+        "loaded_verbatim_from": "artifacts/functional/e2/skill_store_integration_v1.json::registration.card_payloads/card_risk_guards.T2"
+      },
+      "local_skill": {
+        "skill_id": "fast_winner_e1v2_outlier_iqr",
+        "handle_fast_winner": {
+          "stage": "pending",
+          "support_gain": 0.03736562214690686,
+          "support_passed": true,
+          "support_reused": true,
+          "edit_id": "fast_winner_e1v2_outlier_iqr"
+        },
+        "cached_delayed_approval": {
+          "stage": "approved",
+          "delayed_gain": 0.04050113812058425,
+          "snapshot_updated": true
+        },
+        "cached_evidence_only_no_remeasurement": true,
+        "frozen_steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "frozen_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "lifecycle": {
+          "local_status": "LOCAL_ACTIVE",
+          "evidence_level": "DELAYED",
+          "evidence_refs": [
+            "artifacts/functional/e2/lifecycle_probe_v1.json",
+            "draft_id:T2_A5"
+          ],
+          "activation_probe_window": "e1v2_task_05",
+          "activation_probe_origins": [
+            4368,
+            4416,
+            4464
+          ],
+          "activation_probe_gain": 0.04050113812058425,
+          "activation_probe_se_block": 0.007001876806245694,
+          "activation_probe_gain_over_se": 5.78432600877198
+        }
+      },
+      "skill_ids": [
+        "build_contrastive_candidates",
+        "fast_winner_e1v2_outlier_iqr",
+        "inspect_and_localize",
+        "recipe_batch_guidance_t2_v1",
+        "select_or_identity_and_verify"
+      ],
+      "active_pointer": {
+        "runtime_bundle_sha": "3b747271a6fb843ab72d002978185efa582dd0cb8e189a94f50add5541b8b433"
+      }
+    }
+  },
+  "cells": {
+    "A3_T1": {
+      "target_id": "T1",
+      "arm": "A3",
+      "verdict": {
+        "primary": "NO_LOCAL_SKILL",
+        "also": [],
+        "retrieval_hit": null,
+        "reuse_adopted": false,
+        "reuse_harmful": false,
+        "task04_evaluation_count": 69,
+        "task06_evaluation_count": 63,
+        "task06_minus_task04": -6,
+        "cost_unit": "Consumer retrains"
+      },
+      "retrieval": {
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "resolved_memory_ids": [],
+        "effective_harness_view_sha": "7a13128ae6f8817ce99a4cb392368a4fa1f6c461659dea92c46337790e4376f1",
+        "expected_skill_id": null,
+        "hit": null,
+        "capability_top_k": {
+          "kind": "rule_lexical",
+          "top_k": 2
+        },
+        "served_card": null,
+        "expected_local_skill_id": null,
+        "local_skill_hit": null
+      },
+      "support_confirmation": null,
+      "adopted_plan": {
+        "program": "hampel_filter",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 0.030429831288742017,
+      "delayed_aggregate_gain": 0.022935586536983726,
+      "task04_evaluation_count": 69,
+      "task06_evaluation_count": 63,
+      "charged_support_evaluations_task06": 2,
+      "stored_skill_lifecycle": {
+        "before": null,
+        "after": null,
+        "task06_experience_status": "LOCAL_DRAFT"
+      }
+    },
+    "A5_T1": {
+      "target_id": "T1",
+      "arm": "A5",
+      "verdict": {
+        "primary": "RECALLED_REUSED_CHEAPER",
+        "also": [],
+        "retrieval_hit": true,
+        "reuse_adopted": true,
+        "reuse_harmful": false,
+        "task04_evaluation_count": 60,
+        "task06_evaluation_count": 15,
+        "task06_minus_task04": -45,
+        "cost_unit": "Consumer retrains"
+      },
+      "retrieval": {
+        "expected_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+        "local_skill_hit": true,
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify",
+          "fast_winner_e1v2_outlier_iqr",
+          "recipe_batch_guidance_t1_v1"
+        ],
+        "resolved_memory_ids": [],
+        "source_guidance_hits": [
+          "recipe_batch_guidance_t1_v1"
+        ],
+        "local_skill": {
+          "skill_id": "fast_winner_e1v2_outlier_iqr",
+          "body": "Frozen program steps: [{\"op\": \"outlier_iqr\", \"params\": {}}]",
+          "observable_applicability": {
+            "all": [
+              {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            ]
+          },
+          "risk_guards": {
+            "activation_probe_gain": 0.09358275034111724,
+            "activation_probe_gain_over_se": 5.325569007582377,
+            "activation_probe_origins": [
+              4368,
+              4416,
+              4464
+            ],
+            "activation_probe_se_block": 0.017572347707423764,
+            "activation_probe_window": "e1v2_task_05",
+            "current_task_support_confirmation_required": true,
+            "evidence_level": "DELAYED",
+            "evidence_refs": [
+              "artifacts/functional/e2/lifecycle_probe_v1.json",
+              "draft_id:T1_A5"
+            ],
+            "explicit_choice_required": true,
+            "frozen_plan": {
+              "excluded_series": [],
+              "program": "outlier_iqr"
+            },
+            "local_status": "LOCAL_ACTIVE",
+            "observable_applicability_only": true,
+            "preserve_outside_candidate_region": true,
+            "provenance": "target_local_skill",
+            "requires_target_support": true,
+            "single_surface_only": true,
+            "source_episode_id": "ssi_t1_a5"
+          },
+          "frozen_steps": [
+            {
+              "op": "outlier_iqr",
+              "params": {}
+            }
+          ]
+        },
+        "context": {
+          "observation_cutoff": 4512,
+          "series_count": 12,
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+          "features": {
+            "clipping_probe_direction": "unknown",
+            "denoising_probe_direction": "unknown",
+            "estimated_level_offset": 35.474999999999994,
+            "estimated_region_end_fraction": 0.7311613475177305,
+            "estimated_region_start_fraction": 0.0237145390070922,
+            "imputation_probe_direction": "unknown",
+            "level_excursion_score": 9.56947437117409,
+            "level_only_post_shift_support_sufficient": true,
+            "level_probe_direction": "unknown",
+            "level_region_end_fraction": 0.12799202127659576,
+            "level_region_fraction": 0.008865248226950355,
+            "local_robust_z_peak": 8.999286619683222,
+            "longest_missing_run_fraction": 0.0,
+            "missing_fraction": 0.0,
+            "outlier_region_end_fraction": 0.7311613475177305,
+            "period_change_score": 0.5585106382978724,
+            "period_evidence_status": "OK",
+            "period_reliability": 1.0,
+            "period_repair_available": false,
+            "post_shift_support_sufficient": true,
+            "task_kind": "forecast"
+          }
+        }
+      },
+      "support_confirmation": {
+        "aggregate_gain": 0.09213581337544795,
+        "material_threshold": 0.005,
+        "passed": true
+      },
+      "adopted_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 0.09213581337544795,
+      "delayed_aggregate_gain": 0.03286330441091027,
+      "task04_evaluation_count": 60,
+      "task06_evaluation_count": 15,
+      "charged_support_evaluations_task06": 1,
+      "stored_skill_lifecycle": {
+        "before": "LOCAL_ACTIVE",
+        "after": "LOCAL_ACTIVE",
+        "task06_experience_status": "LOCAL_DRAFT"
+      }
+    },
+    "A3_T2": {
+      "target_id": "T2",
+      "arm": "A3",
+      "verdict": {
+        "primary": "RECALLED_REUSED_CHEAPER",
+        "also": [],
+        "retrieval_hit": true,
+        "reuse_adopted": true,
+        "reuse_harmful": false,
+        "task04_evaluation_count": 75,
+        "task06_evaluation_count": 15,
+        "task06_minus_task04": -60,
+        "cost_unit": "Consumer retrains"
+      },
+      "retrieval": {
+        "expected_local_skill_id": "fast_winner_e1v2_repair_level_shift",
+        "local_skill_hit": true,
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify",
+          "fast_winner_e1v2_repair_level_shift"
+        ],
+        "resolved_memory_ids": [],
+        "source_guidance_hits": [],
+        "local_skill": {
+          "skill_id": "fast_winner_e1v2_repair_level_shift",
+          "body": "Frozen program steps: [{\"op\": \"repair_level_shift\", \"params\": {}}]",
+          "observable_applicability": {
+            "all": [
+              {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            ]
+          },
+          "risk_guards": {
+            "activation_probe_gain": 0.056719941465735134,
+            "activation_probe_gain_over_se": 3.8033257028167333,
+            "activation_probe_origins": [
+              4368,
+              4416,
+              4464
+            ],
+            "activation_probe_se_block": 0.014913248535019888,
+            "activation_probe_window": "e1v2_task_05",
+            "current_task_support_confirmation_required": true,
+            "evidence_level": "DELAYED",
+            "evidence_refs": [
+              "artifacts/functional/e2/lifecycle_probe_v1.json",
+              "draft_id:T2_A3"
+            ],
+            "explicit_choice_required": true,
+            "frozen_plan": {
+              "excluded_series": [
+                "0",
+                "1",
+                "10",
+                "11",
+                "3"
+              ],
+              "program": "repair_level_shift"
+            },
+            "local_status": "LOCAL_ACTIVE",
+            "observable_applicability_only": true,
+            "preserve_outside_candidate_region": true,
+            "provenance": "target_local_skill",
+            "requires_target_support": true,
+            "single_surface_only": true,
+            "source_episode_id": "ssi_t2_a3"
+          },
+          "frozen_steps": [
+            {
+              "op": "repair_level_shift",
+              "params": {}
+            }
+          ]
+        },
+        "context": {
+          "observation_cutoff": 4512,
+          "series_count": 12,
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+          "features": {
+            "clipping_probe_direction": "unknown",
+            "denoising_probe_direction": "unknown",
+            "estimated_level_offset": 0.0,
+            "estimated_region_end_fraction": 0.3826462765957447,
+            "estimated_region_start_fraction": 0.009086879432624113,
+            "imputation_probe_direction": "unknown",
+            "level_excursion_score": 4.586054400093573,
+            "level_only_post_shift_support_sufficient": true,
+            "level_probe_direction": "unknown",
+            "level_region_end_fraction": 0.10516400709219859,
+            "level_region_fraction": 0.0118572695035461,
+            "local_robust_z_peak": 6.1260914768970185,
+            "longest_missing_run_fraction": 0.0,
+            "missing_fraction": 0.0,
+            "outlier_region_end_fraction": 0.3826462765957447,
+            "period_change_score": 0.24065040650406502,
+            "period_evidence_status": "OK",
+            "period_reliability": 1.0,
+            "period_repair_available": false,
+            "post_shift_support_sufficient": true,
+            "task_kind": "forecast"
+          }
+        }
+      },
+      "support_confirmation": {
+        "aggregate_gain": 0.01352498598423891,
+        "material_threshold": 0.005,
+        "passed": true
+      },
+      "adopted_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "0",
+          "1",
+          "10",
+          "11",
+          "3"
+        ]
+      },
+      "support_aggregate_gain": 0.01352498598423891,
+      "delayed_aggregate_gain": 0.00527117684299049,
+      "task04_evaluation_count": 75,
+      "task06_evaluation_count": 15,
+      "charged_support_evaluations_task06": 1,
+      "stored_skill_lifecycle": {
+        "before": "LOCAL_ACTIVE",
+        "after": "LOCAL_ACTIVE",
+        "task06_experience_status": "LOCAL_DRAFT"
+      }
+    },
+    "A5_T2": {
+      "target_id": "T2",
+      "arm": "A5",
+      "verdict": {
+        "primary": "RECALLED_REUSED_CHEAPER",
+        "also": [],
+        "retrieval_hit": true,
+        "reuse_adopted": true,
+        "reuse_harmful": false,
+        "task04_evaluation_count": 69,
+        "task06_evaluation_count": 15,
+        "task06_minus_task04": -54,
+        "cost_unit": "Consumer retrains"
+      },
+      "retrieval": {
+        "expected_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+        "local_skill_hit": true,
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify",
+          "fast_winner_e1v2_outlier_iqr",
+          "recipe_batch_guidance_t2_v1"
+        ],
+        "resolved_memory_ids": [],
+        "source_guidance_hits": [
+          "recipe_batch_guidance_t2_v1"
+        ],
+        "local_skill": {
+          "skill_id": "fast_winner_e1v2_outlier_iqr",
+          "body": "Frozen program steps: [{\"op\": \"outlier_iqr\", \"params\": {}}]",
+          "observable_applicability": {
+            "all": [
+              {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            ]
+          },
+          "risk_guards": {
+            "activation_probe_gain": 0.04050113812058425,
+            "activation_probe_gain_over_se": 5.78432600877198,
+            "activation_probe_origins": [
+              4368,
+              4416,
+              4464
+            ],
+            "activation_probe_se_block": 0.007001876806245694,
+            "activation_probe_window": "e1v2_task_05",
+            "current_task_support_confirmation_required": true,
+            "evidence_level": "DELAYED",
+            "evidence_refs": [
+              "artifacts/functional/e2/lifecycle_probe_v1.json",
+              "draft_id:T2_A5"
+            ],
+            "explicit_choice_required": true,
+            "frozen_plan": {
+              "excluded_series": [],
+              "program": "outlier_iqr"
+            },
+            "local_status": "LOCAL_ACTIVE",
+            "observable_applicability_only": true,
+            "preserve_outside_candidate_region": true,
+            "provenance": "target_local_skill",
+            "requires_target_support": true,
+            "single_surface_only": true,
+            "source_episode_id": "ssi_t2_a5"
+          },
+          "frozen_steps": [
+            {
+              "op": "outlier_iqr",
+              "params": {}
+            }
+          ]
+        },
+        "context": {
+          "observation_cutoff": 4512,
+          "series_count": 12,
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+          "features": {
+            "clipping_probe_direction": "unknown",
+            "denoising_probe_direction": "unknown",
+            "estimated_level_offset": 0.0,
+            "estimated_region_end_fraction": 0.3826462765957447,
+            "estimated_region_start_fraction": 0.009086879432624113,
+            "imputation_probe_direction": "unknown",
+            "level_excursion_score": 4.586054400093573,
+            "level_only_post_shift_support_sufficient": true,
+            "level_probe_direction": "unknown",
+            "level_region_end_fraction": 0.10516400709219859,
+            "level_region_fraction": 0.0118572695035461,
+            "local_robust_z_peak": 6.1260914768970185,
+            "longest_missing_run_fraction": 0.0,
+            "missing_fraction": 0.0,
+            "outlier_region_end_fraction": 0.3826462765957447,
+            "period_change_score": 0.24065040650406502,
+            "period_evidence_status": "OK",
+            "period_reliability": 1.0,
+            "period_repair_available": false,
+            "post_shift_support_sufficient": true,
+            "task_kind": "forecast"
+          }
+        }
+      },
+      "support_confirmation": {
+        "aggregate_gain": 0.021251106426088216,
+        "material_threshold": 0.005,
+        "passed": true
+      },
+      "adopted_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support_aggregate_gain": 0.021251106426088216,
+      "delayed_aggregate_gain": 0.01790699494306627,
+      "task04_evaluation_count": 69,
+      "task06_evaluation_count": 15,
+      "charged_support_evaluations_task06": 1,
+      "stored_skill_lifecycle": {
+        "before": "LOCAL_ACTIVE",
+        "after": "LOCAL_ACTIVE",
+        "task06_experience_status": "LOCAL_DRAFT"
+      }
+    }
+  },
+  "learning_curve": [
+    {
+      "arm": "A3",
+      "target_id": "T1",
+      "task04_evaluation_count": 69,
+      "task06_evaluation_count": 63,
+      "delta": -6,
+      "unit": "Consumer retrains"
+    },
+    {
+      "arm": "A5",
+      "target_id": "T1",
+      "task04_evaluation_count": 60,
+      "task06_evaluation_count": 15,
+      "delta": -45,
+      "unit": "Consumer retrains"
+    },
+    {
+      "arm": "A3",
+      "target_id": "T2",
+      "task04_evaluation_count": 75,
+      "task06_evaluation_count": 15,
+      "delta": -60,
+      "unit": "Consumer retrains"
+    },
+    {
+      "arm": "A5",
+      "target_id": "T2",
+      "task04_evaluation_count": 69,
+      "task06_evaluation_count": 15,
+      "delta": -54,
+      "unit": "Consumer retrains"
+    }
+  ],
+  "cost_definition": "the primary evaluation count is total Consumer retrains, matching #10: identity baselines, direct confirmation or shortlist, mask internals, Support bookkeeping and every delayed read all count",
+  "experience_provenance": "local_skill_recall",
+  "experience_counts_as_unguided_exploration": false,
+  "experience_entries_written": [
+    {
+      "episode_id": "lsr_t1_a3_e1v2_task_06",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:pooled",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "task_episode_id": "e1v2_task_06",
+        "arm": "A3",
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled",
+          "retrieved_local_skill_id": null,
+          "local_skill_hit": null
+        },
+        "program_geometry": {
+          "program": "hampel_filter",
+          "excluded_series": [],
+          "consumer_retrains": 63
+        }
+      },
+      "workflow_signature": "hampel_filter",
+      "support_response": {
+        "gain": 0.030429831288742017,
+        "accepted": true,
+        "block_origins": [
+          4512,
+          4560,
+          4608
+        ],
+        "program": "hampel_filter",
+        "excluded_series": [],
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.022935586536983726,
+        "se_block": null,
+        "gain_over_se": null,
+        "block_origins": [
+          4656,
+          4704,
+          4752
+        ],
+        "took_part_in_selection": true,
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "SUPPORT",
+      "response_validity": "VALID",
+      "local_status": "LOCAL_DRAFT",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "local_skill_recall",
+        "local_lifecycle_v1"
+      ]
+    },
+    {
+      "episode_id": "lsr_t1_a5_e1v2_task_06",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:pooled",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "task_episode_id": "e1v2_task_06",
+        "arm": "A5",
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled",
+          "retrieved_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+          "local_skill_hit": true
+        },
+        "program_geometry": {
+          "program": "outlier_iqr",
+          "excluded_series": [],
+          "consumer_retrains": 15
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "gain": 0.09213581337544795,
+        "accepted": true,
+        "block_origins": [
+          4512,
+          4560,
+          4608
+        ],
+        "program": "outlier_iqr",
+        "excluded_series": [],
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.03286330441091027,
+        "se_block": null,
+        "gain_over_se": null,
+        "block_origins": [
+          4656,
+          4704,
+          4752
+        ],
+        "took_part_in_selection": true,
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "SUPPORT",
+      "response_validity": "VALID",
+      "local_status": "LOCAL_DRAFT",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "local_skill_recall",
+        "local_lifecycle_v1"
+      ]
+    },
+    {
+      "episode_id": "lsr_t2_a3_e1v2_task_06",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:electricity|consumer:per_channel",
+      "domain_namespace": "electricity",
+      "context_summary": {
+        "task_episode_id": "e1v2_task_06",
+        "arm": "A3",
+        "cohort": {
+          "cohort_name": "electricity"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "retrieved_local_skill_id": "fast_winner_e1v2_repair_level_shift",
+          "local_skill_hit": true
+        },
+        "program_geometry": {
+          "program": "repair_level_shift",
+          "excluded_series": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "3"
+          ],
+          "consumer_retrains": 15
+        }
+      },
+      "workflow_signature": "repair_level_shift",
+      "support_response": {
+        "gain": 0.01352498598423891,
+        "accepted": true,
+        "block_origins": [
+          4512,
+          4560,
+          4608
+        ],
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "0",
+          "1",
+          "10",
+          "11",
+          "3"
+        ],
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.00527117684299049,
+        "se_block": null,
+        "gain_over_se": null,
+        "block_origins": [
+          4656,
+          4704,
+          4752
+        ],
+        "took_part_in_selection": true,
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "SUPPORT",
+      "response_validity": "VALID",
+      "local_status": "LOCAL_DRAFT",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "local_skill_recall",
+        "local_lifecycle_v1"
+      ]
+    },
+    {
+      "episode_id": "lsr_t2_a5_e1v2_task_06",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:electricity|consumer:per_channel",
+      "domain_namespace": "electricity",
+      "context_summary": {
+        "task_episode_id": "e1v2_task_06",
+        "arm": "A5",
+        "cohort": {
+          "cohort_name": "electricity"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "retrieved_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+          "local_skill_hit": true
+        },
+        "program_geometry": {
+          "program": "outlier_iqr",
+          "excluded_series": [],
+          "consumer_retrains": 15
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "gain": 0.021251106426088216,
+        "accepted": true,
+        "block_origins": [
+          4512,
+          4560,
+          4608
+        ],
+        "program": "outlier_iqr",
+        "excluded_series": [],
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "delayed_response": {
+        "evaluated": true,
+        "gain": 0.01790699494306627,
+        "se_block": null,
+        "gain_over_se": null,
+        "block_origins": [
+          4656,
+          4704,
+          4752
+        ],
+        "took_part_in_selection": true,
+        "provenance": "local_skill_recall",
+        "counts_as_unguided_exploration": false
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "SUPPORT",
+      "response_validity": "VALID",
+      "local_status": "LOCAL_DRAFT",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "local_skill_recall",
+        "local_lifecycle_v1"
+      ]
+    }
+  ],
+  "llm_call_count": 2,
+  "llm_call_budget": 30,
+  "stopped_early": null,
+  "arm_targets": [
+    {
+      "episode_id": "e1v2_task_06_T1_A3",
+      "target_id": "T1",
+      "arm": "A3",
+      "cohort": "T233",
+      "consumer_variant": "pooled",
+      "window_id": "e1v2_task_06",
+      "support_origins": [
+        4512,
+        4560,
+        4608
+      ],
+      "delayed_origins": [
+        4656,
+        4704,
+        4752
+      ],
+      "store_slot": "a3_t1",
+      "store_runtime_bundle_sha": null,
+      "task_context": {
+        "observation_cutoff": 4512,
+        "series_count": 12,
+        "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+        "features": {
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "estimated_level_offset": 35.474999999999994,
+          "estimated_region_end_fraction": 0.7311613475177305,
+          "estimated_region_start_fraction": 0.0237145390070922,
+          "imputation_probe_direction": "unknown",
+          "level_excursion_score": 9.56947437117409,
+          "level_only_post_shift_support_sufficient": true,
+          "level_probe_direction": "unknown",
+          "level_region_end_fraction": 0.12799202127659576,
+          "level_region_fraction": 0.008865248226950355,
+          "local_robust_z_peak": 8.999286619683222,
+          "longest_missing_run_fraction": 0.0,
+          "missing_fraction": 0.0,
+          "outlier_region_end_fraction": 0.7311613475177305,
+          "period_change_score": 0.5585106382978724,
+          "period_evidence_status": "OK",
+          "period_reliability": 1.0,
+          "period_repair_available": false,
+          "post_shift_support_sufficient": true,
+          "task_kind": "forecast"
+        }
+      },
+      "task_context_per_series": {
+        "T233": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 3.05148922908032,
+          "estimated_region_start_fraction": 0.1163563829787234,
+          "estimated_region_end_fraction": 0.13076241134751773,
+          "level_region_fraction": 0.014406028368794326,
+          "level_region_end_fraction": 0.13076241134751773,
+          "outlier_region_end_fraction": 0.0,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 4.772603580848185,
+          "estimated_level_offset": 35.349999999999994,
+          "period_change_score": 0.5,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T234": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 29.726946399370917,
+          "estimated_region_start_fraction": 0.0,
+          "estimated_region_end_fraction": 0.9153368794326241,
+          "level_region_fraction": 0.012632978723404254,
+          "level_region_end_fraction": 0.12433510638297872,
+          "outlier_region_end_fraction": 0.9153368794326241,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": false,
+          "level_excursion_score": 14.781218229017583,
+          "estimated_level_offset": 35.6,
+          "period_change_score": 0.9148936170212766,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T235": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 24.915889995590632,
+          "estimated_region_start_fraction": 0.0,
+          "estimated_region_end_fraction": 0.9137854609929078,
+          "level_region_fraction": 0.009086879432624113,
+          "level_region_end_fraction": 0.46099290780141844,
+          "outlier_region_end_fraction": 0.9137854609929078,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": false,
+          "level_excursion_score": 10.99319267684241,
+          "estimated_level_offset": 35.925,
+          "period_change_score": 0.9069767441860465,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T236": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 5.443183390170993,
+          "estimated_region_start_fraction": 0.024822695035460994,
+          "estimated_region_end_fraction": 0.3721187943262411,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.3721187943262411,
+          "outlier_region_end_fraction": 0.12810283687943264,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 4.852466960693084,
+          "estimated_level_offset": -38.2,
+          "period_change_score": 1.0,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T239": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 7.652404252970826,
+          "estimated_region_start_fraction": 0.025487588652482268,
+          "estimated_region_end_fraction": 0.6976950354609929,
+          "level_region_fraction": 0.009308510638297872,
+          "level_region_end_fraction": 0.4616578014184397,
+          "outlier_region_end_fraction": 0.6976950354609929,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 12.177624075641074,
+          "estimated_level_offset": 30.199999999999996,
+          "period_change_score": 0.9166666666666666,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T240": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 13.06713431359324,
+          "estimated_region_start_fraction": 0.022606382978723406,
+          "estimated_region_end_fraction": 0.6941489361702128,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.031471631205673756,
+          "outlier_region_end_fraction": 0.6941489361702128,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 9.254013220018887,
+          "estimated_level_offset": 31.125,
+          "period_change_score": 0.0,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T241": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 6.1688826395925105,
+          "estimated_region_start_fraction": 0.022384751773049646,
+          "estimated_region_end_fraction": 0.9140070921985816,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.03125,
+          "outlier_region_end_fraction": 0.9140070921985816,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": false,
+          "level_excursion_score": 5.346693173661187,
+          "estimated_level_offset": 66.22500000000002,
+          "period_change_score": 0.0,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T244": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 9.3304555060929,
+          "estimated_region_start_fraction": 0.008643617021276596,
+          "estimated_region_end_fraction": 0.12677304964539007,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.028812056737588652,
+          "outlier_region_end_fraction": 0.12677304964539007,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 7.731350330500472,
+          "estimated_level_offset": 41.875,
+          "period_change_score": 0.0,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T246": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 8.668117733273542,
+          "estimated_region_start_fraction": 0.025487588652482268,
+          "estimated_region_end_fraction": 0.9060283687943262,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.4616578014184397,
+          "outlier_region_end_fraction": 0.9060283687943262,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": false,
+          "level_excursion_score": 9.884935522329293,
+          "estimated_level_offset": 33.05,
+          "period_change_score": 0.9166666666666666,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T247": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 5.212349080114237,
+          "estimated_region_start_fraction": 0.008421985815602837,
+          "estimated_region_end_fraction": 0.12743794326241134,
+          "level_region_fraction": 0.020168439716312058,
+          "level_region_end_fraction": 0.028590425531914893,
+          "outlier_region_end_fraction": 0.12743794326241134,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 5.507309870955681,
+          "estimated_level_offset": 29.9,
+          "period_change_score": 0.6170212765957447,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T254": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 16.81409107552369,
+          "estimated_region_start_fraction": 0.08244680851063829,
+          "estimated_region_end_fraction": 0.7646276595744681,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.12522163120567376,
+          "outlier_region_end_fraction": 0.7646276595744681,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": true,
+          "level_excursion_score": 20.090189050124295,
+          "estimated_level_offset": 36.74999999999999,
+          "period_change_score": 0.0,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        },
+        "T256": {
+          "task_kind": "forecast",
+          "missing_fraction": 0.0,
+          "longest_missing_run_fraction": 0.0,
+          "local_robust_z_peak": 21.602440157680952,
+          "estimated_region_start_fraction": 0.07092198581560284,
+          "estimated_region_end_fraction": 0.9058067375886525,
+          "level_region_fraction": 0.008865248226950355,
+          "level_region_end_fraction": 0.46187943262411346,
+          "outlier_region_end_fraction": 0.9058067375886525,
+          "level_only_post_shift_support_sufficient": true,
+          "post_shift_support_sufficient": false,
+          "level_excursion_score": 11.100993749718963,
+          "estimated_level_offset": 35.8,
+          "period_change_score": 0.0,
+          "period_reliability": 1.0,
+          "period_evidence_status": "OK",
+          "period_repair_available": false,
+          "imputation_probe_direction": "unknown",
+          "clipping_probe_direction": "unknown",
+          "denoising_probe_direction": "unknown",
+          "level_probe_direction": "unknown"
+        }
+      },
+      "retrieval": {
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "resolved_memory_ids": [],
+        "effective_harness_view_sha": "7a13128ae6f8817ce99a4cb392368a4fa1f6c461659dea92c46337790e4376f1",
+        "expected_skill_id": null,
+        "hit": null,
+        "capability_top_k": {
+          "kind": "rule_lexical",
+          "top_k": 2
+        },
+        "served_card": null,
+        "expected_local_skill_id": null,
+        "local_skill_hit": null
+      },
+      "skill_clause_ids_available": [],
+      "prompt_body": {
+        "schema_version": "skill-store-integration-input/1",
+        "target": {
+          "target_id": "T1",
+          "cohort": "T233",
+          "consumer_variant": "pooled",
+          "cell_key": "batch:T233|consumer:pooled",
+          "window_id": "e1v2_task_06",
+          "support_origins": [
+            4512,
+            4560,
+            4608
+          ],
+          "delayed_origins": [
+            4656,
+            4704,
+            4752
+          ],
+          "observation_cutoff": 4512,
+          "training_series": [
+            "T233",
+            "T234",
+            "T235",
+            "T236",
+            "T239",
+            "T240",
+            "T241",
+            "T244",
+            "T246",
+            "T247",
+            "T254",
+            "T256"
+          ],
+          "evaluation_series_count": 8,
+          "exposure": "already exposed development data; not fresh"
+        },
+        "consumer_structure": {
+          "pooled": "one model fitted on the stacked windows of all training channels",
+          "per_channel": "each training channel fits its own model; every evaluation channel is predicted by the equal-weight mean of those channel-wise models"
+        },
+        "program_menu": [
+          "repair_level_shift",
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize",
+          "denoise_median",
+          "smooth_ma"
+        ],
+        "identity_is_always_available": true,
+        "retrieved_guidance": {
+          "where_it_comes_from": "any Skill in the resolved Harness of this call was returned by retrieval for this Task Context; nothing was placed there by hand",
+          "what_it_authorizes": "guidance for the proposal stage only. A retrieved Skill cannot supply a candidate and authorizes no execution: the plan you name is still measured on this batch's own Support and still has to clear the delayed gate",
+          "may_be_empty": true
+        },
+        "evaluation_budget": {
+          "charged_evaluations": 2,
+          "menu_size": 7,
+          "mask_round": "free; runs on the highest-Support shortlisted program",
+          "delayed_window": "read after the plan is named and never shown to you",
+          "adoption_ladder": "the Support winner is the highest-Support full-batch plan measured here, and it sets the bar only if its own Support is positive; a named plan below the bar falls back to that Support winner when its delayed reading is positive, and to identity otherwise"
+        },
+        "public_observation": {
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]",
+          "rows": [
+            {
+              "series_uid": "T233",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 3.05148922908032,
+              "estimated_region_start_fraction": 0.1163563829787234,
+              "estimated_region_end_fraction": 0.13076241134751773,
+              "level_region_fraction": 0.014406028368794326,
+              "level_excursion_score": 4.772603580848185,
+              "estimated_level_offset": 35.349999999999994,
+              "period_change_score": 0.5,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T234",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 29.726946399370917,
+              "estimated_region_start_fraction": 0.0,
+              "estimated_region_end_fraction": 0.9153368794326241,
+              "level_region_fraction": 0.012632978723404254,
+              "level_excursion_score": 14.781218229017583,
+              "estimated_level_offset": 35.6,
+              "period_change_score": 0.9148936170212766,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": false
+            },
+            {
+              "series_uid": "T235",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 24.915889995590632,
+              "estimated_region_start_fraction": 0.0,
+              "estimated_region_end_fraction": 0.9137854609929078,
+              "level_region_fraction": 0.009086879432624113,
+              "level_excursion_score": 10.99319267684241,
+              "estimated_level_offset": 35.925,
+              "period_change_score": 0.9069767441860465,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": false
+            },
+            {
+              "series_uid": "T236",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 5.443183390170993,
+              "estimated_region_start_fraction": 0.024822695035460994,
+              "estimated_region_end_fraction": 0.3721187943262411,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 4.852466960693084,
+              "estimated_level_offset": -38.2,
+              "period_change_score": 1.0,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T239",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 7.652404252970826,
+              "estimated_region_start_fraction": 0.025487588652482268,
+              "estimated_region_end_fraction": 0.6976950354609929,
+              "level_region_fraction": 0.009308510638297872,
+              "level_excursion_score": 12.177624075641074,
+              "estimated_level_offset": 30.199999999999996,
+              "period_change_score": 0.9166666666666666,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T240",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 13.06713431359324,
+              "estimated_region_start_fraction": 0.022606382978723406,
+              "estimated_region_end_fraction": 0.6941489361702128,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 9.254013220018887,
+              "estimated_level_offset": 31.125,
+              "period_change_score": 0.0,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T241",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 6.1688826395925105,
+              "estimated_region_start_fraction": 0.022384751773049646,
+              "estimated_region_end_fraction": 0.9140070921985816,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 5.346693173661187,
+              "estimated_level_offset": 66.22500000000002,
+              "period_change_score": 0.0,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": false
+            },
+            {
+              "series_uid": "T244",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 9.3304555060929,
+              "estimated_region_start_fraction": 0.008643617021276596,
+              "estimated_region_end_fraction": 0.12677304964539007,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 7.731350330500472,
+              "estimated_level_offset": 41.875,
+              "period_change_score": 0.0,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T246",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 8.668117733273542,
+              "estimated_region_start_fraction": 0.025487588652482268,
+              "estimated_region_end_fraction": 0.9060283687943262,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 9.884935522329293,
+              "estimated_level_offset": 33.05,
+              "period_change_score": 0.9166666666666666,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": false
+            },
+            {
+              "series_uid": "T247",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 5.212349080114237,
+              "estimated_region_start_fraction": 0.008421985815602837,
+              "estimated_region_end_fraction": 0.12743794326241134,
+              "level_region_fraction": 0.020168439716312058,
+              "level_excursion_score": 5.507309870955681,
+              "estimated_level_offset": 29.9,
+              "period_change_score": 0.6170212765957447,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T254",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 16.81409107552369,
+              "estimated_region_start_fraction": 0.08244680851063829,
+              "estimated_region_end_fraction": 0.7646276595744681,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 20.090189050124295,
+              "estimated_level_offset": 36.74999999999999,
+              "period_change_score": 0.0,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": true
+            },
+            {
+              "series_uid": "T256",
+              "missing_fraction": 0.0,
+              "longest_missing_run_fraction": 0.0,
+              "local_robust_z_peak": 21.602440157680952,
+              "estimated_region_start_fraction": 0.07092198581560284,
+              "estimated_region_end_fraction": 0.9058067375886525,
+              "level_region_fraction": 0.008865248226950355,
+              "level_excursion_score": 11.100993749718963,
+              "estimated_level_offset": 35.8,
+              "period_change_score": 0.0,
+              "period_reliability": 1.0,
+              "post_shift_support_sufficient": false
+            }
+          ]
+        }
+      },
+      "stages": [
+        {
+          "stage": "skill_store_shortlist",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "skill_store_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        }
+      ],
+      "shortlist": [
+        "repair_level_shift",
+        "hampel_filter"
+      ],
+      "evaluations_used": 2,
+      "adopted_plan": {
+        "program": "hampel_filter",
+        "excluded_series": []
+      },
+      "final_plan": {
+        "program": "hampel_filter",
+        "excluded_series": []
+      },
+      "support": {
+        "aggregate_gain": 0.030429831288742017,
+        "harmed_eval_series_count": 4,
+        "harmed_eval_series_total_harm": 0.7087672426749055,
+        "harmed_eval_series": [
+          "T257",
+          "T259",
+          "T264",
+          "T266"
+        ]
+      },
+      "delayed": {
+        "aggregate_gain": 0.022935586536983726,
+        "harmed_eval_series_count": 5,
+        "harmed_eval_series_total_harm": 0.4996358464375288,
+        "harmed_eval_series": [
+          "T257",
+          "T259",
+          "T262",
+          "T265",
+          "T266"
+        ]
+      },
+      "shortlist_payload": {
+        "shortlist": [
+          "repair_level_shift",
+          "hampel_filter"
+        ],
+        "request_mask_search": true,
+        "skill_clause_use": [],
+        "reason": "The public observations show repeated, localized level excursions with substantial estimated offsets, while missingness is absent; repair_level_shift directly targets the dominant signal. Hampel filtering is a distinct secondary option for the strong local robust-deviation peaks, and mask search is appropriate for the higher-Support shortlisted program."
+      },
+      "request_mask_search": true,
+      "skill_clause_use": [],
+      "shortlist_reason": "The public observations show repeated, localized level excursions with substantial estimated offsets, while missingness is absent; repair_level_shift directly targets the dominant signal. Hampel filtering is a distinct secondary option for the strong local robust-deviation peaks, and mask search is appropriate for the higher-Support shortlisted program.",
+      "support_results": {
+        "repair_level_shift": {
+          "aggregate_gain": 0.0030171117752458335,
+          "harmed_eval_series_count": 3,
+          "harmed_eval_series_total_harm": 0.2426153156487464,
+          "harmed_eval_series": [
+            "T257",
+            "T259",
+            "T265"
+          ]
+        },
+        "hampel_filter": {
+          "aggregate_gain": 0.030429831288742017,
+          "harmed_eval_series_count": 4,
+          "harmed_eval_series_total_harm": 0.7087672426749055,
+          "harmed_eval_series": [
+            "T257",
+            "T259",
+            "T264",
+            "T266"
+          ]
+        }
+      },
+      "mask_search": {
+        "program": "hampel_filter",
+        "final_excluded": [
+          "T244"
+        ],
+        "support": {
+          "aggregate_gain": 0.07441871679341483,
+          "harmed_eval_series_count": 4,
+          "harmed_eval_series_total_harm": 0.5939882817683022,
+          "harmed_eval_series": [
+            "T257",
+            "T259",
+            "T264",
+            "T266"
+          ]
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "T244",
+            "support_aggregate_gain": 0.07441871679341483,
+            "delta": 0.04398888550467281,
+            "decision": "ACCEPTED"
+          },
+          {
+            "step": 2,
+            "reverted_series": "T254",
+            "support_aggregate_gain": 0.05079549829665408,
+            "delta": -0.023623218496760752,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "T244",
+          "T254",
+          "T233",
+          "T240",
+          "T235",
+          "T256",
+          "T241",
+          "T234",
+          "T247",
+          "T246",
+          "T239",
+          "T236"
+        ],
+        "charged": false
+      },
+      "measured_plans": [
+        {
+          "plan_id": "P1",
+          "program": "repair_level_shift",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0030171117752458335,
+          "harmed_evaluation_series_count": 3,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "P2",
+          "program": "hampel_filter",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.030429831288742017,
+          "harmed_evaluation_series_count": 4,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "PM",
+          "program": "hampel_filter",
+          "excluded_series": [
+            "T244"
+          ],
+          "support_aggregate_gain": 0.07441871679341483,
+          "harmed_evaluation_series_count": 4,
+          "measured_by": "greedy exclusion-mask round",
+          "full_batch": false
+        },
+        {
+          "plan_id": "P0",
+          "program": "identity",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "the identity baseline every gain is measured against",
+          "full_batch": true
+        }
+      ],
+      "measured_plans_note": "the mask round ran on `hampel_filter` and reverted T244",
+      "adoption_payload": {
+        "program": "hampel_filter",
+        "excluded_series": [],
+        "reason": "The full-batch hampel_filter plan has the highest positive measured Support gain (0.03043), exceeding repair_level_shift (0.00302) and identity (0)."
+      },
+      "llm_calls": 2,
+      "adoption_reason": "The full-batch hampel_filter plan has the highest positive measured Support gain (0.03043), exceeding repair_level_shift (0.00302) and identity (0).",
+      "adoption_ladder": {
+        "full_batch_pool": {
+          "repair_level_shift": 0.0030171117752458335,
+          "hampel_filter": 0.030429831288742017
+        },
+        "support_ranking": [
+          "hampel_filter",
+          "repair_level_shift"
+        ],
+        "top_support_program": "hampel_filter",
+        "support_winner": "hampel_filter",
+        "support_winner_note": null,
+        "support_winner_full_batch_delayed": 0.022935586536983726,
+        "bar": 0.022935586536983726,
+        "bar_source": "max(0, the full-batch delayed of the Support winner `hampel_filter`)",
+        "named_plan_delayed_aggregate_gain": 0.022935586536983726,
+        "named_plan_margin": 0.0,
+        "gate_passed": true,
+        "path": "GATE_PASS_ADOPT_NAMED",
+        "path_text": "the named plan cleared the bar (+0.022936 >= +0.022936)",
+        "delayed_reads": [
+          {
+            "program": "hampel_filter",
+            "excluded_series": [],
+            "role": "bar",
+            "delayed_aggregate_gain": 0.022935586536983726,
+            "newly_measured": true
+          },
+          {
+            "program": "hampel_filter",
+            "excluded_series": [],
+            "role": "confirmation",
+            "delayed_aggregate_gain": 0.022935586536983726,
+            "newly_measured": false
+          }
+        ],
+        "delayed_reads_newly_measured": 1,
+        "final_plan": {
+          "program": "hampel_filter",
+          "excluded_series": []
+        },
+        "rule": {
+          "step_1_support_winner": "the Support winner is the highest-Support plan among the full-batch plans this arm-target actually evaluated, ties broken by menu order; it is eligible only if its Support aggregate gain is strictly positive, otherwise this arm-target has no Support winner",
+          "step_2_gate": "the plan the Agent named is adopted only if its delayed aggregate gain is at least the bar, where bar = max(0, the Support winner's full-batch delayed aggregate gain), and bar = 0 when there is no Support winner",
+          "step_3_fallback": "if the named plan fails the gate, adopt the Support winner when one exists and its full-batch delayed aggregate gain is positive; otherwise adopt identity",
+          "selection_is_support_only": "which plan the ladder falls back to is decided by Support alone, because Support is the window a deployer can see.  Delayed is a confirmation reading: the ladder consults exactly two delayed numbers -- the Support winner's, to set the bar, and the named plan's, to confirm it.  Ranking fallback candidates by delayed, or comparing several candidates' delayed, is forbidden, and the delayed_reads tape on every arm-target records what was consulted"
+        }
+      },
+      "relation": "POSITIVE",
+      "instrument": {
+        "full_batch_support_evaluations_charged": 2,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 16,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "repair_level_shift",
+            "charged": true,
+            "aggregate_gain": 0.0030171117752458335
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "hampel_filter",
+            "charged": true,
+            "aggregate_gain": 0.030429831288742017
+          },
+          {
+            "kind": "mask_search",
+            "program": "hampel_filter",
+            "charged": false,
+            "final_excluded": [
+              "T244"
+            ],
+            "aggregate_gain": 0.07441871679341483
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "hampel_filter",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.022935586536983726
+          }
+        ],
+        "budget_source": "recipe_skill_bridge_v1",
+        "consumer_retrains_total": 63,
+        "consumer_retrain_log": [
+          {
+            "what": "identity baselines",
+            "retrains": 6
+          },
+          {
+            "what": "scoped(repair_level_shift, full batch)",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, full batch)",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T233'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T234'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T235'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T236'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T239'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T240'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T241'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T244'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T246'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T247'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T254'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, ['T256'])",
+            "retrains": 3
+          },
+          {
+            "what": "scoped(hampel_filter, full batch)",
+            "retrains": 3
+          },
+          {
+            "what": "masked(hampel_filter, minus ['T244'])",
+            "retrains": 3
+          },
+          {
+            "what": "masked(hampel_filter, minus ['T244', 'T254'])",
+            "retrains": 3
+          },
+          {
+            "what": "masked(hampel_filter, minus nothing)",
+            "retrains": 3
+          },
+          {
+            "what": "masked(hampel_filter, minus nothing)",
+            "retrains": 3
+          }
+        ],
+        "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+      },
+      "consumer_retrains_total": 63,
+      "wall_seconds": 80.33569400000852,
+      "reuse_adopted": false,
+      "experience": {
+        "episode_id": "lsr_t1_a3_e1v2_task_06",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:pooled",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "task_episode_id": "e1v2_task_06",
+          "arm": "A3",
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled",
+            "retrieved_local_skill_id": null,
+            "local_skill_hit": null
+          },
+          "program_geometry": {
+            "program": "hampel_filter",
+            "excluded_series": [],
+            "consumer_retrains": 63
+          }
+        },
+        "workflow_signature": "hampel_filter",
+        "support_response": {
+          "gain": 0.030429831288742017,
+          "accepted": true,
+          "block_origins": [
+            4512,
+            4560,
+            4608
+          ],
+          "program": "hampel_filter",
+          "excluded_series": [],
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "delayed_response": {
+          "evaluated": true,
+          "gain": 0.022935586536983726,
+          "se_block": null,
+          "gain_over_se": null,
+          "block_origins": [
+            4656,
+            4704,
+            4752
+          ],
+          "took_part_in_selection": true,
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "LOCAL_DRAFT",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "local_skill_recall",
+          "local_lifecycle_v1"
+        ]
+      },
+      "stored_skill_lifecycle_before": null,
+      "stored_skill_lifecycle_after": null,
+      "lifecycle_note": "the task_06 delayed reading took part in this episode's v2 adoption gate, so it records an Experience but does not retroactively replace #11's out-of-selection ACTIVE evidence"
+    },
+    {
+      "episode_id": "e1v2_task_06_T1_A5",
+      "target_id": "T1",
+      "arm": "A5",
+      "cohort": "T233",
+      "consumer_variant": "pooled",
+      "window_id": "e1v2_task_06",
+      "support_origins": [
+        4512,
+        4560,
+        4608
+      ],
+      "delayed_origins": [
+        4656,
+        4704,
+        4752
+      ],
+      "retrieval": {
+        "expected_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+        "local_skill_hit": true,
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify",
+          "fast_winner_e1v2_outlier_iqr",
+          "recipe_batch_guidance_t1_v1"
+        ],
+        "resolved_memory_ids": [],
+        "source_guidance_hits": [
+          "recipe_batch_guidance_t1_v1"
+        ],
+        "local_skill": {
+          "skill_id": "fast_winner_e1v2_outlier_iqr",
+          "body": "Frozen program steps: [{\"op\": \"outlier_iqr\", \"params\": {}}]",
+          "observable_applicability": {
+            "all": [
+              {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            ]
+          },
+          "risk_guards": {
+            "activation_probe_gain": 0.09358275034111724,
+            "activation_probe_gain_over_se": 5.325569007582377,
+            "activation_probe_origins": [
+              4368,
+              4416,
+              4464
+            ],
+            "activation_probe_se_block": 0.017572347707423764,
+            "activation_probe_window": "e1v2_task_05",
+            "current_task_support_confirmation_required": true,
+            "evidence_level": "DELAYED",
+            "evidence_refs": [
+              "artifacts/functional/e2/lifecycle_probe_v1.json",
+              "draft_id:T1_A5"
+            ],
+            "explicit_choice_required": true,
+            "frozen_plan": {
+              "excluded_series": [],
+              "program": "outlier_iqr"
+            },
+            "local_status": "LOCAL_ACTIVE",
+            "observable_applicability_only": true,
+            "preserve_outside_candidate_region": true,
+            "provenance": "target_local_skill",
+            "requires_target_support": true,
+            "single_surface_only": true,
+            "source_episode_id": "ssi_t1_a5"
+          },
+          "frozen_steps": [
+            {
+              "op": "outlier_iqr",
+              "params": {}
+            }
+          ]
+        },
+        "context": {
+          "observation_cutoff": 4512,
+          "series_count": 12,
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+          "features": {
+            "clipping_probe_direction": "unknown",
+            "denoising_probe_direction": "unknown",
+            "estimated_level_offset": 35.474999999999994,
+            "estimated_region_end_fraction": 0.7311613475177305,
+            "estimated_region_start_fraction": 0.0237145390070922,
+            "imputation_probe_direction": "unknown",
+            "level_excursion_score": 9.56947437117409,
+            "level_only_post_shift_support_sufficient": true,
+            "level_probe_direction": "unknown",
+            "level_region_end_fraction": 0.12799202127659576,
+            "level_region_fraction": 0.008865248226950355,
+            "local_robust_z_peak": 8.999286619683222,
+            "longest_missing_run_fraction": 0.0,
+            "missing_fraction": 0.0,
+            "outlier_region_end_fraction": 0.7311613475177305,
+            "period_change_score": 0.5585106382978724,
+            "period_evidence_status": "OK",
+            "period_reliability": 1.0,
+            "period_repair_available": false,
+            "post_shift_support_sufficient": true,
+            "task_kind": "forecast"
+          }
+        }
+      },
+      "recall_payload": {
+        "source": "naturally_retrieved_target_local_skill",
+        "skill_id": "fast_winner_e1v2_outlier_iqr",
+        "frozen_steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "frozen_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "current_support_confirmation": {
+          "aggregate_gain": 0.09213581337544795,
+          "material_threshold": 0.005,
+          "passed": true
+        }
+      },
+      "recall_candidate_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "reuse_adopted": true,
+      "support_confirmation_passed": true,
+      "adoption_ladder": {
+        "full_batch_pool": {
+          "outlier_iqr": 0.09213581337544795
+        },
+        "support_ranking": [
+          "outlier_iqr"
+        ],
+        "top_support_program": "outlier_iqr",
+        "support_winner": "outlier_iqr",
+        "support_winner_note": null,
+        "support_winner_full_batch_delayed": 0.03286330441091027,
+        "bar": 0.03286330441091027,
+        "bar_source": "max(0, the full-batch delayed of the Support winner `outlier_iqr`)",
+        "named_plan_delayed_aggregate_gain": 0.03286330441091027,
+        "named_plan_margin": 0.0,
+        "gate_passed": true,
+        "path": "GATE_PASS_ADOPT_NAMED",
+        "path_text": "the named plan cleared the bar (+0.032863 >= +0.032863)",
+        "delayed_reads": [
+          {
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "role": "bar",
+            "delayed_aggregate_gain": 0.03286330441091027,
+            "newly_measured": true
+          },
+          {
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "role": "confirmation",
+            "delayed_aggregate_gain": 0.03286330441091027,
+            "newly_measured": false
+          }
+        ],
+        "delayed_reads_newly_measured": 1,
+        "final_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "rule": {
+          "step_1_support_winner": "the Support winner is the highest-Support plan among the full-batch plans this arm-target actually evaluated, ties broken by menu order; it is eligible only if its Support aggregate gain is strictly positive, otherwise this arm-target has no Support winner",
+          "step_2_gate": "the plan the Agent named is adopted only if its delayed aggregate gain is at least the bar, where bar = max(0, the Support winner's full-batch delayed aggregate gain), and bar = 0 when there is no Support winner",
+          "step_3_fallback": "if the named plan fails the gate, adopt the Support winner when one exists and its full-batch delayed aggregate gain is positive; otherwise adopt identity",
+          "selection_is_support_only": "which plan the ladder falls back to is decided by Support alone, because Support is the window a deployer can see.  Delayed is a confirmation reading: the ladder consults exactly two delayed numbers -- the Support winner's, to set the bar, and the named plan's, to confirm it.  Ranking fallback candidates by delayed, or comparing several candidates' delayed, is forbidden, and the delayed_reads tape on every arm-target records what was consulted"
+        }
+      },
+      "final_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support": {
+        "aggregate_gain": 0.09213581337544795,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.03286330441091027,
+        "harmed_eval_series_count": 2,
+        "harmed_eval_series_total_harm": 0.15714562232779913,
+        "harmed_eval_series": [
+          "T257",
+          "T262"
+        ]
+      },
+      "relation": "POSITIVE",
+      "llm_calls": 0,
+      "evaluations_used": 1,
+      "consumer_retrains_total": 15,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 1,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 1,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_iqr",
+            "charged": true,
+            "aggregate_gain": 0.09213581337544795
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_iqr",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.03286330441091027
+          }
+        ],
+        "budget_source": "recipe_skill_bridge_v1",
+        "consumer_retrains_total": 15,
+        "consumer_retrain_log": [
+          {
+            "what": "identity baselines",
+            "retrains": 6
+          },
+          {
+            "what": "scoped(outlier_iqr, full batch)",
+            "retrains": 3
+          },
+          {
+            "what": "masked(outlier_iqr, minus nothing)",
+            "retrains": 3
+          },
+          {
+            "what": "masked(outlier_iqr, minus nothing)",
+            "retrains": 3
+          }
+        ],
+        "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+      },
+      "wall_seconds": 27.317829600069672,
+      "experience": {
+        "episode_id": "lsr_t1_a5_e1v2_task_06",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:pooled",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "task_episode_id": "e1v2_task_06",
+          "arm": "A5",
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled",
+            "retrieved_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+            "local_skill_hit": true
+          },
+          "program_geometry": {
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "consumer_retrains": 15
+          }
+        },
+        "workflow_signature": "outlier_iqr",
+        "support_response": {
+          "gain": 0.09213581337544795,
+          "accepted": true,
+          "block_origins": [
+            4512,
+            4560,
+            4608
+          ],
+          "program": "outlier_iqr",
+          "excluded_series": [],
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "delayed_response": {
+          "evaluated": true,
+          "gain": 0.03286330441091027,
+          "se_block": null,
+          "gain_over_se": null,
+          "block_origins": [
+            4656,
+            4704,
+            4752
+          ],
+          "took_part_in_selection": true,
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "LOCAL_DRAFT",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "local_skill_recall",
+          "local_lifecycle_v1"
+        ]
+      },
+      "stored_skill_lifecycle_before": "LOCAL_ACTIVE",
+      "stored_skill_lifecycle_after": "LOCAL_ACTIVE",
+      "lifecycle_note": "the task_06 delayed reading took part in this episode's v2 adoption gate, so it records an Experience but does not retroactively replace #11's out-of-selection ACTIVE evidence"
+    },
+    {
+      "episode_id": "e1v2_task_06_T2_A3",
+      "target_id": "T2",
+      "arm": "A3",
+      "cohort": "electricity",
+      "consumer_variant": "per_channel",
+      "window_id": "e1v2_task_06",
+      "support_origins": [
+        4512,
+        4560,
+        4608
+      ],
+      "delayed_origins": [
+        4656,
+        4704,
+        4752
+      ],
+      "retrieval": {
+        "expected_local_skill_id": "fast_winner_e1v2_repair_level_shift",
+        "local_skill_hit": true,
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify",
+          "fast_winner_e1v2_repair_level_shift"
+        ],
+        "resolved_memory_ids": [],
+        "source_guidance_hits": [],
+        "local_skill": {
+          "skill_id": "fast_winner_e1v2_repair_level_shift",
+          "body": "Frozen program steps: [{\"op\": \"repair_level_shift\", \"params\": {}}]",
+          "observable_applicability": {
+            "all": [
+              {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            ]
+          },
+          "risk_guards": {
+            "activation_probe_gain": 0.056719941465735134,
+            "activation_probe_gain_over_se": 3.8033257028167333,
+            "activation_probe_origins": [
+              4368,
+              4416,
+              4464
+            ],
+            "activation_probe_se_block": 0.014913248535019888,
+            "activation_probe_window": "e1v2_task_05",
+            "current_task_support_confirmation_required": true,
+            "evidence_level": "DELAYED",
+            "evidence_refs": [
+              "artifacts/functional/e2/lifecycle_probe_v1.json",
+              "draft_id:T2_A3"
+            ],
+            "explicit_choice_required": true,
+            "frozen_plan": {
+              "excluded_series": [
+                "0",
+                "1",
+                "10",
+                "11",
+                "3"
+              ],
+              "program": "repair_level_shift"
+            },
+            "local_status": "LOCAL_ACTIVE",
+            "observable_applicability_only": true,
+            "preserve_outside_candidate_region": true,
+            "provenance": "target_local_skill",
+            "requires_target_support": true,
+            "single_surface_only": true,
+            "source_episode_id": "ssi_t2_a3"
+          },
+          "frozen_steps": [
+            {
+              "op": "repair_level_shift",
+              "params": {}
+            }
+          ]
+        },
+        "context": {
+          "observation_cutoff": 4512,
+          "series_count": 12,
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+          "features": {
+            "clipping_probe_direction": "unknown",
+            "denoising_probe_direction": "unknown",
+            "estimated_level_offset": 0.0,
+            "estimated_region_end_fraction": 0.3826462765957447,
+            "estimated_region_start_fraction": 0.009086879432624113,
+            "imputation_probe_direction": "unknown",
+            "level_excursion_score": 4.586054400093573,
+            "level_only_post_shift_support_sufficient": true,
+            "level_probe_direction": "unknown",
+            "level_region_end_fraction": 0.10516400709219859,
+            "level_region_fraction": 0.0118572695035461,
+            "local_robust_z_peak": 6.1260914768970185,
+            "longest_missing_run_fraction": 0.0,
+            "missing_fraction": 0.0,
+            "outlier_region_end_fraction": 0.3826462765957447,
+            "period_change_score": 0.24065040650406502,
+            "period_evidence_status": "OK",
+            "period_reliability": 1.0,
+            "period_repair_available": false,
+            "post_shift_support_sufficient": true,
+            "task_kind": "forecast"
+          }
+        }
+      },
+      "recall_payload": {
+        "source": "naturally_retrieved_target_local_skill",
+        "skill_id": "fast_winner_e1v2_repair_level_shift",
+        "frozen_steps": [
+          {
+            "op": "repair_level_shift",
+            "params": {}
+          }
+        ],
+        "frozen_plan": {
+          "program": "repair_level_shift",
+          "excluded_series": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "3"
+          ]
+        },
+        "current_support_confirmation": {
+          "aggregate_gain": 0.01352498598423891,
+          "material_threshold": 0.005,
+          "passed": true
+        }
+      },
+      "recall_candidate_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "0",
+          "1",
+          "10",
+          "11",
+          "3"
+        ]
+      },
+      "reuse_adopted": true,
+      "support_confirmation_passed": true,
+      "adoption_ladder": {
+        "full_batch_pool": {},
+        "support_ranking": [],
+        "top_support_program": null,
+        "support_winner": null,
+        "support_winner_note": null,
+        "support_winner_full_batch_delayed": null,
+        "bar": 0.0,
+        "bar_source": "no Support winner, so the bar is identity at zero",
+        "named_plan_delayed_aggregate_gain": 0.00527117684299049,
+        "named_plan_margin": 0.00527117684299049,
+        "gate_passed": true,
+        "path": "GATE_PASS_ADOPT_NAMED",
+        "path_text": "the named plan cleared the bar (+0.005271 >= +0.000000)",
+        "delayed_reads": [
+          {
+            "program": "repair_level_shift",
+            "excluded_series": [
+              "0",
+              "1",
+              "10",
+              "11",
+              "3"
+            ],
+            "role": "confirmation",
+            "delayed_aggregate_gain": 0.00527117684299049,
+            "newly_measured": true
+          }
+        ],
+        "delayed_reads_newly_measured": 1,
+        "final_plan": {
+          "program": "repair_level_shift",
+          "excluded_series": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "3"
+          ]
+        },
+        "rule": {
+          "step_1_support_winner": "the Support winner is the highest-Support plan among the full-batch plans this arm-target actually evaluated, ties broken by menu order; it is eligible only if its Support aggregate gain is strictly positive, otherwise this arm-target has no Support winner",
+          "step_2_gate": "the plan the Agent named is adopted only if its delayed aggregate gain is at least the bar, where bar = max(0, the Support winner's full-batch delayed aggregate gain), and bar = 0 when there is no Support winner",
+          "step_3_fallback": "if the named plan fails the gate, adopt the Support winner when one exists and its full-batch delayed aggregate gain is positive; otherwise adopt identity",
+          "selection_is_support_only": "which plan the ladder falls back to is decided by Support alone, because Support is the window a deployer can see.  Delayed is a confirmation reading: the ladder consults exactly two delayed numbers -- the Support winner's, to set the bar, and the named plan's, to confirm it.  Ranking fallback candidates by delayed, or comparing several candidates' delayed, is forbidden, and the delayed_reads tape on every arm-target records what was consulted"
+        }
+      },
+      "final_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "0",
+          "1",
+          "10",
+          "11",
+          "3"
+        ]
+      },
+      "support": {
+        "aggregate_gain": 0.01352498598423891,
+        "harmed_eval_series_count": 1,
+        "harmed_eval_series_total_harm": 0.04631733119309386,
+        "harmed_eval_series": [
+          "16"
+        ]
+      },
+      "delayed": {
+        "aggregate_gain": 0.00527117684299049,
+        "harmed_eval_series_count": 3,
+        "harmed_eval_series_total_harm": 0.11121950161332506,
+        "harmed_eval_series": [
+          "13",
+          "14",
+          "15"
+        ]
+      },
+      "relation": "POSITIVE",
+      "llm_calls": 0,
+      "evaluations_used": 1,
+      "consumer_retrains_total": 15,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 1,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 1,
+        "log": [
+          {
+            "kind": "local_skill_direct_support_confirmation",
+            "program": "repair_level_shift",
+            "excluded_series": [
+              "0",
+              "1",
+              "10",
+              "11",
+              "3"
+            ],
+            "charged": true,
+            "aggregate_gain": 0.01352498598423891
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "repair_level_shift",
+            "charged": false,
+            "excluded_series": [
+              "0",
+              "1",
+              "10",
+              "11",
+              "3"
+            ],
+            "aggregate_gain": 0.00527117684299049
+          }
+        ],
+        "budget_source": "recipe_skill_bridge_v1",
+        "consumer_retrains_total": 15,
+        "consumer_retrain_log": [
+          {
+            "what": "identity baselines",
+            "retrains": 6
+          },
+          {
+            "what": "masked(repair_level_shift, minus ['0', '1', '10', '11', '3'])",
+            "retrains": 3
+          },
+          {
+            "what": "masked(repair_level_shift, minus ['0', '1', '10', '11', '3'])",
+            "retrains": 3
+          },
+          {
+            "what": "masked(repair_level_shift, minus ['0', '1', '10', '11', '3'])",
+            "retrains": 3
+          }
+        ],
+        "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+      },
+      "wall_seconds": 32.41939159994945,
+      "experience": {
+        "episode_id": "lsr_t2_a3_e1v2_task_06",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:electricity|consumer:per_channel",
+        "domain_namespace": "electricity",
+        "context_summary": {
+          "task_episode_id": "e1v2_task_06",
+          "arm": "A3",
+          "cohort": {
+            "cohort_name": "electricity"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "retrieved_local_skill_id": "fast_winner_e1v2_repair_level_shift",
+            "local_skill_hit": true
+          },
+          "program_geometry": {
+            "program": "repair_level_shift",
+            "excluded_series": [
+              "0",
+              "1",
+              "10",
+              "11",
+              "3"
+            ],
+            "consumer_retrains": 15
+          }
+        },
+        "workflow_signature": "repair_level_shift",
+        "support_response": {
+          "gain": 0.01352498598423891,
+          "accepted": true,
+          "block_origins": [
+            4512,
+            4560,
+            4608
+          ],
+          "program": "repair_level_shift",
+          "excluded_series": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "3"
+          ],
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "delayed_response": {
+          "evaluated": true,
+          "gain": 0.00527117684299049,
+          "se_block": null,
+          "gain_over_se": null,
+          "block_origins": [
+            4656,
+            4704,
+            4752
+          ],
+          "took_part_in_selection": true,
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "LOCAL_DRAFT",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "local_skill_recall",
+          "local_lifecycle_v1"
+        ]
+      },
+      "stored_skill_lifecycle_before": "LOCAL_ACTIVE",
+      "stored_skill_lifecycle_after": "LOCAL_ACTIVE",
+      "lifecycle_note": "the task_06 delayed reading took part in this episode's v2 adoption gate, so it records an Experience but does not retroactively replace #11's out-of-selection ACTIVE evidence"
+    },
+    {
+      "episode_id": "e1v2_task_06_T2_A5",
+      "target_id": "T2",
+      "arm": "A5",
+      "cohort": "electricity",
+      "consumer_variant": "per_channel",
+      "window_id": "e1v2_task_06",
+      "support_origins": [
+        4512,
+        4560,
+        4608
+      ],
+      "delayed_origins": [
+        4656,
+        4704,
+        4752
+      ],
+      "retrieval": {
+        "expected_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+        "local_skill_hit": true,
+        "resolved_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify",
+          "fast_winner_e1v2_outlier_iqr",
+          "recipe_batch_guidance_t2_v1"
+        ],
+        "resolved_memory_ids": [],
+        "source_guidance_hits": [
+          "recipe_batch_guidance_t2_v1"
+        ],
+        "local_skill": {
+          "skill_id": "fast_winner_e1v2_outlier_iqr",
+          "body": "Frozen program steps: [{\"op\": \"outlier_iqr\", \"params\": {}}]",
+          "observable_applicability": {
+            "all": [
+              {
+                "feature": "task_kind",
+                "op": "==",
+                "value": "forecast"
+              }
+            ]
+          },
+          "risk_guards": {
+            "activation_probe_gain": 0.04050113812058425,
+            "activation_probe_gain_over_se": 5.78432600877198,
+            "activation_probe_origins": [
+              4368,
+              4416,
+              4464
+            ],
+            "activation_probe_se_block": 0.007001876806245694,
+            "activation_probe_window": "e1v2_task_05",
+            "current_task_support_confirmation_required": true,
+            "evidence_level": "DELAYED",
+            "evidence_refs": [
+              "artifacts/functional/e2/lifecycle_probe_v1.json",
+              "draft_id:T2_A5"
+            ],
+            "explicit_choice_required": true,
+            "frozen_plan": {
+              "excluded_series": [],
+              "program": "outlier_iqr"
+            },
+            "local_status": "LOCAL_ACTIVE",
+            "observable_applicability_only": true,
+            "preserve_outside_candidate_region": true,
+            "provenance": "target_local_skill",
+            "requires_target_support": true,
+            "single_surface_only": true,
+            "source_episode_id": "ssi_t2_a5"
+          },
+          "frozen_steps": [
+            {
+              "op": "outlier_iqr",
+              "params": {}
+            }
+          ]
+        },
+        "context": {
+          "observation_cutoff": 4512,
+          "series_count": 12,
+          "rule": "public features of each training series on its own public prefix values[uid][:observation_cutoff]; numbers aggregated by median, strings and booleans by most common value",
+          "features": {
+            "clipping_probe_direction": "unknown",
+            "denoising_probe_direction": "unknown",
+            "estimated_level_offset": 0.0,
+            "estimated_region_end_fraction": 0.3826462765957447,
+            "estimated_region_start_fraction": 0.009086879432624113,
+            "imputation_probe_direction": "unknown",
+            "level_excursion_score": 4.586054400093573,
+            "level_only_post_shift_support_sufficient": true,
+            "level_probe_direction": "unknown",
+            "level_region_end_fraction": 0.10516400709219859,
+            "level_region_fraction": 0.0118572695035461,
+            "local_robust_z_peak": 6.1260914768970185,
+            "longest_missing_run_fraction": 0.0,
+            "missing_fraction": 0.0,
+            "outlier_region_end_fraction": 0.3826462765957447,
+            "period_change_score": 0.24065040650406502,
+            "period_evidence_status": "OK",
+            "period_reliability": 1.0,
+            "period_repair_available": false,
+            "post_shift_support_sufficient": true,
+            "task_kind": "forecast"
+          }
+        }
+      },
+      "recall_payload": {
+        "source": "naturally_retrieved_target_local_skill",
+        "skill_id": "fast_winner_e1v2_outlier_iqr",
+        "frozen_steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "frozen_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "current_support_confirmation": {
+          "aggregate_gain": 0.021251106426088216,
+          "material_threshold": 0.005,
+          "passed": true
+        }
+      },
+      "recall_candidate_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "reuse_adopted": true,
+      "support_confirmation_passed": true,
+      "adoption_ladder": {
+        "full_batch_pool": {
+          "outlier_iqr": 0.021251106426088216
+        },
+        "support_ranking": [
+          "outlier_iqr"
+        ],
+        "top_support_program": "outlier_iqr",
+        "support_winner": "outlier_iqr",
+        "support_winner_note": null,
+        "support_winner_full_batch_delayed": 0.01790699494306627,
+        "bar": 0.01790699494306627,
+        "bar_source": "max(0, the full-batch delayed of the Support winner `outlier_iqr`)",
+        "named_plan_delayed_aggregate_gain": 0.01790699494306627,
+        "named_plan_margin": 0.0,
+        "gate_passed": true,
+        "path": "GATE_PASS_ADOPT_NAMED",
+        "path_text": "the named plan cleared the bar (+0.017907 >= +0.017907)",
+        "delayed_reads": [
+          {
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "role": "bar",
+            "delayed_aggregate_gain": 0.01790699494306627,
+            "newly_measured": true
+          },
+          {
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "role": "confirmation",
+            "delayed_aggregate_gain": 0.01790699494306627,
+            "newly_measured": false
+          }
+        ],
+        "delayed_reads_newly_measured": 1,
+        "final_plan": {
+          "program": "outlier_iqr",
+          "excluded_series": []
+        },
+        "rule": {
+          "step_1_support_winner": "the Support winner is the highest-Support plan among the full-batch plans this arm-target actually evaluated, ties broken by menu order; it is eligible only if its Support aggregate gain is strictly positive, otherwise this arm-target has no Support winner",
+          "step_2_gate": "the plan the Agent named is adopted only if its delayed aggregate gain is at least the bar, where bar = max(0, the Support winner's full-batch delayed aggregate gain), and bar = 0 when there is no Support winner",
+          "step_3_fallback": "if the named plan fails the gate, adopt the Support winner when one exists and its full-batch delayed aggregate gain is positive; otherwise adopt identity",
+          "selection_is_support_only": "which plan the ladder falls back to is decided by Support alone, because Support is the window a deployer can see.  Delayed is a confirmation reading: the ladder consults exactly two delayed numbers -- the Support winner's, to set the bar, and the named plan's, to confirm it.  Ranking fallback candidates by delayed, or comparing several candidates' delayed, is forbidden, and the delayed_reads tape on every arm-target records what was consulted"
+        }
+      },
+      "final_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": []
+      },
+      "support": {
+        "aggregate_gain": 0.021251106426088216,
+        "harmed_eval_series_count": 1,
+        "harmed_eval_series_total_harm": 0.03307826343247119,
+        "harmed_eval_series": [
+          "16"
+        ]
+      },
+      "delayed": {
+        "aggregate_gain": 0.01790699494306627,
+        "harmed_eval_series_count": 1,
+        "harmed_eval_series_total_harm": 0.011848630795290083,
+        "harmed_eval_series": [
+          "13"
+        ]
+      },
+      "relation": "POSITIVE",
+      "llm_calls": 0,
+      "evaluations_used": 1,
+      "consumer_retrains_total": 15,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 1,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 1,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_iqr",
+            "charged": true,
+            "aggregate_gain": 0.021251106426088216
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_iqr",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.01790699494306627
+          }
+        ],
+        "budget_source": "recipe_skill_bridge_v1",
+        "consumer_retrains_total": 15,
+        "consumer_retrain_log": [
+          {
+            "what": "identity baselines",
+            "retrains": 6
+          },
+          {
+            "what": "scoped(outlier_iqr, full batch)",
+            "retrains": 3
+          },
+          {
+            "what": "masked(outlier_iqr, minus nothing)",
+            "retrains": 3
+          },
+          {
+            "what": "masked(outlier_iqr, minus nothing)",
+            "retrains": 3
+          }
+        ],
+        "retrain_note": "every call that fits the Consumer is counted, including the identity baselines, the mask round's per-series work and the delayed gate"
+      },
+      "wall_seconds": 30.797798999934457,
+      "experience": {
+        "episode_id": "lsr_t2_a5_e1v2_task_06",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:electricity|consumer:per_channel",
+        "domain_namespace": "electricity",
+        "context_summary": {
+          "task_episode_id": "e1v2_task_06",
+          "arm": "A5",
+          "cohort": {
+            "cohort_name": "electricity"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "retrieved_local_skill_id": "fast_winner_e1v2_outlier_iqr",
+            "local_skill_hit": true
+          },
+          "program_geometry": {
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "consumer_retrains": 15
+          }
+        },
+        "workflow_signature": "outlier_iqr",
+        "support_response": {
+          "gain": 0.021251106426088216,
+          "accepted": true,
+          "block_origins": [
+            4512,
+            4560,
+            4608
+          ],
+          "program": "outlier_iqr",
+          "excluded_series": [],
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "delayed_response": {
+          "evaluated": true,
+          "gain": 0.01790699494306627,
+          "se_block": null,
+          "gain_over_se": null,
+          "block_origins": [
+            4656,
+            4704,
+            4752
+          ],
+          "took_part_in_selection": true,
+          "provenance": "local_skill_recall",
+          "counts_as_unguided_exploration": false
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "LOCAL_DRAFT",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "local_skill_recall",
+          "local_lifecycle_v1"
+        ]
+      },
+      "stored_skill_lifecycle_before": "LOCAL_ACTIVE",
+      "stored_skill_lifecycle_after": "LOCAL_ACTIVE",
+      "lifecycle_note": "the task_06 delayed reading took part in this episode's v2 adoption gate, so it records an Experience but does not retroactively replace #11's out-of-selection ACTIVE evidence"
+    }
+  ],
+  "wall_seconds": 171.66562139999587
+}

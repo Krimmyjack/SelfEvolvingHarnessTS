@@ -1,0 +1,921 @@
+{
+  "protocol_version": "smd_target_readiness_v1",
+  "question": "without modifying the Harness and without the SMD held-out outcome, does SMD have a correct entity structure, a readable Forecasting Judge, and real outlier Program headroom against the Shared Candidate",
+  "llm_calls": 0,
+  "retrain_budget": 100,
+  "exposure": {
+    "smd_selected_train_development_windows": {
+      "context": "INSTANCE_SEEN",
+      "outcome": "EXPOSED"
+    },
+    "smd_official_test_and_labels": {
+      "outcome": "SEALED"
+    },
+    "read_this_round": "the official train split only"
+  },
+  "nothing_modified": [
+    "Harness",
+    "Consumer",
+    "Metric",
+    "menu",
+    "risk line",
+    "v2 adoption ladder",
+    "the frozen v1 candidate",
+    "the Observation surface"
+  ],
+  "part_a": {
+    "a1_condition_audit": [
+      {
+        "feature": "missing_fraction",
+        "in_observable_features": true,
+        "verdict": "EXPRESSIBLE",
+        "why": "missing_fraction is in OBSERVABLE_FEATURES as number",
+        "original_requirement": "may be zero; the capability does not need missing data"
+      },
+      {
+        "feature": "local_robust_z_peak",
+        "in_observable_features": true,
+        "verdict": "EXPRESSIBLE",
+        "why": "local_robust_z_peak is in OBSERVABLE_FEATURES as number",
+        "original_requirement": "at least one series at or above 4.0"
+      },
+      {
+        "feature": "outlier_point_fraction",
+        "in_observable_features": false,
+        "verdict": "DEMOTED_TO_EVIDENCE",
+        "why": "outlier_point_fraction is not in OBSERVABLE_FEATURES, so the Fast view cannot retrieve it.  The Observation surface is not extended this round; the reading stays in the card as evidence and is not an applicability gate",
+        "original_requirement": "greater than zero somewhere in the pool"
+      },
+      {
+        "feature": "per-eval-series gain dispersion of the adopted plan",
+        "in_observable_features": false,
+        "verdict": "NOT_A_PRE_EXECUTION_CONDITION",
+        "why": "per_eval_series_gain is measured after a plan is adopted.  It is Risk feedback and it cannot be retrieved before execution, so it is restated as the rule that attaches the guard, not as a condition that selects the capability",
+        "original_requirement": "the guard is required whenever the minimum per-series delayed gain can fall below -0.005 while the aggregate stays positive"
+      }
+    ],
+    "a2_source_support": {
+      "outlier_iqr": {
+        "by_domain": {
+          "traffic": {
+            "rows": 2,
+            "positive_rows": 2,
+            "best_delayed_gain": 1.0197743357219498,
+            "episodes": [
+              "traffic/pooled/outlier_iqr",
+              "traffic/per_channel/outlier_iqr"
+            ]
+          },
+          "noaa": {
+            "rows": 1,
+            "positive_rows": 1,
+            "best_delayed_gain": 0.06694086622738711,
+            "episodes": [
+              "noaa/task_A/outlier_iqr"
+            ]
+          }
+        },
+        "two_domain_support": true,
+        "role": "shared"
+      },
+      "outlier_mad": {
+        "by_domain": {
+          "traffic": {
+            "rows": 2,
+            "positive_rows": 2,
+            "best_delayed_gain": 0.9582064112033299,
+            "episodes": [
+              "traffic/pooled/outlier_mad",
+              "traffic/per_channel/outlier_mad"
+            ]
+          },
+          "noaa": {
+            "rows": 3,
+            "positive_rows": 3,
+            "best_delayed_gain": 0.30637972777516714,
+            "episodes": [
+              "noaa/task_A/outlier_mad",
+              "noaa/task_C/outlier_mad",
+              "noaa/task_D/outlier_mad"
+            ]
+          }
+        },
+        "two_domain_support": true,
+        "role": "shared"
+      },
+      "hampel_filter": {
+        "by_domain": {
+          "traffic": {
+            "rows": 2,
+            "positive_rows": 2,
+            "best_delayed_gain": 0.20860319761138876,
+            "episodes": [
+              "traffic/pooled/hampel_filter",
+              "traffic/per_channel/hampel_filter"
+            ]
+          },
+          "noaa": {
+            "rows": 0,
+            "positive_rows": 0,
+            "best_delayed_gain": null,
+            "episodes": []
+          }
+        },
+        "two_domain_support": false,
+        "role": "contrast_only"
+      },
+      "winsorize": {
+        "by_domain": {
+          "traffic": {
+            "rows": 2,
+            "positive_rows": 2,
+            "best_delayed_gain": 0.9591409387865703,
+            "episodes": [
+              "traffic/pooled/winsorize",
+              "traffic/per_channel/winsorize"
+            ]
+          },
+          "noaa": {
+            "rows": 0,
+            "positive_rows": 0,
+            "best_delayed_gain": null,
+            "episodes": []
+          }
+        },
+        "two_domain_support": false,
+        "role": "contrast_only"
+      }
+    },
+    "a4_lodo": {
+      "traffic_to_noaa": {
+        "compiled_on": "traffic",
+        "checked_on": "noaa",
+        "shared_programs_compiled": [
+          "outlier_iqr",
+          "outlier_mad"
+        ],
+        "target_episodes_non_empty": 4,
+        "direction_agrees": 4,
+        "rows": [
+          {
+            "episode": "noaa/task_A/outlier_mad",
+            "program": "outlier_mad",
+            "delayed_aggregate_gain": 0.30637972777516714,
+            "agrees": true
+          },
+          {
+            "episode": "noaa/task_C/outlier_mad",
+            "program": "outlier_mad",
+            "delayed_aggregate_gain": 0.029687731257638534,
+            "agrees": true
+          },
+          {
+            "episode": "noaa/task_A/outlier_iqr",
+            "program": "outlier_iqr",
+            "delayed_aggregate_gain": 0.06694086622738711,
+            "agrees": true
+          },
+          {
+            "episode": "noaa/task_D/outlier_mad",
+            "program": "outlier_mad",
+            "delayed_aggregate_gain": 0.04950408483265769,
+            "agrees": true
+          }
+        ],
+        "verdict": "SUPPORTED"
+      },
+      "noaa_to_traffic": {
+        "compiled_on": "noaa",
+        "checked_on": "traffic",
+        "shared_programs_compiled": [
+          "outlier_iqr",
+          "outlier_mad"
+        ],
+        "target_episodes_non_empty": 4,
+        "direction_agrees": 4,
+        "rows": [
+          {
+            "episode": "traffic/pooled/outlier_iqr",
+            "program": "outlier_iqr",
+            "delayed_aggregate_gain": 1.0197743357219498,
+            "agrees": true
+          },
+          {
+            "episode": "traffic/pooled/outlier_mad",
+            "program": "outlier_mad",
+            "delayed_aggregate_gain": 0.9582064112033299,
+            "agrees": true
+          },
+          {
+            "episode": "traffic/per_channel/outlier_iqr",
+            "program": "outlier_iqr",
+            "delayed_aggregate_gain": 0.3482156275538379,
+            "agrees": true
+          },
+          {
+            "episode": "traffic/per_channel/outlier_mad",
+            "program": "outlier_mad",
+            "delayed_aggregate_gain": 0.31962658032985625,
+            "agrees": true
+          }
+        ],
+        "verdict": "SUPPORTED"
+      },
+      "same_source_replay": "internal consistency only; not run as transfer evidence",
+      "guard_is_not_a_result": "the harm line that defines a harmed row is the same line the guard uses, so 'the guard finds the crossing' is true by construction and is not counted here"
+    },
+    "passes": true
+  },
+  "part_b": {
+    "entity_unit": "machine",
+    "channel_unit": "metric inside a machine",
+    "channel_choice_reads": "[0, 1104) of each machine's own train block only",
+    "rule": {
+      "eligibility": "cardinality > 20",
+      "primary": "highest cardinality, ties to the lowest channel index",
+      "backup": "second highest, ties to the lowest channel index",
+      "backup_use": "only once, and only if the primary mapping yields JUDGE_UNREADABLE; never because a Program's gain is poor"
+    },
+    "mapping": [
+      {
+        "entity": "1-5",
+        "offset": 0,
+        "train_length": 23705,
+        "eligible_channels": 24,
+        "primary_channel": 22,
+        "primary_cardinality": 1028,
+        "backup_channel": 18,
+        "backup_cardinality": 991
+      },
+      {
+        "entity": "2-7",
+        "offset": 23705,
+        "train_length": 23696,
+        "eligible_channels": 24,
+        "primary_channel": 18,
+        "primary_cardinality": 1077,
+        "backup_channel": 15,
+        "backup_cardinality": 1069
+      },
+      {
+        "entity": "2-6",
+        "offset": 47401,
+        "train_length": 28743,
+        "eligible_channels": 26,
+        "primary_channel": 19,
+        "primary_cardinality": 1094,
+        "backup_channel": 18,
+        "backup_cardinality": 1090
+      },
+      {
+        "entity": "3-2",
+        "offset": 76144,
+        "train_length": 23702,
+        "eligible_channels": 24,
+        "primary_channel": 18,
+        "primary_cardinality": 1100,
+        "backup_channel": 19,
+        "backup_cardinality": 1096
+      },
+      {
+        "entity": "3-11",
+        "offset": 99846,
+        "train_length": 28695,
+        "eligible_channels": 18,
+        "primary_channel": 18,
+        "primary_cardinality": 1103,
+        "backup_channel": 19,
+        "backup_cardinality": 1099
+      },
+      {
+        "entity": "2-5",
+        "offset": 128541,
+        "train_length": 23688,
+        "eligible_channels": 25,
+        "primary_channel": 15,
+        "primary_cardinality": 1071,
+        "backup_channel": 10,
+        "backup_cardinality": 1069
+      },
+      {
+        "entity": "1-8",
+        "offset": 152229,
+        "train_length": 23698,
+        "eligible_channels": 25,
+        "primary_channel": 18,
+        "primary_cardinality": 1094,
+        "backup_channel": 13,
+        "backup_cardinality": 1093
+      },
+      {
+        "entity": "1-3",
+        "offset": 175927,
+        "train_length": 23702,
+        "eligible_channels": 25,
+        "primary_channel": 22,
+        "primary_cardinality": 1094,
+        "backup_channel": 19,
+        "backup_cardinality": 1081
+      },
+      {
+        "entity": "3-4",
+        "offset": 199629,
+        "train_length": 23687,
+        "eligible_channels": 21,
+        "primary_channel": 13,
+        "primary_cardinality": 1083,
+        "backup_channel": 22,
+        "backup_cardinality": 1014
+      },
+      {
+        "entity": "2-2",
+        "offset": 223316,
+        "train_length": 23699,
+        "eligible_channels": 24,
+        "primary_channel": 18,
+        "primary_cardinality": 1001,
+        "backup_channel": 19,
+        "backup_cardinality": 879
+      },
+      {
+        "entity": "1-4",
+        "offset": 247015,
+        "train_length": 23706,
+        "eligible_channels": 25,
+        "primary_channel": 22,
+        "primary_cardinality": 1091,
+        "backup_channel": 19,
+        "backup_cardinality": 1068
+      },
+      {
+        "entity": "3-10",
+        "offset": 270721,
+        "train_length": 23692,
+        "eligible_channels": 18,
+        "primary_channel": 13,
+        "primary_cardinality": 1058,
+        "backup_channel": 10,
+        "backup_cardinality": 529
+      },
+      {
+        "entity": "2-9",
+        "offset": 294413,
+        "train_length": 28722,
+        "eligible_channels": 20,
+        "primary_channel": 13,
+        "primary_cardinality": 1049,
+        "backup_channel": 19,
+        "backup_cardinality": 931
+      },
+      {
+        "entity": "1-7",
+        "offset": 323135,
+        "train_length": 23697,
+        "eligible_channels": 26,
+        "primary_channel": 22,
+        "primary_cardinality": 1102,
+        "backup_channel": 19,
+        "backup_cardinality": 1062
+      },
+      {
+        "entity": "3-7",
+        "offset": 346832,
+        "train_length": 28705,
+        "eligible_channels": 22,
+        "primary_channel": 18,
+        "primary_cardinality": 1095,
+        "backup_channel": 19,
+        "backup_cardinality": 1094
+      },
+      {
+        "entity": "1-6",
+        "offset": 375537,
+        "train_length": 23688,
+        "eligible_channels": 27,
+        "primary_channel": 18,
+        "primary_cardinality": 1095,
+        "backup_channel": 19,
+        "backup_cardinality": 1092
+      },
+      {
+        "entity": "2-3",
+        "offset": 399225,
+        "train_length": 23688,
+        "eligible_channels": 15,
+        "primary_channel": 13,
+        "primary_cardinality": 820,
+        "backup_channel": 10,
+        "backup_cardinality": 796
+      },
+      {
+        "entity": "3-8",
+        "offset": 422913,
+        "train_length": 28703,
+        "eligible_channels": 22,
+        "primary_channel": 13,
+        "primary_cardinality": 1066,
+        "backup_channel": 19,
+        "backup_cardinality": 913
+      },
+      {
+        "entity": "3-5",
+        "offset": 451616,
+        "train_length": 23690,
+        "eligible_channels": 21,
+        "primary_channel": 19,
+        "primary_cardinality": 1084,
+        "backup_channel": 13,
+        "backup_cardinality": 1066
+      },
+      {
+        "entity": "3-3",
+        "offset": 475306,
+        "train_length": 23703,
+        "eligible_channels": 30,
+        "primary_channel": 18,
+        "primary_cardinality": 1088,
+        "backup_channel": 36,
+        "backup_cardinality": 1085
+      },
+      {
+        "entity": "1-1",
+        "offset": 499009,
+        "train_length": 28479,
+        "eligible_channels": 24,
+        "primary_channel": 13,
+        "primary_cardinality": 1053,
+        "backup_channel": 22,
+        "backup_cardinality": 1022
+      },
+      {
+        "entity": "1-2",
+        "offset": 527488,
+        "train_length": 23694,
+        "eligible_channels": 22,
+        "primary_channel": 5,
+        "primary_cardinality": 1066,
+        "backup_channel": 15,
+        "backup_cardinality": 907
+      },
+      {
+        "entity": "2-1",
+        "offset": 551182,
+        "train_length": 23693,
+        "eligible_channels": 23,
+        "primary_channel": 19,
+        "primary_cardinality": 1098,
+        "backup_channel": 18,
+        "backup_cardinality": 1092
+      },
+      {
+        "entity": "2-8",
+        "offset": 574875,
+        "train_length": 23702,
+        "eligible_channels": 24,
+        "primary_channel": 19,
+        "primary_cardinality": 1074,
+        "backup_channel": 18,
+        "backup_cardinality": 1043
+      },
+      {
+        "entity": "2-4",
+        "offset": 598577,
+        "train_length": 23689,
+        "eligible_channels": 24,
+        "primary_channel": 18,
+        "primary_cardinality": 1102,
+        "backup_channel": 27,
+        "backup_cardinality": 1064
+      },
+      {
+        "entity": "3-9",
+        "offset": 622266,
+        "train_length": 28713,
+        "eligible_channels": 26,
+        "primary_channel": 19,
+        "primary_cardinality": 1098,
+        "backup_channel": 18,
+        "backup_cardinality": 1094
+      },
+      {
+        "entity": "3-6",
+        "offset": 650979,
+        "train_length": 28726,
+        "eligible_channels": 26,
+        "primary_channel": 19,
+        "primary_cardinality": 1100,
+        "backup_channel": 18,
+        "backup_cardinality": 1090
+      },
+      {
+        "entity": "3-1",
+        "offset": 679705,
+        "train_length": 28700,
+        "eligible_channels": 25,
+        "primary_channel": 18,
+        "primary_cardinality": 1096,
+        "backup_channel": 19,
+        "backup_cardinality": 1094
+      }
+    ],
+    "roster": {
+      "train": [
+        "1-5",
+        "2-7",
+        "2-6",
+        "3-2",
+        "3-11",
+        "2-5",
+        "1-8",
+        "1-3",
+        "3-4",
+        "2-2",
+        "1-4",
+        "3-10"
+      ],
+      "eval": [
+        "2-9",
+        "1-7",
+        "3-7",
+        "1-6"
+      ],
+      "taken_from": "the first 16 entities of the frozen packing order",
+      "no_substitution": "entities are not replaced on Outcome"
+    },
+    "windows": {
+      "episode_1": {
+        "start": 1104,
+        "support_origins": [
+          1104,
+          1152,
+          1200
+        ],
+        "delayed_origins": [
+          1248,
+          1296,
+          1344
+        ],
+        "horizon": 48,
+        "farthest_index": 1392,
+        "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48"
+      },
+      "episode_2": {
+        "start": 1800,
+        "support_origins": [
+          1800,
+          1848,
+          1896
+        ],
+        "delayed_origins": [
+          1944,
+          1992,
+          2040
+        ],
+        "horizon": 48,
+        "farthest_index": 2088,
+        "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48"
+      }
+    },
+    "farthest_index_required": 2088,
+    "entities_too_short": [],
+    "entities_without_a_usable_channel": [],
+    "legal": true
+  },
+  "part_c": {
+    "primary": {
+      "mapping": "primary",
+      "chosen_channels": {
+        "1-5": 22,
+        "2-7": 18,
+        "2-6": 19,
+        "3-2": 18,
+        "3-11": 18,
+        "2-5": 15,
+        "1-8": 18,
+        "1-3": 22,
+        "3-4": 13,
+        "2-2": 18,
+        "1-4": 22,
+        "3-10": 13,
+        "2-9": 13,
+        "1-7": 22,
+        "3-7": 18,
+        "1-6": 18
+      },
+      "episodes": {
+        "episode_1": {
+          "window": {
+            "start": 1104,
+            "support_origins": [
+              1104,
+              1152,
+              1200
+            ],
+            "delayed_origins": [
+              1248,
+              1296,
+              1344
+            ],
+            "horizon": 48,
+            "farthest_index": 1392,
+            "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48"
+          },
+          "identity_readability": {
+            "support": {
+              "block": "support",
+              "per_series_identity_smase": {
+                "2-9": 1.8263568170076052,
+                "1-7": 3.297045520464348,
+                "3-7": 0.6688866653665269,
+                "1-6": 2.276341837294446
+              },
+              "min": 0.6688866653665269,
+              "max": 3.297045520464348,
+              "eval_loss_spread": 4.92915420680076,
+              "largest_single_series_loss_share": 0.40862515410483585,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": true,
+                "share_within_cap": false
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            },
+            "delayed": {
+              "block": "delayed",
+              "per_series_identity_smase": {
+                "2-9": 6.499412033523288,
+                "1-7": 2.116003554017932,
+                "3-7": 1.3599051584403676,
+                "1-6": 3.3986138095526015
+              },
+              "min": 1.3599051584403676,
+              "max": 6.499412033523288,
+              "eval_loss_spread": 4.779312728673857,
+              "largest_single_series_loss_share": 0.48597606086189526,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": true,
+                "share_within_cap": false
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            }
+          },
+          "readable": false
+        },
+        "episode_2": {
+          "window": {
+            "start": 1800,
+            "support_origins": [
+              1800,
+              1848,
+              1896
+            ],
+            "delayed_origins": [
+              1944,
+              1992,
+              2040
+            ],
+            "horizon": 48,
+            "farthest_index": 2088,
+            "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48"
+          },
+          "identity_readability": {
+            "support": {
+              "block": "support",
+              "per_series_identity_smase": {
+                "2-9": 1.6669902992649395,
+                "1-7": 1.411324445257707,
+                "3-7": 0.5938796859788517,
+                "1-6": 2.768450236838786
+              },
+              "min": 0.5938796859788517,
+              "max": 2.768450236838786,
+              "eval_loss_spread": 4.661634843218685,
+              "largest_single_series_loss_share": 0.4298405485521125,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": true,
+                "share_within_cap": false
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            },
+            "delayed": {
+              "block": "delayed",
+              "per_series_identity_smase": {
+                "2-9": 4.0441571202137,
+                "1-7": 2.82669898156673,
+                "3-7": 0.33916370298700865,
+                "1-6": 6.222379333358174
+              },
+              "min": 0.33916370298700865,
+              "max": 6.222379333358174,
+              "eval_loss_spread": 18.346241884251736,
+              "largest_single_series_loss_share": 0.46323663177168356,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": false,
+                "share_within_cap": false
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            }
+          },
+          "readable": false
+        }
+      },
+      "judge_readable": false
+    },
+    "backup": {
+      "mapping": "backup",
+      "chosen_channels": {
+        "1-5": 18,
+        "2-7": 15,
+        "2-6": 18,
+        "3-2": 19,
+        "3-11": 19,
+        "2-5": 10,
+        "1-8": 13,
+        "1-3": 19,
+        "3-4": 22,
+        "2-2": 19,
+        "1-4": 19,
+        "3-10": 10,
+        "2-9": 19,
+        "1-7": 19,
+        "3-7": 19,
+        "1-6": 19
+      },
+      "episodes": {
+        "episode_1": {
+          "window": {
+            "start": 1104,
+            "support_origins": [
+              1104,
+              1152,
+              1200
+            ],
+            "delayed_origins": [
+              1248,
+              1296,
+              1344
+            ],
+            "horizon": 48,
+            "farthest_index": 1392,
+            "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48"
+          },
+          "identity_readability": {
+            "support": {
+              "block": "support",
+              "per_series_identity_smase": {
+                "2-9": 7.471216792912256,
+                "1-7": 2.1545915879144744,
+                "3-7": 1.4730844287048326,
+                "1-6": 2.2236158028853774
+              },
+              "min": 1.4730844287048326,
+              "max": 7.471216792912256,
+              "eval_loss_spread": 5.071818456109206,
+              "largest_single_series_loss_share": 0.5607965444247399,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": false,
+                "share_within_cap": false
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            },
+            "delayed": {
+              "block": "delayed",
+              "per_series_identity_smase": {
+                "2-9": 2.190847473887725,
+                "1-7": 1.5001301065421853,
+                "3-7": 1.0418286503606842,
+                "1-6": 2.6083987120145204
+              },
+              "min": 1.0418286503606842,
+              "max": 2.6083987120145204,
+              "eval_loss_spread": 2.503673431433744,
+              "largest_single_series_loss_share": 0.35530934394781205,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": true,
+                "share_within_cap": true
+              },
+              "pass": true,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            }
+          },
+          "readable": false
+        },
+        "episode_2": {
+          "window": {
+            "start": 1800,
+            "support_origins": [
+              1800,
+              1848,
+              1896
+            ],
+            "delayed_origins": [
+              1944,
+              1992,
+              2040
+            ],
+            "horizon": 48,
+            "farthest_index": 2088,
+            "syntax": "support s/s+48/s+96, delayed s+144/s+192/s+240, horizon 48"
+          },
+          "identity_readability": {
+            "support": {
+              "block": "support",
+              "per_series_identity_smase": {
+                "2-9": 1.1801562845251254,
+                "1-7": 1.528536603606384,
+                "3-7": 0.39235819886671747,
+                "1-6": 2.9315956461874806
+              },
+              "min": 0.39235819886671747,
+              "max": 2.9315956461874806,
+              "eval_loss_spread": 7.471732857004301,
+              "largest_single_series_loss_share": 0.485955133102808,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": false,
+                "share_within_cap": false
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            },
+            "delayed": {
+              "block": "delayed",
+              "per_series_identity_smase": {
+                "2-9": 2.4047503816837046,
+                "1-7": 3.3442742032186588,
+                "3-7": 0.33697151566756967,
+                "1-6": 3.7423962258665875
+              },
+              "min": 0.33697151566756967,
+              "max": 3.7423962258665875,
+              "eval_loss_spread": 11.105972023933766,
+              "largest_single_series_loss_share": 0.38077399655691885,
+              "degenerate_single_value": false,
+              "checks": {
+                "finite": true,
+                "non_degenerate": true,
+                "spread_within_cap": false,
+                "share_within_cap": true
+              },
+              "pass": false,
+              "formula_source": "g3_sourcing.development_judge_readability: per-series mean sMASE over the block's origins, spread = max/min, share = max/sum"
+            }
+          },
+          "readable": false
+        }
+      },
+      "judge_readable": false
+    }
+  },
+  "backup_mapping_used": "the primary mapping produced JUDGE_UNREADABLE, which is the only condition that releases the backup rule",
+  "verdict": "JUDGE_UNREADABLE",
+  "verdict_reason": "identity readings fail the reused NOAA readability bar on both the primary and the backup mapping",
+  "consumer_retrains": 24,
+  "retrain_log": [
+    {
+      "what": "identity baselines, episode 1",
+      "retrains": 6,
+      "cumulative": 6
+    },
+    {
+      "what": "identity baselines, episode 2",
+      "retrains": 6,
+      "cumulative": 12
+    },
+    {
+      "what": "identity baselines, episode 1",
+      "retrains": 6,
+      "cumulative": 18
+    },
+    {
+      "what": "identity baselines, episode 2",
+      "retrains": 6,
+      "cumulative": 24
+    }
+  ],
+  "wall_seconds": 0.8659851999982493
+}

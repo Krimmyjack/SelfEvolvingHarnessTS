@@ -24,6 +24,14 @@ OBSERVABLE_FEATURES = MappingProxyType(
         "local_robust_z_peak": "number",
         "estimated_region_start_fraction": "number",
         "estimated_region_end_fraction": "number",
+        "level_region_fraction": "number",
+        "level_region_end_fraction": "number",
+        "outlier_region_end_fraction": "number",
+        # Listed ahead of post_shift_support_sufficient because consumers that
+        # resolve a feature name by substring scan in declaration order would
+        # otherwise resolve this name to the shorter one.
+        "level_only_post_shift_support_sufficient": "boolean",
+        "post_shift_support_sufficient": "boolean",
         "level_excursion_score": "number",
         "estimated_level_offset": "number",
         "period_change_score": "number",

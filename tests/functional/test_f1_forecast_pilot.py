@@ -114,6 +114,17 @@ def _stage(stage: str, payload: dict[str, object]) -> AgentResponse:
 
 
 def test_f1_pilot_runs_on_frozen_h2_without_promoting_harness(tmp_path: Path) -> None:
+    # #42l: propose has to supply a real PROGRAM candidate.  With zero
+    # candidates the fast path takes the documented empty-pool abstention
+    # branch (fast_agent: "无 PROGRAM 候选 = ABSTAIN 语义 ... 跳过 select",
+    # 审查修复 2026-08-08), which both skips select -- desynchronising this
+    # replay list so later tasks consumed the previous task's unused select
+    # reply, the wrong-stage retries -- and records
+    # compilation_status="not_applicable", so no case counts as completed.
+    # The pre-registration accepts only completed cases
+    # (6 correct + 2 neutral, artifacts/manifests/
+    # f1_forecast_pilot_preregistration_20260719.json), so an all-abstain
+    # replay can never reach PASS.
     responses: list[AgentResponse] = []
     for _ in range(8):
         responses.extend(
@@ -126,12 +137,22 @@ def test_f1_pilot_runs_on_frozen_h2_without_promoting_harness(tmp_path: Path) ->
                         "uncertainty": "high",
                     },
                 ),
-                _stage("propose", {"candidates": []}),
+                _stage(
+                    "propose",
+                    {
+                        "candidates": [
+                            {
+                                "candidate_id": "offline-fill",
+                                "steps": [{"op": "impute_linear", "params": {}}],
+                            }
+                        ]
+                    },
+                ),
                 _stage(
                     "select",
                     {
-                        "chosen_candidate_id": "identity",
-                        "verification_actions": ["identity_retained"],
+                        "chosen_candidate_id": "offline-fill",
+                        "verification_actions": ["runtime_receipt_checked"],
                     },
                 ),
             ]

@@ -1,0 +1,808 @@
+{
+  "protocol_version": "agent_recipe_mount_v1",
+  "role": "engineering demonstration that a Fast Agent can route to the mounted batch recipe and that a prior Experience entry removes the cost of re-searching the same cell",
+  "not_authorization_evidence": "no Skill is written, no TRY right is granted, no Episode is promoted, no Fast or Slow update runs, no snapshot pointer moves",
+  "harness_change_surface": {
+    "surface": "Fast Agent Workspace tool supply",
+    "file": "evaluation/functional/task_episode_harness/agentic/gateway.py",
+    "change": "CohortScopePublicToolGateway gained an optional batch_recipe_binding: one extra tool name, its description, its two bounded argument enums, one extra allowed stage and the binding identity folded into context_sha",
+    "default_path_unchanged": "with batch_recipe_binding=None the class serves the same two tools on the same three stages and hashes the same context_sha payload as before",
+    "unchanged": [
+      "OBSERVABLE_FEATURES",
+      "feature_context_sha",
+      "Judge",
+      "Metric",
+      "Operator DSL",
+      "Source Skill",
+      "Slow path",
+      "run_batch_composition_headroom (imported, not modified)"
+    ]
+  },
+  "information_wall_note": "batch_recipe returns delayed-window numbers, which the two pre-existing Workspace tools cannot see. The recipe uses the delayed window inside its own adoption gate, so mounting it widens what the Fast Agent can observe. This run therefore writes no Skill and tags every Experience entry provenance=batch_recipe_tool_v2_engineering; the tool must not be bound in a Task Episode run that produces authorization evidence.",
+  "pre_registered": {
+    "behaviour_labels_are_read_off_the_transcript": "tool_called is true iff a successful batch_recipe receipt exists in that episode's stage; reused is true iff the payload decision is REUSE_PRIOR_EXPERIENCE and it cites an episode_id that exists. Neither label is read out of the Agent's prose.",
+    "verdict_rules_first_match_wins": [
+      "PROTOCOL_NOISE_BLOCKS_READOUT: E1 produced no payload, or two or more episodes produced no payload",
+      "AGENT_IGNORES_TOOL: E1 made no successful batch_recipe call",
+      "REUSES_WRONGLY_ACROSS_CELL: E3 reused an entry measured on a different cell and made no batch_recipe call of its own",
+      "AGENT_ROUTES_AND_REUSES: E1 called and adopted, E2 reused without calling, E3 called again",
+      "ROUTES_NO_REUSE: anything else that still routed to the tool"
+    ],
+    "circuit_breaker": "the micro stops after E1 and reports if E1 produced no payload or made no successful batch_recipe call; E2 and E3 are not run",
+    "budget": {
+      "llm_calls_total": 30,
+      "llm_calls_per_episode": 10,
+      "validation_retries_per_stage": 2,
+      "workspace_tool_calls_per_episode": 6
+    },
+    "experience_relation_rule": "POSITIVE if the plan's offline support and delayed gains are both positive; CONFLICT if they disagree in sign; NEGATIVE if both are non-positive and the plan treats something; ABSTAIN if the plan is identity"
+  },
+  "model": {
+    "model": "gpt-5.6-luna",
+    "base_url": "https://api.agicto.cn/v1"
+  },
+  "adoption_rule_version": "v2",
+  "tool_binding_identity": {
+    "schema_version": "batch-recipe-tool-binding/1",
+    "callable": "run_batch_composition_headroom.make_batch_recipe",
+    "adoption_rule_version": "v2",
+    "task_index": 0,
+    "cohort_choices": [
+      "electricity",
+      "T233",
+      "traffic"
+    ],
+    "consumer_variant_choices": [
+      "pooled",
+      "per_channel"
+    ],
+    "writes_no_artifact": true
+  },
+  "tool_description_shown_to_agent": "Run the frozen batch data-processing recipe on one already-exposed development batch and return the plan it adopts. The recipe scans a fixed program menu at full batch, runs a greedy harm-ordered exclusion mask search on the two best programs with a real Consumer retrain behind every single step, then applies a frozen delayed stability gate (adoption_rule_version v2). It is deterministic and makes no LLM call of its own, and it has no threshold or rule knob you can set: the only arguments are which batch and which Consumer structure. It costs one Workspace tool call and it is by far the most expensive tool here -- it retrains the downstream Consumer many times over. A plan it returns was measured for exactly one (cohort, consumer_variant) pair and says nothing about another pair. Information wall: unlike the two series tools, this result carries numbers from the delayed window, which the recipe uses inside its own adoption gate.",
+  "batch_plan_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "batch-plan/1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "decision",
+      "program",
+      "excluded_series",
+      "reason",
+      "experience_use"
+    ],
+    "properties": {
+      "decision": {
+        "enum": [
+          "ADOPT_TOOL_RESULT",
+          "REUSE_PRIOR_EXPERIENCE",
+          "IDENTITY_NO_TREATMENT"
+        ]
+      },
+      "program": {
+        "enum": [
+          "identity",
+          "repair_level_shift",
+          "hampel_filter",
+          "outlier_iqr",
+          "outlier_mad",
+          "winsorize",
+          "denoise_median",
+          "smooth_ma"
+        ]
+      },
+      "excluded_series": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true,
+        "maxItems": 24
+      },
+      "reason": {
+        "type": "string"
+      },
+      "experience_use": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 8
+      }
+    }
+  },
+  "verdict": {
+    "verdict": "AGENT_ROUTES_AND_REUSES",
+    "reasons": [
+      "E1 called and adopted, E2 reused without calling, E3 called again"
+    ],
+    "stopped_early": null,
+    "episodes_run": [
+      "E1",
+      "E2",
+      "E3"
+    ],
+    "rule": [
+      "PROTOCOL_NOISE_BLOCKS_READOUT: E1 produced no payload, or two or more episodes produced no payload",
+      "AGENT_IGNORES_TOOL: E1 made no successful batch_recipe call",
+      "REUSES_WRONGLY_ACROSS_CELL: E3 reused an entry measured on a different cell and made no batch_recipe call of its own",
+      "AGENT_ROUTES_AND_REUSES: E1 called and adopted, E2 reused without calling, E3 called again",
+      "ROUTES_NO_REUSE: anything else that still routed to the tool"
+    ]
+  },
+  "llm_call_count": 8,
+  "llm_call_budget_total": 30,
+  "recipe_tool_accounting": {
+    "tool_calls_routed": 2,
+    "recipe_searches_executed": 2,
+    "recipe_search_seconds": 27.9514172001509,
+    "cache_hits": 0,
+    "call_log": [
+      {
+        "cohort": "traffic",
+        "consumer_variant": "pooled",
+        "run_local_cache_hit": false,
+        "wall_seconds": 12.793143500108272
+      },
+      {
+        "cohort": "traffic",
+        "consumer_variant": "per_channel",
+        "run_local_cache_hit": false,
+        "wall_seconds": 15.158276399946772
+      }
+    ],
+    "writes_no_artifact": true
+  },
+  "experience_entries": [
+    {
+      "episode_id": "E1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:pooled",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic",
+          "training_series_count": 12,
+          "evaluation_series_count": 8
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled"
+        },
+        "program_geometry": {
+          "excluded_count": 1,
+          "treated_count": 11
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "gain": 0.6652773536462215,
+        "window": "support",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "plan_source": "ADOPT_TOOL_RESULT",
+        "harmed_eval_series_count": 0,
+        "provenance": "batch_recipe_tool_v2_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+      },
+      "delayed_response": {
+        "gain": 1.0470750569907492,
+        "window": "delayed",
+        "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+        "harmed_eval_series_count": 0,
+        "provenance": "batch_recipe_tool_v2_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "batch_recipe_tool_v2_engineering"
+      ]
+    },
+    {
+      "episode_id": "E2",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:pooled",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic",
+          "training_series_count": 12,
+          "evaluation_series_count": 8
+        },
+        "local_pattern": {
+          "consumer_variant": "pooled"
+        },
+        "program_geometry": {
+          "excluded_count": 1,
+          "treated_count": 11
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "gain": 0.6652773536462215,
+        "window": "support",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "plan_source": "REUSE_PRIOR_EXPERIENCE",
+        "harmed_eval_series_count": 0,
+        "provenance": "batch_recipe_tool_v2_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+      },
+      "delayed_response": {
+        "gain": 1.0470750569907492,
+        "window": "delayed",
+        "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+        "harmed_eval_series_count": 0,
+        "provenance": "batch_recipe_tool_v2_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "batch_recipe_tool_v2_engineering"
+      ]
+    },
+    {
+      "episode_id": "E3",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:per_channel",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic",
+          "training_series_count": 12,
+          "evaluation_series_count": 8
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel"
+        },
+        "program_geometry": {
+          "excluded_count": 2,
+          "treated_count": 10
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "gain": 0.3031836970220849,
+        "window": "support",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3",
+          "8"
+        ],
+        "plan_source": "ADOPT_TOOL_RESULT",
+        "harmed_eval_series_count": 0,
+        "provenance": "batch_recipe_tool_v2_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+      },
+      "delayed_response": {
+        "gain": 0.35547178578423166,
+        "window": "delayed",
+        "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+        "harmed_eval_series_count": 0,
+        "provenance": "batch_recipe_tool_v2_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "batch_recipe_tool_v2_engineering"
+      ]
+    }
+  ],
+  "experience_provenance": "batch_recipe_tool_v2_engineering",
+  "episodes": [
+    {
+      "episode_id": "E1",
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "cell_key": "batch:traffic|consumer:pooled",
+      "request": "First processing request for this batch. Nothing has been recorded about it before now.",
+      "payload": {
+        "decision": "ADOPT_TOOL_RESULT",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "experience_use": [],
+        "reason": "The deterministic batch recipe selected outlier_iqr with series 6 excluded after its masked plan cleared the delayed stability check. The result was measured for the current traffic and pooled Consumer batch."
+      },
+      "protocol_error": null,
+      "infrastructure_error": null,
+      "llm_calls": 4,
+      "llm_call_budget_for_this_episode": 10,
+      "validation_retry_count": 1,
+      "validation_error_codes": [
+        "AGENT_ENVELOPE_INVALID"
+      ],
+      "first_pass_valid": false,
+      "tool_receipts": [
+        {
+          "tool_name": "summarize_series",
+          "arguments": {
+            "series_uid": "0"
+          },
+          "ok": true,
+          "receipt_sha": "35342fff5232ad06dc01c489c37802813215b6cc8d0b684eb2d49374c5721f68"
+        },
+        {
+          "tool_name": "batch_recipe",
+          "arguments": {
+            "cohort": "traffic",
+            "consumer_variant": "pooled"
+          },
+          "ok": true,
+          "receipt_sha": "4251dc30a779c3e9ec160dba4777b929b0846d7e4ada1dfd2fb32fe5db5ce33b"
+        }
+      ],
+      "tool_called": true,
+      "tool_plan_for_this_cell": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ]
+      },
+      "workspace_tool_accounting": {
+        "workspace_tool_calls": 2,
+        "workspace_tool_calls_refused": 0,
+        "workspace_tool_call_budget": 6,
+        "distinct_series_observed": 1,
+        "refusal_reasons": [],
+        "scope_series_count": 12,
+        "call_log": [
+          {
+            "tool_name": "summarize_series",
+            "series_uid": "0",
+            "ok": true
+          },
+          {
+            "tool_name": "batch_recipe",
+            "cohort": "traffic",
+            "consumer_variant": "pooled",
+            "ok": true
+          }
+        ]
+      },
+      "experience_entries_visible": 0,
+      "signed_pack_for_this_cell": {
+        "positive": null,
+        "negative": null,
+        "conflict": null,
+        "evidence_sufficient": false,
+        "retrieval_note": "no valid episodes"
+      },
+      "wall_seconds": 54.52742329996545,
+      "label": {
+        "behaviour": "TOOL_CALLED_AND_ADOPTED",
+        "decision": "ADOPT_TOOL_RESULT",
+        "reused": false,
+        "reused_across_cell": false,
+        "cited_episode_ids": [],
+        "cited_cells": [],
+        "plan": {
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "6"
+          ]
+        },
+        "plan_matches_tool_plan": true
+      },
+      "adopted_plan_offline_readout": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "unknown_series_ignored": [],
+        "support_aggregate_gain": 0.6652773536462215,
+        "delayed_aggregate_gain": 1.0470750569907492,
+        "support_harmed_eval_series_count": 0,
+        "delayed_harmed_eval_series_count": 0,
+        "mechanism": "run_batch_composition_headroom._evaluate_assignment + _gain_rows on the same Task windows and Consumer variant the recipe used; identity baseline recomputed once per cell"
+      },
+      "experience_written": {
+        "episode_id": "E1",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:pooled",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic",
+            "training_series_count": 12,
+            "evaluation_series_count": 8
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled"
+          },
+          "program_geometry": {
+            "excluded_count": 1,
+            "treated_count": 11
+          }
+        },
+        "workflow_signature": "outlier_iqr",
+        "support_response": {
+          "gain": 0.6652773536462215,
+          "window": "support",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "6"
+          ],
+          "plan_source": "ADOPT_TOOL_RESULT",
+          "harmed_eval_series_count": 0,
+          "provenance": "batch_recipe_tool_v2_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+        },
+        "delayed_response": {
+          "gain": 1.0470750569907492,
+          "window": "delayed",
+          "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+          "harmed_eval_series_count": 0,
+          "provenance": "batch_recipe_tool_v2_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "batch_recipe_tool_v2_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E2",
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "cell_key": "batch:traffic|consumer:pooled",
+      "request": "Second processing request. It is the same batch of data as the previous request and the downstream Consumer structure is unchanged.",
+      "payload": {
+        "decision": "REUSE_PRIOR_EXPERIENCE",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "reason": "The retrieved same-cell experience reports a valid positive delayed response for applying outlier_iqr to all training series except series 6, with no harmed evaluation series recorded. Reuse that prior plan for this unchanged traffic pooled batch.",
+        "experience_use": [
+          "E1"
+        ]
+      },
+      "protocol_error": null,
+      "infrastructure_error": null,
+      "llm_calls": 2,
+      "llm_call_budget_for_this_episode": 10,
+      "validation_retry_count": 1,
+      "validation_error_codes": [
+        "AGENT_ENVELOPE_INVALID"
+      ],
+      "first_pass_valid": false,
+      "tool_receipts": [],
+      "tool_called": false,
+      "tool_plan_for_this_cell": null,
+      "workspace_tool_accounting": {
+        "workspace_tool_calls": 0,
+        "workspace_tool_calls_refused": 0,
+        "workspace_tool_call_budget": 6,
+        "distinct_series_observed": 0,
+        "refusal_reasons": [],
+        "scope_series_count": 12,
+        "call_log": []
+      },
+      "experience_entries_visible": 1,
+      "signed_pack_for_this_cell": {
+        "positive": {
+          "episode_id": "E1",
+          "schema_version": "experience-episode/1",
+          "task_consumer_key": "batch:traffic|consumer:pooled",
+          "domain_namespace": "traffic",
+          "context_summary": {
+            "cohort": {
+              "cohort_name": "traffic",
+              "training_series_count": 12,
+              "evaluation_series_count": 8
+            },
+            "local_pattern": {
+              "consumer_variant": "pooled"
+            },
+            "program_geometry": {
+              "excluded_count": 1,
+              "treated_count": 11
+            }
+          },
+          "workflow_signature": "outlier_iqr",
+          "support_response": {
+            "gain": 0.6652773536462215,
+            "window": "support",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ],
+            "plan_source": "ADOPT_TOOL_RESULT",
+            "harmed_eval_series_count": 0,
+            "provenance": "batch_recipe_tool_v2_engineering",
+            "counts_as_unguided_exploration": false,
+            "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+          },
+          "delayed_response": {
+            "gain": 1.0470750569907492,
+            "window": "delayed",
+            "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+            "harmed_eval_series_count": 0,
+            "provenance": "batch_recipe_tool_v2_engineering",
+            "counts_as_unguided_exploration": false,
+            "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+          },
+          "relation": "POSITIVE",
+          "evidence_level": "DELAYED",
+          "response_validity": "VALID",
+          "local_status": "EPISODE_ONLY",
+          "pattern_view": "default",
+          "evidence_refs": [
+            "batch_recipe_tool_v2_engineering"
+          ]
+        },
+        "negative": null,
+        "conflict": null,
+        "evidence_sufficient": true,
+        "retrieval_note": "1 valid episodes; same-domain-first; signed pack (pos/neg/conflict)"
+      },
+      "wall_seconds": 18.41790600004606,
+      "label": {
+        "behaviour": "EXPERIENCE_REUSED_NO_TOOL_CALL",
+        "decision": "REUSE_PRIOR_EXPERIENCE",
+        "reused": true,
+        "reused_across_cell": false,
+        "cited_episode_ids": [
+          "E1"
+        ],
+        "cited_cells": [
+          "batch:traffic|consumer:pooled"
+        ],
+        "plan": {
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "6"
+          ]
+        },
+        "plan_matches_tool_plan": null
+      },
+      "adopted_plan_offline_readout": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "6"
+        ],
+        "unknown_series_ignored": [],
+        "support_aggregate_gain": 0.6652773536462215,
+        "delayed_aggregate_gain": 1.0470750569907492,
+        "support_harmed_eval_series_count": 0,
+        "delayed_harmed_eval_series_count": 0,
+        "mechanism": "run_batch_composition_headroom._evaluate_assignment + _gain_rows on the same Task windows and Consumer variant the recipe used; identity baseline recomputed once per cell"
+      },
+      "experience_written": {
+        "episode_id": "E2",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:pooled",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic",
+            "training_series_count": 12,
+            "evaluation_series_count": 8
+          },
+          "local_pattern": {
+            "consumer_variant": "pooled"
+          },
+          "program_geometry": {
+            "excluded_count": 1,
+            "treated_count": 11
+          }
+        },
+        "workflow_signature": "outlier_iqr",
+        "support_response": {
+          "gain": 0.6652773536462215,
+          "window": "support",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "6"
+          ],
+          "plan_source": "REUSE_PRIOR_EXPERIENCE",
+          "harmed_eval_series_count": 0,
+          "provenance": "batch_recipe_tool_v2_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+        },
+        "delayed_response": {
+          "gain": 1.0470750569907492,
+          "window": "delayed",
+          "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+          "harmed_eval_series_count": 0,
+          "provenance": "batch_recipe_tool_v2_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "batch_recipe_tool_v2_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E3",
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "cell_key": "batch:traffic|consumer:per_channel",
+      "request": "Same batch of data as the previous requests, but the downstream Consumer structure has changed: instead of one model fitted on the stacked windows of all training channels, each training channel now fits its own model and every evaluation channel is predicted by the equal-weight mean of those channel-wise models.",
+      "payload": {
+        "decision": "ADOPT_TOOL_RESULT",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3",
+          "8"
+        ],
+        "reason": "The deterministic batch recipe adopted an outlier_iqr plan excluding series 3 and 8 after its delayed stability check, with zero harmed evaluation series under the adopted plan. This result is specific to the traffic cohort with the per_channel Consumer.",
+        "experience_use": []
+      },
+      "protocol_error": null,
+      "infrastructure_error": null,
+      "llm_calls": 2,
+      "llm_call_budget_for_this_episode": 10,
+      "validation_retry_count": 0,
+      "validation_error_codes": [],
+      "first_pass_valid": true,
+      "tool_receipts": [
+        {
+          "tool_name": "batch_recipe",
+          "arguments": {
+            "cohort": "traffic",
+            "consumer_variant": "per_channel"
+          },
+          "ok": true,
+          "receipt_sha": "5cc0091d0e42d192c381b558c7849ffb2c4af97e06277ad05cd206a95ce3c203"
+        }
+      ],
+      "tool_called": true,
+      "tool_plan_for_this_cell": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3",
+          "8"
+        ]
+      },
+      "workspace_tool_accounting": {
+        "workspace_tool_calls": 1,
+        "workspace_tool_calls_refused": 0,
+        "workspace_tool_call_budget": 6,
+        "distinct_series_observed": 0,
+        "refusal_reasons": [],
+        "scope_series_count": 12,
+        "call_log": [
+          {
+            "tool_name": "batch_recipe",
+            "cohort": "traffic",
+            "consumer_variant": "per_channel",
+            "ok": true
+          }
+        ]
+      },
+      "experience_entries_visible": 2,
+      "signed_pack_for_this_cell": {
+        "positive": null,
+        "negative": null,
+        "conflict": null,
+        "evidence_sufficient": false,
+        "retrieval_note": "no valid episodes"
+      },
+      "wall_seconds": 39.509848700021394,
+      "label": {
+        "behaviour": "TOOL_CALLED_AND_ADOPTED",
+        "decision": "ADOPT_TOOL_RESULT",
+        "reused": false,
+        "reused_across_cell": false,
+        "cited_episode_ids": [],
+        "cited_cells": [],
+        "plan": {
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3",
+            "8"
+          ]
+        },
+        "plan_matches_tool_plan": true
+      },
+      "adopted_plan_offline_readout": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3",
+          "8"
+        ],
+        "unknown_series_ignored": [],
+        "support_aggregate_gain": 0.3031836970220849,
+        "delayed_aggregate_gain": 0.35547178578423166,
+        "support_harmed_eval_series_count": 0,
+        "delayed_harmed_eval_series_count": 0,
+        "mechanism": "run_batch_composition_headroom._evaluate_assignment + _gain_rows on the same Task windows and Consumer variant the recipe used; identity baseline recomputed once per cell"
+      },
+      "experience_written": {
+        "episode_id": "E3",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:per_channel",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic",
+            "training_series_count": 12,
+            "evaluation_series_count": 8
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel"
+          },
+          "program_geometry": {
+            "excluded_count": 2,
+            "treated_count": 10
+          }
+        },
+        "workflow_signature": "outlier_iqr",
+        "support_response": {
+          "gain": 0.3031836970220849,
+          "window": "support",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3",
+            "8"
+          ],
+          "plan_source": "ADOPT_TOOL_RESULT",
+          "harmed_eval_series_count": 0,
+          "provenance": "batch_recipe_tool_v2_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+        },
+        "delayed_response": {
+          "gain": 0.35547178578423166,
+          "window": "delayed",
+          "window_role": "already-exposed development origins; the recipe's own adoption gate reads this window, so it is in-selection for any plan the tool produced",
+          "harmed_eval_series_count": 0,
+          "provenance": "batch_recipe_tool_v2_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "tool-mediated engineering measurement produced by the mounted batch_recipe tool; not authorization evidence and not an unguided probe"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "batch_recipe_tool_v2_engineering"
+        ]
+      }
+    }
+  ],
+  "windows": {
+    "cohort": "traffic",
+    "note": "traffic development origins only: Support 1104/1368, delayed 1800, farthest read 1848, sealed_from_index 3072 never approached"
+  },
+  "wall_seconds": 113.15164589998312
+}

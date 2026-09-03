@@ -1,0 +1,2251 @@
+{
+ "protocol_version": "t6_cls_conf_unused_target_v3a",
+ "run_id": "t6_cls_conf_r3a",
+ "entry": "_scratch/cls_conf_r3_select.py",
+ "evidence_grade": "DEVELOPMENT",
+ "git_head": "3673366c5efea7416566985ec38df72ba47b0e44",
+ "selection": {
+  "rule": "condition_pair_used iff a claiming runner is EXECUTES_CONDITION_PAIR and the dataset is in that runner's actual roster (constants/calls, not file-name mentions). Eligible = NOT condition_pair_used AND binary AND official TRAIN rows in [40, 400] AND loadable. Selected = lexicographic first eligible. No new rule.",
+  "census_reused": "_scratch/_conf_name_census.json",
+  "census_names": [
+   "BeetleFly",
+   "BirdChicken",
+   "Coffee",
+   "Computers",
+   "DistalPhalanxOutlineCorrect",
+   "DodgerLoopWeekend",
+   "ECG200",
+   "ECGFiveDays",
+   "Earthquakes",
+   "FordA",
+   "FordB",
+   "FreezerRegularTrain",
+   "FreezerSmallTrain",
+   "GunPoint",
+   "GunPointAgeSpan",
+   "GunPointMaleVersusFemale",
+   "GunPointOldVersusYoung",
+   "Ham",
+   "HandOutlines",
+   "Herring",
+   "HouseTwenty",
+   "KeplerLightCurves",
+   "Lightning2",
+   "MiddlePhalanxOutlineCorrect",
+   "MoteStrain",
+   "PhalangesOutlinesCorrect",
+   "PowerCons",
+   "ProximalPhalanxOutlineCorrect",
+   "SemgHandGenderCh2",
+   "ShapeletSim",
+   "SonyAIBORobotSurface1",
+   "SonyAIBORobotSurface2",
+   "Strawberry",
+   "ToeSegmentation1",
+   "ToeSegmentation2",
+   "TwoLeadECG",
+   "Wafer",
+   "Wine",
+   "WormsTwoClass",
+   "Yoga"
+  ],
+  "census_match_zip_stems": true,
+  "audit_path": "_scratch/cls_conf_r3_runner_audit.json",
+  "r1_artifact_not_overwritten": true,
+  "r2_artifact_not_overwritten": true,
+  "pool_size": 40,
+  "runner_audit": [
+   {
+    "runner": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "DistalPhalanxOutlineCorrect",
+     "Earthquakes",
+     "ShapeletSim",
+     "Wine"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "line": 34,
+      "quote": "TARGET_DATASETS = (\"ShapeletSim\", \"Wine\", \"Earthquakes\", \"DistalPhalanxOutlineCorrect\",)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "line": 40,
+      "quote": "ARTIFACT = \"fit_only_artifact\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "line": 41,
+      "quote": "EVENT = \"stable_task_event\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "line": 93,
+      "quote": "row = _w50b_train_plan(root, dataset)  # W50b injects both CONDITIONS"
+     },
+     {
+      "file": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "line": 275,
+      "quote": "artifact_fit, artifact_support = _condition_inputs(..., condition=ARTIFACT, inject=helpers[\"inject\"])"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": true,
+    "conservative_note": "存疑归严: file tokens only read W48/W49 report fields; run() also re-applies W48 _inject on TRAIN fit-only for Woodbury calibration (no TEST, no named CONDITIONS, no stable_task_event). Counted as executing the fit-only half of the pair.",
+    "actual_roster": [
+     "BeetleFly",
+     "Coffee",
+     "ECG200",
+     "ECGFiveDays",
+     "FordA",
+     "GunPoint",
+     "TwoLeadECG",
+     "Wafer"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "line": 34,
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "line": 136,
+      "quote": "row[\"conditions\"][\"fit_only_artifact\"][\"forced_query_gain\"]  # report-field read"
+     },
+     {
+      "file": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "line": 202,
+      "quote": "fit_values = _inject(np, values[fit_indices], labels[fit_indices], positions)"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "Computers",
+     "HandOutlines",
+     "PowerCons",
+     "SemgHandGenderCh2",
+     "WormsTwoClass",
+     "Yoga"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "line": 38,
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "line": 46,
+      "quote": "CONDITIONS = (\"fit_only_artifact\", \"stable_task_event\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "line": 392,
+      "quote": "for condition_name in CONDITIONS: fit_values, support_values = _condition_inputs(..., condition=condition_name, inject=helpers[\"inject\"])"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "BeetleFly",
+     "Coffee",
+     "ECG200",
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+      "line": 28,
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"GunPoint\", \"BeetleFly\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+      "line": 1,
+      "quote": "no fit_only_artifact / stable_task_event token; pattern-multiplicity duplication, not the impulse pair"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "FordB",
+     "Lightning2",
+     "MiddlePhalanxOutlineCorrect",
+     "MoteStrain",
+     "ProximalPhalanxOutlineCorrect",
+     "SonyAIBORobotSurface1"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "line": 32,
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "line": 199,
+      "quote": "fit_artifact, support_artifact = _condition_inputs(..., condition=\"fit_only_artifact\", inject=helpers[\"inject\"])"
+     },
+     {
+      "file": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "line": 223,
+      "quote": "fit_event, support_event = _condition_inputs(..., condition=\"stable_task_event\", inject=helpers[\"inject\"])"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "BirdChicken",
+     "GunPointAgeSpan",
+     "HouseTwenty",
+     "PhalangesOutlinesCorrect",
+     "SonyAIBORobotSurface2",
+     "ToeSegmentation1"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "line": 34,
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "line": 113,
+      "quote": "return _build_w55_target_train_plan(root, dataset)  # W55 injects both conditions"
+     },
+     {
+      "file": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "line": 330,
+      "quote": "fit_values, support_values = _condition_inputs(..., condition=\"fit_only_artifact\", inject=helpers[\"inject\"])"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_shared_capability_s0_census.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_shared_capability_s0_census.py",
+      "line": 285,
+      "quote": "\"UCR archive (BeetleFly, FordA, ... ), and the .ts classification \"  # comment mention only; forecasting census, no UCR impulse run"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_source_outlier_local_behavior_audit.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_source_cohort_policy_premise.py",
+      "line": 39,
+      "quote": "SOURCE_DATASETS = (\"monash:traffic_hourly\", \"metr_la\")  # imported; not UCR Ham"
+     },
+     {
+      "file": "evaluation/functional/run_e2_source_outlier_local_behavior_audit.py",
+      "line": 3,
+      "quote": "fixed sparse Hampel repair  # r1 claiming of Ham is a Hampel substring false positive"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "brief_disagreement": "r2/task brief treated file-local tokens as incidental field reads. evaluate() reuses W56/W55 planner which injects both conditions, then W56 _prepare_train_execution injects fit_only_artifact and opens TEST. Semantic standard => EXECUTES.",
+    "actual_roster": [
+     "FreezerRegularTrain",
+     "GunPointMaleVersusFemale",
+     "GunPointOldVersusYoung",
+     "ToeSegmentation2"
+    ],
+    "tokens_in_file": [
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "line": 38,
+      "quote": "TARGET_DATASETS = (\"FreezerRegularTrain\", \"ToeSegmentation2\", \"GunPointMaleVersusFemale\", \"GunPointOldVersusYoung\",)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "line": 123,
+      "quote": "return _build_w56_target_train_plan(root, dataset)  # -> W55 _condition_inputs both conditions"
+     },
+     {
+      "file": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "line": 137,
+      "quote": "if row[\"stable_task_event\"][\"scope\"] != CONTRAINDICATED:  # field-name read (also present)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "line": 354,
+      "quote": "return _prepare_w56_train_execution(...)  # injects condition=\"fit_only_artifact\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "line": 409,
+      "quote": "current = _build_target_train_plan(root, dataset); prepared[dataset] = _prepare_train_execution(...)"
+     },
+     {
+      "file": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "line": 199,
+      "quote": "W55 planner (reused): _condition_inputs(..., condition=\"fit_only_artifact\") and condition=\"stable_task_event\""
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+      "line": 59,
+      "quote": "DATASET = \"GunPoint\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+      "line": 152,
+      "quote": "def inject_point_mcar(  # MCAR missing, not the impulse pair"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+      "line": 376,
+      "quote": "\"rejected\": \"ECG200\"  # named but not run"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "ECG200",
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+      "line": 54,
+      "quote": "LADDER = (\"GunPoint\", \"ECG200\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+      "line": 119,
+      "quote": "def inject_row_subset_two_runs(  # missing-value runs, not the impulse pair"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+      "line": 58,
+      "quote": "DATASET = \"GunPoint\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+      "line": 186,
+      "quote": "def inject_burst_noise(  # contiguous burst, not the impulse pair"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+      "line": 601,
+      "quote": "\"rejected\": \"ECG200\""
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_t6_cls3_paired_consumer_gate.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_t6_cls3_paired_consumer_gate.py",
+      "line": 48,
+      "quote": "DATASET = \"GunPoint\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls3_paired_consumer_gate.py",
+      "line": 515,
+      "quote": "injected = apply_frozen_ledger(train_values, ledger)  # CLS-2 burst ledger replay"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_t6_cls4_burst_repair_gate.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_t6_cls4_burst_repair_gate.py",
+      "line": 654,
+      "quote": "\"dataset\": \"GunPoint\""
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls4_burst_repair_gate.py",
+      "line": 3,
+      "quote": "Adds repair_burst_segment, then re-opens the CLS-3 five-condition table on the frozen CLS-2 ledger."
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "GunPointAgeSpan",
+     "Lightning2",
+     "MiddlePhalanxOutlineCorrect",
+     "PhalangesOutlinesCorrect",
+     "ProximalPhalanxOutlineCorrect"
+    ],
+    "named_but_not_all_executed": {
+     "W55_SOURCE_ROSTER": [
+      "FordB",
+      "Lightning2",
+      "MoteStrain",
+      "SonyAIBORobotSurface1",
+      "ProximalPhalanxOutlineCorrect",
+      "MiddlePhalanxOutlineCorrect"
+     ],
+     "W56_TARGET_ROSTER": [
+      "BirdChicken",
+      "HouseTwenty",
+      "ToeSegmentation1",
+      "PhalangesOutlinesCorrect",
+      "SonyAIBORobotSurface2",
+      "GunPointAgeSpan"
+     ]
+    },
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "line": 132,
+      "quote": "SOURCE_DATASETS = (\"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\", \"Lightning2\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "line": 134,
+      "quote": "TARGET_DATASETS = (\"PhalangesOutlinesCorrect\", \"GunPointAgeSpan\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "line": 135,
+      "quote": "CONDITIONS = (\"fit_only_artifact\", \"stable_task_event\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "line": 429,
+      "quote": "fit_values, support_values = _condition_inputs(..., condition=condition, inject=helpers[\"inject\"])"
+     },
+     {
+      "file": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "line": 1316,
+      "quote": "for dataset in SOURCE_DATASETS: for condition in CONDITIONS: cell = _build_cell(dataset, condition)"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_task_conditioned_impulse_repair_control.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_task_conditioned_impulse_repair_control.py",
+      "line": 27,
+      "quote": "DATASETS = (\"monash:traffic_hourly\", \"legacy_monash:fred_md\")  # not UCR Ham"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "Coffee",
+     "ECG200",
+     "FordA",
+     "GunPoint"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "line": 33,
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "line": 34,
+      "quote": "CONDITIONS = (\"fit_only_artifact\", \"stable_task_event\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "line": 328,
+      "quote": "for condition in CONDITIONS: fit_values = _inject(...); if condition == \"fit_only_artifact\": support_values = base_support.copy()"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "BeetleFly",
+     "Coffee",
+     "ECG200",
+     "ECGFiveDays",
+     "FordA",
+     "GunPoint",
+     "TwoLeadECG",
+     "Wafer"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "line": 31,
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "line": 32,
+      "quote": "TARGET_DATASETS = (\"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "line": 33,
+      "quote": "CONDITIONS = (\"fit_only_artifact\", \"stable_task_event\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "line": 223,
+      "quote": "def _condition_inputs(...): fit_values = inject(...); support_values = base_support.copy() if condition == \"fit_only_artifact\" else inject(...)"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+    "classification": "EXECUTES_CONDITION_PAIR",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "FreezerSmallTrain",
+     "Ham",
+     "Herring",
+     "Strawberry"
+    ],
+    "tokens_in_file": [
+     "fit_only_artifact",
+     "stable_task_event"
+    ],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "line": 40,
+      "quote": "TARGET_DATASETS = (\"Herring\", \"Ham\", \"FreezerSmallTrain\", \"Strawberry\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "line": 41,
+      "quote": "CONDITIONS = (\"fit_only_artifact\", \"stable_task_event\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "line": 258,
+      "quote": "for condition_name in CONDITIONS: fit_values, support_values = _condition_inputs(..., condition=condition_name, inject=helpers[\"inject\"])"
+     }
+    ]
+   },
+   {
+    "runner": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py",
+    "classification": "NO_TOKEN",
+    "conservative_uncertain": false,
+    "actual_roster": [
+     "ECG200",
+     "GunPoint"
+    ],
+    "tokens_in_file": [],
+    "evidence": [
+     {
+      "file": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py",
+      "line": 27,
+      "quote": "DATASETS = (\"ECG200\", \"GunPoint\")"
+     },
+     {
+      "file": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py",
+      "line": 80,
+      "quote": "def _inject_temporary(  # two-boundary level excursion, not the impulse pair"
+     }
+    ]
+   }
+  ],
+  "candidates": [
+   {
+    "dataset": "BeetleFly",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+     "evaluation/functional/run_e2_shared_capability_s0_census.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 20,
+    "series_length": 512,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py:28"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_shared_capability_s0_census.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_shared_capability_s0_census.py:285"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "BirdChicken",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 20,
+    "series_length": 512,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py:34",
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "Coffee",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 28,
+    "series_length": 286,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_context_label_evidence_witness.py:33",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py:28"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "Computers",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 250,
+    "series_length": 720,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_integrated_context_harness_evolution.py:38",
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "DistalPhalanxOutlineCorrect",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 600,
+    "series_length": 80,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_action_credit_candidate_ordering.py:34",
+      "quote": "TARGET_DATASETS = (\"ShapeletSim\", \"Wine\", \"Earthquakes\", \"DistalPhalanxOutlineCorrect\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "DodgerLoopWeekend",
+    "claiming_runners": [],
+    "executing_claiming_runners": [],
+    "condition_pair_used": false,
+    "loadable": false,
+    "load_error": "ValueError: invalid UCR table: DodgerLoopWeekend/TRAIN",
+    "train_rows": null,
+    "series_length": null,
+    "class_count": null,
+    "excluded_because": [
+     "not_loadable_as_binary_ucr"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "load_error",
+      "detail": "ValueError: invalid UCR table: DodgerLoopWeekend/TRAIN"
+     }
+    ]
+   },
+   {
+    "dataset": "ECG200",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+     "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+     "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+     "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+     "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 100,
+    "series_length": 96,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_context_label_evidence_witness.py:33",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py:28"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py:59"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py:54"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py:58"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py:27"
+     }
+    ]
+   },
+   {
+    "dataset": "ECGFiveDays",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 23,
+    "series_length": 136,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "Earthquakes",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 322,
+    "series_length": 512,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_action_credit_candidate_ordering.py:34",
+      "quote": "TARGET_DATASETS = (\"ShapeletSim\", \"Wine\", \"Earthquakes\", \"DistalPhalanxOutlineCorrect\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "FordA",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_shared_capability_s0_census.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 3601,
+    "series_length": 500,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_context_label_evidence_witness.py:33",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_shared_capability_s0_census.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_shared_capability_s0_census.py:285"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "FordB",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 3636,
+    "series_length": 500,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_program_binding_harness_update.py:32",
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "FreezerRegularTrain",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 150,
+    "series_length": 301,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_source_prior_evidence_fusion.py:38",
+      "quote": "TARGET_DATASETS = (\"FreezerRegularTrain\", \"ToeSegmentation2\", \"GunPointMaleVersusFemale\", \"GunPointOldVersusYoung\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "FreezerSmallTrain",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 28,
+    "series_length": 301,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py:40",
+      "quote": "TARGET_DATASETS = (\"Herring\", \"Ham\", \"FreezerSmallTrain\", \"Strawberry\")"
+     }
+    ]
+   },
+   {
+    "dataset": "GunPoint",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+     "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+     "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+     "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+     "evaluation/functional/run_e2_t6_cls3_paired_consumer_gate.py",
+     "evaluation/functional/run_e2_t6_cls4_burst_repair_gate.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+     "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 50,
+    "series_length": 150,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_context_label_evidence_witness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_context_label_evidence_witness.py:33",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_pattern_mass_multiplicity_headroom.py:28"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_t6_cls1_qualification_gate.py:59"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_t6_cls1_r2_qualification_gate.py:54"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py:58"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls3_paired_consumer_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_t6_cls3_paired_consumer_gate.py:48"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls4_burst_repair_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_t6_cls4_burst_repair_gate.py:654"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": true,
+      "pointer": "evaluation/functional/run_e2_temporary_excursion_skill_headroom.py:27"
+     }
+    ]
+   },
+   {
+    "dataset": "GunPointAgeSpan",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 135,
+    "series_length": 150,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py:34",
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132",
+      "quote": "SOURCE_DATASETS = (\"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\", \"Lightning2\")"
+     }
+    ]
+   },
+   {
+    "dataset": "GunPointMaleVersusFemale",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 135,
+    "series_length": 150,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_source_prior_evidence_fusion.py:38",
+      "quote": "TARGET_DATASETS = (\"FreezerRegularTrain\", \"ToeSegmentation2\", \"GunPointMaleVersusFemale\", \"GunPointOldVersusYoung\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "GunPointOldVersusYoung",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 136,
+    "series_length": 150,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_source_prior_evidence_fusion.py:38",
+      "quote": "TARGET_DATASETS = (\"FreezerRegularTrain\", \"ToeSegmentation2\", \"GunPointMaleVersusFemale\", \"GunPointOldVersusYoung\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "Ham",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_source_outlier_local_behavior_audit.py",
+     "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+     "evaluation/functional/run_e2_task_conditioned_impulse_repair_control.py",
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 109,
+    "series_length": 431,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py:40",
+      "quote": "TARGET_DATASETS = (\"Herring\", \"Ham\", \"FreezerSmallTrain\", \"Strawberry\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_source_outlier_local_behavior_audit.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_source_cohort_policy_premise.py:39"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls2_value_corruption_gate.py:58"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_task_conditioned_impulse_repair_control.py",
+      "classification": "NO_TOKEN",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_task_conditioned_impulse_repair_control.py:27"
+     }
+    ]
+   },
+   {
+    "dataset": "HandOutlines",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 1000,
+    "series_length": 2709,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_integrated_context_harness_evolution.py:38",
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "Herring",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 64,
+    "series_length": 512,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py:40",
+      "quote": "TARGET_DATASETS = (\"Herring\", \"Ham\", \"FreezerSmallTrain\", \"Strawberry\")"
+     }
+    ]
+   },
+   {
+    "dataset": "HouseTwenty",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 40,
+    "series_length": 2000,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py:34",
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "KeplerLightCurves",
+    "claiming_runners": [],
+    "executing_claiming_runners": [],
+    "condition_pair_used": false,
+    "loadable": false,
+    "load_error": "KeyError: \"There is no item named 'KeplerLightCurves_TRAIN.txt' in the archive\"",
+    "train_rows": null,
+    "series_length": null,
+    "class_count": null,
+    "excluded_because": [
+     "not_loadable_as_binary_ucr"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "load_error",
+      "detail": "KeyError: \"There is no item named 'KeplerLightCurves_TRAIN.txt' in the archive\""
+     }
+    ]
+   },
+   {
+    "dataset": "Lightning2",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 60,
+    "series_length": 637,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_program_binding_harness_update.py:32",
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132",
+      "quote": "SOURCE_DATASETS = (\"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\", \"Lightning2\")"
+     }
+    ]
+   },
+   {
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 600,
+    "series_length": 80,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_program_binding_harness_update.py:32",
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132",
+      "quote": "SOURCE_DATASETS = (\"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\", \"Lightning2\")"
+     }
+    ]
+   },
+   {
+    "dataset": "MoteStrain",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 20,
+    "series_length": 84,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_program_binding_harness_update.py:32",
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "PhalangesOutlinesCorrect",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 1800,
+    "series_length": 80,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py:34",
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132",
+      "quote": "SOURCE_DATASETS = (\"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\", \"Lightning2\")"
+     }
+    ]
+   },
+   {
+    "dataset": "PowerCons",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 180,
+    "series_length": 144,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_integrated_context_harness_evolution.py:38",
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "ProximalPhalanxOutlineCorrect",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 600,
+    "series_length": 80,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_program_binding_harness_update.py:32",
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132",
+      "quote": "SOURCE_DATASETS = (\"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\", \"Lightning2\")"
+     }
+    ]
+   },
+   {
+    "dataset": "SemgHandGenderCh2",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 300,
+    "series_length": 1500,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_integrated_context_harness_evolution.py:38",
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "ShapeletSim",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 20,
+    "series_length": 500,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_action_credit_candidate_ordering.py:34",
+      "quote": "TARGET_DATASETS = (\"ShapeletSim\", \"Wine\", \"Earthquakes\", \"DistalPhalanxOutlineCorrect\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "SonyAIBORobotSurface1",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_program_binding_harness_update.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 20,
+    "series_length": 70,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_program_binding_harness_update.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_program_binding_harness_update.py:32",
+      "quote": "TARGET_DATASETS = (\"FordB\", \"Lightning2\", \"MoteStrain\", \"SonyAIBORobotSurface1\", \"ProximalPhalanxOutlineCorrect\", \"MiddlePhalanxOutlineCorrect\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "SonyAIBORobotSurface2",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 27,
+    "series_length": 65,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py:34",
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "Strawberry",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 613,
+    "series_length": 235,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_confirmation_adaptation_curve.py:40",
+      "quote": "TARGET_DATASETS = (\"Herring\", \"Ham\", \"FreezerSmallTrain\", \"Strawberry\")"
+     }
+    ]
+   },
+   {
+    "dataset": "ToeSegmentation1",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_promoted_binding_capability_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 40,
+    "series_length": 277,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_promoted_binding_capability_transfer.py:34",
+      "quote": "TARGET_DATASETS = (\"BirdChicken\", \"HouseTwenty\", \"ToeSegmentation1\", \"PhalangesOutlinesCorrect\", \"SonyAIBORobotSurface2\", \"GunPointAgeSpan\",)"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "ToeSegmentation2",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_source_prior_evidence_fusion.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 36,
+    "series_length": 343,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_source_prior_evidence_fusion.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_source_prior_evidence_fusion.py:38",
+      "quote": "TARGET_DATASETS = (\"FreezerRegularTrain\", \"ToeSegmentation2\", \"GunPointMaleVersusFemale\", \"GunPointOldVersusYoung\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "TwoLeadECG",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 23,
+    "series_length": 82,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "Wafer",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+     "evaluation/functional/run_e2_task_risk_action_credit_transfer.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 1000,
+    "series_length": 152,
+    "class_count": 2,
+    "excluded_because": [
+     "train_rows_outside_40_400",
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_curvature_corrected_action_credit.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_curvature_corrected_action_credit.py:34",
+      "quote": "DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\", \"Wafer\", \"ECGFiveDays\", \"TwoLeadECG\", \"BeetleFly\",)"
+     },
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_task_risk_action_credit_transfer.py:31",
+      "quote": "SOURCE_DATASETS = (\"Coffee\", \"ECG200\", \"FordA\", \"GunPoint\")"
+     },
+     {
+      "reason": "claiming_but_not_condition_pair",
+      "runner": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "in_actual_roster": false,
+      "pointer": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:132"
+     }
+    ]
+   },
+   {
+    "dataset": "Wine",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_action_credit_candidate_ordering.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 57,
+    "series_length": 234,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_action_credit_candidate_ordering.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_action_credit_candidate_ordering.py:34",
+      "quote": "TARGET_DATASETS = (\"ShapeletSim\", \"Wine\", \"Earthquakes\", \"DistalPhalanxOutlineCorrect\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "WormsTwoClass",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 181,
+    "series_length": 900,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_integrated_context_harness_evolution.py:38",
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     }
+    ]
+   },
+   {
+    "dataset": "Yoga",
+    "claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "executing_claiming_runners": [
+     "evaluation/functional/run_e2_integrated_context_harness_evolution.py"
+    ],
+    "condition_pair_used": true,
+    "loadable": true,
+    "load_error": null,
+    "train_rows": 300,
+    "series_length": 426,
+    "class_count": 2,
+    "excluded_because": [
+     "condition_pair_used"
+    ],
+    "eligible": false,
+    "evidence_chain": [
+     {
+      "reason": "condition_pair_used",
+      "runner": "evaluation/functional/run_e2_integrated_context_harness_evolution.py",
+      "classification": "EXECUTES_CONDITION_PAIR",
+      "pointer": "evaluation/functional/run_e2_integrated_context_harness_evolution.py:38",
+      "quote": "TARGET_DATASETS = (\"Computers\", \"PowerCons\", \"Yoga\", \"SemgHandGenderCh2\", \"WormsTwoClass\", \"HandOutlines\",)"
+     }
+    ]
+   }
+  ],
+  "eligible": [],
+  "selected": null,
+  "selection_basis": "no eligible dataset",
+  "gunpoint_family_warning": false
+ },
+ "target": null,
+ "condition": "fit_only_artifact",
+ "arms": [
+  "A3",
+  "STATIC"
+ ],
+ "verdict": {
+  "verdict": "CANDIDATE_POOL_EMPTY",
+  "reason": "after semantic runner audit, no dataset is unused under the impulse pair and also binary / TRAIN[40,400] / loadable; arms not run",
+  "pool_size": 40,
+  "eligible": [],
+  "selected": null,
+  "llm_spent": 0,
+  "arms_run": 0
+ },
+ "ledger": {
+  "llm_calls": 0,
+  "consumer_fits": 0,
+  "downloads": 0
+ },
+ "obligations": {
+  "llm_spent": 0,
+  "consumer_fits": 0,
+  "downloads": 0,
+  "methods_package_unmodified": true,
+  "r1_artifacts_not_overwritten": true,
+  "r2_artifacts_not_overwritten": true,
+  "other_line_docs_untouched": true,
+  "conservative_uncertain_runners": [
+   "evaluation/functional/run_e2_curvature_corrected_action_credit.py"
+  ]
+ }
+}

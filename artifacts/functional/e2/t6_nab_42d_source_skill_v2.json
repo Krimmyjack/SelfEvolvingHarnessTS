@@ -1,0 +1,307 @@
+{
+  "protocol_version": "t6_nab_42d_source_skill_v2",
+  "skill_id": "source_investigation_ad_v2",
+  "v1_skill_id": "source_investigation_ad_v1",
+  "v1_status": "superseded",
+  "v1_not_deleted": true,
+  "v1_not_in_h0s_v2": true,
+  "authorized_try_operators": [],
+  "risk_authorized_operators": [
+    "hampel_filter"
+  ],
+  "llm_api_call_count": 1,
+  "llm_cap": 6,
+  "target_outcome_read": false,
+  "counts_as_capability_evidence": false,
+  "attempts": [
+    {
+      "attempt": 1,
+      "decision": "ADD",
+      "slow_response": {
+        "decision": "ADD",
+        "sections": {
+          "WHEN": "Apply when the proposal-time task_kind is anomaly_detection.",
+          "OBSERVE": "Observe the proposal-time task_kind and any strong public Pattern evidence before deciding.",
+          "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+          "RISK": "Lower the proposal priority of hampel_filter. Under strong public Pattern evidence, it may still be a restricted probe candidate.",
+          "VERIFY": "The current Target Support relation must be POSITIVE to form a Draft; the later delayed relation must be POSITIVE to approve or keep it Active.",
+          "FALLBACK": "When the observation does not support a guarded hypothesis, use the ordinary unmodified proposal path and gather further Target Support."
+        },
+        "reason": "ADD the source_investigation_ad_v2 skill library entry; no active recommendation is authorized for this call, while hampel_filter remains risk-authorized only."
+      },
+      "audit": {
+        "pass": true,
+        "containment": {
+          "pass": true,
+          "checks": {
+            "all_six_sections_present": true,
+            "no_extra_sections": true,
+            "no_invented_operator": true,
+            "no_invented_observable_feature": true,
+            "no_numeric_threshold": true,
+            "no_source_cohort_identity_leaked": true,
+            "try_clause_within_authorization": true
+          },
+          "missing_sections": [],
+          "extra_sections": [],
+          "invented_operators": [],
+          "invented_observable_features": [],
+          "numeric_literals": [],
+          "leaked_cohort_tokens": [],
+          "operators_named_in_try": [],
+          "unauthorized_operators_in_try": [],
+          "authorized_try_operators": [],
+          "try_abstained": true
+        },
+        "temporal": {
+          "pass": true,
+          "checks": {
+            "observe_when_proposal_time_only": true,
+            "risk_names_hampel": true,
+            "risk_is_deprioritization": true,
+            "risk_allows_restricted_probe": true,
+            "verify_support_positive_forms_draft": true,
+            "verify_delayed_positive_approves_active": true,
+            "no_distinct_task_requirement": true
+          },
+          "forbidden_in_observe_when": [],
+          "distinct_task_hits": [],
+          "risk_hard_ban": false
+        }
+      }
+    }
+  ],
+  "slow_payload": {
+    "authorized_try_operators": [],
+    "risk_authorized_operators": [
+      "hampel_filter"
+    ],
+    "authorization": {
+      "min_distinct_cohorts": 2,
+      "harm_definition": "delayed_relation in {NEGATIVE, CONFLICT}",
+      "harm_definition_strict": "delayed_relation == NEGATIVE",
+      "try_authorized": [],
+      "risk_authorized": [
+        "hampel_filter"
+      ],
+      "preregistered_expectation": {
+        "try": [],
+        "risk": [
+          "hampel_filter"
+        ]
+      },
+      "matches_preregistration": true,
+      "per_program": {
+        "hampel_filter": "RISK: >=2 cohort extended harm (NEGATIVE|CONFLICT), zero pool POSITIVE",
+        "outlier_iqr": "neither: positive_cohorts=[] extended_harm=['source_known_cause']",
+        "outlier_mad": "neither: positive_cohorts=[] extended_harm=['source_known_cause']",
+        "winsorize": "neither: positive_cohorts=['source_aws_cloudwatch'] extended_harm=['source_known_cause']"
+      }
+    },
+    "signed_summary": [
+      {
+        "program": "hampel_filter",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "conflict_cohorts": [
+          "source_known_cause"
+        ],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "extended_harm_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ]
+      },
+      {
+        "program": "outlier_iqr",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause"
+        ]
+      },
+      {
+        "program": "outlier_mad",
+        "positive_cohorts": [],
+        "negative_cohorts": [
+          "source_known_cause"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_aws_cloudwatch",
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause"
+        ]
+      },
+      {
+        "program": "winsorize",
+        "positive_cohorts": [
+          "source_aws_cloudwatch"
+        ],
+        "negative_cohorts": [
+          "source_known_cause"
+        ],
+        "conflict_cohorts": [],
+        "immaterial_cohorts": [
+          "source_known_cause"
+        ],
+        "strict_harm_cohorts": [
+          "source_known_cause"
+        ],
+        "extended_harm_cohorts": [
+          "source_known_cause"
+        ]
+      }
+    ],
+    "known_limits": [
+      "winsorize's two delayed POSITIVE episodes are both source_aws_cloudwatch (r1 and r2): same cohort, different round windows.  That is one cohort under the r3 vote unit, not two."
+    ],
+    "required_sections": [
+      "WHEN",
+      "OBSERVE",
+      "TRY",
+      "RISK",
+      "VERIFY",
+      "FALLBACK"
+    ],
+    "try_abstain_literal": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+    "skill_id": "source_investigation_ad_v2",
+    "applicability": {
+      "feature": "task_kind",
+      "op": "==",
+      "value": "anomaly_detection"
+    },
+    "v1_status": "superseded",
+    "temporal_rules": "OBSERVE/WHEN proposal-time public Context only; RISK default deprioritize hampel_filter but keep a restricted probe exception; VERIFY is the live two-stage Support then delayed POSITIVE gate; no distinct-task requirement",
+    "target_domain": "a different domain from the census; write what to observe and what would have to hold, not what happened in a named cohort"
+  },
+  "verdict": "SKILL_V2_FROZEN_PENDING_BEHAVIOR_REPLAY",
+  "skill_written": true,
+  "entry": {
+    "schema_version": "skill-entry/1",
+    "skill_id": "source_investigation_ad_v2",
+    "skill_kind": "capability",
+    "revision": 1,
+    "body": "WHEN: Apply when the proposal-time task_kind is anomaly_detection.\nOBSERVE: Observe the proposal-time task_kind and any strong public Pattern evidence before deciding.\nTRY: NO_AUTHORIZED_ACTIVE_RECOMMENDATION\nRISK: Lower the proposal priority of hampel_filter. Under strong public Pattern evidence, it may still be a restricted probe candidate.\nVERIFY: The current Target Support relation must be POSITIVE to form a Draft; the later delayed relation must be POSITIVE to approve or keep it Active.\nFALLBACK: When the observation does not support a guarded hypothesis, use the ordinary unmodified proposal path and gather further Target Support.",
+    "observable_applicability": {
+      "feature": "task_kind",
+      "op": "==",
+      "value": "anomaly_detection"
+    },
+    "allowed_tools": [],
+    "risk_guards": {
+      "carrier": "source_derived_general_skill",
+      "advises_the_proposal_stage_only": true,
+      "never_supplies_a_candidate": true,
+      "requires_target_support": true,
+      "sections": {
+        "WHEN": "Apply when the proposal-time task_kind is anomaly_detection.",
+        "OBSERVE": "Observe the proposal-time task_kind and any strong public Pattern evidence before deciding.",
+        "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+        "RISK": "Lower the proposal priority of hampel_filter. Under strong public Pattern evidence, it may still be a restricted probe candidate.",
+        "VERIFY": "The current Target Support relation must be POSITIVE to form a Draft; the later delayed relation must be POSITIVE to approve or keep it Active.",
+        "FALLBACK": "When the observation does not support a guarded hypothesis, use the ordinary unmodified proposal path and gather further Target Support."
+      }
+    }
+  },
+  "sections": {
+    "WHEN": "Apply when the proposal-time task_kind is anomaly_detection.",
+    "OBSERVE": "Observe the proposal-time task_kind and any strong public Pattern evidence before deciding.",
+    "TRY": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+    "RISK": "Lower the proposal priority of hampel_filter. Under strong public Pattern evidence, it may still be a restricted probe candidate.",
+    "VERIFY": "The current Target Support relation must be POSITIVE to form a Draft; the later delayed relation must be POSITIVE to approve or keep it Active.",
+    "FALLBACK": "When the observation does not support a guarded hypothesis, use the ordinary unmodified proposal path and gather further Target Support."
+  },
+  "audit": {
+    "pass": true,
+    "containment": {
+      "pass": true,
+      "checks": {
+        "all_six_sections_present": true,
+        "no_extra_sections": true,
+        "no_invented_operator": true,
+        "no_invented_observable_feature": true,
+        "no_numeric_threshold": true,
+        "no_source_cohort_identity_leaked": true,
+        "try_clause_within_authorization": true
+      },
+      "missing_sections": [],
+      "extra_sections": [],
+      "invented_operators": [],
+      "invented_observable_features": [],
+      "numeric_literals": [],
+      "leaked_cohort_tokens": [],
+      "operators_named_in_try": [],
+      "unauthorized_operators_in_try": [],
+      "authorized_try_operators": [],
+      "try_abstained": true
+    },
+    "temporal": {
+      "pass": true,
+      "checks": {
+        "observe_when_proposal_time_only": true,
+        "risk_names_hampel": true,
+        "risk_is_deprioritization": true,
+        "risk_allows_restricted_probe": true,
+        "verify_support_positive_forms_draft": true,
+        "verify_delayed_positive_approves_active": true,
+        "no_distinct_task_requirement": true
+      },
+      "forbidden_in_observe_when": [],
+      "distinct_task_hits": [],
+      "risk_hard_ban": false
+    }
+  },
+  "accepted_attempt": 1,
+  "store_root": "C:\\Users\\辉\\AppData\\Local\\Temp\\t6_42d_h0s_v2",
+  "h0s_v2_runtime_bundle_sha": "9cd6ade6daa4a613b9057b3dbf55cf09d009f1dd6240b9cd0f96bf6dd903804a",
+  "h0_runtime_bundle_sha": "9039093eef624a3230fcc2d32fc6b515e8ceb86182362ff3363dc7bac71e9f80",
+  "skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_ad_v2"
+  ],
+  "delivery_assert": {
+    "a5_retrieves_v2": true,
+    "a3_does_not_retrieve_v2": true,
+    "a5_memory_empty": true,
+    "a3_memory_empty": true,
+    "a5_view_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify",
+      "source_investigation_ad_v2"
+    ],
+    "a3_view_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ],
+    "note": "proves legal delivery only; not a behavior gain. v1 SCOPE_CORRECT_NO_APPLICABLE does not endorse v2",
+    "pass": true
+  }
+}

@@ -18,6 +18,10 @@ from SelfEvolvingHarnessTS.evaluation.minipipe.contracts import (
     StageAssessment,
     UpdateAttributionFeedback,
 )
+from SelfEvolvingHarnessTS.contracts.program_supply import (
+    PROGRAM_SUPPLY_ROUTE_FIELDS,
+    route_program_supply_fault,
+)
 
 from .router import FaultRouter
 
@@ -67,7 +71,7 @@ class CaseFacts:
     skill_retrieved: bool = True
     retrieved_capability_skill_ids: tuple[str, ...] = ()
     forced_skill_succeeds: bool = True
-    constrained_proposal_succeeds: bool = False
+    constrained_proposal_succeeds: bool | None = None
     proposed_candidate_exists: bool = True
     compilation_ok: bool = True
     compiled_candidate_exists: bool = True
@@ -147,37 +151,19 @@ def _effective_candidates(facts: CaseFacts, rules: M0Rules) -> tuple[str, ...]:
 
 
 def _supply_failure(facts: CaseFacts) -> tuple[str, str, tuple[str, ...]]:
-    if facts.expressibility_status == "PROVEN_UNAVAILABLE":
-        return "OPERATOR_GAP", "CAPABILITY_BACKLOG", ()
-    if facts.expressibility_cause == "OBSERVABLE_DERIVATION_PROCEDURE_GAP":
-        return (
-            "OBSERVABLE_DERIVATION_PROCEDURE_GAP",
-            "EDITABLE_M0",
-            ("bootstrap_skills.entries/inspect_and_localize.body",),
-        )
-    if facts.expressibility_cause == "OBSERVABLE_FEATURE_SCHEMA_GAP":
-        return "OBSERVABLE_FEATURE_SCHEMA_GAP", "OBSERVATION_CAPABILITY_BACKLOG", ()
-    if facts.expressibility_status == "EXPRESSIBILITY_UNKNOWN":
-        return "EXPRESSIBILITY_UNKNOWN", "EVIDENCE_BACKLOG", ()
-    if facts.expressibility_status == "PROVEN_EXPRESSIBLE" and not facts.capability_skill_exists:
-        return (
-            "SKILL_LIBRARY_GAP",
-            "EDITABLE_M0",
-            ("skill_library.entries/{skill_id}",),
-        )
-    if facts.capability_skill_exists and facts.skill_retrieved:
-        if facts.constrained_proposal_succeeds:
-            return (
-                "PROPOSAL_CONTROL_GAP",
-                "EDITABLE_M0",
-                ("candidate_policy.proposal_guidance",),
-            )
-        return (
-            "SKILL_CONTENT_GAP",
-            "EDITABLE_M0",
-            ("skill_library.entries/{skill_id}.body",),
-        )
-    return "CANDIDATE_SUPPLY_UNKNOWN", "EVIDENCE_BACKLOG", ()
+    """Controlled-minipipe wrapper: same code path as the online router.
+
+    ``assess_case`` still owns the full ten-stage fold for controlled
+    synthetic fixtures; the Program Supply branch is forbidden from keeping
+    a private copy of this logic.
+    """
+    return route_program_supply_fault(
+        expressibility_status=facts.expressibility_status,
+        expressibility_cause=facts.expressibility_cause,
+        capability_skill_exists=facts.capability_skill_exists,
+        skill_retrieved=facts.skill_retrieved,
+        constrained_proposal_succeeds=facts.constrained_proposal_succeeds,
+    )
 
 
 def _build_assessments(facts: CaseFacts, rules: M0Rules) -> tuple[StageAssessment, ...]:
@@ -689,10 +675,12 @@ def assess_case(
 
 
 __all__ = [
+    "PROGRAM_SUPPLY_ROUTE_FIELDS",
+    "STAGE_ORDER",
     "AssessmentResult",
     "AssessmentStatus",
     "CaseFacts",
-    "STAGE_ORDER",
     "Stage",
     "assess_case",
+    "route_program_supply_fault",
 ]

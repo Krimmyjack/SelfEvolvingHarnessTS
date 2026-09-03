@@ -1,0 +1,310 @@
+{
+  "protocol_version": "ps1b_coupling_autopsy_v1",
+  "book": "PS-1b",
+  "date": "2026-08-27",
+  "llm_calls": 0,
+  "fit_calls": 0,
+  "downloads": 0,
+  "code_changed": false,
+  "verdict": "TEXT_RUNG_INERT",
+  "verdict_frozen": true,
+  "parent": {
+    "book": "PS-1",
+    "commit": "5bf4d64",
+    "artifact": "artifacts/functional/e2/ps1_proposal_shift_r2.json",
+    "verdict": "NO_PROPOSAL_SHIFT",
+    "hampel_proposal_rates": {
+      "A3": "0/4",
+      "A5-neutral": "0/4",
+      "A5-scoped": "0/4"
+    },
+    "card_served": {
+      "A5-neutral": "4/4",
+      "A5-scoped": "4/4"
+    }
+  },
+  "contrast": {
+    "c40_artifact": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+    "c40_git_head": "cb03eb688210f521c931895454b44d30048c1928",
+    "c40_card_id": "source_investigation_cls_v1",
+    "c40_live_fast_included_card": true,
+    "c40_a5_gpa_r1_pool": ["identity", "localized_level_shift_repair"],
+    "c40_a5_gpa_r2_pool": ["identity", "repair_local_level_excursion"],
+    "c40_named_operator": "repair_level_shift",
+    "ps1_card_id": "ps1_source_hypothesis_scoped_v1",
+    "ps1_named_operator": "hampel_filter"
+  },
+  "reconstruction_method": {
+    "path": "compile_snapshot(h0) + load_skill_entry(card) + resolve_harness_view(role=fast) + agent_core._skill_prompt + agent_core._messages system concatenation",
+    "live_prompt_persisted_in_ps1_store": false,
+    "token_proxy": "whitespace \\S+ split; not the live model tokenizer",
+    "note": "PS-1 rounds persist retrieved_skill_ids and compiled pools, not raw messages."
+  },
+  "git_history": {
+    "t1_commit": "03f2c1bc8eb42216935b4aabd7f02895279927ca",
+    "t1_what_changed": "methods/ttha/retrieval.py added _is_inert_experience_card; Fast drops experience cards with empty/sentinel TRY and no scoped counted RISK. Slow still resolves them. h0 lock regen only.",
+    "t1_did_not_change": [
+      "methods/ttha/agent_core.py _skill_prompt",
+      "methods/ttha/agent_core.py _messages",
+      "methods/ttha/harness/h0/instruction.md",
+      "methods/ttha/harness/h0/skills/bootstrap/build_contrastive_candidates.json"
+    ],
+    "c40_vs_ps1_prompt_layout": "same. C40 live predates T1 so the card entered Fast. After T1 the same C40 card is inert and Fast-excluded (T2 replay). _skill_prompt keys and Resolved Harness JSON layout are unchanged."
+  },
+  "render_reconstruction": {
+    "message_layout": {
+      "system_order": [
+        "harness_view.instruction (h0 instruction.md, also the start of the system string)",
+        "runtime envelope rule paragraph",
+        "literal 'Resolved Harness: '",
+        "canonical JSON {instruction, skills: [_skill_prompt...], memories, controls}"
+      ],
+      "user_order": [
+        "public-agent-input/1",
+        "public_input.features (observation / Pattern)",
+        "public_input.inspection (propose only)",
+        "public_input.fixed_probe_panel",
+        "public_input.allowed_operator_contracts (propose only)",
+        "allowed_local_tools",
+        "response_contract",
+        "stage_payload_schema"
+      ],
+      "skills_never_in_user_message": true,
+      "observation_never_in_system_resolved_harness_skills": true
+    },
+    "skill_prompt_keys": ["skill_id", "skill_kind", "body", "allowed_tools", "risk_guards"],
+    "fast_skill_order_rule": "bootstrap sorted by skill_id, then ranked capabilities[:top_k=2], then safety",
+    "ps1_scoped": {
+      "in_fast_view": true,
+      "fast_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "ps1_source_hypothesis_scoped_v1"
+      ],
+      "card_index": 3,
+      "is_inert_experience_card": false,
+      "reason_not_inert": "no risk_guards.sections.TRY; _experience_card_sections returns None",
+      "parse_frozen_steps": false,
+      "body_chars": 1810,
+      "body_approx_tokens": 185,
+      "system_chars": 12799,
+      "system_approx_tokens": 1300,
+      "instruction_chars": 506,
+      "runtime_rule_chars": 326,
+      "resolved_harness_json_chars": 11967,
+      "bootstrap_body_chars_ahead": {
+        "build_contrastive_candidates": 6069,
+        "inspect_and_localize": 673,
+        "select_or_identity_and_verify": 142
+      },
+      "card_body_char_offset_in_system": 9241,
+      "card_body_frac_in_system": 0.722,
+      "hampel_filter": {
+        "count_in_system": 2,
+        "first_char_offset": 10228,
+        "first_frac": 0.799,
+        "sites": ["body TRY-HYPOTHESIS", "risk_guards.scope_v1.program_geometry"]
+      },
+      "exact_try_hypothesis": "TRY-HYPOTHESIS: prioritise exploring the hampel family (hampel_filter) among the candidates you propose. This is a ranking suggestion only and is not execution authority: it supplies one candidate for the same candidate budget and grants no right to deploy."
+    },
+    "c40_pre_t1": {
+      "in_fast_view_live": true,
+      "in_fast_view_now": false,
+      "fast_skill_ids_live": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "source_investigation_cls_v1"
+      ],
+      "card_index": 3,
+      "is_inert_experience_card_now": true,
+      "parse_frozen_steps": false,
+      "body_chars": 906,
+      "body_approx_tokens": 121,
+      "forced_system_chars": 10835,
+      "forced_system_approx_tokens": 1295,
+      "repair_level_shift": {
+        "count_in_system": 2,
+        "first_char_offset": 9162,
+        "first_frac": 0.846,
+        "sites": ["body RISK", "risk_guards.sections.RISK (duplicate prose)"]
+      },
+      "exact_risk": "RISK: The census provides no unguided positive support for any listed program, and the lone negative result for repair_level_shift is not repeated; do not infer a transferable preference from this evidence.",
+      "exact_try": "TRY: NO_AUTHORIZED_ACTIVE_RECOMMENDATION"
+    },
+    "position_verdict": "same slot. Both cards are skill[3] after the same three bootstrap procedures. Operator token sits at ~80–85% of the system string. Position does not explain the behaviour split."
+  },
+  "proposal_instruction_audit": {
+    "h0_instruction_md_lines_1_6": [
+      "You are the TTHA preparation Agent. Use only public observations, declared tools,",
+      "canonical operator contracts, retrieved Harness content, and the typed output schema.",
+      "Never request or infer clean references, injection metadata, candidate utility, or",
+      "private rankings. Inspect before proposing. Supply at most the configured number of",
+      "effect-distinct PROGRAM candidates. Select exactly one candidate, including identity.",
+      "Keep modifications local and abstain when public evidence does not justify a repair."
+    ],
+    "instruction_tells_agent_to_use_retrieved_harness": true,
+    "observation_only_wording_present": false,
+    "bootstrap_build_contrastive_candidates": {
+      "file": "methods/ttha/harness/h0/skills/bootstrap/build_contrastive_candidates.json",
+      "revision": 7,
+      "quotes": {
+        "1_goal": "From the current TaskContext, the public Pattern evidence, and any retrieved Experience, construct minimal, effect-distinct typed PROGRAM candidates whose expected effects can be verified on the current Context.",
+        "2_inspect_inputs": "At the inspect stage only the deployment-visible feature summary and the public tools are available.",
+        "2_propose_inputs": "At the propose stage the inspection payload (inspected region fractions, uncertainty, and structured pattern hypotheses), the allowed operator contracts, the fixed probe panel, and any retrieved positive, negative, or conflict Experience are additionally available.",
+        "4b_runtime_prior": "The Source prior, when admissible, is injected by the runtime into a pool slot; do not propose a copy of it.",
+        "4f_experience_slot": "Retrieved Experience may inform the prior slot but must never remove the exploration slot.",
+        "propose_rule_effect_distinct": "do not propose operators merely because they are allowed.",
+        "propose_rule_no_legal_binding": "When no legal binding exists for a hypothesis, abstain by returning an empty candidate set rather than an unverifiable program."
+      }
+    },
+    "bootstrap_inspect_and_localize": "Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence, and localize regions. ... (no skill-card / operator-family instruction)",
+    "bootstrap_select": "Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.",
+    "tension": "instruction.md names retrieved Harness content as a legal input. Clause 4b tells the agent the prior is runtime-injected and not to copy it. PS-1 TRY-HYPOTHESIS says the card 'supplies one candidate' but the runtime never injects one. The model is licensed to read the card and simultaneously told not to copy a runtime prior that never arrives."
+  },
+  "wiring": {
+    "same_view_for_inspect_propose_select": true,
+    "citations": {
+      "view_once": "methods/ttha/fast_agent.py:742 resolve_harness_view; reused through inspect (894), propose (941-952 harness_view=view), select",
+      "trace_skill_ids": "methods/ttha/fast_agent.py:672 retrieved_skill_ids=view.skill_ids",
+      "messages": "methods/ttha/agent_core.py:310-318 run_stage builds _messages from that harness_view",
+      "skill_prompt": "methods/ttha/agent_core.py:135-142 body + risk_guards untruncated"
+    },
+    "ps1_empirical": {
+      "every_A5_scoped_round_retrieved": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "ps1_source_hypothesis_scoped_v1"
+      ],
+      "runs": ["ps1_run3", "ps1_run6", "ps1_run9", "ps1_run12"],
+      "rounds_with_non_identity_pool_while_card_present": [
+        {"run_id": "ps1_run6", "round": "r2", "pool": ["identity", "robust_local_outlier_repair"], "family": "outlier_threshold", "llm_calls": 3},
+        {"run_id": "ps1_run9", "round": "r1", "pool": ["identity", "local_mad_repair"], "family": "outlier_threshold", "llm_calls": 4}
+      ],
+      "hampel_in_any_scoped_pool": false,
+      "raw_prompt_bytes_in_artifact": false
+    },
+    "mechanical_inject": {
+      "supplies_candidates_readers_in_methods_ttha": [
+        "methods/ttha/ordering_card.py:216 default False on ordering-control/1 cards"
+      ],
+      "supplies_candidates_readers_in_fast_agent": [],
+      "ps1_card_kind": "ps1_source_hypothesis",
+      "is_ordering_card": false,
+      "frozen_steps_marker_present": false,
+      "skill_frozen_candidates_would_emit": false,
+      "runtime_prior_slot_on_ps1_arms": false,
+      "carried_episodes": []
+    },
+    "hampel_legal_to_emit": {
+      "allowed_tasks_includes_classification": true,
+      "targeting_mode": "intrinsic",
+      "public_parameter_bindings": {},
+      "fast_propose_schema_injects_all_OPERATOR_NAMES": true,
+      "compile_gate": "_allowed_operators(request), not propose_contracts",
+      "propose_contracts_list_persisted_in_ps1": false,
+      "sibling_s1_gpovy_menu_available_for_hampel_oracle": true,
+      "a3_same_cell_proposed_other_ops": true
+    },
+    "wiring_fault": false,
+    "text_entered_propose_context_complete": true
+  },
+  "language_strength": {
+    "c40": {
+      "section": "RISK",
+      "syntax": "concrete operator token inside a negation ('lone negative result for repair_level_shift'; 'do not infer a transferable preference')",
+      "duplication": "body RISK + risk_guards.sections.RISK, so _skill_prompt emits the name twice",
+      "when_clause": "short eligibility (task_kind + context_condition)",
+      "try_clause": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+      "hedge_count_in_recommendation_span": 1,
+      "salience": "short card (906 chars) after 6069-char bootstrap; unique operator token; aligns with the cold level-shift naming habit"
+    },
+    "ps1_scoped": {
+      "section": "TRY-HYPOTHESIS",
+      "syntax": "weak imperative 'prioritise exploring' plus six explicit hedges",
+      "hedges": [
+        "prioritise exploring",
+        "ranking suggestion only",
+        "not execution authority",
+        "grants no right to deploy",
+        "weak evidence",
+        "hypothesis worth one probe, not a fact",
+        "Neither is assumed"
+      ],
+      "duplication": "hampel_filter once in prose and once as JSON program_geometry (not a recommendation sentence)",
+      "when_clause": "19-feature pattern dump before the suggestion",
+      "try_clause": "suggestion-only, no Frozen program steps",
+      "salience": "longer card (1810 chars) in the same slot; hedges outnumber the operator name; names the family the GPOVY cold policy does not propose"
+    },
+    "token_position_distribution": {
+      "method": "char offset / reconstructed system length; approx_tokens = whitespace words",
+      "observation": "user message, after the entire system string",
+      "proposal_instruction": "system prefix (instruction.md + bootstrap body inside Resolved Harness skills[0])",
+      "bootstrap_three": "system Resolved Harness skills[0:3], ~6884 body chars before either card",
+      "ps1_hampel_first_frac": 0.799,
+      "c40_level_shift_first_frac": 0.846,
+      "conclusion": "token position is matched. Language polarity and mechanical inject are not."
+    }
+  },
+  "model_confound": {
+    "rating": "LOW",
+    "c40": {
+      "requested": "gpt-5.6-sol",
+      "returned_model": "gpt-5.6-sol",
+      "relay": "agicto"
+    },
+    "ps1": {
+      "requested": "cpa-gpt-5.6-sol",
+      "returned_model": "gpt-5.6-sol",
+      "relay": "cpa trycloudflare (first book on this relay)"
+    },
+    "note": "same returned_model. Relay/path differs and is noted. Does not explain a 0/12 vs C40 lock split: PS-1 A3/A5-neutral/A5-scoped share one backend and still do not separate."
+  },
+  "verdict_rationale": {
+    "rejected_WIRING_FAULT": "scoped body + risk_guards enter the propose run_stage via the same view; 8/8 scoped rounds list the card in retrieved_skill_ids; two of those rounds compiled a non-identity candidate. No render truncate/filter on this card.",
+    "rejected_MIXED": "rendering is complete, not partial. The unread supplies_candidates flag is the next permission rung, which this book assigns to TEXT_RUNG_INERT / PS-2, not a propose-context miss.",
+    "accepted_TEXT_RUNG_INERT": "card text is in the propose context and the model still names burst/outlier_threshold or abstains. Text-rung coupling is naturally weak under this prompt and this returned_model."
+  },
+  "ps2_design": {
+    "permission_rung": "supply one candidate to verify",
+    "scoped_card": {
+      "carry": "one concrete hampel_filter frozen program (Frozen program steps JSON after the existing marker)",
+      "channel": "supplies_candidates must be read by Fast and mechanically merged via the existing _skill_frozen_candidates / pool merge (or an equivalent single inject). Do not rely on TRY-HYPOTHESIS prose.",
+      "execution": "still off (grants_execution=false, requires_target_support=true)",
+      "approval": "Support + delayed still hold deploy"
+    },
+    "placebo_card": {
+      "carry": "one legal neutral no-op program (deterministically inert or identity-equivalent under the current Context), not an empty-body card",
+      "purpose": "any mechanical inject vs the correct-family inject"
+    },
+    "protocol_unchanged": {
+      "exam": "GPOVY impulse",
+      "arms": "A3 / A5-neutral / A5-scoped",
+      "replicates": 4,
+      "budget": "12 runs, same caps as PS-1"
+    },
+    "do_not": [
+      "rewire retrieve-only visibility and rerun PS-1 as-is",
+      "open grants_execution",
+      "count a guided positive toward Source cross-domain authorization"
+    ]
+  },
+  "out_of_book": [
+    "supplies_candidates is written by the PS-1 runner and defaulted in ordering_card.py; no Fast/propose/pool reader exists.",
+    "PS-1 card_kind is ps1_source_hypothesis, so online_loop.is_ordering_card is false and the reorder path never sees the card.",
+    "C40 repair_level_shift is duplicated by risk_guards.sections inside _skill_prompt; PS-1's second hampel_filter hit is a JSON geometry field.",
+    "A5-scoped still proposed outlier_threshold on 2/4 runs while the card named hampel — the card did not suppress competing families.",
+    "instruction.md is not observation-only; it lists retrieved Harness content as a legal input.",
+    "Bootstrap 4b + TRY-HYPOTHESIS 'supplies one candidate' + no runtime inject is a double bind.",
+    "fast_propose_v1 injects every OPERATOR_NAMES branch; compile allows hampel_filter for classification. Menu-absence is not the PS-1 null."
+  ],
+  "obligations": {
+    "llm": 0,
+    "fit": 0,
+    "downloads": 0,
+    "methods_runtime_contracts_operators": "untouched",
+    "secrets_in_artifacts": false
+  }
+}

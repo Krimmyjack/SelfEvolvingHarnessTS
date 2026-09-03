@@ -1,0 +1,1919 @@
+{
+  "protocol_version": "negative_path_adaptation_v1",
+  "role": "does the Agent converge to abstention after repeated failed re-confirmation on a low-headroom cell, and does the abstention stay local",
+  "not_authorization_evidence": "no Skill is written, no TRY right is granted, no Episode is promoted, no Fast or Slow path is entered, no snapshot pointer moves",
+  "verdict": "GATE_SAVES_BUT_NO_LEARNING",
+  "verdict_reason": "the identity gate forced the fallback in 2 episodes",
+  "verdict_facts": {
+    "e1_e3_evaluations": [
+      1,
+      2,
+      2
+    ],
+    "evaluations_monotonically_non_increasing": false,
+    "e3_ends_at_identity": true,
+    "negative_or_marginal_record_ids": [
+      "run|E1",
+      "run|E2"
+    ],
+    "e3_cited": [
+      "T233|per_channel|W1",
+      "run|E2"
+    ],
+    "e3_cites_a_negative_or_marginal_record": true,
+    "e4_final_program": "outlier_iqr",
+    "e4_abstained": false,
+    "e4_delayed_positive": true,
+    "gate_fallback_count": 2,
+    "e2_e3_spent_full_budget_without_abstaining": false
+  },
+  "pre_registered": {
+    "fixed_before_the_first_llm_call": true,
+    "question": "does the Agent converge to abstention after repeated failed re-confirmation on a low-headroom cell, and does the abstention stay local",
+    "deliberate_departures_from_the_warm_cold_runs": [
+      "within-run feedback is allowed: episode k's outcome is visible to episode k+1, because learning from one's own failures is the mechanism under test",
+      "the adoption stage gains an identity-incumbent gate: a plan is adopted only if its delayed aggregate gain is at least max(best evaluated full-batch delayed, 0); otherwise the episode falls back to identity"
+    ],
+    "actions_and_their_cost": {
+      "REUSE_CONFIRM": "one charged evaluation: the Support of a plan named from visible experience, measured on this window. Confirmed only at Support >= 0.005",
+      "SEARCH": "one charged evaluation per shortlisted program, at most 2, plus a free greedy mask round on the highest-Support one",
+      "ABSTAIN_IDENTITY": "no evaluation is charged and no second stage runs"
+    },
+    "identity_incumbent_gate": "bar = max(delayed of every evaluated full-batch plan, 0.0). A plan whose delayed gain is below the bar is not adopted; the episode falls back to identity. In the reuse path no full-batch plan is evaluated, so the bar is identity at zero. The Agent never sees a delayed number",
+    "verdict_rules_in_this_order": [
+      "OVERGENERALIZED_ABSTENTION: E4 abstained on the high-headroom control cell",
+      "ADAPTIVE_ABSTENTION_CONVERGES: E1..E3 charged-evaluation counts are monotonically non-increasing, E3 ends at identity, E3 cites at least one earlier negative or marginal record, and E4 adopts a delayed-positive plan",
+      "GATE_SAVES_BUT_NO_LEARNING: the identity gate forced the fallback in two or more episodes",
+      "NO_BEHAVIOR_CHANGE: E2 and E3 both spent the full 2 evaluations and neither abstained",
+      "MIXED: anything else, reported episode by episode without merging"
+    ],
+    "behaviour_is_read_from_the_payload": "the action, the shortlist, the cited record ids and the adopted plan are read from the stage payloads and the instrument's own log; the Agent's prose is quoted in the report but never scored",
+    "circuit_breaker": "stop and report if the first episode produces no stage-one payload",
+    "budget": {
+      "charged_evaluations_per_episode": 2,
+      "confirmation_line_support": 0.005,
+      "llm_calls_total": 30,
+      "llm_calls_per_episode": 5,
+      "validation_retries_per_stage": 2,
+      "mask_round": "free, and still runs on the highest-Support shortlisted program (frozen, unchanged)",
+      "delayed_readings": "free, taken after the plan is named, and never shown to the Agent"
+    },
+    "origins": "W2 and W3 are quoted from batch_recipe_windows_v1; W4 is the frozen e1v2_task_04 roster spec, quoted; no origin is chosen here"
+  },
+  "template_parity_check": {
+    "episodes_compared": [
+      "E1",
+      "E2",
+      "E3",
+      "E4"
+    ],
+    "fields_compared": [
+      "consumer_structure",
+      "episode_id",
+      "evaluation_budget",
+      "identity_is_always_available",
+      "prior_experience",
+      "program_menu",
+      "public_observation",
+      "schema_version",
+      "target"
+    ],
+    "fields_that_move_between_episodes": [
+      "episode_id",
+      "prior_experience",
+      "public_observation",
+      "target"
+    ],
+    "allowed_to_move": [
+      "episode_id",
+      "prior_experience",
+      "public_observation",
+      "target"
+    ],
+    "only_allowed_fields_moved": true,
+    "note": "public_observation is a function of the window, so it moves with the window identifier; every other field is fixed by the template"
+  },
+  "model": {
+    "model": "gpt-5.6-luna",
+    "base_url": "https://api.agicto.cn/v1"
+  },
+  "cells": {
+    "low_headroom": {
+      "cohort": "T233",
+      "consumer_variant": "per_channel"
+    },
+    "control": {
+      "cohort": "traffic",
+      "consumer_variant": "per_channel"
+    }
+  },
+  "windows": {
+    "E1": {
+      "window_id": "W2",
+      "support_origins": [
+        3360,
+        3408,
+        3456
+      ],
+      "delayed_origins": [
+        3504,
+        3552,
+        3600
+      ],
+      "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_02, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+      "origin_source": "quoted from the frozen roster",
+      "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "T235",
+          "T244",
+          "T256"
+        ]
+      },
+      "reference_support_aggregate_gain": 0.007415794789236013,
+      "reference_delayed_aggregate_gain": 0.051322498773402093,
+      "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two",
+      "reference_source": "artifacts/functional/e2/batch_recipe_windows_v1.json"
+    },
+    "E2": {
+      "window_id": "W3",
+      "support_origins": [
+        3648,
+        3696,
+        3744
+      ],
+      "delayed_origins": [
+        3792,
+        3840,
+        3888
+      ],
+      "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_03, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+      "origin_source": "quoted from the frozen roster",
+      "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+      "reference_plan": {
+        "kind": "IDENTITY",
+        "program": "identity",
+        "excluded_series": []
+      },
+      "reference_support_aggregate_gain": 0.0,
+      "reference_delayed_aggregate_gain": 0.0,
+      "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two",
+      "reference_source": "artifacts/functional/e2/batch_recipe_windows_v1.json"
+    },
+    "E3": {
+      "window_id": "W4",
+      "support_origins": [
+        3936,
+        3984,
+        4032
+      ],
+      "delayed_origins": [
+        4080,
+        4128,
+        4176
+      ],
+      "origin_source": "quoted from the frozen roster",
+      "origin_provenance": "task_episode_harness.e1._frozen_task_roster()[3], e1v2_task_04, support and delayed origins verbatim",
+      "quoted_from": "frozen e1v2 Task roster",
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "T241",
+          "T256"
+        ]
+      },
+      "reference_support_aggregate_gain": 0.03361104039771758,
+      "reference_delayed_aggregate_gain": 0.028664111205581228,
+      "reference_note": "computed by this runner with the frozen v2 recipe, 0 LLM calls, because no earlier artifact covers W4 on this cell",
+      "reference_adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.013874)",
+      "reference_menu_scan": {
+        "repair_level_shift": 0.028163032800199855,
+        "hampel_filter": -0.013308186617879317,
+        "outlier_iqr": -0.002311741072023842,
+        "outlier_mad": -0.0015418471886909507,
+        "winsorize": 0.0004971223258265536,
+        "denoise_median": -0.036712023587086966,
+        "smooth_ma": -0.04438854965116021
+      },
+      "reference_wall_seconds": 29.91026759997476
+    },
+    "E4": {
+      "window_id": "W3",
+      "support_origins": [
+        2064,
+        2328
+      ],
+      "delayed_origins": [
+        2760
+      ],
+      "origin_provenance": "chosen, not quoted: window 1's shape and spacing shifted by +960 inside the same pre-sealed development region declared by g3_candidate_screening_v2.json (sealed_from_index = 3072)",
+      "origin_source": "chosen inside the declared pre-sealed region",
+      "quoted_from": "artifacts/functional/e2/batch_recipe_windows_v1.json",
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ]
+      },
+      "reference_support_aggregate_gain": 0.5147523618556838,
+      "reference_delayed_aggregate_gain": 0.386971680105862,
+      "reference_note": "the frozen full search's own answer on this cell and window: an unbudgeted 7-program menu scan plus a mask search on its top two",
+      "reference_source": "artifacts/functional/e2/batch_recipe_windows_v1.json"
+    }
+  },
+  "visible_experience_design": {
+    "E1": "the low-headroom cell's frozen W1 row only",
+    "E2": "that row plus everything E1 produced",
+    "E3": "that row plus E1 and E2",
+    "E4": "the control cell's frozen W1 and W2 rows plus all three earlier episodes, so an over-applied abstention would show",
+    "scoring_references_are_never_shown": true
+  },
+  "llm_call_count": 9,
+  "llm_call_budget_total": 30,
+  "stopped_early": null,
+  "experience_entries_written": [
+    {
+      "episode_id": "E1",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:per_channel",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "window_id": "W2"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "evaluations_used": 1
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "gain": 0.0,
+        "window": "support",
+        "program": "identity",
+        "excluded_series": [],
+        "action": "REUSE_CONFIRM",
+        "evaluations_used": 1,
+        "reuse_confirmed": false,
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "delayed_response": {
+        "gain": 0.0,
+        "window": "delayed",
+        "identity_incumbent_gate_passed": true,
+        "fell_back_to_identity": false,
+        "window_role": "read once after the plan was named; the Agent never saw it",
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "negative_path_engineering"
+      ]
+    },
+    {
+      "episode_id": "E2",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:per_channel",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "window_id": "W3"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "evaluations_used": 2
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "gain": 0.0,
+        "window": "support",
+        "program": "identity",
+        "excluded_series": [],
+        "action": "SEARCH",
+        "evaluations_used": 2,
+        "reuse_confirmed": null,
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "delayed_response": {
+        "gain": 0.0,
+        "window": "delayed",
+        "identity_incumbent_gate_passed": false,
+        "fell_back_to_identity": true,
+        "window_role": "read once after the plan was named; the Agent never saw it",
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "negative_path_engineering"
+      ]
+    },
+    {
+      "episode_id": "E3",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:T233|consumer:per_channel",
+      "domain_namespace": "T233",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "T233"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "window_id": "W4"
+        },
+        "program_geometry": {
+          "excluded_count": 0,
+          "evaluations_used": 2
+        }
+      },
+      "workflow_signature": "identity",
+      "support_response": {
+        "gain": 0.0,
+        "window": "support",
+        "program": "identity",
+        "excluded_series": [],
+        "action": "SEARCH",
+        "evaluations_used": 2,
+        "reuse_confirmed": null,
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "delayed_response": {
+        "gain": 0.0,
+        "window": "delayed",
+        "identity_incumbent_gate_passed": false,
+        "fell_back_to_identity": true,
+        "window_role": "read once after the plan was named; the Agent never saw it",
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "relation": "ABSTAIN",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "negative_path_engineering"
+      ]
+    },
+    {
+      "episode_id": "E4",
+      "schema_version": "experience-episode/1",
+      "task_consumer_key": "batch:traffic|consumer:per_channel",
+      "domain_namespace": "traffic",
+      "context_summary": {
+        "cohort": {
+          "cohort_name": "traffic"
+        },
+        "local_pattern": {
+          "consumer_variant": "per_channel",
+          "window_id": "W3"
+        },
+        "program_geometry": {
+          "excluded_count": 1,
+          "evaluations_used": 2
+        }
+      },
+      "workflow_signature": "outlier_iqr",
+      "support_response": {
+        "gain": 0.5147523618556838,
+        "window": "support",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ],
+        "action": "SEARCH",
+        "evaluations_used": 2,
+        "reuse_confirmed": null,
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "delayed_response": {
+        "gain": 0.386971680105862,
+        "window": "delayed",
+        "identity_incumbent_gate_passed": true,
+        "fell_back_to_identity": false,
+        "window_role": "read once after the plan was named; the Agent never saw it",
+        "harmed_eval_series_count": 0,
+        "provenance": "negative_path_engineering",
+        "counts_as_unguided_exploration": false,
+        "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+      },
+      "relation": "POSITIVE",
+      "evidence_level": "DELAYED",
+      "response_validity": "VALID",
+      "local_status": "EPISODE_ONLY",
+      "pattern_view": "default",
+      "evidence_refs": [
+        "negative_path_engineering"
+      ]
+    }
+  ],
+  "experience_provenance": "negative_path_engineering",
+  "run_experience_rows": [
+    {
+      "record_id": "run|E1",
+      "source": "this run",
+      "episode_id": "E1",
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "cell_key": "batch:T233|consumer:per_channel",
+      "window_id": "W2",
+      "support_origins": [
+        3360,
+        3408,
+        3456
+      ],
+      "delayed_origins": [
+        3504,
+        3552,
+        3600
+      ],
+      "action_taken": "REUSE_CONFIRM",
+      "charged_evaluations": 1,
+      "reuse_confirmation": {
+        "plan": {
+          "program": "winsorize",
+          "excluded_series": [
+            "T233",
+            "T234",
+            "T241",
+            "T247",
+            "T256"
+          ]
+        },
+        "support_aggregate_gain": 0.0017307846247483609,
+        "confirmation_line": 0.005,
+        "confirmed": false
+      },
+      "plan_the_agent_named": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "adopted_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "identity_incumbent_gate": {
+        "bar": 0.0,
+        "adopted_plan_passed": true,
+        "fell_back_to_identity": false
+      },
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "harmed_eval_series_count": 0,
+      "relation": "ABSTAIN"
+    },
+    {
+      "record_id": "run|E2",
+      "source": "this run",
+      "episode_id": "E2",
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "cell_key": "batch:T233|consumer:per_channel",
+      "window_id": "W3",
+      "support_origins": [
+        3648,
+        3696,
+        3744
+      ],
+      "delayed_origins": [
+        3792,
+        3840,
+        3888
+      ],
+      "action_taken": "SEARCH",
+      "charged_evaluations": 2,
+      "reuse_confirmation": null,
+      "plan_the_agent_named": {
+        "program": "smooth_ma",
+        "excluded_series": [
+          "T254"
+        ]
+      },
+      "adopted_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "identity_incumbent_gate": {
+        "bar": 0.0,
+        "adopted_plan_passed": false,
+        "fell_back_to_identity": true
+      },
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "harmed_eval_series_count": 0,
+      "relation": "ABSTAIN"
+    },
+    {
+      "record_id": "run|E3",
+      "source": "this run",
+      "episode_id": "E3",
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "cell_key": "batch:T233|consumer:per_channel",
+      "window_id": "W4",
+      "support_origins": [
+        3936,
+        3984,
+        4032
+      ],
+      "delayed_origins": [
+        4080,
+        4128,
+        4176
+      ],
+      "action_taken": "SEARCH",
+      "charged_evaluations": 2,
+      "reuse_confirmation": null,
+      "plan_the_agent_named": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "T241",
+          "T256"
+        ]
+      },
+      "adopted_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "identity_incumbent_gate": {
+        "bar": 0.08415295146013496,
+        "adopted_plan_passed": false,
+        "fell_back_to_identity": true
+      },
+      "support_aggregate_gain": 0.0,
+      "delayed_aggregate_gain": 0.0,
+      "harmed_eval_series_count": 0,
+      "relation": "ABSTAIN"
+    },
+    {
+      "record_id": "run|E4",
+      "source": "this run",
+      "episode_id": "E4",
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "cell_key": "batch:traffic|consumer:per_channel",
+      "window_id": "W3",
+      "support_origins": [
+        2064,
+        2328
+      ],
+      "delayed_origins": [
+        2760
+      ],
+      "action_taken": "SEARCH",
+      "charged_evaluations": 2,
+      "reuse_confirmation": null,
+      "plan_the_agent_named": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ]
+      },
+      "adopted_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ]
+      },
+      "identity_incumbent_gate": {
+        "bar": 0.38039760868835465,
+        "adopted_plan_passed": true,
+        "fell_back_to_identity": false
+      },
+      "support_aggregate_gain": 0.5147523618556838,
+      "delayed_aggregate_gain": 0.386971680105862,
+      "harmed_eval_series_count": 0,
+      "relation": "POSITIVE"
+    }
+  ],
+  "episodes": [
+    {
+      "episode_id": "E1",
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "window_id": "W2",
+      "support_origins": [
+        3360,
+        3408,
+        3456
+      ],
+      "delayed_origins": [
+        3504,
+        3552,
+        3600
+      ],
+      "experience_rows_visible": 1,
+      "experience_record_ids_visible": [
+        "T233|per_channel|W1"
+      ],
+      "base_input_field_shas": {
+        "schema_version": "f48d559016ec231c041367152b522a0428e23d84c1bf5f2405c4376b84feefb9",
+        "episode_id": "04c16bff0bb2746281235d0b9c69326a2b098b44856d16046859f6a56f541a46",
+        "target": "15e755777a26f68f1b524244e571bce9850d24602dbf71e844d728f015f546f8",
+        "consumer_structure": "d00faa5867b4f87c76c4e4dfbc477939d2604f53c54ad2aa3606106d8acfc293",
+        "program_menu": "ec3dcd02106e1db1011e9975bfa7c66f33d01b20ef3937f3c55e692908985139",
+        "identity_is_always_available": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+        "evaluation_budget": "cf9f1a0b654a252e6ebea69e5ae58e65e2829afb3bfcc3f096465b5ebf5f6e25",
+        "public_observation": "5b866f47663296249acc4392052c407ca301039b79b7a76e3046c698bbaed29a",
+        "prior_experience": "a87fbad44f61f1434a524f29c6317686163747e1bad8b775ee6684eab7de43f4"
+      },
+      "stages": [
+        {
+          "stage": "negative_path_action",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "negative_path_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        }
+      ],
+      "action_payload": {
+        "action": "REUSE_CONFIRM",
+        "reuse_program": "winsorize",
+        "reuse_excluded_series": [
+          "T233",
+          "T234",
+          "T241",
+          "T247",
+          "T256"
+        ],
+        "shortlist": [],
+        "request_mask_search": false,
+        "experience_use": [
+          "T233|per_channel|W1"
+        ],
+        "reason": "The prior winsorize plan for this batch and consumer structure had positive Support and delayed-window gains. Current public observations still show strong localized deviations and level excursions, supporting a focused re-confirmation while retaining the previously excluded series."
+      },
+      "action": "REUSE_CONFIRM",
+      "evaluations_used": 1,
+      "confirmation": {
+        "plan": {
+          "program": "winsorize",
+          "excluded_series": [
+            "T233",
+            "T234",
+            "T241",
+            "T247",
+            "T256"
+          ]
+        },
+        "support_aggregate_gain": 0.0017307846247483609,
+        "confirmation_line": 0.005,
+        "confirmed": false,
+        "harmed_eval_series_count": 2
+      },
+      "agent_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "final_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "T235",
+          "T244",
+          "T256"
+        ]
+      },
+      "reference_delayed_aggregate_gain": 0.051322498773402093,
+      "action_reason": "The prior winsorize plan for this batch and consumer structure had positive Support and delayed-window gains. Current public observations still show strong localized deviations and level excursions, supporting a focused re-confirmation while retaining the previously excluded series.",
+      "experience_use": [
+        "T233|per_channel|W1"
+      ],
+      "measured_plans": [
+        {
+          "plan_id": "P1",
+          "program": "winsorize",
+          "excluded_series": [
+            "T233",
+            "T234",
+            "T241",
+            "T247",
+            "T256"
+          ],
+          "support_aggregate_gain": 0.0017307846247483609,
+          "harmed_evaluation_series_count": 2,
+          "measured_by": "re-confirmation of a plan from prior experience",
+          "full_batch": false
+        },
+        {
+          "plan_id": "P0",
+          "program": "identity",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "the identity baseline every gain is measured against",
+          "full_batch": true
+        }
+      ],
+      "adoption_payload": {
+        "program": "identity",
+        "excluded_series": [],
+        "reason": "The reconfirmed winsorize plan did not clear the public support line and harmed two evaluation series. Identity is the measured incumbent and is therefore selected."
+      },
+      "adoption_reason": "The reconfirmed winsorize plan did not clear the public support line and harmed two evaluation series. Identity is the measured incumbent and is therefore selected.",
+      "llm_calls": 2,
+      "identity_incumbent_gate": {
+        "bar": 0.0,
+        "full_batch_delayed_evaluated": {},
+        "agent_plan_delayed": 0.0,
+        "passed": true,
+        "fell_back_to_identity": false,
+        "rule": "adopt only if delayed >= max(best evaluated full-batch delayed, 0); the Agent never sees these numbers"
+      },
+      "support": {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "relation": "ABSTAIN",
+      "capture_ratio": 0.0,
+      "matches_reference_plan": false,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 1,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 0,
+        "log": [
+          {
+            "kind": "reuse_confirmation",
+            "program": "winsorize",
+            "excluded_series": [
+              "T233",
+              "T234",
+              "T241",
+              "T247",
+              "T256"
+            ],
+            "charged": true,
+            "aggregate_gain": 0.0017307846247483609
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "identity",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.0
+          }
+        ],
+        "budget_source": "negative_path_adaptation_v1"
+      },
+      "wall_seconds": 58.01157840003725,
+      "experience_written": {
+        "episode_id": "E1",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:per_channel",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "window_id": "W2"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "evaluations_used": 1
+          }
+        },
+        "workflow_signature": "identity",
+        "support_response": {
+          "gain": 0.0,
+          "window": "support",
+          "program": "identity",
+          "excluded_series": [],
+          "action": "REUSE_CONFIRM",
+          "evaluations_used": 1,
+          "reuse_confirmed": false,
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "delayed_response": {
+          "gain": 0.0,
+          "window": "delayed",
+          "identity_incumbent_gate_passed": true,
+          "fell_back_to_identity": false,
+          "window_role": "read once after the plan was named; the Agent never saw it",
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "negative_path_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E2",
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "window_id": "W3",
+      "support_origins": [
+        3648,
+        3696,
+        3744
+      ],
+      "delayed_origins": [
+        3792,
+        3840,
+        3888
+      ],
+      "experience_rows_visible": 2,
+      "experience_record_ids_visible": [
+        "T233|per_channel|W1",
+        "run|E1"
+      ],
+      "base_input_field_shas": {
+        "schema_version": "f48d559016ec231c041367152b522a0428e23d84c1bf5f2405c4376b84feefb9",
+        "episode_id": "2500ab39fb3d386a4b81365839bb19aabddb7a2d9232082b3c4af0635c66a075",
+        "target": "36b8f33e4c560a9bf39a0826db1c30c02b5b570833c170ac119fc830d8cfcc68",
+        "consumer_structure": "d00faa5867b4f87c76c4e4dfbc477939d2604f53c54ad2aa3606106d8acfc293",
+        "program_menu": "ec3dcd02106e1db1011e9975bfa7c66f33d01b20ef3937f3c55e692908985139",
+        "identity_is_always_available": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+        "evaluation_budget": "cf9f1a0b654a252e6ebea69e5ae58e65e2829afb3bfcc3f096465b5ebf5f6e25",
+        "public_observation": "dbd50b43245120532cbf6f59469a11d519400ec67e55b557cd0db817fbd835fe",
+        "prior_experience": "03f159d72809b6b65572f73fbd62b40694c39cc842970b845123dc3284cefbec"
+      },
+      "stages": [
+        {
+          "stage": "negative_path_action",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "negative_path_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        }
+      ],
+      "action_payload": {
+        "action": "SEARCH",
+        "reuse_program": "",
+        "reuse_excluded_series": [],
+        "shortlist": [
+          "repair_level_shift",
+          "smooth_ma"
+        ],
+        "request_mask_search": true,
+        "experience_use": [
+          "T233|per_channel|W1",
+          "run|E1"
+        ],
+        "reason": "Public observations show strong level excursions across the training series, making repair_level_shift a direct mechanism candidate; smooth_ma is an effect-distinct alternative with positive prior Support evidence. The prior winsorize plan was not confirmed on the immediately preceding window, so it is not reused."
+      },
+      "action": "SEARCH",
+      "evaluations_used": 2,
+      "confirmation": null,
+      "agent_plan": {
+        "program": "smooth_ma",
+        "excluded_series": [
+          "T254"
+        ]
+      },
+      "final_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "reference_plan": {
+        "kind": "IDENTITY",
+        "program": "identity",
+        "excluded_series": []
+      },
+      "reference_delayed_aggregate_gain": 0.0,
+      "action_reason": "Public observations show strong level excursions across the training series, making repair_level_shift a direct mechanism candidate; smooth_ma is an effect-distinct alternative with positive prior Support evidence. The prior winsorize plan was not confirmed on the immediately preceding window, so it is not reused.",
+      "experience_use": [
+        "T233|per_channel|W1",
+        "run|E1"
+      ],
+      "shortlist": [
+        "repair_level_shift",
+        "smooth_ma"
+      ],
+      "request_mask_search": true,
+      "support_results": {
+        "repair_level_shift": {
+          "aggregate_gain": 0.01585453854964382,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.006264418955668945,
+          "harmed_eval_series": [
+            "T264"
+          ]
+        },
+        "smooth_ma": {
+          "aggregate_gain": 0.0204754750428925,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.05317407685749692,
+          "harmed_eval_series": [
+            "T261",
+            "T264"
+          ]
+        }
+      },
+      "mask_search": {
+        "program": "smooth_ma",
+        "final_excluded": [
+          "T254"
+        ],
+        "support": {
+          "aggregate_gain": 0.029733990728998943,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.04331975066217323,
+          "harmed_eval_series": [
+            "T261",
+            "T264"
+          ]
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "T254",
+            "support_aggregate_gain": 0.029733990728998943,
+            "delta": 0.009258515686106444,
+            "decision": "ACCEPTED"
+          },
+          {
+            "step": 2,
+            "reverted_series": "T240",
+            "support_aggregate_gain": 0.027043772735161658,
+            "delta": -0.002690217993837285,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "T254",
+          "T240",
+          "T247",
+          "T246",
+          "T234",
+          "T241",
+          "T239",
+          "T233",
+          "T244",
+          "T236",
+          "T235",
+          "T256"
+        ],
+        "charged": false
+      },
+      "measured_plans": [
+        {
+          "plan_id": "P1",
+          "program": "repair_level_shift",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.01585453854964382,
+          "harmed_evaluation_series_count": 1,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "P2",
+          "program": "smooth_ma",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0204754750428925,
+          "harmed_evaluation_series_count": 2,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "PM",
+          "program": "smooth_ma",
+          "excluded_series": [
+            "T254"
+          ],
+          "support_aggregate_gain": 0.029733990728998943,
+          "harmed_evaluation_series_count": 2,
+          "measured_by": "greedy exclusion-mask round",
+          "full_batch": false
+        },
+        {
+          "plan_id": "P0",
+          "program": "identity",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "the identity baseline every gain is measured against",
+          "full_batch": true
+        }
+      ],
+      "adoption_payload": {
+        "program": "smooth_ma",
+        "excluded_series": [
+          "T254"
+        ],
+        "reason": "The masked smooth_ma plan has the strongest measured support gain (0.029733990728998943), exceeding the full-batch alternatives. Excluding T254 is supported by its unusually strong level excursion and period inconsistency signals, with insufficient post-shift support."
+      },
+      "adoption_reason": "The masked smooth_ma plan has the strongest measured support gain (0.029733990728998943), exceeding the full-batch alternatives. Excluding T254 is supported by its unusually strong level excursion and period inconsistency signals, with insufficient post-shift support.",
+      "llm_calls": 2,
+      "identity_incumbent_gate": {
+        "bar": 0.0,
+        "full_batch_delayed_evaluated": {
+          "repair_level_shift": -0.02337647247770237,
+          "smooth_ma": -0.06819092365133249
+        },
+        "agent_plan_delayed": -0.0635014215605335,
+        "passed": false,
+        "fell_back_to_identity": true,
+        "rule": "adopt only if delayed >= max(best evaluated full-batch delayed, 0); the Agent never sees these numbers"
+      },
+      "support": {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "relation": "ABSTAIN",
+      "capture_ratio": null,
+      "matches_reference_plan": true,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 2,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 15,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "repair_level_shift",
+            "charged": true,
+            "aggregate_gain": 0.01585453854964382
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "smooth_ma",
+            "charged": true,
+            "aggregate_gain": 0.0204754750428925
+          },
+          {
+            "kind": "mask_search",
+            "program": "smooth_ma",
+            "charged": false,
+            "final_excluded": [
+              "T254"
+            ],
+            "aggregate_gain": 0.029733990728998943
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "repair_level_shift",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": -0.02337647247770237
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "smooth_ma",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": -0.06819092365133249
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "smooth_ma",
+            "charged": false,
+            "excluded_series": [
+              "T254"
+            ],
+            "aggregate_gain": -0.0635014215605335
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "identity",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.0
+          }
+        ],
+        "budget_source": "negative_path_adaptation_v1"
+      },
+      "wall_seconds": 71.15312069992069,
+      "experience_written": {
+        "episode_id": "E2",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:per_channel",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "window_id": "W3"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "evaluations_used": 2
+          }
+        },
+        "workflow_signature": "identity",
+        "support_response": {
+          "gain": 0.0,
+          "window": "support",
+          "program": "identity",
+          "excluded_series": [],
+          "action": "SEARCH",
+          "evaluations_used": 2,
+          "reuse_confirmed": null,
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "delayed_response": {
+          "gain": 0.0,
+          "window": "delayed",
+          "identity_incumbent_gate_passed": false,
+          "fell_back_to_identity": true,
+          "window_role": "read once after the plan was named; the Agent never saw it",
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "negative_path_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E3",
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "window_id": "W4",
+      "support_origins": [
+        3936,
+        3984,
+        4032
+      ],
+      "delayed_origins": [
+        4080,
+        4128,
+        4176
+      ],
+      "experience_rows_visible": 3,
+      "experience_record_ids_visible": [
+        "T233|per_channel|W1",
+        "run|E1",
+        "run|E2"
+      ],
+      "base_input_field_shas": {
+        "schema_version": "f48d559016ec231c041367152b522a0428e23d84c1bf5f2405c4376b84feefb9",
+        "episode_id": "381868b0aedbffe9faabab94df3150ba27c098fff740aef5d86e777b4d8bd751",
+        "target": "9e848e3744beab38620df28837a1818a62abc04c04ae220f53f84a8f9daeaf2c",
+        "consumer_structure": "d00faa5867b4f87c76c4e4dfbc477939d2604f53c54ad2aa3606106d8acfc293",
+        "program_menu": "ec3dcd02106e1db1011e9975bfa7c66f33d01b20ef3937f3c55e692908985139",
+        "identity_is_always_available": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+        "evaluation_budget": "cf9f1a0b654a252e6ebea69e5ae58e65e2829afb3bfcc3f096465b5ebf5f6e25",
+        "public_observation": "9745fba6a4b3fc5ec48a34c9142c49998923085d4fcf4b1f8bdc8529921eabd4",
+        "prior_experience": "8964af326b14cffa7aa1e034c88197244a1648fe0f088d6ecb1cf41f10309267"
+      },
+      "stages": [
+        {
+          "stage": "negative_path_action",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 1,
+          "validation_error_codes": [
+            "AGENT_ENVELOPE_INVALID"
+          ],
+          "first_pass_valid": false
+        },
+        {
+          "stage": "negative_path_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        }
+      ],
+      "action_payload": {
+        "action": "SEARCH",
+        "reuse_program": "",
+        "reuse_excluded_series": [],
+        "shortlist": [
+          "repair_level_shift",
+          "outlier_iqr"
+        ],
+        "request_mask_search": true,
+        "experience_use": [
+          "run|E2",
+          "T233|per_channel|W1"
+        ],
+        "reason": "Public evidence shows strong level excursions and localized robust deviations with no missingness, so repair_level_shift is directly motivated and outlier_iqr provides an effect-distinct local alternative. Earlier smooth_ma search fell back to identity, while prior winsorize reuse was not confirmed on support."
+      },
+      "action": "SEARCH",
+      "evaluations_used": 2,
+      "confirmation": null,
+      "agent_plan": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "T241",
+          "T256"
+        ]
+      },
+      "final_plan": {
+        "program": "identity",
+        "excluded_series": []
+      },
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "T241",
+          "T256"
+        ]
+      },
+      "reference_delayed_aggregate_gain": 0.028664111205581228,
+      "action_reason": "Public evidence shows strong level excursions and localized robust deviations with no missingness, so repair_level_shift is directly motivated and outlier_iqr provides an effect-distinct local alternative. Earlier smooth_ma search fell back to identity, while prior winsorize reuse was not confirmed on support.",
+      "experience_use": [
+        "run|E2",
+        "T233|per_channel|W1"
+      ],
+      "shortlist": [
+        "repair_level_shift",
+        "outlier_iqr"
+      ],
+      "request_mask_search": true,
+      "support_results": {
+        "repair_level_shift": {
+          "aggregate_gain": 0.028163032800199855,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "outlier_iqr": {
+          "aggregate_gain": -0.002311741072023842,
+          "harmed_eval_series_count": 3,
+          "harmed_eval_series_total_harm": 0.038273479185456705,
+          "harmed_eval_series": [
+            "T260",
+            "T264",
+            "T265"
+          ]
+        }
+      },
+      "mask_search": {
+        "program": "repair_level_shift",
+        "final_excluded": [
+          "T241",
+          "T256"
+        ],
+        "support": {
+          "aggregate_gain": 0.03361104039771758,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "T241",
+            "support_aggregate_gain": 0.031498356038988505,
+            "delta": 0.0033353232387886497,
+            "decision": "ACCEPTED"
+          },
+          {
+            "step": 2,
+            "reverted_series": "T256",
+            "support_aggregate_gain": 0.03361104039771758,
+            "delta": 0.0021126843587290778,
+            "decision": "ACCEPTED"
+          },
+          {
+            "step": 3,
+            "reverted_series": "T235",
+            "support_aggregate_gain": 0.03361104039771758,
+            "delta": 0.0,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "T241",
+          "T256",
+          "T235",
+          "T246",
+          "T236",
+          "T240",
+          "T233",
+          "T244",
+          "T247",
+          "T234",
+          "T254",
+          "T239"
+        ],
+        "charged": false
+      },
+      "measured_plans": [
+        {
+          "plan_id": "P1",
+          "program": "repair_level_shift",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.028163032800199855,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "P2",
+          "program": "outlier_iqr",
+          "excluded_series": [],
+          "support_aggregate_gain": -0.002311741072023842,
+          "harmed_evaluation_series_count": 3,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "PM",
+          "program": "repair_level_shift",
+          "excluded_series": [
+            "T241",
+            "T256"
+          ],
+          "support_aggregate_gain": 0.03361104039771758,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "greedy exclusion-mask round",
+          "full_batch": false
+        },
+        {
+          "plan_id": "P0",
+          "program": "identity",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "the identity baseline every gain is measured against",
+          "full_batch": true
+        }
+      ],
+      "adoption_payload": {
+        "program": "repair_level_shift",
+        "excluded_series": [
+          "T241",
+          "T256"
+        ],
+        "reason": "Public features show pronounced level excursions across the training series, and the measured repair_level_shift plan had positive support gain with no harmed evaluation series. The exclusion mask further improved measured support while retaining zero harmed evaluation series."
+      },
+      "adoption_reason": "Public features show pronounced level excursions across the training series, and the measured repair_level_shift plan had positive support gain with no harmed evaluation series. The exclusion mask further improved measured support while retaining zero harmed evaluation series.",
+      "llm_calls": 3,
+      "identity_incumbent_gate": {
+        "bar": 0.08415295146013496,
+        "full_batch_delayed_evaluated": {
+          "repair_level_shift": 0.01387370007745937,
+          "outlier_iqr": 0.08415295146013496
+        },
+        "agent_plan_delayed": 0.028664111205581228,
+        "passed": false,
+        "fell_back_to_identity": true,
+        "rule": "adopt only if delayed >= max(best evaluated full-batch delayed, 0); the Agent never sees these numbers"
+      },
+      "support": {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.0,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "relation": "ABSTAIN",
+      "capture_ratio": 0.0,
+      "matches_reference_plan": false,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 2,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 16,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "repair_level_shift",
+            "charged": true,
+            "aggregate_gain": 0.028163032800199855
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_iqr",
+            "charged": true,
+            "aggregate_gain": -0.002311741072023842
+          },
+          {
+            "kind": "mask_search",
+            "program": "repair_level_shift",
+            "charged": false,
+            "final_excluded": [
+              "T241",
+              "T256"
+            ],
+            "aggregate_gain": 0.03361104039771758
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "repair_level_shift",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.01387370007745937
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_iqr",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.08415295146013496
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "repair_level_shift",
+            "charged": false,
+            "excluded_series": [
+              "T241",
+              "T256"
+            ],
+            "aggregate_gain": 0.028664111205581228
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "identity",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.0
+          }
+        ],
+        "budget_source": "negative_path_adaptation_v1"
+      },
+      "wall_seconds": 80.21580759994686,
+      "experience_written": {
+        "episode_id": "E3",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:T233|consumer:per_channel",
+        "domain_namespace": "T233",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "T233"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "window_id": "W4"
+          },
+          "program_geometry": {
+            "excluded_count": 0,
+            "evaluations_used": 2
+          }
+        },
+        "workflow_signature": "identity",
+        "support_response": {
+          "gain": 0.0,
+          "window": "support",
+          "program": "identity",
+          "excluded_series": [],
+          "action": "SEARCH",
+          "evaluations_used": 2,
+          "reuse_confirmed": null,
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "delayed_response": {
+          "gain": 0.0,
+          "window": "delayed",
+          "identity_incumbent_gate_passed": false,
+          "fell_back_to_identity": true,
+          "window_role": "read once after the plan was named; the Agent never saw it",
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "relation": "ABSTAIN",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "negative_path_engineering"
+        ]
+      }
+    },
+    {
+      "episode_id": "E4",
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "window_id": "W3",
+      "support_origins": [
+        2064,
+        2328
+      ],
+      "delayed_origins": [
+        2760
+      ],
+      "experience_rows_visible": 5,
+      "experience_record_ids_visible": [
+        "traffic|per_channel|W1",
+        "traffic|per_channel|W2",
+        "run|E1",
+        "run|E2",
+        "run|E3"
+      ],
+      "base_input_field_shas": {
+        "schema_version": "f48d559016ec231c041367152b522a0428e23d84c1bf5f2405c4376b84feefb9",
+        "episode_id": "ef5ec5f10bd73023590f7cd62a0de13237e41d20600c1f75529ed7e62d73677f",
+        "target": "4b06e405312d2ff1756ca39073c7d532b7bea05ff60b8a2fa076ef349ecd7235",
+        "consumer_structure": "d00faa5867b4f87c76c4e4dfbc477939d2604f53c54ad2aa3606106d8acfc293",
+        "program_menu": "ec3dcd02106e1db1011e9975bfa7c66f33d01b20ef3937f3c55e692908985139",
+        "identity_is_always_available": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+        "evaluation_budget": "cf9f1a0b654a252e6ebea69e5ae58e65e2829afb3bfcc3f096465b5ebf5f6e25",
+        "public_observation": "d0c85d69f783400f9c64516a5d2709d31fe24d79b7b9925eb1eeff8d99f0b638",
+        "prior_experience": "e3418f7a029f59bee427a9cc8718686f6c75c4ce89828e5936964d6578307b52"
+      },
+      "stages": [
+        {
+          "stage": "negative_path_action",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        },
+        {
+          "stage": "negative_path_adoption",
+          "protocol_error": null,
+          "infrastructure_error": null,
+          "validation_retry_count": 0,
+          "validation_error_codes": [],
+          "first_pass_valid": true
+        }
+      ],
+      "action_payload": {
+        "action": "SEARCH",
+        "reuse_program": "",
+        "reuse_excluded_series": [],
+        "shortlist": [
+          "outlier_iqr",
+          "winsorize"
+        ],
+        "request_mask_search": true,
+        "experience_use": [
+          "traffic|per_channel|W1",
+          "traffic|per_channel|W2"
+        ],
+        "reason": "The public features show repeated strong local deviations with no missingness, while level-shift support is insufficient for most series. Earlier traffic/per-channel records provide public support for outlier_iqr and winsorize, so evaluating both with the free mask search is justified."
+      },
+      "action": "SEARCH",
+      "evaluations_used": 2,
+      "confirmation": null,
+      "agent_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ]
+      },
+      "final_plan": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ]
+      },
+      "reference_plan": {
+        "kind": "MASKED_PLAN",
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ]
+      },
+      "reference_delayed_aggregate_gain": 0.386971680105862,
+      "action_reason": "The public features show repeated strong local deviations with no missingness, while level-shift support is insufficient for most series. Earlier traffic/per-channel records provide public support for outlier_iqr and winsorize, so evaluating both with the free mask search is justified.",
+      "experience_use": [
+        "traffic|per_channel|W1",
+        "traffic|per_channel|W2"
+      ],
+      "shortlist": [
+        "outlier_iqr",
+        "winsorize"
+      ],
+      "request_mask_search": true,
+      "support_results": {
+        "outlier_iqr": {
+          "aggregate_gain": 0.5083898301262475,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "winsorize": {
+          "aggregate_gain": 0.5049925133427253,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        }
+      },
+      "mask_search": {
+        "program": "outlier_iqr",
+        "final_excluded": [
+          "3"
+        ],
+        "support": {
+          "aggregate_gain": 0.5147523618556838,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "harmed_eval_series": []
+        },
+        "steps": [
+          {
+            "step": 1,
+            "reverted_series": "3",
+            "support_aggregate_gain": 0.5147523618556838,
+            "delta": 0.006362531729436349,
+            "decision": "ACCEPTED"
+          },
+          {
+            "step": 2,
+            "reverted_series": "2",
+            "support_aggregate_gain": 0.5143801468719852,
+            "delta": -0.0003722149836986599,
+            "decision": "REJECTED_AND_STOPPED"
+          }
+        ],
+        "revert_order": [
+          "3",
+          "2",
+          "8",
+          "10",
+          "7",
+          "6",
+          "1",
+          "4",
+          "11",
+          "0",
+          "5",
+          "9"
+        ],
+        "charged": false
+      },
+      "measured_plans": [
+        {
+          "plan_id": "P1",
+          "program": "outlier_iqr",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.5083898301262475,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "P2",
+          "program": "winsorize",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.5049925133427253,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "full-batch Support evaluation",
+          "full_batch": true
+        },
+        {
+          "plan_id": "PM",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3"
+          ],
+          "support_aggregate_gain": 0.5147523618556838,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "greedy exclusion-mask round",
+          "full_batch": false
+        },
+        {
+          "plan_id": "P0",
+          "program": "identity",
+          "excluded_series": [],
+          "support_aggregate_gain": 0.0,
+          "harmed_evaluation_series_count": 0,
+          "measured_by": "the identity baseline every gain is measured against",
+          "full_batch": true
+        }
+      ],
+      "adoption_payload": {
+        "program": "outlier_iqr",
+        "excluded_series": [
+          "3"
+        ],
+        "reason": "The measured outlier_iqr plan with series 3 excluded had the highest support aggregate gain among the measured non-identity plans and harmed no evaluation series. Public features show pronounced local deviations across the training series, supporting a localized outlier treatment."
+      },
+      "adoption_reason": "The measured outlier_iqr plan with series 3 excluded had the highest support aggregate gain among the measured non-identity plans and harmed no evaluation series. Public features show pronounced local deviations across the training series, supporting a localized outlier treatment.",
+      "llm_calls": 2,
+      "identity_incumbent_gate": {
+        "bar": 0.38039760868835465,
+        "full_batch_delayed_evaluated": {
+          "outlier_iqr": 0.38039760868835465,
+          "winsorize": 0.37812955532436443
+        },
+        "agent_plan_delayed": 0.386971680105862,
+        "passed": true,
+        "fell_back_to_identity": false,
+        "rule": "adopt only if delayed >= max(best evaluated full-batch delayed, 0); the Agent never sees these numbers"
+      },
+      "support": {
+        "aggregate_gain": 0.5147523618556838,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "delayed": {
+        "aggregate_gain": 0.386971680105862,
+        "harmed_eval_series_count": 0,
+        "harmed_eval_series_total_harm": 0.0,
+        "harmed_eval_series": []
+      },
+      "relation": "POSITIVE",
+      "capture_ratio": 1.0,
+      "matches_reference_plan": true,
+      "instrument": {
+        "full_batch_support_evaluations_charged": 2,
+        "budget": 2,
+        "instrument_internal_evaluations_not_charged": 16,
+        "log": [
+          {
+            "kind": "full_batch_support",
+            "program": "outlier_iqr",
+            "charged": true,
+            "aggregate_gain": 0.5083898301262475
+          },
+          {
+            "kind": "full_batch_support",
+            "program": "winsorize",
+            "charged": true,
+            "aggregate_gain": 0.5049925133427253
+          },
+          {
+            "kind": "mask_search",
+            "program": "outlier_iqr",
+            "charged": false,
+            "final_excluded": [
+              "3"
+            ],
+            "aggregate_gain": 0.5147523618556838
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_iqr",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.38039760868835465
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "winsorize",
+            "charged": false,
+            "excluded_series": [],
+            "aggregate_gain": 0.37812955532436443
+          },
+          {
+            "kind": "delayed_gate",
+            "program": "outlier_iqr",
+            "charged": false,
+            "excluded_series": [
+              "3"
+            ],
+            "aggregate_gain": 0.386971680105862
+          }
+        ],
+        "budget_source": "negative_path_adaptation_v1"
+      },
+      "wall_seconds": 35.73837340006139,
+      "experience_written": {
+        "episode_id": "E4",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "batch:traffic|consumer:per_channel",
+        "domain_namespace": "traffic",
+        "context_summary": {
+          "cohort": {
+            "cohort_name": "traffic"
+          },
+          "local_pattern": {
+            "consumer_variant": "per_channel",
+            "window_id": "W3"
+          },
+          "program_geometry": {
+            "excluded_count": 1,
+            "evaluations_used": 2
+          }
+        },
+        "workflow_signature": "outlier_iqr",
+        "support_response": {
+          "gain": 0.5147523618556838,
+          "window": "support",
+          "program": "outlier_iqr",
+          "excluded_series": [
+            "3"
+          ],
+          "action": "SEARCH",
+          "evaluations_used": 2,
+          "reuse_confirmed": null,
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "delayed_response": {
+          "gain": 0.386971680105862,
+          "window": "delayed",
+          "identity_incumbent_gate_passed": true,
+          "fell_back_to_identity": false,
+          "window_role": "read once after the plan was named; the Agent never saw it",
+          "harmed_eval_series_count": 0,
+          "provenance": "negative_path_engineering",
+          "counts_as_unguided_exploration": false,
+          "audit_note": "engineering measurement from the negative-path adaptation sequence; not authorization evidence and not an unguided probe. Within-run feedback is deliberate here: the mechanism under test is whether the Agent learns from its own failed re-confirmations"
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "DELAYED",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "negative_path_engineering"
+        ]
+      }
+    }
+  ],
+  "wall_seconds": 275.1169532999629
+}

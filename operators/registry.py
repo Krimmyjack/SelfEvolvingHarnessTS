@@ -27,12 +27,28 @@ from __future__ import annotations
 
 from typing import Callable, Dict
 
-from . import s1_impute, s1_denoise, s1_outlier, s1_decompose, s1_structural, s2_align, s3_shape
+from . import (
+    s1_burst,
+    s1_impute,
+    s1_denoise,
+    s1_outlier,
+    s1_decompose,
+    s1_structural,
+    s2_align,
+    s3_shape,
+)
 from ._common import BOUNDARY_MODES  # noqa: F401（S0.7-8 边界语义指纹，随 registry 一并落 provenance）
 from ._provenance import record as _prov_record
 
 _ALL_TASKS = ("forecast", "classification", "anomaly_detection")
 _NON_ANOMALY = ("forecast", "classification")   # 平滑/删改类：物理禁 anomaly（毁 spike/changepoint 信号）
+# T5 #41 A1（Program Supply 与菜单等同）：四个点式离群修复程序对
+# anomaly_detection 由"物理禁"改为"机械可执行"。allowed_tasks 只表达**可试**，
+# 不表达**有益**——AD 下这四个程序仍可能删掉正要检的 spike，那是 Consumer
+# feedback 的判词（classify_relation 会把"聚合正、逐序列有害"记成 CONFLICT），
+# 不该由注册表提前替 Agent 决定。其余 smoothing/denoise/decompose 的 AD 禁令
+# 一律不动：它们的禁因是形状级的（毁 changepoint 结构），不是"没试过"。
+_REPAIR_ALL_TASKS = _ALL_TASKS
 
 _CONTRACT_BASE = {
     "allowed_tasks": _ALL_TASKS,
@@ -80,6 +96,23 @@ OPERATOR_SPECS = [
      _c(preserves_observed=True, targeting_mode="intrinsic")),
     ("period_complete", "impute", "s1", [], s1_impute.period_complete, False,
      _c(preserves_observed=True, targeting_mode="intrinsic")),
+    ("period_median_complete", "impute", "s1", [],
+     s1_impute.period_median_complete, False,
+     _c(
+         preserves_observed=True,
+         targeting_mode="intrinsic",
+         fallback_policy="explicit_record→impute_linear",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "required": ["period"],
+             "properties": {
+                 "period": {"type": "integer", "minimum": 2},
+                 "cycles": {"type": "integer", "minimum": 1, "default": 3},
+                 "min_donors": {"type": "integer", "minimum": 1, "default": 2},
+             },
+         },
+     )),
     # —— E-3.3 R2：模型预测族插补（机制上与上面的复制/插值族可区分）——
     ("impute_ssm", "impute", "s1", [], s1_impute.impute_ssm, False,
      _c(preserves_observed=True, targeting_mode="intrinsic", requires_dependency="statsmodels",
@@ -117,15 +150,15 @@ OPERATOR_SPECS = [
         dependency_policy="recorded_fallback",               # 与 impute_ssm 的 hard_fail 刻意不同
         fallback_policy="explicit_record→denoise_savgol")),
     ("winsorize", "outlier", "s1", ["destructive"], s1_outlier.winsorize, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode="intrinsic")),
     ("outlier_iqr", "outlier", "s1", ["destructive"], s1_outlier.outlier_iqr, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode="intrinsic")),
     ("outlier_mad", "outlier", "s1", ["destructive"], s1_outlier.outlier_mad, False,
-     _c(allowed_tasks=_NON_ANOMALY, destructive=True, targeting_mode="intrinsic")),
+     _c(allowed_tasks=_REPAIR_ALL_TASKS, destructive=True, targeting_mode="intrinsic")),
     # —— E-3.3 R3：局部自适应点式离群修复（与上面三个全局阈值裁剪算子机制不同）——
     ("hampel_filter", "outlier", "s1", ["destructive"], s1_outlier.hampel_filter, False,
      _c(
-         allowed_tasks=_NON_ANOMALY,
+         allowed_tasks=_REPAIR_ALL_TASKS,
          destructive=True,
          targeting_mode="intrinsic",
          public_parameter_schema={
@@ -139,17 +172,42 @@ OPERATOR_SPECS = [
          },
      )),                                                     # 纯 numpy
     # —— E-3.3 R1：结构断层修复（填 benchmark 预先声明的 structural_break 能力缺口）——
+    # 参数所有权修复（AGENTIC_SKILL_HARNESS_GLOBAL_DESIGN_2026-08-19 §7.3/§17.4
+    # 冻结决定）。旧契约声明 external_region 并强制绑定代表序列的
+    # full-prefix region/offset，但 repair_level_shift 本身就带 intrinsic 路径
+    # （s1_structural.py：三个参数为 None 时自行估周期、定断点、算 offset）。
+    # 契约与实现不一致的后果已在已曝光数据上量化：24/24 个 Task 把仅由 level
+    # candidate 得到的 offset 用到平均 89% 为 non-level 的区间上；Weather 12/12
+    # 的 full-prefix 绝对区间与实际 240 点训练窗口零重叠。因此 legacy external
+    # binding 停用，契约改为与实现一致的 OPERATOR_INTRINSIC。
+    # 公开参数形状收敛为空对象：Runtime 只把 action unit 交给算子，算子在单元
+    # 内部定位；同时机械地阻止继续为该 family 调阈值（§17.4）。旧的显式参数
+    # 调用路径未删除——直接构造 Program 的历史回放仍可复算。
     ("repair_level_shift", "structural", "s1", ["destructive"], s1_structural.repair_level_shift, False,
      _c(
          allowed_tasks=_NON_ANOMALY,
          destructive=True,
-         targeting_mode="external_region",
-         public_parameter_bindings={
-             "region_start_fraction": "estimated_region_start_fraction",
-             "region_end_fraction": "estimated_region_end_fraction",
-             "estimated_offset": "estimated_level_offset",
+         targeting_mode="intrinsic",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {},
          },
      )),      # 纯 numpy（无 ruptures 依赖）
+    # —— CLS-4：连续高偏差段修复（点式 hampel/mad 与台阶 repair_level_shift 都不是此几何）——
+    # |robust-z|>3.5 且连续 run≥8（两参冻结禁扫）→ 段两端线性插值。无检出段恒等。
+    # allowed_tasks 单任务起步 classification；扩域须另开证据。
+    ("repair_burst_segment", "structural", "s1", ["destructive"], s1_burst.repair_burst_segment, False,
+     _c(
+         allowed_tasks=("classification",),
+         destructive=True,
+         targeting_mode="intrinsic",
+         public_parameter_schema={
+             "type": "object",
+             "additionalProperties": False,
+             "properties": {},
+         },
+     )),
     ("stl_decompose", "decompose", "s1", [], s1_decompose.stl_decompose, False,
      _c(allowed_tasks=_NON_ANOMALY, requires_dependency="statsmodels",
         dependency_policy="recorded_fallback",

@@ -314,7 +314,39 @@ def test_fast_propose_and_select_receive_the_fixed_probe_contracts():
     class CapturingBackend:
         def __init__(self):
             self.requests = []
-            self.responses = _identity_responses()
+            # #42l: propose has to supply a real PROGRAM candidate.  With an
+            # empty candidate list the fast path takes the documented
+            # empty-pool abstention branch (fast_agent: "无 PROGRAM 候选 =
+            # ABSTAIN 语义 ... 跳过 select", 审查修复 2026-08-08), so select is
+            # never called and this test cannot inspect the select prompt.
+            self.responses = [
+                _stage(
+                    "inspect",
+                    {
+                        "inspected_region_fractions": [[0.0, 1.0]],
+                        "requested_public_tools": [],
+                        "uncertainty": "high",
+                    },
+                ),
+                _stage(
+                    "propose",
+                    {
+                        "candidates": [
+                            {
+                                "candidate_id": "agent-0",
+                                "steps": [{"op": "impute_linear", "params": {}}],
+                            }
+                        ]
+                    },
+                ),
+                _stage(
+                    "select",
+                    {
+                        "chosen_candidate_id": "identity",
+                        "verification_actions": ["public_evidence_insufficient"],
+                    },
+                ),
+            ]
 
         def complete(self, request):
             self.requests.append(request)
@@ -435,7 +467,11 @@ def test_fast_path_compiles_selects_and_executes_program():
     assert result.status is PreparationStatus.PREPARED
     assert np.isfinite(result.prepared.values).all()
     assert result.program.steps[0].op == "impute_linear"
-    assert trace.modified_indices == (1,)
+    # #42l: modified_indices counts rewritten *observed* values only; filling a
+    # NaN is not a rewrite (runtime.candidate_verification._modified_indices,
+    # 用户裁决 2026-08-13).  The fill stays visible through the prepared series.
+    assert trace.modified_indices == ()
+    assert result.prepared.values[1] == pytest.approx(2.0)
     assert trace.chosen_candidate_id == "agent-0"
 
 
@@ -482,8 +518,16 @@ def test_f1_task_context_and_receipts_reach_select_with_single_execution(monkeyp
     original = candidate_verification.run_pipeline
 
     def counted(*args, **kwargs):
+        # #42l: count pool executions only.  _actionable_operators probes every
+        # allowed operator against the live verifier before propose (候选供给与
+        # verifier 对齐, 审查裁决 2026-08-08); those runs carry
+        # source="actionability_probe" and are supply alignment, not candidate
+        # execution.  The guarantee this test pins -- the selected candidate is
+        # executed once and select reads that receipt rather than re-running it
+        # -- is about the pool.
         nonlocal calls
-        calls += 1
+        if kwargs.get("source") != "actionability_probe":
+            calls += 1
         return original(*args, **kwargs)
 
     monkeypatch.setattr(candidate_verification, "run_pipeline", counted)
@@ -515,7 +559,9 @@ def test_f1_task_context_and_receipts_reach_select_with_single_execution(monkeyp
     assert "verification_receipt" not in json.dumps(prompts[0], sort_keys=True)
     assert "verification_receipt" not in json.dumps(prompts[1], sort_keys=True)
     assert select_candidate["verification_receipt"]["execution_ok"] is True
-    assert select_candidate["verification_receipt"]["modified_fraction"] == 0.25
+    # #42l: the fill touches no observed value, so the cap reads 0.0 (same
+    # semantics as trace.modified_indices above).
+    assert select_candidate["verification_receipt"]["modified_fraction"] == 0.0
     assert trace.task_context_sha == request.task_context.sha()
     assert trace.run_context_sha == request.run_dependency_binding.sha()
     assert set(trace.candidate_receipt_shas) == {"identity", "fill-gap"}
@@ -739,45 +785,41 @@ def test_fast_propose_schema_forbids_identity_program_and_nonregistry_ops():
         validate_local_schema(identity_operator, schema)
 
 
-def test_fast_propose_schema_exposes_canonical_public_parameter_bindings():
+def test_fast_propose_schema_enforces_operator_parameter_ownership():
+    """propose 面的参数形状由 registry 机械派生，因此所有权在 schema 层生效。
+
+    参数所有权修复（AGENTIC_SKILL_HARNESS_GLOBAL_DESIGN_2026-08-19 §7.3/§17.4）：repair_level_shift 是 OPERATOR_INTRINSIC，
+    没有任何公开参数。Agent 只能选 Program family，连"顺手把区间塞进去"
+    这条路都不存在——不靠 prompt 约束。
+    """
     schema = TTHAAgentCore.load_stage_schema("fast_propose_v1")
-    canonical = {
-        "candidates": [
-            {
-                "candidate_id": "repair-level",
-                "steps": [
-                    {
-                        "op": "repair_level_shift",
-                        "params": {
-                            "region_start_fraction": 0.5,
-                            "region_end_fraction": 0.75,
-                            "estimated_offset": 1.0,
-                        },
-                    }
-                ],
-            }
-        ]
-    }
-    validate_local_schema(canonical, schema)
-    wrong_feature_names = {
-        "candidates": [
-            {
-                "candidate_id": "repair-level",
-                "steps": [
-                    {
-                        "op": "repair_level_shift",
-                        "params": {
-                            "estimated_region_start_fraction": 0.5,
-                            "estimated_region_end_fraction": 0.75,
-                            "estimated_level_offset": 1.0,
-                        },
-                    }
-                ],
-            }
-        ]
-    }
-    with pytest.raises(AgentProtocolError):
-        validate_local_schema(wrong_feature_names, schema)
+
+    def _payload(params):
+        return {
+            "candidates": [
+                {
+                    "candidate_id": "repair-level",
+                    "steps": [{"op": "repair_level_shift", "params": params}],
+                }
+            ]
+        }
+
+    validate_local_schema(_payload({}), schema)
+    for rejected in (
+        {
+            "region_start_fraction": 0.5,
+            "region_end_fraction": 0.75,
+            "estimated_offset": 1.0,
+        },
+        {
+            "estimated_region_start_fraction": 0.5,
+            "estimated_region_end_fraction": 0.75,
+            "estimated_level_offset": 1.0,
+        },
+        {"t_threshold": 2.0},
+    ):
+        with pytest.raises(AgentProtocolError):
+            validate_local_schema(_payload(rejected), schema)
 
 
 def test_fast_propose_schema_exposes_closed_probe_operator_parameters():
@@ -807,18 +849,28 @@ def test_fast_propose_schema_exposes_closed_probe_operator_parameters():
 
 
 def test_fast_propose_retries_mismatched_public_parameter_values():
+    """A propose payload carrying non-contract parameter values is retried once.
+
+    #42l: ``repair_level_shift`` owns its own targeting since the parameter
+    ownership fix (2799d0f, design §7.3/§17.4) -- targeting_mode is intrinsic
+    and its public parameter schema is empty and closed, so the three region
+    parameters are *structurally unproposable*, not merely mismatched.  The
+    sibling test ``test_fast_propose_schema_enforces_operator_parameter_
+    ownership`` pins exactly that rejection.  The retry contract this test
+    exists for is unchanged: one invalid propose payload, one static-feedback
+    retry, then the corrected payload is accepted.
+    """
     index = np.arange(192, dtype=float)
     values = np.sin(2.0 * np.pi * index / 24.0)
     values[120:168] += 2.0
     gateway = LocalPublicToolGateway(values, task_kind="forecast")
     features = gateway.public_features
-    correct_params = {
+    correct_params: dict[str, float] = {}
+    wrong_params = {
         "region_start_fraction": features["estimated_region_start_fraction"],
         "region_end_fraction": features["estimated_region_end_fraction"],
         "estimated_offset": features["estimated_level_offset"],
     }
-    wrong_params = dict(correct_params)
-    wrong_params["estimated_offset"] = float(correct_params["estimated_offset"]) + 0.1
     inspect = _stage(
         "inspect",
         {
@@ -871,7 +923,12 @@ def test_fast_propose_retries_mismatched_public_parameter_values():
 def test_matched_skill_risk_guard_is_enforced_by_runtime_pool():
     index = np.arange(192, dtype=float)
     values = np.sin(2.0 * np.pi * index / 24.0)
-    values[120:168] += 2.0
+    # #42l: the excursion has to clear the intrinsic detector's t-threshold,
+    # otherwise repair_level_shift returns identity ("无命中 → 恒等",
+    # operators/s1_structural.py) and there is nothing for the guard to reject
+    # -- the test would pass on the canned select answer alone.  At +10 the
+    # candidate rewrites 25% of the window against a 0.05 Skill cap.
+    values[120:168] += 10.0
     gateway = LocalPublicToolGateway(values, task_kind="forecast")
     features = gateway.public_features
     h0 = compile_snapshot(H0_ROOT)
@@ -891,11 +948,14 @@ def test_matched_skill_risk_guard_is_enforced_by_runtime_pool():
         }
     )
     snapshot = replace(h0, skills=(*h0.skills, constrained))
-    params = {
-        "region_start_fraction": features["estimated_region_start_fraction"],
-        "region_end_fraction": features["estimated_region_end_fraction"],
-        "estimated_offset": features["estimated_level_offset"],
-    }
+    # #42l: repair_level_shift is OPERATOR_INTRINSIC with an empty closed
+    # parameter schema (2799d0f, design §7.3/§17.4).  The region parameters
+    # this test used to send are structurally unproposable, so the propose
+    # payload was schema-rejected and the single retry consumed the canned
+    # select reply -- that is where "stage_result names the wrong stage" came
+    # from.  The guard being tested is unaffected: the intrinsic candidate
+    # still rewrites far more than the Skill's 0.05 cap allows.
+    params: dict[str, float] = {}
     responses = [
         _stage(
             "inspect",
@@ -929,9 +989,8 @@ def test_matched_skill_risk_guard_is_enforced_by_runtime_pool():
             },
         ),
     ]
-    result, trace = TTHAFastAgent(
-        TTHAAgentCore(ReplayAgentBackend(responses), gateway)
-    ).prepare(
+    backend = ReplayAgentBackend(responses)
+    result, trace = TTHAFastAgent(TTHAAgentCore(backend, gateway)).prepare(
         PreparationRequest(
             "series-level-guard",
             values,
@@ -942,6 +1001,10 @@ def test_matched_skill_risk_guard_is_enforced_by_runtime_pool():
     )
     assert result.status is PreparationStatus.ABSTAINED
     assert trace.candidate_ids == ("identity",)
+    # The guard, not the canned answer, produced the abstention: the proposed
+    # repair never becomes selectable, so no PROGRAM candidate survives and
+    # select is never consulted.  The third canned response goes unused.
+    assert backend.call_count == 2
 
 
 def test_slow_stage_retries_once_with_schema_error_feedback():

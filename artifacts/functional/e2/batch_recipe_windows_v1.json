@@ -1,0 +1,1780 @@
+{
+  "protocol_version": "batch_recipe_windows_v1",
+  "role": "two extra development windows per cell for the frozen v2 batch recipe, and the first out-of-selection reading of the plans the v2 rule adopted on window 1",
+  "not_authorization_evidence": "engineering effect measurement; no Skill is written, no Episode is formed, no Fast or Slow path is entered, and no execution right is granted or implied",
+  "llm_api_call_count": 0,
+  "deterministic": true,
+  "adoption_rule_version": "v2",
+  "adoption_rule": "adoption_rule_version: v2.  Candidates are the masked plans, ordered by Support aggregate gain, highest first.  A masked plan is adopted only if it also clears the delayed stability check: its delayed aggregate gain must be at least max(best full-batch delayed aggregate gain, 0) -- identity is an incumbent on the delayed window, not only the best full-batch plan.  The first candidate that clears it is adopted.  If none clears it, fall back to the best full-batch plan only if that plan's delayed aggregate gain is positive; otherwise fall back to identity.  v1 failure case: T233@per_channel in artifacts/functional/e2/consumer_conditioned_recipe_v1.json adopted MASKED_PLAN smooth_ma at delayed -0.076 because v1 compared the mask only against the best full-batch delayed gain (-0.146) and did not treat identity (delayed 0) as the incumbent.",
+  "pre_registered": {
+    "out_of_selection_check": "per cell, window 1's adopted plan passes iff its delayed aggregate gain is >= 0.0 on both new windows; the v2 rule's own bar is max(best full-batch delayed, 0), so identity at zero is the honest bar. A second column reports the stricter > MATERIAL_THRESHOLD=0.005 reading for information only.",
+    "per_cell_verdicts": [
+      "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION: delayed >= 0 on both new windows",
+      "W1_PLAN_DELAYED_NEGATIVE_ON_SOME_WINDOW: otherwise"
+    ],
+    "stability": "program_stable iff all three windows adopt the same program; mask_stable iff all three adopt the same excluded set; kind_stable iff all three adopt the same plan kind",
+    "fixed_before_the_numbers_were_seen": true
+  },
+  "window_1_source": {
+    "artifact": "artifacts/functional/e2/batch_recipe_v2_all_cells_v1.json",
+    "protocol_version": "batch_recipe_v2_all_cells_v1",
+    "re_run": false,
+    "note": "read verbatim; window 1 was not re-run and no existing artifact is written by this run"
+  },
+  "window_definitions": {
+    "electricity": [
+      {
+        "window_id": "W1",
+        "task_index": 0,
+        "task_episode_id": "e1v2_task_01",
+        "support_origins": [
+          3072,
+          3120,
+          3168
+        ],
+        "delayed_origins": [
+          3216,
+          3264,
+          3312
+        ],
+        "farthest_index_read": 3360,
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_01, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "traffic_origin_override": null
+      },
+      {
+        "window_id": "W2",
+        "task_index": 1,
+        "task_episode_id": "e1v2_task_02",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "farthest_index_read": 3648,
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_02, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "traffic_origin_override": null
+      },
+      {
+        "window_id": "W3",
+        "task_index": 2,
+        "task_episode_id": "e1v2_task_03",
+        "support_origins": [
+          3648,
+          3696,
+          3744
+        ],
+        "delayed_origins": [
+          3792,
+          3840,
+          3888
+        ],
+        "farthest_index_read": 3936,
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_03, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "traffic_origin_override": null
+      }
+    ],
+    "T233": [
+      {
+        "window_id": "W1",
+        "task_index": 0,
+        "task_episode_id": "e1v2_task_01",
+        "support_origins": [
+          3072,
+          3120,
+          3168
+        ],
+        "delayed_origins": [
+          3216,
+          3264,
+          3312
+        ],
+        "farthest_index_read": 3360,
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_01, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "traffic_origin_override": null
+      },
+      {
+        "window_id": "W2",
+        "task_index": 1,
+        "task_episode_id": "e1v2_task_02",
+        "support_origins": [
+          3360,
+          3408,
+          3456
+        ],
+        "delayed_origins": [
+          3504,
+          3552,
+          3600
+        ],
+        "farthest_index_read": 3648,
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_02, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "traffic_origin_override": null
+      },
+      {
+        "window_id": "W3",
+        "task_index": 2,
+        "task_episode_id": "e1v2_task_03",
+        "support_origins": [
+          3648,
+          3696,
+          3744
+        ],
+        "delayed_origins": [
+          3792,
+          3840,
+          3888
+        ],
+        "farthest_index_read": 3936,
+        "origin_source": "quoted from the frozen roster",
+        "origin_provenance": "frozen e1v2 Task roster (task_episode_harness.e1._frozen_task_roster), Task e1v2_task_03, support and delayed origins verbatim; this Task is inside the roster the g1 agentic pipeline and the M0a census already ran on this cohort (electricity e1v2_task_01..09, T233 e1v2_task_01..19)",
+        "traffic_origin_override": null
+      }
+    ],
+    "traffic": [
+      {
+        "window_id": "W1",
+        "task_index": 0,
+        "task_episode_id": "e1v2_task_01",
+        "support_origins": [
+          1104,
+          1368
+        ],
+        "delayed_origins": [
+          1800
+        ],
+        "farthest_index_read": 1848,
+        "origin_source": "quoted from the screening record",
+        "origin_provenance": "artifacts/functional/e2/g3_candidate_screening_v2.json, criteria.development_origins = [1104, 1368, 1800]; the same triple the batch recipe and the M0a traffic census already ran on",
+        "sealed_from_index": 3072,
+        "traffic_origin_override": [
+          1104,
+          1368,
+          1800
+        ]
+      },
+      {
+        "window_id": "W2",
+        "task_index": 0,
+        "task_episode_id": "e1v2_task_01",
+        "support_origins": [
+          1584,
+          1848
+        ],
+        "delayed_origins": [
+          2280
+        ],
+        "farthest_index_read": 2328,
+        "origin_source": "chosen inside the declared pre-sealed region",
+        "origin_provenance": "chosen, not quoted: window 1's shape and spacing shifted by +480 inside the same pre-sealed development region declared by g3_candidate_screening_v2.json (sealed_from_index = 3072)",
+        "sealed_from_index": 3072,
+        "traffic_origin_override": [
+          1584,
+          1848,
+          2280
+        ]
+      },
+      {
+        "window_id": "W3",
+        "task_index": 0,
+        "task_episode_id": "e1v2_task_01",
+        "support_origins": [
+          2064,
+          2328
+        ],
+        "delayed_origins": [
+          2760
+        ],
+        "farthest_index_read": 2808,
+        "origin_source": "chosen inside the declared pre-sealed region",
+        "origin_provenance": "chosen, not quoted: window 1's shape and spacing shifted by +960 inside the same pre-sealed development region declared by g3_candidate_screening_v2.json (sealed_from_index = 3072)",
+        "sealed_from_index": 3072,
+        "traffic_origin_override": [
+          2064,
+          2328,
+          2760
+        ]
+      }
+    ]
+  },
+  "traffic_window_note": "traffic has exactly one triple of development origins on record (1104/1368/1800). Windows 2 and 3 keep its shape and spacing and are shifted forward inside the same pre-sealed region; they are chosen rather than quoted, they are the only chosen origins in this run, and the farthest index any of them reads is 2808 against sealed_from_index=3072.",
+  "recipe_module_note": "run_batch_composition_headroom is imported and not modified; the traffic window is selected by rebinding its module-level _TRAFFIC_DEVELOPMENT_ORIGINS for the duration of one call and restoring it afterwards, with _TRAFFIC_SEALED_FROM_INDEX left untouched so the module's own boundary guard stays live",
+  "summary": {
+    "cells": 6,
+    "windows_per_cell": 3,
+    "new_recipe_runs": 12,
+    "out_of_selection_pass_count": 6,
+    "out_of_selection_pass_cells": [
+      "electricity x pooled",
+      "electricity x per_channel",
+      "T233 x pooled",
+      "T233 x per_channel",
+      "traffic x pooled",
+      "traffic x per_channel"
+    ],
+    "out_of_selection_fail_cells": [],
+    "program_stable_cells": [
+      "electricity x per_channel",
+      "traffic x pooled",
+      "traffic x per_channel"
+    ],
+    "mask_stable_cells": [
+      "T233 x pooled"
+    ]
+  },
+  "cells": [
+    {
+      "cohort": "electricity",
+      "consumer_variant": "pooled",
+      "windows": [
+        {
+          "window_id": "W1",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            3072,
+            3120,
+            3168
+          ],
+          "delayed_origins": [
+            3216,
+            3264,
+            3312
+          ],
+          "farthest_index_read": 3360,
+          "origin_source": "quoted from the frozen roster",
+          "source": "read from batch_recipe_v2_all_cells_v1.json, not re-run",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "1",
+              "2",
+              "6"
+            ],
+            "treated_series_count": 9
+          },
+          "support_aggregate_gain": 0.03464312207313532,
+          "delayed_aggregate_gain": 0.016342695212762604,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.010755354094145556,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.000022)"
+        },
+        {
+          "window_id": "W2",
+          "task_episode_id": "e1v2_task_02",
+          "support_origins": [
+            3360,
+            3408,
+            3456
+          ],
+          "delayed_origins": [
+            3504,
+            3552,
+            3600
+          ],
+          "farthest_index_read": 3648,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "winsorize",
+            "excluded_series": [
+              "1",
+              "10",
+              "11",
+              "4",
+              "5",
+              "7",
+              "8"
+            ],
+            "treated_series_count": 5
+          },
+          "support_aggregate_gain": 0.06838349184544888,
+          "delayed_aggregate_gain": 0.06350195164437798,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.004738)",
+          "delayed_stability_bar": 0.0047377540783703305,
+          "best_full_batch_program": "outlier_mad",
+          "best_full_batch_support": 0.0368221950531343,
+          "best_full_batch_delayed": 0.0047377540783703305,
+          "programs_searched": [
+            "outlier_mad",
+            "winsorize"
+          ],
+          "adoption_trace": [
+            {
+              "program": "winsorize",
+              "excluded_series": [
+                "1",
+                "10",
+                "11",
+                "4",
+                "5",
+                "7",
+                "8"
+              ],
+              "support_aggregate_gain": 0.06838349184544888,
+              "delayed_aggregate_gain": 0.06350195164437798,
+              "delayed_bar": 0.0047377540783703305,
+              "stability_check": "PASS"
+            },
+            {
+              "program": "outlier_mad",
+              "excluded_series": [
+                "1",
+                "2",
+                "3",
+                "4"
+              ],
+              "support_aggregate_gain": 0.05451814338616848,
+              "delayed_aggregate_gain": 0.022773422059295025,
+              "delayed_bar": null,
+              "stability_check": "NOT_REACHED"
+            }
+          ],
+          "wall_seconds": 16.760014800005592
+        },
+        {
+          "window_id": "W3",
+          "task_episode_id": "e1v2_task_03",
+          "support_origins": [
+            3648,
+            3696,
+            3744
+          ],
+          "delayed_origins": [
+            3792,
+            3840,
+            3888
+          ],
+          "farthest_index_read": 3936,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "winsorize",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.05765955525139644,
+          "delayed_aggregate_gain": 0.01610270708100586,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.10318800482586762,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "delayed_stability_bar": 0.01610270708100586,
+          "best_full_batch_program": "winsorize",
+          "best_full_batch_support": 0.05765955525139644,
+          "best_full_batch_delayed": 0.01610270708100586,
+          "programs_searched": [
+            "winsorize",
+            "outlier_mad"
+          ],
+          "adoption_trace": [
+            {
+              "program": "outlier_mad",
+              "excluded_series": [
+                "1",
+                "3",
+                "4"
+              ],
+              "support_aggregate_gain": 0.030074905864883553,
+              "delayed_aggregate_gain": -0.009416716383042603,
+              "delayed_bar": 0.01610270708100586,
+              "stability_check": "FAIL"
+            }
+          ],
+          "wall_seconds": 15.16726449993439
+        }
+      ],
+      "window1_plan_out_of_selection": [
+        {
+          "window_id": "W2",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "1",
+              "2",
+              "6"
+            ],
+            "treated_series_count": 9
+          },
+          "support": {
+            "origins": [
+              3360,
+              3408,
+              3456
+            ],
+            "aggregate_gain": 0.01436807248097455,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.02539079394944488,
+            "harmed_eval_series": [
+              "15"
+            ]
+          },
+          "delayed": {
+            "origins": [
+              3504,
+              3552,
+              3600
+            ],
+            "aggregate_gain": 0.026594527341856536,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.011958261865578357,
+            "harmed_eval_series": [
+              "16"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        },
+        {
+          "window_id": "W3",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "1",
+              "2",
+              "6"
+            ],
+            "treated_series_count": 9
+          },
+          "support": {
+            "origins": [
+              3648,
+              3696,
+              3744
+            ],
+            "aggregate_gain": 0.01899785210675624,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.017840939449640048,
+            "harmed_eval_series": [
+              "16"
+            ]
+          },
+          "delayed": {
+            "origins": [
+              3792,
+              3840,
+              3888
+            ],
+            "aggregate_gain": 0.019688187775533595,
+            "harmed_eval_series_count": 2,
+            "harmed_eval_series_total_harm": 0.04374570977025324,
+            "harmed_eval_series": [
+              "12",
+              "14"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        }
+      ],
+      "out_of_selection_verdict": "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION",
+      "stability": {
+        "programs": [
+          "outlier_iqr",
+          "winsorize",
+          "winsorize"
+        ],
+        "excluded_series_per_window": [
+          [
+            "1",
+            "2",
+            "6"
+          ],
+          [
+            "1",
+            "10",
+            "11",
+            "4",
+            "5",
+            "7",
+            "8"
+          ],
+          []
+        ],
+        "kinds": [
+          "MASKED_PLAN",
+          "MASKED_PLAN",
+          "BEST_FULL_BATCH"
+        ],
+        "program_stable": false,
+        "mask_stable": false,
+        "kind_stable": false
+      },
+      "wall_seconds": 39.78454690007493
+    },
+    {
+      "cohort": "electricity",
+      "consumer_variant": "per_channel",
+      "windows": [
+        {
+          "window_id": "W1",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            3072,
+            3120,
+            3168
+          ],
+          "delayed_origins": [
+            3216,
+            3264,
+            3312
+          ],
+          "farthest_index_read": 3360,
+          "origin_source": "quoted from the frozen roster",
+          "source": "read from batch_recipe_v2_all_cells_v1.json, not re-run",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "denoise_median",
+            "excluded_series": [
+              "10",
+              "3",
+              "4"
+            ],
+            "treated_series_count": 9
+          },
+          "support_aggregate_gain": 0.12935877470240767,
+          "delayed_aggregate_gain": 0.13852340221127663,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.029666661363195106,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.118209)"
+        },
+        {
+          "window_id": "W2",
+          "task_episode_id": "e1v2_task_02",
+          "support_origins": [
+            3360,
+            3408,
+            3456
+          ],
+          "delayed_origins": [
+            3504,
+            3552,
+            3600
+          ],
+          "farthest_index_read": 3648,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "denoise_median",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.09112400157929097,
+          "delayed_aggregate_gain": 0.1341711497037197,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.02987476098704304,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "delayed_stability_bar": 0.1341711497037197,
+          "best_full_batch_program": "denoise_median",
+          "best_full_batch_support": 0.09112400157929097,
+          "best_full_batch_delayed": 0.1341711497037197,
+          "programs_searched": [
+            "denoise_median",
+            "winsorize"
+          ],
+          "adoption_trace": [
+            {
+              "program": "winsorize",
+              "excluded_series": [
+                "1",
+                "11",
+                "5"
+              ],
+              "support_aggregate_gain": 0.0333754679666099,
+              "delayed_aggregate_gain": 0.03606585051524633,
+              "delayed_bar": 0.1341711497037197,
+              "stability_check": "FAIL"
+            }
+          ],
+          "wall_seconds": 19.69564999989234
+        },
+        {
+          "window_id": "W3",
+          "task_episode_id": "e1v2_task_03",
+          "support_origins": [
+            3648,
+            3696,
+            3744
+          ],
+          "delayed_origins": [
+            3792,
+            3840,
+            3888
+          ],
+          "farthest_index_read": 3936,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "denoise_median",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.1198081321531685,
+          "delayed_aggregate_gain": 0.10067226362445664,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "delayed_stability_bar": 0.10067226362445664,
+          "best_full_batch_program": "denoise_median",
+          "best_full_batch_support": 0.1198081321531685,
+          "best_full_batch_delayed": 0.10067226362445664,
+          "programs_searched": [
+            "denoise_median",
+            "smooth_ma"
+          ],
+          "adoption_trace": [
+            {
+              "program": "smooth_ma",
+              "excluded_series": [
+                "0",
+                "1",
+                "10",
+                "11",
+                "3",
+                "7"
+              ],
+              "support_aggregate_gain": 0.07019908380152128,
+              "delayed_aggregate_gain": 0.05554443952407379,
+              "delayed_bar": 0.10067226362445664,
+              "stability_check": "FAIL"
+            }
+          ],
+          "wall_seconds": 20.173936199978925
+        }
+      ],
+      "window1_plan_out_of_selection": [
+        {
+          "window_id": "W2",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "denoise_median",
+            "excluded_series": [
+              "10",
+              "3",
+              "4"
+            ],
+            "treated_series_count": 9
+          },
+          "support": {
+            "origins": [
+              3360,
+              3408,
+              3456
+            ],
+            "aggregate_gain": 0.08584773721839266,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.0190360786140565,
+            "harmed_eval_series": [
+              "19"
+            ]
+          },
+          "delayed": {
+            "origins": [
+              3504,
+              3552,
+              3600
+            ],
+            "aggregate_gain": 0.13804392477248587,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        },
+        {
+          "window_id": "W3",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "denoise_median",
+            "excluded_series": [
+              "10",
+              "3",
+              "4"
+            ],
+            "treated_series_count": 9
+          },
+          "support": {
+            "origins": [
+              3648,
+              3696,
+              3744
+            ],
+            "aggregate_gain": 0.12034826296373265,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed": {
+            "origins": [
+              3792,
+              3840,
+              3888
+            ],
+            "aggregate_gain": 0.10885030056982091,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.07295556234399247,
+            "harmed_eval_series": [
+              "17"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        }
+      ],
+      "out_of_selection_verdict": "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION",
+      "stability": {
+        "programs": [
+          "denoise_median",
+          "denoise_median",
+          "denoise_median"
+        ],
+        "excluded_series_per_window": [
+          [
+            "10",
+            "3",
+            "4"
+          ],
+          [],
+          []
+        ],
+        "kinds": [
+          "MASKED_PLAN",
+          "BEST_FULL_BATCH",
+          "BEST_FULL_BATCH"
+        ],
+        "program_stable": true,
+        "mask_stable": false,
+        "kind_stable": false
+      },
+      "wall_seconds": 48.104733099928126
+    },
+    {
+      "cohort": "T233",
+      "consumer_variant": "pooled",
+      "windows": [
+        {
+          "window_id": "W1",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            3072,
+            3120,
+            3168
+          ],
+          "delayed_origins": [
+            3216,
+            3264,
+            3312
+          ],
+          "farthest_index_read": 3360,
+          "origin_source": "quoted from the frozen roster",
+          "source": "read from batch_recipe_v2_all_cells_v1.json, not re-run",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "winsorize",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.07215558404058357,
+          "delayed_aggregate_gain": 0.11662707574145732,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.6786475831282432,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive"
+        },
+        {
+          "window_id": "W2",
+          "task_episode_id": "e1v2_task_02",
+          "support_origins": [
+            3360,
+            3408,
+            3456
+          ],
+          "delayed_origins": [
+            3504,
+            3552,
+            3600
+          ],
+          "farthest_index_read": 3648,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "winsorize",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.25057492749462806,
+          "delayed_aggregate_gain": 0.2704229678659038,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "delayed_stability_bar": 0.2704229678659038,
+          "best_full_batch_program": "winsorize",
+          "best_full_batch_support": 0.25057492749462806,
+          "best_full_batch_delayed": 0.2704229678659038,
+          "programs_searched": [
+            "winsorize",
+            "outlier_iqr"
+          ],
+          "adoption_trace": [
+            {
+              "program": "winsorize",
+              "excluded_series": [
+                "T234"
+              ],
+              "support_aggregate_gain": 0.2704328473226926,
+              "delayed_aggregate_gain": 0.2600676913778575,
+              "delayed_bar": 0.2704229678659038,
+              "stability_check": "FAIL"
+            }
+          ],
+          "wall_seconds": 7.91177950007841
+        },
+        {
+          "window_id": "W3",
+          "task_episode_id": "e1v2_task_03",
+          "support_origins": [
+            3648,
+            3696,
+            3744
+          ],
+          "delayed_origins": [
+            3792,
+            3840,
+            3888
+          ],
+          "farthest_index_read": 3936,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.31681336360035944,
+          "delayed_aggregate_gain": 0.22579028231367881,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.2822727755037031,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "delayed_stability_bar": 0.22579028231367881,
+          "best_full_batch_program": "outlier_iqr",
+          "best_full_batch_support": 0.31681336360035944,
+          "best_full_batch_delayed": 0.22579028231367881,
+          "programs_searched": [
+            "outlier_iqr",
+            "hampel_filter"
+          ],
+          "adoption_trace": [
+            {
+              "program": "hampel_filter",
+              "excluded_series": [
+                "T241",
+                "T254"
+              ],
+              "support_aggregate_gain": 0.38035497100839066,
+              "delayed_aggregate_gain": 0.05309088507345681,
+              "delayed_bar": 0.22579028231367881,
+              "stability_check": "FAIL"
+            },
+            {
+              "program": "outlier_iqr",
+              "excluded_series": [
+                "T241",
+                "T244"
+              ],
+              "support_aggregate_gain": 0.3438651136019353,
+              "delayed_aggregate_gain": 0.2232714517039693,
+              "delayed_bar": 0.22579028231367881,
+              "stability_check": "FAIL"
+            }
+          ],
+          "wall_seconds": 9.026556299999356
+        }
+      ],
+      "window1_plan_out_of_selection": [
+        {
+          "window_id": "W2",
+          "plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "winsorize",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support": {
+            "origins": [
+              3360,
+              3408,
+              3456
+            ],
+            "aggregate_gain": 0.25057492749462806,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed": {
+            "origins": [
+              3504,
+              3552,
+              3600
+            ],
+            "aggregate_gain": 0.2704229678659038,
+            "harmed_eval_series_count": 2,
+            "harmed_eval_series_total_harm": 0.07353418126308597,
+            "harmed_eval_series": [
+              "T259",
+              "T262"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        },
+        {
+          "window_id": "W3",
+          "plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "winsorize",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support": {
+            "origins": [
+              3648,
+              3696,
+              3744
+            ],
+            "aggregate_gain": 0.2677240756002803,
+            "harmed_eval_series_count": 2,
+            "harmed_eval_series_total_harm": 0.13437749182679468,
+            "harmed_eval_series": [
+              "T257",
+              "T260"
+            ]
+          },
+          "delayed": {
+            "origins": [
+              3792,
+              3840,
+              3888
+            ],
+            "aggregate_gain": 0.16150124782542719,
+            "harmed_eval_series_count": 3,
+            "harmed_eval_series_total_harm": 0.2934783108072497,
+            "harmed_eval_series": [
+              "T259",
+              "T260",
+              "T266"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        }
+      ],
+      "out_of_selection_verdict": "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION",
+      "stability": {
+        "programs": [
+          "winsorize",
+          "winsorize",
+          "outlier_iqr"
+        ],
+        "excluded_series_per_window": [
+          [],
+          [],
+          []
+        ],
+        "kinds": [
+          "BEST_FULL_BATCH",
+          "BEST_FULL_BATCH",
+          "BEST_FULL_BATCH"
+        ],
+        "program_stable": false,
+        "mask_stable": true,
+        "kind_stable": true
+      },
+      "wall_seconds": 19.5199332999764
+    },
+    {
+      "cohort": "T233",
+      "consumer_variant": "per_channel",
+      "windows": [
+        {
+          "window_id": "W1",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            3072,
+            3120,
+            3168
+          ],
+          "delayed_origins": [
+            3216,
+            3264,
+            3312
+          ],
+          "farthest_index_read": 3360,
+          "origin_source": "quoted from the frozen roster",
+          "source": "read from batch_recipe_v2_all_cells_v1.json, not re-run",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "winsorize",
+            "excluded_series": [
+              "T233",
+              "T234",
+              "T241",
+              "T247",
+              "T256"
+            ],
+            "treated_series_count": 7
+          },
+          "support_aggregate_gain": 0.01902193029912629,
+          "delayed_aggregate_gain": 0.030409829728196905,
+          "harmed_eval_series_count": 2,
+          "harmed_eval_series_total_harm": 0.026483639419915533,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.000000)"
+        },
+        {
+          "window_id": "W2",
+          "task_episode_id": "e1v2_task_02",
+          "support_origins": [
+            3360,
+            3408,
+            3456
+          ],
+          "delayed_origins": [
+            3504,
+            3552,
+            3600
+          ],
+          "farthest_index_read": 3648,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "T235",
+              "T244",
+              "T256"
+            ],
+            "treated_series_count": 9
+          },
+          "support_aggregate_gain": 0.007415794789236013,
+          "delayed_aggregate_gain": 0.051322498773402093,
+          "harmed_eval_series_count": 1,
+          "harmed_eval_series_total_harm": 0.012162690242870903,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.000000)",
+          "delayed_stability_bar": 0.0,
+          "best_full_batch_program": "repair_level_shift",
+          "best_full_batch_support": 0.0034053770430312303,
+          "best_full_batch_delayed": -0.00547060384629448,
+          "programs_searched": [
+            "repair_level_shift",
+            "outlier_iqr"
+          ],
+          "adoption_trace": [
+            {
+              "program": "repair_level_shift",
+              "excluded_series": [
+                "T236",
+                "T240",
+                "T241",
+                "T256"
+              ],
+              "support_aggregate_gain": 0.010849641440777234,
+              "delayed_aggregate_gain": -0.00676882491176574,
+              "delayed_bar": 0.0,
+              "stability_check": "FAIL"
+            },
+            {
+              "program": "outlier_iqr",
+              "excluded_series": [
+                "T235",
+                "T244",
+                "T256"
+              ],
+              "support_aggregate_gain": 0.007415794789236013,
+              "delayed_aggregate_gain": 0.051322498773402093,
+              "delayed_bar": 0.0,
+              "stability_check": "PASS"
+            }
+          ],
+          "wall_seconds": 22.711856300011277
+        },
+        {
+          "window_id": "W3",
+          "task_episode_id": "e1v2_task_03",
+          "support_origins": [
+            3648,
+            3696,
+            3744
+          ],
+          "delayed_origins": [
+            3792,
+            3840,
+            3888
+          ],
+          "farthest_index_read": 3936,
+          "origin_source": "quoted from the frozen roster",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "IDENTITY",
+            "program": "identity",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 0.0,
+          "delayed_aggregate_gain": 0.0,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "no masked plan cleared the delayed stability check and the best full-batch plan's delayed gain is not positive; fell back to identity",
+          "delayed_stability_bar": 0.0,
+          "best_full_batch_program": "smooth_ma",
+          "best_full_batch_support": 0.0204754750428925,
+          "best_full_batch_delayed": -0.06819092365133249,
+          "programs_searched": [
+            "smooth_ma",
+            "denoise_median"
+          ],
+          "adoption_trace": [
+            {
+              "program": "denoise_median",
+              "excluded_series": [
+                "T234",
+                "T247",
+                "T254"
+              ],
+              "support_aggregate_gain": 0.035299634328479976,
+              "delayed_aggregate_gain": -0.015484737981888402,
+              "delayed_bar": 0.0,
+              "stability_check": "FAIL"
+            },
+            {
+              "program": "smooth_ma",
+              "excluded_series": [
+                "T254"
+              ],
+              "support_aggregate_gain": 0.029733990728998943,
+              "delayed_aggregate_gain": -0.0635014215605335,
+              "delayed_bar": 0.0,
+              "stability_check": "FAIL"
+            }
+          ],
+          "wall_seconds": 12.776096499990672
+        }
+      ],
+      "window1_plan_out_of_selection": [
+        {
+          "window_id": "W2",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "winsorize",
+            "excluded_series": [
+              "T233",
+              "T234",
+              "T241",
+              "T247",
+              "T256"
+            ],
+            "treated_series_count": 7
+          },
+          "support": {
+            "origins": [
+              3360,
+              3408,
+              3456
+            ],
+            "aggregate_gain": 0.0017307846247483609,
+            "harmed_eval_series_count": 2,
+            "harmed_eval_series_total_harm": 0.022782750131210044,
+            "harmed_eval_series": [
+              "T257",
+              "T264"
+            ]
+          },
+          "delayed": {
+            "origins": [
+              3504,
+              3552,
+              3600
+            ],
+            "aggregate_gain": 0.06003760950315327,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        },
+        {
+          "window_id": "W3",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "winsorize",
+            "excluded_series": [
+              "T233",
+              "T234",
+              "T241",
+              "T247",
+              "T256"
+            ],
+            "treated_series_count": 7
+          },
+          "support": {
+            "origins": [
+              3648,
+              3696,
+              3744
+            ],
+            "aggregate_gain": -0.0010332504665461508,
+            "harmed_eval_series_count": 4,
+            "harmed_eval_series_total_harm": 0.038328137835336305,
+            "harmed_eval_series": [
+              "T257",
+              "T264",
+              "T265",
+              "T266"
+            ]
+          },
+          "delayed": {
+            "origins": [
+              3792,
+              3840,
+              3888
+            ],
+            "aggregate_gain": 0.012081595931721126,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        }
+      ],
+      "out_of_selection_verdict": "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION",
+      "stability": {
+        "programs": [
+          "winsorize",
+          "outlier_iqr",
+          "identity"
+        ],
+        "excluded_series_per_window": [
+          [
+            "T233",
+            "T234",
+            "T241",
+            "T247",
+            "T256"
+          ],
+          [
+            "T235",
+            "T244",
+            "T256"
+          ],
+          []
+        ],
+        "kinds": [
+          "MASKED_PLAN",
+          "MASKED_PLAN",
+          "IDENTITY"
+        ],
+        "program_stable": false,
+        "mask_stable": false,
+        "kind_stable": false
+      },
+      "wall_seconds": 38.653561399900354
+    },
+    {
+      "cohort": "traffic",
+      "consumer_variant": "pooled",
+      "windows": [
+        {
+          "window_id": "W1",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            1104,
+            1368
+          ],
+          "delayed_origins": [
+            1800
+          ],
+          "farthest_index_read": 1848,
+          "origin_source": "quoted from the screening record",
+          "source": "read from batch_recipe_v2_all_cells_v1.json, not re-run",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ],
+            "treated_series_count": 11
+          },
+          "support_aggregate_gain": 0.6652773536462215,
+          "delayed_aggregate_gain": 1.0470750569907492,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+1.019774)"
+        },
+        {
+          "window_id": "W2",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            1584,
+            1848
+          ],
+          "delayed_origins": [
+            2280
+          ],
+          "farthest_index_read": 2328,
+          "origin_source": "chosen inside the declared pre-sealed region",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "outlier_iqr",
+            "excluded_series": [],
+            "treated_series_count": 12
+          },
+          "support_aggregate_gain": 1.3006989387592602,
+          "delayed_aggregate_gain": 0.5470079644428341,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "delayed_stability_bar": 0.5470079644428341,
+          "best_full_batch_program": "outlier_iqr",
+          "best_full_batch_support": 1.3006989387592602,
+          "best_full_batch_delayed": 0.5470079644428341,
+          "programs_searched": [
+            "outlier_iqr",
+            "outlier_mad"
+          ],
+          "adoption_trace": [],
+          "wall_seconds": 12.533850400010124
+        },
+        {
+          "window_id": "W3",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            2064,
+            2328
+          ],
+          "delayed_origins": [
+            2760
+          ],
+          "farthest_index_read": 2808,
+          "origin_source": "chosen inside the declared pre-sealed region",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3",
+              "5",
+              "7"
+            ],
+            "treated_series_count": 9
+          },
+          "support_aggregate_gain": 0.9495787449025421,
+          "delayed_aggregate_gain": 1.0371011514814654,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.955591)",
+          "delayed_stability_bar": 0.955590959759959,
+          "best_full_batch_program": "outlier_mad",
+          "best_full_batch_support": 0.8640620607659373,
+          "best_full_batch_delayed": 0.955590959759959,
+          "programs_searched": [
+            "outlier_mad",
+            "outlier_iqr"
+          ],
+          "adoption_trace": [
+            {
+              "program": "outlier_iqr",
+              "excluded_series": [
+                "3",
+                "5",
+                "7"
+              ],
+              "support_aggregate_gain": 0.9495787449025421,
+              "delayed_aggregate_gain": 1.0371011514814654,
+              "delayed_bar": 0.955590959759959,
+              "stability_check": "PASS"
+            },
+            {
+              "program": "outlier_mad",
+              "excluded_series": [
+                "7"
+              ],
+              "support_aggregate_gain": 0.9405157443765024,
+              "delayed_aggregate_gain": 0.9966255838656789,
+              "delayed_bar": null,
+              "stability_check": "NOT_REACHED"
+            }
+          ],
+          "wall_seconds": 15.524313399917446
+        }
+      ],
+      "window1_plan_out_of_selection": [
+        {
+          "window_id": "W2",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ],
+            "treated_series_count": 11
+          },
+          "support": {
+            "origins": [
+              1584,
+              1848
+            ],
+            "aggregate_gain": 1.3175901822329878,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed": {
+            "origins": [
+              2280
+            ],
+            "aggregate_gain": 0.5987902041284545,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.21639053240199457,
+            "harmed_eval_series": [
+              "15"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        },
+        {
+          "window_id": "W3",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ],
+            "treated_series_count": 11
+          },
+          "support": {
+            "origins": [
+              2064,
+              2328
+            ],
+            "aggregate_gain": 0.8411343643123042,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed": {
+            "origins": [
+              2760
+            ],
+            "aggregate_gain": 0.8123415552898363,
+            "harmed_eval_series_count": 1,
+            "harmed_eval_series_total_harm": 0.07551179468972569,
+            "harmed_eval_series": [
+              "19"
+            ]
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        }
+      ],
+      "out_of_selection_verdict": "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION",
+      "stability": {
+        "programs": [
+          "outlier_iqr",
+          "outlier_iqr",
+          "outlier_iqr"
+        ],
+        "excluded_series_per_window": [
+          [
+            "6"
+          ],
+          [],
+          [
+            "3",
+            "5",
+            "7"
+          ]
+        ],
+        "kinds": [
+          "MASKED_PLAN",
+          "BEST_FULL_BATCH",
+          "MASKED_PLAN"
+        ],
+        "program_stable": true,
+        "mask_stable": false,
+        "kind_stable": false
+      },
+      "wall_seconds": 37.04727320000529
+    },
+    {
+      "cohort": "traffic",
+      "consumer_variant": "per_channel",
+      "windows": [
+        {
+          "window_id": "W1",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            1104,
+            1368
+          ],
+          "delayed_origins": [
+            1800
+          ],
+          "farthest_index_read": 1848,
+          "origin_source": "quoted from the screening record",
+          "source": "read from batch_recipe_v2_all_cells_v1.json, not re-run",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3",
+              "8"
+            ],
+            "treated_series_count": 10
+          },
+          "support_aggregate_gain": 0.3031836970220849,
+          "delayed_aggregate_gain": 0.35547178578423166,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.348216)"
+        },
+        {
+          "window_id": "W2",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            1584,
+            1848
+          ],
+          "delayed_origins": [
+            2280
+          ],
+          "farthest_index_read": 2328,
+          "origin_source": "chosen inside the declared pre-sealed region",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "8"
+            ],
+            "treated_series_count": 11
+          },
+          "support_aggregate_gain": 0.2894029356859919,
+          "delayed_aggregate_gain": 0.4392405194866649,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.396081)",
+          "delayed_stability_bar": 0.3960807204767255,
+          "best_full_batch_program": "winsorize",
+          "best_full_batch_support": 0.30197649597473764,
+          "best_full_batch_delayed": 0.3960807204767255,
+          "programs_searched": [
+            "winsorize",
+            "outlier_iqr"
+          ],
+          "adoption_trace": [
+            {
+              "program": "outlier_iqr",
+              "excluded_series": [
+                "8"
+              ],
+              "support_aggregate_gain": 0.2894029356859919,
+              "delayed_aggregate_gain": 0.4392405194866649,
+              "delayed_bar": 0.3960807204767255,
+              "stability_check": "PASS"
+            }
+          ],
+          "wall_seconds": 15.166690199985169
+        },
+        {
+          "window_id": "W3",
+          "task_episode_id": "e1v2_task_01",
+          "support_origins": [
+            2064,
+            2328
+          ],
+          "delayed_origins": [
+            2760
+          ],
+          "farthest_index_read": 2808,
+          "origin_source": "chosen inside the declared pre-sealed region",
+          "source": "this run, frozen v2 recipe",
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3"
+            ],
+            "treated_series_count": 11
+          },
+          "support_aggregate_gain": 0.5147523618556838,
+          "delayed_aggregate_gain": 0.386971680105862,
+          "harmed_eval_series_count": 0,
+          "harmed_eval_series_total_harm": 0.0,
+          "adoption_path": "masked plan cleared the delayed stability check (bar=max(best_full_batch_delayed, 0)=+0.380398)",
+          "delayed_stability_bar": 0.38039760868835465,
+          "best_full_batch_program": "outlier_iqr",
+          "best_full_batch_support": 0.5083898301262475,
+          "best_full_batch_delayed": 0.38039760868835465,
+          "programs_searched": [
+            "outlier_iqr",
+            "winsorize"
+          ],
+          "adoption_trace": [
+            {
+              "program": "outlier_iqr",
+              "excluded_series": [
+                "3"
+              ],
+              "support_aggregate_gain": 0.5147523618556838,
+              "delayed_aggregate_gain": 0.386971680105862,
+              "delayed_bar": 0.38039760868835465,
+              "stability_check": "PASS"
+            },
+            {
+              "program": "winsorize",
+              "excluded_series": [
+                "3"
+              ],
+              "support_aggregate_gain": 0.5089357726222481,
+              "delayed_aggregate_gain": 0.3830496131735435,
+              "delayed_bar": null,
+              "stability_check": "NOT_REACHED"
+            }
+          ],
+          "wall_seconds": 15.06971579999663
+        }
+      ],
+      "window1_plan_out_of_selection": [
+        {
+          "window_id": "W2",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3",
+              "8"
+            ],
+            "treated_series_count": 10
+          },
+          "support": {
+            "origins": [
+              1584,
+              1848
+            ],
+            "aggregate_gain": 0.2833794908547229,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed": {
+            "origins": [
+              2280
+            ],
+            "aggregate_gain": 0.43764167707627727,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        },
+        {
+          "window_id": "W3",
+          "plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3",
+              "8"
+            ],
+            "treated_series_count": 10
+          },
+          "support": {
+            "origins": [
+              2064,
+              2328
+            ],
+            "aggregate_gain": 0.5133583204437027,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed": {
+            "origins": [
+              2760
+            ],
+            "aggregate_gain": 0.3870618712478756,
+            "harmed_eval_series_count": 0,
+            "harmed_eval_series_total_harm": 0.0,
+            "harmed_eval_series": []
+          },
+          "delayed_non_negative": true,
+          "delayed_above_material_threshold": true,
+          "reading": "the plan adopted on W1 by the v2 rule, evaluated on a window that took no part in adopting it"
+        }
+      ],
+      "out_of_selection_verdict": "W1_PLAN_DELAYED_NON_NEGATIVE_OUT_OF_SELECTION",
+      "stability": {
+        "programs": [
+          "outlier_iqr",
+          "outlier_iqr",
+          "outlier_iqr"
+        ],
+        "excluded_series_per_window": [
+          [
+            "3",
+            "8"
+          ],
+          [
+            "8"
+          ],
+          [
+            "3"
+          ]
+        ],
+        "kinds": [
+          "MASKED_PLAN",
+          "MASKED_PLAN",
+          "MASKED_PLAN"
+        ],
+        "program_stable": true,
+        "mask_stable": false,
+        "kind_stable": true
+      },
+      "wall_seconds": 38.8487917999737
+    }
+  ],
+  "wall_seconds": 221.9625102999853
+}

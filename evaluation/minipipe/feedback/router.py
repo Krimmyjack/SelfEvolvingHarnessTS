@@ -14,6 +14,16 @@ _FORBIDDEN_TARGET_FRAGMENTS = (
     "public_tools.py",
 )
 
+# Direction tokens for the applicability surface.  RETRIEVAL_MISS stays the
+# widening-direction cause (the skill should have been retrieved and was
+# not).  SCOPE_OVERREACH is the narrowing-direction token: this Scope
+# reached too far, and the only authorized edit is a monotone applicability
+# PATCH.
+_APPLICABILITY_DIRECTION = {
+    "RETRIEVAL_MISS": "widen",
+    "SCOPE_OVERREACH": "narrow",
+}
+
 
 @dataclass(frozen=True)
 class RouteAuthorization:
@@ -58,6 +68,13 @@ class FaultRouter:
         target_surface_id: str | None = None,
     ) -> RouteAuthorization:
         route = self.allowed_targets(cause_code)
+        if (
+            _APPLICABILITY_DIRECTION.get(cause_code) == "narrow"
+            and target_class != "applicability"
+        ):
+            raise ValueError(
+                "SCOPE_OVERREACH only authorizes monotone Scope narrowing"
+            )
         if target_class not in route.target_classes:
             raise ValueError("target class is not authorized for the attributed cause")
         if operation not in route.allowed_operations:
@@ -74,6 +91,23 @@ class FaultRouter:
             raise ValueError("target class and skill kind do not form an authorized pair")
         if target_class == "capability_risk_guard" and operation != "PATCH":
             raise ValueError("RISK_GAP may only patch an existing capability risk guard")
+        # P4U-v2.  RISK_GAP gained ``capability`` so a refused-for-tail-risk
+        # candidate can be ADDed as an inactive Draft.  ``operations`` is
+        # declared per cause, not per target class, so that grant also handed
+        # it PATCH over every capability surface -- including the Skill body,
+        # which is the Program.  A Scope fault must never become licence to
+        # rewrite the program it was raised about, so the operation is pinned
+        # here rather than left to whichever caller builds the catalog.
+        # Cause-scoped on purpose: four other causes patch this class legally.
+        if (
+            cause_code == "RISK_GAP"
+            and target_class == "capability"
+            and operation != "ADD"
+        ):
+            raise ValueError(
+                "RISK_GAP may only ADD a whole capability Skill, never edit one "
+                "in place"
+            )
         if route.allowed_surface_ids and target_surface_id is None:
             raise ValueError("cause requires an exact declared surface ID")
         if target_surface_id is not None:

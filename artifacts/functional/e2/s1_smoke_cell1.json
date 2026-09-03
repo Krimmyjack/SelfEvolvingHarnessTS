@@ -1,0 +1,1965 @@
+{
+ "protocol_version": "s1_curriculum_four_arms_v1",
+ "entry": "--smoke",
+ "evidence_grade": "DEVELOPMENT",
+ "git_head": "dbd840a50bddfb0b9e74b0284e2e2f88c3396776",
+ "python": "3.13.5",
+ "backend": "scripted_sealed_probe",
+ "curriculum_source": "artifacts/functional/e2/s1_curriculum_frozen.json",
+ "curriculum": {
+  "revision": "r2",
+  "forward_order": [
+   "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "DistalPhalanxOutlineCorrect__burst_cls2",
+   "PowerCons__impulse_v2",
+   "FreezerRegularTrain__burst_cls2",
+   "GunPointOldVersusYoung__impulse_v2",
+   "ECG200__impulse_v2",
+   "Ham__impulse_v2"
+  ],
+  "supersedes": "artifacts/functional/e2/s1_curriculum_frozen_r1.json"
+ },
+ "unit_under_test": {
+  "forward_position": 1,
+  "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+  "dataset": "MiddlePhalanxOutlineCorrect",
+  "injection": "impulse_v2",
+  "condition": "fit_only_artifact",
+  "consumer": "ridge-raw-plus-difference-v1",
+  "metric": "accuracy",
+  "group": "harm_evidence",
+  "family_key": "PhalanxFamily",
+  "family_repeat": false,
+  "learnability": "HELDOUT_ONLY",
+  "slice_rows": {
+   "r1_support": 45,
+   "r1_delayed": 45,
+   "r2_support": 45,
+   "r2_delayed": 45
+  },
+  "min_slice_rows": 45,
+  "slice_resolution": 0.022222222222222223,
+  "key_heldin_readout": 0.09444444444444444,
+  "largest_legal_heldin_magnitude": 0.13888888888888895,
+  "total_points": 48000,
+  "official_train_rows": 600,
+  "series_length": 80,
+  "n_heldin": 180,
+  "n_heldout": 291,
+  "oracle_set": [
+   "repair_level_shift"
+  ],
+  "menu_oracle_program": "repair_level_shift",
+  "harmful_outlier_operators": [
+   {
+    "program": "outlier_iqr",
+    "heldin_headroom": -0.09444444444444444,
+    "heldout_utility": 0.20962199312714774,
+    "cohort_modified_fraction": 0.05
+   }
+  ]
+ },
+ "next_unit_for_the_boundary_test": {
+  "forward_position": 2,
+  "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+  "dataset": "DistalPhalanxOutlineCorrect",
+  "injection": "burst_cls2",
+  "condition": "fit_only_artifact",
+  "consumer": "ridge-raw-plus-difference-v1",
+  "metric": "accuracy",
+  "group": "learnable_positive",
+  "family_key": "PhalanxFamily",
+  "family_repeat": true,
+  "learnability": "LEARNABLE",
+  "slice_rows": {
+   "r1_support": 46,
+   "r1_delayed": 45,
+   "r2_support": 45,
+   "r2_delayed": 44
+  },
+  "min_slice_rows": 44,
+  "slice_resolution": 0.022727272727272728,
+  "key_heldin_readout": 0.033333333333333326,
+  "largest_legal_heldin_magnitude": 0.033333333333333326,
+  "total_points": 48000,
+  "official_train_rows": 600,
+  "series_length": 80,
+  "n_heldin": 180,
+  "n_heldout": 276,
+  "oracle_set": [
+   "outlier_iqr",
+   "outlier_mad"
+  ],
+  "menu_oracle_program": "outlier_iqr",
+  "harmful_outlier_operators": []
+ },
+ "reduced_protocol": {
+  "rounds_per_unit": [
+   "r1"
+  ],
+  "full_protocol_rounds": [
+   "r1",
+   "r2"
+  ],
+  "llm_cap_per_arm": 5,
+  "fit_cap_per_unit_per_arm": 25,
+  "wall_seconds_cap": 1800,
+  "note": "this is a wiring smoke on curriculum unit 1 only.  The course is NOT run here."
+ },
+ "k0": {
+  "h0_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+  "k0_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+  "h0_skill_ids": [
+   "build_contrastive_candidates",
+   "inspect_and_localize",
+   "select_or_identity_and_verify"
+  ],
+  "k0_skill_ids": [
+   "build_contrastive_candidates",
+   "inspect_and_localize",
+   "select_or_identity_and_verify",
+   "source_investigation_cls_v1"
+  ],
+  "purity": {
+   "no_allowed_tools": true,
+   "no_frozen_program_steps": true,
+   "try_abstains": true,
+   "no_target_local_capability_in_k0": true
+  },
+  "definition": {
+   "base": "methods/ttha/harness/h0 (the three bootstrap Skills)",
+   "bootstrap_skills": [
+    "inspect_and_localize",
+    "build_contrastive_candidates",
+    "select_or_identity_and_verify"
+   ],
+   "inert_slow_card": {
+    "skill_id": "source_investigation_cls_v1",
+    "source": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+    "try_clause": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+    "allowed_tools": [],
+    "carries_frozen_steps": false
+   },
+   "excluded_on_purpose": "the C40 Target-local hampel capability is NOT in K0.  It is a frozen-steps capability bound to one Source domain; placing it in K0 would leak an answer across domains and contaminate both K0-fixed and A5-online."
+  }
+ },
+ "pattern_views": {
+  "MiddlePhalanxOutlineCorrect__impulse_v2": {
+   "missing_fraction": "zero",
+   "longest_missing_run_fraction": "zero",
+   "local_robust_z_peak": "high",
+   "estimated_region_start_fraction": "very_low",
+   "estimated_region_end_fraction": "high",
+   "level_region_fraction": "very_low",
+   "level_region_end_fraction": "very_low",
+   "outlier_region_end_fraction": "very_low",
+   "level_excursion_score": "medium",
+   "estimated_level_offset": "low",
+   "period_change_score": "zero",
+   "period_reliability": "high",
+   "period_evidence_status": "OK"
+  },
+  "DistalPhalanxOutlineCorrect__burst_cls2": {
+   "missing_fraction": "zero",
+   "longest_missing_run_fraction": "zero",
+   "local_robust_z_peak": "high",
+   "estimated_region_start_fraction": "low",
+   "estimated_region_end_fraction": "high",
+   "level_region_fraction": "very_low",
+   "level_region_end_fraction": "very_low",
+   "outlier_region_end_fraction": "very_low",
+   "level_excursion_score": "medium",
+   "estimated_level_offset": "low",
+   "period_change_score": "low",
+   "period_reliability": "high",
+   "period_evidence_status": "OK"
+  }
+ },
+ "oracle_guard_selftest": {
+  "fired": true,
+  "target": "BeetleFly__burst_cls2.json",
+  "surfaces": {
+   "builtins.open": "blocked",
+   "pathlib.Path.read_text": "blocked",
+   "pathlib.Path.open": "blocked"
+  }
+ },
+ "a5_slow_integration": {
+  "probe_rows": [
+   {
+    "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "arm": "A5-online",
+    "program": "denoise_median",
+    "context_condition": false,
+    "support_gain": 0.0,
+    "relation": "NEUTRAL",
+    "conditioned_snapshot": true,
+    "conditioned_served": true
+   },
+   {
+    "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "arm": "A5-online",
+    "program": "winsorize",
+    "context_condition": false,
+    "support_gain": 0.1333333333333333,
+    "relation": "NEGATIVE",
+    "conditioned_snapshot": true,
+    "conditioned_served": true
+   }
+  ],
+  "census": [
+   {
+    "canonical_program": [
+     "denoise_median"
+    ],
+    "support_reproduces_fit_signal": false,
+    "support_relation": "NEUTRAL",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "MiddlePhalanxOutlineCorrect__impulse_v2"
+    ]
+   },
+   {
+    "canonical_program": [
+     "winsorize"
+    ],
+    "support_reproduces_fit_signal": false,
+    "support_relation": "NEGATIVE",
+    "distinct_task_count": 1,
+    "distinct_task_episode_ids": [
+     "MiddlePhalanxOutlineCorrect__impulse_v2"
+    ]
+   }
+  ],
+  "authorization_audit": [
+   {
+    "program": "denoise_median",
+    "context_condition": false,
+    "pooled_positive": 0,
+    "pooled_negative": 0,
+    "pooled_immaterial": 0,
+    "unguided_positive": 0,
+    "unguided_negative": 0,
+    "conditioned_positive": 0,
+    "conditioned_negative": 0,
+    "leave_one_out_minimum_positive": 0,
+    "active_try_authorized": false,
+    "deprioritization_authorized": false,
+    "withheld_because": "no_unguided_positive"
+   },
+   {
+    "program": "winsorize",
+    "context_condition": false,
+    "pooled_positive": 0,
+    "pooled_negative": 1,
+    "pooled_immaterial": 0,
+    "unguided_positive": 0,
+    "unguided_negative": 0,
+    "conditioned_positive": 0,
+    "conditioned_negative": 1,
+    "leave_one_out_minimum_positive": 0,
+    "active_try_authorized": false,
+    "deprioritization_authorized": false,
+    "withheld_because": "no_unguided_positive"
+   }
+  ],
+  "authorized_try_operators": [],
+  "risk_authorized_operators": [],
+  "skill_written": false,
+  "execution_right_granted": false,
+  "slow_llm_calls": 0,
+  "slow_llm_cap": 6,
+  "scope_v1": null,
+  "entry_skill_id": null
+ },
+ "a5_carry_into_next_unit": {
+  "next_unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+  "decisions": [],
+  "carried_skill_ids": [],
+  "dropped_skill_ids": [],
+  "runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+  "source_card_decision": null
+ },
+ "unit_boundary_state": {
+  "Static": {
+   "next_base_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "next_base": "h0 (never adapts, never deploys a learned Workflow)",
+   "episodes_carried": 0,
+   "skills_carried": [],
+   "end_of_unit_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "store_evolved_in_unit": false,
+   "episodes_at_unit_end": 0
+  },
+  "A3-reset": {
+   "next_base_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "next_base": "h0 (cold start, zero carry)",
+   "episodes_carried": 0,
+   "skills_carried": [],
+   "end_of_unit_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "store_evolved_in_unit": false,
+   "episodes_at_unit_end": 2
+  },
+  "K0-fixed": {
+   "next_base_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "next_base": "K0 (reset; no write-back)",
+   "episodes_carried": 0,
+   "skills_carried": [],
+   "end_of_unit_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "store_evolved_in_unit": false,
+   "episodes_at_unit_end": 2
+  },
+  "A5-online": {
+   "next_base_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "next_base": "K0 + everything the domain-binding wall admits",
+   "episodes_carried": 2,
+   "skills_carried": [],
+   "skills_dropped": [],
+   "end_of_unit_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "store_evolved_in_unit": false,
+   "episodes_at_unit_end": 2
+  },
+  "next_unit_id": "DistalPhalanxOutlineCorrect__burst_cls2"
+ },
+ "arm_isolation": {
+  "checks": {
+   "static_ran_no_round": true,
+   "static_wrote_no_episode": true,
+   "static_store_unchanged": true,
+   "static_deployed_identity": true,
+   "a3_started_from_h0": true,
+   "a3_started_with_no_episode": true,
+   "a3_next_base_is_h0": true,
+   "k0fixed_started_from_k0": true,
+   "k0fixed_next_base_resets_to_k0": true,
+   "k0fixed_carries_no_episode": true,
+   "a5_started_from_k0": true,
+   "a5_carries_episode_memory": true,
+   "a5_and_k0fixed_share_the_same_start": true,
+   "a5_next_base_differs_from_k0_or_states_why": true,
+   "k0_card_in_the_store_of_k0fixed_and_a5": true,
+   "k0_card_never_entered_a_fast_view": true,
+   "a3_store_never_held_the_k0_card": true
+  },
+  "all_hold": true,
+  "k0_card_in_fast_view_of": []
+ },
+ "domain_binding": {
+  "hook_1_stamped_skills": [],
+  "hook_1_every_minted_skill_is_stamped": true,
+  "hook_2_next_unit": "DistalPhalanxOutlineCorrect__burst_cls2",
+  "hook_2_target_local_decisions": [],
+  "hook_2_all_foreign_target_local_dropped": true,
+  "hook_3_source_card_decision": null,
+  "episode_domain_namespaces": [
+   "MiddlePhalanxOutlineCorrect__impulse_v2"
+  ],
+  "synthetic_probe": {
+   "note": "synthetic entries through the live decision functions; the arms minted none of these",
+   "hook_2": {
+    "carrier_kind_classifier": "target_local_capability",
+    "foreign_domain_capability": {
+     "skill_id": "probe_target_local_foreign_domain",
+     "carrier_kind": "target_local_capability",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "carried": false,
+     "why": "hook 2: a Target-local capability carries frozen program steps and is valid only in the domain that formed it; stamped MiddlePhalanxOutlineCorrect__impulse_v2, next unit is DistalPhalanxOutlineCorrect__burst_cls2"
+    },
+    "native_domain_capability": {
+     "skill_id": "probe_target_local_native_domain",
+     "carrier_kind": "target_local_capability",
+     "domain_namespace": "DistalPhalanxOutlineCorrect__burst_cls2",
+     "carried": true,
+     "why": "hook 2: a Target-local capability carries frozen program steps and is valid only in the domain that formed it; stamped DistalPhalanxOutlineCorrect__burst_cls2, next unit is DistalPhalanxOutlineCorrect__burst_cls2"
+    },
+    "behaves_as_specified": true
+   },
+   "hook_3": {
+    "matching_five_axis_scope": {
+     "admits": true,
+     "why": [
+      "all five axes match"
+     ]
+    },
+    "pattern_mismatch_scope": {
+     "admits": false,
+     "why": [
+      "pattern_mismatch:estimated_region_start_fraction,period_change_score"
+     ]
+    },
+    "empty_intersection_scope": {
+     "admits": false,
+     "why": [
+      "empty_pattern_intersection"
+     ]
+    },
+    "wrong_consumer_scope": {
+     "admits": false,
+     "why": [
+      "consumer_id"
+     ]
+    },
+    "pattern_axes_that_differ_between_unit_1_and_unit_2": [
+     "estimated_region_start_fraction",
+     "period_change_score"
+    ],
+    "behaves_as_specified": true
+   }
+  }
+ },
+ "instrument_census": {
+  "per_unit": [
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "group": "harm_evidence",
+    "fit_rows": 420,
+    "support_pool_rows": 180,
+    "slice_rows": {
+     "r1_support": 45,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 45
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 45,
+    "smallest_expressible_gain": 0.022222222222222223,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 45-row slice moves accuracy only in steps of 0.022"
+   },
+   {
+    "unit_id": "DistalPhalanxOutlineCorrect__burst_cls2",
+    "forward_position": 2,
+    "group": "learnable_positive",
+    "fit_rows": 420,
+    "support_pool_rows": 180,
+    "slice_rows": {
+     "r1_support": 46,
+     "r1_delayed": 45,
+     "r2_support": 45,
+     "r2_delayed": 44
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 44,
+    "smallest_expressible_gain": 0.022727272727272728,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 44-row slice moves accuracy only in steps of 0.023"
+   },
+   {
+    "unit_id": "PowerCons__impulse_v2",
+    "forward_position": 3,
+    "group": "harm_evidence",
+    "fit_rows": 126,
+    "support_pool_rows": 54,
+    "slice_rows": {
+     "r1_support": 14,
+     "r1_delayed": 14,
+     "r2_support": 14,
+     "r2_delayed": 12
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 12,
+    "smallest_expressible_gain": 0.08333333333333333,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 12-row slice moves accuracy only in steps of 0.083"
+   },
+   {
+    "unit_id": "FreezerRegularTrain__burst_cls2",
+    "forward_position": 4,
+    "group": "identity",
+    "fit_rows": 106,
+    "support_pool_rows": 44,
+    "slice_rows": {
+     "r1_support": 12,
+     "r1_delayed": 12,
+     "r2_support": 10,
+     "r2_delayed": 10
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 10,
+    "smallest_expressible_gain": 0.1,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 10-row slice moves accuracy only in steps of 0.100"
+   },
+   {
+    "unit_id": "GunPointOldVersusYoung__impulse_v2",
+    "forward_position": 5,
+    "group": "learnable_positive",
+    "fit_rows": 95,
+    "support_pool_rows": 41,
+    "slice_rows": {
+     "r1_support": 11,
+     "r1_delayed": 10,
+     "r2_support": 10,
+     "r2_delayed": 10
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 10,
+    "smallest_expressible_gain": 0.1,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 10-row slice moves accuracy only in steps of 0.100"
+   },
+   {
+    "unit_id": "ECG200__impulse_v2",
+    "forward_position": 6,
+    "group": "heldout_only_temptation",
+    "fit_rows": 70,
+    "support_pool_rows": 30,
+    "slice_rows": {
+     "r1_support": 9,
+     "r1_delayed": 7,
+     "r2_support": 7,
+     "r2_delayed": 7
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 7,
+    "smallest_expressible_gain": 0.14285714285714285,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 7-row slice moves accuracy only in steps of 0.143"
+   },
+   {
+    "unit_id": "Ham__impulse_v2",
+    "forward_position": 7,
+    "group": "identity",
+    "fit_rows": 76,
+    "support_pool_rows": 33,
+    "slice_rows": {
+     "r1_support": 9,
+     "r1_delayed": 8,
+     "r2_support": 8,
+     "r2_delayed": 8
+    },
+    "empty_slices": [],
+    "smallest_slice_rows": 8,
+    "smallest_expressible_gain": 0.125,
+    "can_express_a_material_relation": true,
+    "relation_resolution": "a 8-row slice moves accuracy only in steps of 0.125"
+   }
+  ],
+  "units_whose_smallest_slice_is_at_most_two_rows": [],
+  "units_with_an_empty_held_in_slice": [],
+  "two_round_protocol_has_rows_on_every_unit": true,
+  "why_this_matters": "the harm channel needs NEGATIVE Episodes on two distinct units before risk_skill can compile a guard, and classify_relation needs an aggregate move of at least 0.005 to call anything but NEUTRAL.  A slice of n rows moves accuracy only in steps of 1/n, so a one- or two-row slice reports 0.0 for every candidate and a zero-row slice leaves the round with no surface to read at all.  This table is the readability precondition, not a result."
+ },
+ "instrument_findings": {
+  "observed_relations_on_unit_1": [
+   "NEGATIVE",
+   "NEUTRAL"
+  ],
+  "units_with_an_empty_held_in_slice": [],
+  "two_round_protocol_has_rows_on_every_unit": true,
+  "smallest_slice_anywhere_in_the_course": 7,
+  "harm_episode_formed_on_unit_1": true,
+  "guard_minted_on_unit_1": false,
+  "coarse_units": [],
+  "finding": "the r2 readability floor holds across the whole course: every unit's smallest held-in slice is at least 7 rows, none is empty, and the frozen two-round protocol has a delayed surface everywhere.  On unit 1 the observed Episode relations were ['NEGATIVE', 'NEUTRAL'], so a harm Episode was written on live evidence rather than inferred.",
+  "blocks_s1c": false,
+  "what_would_unblock_it": "nothing outstanding on the readability axis.  The remaining question is not whether harm can be *read* but whether the proposal stage samples the same harmful program on both harm units -- see guard_channel_feasibility."
+ },
+ "arm_results": [
+  {
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "arm": "Static",
+   "base_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "end_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "store_evolved": false,
+   "episodes_at_unit_start": 0,
+   "episodes_at_unit_end": 0,
+   "base_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "end_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "skills_added_in_unit": [],
+   "rounds": [],
+   "deployment": {
+    "arm": "Static",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "deploy_why": "no frozen Skill and no incumbent; identity is the fallback",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "applied_program": [],
+    "scored_program": [],
+    "scored_equals_applied": true,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.42955326460481097,
+    "heldout_accuracy_gain": 0.0,
+    "heldout_recall_by_class": {
+     "0": 0.4,
+     "1": 0.45180722891566266
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.4,
+     "1": 0.45180722891566266
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "harmed_classes_over_bar": [],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 1,
+    "breach": [],
+    "pure": true
+   },
+   "approved_skill_ids": [],
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "consumer_fit_cap": 25,
+   "seconds": 2.28
+  },
+  {
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "arm": "A3-reset",
+   "base_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "end_runtime_bundle_sha": "4abf3bec40f1ca3743f9f2f0a28442c5f2f2ca0feffa91a1be0c44c80e56606e",
+   "store_evolved": false,
+   "episodes_at_unit_start": 0,
+   "episodes_at_unit_end": 2,
+   "base_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "end_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify"
+   ],
+   "skills_added_in_unit": [],
+   "rounds": [
+    {
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "cand_denoise_median",
+      "cand_winsorize"
+     ],
+     "chosen": "cand_denoise_median",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "probes": [
+      {
+       "candidate_id": "cand_denoise_median",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "denoise_median"
+       ]
+      },
+      {
+       "candidate_id": "cand_winsorize",
+       "kind": "probe",
+       "gain": 0.1333333333333333,
+       "passed": true,
+       "operators": [
+        "winsorize"
+       ]
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": -0.11111111111111116,
+     "approved_skill_id": null,
+     "activated": false,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "denoise_median",
+       "winsorize"
+      ],
+      "probed_operators": [
+       "denoise_median",
+       "winsorize"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_denoise_median_a3-reset_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p1",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "denoise_median",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a3-reset_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "winsorize",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.1333333333333333,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.06896551724137934
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.11111111111111116,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.20689655172413796
+       }
+      }
+     ],
+     "consumer_fits_after": 5,
+     "llm_calls_this_round": 3,
+     "candidate_executions": 2,
+     "seconds": 5.02
+    }
+   ],
+   "deployment": {
+    "arm": "A3-reset",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "deploy_why": "the last held-in round adopted this Workflow",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_equals_applied": true,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_accuracy_gain": 0.19931271477663232,
+    "heldout_recall_by_class": {
+     "0": 0.328,
+     "1": 0.8554216867469879
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.4,
+     "1": 0.45180722891566266
+    },
+    "heldout_recall_delta_by_class": {
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
+    },
+    "harmed_classes_over_bar": [
+     "0"
+    ],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 7,
+    "breach": [],
+    "pure": true
+   },
+   "approved_skill_ids": [],
+   "llm_calls": 3,
+   "consumer_fits": 7,
+   "consumer_fit_cap": 25,
+   "seconds": 9.51
+  },
+  {
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "arm": "K0-fixed",
+   "base_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "end_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "store_evolved": false,
+   "episodes_at_unit_start": 0,
+   "episodes_at_unit_end": 2,
+   "base_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_cls_v1"
+   ],
+   "end_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_cls_v1"
+   ],
+   "skills_added_in_unit": [],
+   "rounds": [
+    {
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "cand_denoise_median",
+      "cand_winsorize"
+     ],
+     "chosen": "cand_denoise_median",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "probes": [
+      {
+       "candidate_id": "cand_denoise_median",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "denoise_median"
+       ]
+      },
+      {
+       "candidate_id": "cand_winsorize",
+       "kind": "probe",
+       "gain": 0.1333333333333333,
+       "passed": true,
+       "operators": [
+        "winsorize"
+       ]
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": -0.11111111111111116,
+     "approved_skill_id": null,
+     "activated": false,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "denoise_median",
+       "winsorize"
+      ],
+      "probed_operators": [
+       "denoise_median",
+       "winsorize"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_denoise_median_k0-fixed_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p1",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "denoise_median",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_k0-fixed_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "winsorize",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.1333333333333333,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.06896551724137934
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.11111111111111116,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.20689655172413796
+       }
+      }
+     ],
+     "consumer_fits_after": 5,
+     "llm_calls_this_round": 3,
+     "candidate_executions": 2,
+     "seconds": 4.99
+    }
+   ],
+   "deployment": {
+    "arm": "K0-fixed",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "deploy_why": "the last held-in round adopted this Workflow",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_equals_applied": true,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_accuracy_gain": 0.19931271477663232,
+    "heldout_recall_by_class": {
+     "0": 0.328,
+     "1": 0.8554216867469879
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.4,
+     "1": 0.45180722891566266
+    },
+    "heldout_recall_delta_by_class": {
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
+    },
+    "harmed_classes_over_bar": [
+     "0"
+    ],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 7,
+    "breach": [],
+    "pure": true
+   },
+   "approved_skill_ids": [],
+   "llm_calls": 3,
+   "consumer_fits": 7,
+   "consumer_fit_cap": 25,
+   "seconds": 9.51
+  },
+  {
+   "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+   "arm": "A5-online",
+   "base_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "end_runtime_bundle_sha": "127ecb868f635e626a9367d25ed2e1ef697ca71a6d093c5d3259bf82742ddad8",
+   "store_evolved": false,
+   "episodes_at_unit_start": 0,
+   "episodes_at_unit_end": 2,
+   "base_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_cls_v1"
+   ],
+   "end_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_cls_v1"
+   ],
+   "skills_added_in_unit": [],
+   "rounds": [
+    {
+     "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "MiddlePhalanxOutlineCorrect",
+     "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "cand_denoise_median",
+      "cand_winsorize"
+     ],
+     "chosen": "cand_denoise_median",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "probes": [
+      {
+       "candidate_id": "cand_denoise_median",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "denoise_median"
+       ]
+      },
+      {
+       "candidate_id": "cand_winsorize",
+       "kind": "probe",
+       "gain": 0.1333333333333333,
+       "passed": true,
+       "operators": [
+        "winsorize"
+       ]
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": -0.11111111111111116,
+     "approved_skill_id": null,
+     "activated": false,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "denoise_median",
+       "winsorize"
+      ],
+      "probed_operators": [
+       "denoise_median",
+       "winsorize"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_denoise_median_a5-online_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p1",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "denoise_median",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a5-online_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "domain_namespace": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "task_episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+       "workflow_signature": "winsorize",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.1333333333333333,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.06896551724137934
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.11111111111111116,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.20689655172413796
+       }
+      }
+     ],
+     "consumer_fits_after": 5,
+     "llm_calls_this_round": 3,
+     "candidate_executions": 2,
+     "seconds": 5.08
+    }
+   ],
+   "deployment": {
+    "arm": "A5-online",
+    "dataset": "MiddlePhalanxOutlineCorrect",
+    "condition": "fit_only_artifact",
+    "mode": "FROZEN_FAST_ONLY_DEPLOY",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "deploy_why": "the last held-in round adopted this Workflow",
+    "active_skill_id": null,
+    "recall_hit": false,
+    "view_skill_ids": [
+     "build_contrastive_candidates",
+     "inspect_and_localize",
+     "select_or_identity_and_verify"
+    ],
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "scored_equals_applied": true,
+    "heldout_rows": 291,
+    "heldout_identity_accuracy": 0.42955326460481097,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_accuracy_gain": 0.19931271477663232,
+    "heldout_recall_by_class": {
+     "0": 0.328,
+     "1": 0.8554216867469879
+    },
+    "heldout_identity_recall_by_class": {
+     "0": 0.4,
+     "1": 0.45180722891566266
+    },
+    "heldout_recall_delta_by_class": {
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
+    },
+    "harmed_classes_over_bar": [
+     "0"
+    ],
+    "harm_bar": 0.05,
+    "open_delayed_calls": 0,
+    "slow_calls": 0,
+    "llm_calls": 0,
+    "new_skill_formed": false,
+    "store_unchanged": true,
+    "experience_unchanged": true,
+    "heldout_openings": 1,
+    "consumer_fits_after": 7,
+    "breach": [],
+    "pure": true
+   },
+   "approved_skill_ids": [],
+   "llm_calls": 3,
+   "consumer_fits": 7,
+   "consumer_fit_cap": 25,
+   "seconds": 9.68
+  }
+ ],
+ "judging": {
+  "reads": "artifacts/functional/e2/s1_oracle/*.json",
+  "read_when": "after every arm is closed; the arm phase physically cannot open these files",
+  "per_unit_per_arm": [
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "group": "harm_evidence",
+    "arm": "Static",
+    "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+    "applied_program": [],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.0,
+    "regret": 0.010309278350515483,
+    "heldout_accuracy": 0.42955326460481097,
+    "heldout_recall_by_class": {
+     "0": 0.4,
+     "1": 0.45180722891566266
+    },
+    "heldout_recall_delta_by_class": {
+     "0": 0.0,
+     "1": 0.0
+    },
+    "worst_class_harm": 0.0,
+    "harm_event": false,
+    "harm_event_detail": [],
+    "wrong_promotions": 0,
+    "wrong_promotion_detail": [],
+    "cost": {
+     "llm": 0,
+     "consumer_fits": 1,
+     "probes": 0
+    },
+    "wasted_probes": 0,
+    "wasted_probe_detail": [],
+    "support_delayed_direction": {
+     "pairs": 0,
+     "same_direction": 0,
+     "detail": []
+    },
+    "guard_events": [],
+    "deploy_purity_breach": []
+   },
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "group": "harm_evidence",
+    "arm": "A3-reset",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.19931271477663232,
+    "regret": -0.18900343642611683,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_recall_by_class": {
+     "0": 0.328,
+     "1": 0.8554216867469879
+    },
+    "heldout_recall_delta_by_class": {
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
+    },
+    "worst_class_harm": -0.07200000000000001,
+    "harm_event": true,
+    "harm_event_detail": [
+     {
+      "program": "winsorize",
+      "known": true,
+      "legal": true,
+      "in_oracle_set": false,
+      "heldout_utility": 0.19931271477663232,
+      "heldout_worst_class_recall_delta": -0.07200000000000001,
+      "oracle_harmful": true
+     }
+    ],
+    "wrong_promotions": 0,
+    "wrong_promotion_detail": [],
+    "cost": {
+     "llm": 3,
+     "consumer_fits": 7,
+     "probes": 2
+    },
+    "wasted_probes": 1,
+    "wasted_probe_detail": [
+     {
+      "round": "r1",
+      "candidate_id": "cand_winsorize",
+      "reasons": [
+       "oracle_harmful:winsorize"
+      ]
+     }
+    ],
+    "support_delayed_direction": {
+     "pairs": 1,
+     "same_direction": 0,
+     "detail": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a3-reset_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "same_direction": false
+      }
+     ]
+    },
+    "guard_events": [],
+    "deploy_purity_breach": []
+   },
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "group": "harm_evidence",
+    "arm": "K0-fixed",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.19931271477663232,
+    "regret": -0.18900343642611683,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_recall_by_class": {
+     "0": 0.328,
+     "1": 0.8554216867469879
+    },
+    "heldout_recall_delta_by_class": {
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
+    },
+    "worst_class_harm": -0.07200000000000001,
+    "harm_event": true,
+    "harm_event_detail": [
+     {
+      "program": "winsorize",
+      "known": true,
+      "legal": true,
+      "in_oracle_set": false,
+      "heldout_utility": 0.19931271477663232,
+      "heldout_worst_class_recall_delta": -0.07200000000000001,
+      "oracle_harmful": true
+     }
+    ],
+    "wrong_promotions": 0,
+    "wrong_promotion_detail": [],
+    "cost": {
+     "llm": 3,
+     "consumer_fits": 7,
+     "probes": 2
+    },
+    "wasted_probes": 1,
+    "wasted_probe_detail": [
+     {
+      "round": "r1",
+      "candidate_id": "cand_winsorize",
+      "reasons": [
+       "oracle_harmful:winsorize"
+      ]
+     }
+    ],
+    "support_delayed_direction": {
+     "pairs": 1,
+     "same_direction": 0,
+     "detail": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_k0-fixed_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "same_direction": false
+      }
+     ]
+    },
+    "guard_events": [],
+    "deploy_purity_breach": []
+   },
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "group": "harm_evidence",
+    "arm": "A5-online",
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT",
+    "applied_program": [
+     {
+      "op": "winsorize",
+      "params": {}
+     }
+    ],
+    "menu_oracle_program": "repair_level_shift",
+    "menu_oracle_heldout_utility": 0.010309278350515483,
+    "heldout_utility": 0.19931271477663232,
+    "regret": -0.18900343642611683,
+    "heldout_accuracy": 0.6288659793814433,
+    "heldout_recall_by_class": {
+     "0": 0.328,
+     "1": 0.8554216867469879
+    },
+    "heldout_recall_delta_by_class": {
+     "0": -0.07200000000000001,
+     "1": 0.40361445783132527
+    },
+    "worst_class_harm": -0.07200000000000001,
+    "harm_event": true,
+    "harm_event_detail": [
+     {
+      "program": "winsorize",
+      "known": true,
+      "legal": true,
+      "in_oracle_set": false,
+      "heldout_utility": 0.19931271477663232,
+      "heldout_worst_class_recall_delta": -0.07200000000000001,
+      "oracle_harmful": true
+     }
+    ],
+    "wrong_promotions": 0,
+    "wrong_promotion_detail": [],
+    "cost": {
+     "llm": 3,
+     "consumer_fits": 7,
+     "probes": 2
+    },
+    "wasted_probes": 1,
+    "wasted_probe_detail": [
+     {
+      "round": "r1",
+      "candidate_id": "cand_winsorize",
+      "reasons": [
+       "oracle_harmful:winsorize"
+      ]
+     }
+    ],
+    "support_delayed_direction": {
+     "pairs": 1,
+     "same_direction": 0,
+     "detail": [
+      {
+       "episode_id": "MiddlePhalanxOutlineCorrect__impulse_v2_target_winsorize_a5-online_MiddlePhalanxOutlineCorrect__impulse_v2_r1_p2",
+       "support_gain": 0.1333333333333333,
+       "delayed_gain": -0.11111111111111116,
+       "same_direction": false
+      }
+     ]
+    },
+    "guard_events": [],
+    "deploy_purity_breach": []
+   }
+  ],
+  "totals_by_arm": {
+   "Static": {
+    "units": 1,
+    "cumulative_regret": 0.010309278350515483,
+    "cumulative_heldout_utility": 0.0,
+    "harm_events": 0,
+    "wrong_promotions": 0,
+    "wasted_probes": 0,
+    "llm": 0,
+    "consumer_fits": 1,
+    "probes": 0,
+    "worst_class_harm_min": 0.0,
+    "curve": [
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "forward_position": 1,
+      "regret": 0.010309278350515483,
+      "cumulative_regret": 0.010309278350515483,
+      "heldout_utility": 0.0,
+      "llm": 0,
+      "consumer_fits": 1
+     }
+    ]
+   },
+   "A3-reset": {
+    "units": 1,
+    "cumulative_regret": -0.18900343642611683,
+    "cumulative_heldout_utility": 0.19931271477663232,
+    "harm_events": 1,
+    "wrong_promotions": 0,
+    "wasted_probes": 1,
+    "llm": 3,
+    "consumer_fits": 7,
+    "probes": 2,
+    "worst_class_harm_min": -0.07200000000000001,
+    "curve": [
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "forward_position": 1,
+      "regret": -0.18900343642611683,
+      "cumulative_regret": -0.18900343642611683,
+      "heldout_utility": 0.19931271477663232,
+      "llm": 3,
+      "consumer_fits": 7
+     }
+    ]
+   },
+   "K0-fixed": {
+    "units": 1,
+    "cumulative_regret": -0.18900343642611683,
+    "cumulative_heldout_utility": 0.19931271477663232,
+    "harm_events": 1,
+    "wrong_promotions": 0,
+    "wasted_probes": 1,
+    "llm": 3,
+    "consumer_fits": 7,
+    "probes": 2,
+    "worst_class_harm_min": -0.07200000000000001,
+    "curve": [
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "forward_position": 1,
+      "regret": -0.18900343642611683,
+      "cumulative_regret": -0.18900343642611683,
+      "heldout_utility": 0.19931271477663232,
+      "llm": 3,
+      "consumer_fits": 7
+     }
+    ]
+   },
+   "A5-online": {
+    "units": 1,
+    "cumulative_regret": -0.18900343642611683,
+    "cumulative_heldout_utility": 0.19931271477663232,
+    "harm_events": 1,
+    "wrong_promotions": 0,
+    "wasted_probes": 1,
+    "llm": 3,
+    "consumer_fits": 7,
+    "probes": 2,
+    "worst_class_harm_min": -0.07200000000000001,
+    "curve": [
+     {
+      "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+      "forward_position": 1,
+      "regret": -0.18900343642611683,
+      "cumulative_regret": -0.18900343642611683,
+      "heldout_utility": 0.19931271477663232,
+      "llm": 3,
+      "consumer_fits": 7
+     }
+    ]
+   }
+  },
+  "pre_registered_readout": {
+   "primary": "A5-online must be non-inferior to both A3-reset and K0-fixed on quality (cumulative held-out utility) and on harm (harm events, worst-class harm), and must improve at least one of cumulative regret or cumulative total cost by a material margin",
+   "material_threshold": 0.005,
+   "verdict_ceiling_for_a_single_order_single_run": "S1_DEVELOPMENT_EVOLUTION_SIGNAL",
+   "judged_in": "S1c.  This book freezes the readout and does not judge it."
+  }
+ },
+ "readable_surface_evidence": {
+  "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+  "min_slice_rows": 45,
+  "slice_resolution": 0.022222222222222223,
+  "support_receipts": [
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "program": "denoise_median",
+    "relation": "NEUTRAL",
+    "support_gain": 0.0,
+    "delayed_gain": null
+   },
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "program": "denoise_median",
+    "relation": "NEUTRAL",
+    "support_gain": 0.0,
+    "delayed_gain": null
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "program": "denoise_median",
+    "relation": "NEUTRAL",
+    "support_gain": 0.0,
+    "delayed_gain": null
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   }
+  ],
+  "programs_probed": [
+   "denoise_median",
+   "winsorize"
+  ],
+  "live_non_neutral_receipts": [
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "program": "winsorize",
+    "relation": "NEGATIVE",
+    "support_gain": 0.1333333333333333,
+    "delayed_gain": -0.11111111111111116
+   }
+  ],
+  "live_non_neutral_count": 3,
+  "arithmetic_corroboration": [
+   {
+    "program": "outlier_iqr",
+    "legal": true,
+    "pooled_heldin_headroom": -0.09444444444444444,
+    "magnitude": 0.09444444444444444,
+    "slice_resolution": 0.022222222222222223,
+    "expressible_on_the_smallest_slice": true,
+    "material": true,
+    "was_probed_in_the_smoke": false
+   },
+   {
+    "program": "outlier_mad",
+    "legal": true,
+    "pooled_heldin_headroom": 0.13888888888888895,
+    "magnitude": 0.13888888888888895,
+    "slice_resolution": 0.022222222222222223,
+    "expressible_on_the_smallest_slice": true,
+    "material": true,
+    "was_probed_in_the_smoke": false
+   },
+   {
+    "program": "repair_level_shift",
+    "legal": true,
+    "pooled_heldin_headroom": 0.0,
+    "magnitude": 0.0,
+    "slice_resolution": 0.022222222222222223,
+    "expressible_on_the_smallest_slice": false,
+    "material": false,
+    "was_probed_in_the_smoke": false
+   }
+  ],
+  "arithmetic_corroboration_holds": true,
+  "mode": "live",
+  "reading": "at least one Support receipt came back non-NEUTRAL: the feedback surface is readable on live evidence",
+  "caveat": "the oracle headroom is measured on the pooled held-in surface (all four slices concatenated) while a round reads one slice, so the arithmetic is a necessary condition on the surface, not a guarantee about any single round"
+ },
+ "guard_channel_feasibility": {
+  "harm_units": [
+   {
+    "unit_id": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "forward_position": 1,
+    "min_slice_rows": 45,
+    "slice_resolution": 0.022222222222222223,
+    "readably_harmful_legal_programs": {
+     "outlier_iqr": -0.09444444444444444
+    }
+   },
+   {
+    "unit_id": "PowerCons__impulse_v2",
+    "forward_position": 3,
+    "min_slice_rows": 12,
+    "slice_resolution": 0.08333333333333333,
+    "readably_harmful_legal_programs": {
+     "outlier_iqr": -0.18518518518518517,
+     "repair_level_shift": -0.27777777777777773
+    }
+   }
+  ],
+  "programs_readably_harmful_on_every_harm_unit": [
+   "outlier_iqr"
+  ],
+  "guard_is_formable_in_principle": true,
+  "reading": "a guard can form on ['outlier_iqr']: legal and readably harmful on both harm units.  Formation still requires the proposal stage to sample it on both, which is an agent behaviour and not an arithmetic guarantee.",
+  "expected_earliest_guard": "after forward position 3, the second harm unit"
+ },
+ "deploy_rule_observation": {
+  "rows": [
+   {
+    "arm": "A3-reset",
+    "round": "r1",
+    "support_winner": [
+     "winsorize"
+    ],
+    "approved_skill_id": null,
+    "activated": false,
+    "delayed_relations": [
+     "NEGATIVE"
+    ],
+    "deployed_program": [
+     "winsorize"
+    ],
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT"
+   },
+   {
+    "arm": "K0-fixed",
+    "round": "r1",
+    "support_winner": [
+     "winsorize"
+    ],
+    "approved_skill_id": null,
+    "activated": false,
+    "delayed_relations": [
+     "NEGATIVE"
+    ],
+    "deployed_program": [
+     "winsorize"
+    ],
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT"
+   },
+   {
+    "arm": "A5-online",
+    "round": "r1",
+    "support_winner": [
+     "winsorize"
+    ],
+    "approved_skill_id": null,
+    "activated": false,
+    "delayed_relations": [
+     "NEGATIVE"
+    ],
+    "deployed_program": [
+     "winsorize"
+    ],
+    "deploy_source": "FROZEN_LEDGER_INCUMBENT"
+   }
+  ],
+  "any_arm_deployed_a_delayed_rejected_winner": true,
+  "note": "the delayed gate correctly withheld Skill approval, but the ledger incumbent set by the Support winner survived it and became the frozen deployment.  Inherited from the shared runner's round body; recorded here, not repaired."
+ },
+ "ledger": {
+  "llm_calls_fast": 9,
+  "llm_calls_slow": 0,
+  "llm_calls_total": 9,
+  "llm_cap": 15,
+  "consumer_fits": 22,
+  "wall_seconds": 33.9,
+  "wall_seconds_cap": 1800,
+  "real_llm_spend": 0,
+  "counter_meaning": "scripted sealed-probe backend calls; real LLM spend is 0"
+ },
+ "oracle_isolation": {
+  "mechanism": "builtins.open, io.open, os.open, Path.open, Path.read_text and Path.read_bytes are wrapped at module import; any path containing artifacts/functional/e2/s1_oracle/ raises OracleIsolationBreach while the phase is 'arm'",
+  "arm_phase_attempts": 3,
+  "arm_phase_attempts_blocked": 3,
+  "arm_phase_leaks": [],
+  "deliberate_probe_rows": [
+   {
+    "path": "C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\artifacts\\functional\\e2\\s1_oracle\\BeetleFly__burst_cls2.json",
+    "phase": "arm",
+    "unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "arm": "Static",
+    "blocked": true,
+    "probe": true
+   },
+   {
+    "path": "C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\artifacts\\functional\\e2\\s1_oracle\\BeetleFly__burst_cls2.json",
+    "phase": "arm",
+    "unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "arm": "Static",
+    "blocked": true,
+    "probe": true
+   },
+   {
+    "path": "C:\\Users\\辉\\Desktop\\Agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\artifacts\\functional\\e2\\s1_oracle\\BeetleFly__burst_cls2.json",
+    "phase": "arm",
+    "unit": "MiddlePhalanxOutlineCorrect__impulse_v2",
+    "arm": "Static",
+    "blocked": true,
+    "probe": true
+   }
+  ],
+  "judge_phase_keys_read": [
+   "MiddlePhalanxOutlineCorrect__impulse_v2.json",
+   "PowerCons__impulse_v2.json"
+  ],
+  "unblocked_reads_by_phase": {
+   "setup": 0,
+   "select": 0,
+   "judge": 2
+  },
+  "holds": true
+ },
+ "verdict": {
+  "verdict": "S1B_SMOKE_WIRED",
+  "gates": {
+   "four_arm_state_isolation": true,
+   "domain_binding_hooks_live": true,
+   "judging_produced_a_regret_table": true,
+   "oracle_isolation_holds": true,
+   "oracle_wall_proved_armed": true,
+   "within_budget": true,
+   "deploy_purity_clean": true,
+   "feedback_surface_readable": true
+  },
+  "feedback_surface_evidence_mode": "live",
+  "scope": "wiring only, on curriculum unit 1, one round per adaptive arm.  No Capability claim; the course was not run."
+ },
+ "obligations": {
+  "methods_package_unmodified": true,
+  "runtime_contracts_operators_unmodified": true,
+  "shared_runner_unmodified": true,
+  "full_curriculum_not_run": true,
+  "units_run": 1,
+  "rounds_per_adaptive_arm": 1,
+  "oracle_isolation_mechanism": "builtins.open, io.open, os.open, Path.open, Path.read_text and Path.read_bytes are wrapped at module import; any path containing artifacts/functional/e2/s1_oracle/ raises OracleIsolationBreach while the phase is 'arm'",
+  "oracle_isolation_holds": true,
+  "oracle_wall_selftest_fired": true,
+  "oracle_wall_surfaces_probed": {
+   "builtins.open": "blocked",
+   "pathlib.Path.read_text": "blocked",
+   "pathlib.Path.open": "blocked"
+  },
+  "harm_channel_exercised_on_unit_1": true,
+  "instrument_blocker_reported_for_s1c": false,
+  "feedback_surface_evidence_mode": "live",
+  "guard_formable_in_principle_on_this_course": true,
+  "a_delayed_rejected_winner_was_still_deployed": true,
+  "curriculum_revision": "r2",
+  "k0_has_no_target_local_capability": true,
+  "k0_card_carries_no_frozen_steps": true,
+  "live_llm_backend": false,
+  "downloads": 0,
+  "full_repo_pytest_not_run": true,
+  "sealed_artifacts_not_rewritten": true
+ }
+}

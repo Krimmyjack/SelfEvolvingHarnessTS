@@ -1,0 +1,2232 @@
+{
+  "ambiguities_reported_not_self_adjudicated": [
+    "the cycle counter restarts from slot 0 per Query region (the T1 convention: each freeze is its own seeded draw); the T1b book does not name the counter rule, only the seeds",
+    "Query features for the first scored points read pristine bytes preceding the region (up to 48 back for window 49) -- the same trailing geometry the T0 detector uses, and never P-processed bytes; the v2 isolation block asserts the 168-step pre-region prefix byte-equal to pristine in every scored copy",
+    "the v2 gate and judgment read the macro average of per-series event F1 (main-line ruling); the pooled F1 is kept as a secondary reading alongside, and both are in the artifact",
+    "the A3 gate reads the same macro average on Qcal; a per-series reading of the gate was not pre-registered",
+    "'168-step history isolation' is implemented as (a) each injected event's sigma prefix recomputed from pristine bytes and compared to the ledger, and (b) the 168-step pre-region prefix of every scored copy asserted byte-equal to pristine; if the main line meant a different isolation, the assertion block is the single place to adjust"
+  ],
+  "blocked_reason": "the identity-trained classifier reads Qcal at macro-averaged per-series event F1 0.17646022730867628 under the primary window and 0.29416579019672207 under the fallback; both below 0.50",
+  "budgets": {
+    "ad_evaluation_budget": 300,
+    "ad_evaluation_counting": "each classifier fit counts once; each per-series Query scoring counts once; each oracle detect counts once",
+    "ad_evaluations": 38,
+    "forecasting_retrain_budget": 40,
+    "forecasting_retrains": 0,
+    "llm_budget": 0,
+    "llm_calls": 0
+  },
+  "budgets_respected": true,
+  "commit_discipline": "deliverables not committed (the Part 0 checkpoint excepted); no spawn; the other line untouched",
+  "evidence_grade": "POSITIVE_CONTROL",
+  "evidence_grade_note": "permanent: an injected flip can be constructive, so this slice can never become transfer evidence by later reinterpretation",
+  "frozen_surface": {
+    "name": "FROZEN_SURFACE_V9 (post-T2 registry)",
+    "raw_entries": 40,
+    "unique_files": 39,
+    "verify_after_run": {
+      "drift": [],
+      "files": 39,
+      "ok": true
+    }
+  },
+  "geometry": {
+    "dev_limit": 8760,
+    "qcal_region": [
+      2600,
+      3060
+    ],
+    "qf_region": [
+      2100,
+      2560
+    ],
+    "task_spans_avoided": [
+      [
+        912,
+        1392
+      ],
+      [
+        1608,
+        2088
+      ]
+    ],
+    "training_block": [
+      120,
+      900
+    ]
+  },
+  "git_status_before": "",
+  "integrity_post_run": {
+    "originals_unchanged": true,
+    "query_copies_unchanged": true,
+    "t1_copies_unchanged": true
+  },
+  "mode": "v2",
+  "part0_checkpoint": {
+    "commit": "a6ba53d",
+    "files": 6,
+    "note": "#37 deliverables + the V9 registry's authorized ssi hash move (37d31cb8... -> f39c13f3..., T2_OBSERVATION_TOUCHED) + main-line ledger/roadmap revisions"
+  },
+  "part_a_consumer": {
+    "fallback_taken": true,
+    "feature_window_used": 25,
+    "readability_gate": {
+      "fallback_macro_f1": 0.29416579019672207,
+      "fallback_pooled_f1": 0.27627627627627627,
+      "gate_metric": "macro_f1",
+      "macro_f1": 0.17646022730867628,
+      "passed": false,
+      "pooled_f1": 0.17338709677419353,
+      "rule": "identity(B)-trained classifier, macro-averaged per-series event F1 on Qcal >= 0.50; the formal Query never participates"
+    },
+    "spec": {
+      "classifier": {
+        "alpha": 1.0,
+        "classifier": "weighted closed-form ridge over trailing lag windows",
+        "decision": "score > 0.5 flags the point",
+        "deterministic": true,
+        "feature": "x[t-48:t+1], trailing window including the current point x_t (the label point) -- the v2 geometry ruling",
+        "feature_window": 49,
+        "label": "1 at every ledger event point (all 3 points of a burst), else 0",
+        "positive_class_weight": "N_neg / N_pos, computed on the pooled training set",
+        "solver": "weighted normal equations, np.linalg.solve, mirroring evaluation/benchmark_v02/trainers.fit_closed_form (intercept column last and unpenalized)",
+        "standardization": "per series: (x - median) / (1.4826 * MAD) with both constants taken from that series' own P(training block); the same constants standardize the Query features"
+      },
+      "consumer_id": "anomaly_detection_trainable_v2",
+      "fallback": {
+        "budget": "may be taken at most once, and only after the primary spec fails the readability gate on the calibration Query",
+        "feature": "x[t-24:t+1], same inclusive geometry at the fallback width",
+        "feature_window": 25,
+        "on_use": "the chosen window freezes into the artifact; nothing else moves"
+      },
+      "score": {
+        "event_merging": "maximal runs of consecutive flagged points (T0)",
+        "main_metric": "per-series Query event F1, macro-averaged across series (v2 execution-convention ruling); the pooled F1 is reported alongside as a secondary reading",
+        "matching": "greedy nearest-distance one-to-one at +-3 (T0)",
+        "precision_is_a_lower_bound": true,
+        "scoring_parts": "anomaly_detection_v1.predicted_events / match_events / score_events, imported, not re-implemented",
+        "secondary_metric": "AUPRC from the raw scores, threshold-free",
+        "unit": "event"
+      },
+      "sited_at": "evaluation/functional/consumers/anomaly_detection_trainable_v2.py",
+      "siting_rule": "an experiment instrument, not a Harness part: nothing under methods/ttha imports this module and this module imports nothing from the Harness under study",
+      "task": "anomaly_detection"
+    }
+  },
+  "part_b4_oracle_smoke": {
+    "qcal": {
+      "ad_evaluations": 12,
+      "per_series": {
+        "72203812897": {
+          "abstained_zero_scale": 0,
+          "f1": 1.0,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 3
+            }
+          ],
+          "precision": 1.0,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 4,
+          "recall": 1.0
+        },
+        "72259003927": {
+          "abstained_zero_scale": 0,
+          "f1": 0.888888888888889,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 3
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 4
+            }
+          ],
+          "precision": 0.8,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 5,
+          "recall": 1.0
+        },
+        "72329003935": {
+          "abstained_zero_scale": 0,
+          "f1": 0.888888888888889,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 4
+            }
+          ],
+          "precision": 0.8,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 5,
+          "recall": 1.0
+        },
+        "72422093820": {
+          "abstained_zero_scale": 0,
+          "f1": 0.8571428571428571,
+          "ledger_events": 4,
+          "matched_events": 3,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 2
+            }
+          ],
+          "precision": 1.0,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 3,
+          "recall": 0.75
+        },
+        "72435653866": {
+          "abstained_zero_scale": 0,
+          "f1": 0.8571428571428571,
+          "ledger_events": 4,
+          "matched_events": 3,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 2
+            }
+          ],
+          "precision": 1.0,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 3,
+          "recall": 0.75
+        },
+        "72438093819": {
+          "abstained_zero_scale": 0,
+          "f1": 0.75,
+          "ledger_events": 4,
+          "matched_events": 3,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 3
+            }
+          ],
+          "precision": 0.75,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 4,
+          "recall": 0.75
+        },
+        "72511654737": {
+          "abstained_zero_scale": 0,
+          "f1": 0.6666666666666666,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 3
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 4
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 7
+            }
+          ],
+          "precision": 0.5,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 8,
+          "recall": 1.0
+        },
+        "72529014768": {
+          "abstained_zero_scale": 0,
+          "f1": 0.7272727272727273,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 4
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 6
+            }
+          ],
+          "precision": 0.5714285714285714,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 7,
+          "recall": 1.0
+        },
+        "72605654791": {
+          "abstained_zero_scale": 0,
+          "f1": 0.8,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 3
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 4
+            }
+          ],
+          "precision": 0.6666666666666666,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 6,
+          "recall": 1.0
+        },
+        "72654014936": {
+          "abstained_zero_scale": 0,
+          "f1": 0.6666666666666666,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 1
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 3
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 7
+            }
+          ],
+          "precision": 0.5,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 8,
+          "recall": 1.0
+        },
+        "72793494248": {
+          "abstained_zero_scale": 0,
+          "f1": 0.6666666666666665,
+          "ledger_events": 4,
+          "matched_events": 3,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 0
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 4
+            }
+          ],
+          "precision": 0.6,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 5,
+          "recall": 0.75
+        },
+        "74486514719": {
+          "abstained_zero_scale": 0,
+          "f1": 0.5,
+          "ledger_events": 4,
+          "matched_events": 4,
+          "matches": [
+            {
+              "distance": 0,
+              "ledger_event_index": 0,
+              "predicted_event_index": 2
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 1,
+              "predicted_event_index": 6
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 2,
+              "predicted_event_index": 8
+            },
+            {
+              "distance": 0,
+              "ledger_event_index": 3,
+              "predicted_event_index": 9
+            }
+          ],
+          "precision": 0.3333333333333333,
+          "precision_is_a_lower_bound": true,
+          "predicted_events": 12,
+          "recall": 1.0
+        }
+      },
+      "pooled": {
+        "f1": 0.7457627118644068,
+        "ledger_events": 48,
+        "matched_events": 44,
+        "predicted_events": 70
+      },
+      "role": "injection-visibility oracle only; not a verdict input"
+    },
+    "qf": null
+  },
+  "part_b_queries": {
+    "qcal": {
+      "history_isolation": {
+        "holds": true,
+        "per_series": {
+          "72203812897": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72259003927": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72329003935": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72422093820": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72435653866": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72438093819": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72511654737": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72529014768": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72605654791": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72654014936": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72793494248": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "74486514719": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          }
+        },
+        "rule": "168-step history isolation: sigma prefixes are sourced from pristine bytes only (recomputed and compared per event), and the 168-step pre-region prefix of every scored copy is byte-equal to pristine"
+      },
+      "integrity": {
+        "all_copies_exact_at_ledger_indices": true,
+        "originals": "read-only: the runner opens no path under data/ for writing, and the pristine arrays are re-read and compared again after the run (post_run_originals_unchanged)",
+        "per_series": {
+          "72203812897": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72259003927": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72329003935": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72422093820": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72435653866": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72438093819": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72511654737": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72529014768": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72605654791": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72654014936": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72793494248": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "74486514719": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          }
+        }
+      },
+      "ledger_summary": {
+        "events_per_series": 4,
+        "total_events": 48,
+        "total_skips": 0,
+        "written_to": "_scratch/phase_t/injected/t1b_query/qcal"
+      },
+      "protocol": {
+        "block": {
+          "end": 3060,
+          "start": 2600
+        },
+        "constants": {
+          "boundary_exclusion": 25,
+          "cycle_counter": "from slot 0, global across the 12 train series in roster order, advancing only on an accepted event; each Query region is its own seeded freeze, independent of T0 and T1",
+          "cycle_table": [
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 3,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "delta_scale_dependence": "every delta = sign * sigma_multiple * sigma_local(pristine); no injected value is ever used as a scale source",
+          "events_per_series": 4,
+          "events_per_series_rule": "floor(region length / 112)",
+          "inherited_from": "run_e2_t0_ad_instrument via run_e2_t1_flip_control (both frozen); only the region, the seed and the output directory changed, all three book-mandated",
+          "legal_index_range": [
+            2625,
+            3035
+          ],
+          "min_event_spacing": 50,
+          "position_rule": "a seeded uniform permutation of the legal index range, then filtered in rule order: block fit, minimum spacing, sigma_local validity, target finiteness",
+          "query_processing": "none, ever: the Query is scored unprocessed (B3); P is only ever applied to the training block [120, 900)",
+          "seed": 20260825,
+          "sigma_local": "1.4826 * MAD(pristine[t-168 : t)); MAD == 0 -> std of the same prefix; still 0 -> skip the position and record it"
+        },
+        "evidence_grade": "POSITIVE_CONTROL",
+        "frozen_before_any_training_or_scoring": true,
+        "ledger": {
+          "72203812897": [
+            {
+              "cycle_slot": 3,
+              "index": 2647,
+              "magnitude": 24.907680000000006,
+              "points": 3,
+              "series": "72203812897",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2720,
+              "magnitude": -19.57031999999999,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2890,
+              "magnitude": 29.35547999999997,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.892579999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2967,
+              "magnitude": 41.512800000000006,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72259003927": [
+            {
+              "cycle_slot": 0,
+              "index": 2662,
+              "magnitude": 24.907680000000006,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2857,
+              "magnitude": -19.57031999999999,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2908,
+              "magnitude": -25.204199999999986,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 2.5204199999999988,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2979,
+              "magnitude": 19.570320000000024,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 3.261720000000004,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72329003935": [
+            {
+              "cycle_slot": 2,
+              "index": 2714,
+              "magnitude": 69.6822,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 6.968219999999999,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2765,
+              "magnitude": 29.800260000000005,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 4.966710000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2874,
+              "magnitude": -53.373599999999996,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 5.337359999999999,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2969,
+              "magnitude": 20.459880000000005,
+              "points": 3,
+              "series": "72329003935",
+              "sigma_local": 3.409980000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72422093820": [
+            {
+              "cycle_slot": 3,
+              "index": 2725,
+              "magnitude": 54.26315999999999,
+              "points": 3,
+              "series": "72422093820",
+              "sigma_local": 9.043859999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2825,
+              "magnitude": 34.692840000000004,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 5.78214,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2935,
+              "magnitude": 57.821399999999976,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 5.782139999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 3023,
+              "magnitude": -24.907680000000006,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72435653866": [
+            {
+              "cycle_slot": 1,
+              "index": 2636,
+              "magnitude": -40.03019999999998,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 6.671699999999997,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2711,
+              "magnitude": 47.146679999999996,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 7.857779999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2822,
+              "magnitude": 34.69284,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.782139999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2928,
+              "magnitude": -57.821399999999976,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.782139999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72438093819": [
+            {
+              "cycle_slot": 2,
+              "index": 2681,
+              "magnitude": 83.02560000000001,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 8.302560000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2745,
+              "magnitude": 29.35548,
+              "points": 3,
+              "series": "72438093819",
+              "sigma_local": 4.89258,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2858,
+              "magnitude": -81.543,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 8.154300000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2935,
+              "magnitude": 29.35547999999997,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 4.892579999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72511654737": [
+            {
+              "cycle_slot": 1,
+              "index": 2654,
+              "magnitude": -24.907680000000006,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2716,
+              "magnitude": 24.907680000000006,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2786,
+              "magnitude": 41.512799999999984,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 4.151279999999998,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2924,
+              "magnitude": 40.030199999999994,
+              "points": 3,
+              "series": "72511654737",
+              "sigma_local": 6.6716999999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72529014768": [
+            {
+              "cycle_slot": 4,
+              "index": 2674,
+              "magnitude": -45.96060000000001,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.5960600000000005,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2821,
+              "magnitude": -29.35548,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.89258,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2914,
+              "magnitude": 25.797240000000002,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.29954,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 3032,
+              "magnitude": 24.018120000000007,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72605654791": [
+            {
+              "cycle_slot": 2,
+              "index": 2634,
+              "magnitude": 45.219300000000004,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.52193,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2690,
+              "magnitude": -40.0302,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.00302,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2951,
+              "magnitude": 24.018120000000007,
+              "points": 3,
+              "series": "72605654791",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 3005,
+              "magnitude": 17.34642000000001,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 2.8910700000000014,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72654014936": [
+            {
+              "cycle_slot": 1,
+              "index": 2695,
+              "magnitude": -40.030199999999994,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 6.6716999999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2758,
+              "magnitude": 44.477999999999994,
+              "points": 3,
+              "series": "72654014936",
+              "sigma_local": 7.412999999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2846,
+              "magnitude": 40.03020000000001,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 3022,
+              "magnitude": 29.355479999999986,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 4.892579999999998,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72793494248": [
+            {
+              "cycle_slot": 5,
+              "index": 2680,
+              "magnitude": 24.90768,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 4.15128,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2752,
+              "magnitude": 24.90767999999999,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 4.151279999999998,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2866,
+              "magnitude": -10.674719999999994,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 1.779119999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2920,
+              "magnitude": -17.79119999999999,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 1.779119999999999,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "74486514719": [
+            {
+              "cycle_slot": 3,
+              "index": 2648,
+              "magnitude": 24.018120000000007,
+              "points": 3,
+              "series": "74486514719",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2772,
+              "magnitude": 25.204199999999986,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 2.5204199999999988,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2946,
+              "magnitude": -30.393299999999996,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 3.0393299999999996,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 3006,
+              "magnitude": 19.57031999999999,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ]
+        },
+        "protocol_version": "t1b_training_flip_v2",
+        "role": "T1b calibration Query Qcal; serves the A3 readability gate only.",
+        "skips": {
+          "72203812897": [],
+          "72259003927": [],
+          "72329003935": [],
+          "72422093820": [],
+          "72435653866": [],
+          "72438093819": [],
+          "72511654737": [],
+          "72529014768": [],
+          "72605654791": [],
+          "72654014936": [],
+          "72793494248": [],
+          "74486514719": []
+        },
+        "spacing_rejections": {
+          "72203812897": 8,
+          "72259003927": 0,
+          "72329003935": 5,
+          "72422093820": 2,
+          "72435653866": 3,
+          "72438093819": 0,
+          "72511654737": 4,
+          "72529014768": 4,
+          "72605654791": 2,
+          "72654014936": 4,
+          "72793494248": 3,
+          "74486514719": 1
+        }
+      },
+      "region": {
+        "end": 3060,
+        "start": 2600
+      }
+    },
+    "qf": {
+      "history_isolation": {
+        "holds": true,
+        "per_series": {
+          "72203812897": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72259003927": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72329003935": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72422093820": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72435653866": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72438093819": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72511654737": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72529014768": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72605654791": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72654014936": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "72793494248": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          },
+          "74486514719": {
+            "pre_region_168_pristine": true,
+            "sigma_prefix_from_pristine": true
+          }
+        },
+        "rule": "168-step history isolation: sigma prefixes are sourced from pristine bytes only (recomputed and compared per event), and the 168-step pre-region prefix of every scored copy is byte-equal to pristine"
+      },
+      "integrity": {
+        "all_copies_exact_at_ledger_indices": true,
+        "originals": "read-only: the runner opens no path under data/ for writing, and the pristine arrays are re-read and compared again after the run (post_run_originals_unchanged)",
+        "per_series": {
+          "72203812897": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72259003927": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72329003935": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 1.4210854715202004e-14
+          },
+          "72422093820": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 7.105427357601002e-15
+          },
+          "72435653866": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72438093819": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72511654737": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72529014768": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72605654791": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "72654014936": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          },
+          "72793494248": {
+            "differing_indices": 4,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 4,
+            "max_abs_delta_deviation_from_ledger_magnitude": 0.0
+          },
+          "74486514719": {
+            "differing_indices": 6,
+            "differs_exactly_at_ledger_indices": true,
+            "ledger_indices": 6,
+            "max_abs_delta_deviation_from_ledger_magnitude": 3.552713678800501e-15
+          }
+        }
+      },
+      "ledger_summary": {
+        "events_per_series": 4,
+        "total_events": 48,
+        "total_skips": 1,
+        "written_to": "_scratch/phase_t/injected/t1b_query/qf"
+      },
+      "protocol": {
+        "block": {
+          "end": 2560,
+          "start": 2100
+        },
+        "constants": {
+          "boundary_exclusion": 25,
+          "cycle_counter": "from slot 0, global across the 12 train series in roster order, advancing only on an accepted event; each Query region is its own seeded freeze, independent of T0 and T1",
+          "cycle_table": [
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "points": 3,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 10.0,
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "points": 1,
+              "sigma_multiple": 6.0,
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "delta_scale_dependence": "every delta = sign * sigma_multiple * sigma_local(pristine); no injected value is ever used as a scale source",
+          "events_per_series": 4,
+          "events_per_series_rule": "floor(region length / 112)",
+          "inherited_from": "run_e2_t0_ad_instrument via run_e2_t1_flip_control (both frozen); only the region, the seed and the output directory changed, all three book-mandated",
+          "legal_index_range": [
+            2125,
+            2535
+          ],
+          "min_event_spacing": 50,
+          "position_rule": "a seeded uniform permutation of the legal index range, then filtered in rule order: block fit, minimum spacing, sigma_local validity, target finiteness",
+          "query_processing": "none, ever: the Query is scored unprocessed (B3); P is only ever applied to the training block [120, 900)",
+          "seed": 20260824,
+          "sigma_local": "1.4826 * MAD(pristine[t-168 : t)); MAD == 0 -> std of the same prefix; still 0 -> skip the position and record it"
+        },
+        "evidence_grade": "POSITIVE_CONTROL",
+        "frozen_before_any_training_or_scoring": true,
+        "ledger": {
+          "72203812897": [
+            {
+              "cycle_slot": 1,
+              "index": 2148,
+              "magnitude": -24.01811999999999,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.0030199999999985,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2249,
+              "magnitude": 24.01811999999999,
+              "points": 3,
+              "series": "72203812897",
+              "sigma_local": 4.0030199999999985,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2396,
+              "magnitude": 19.57031999999999,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 3.2617199999999986,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2466,
+              "magnitude": 41.512799999999956,
+              "points": 1,
+              "series": "72203812897",
+              "sigma_local": 4.151279999999995,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72259003927": [
+            {
+              "cycle_slot": 4,
+              "index": 2125,
+              "magnitude": -40.771499999999996,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.07715,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2178,
+              "magnitude": 29.355480000000004,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.892580000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2282,
+              "magnitude": 29.355480000000004,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.892580000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2445,
+              "magnitude": -24.907680000000006,
+              "points": 1,
+              "series": "72259003927",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72329003935": [
+            {
+              "cycle_slot": 2,
+              "index": 2188,
+              "magnitude": 70.42349999999998,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 7.042349999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2265,
+              "magnitude": 44.477999999999994,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 7.412999999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2357,
+              "magnitude": -69.68219999999997,
+              "points": 1,
+              "series": "72329003935",
+              "sigma_local": 6.968219999999997,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2446,
+              "magnitude": 32.02416000000001,
+              "points": 3,
+              "series": "72329003935",
+              "sigma_local": 5.337360000000002,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72422093820": [
+            {
+              "cycle_slot": 0,
+              "index": 2216,
+              "magnitude": 48.925799999999995,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 8.1543,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2298,
+              "magnitude": -47.14668,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 7.857780000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2404,
+              "magnitude": 73.38870000000001,
+              "points": 1,
+              "series": "72422093820",
+              "sigma_local": 7.338870000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2468,
+              "magnitude": 27.576360000000015,
+              "points": 3,
+              "series": "72422093820",
+              "sigma_local": 4.596060000000002,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72435653866": [
+            {
+              "cycle_slot": 1,
+              "index": 2173,
+              "magnitude": -34.69284,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.782139999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2248,
+              "magnitude": -66.717,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 6.6716999999999995,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2341,
+              "magnitude": 32.024159999999995,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 5.337359999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2485,
+              "magnitude": 24.907680000000006,
+              "points": 1,
+              "series": "72435653866",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72438093819": [
+            {
+              "cycle_slot": 3,
+              "index": 2130,
+              "magnitude": 34.69284,
+              "points": 3,
+              "series": "72438093819",
+              "sigma_local": 5.782139999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2185,
+              "magnitude": 61.5279,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 6.15279,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2447,
+              "magnitude": 34.69283999999998,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 5.782139999999997,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2534,
+              "magnitude": -41.512800000000006,
+              "points": 1,
+              "series": "72438093819",
+              "sigma_local": 4.151280000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72511654737": [
+            {
+              "cycle_slot": 1,
+              "index": 2178,
+              "magnitude": -19.57032000000001,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 3.2617200000000013,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2229,
+              "magnitude": 15.122519999999993,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 2.5204199999999988,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2341,
+              "magnitude": 23.721600000000006,
+              "points": 1,
+              "series": "72511654737",
+              "sigma_local": 2.3721600000000005,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2525,
+              "magnitude": 28.9107,
+              "points": 3,
+              "series": "72511654737",
+              "sigma_local": 4.8184499999999995,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            }
+          ],
+          "72529014768": [
+            {
+              "cycle_slot": 1,
+              "index": 2181,
+              "magnitude": -27.13158,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 4.52193,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2268,
+              "magnitude": 17.346420000000002,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 2.89107,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2341,
+              "magnitude": -32.6172,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2479,
+              "magnitude": 34.69284000000002,
+              "points": 1,
+              "series": "72529014768",
+              "sigma_local": 5.782140000000003,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72605654791": [
+            {
+              "cycle_slot": 5,
+              "index": 2176,
+              "magnitude": 24.018120000000003,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.00302,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2237,
+              "magnitude": 41.5128,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.15128,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2450,
+              "magnitude": 22.239000000000004,
+              "points": 3,
+              "series": "72605654791",
+              "sigma_local": 3.7065000000000006,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2512,
+              "magnitude": -40.03020000000001,
+              "points": 1,
+              "series": "72605654791",
+              "sigma_local": 4.003020000000001,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "72654014936": [
+            {
+              "cycle_slot": 3,
+              "index": 2241,
+              "magnitude": 19.57032,
+              "points": 3,
+              "series": "72654014936",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 2,
+              "index": 2346,
+              "magnitude": 69.6822,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 6.96822,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2415,
+              "magnitude": -32.024159999999995,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 5.337359999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2474,
+              "magnitude": 30.245039999999996,
+              "points": 1,
+              "series": "72654014936",
+              "sigma_local": 5.040839999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            }
+          ],
+          "72793494248": [
+            {
+              "cycle_slot": 5,
+              "index": 2137,
+              "magnitude": 10.674719999999994,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 1.779119999999999,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 1,
+              "index": 2226,
+              "magnitude": -19.57032,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 0,
+              "index": 2297,
+              "magnitude": 19.57032,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2355,
+              "magnitude": -23.721600000000006,
+              "points": 1,
+              "series": "72793494248",
+              "sigma_local": 2.3721600000000005,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ],
+          "74486514719": [
+            {
+              "cycle_slot": 2,
+              "index": 2127,
+              "magnitude": 34.099799999999995,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 3.4099799999999996,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 3,
+              "index": 2253,
+              "magnitude": 19.57032,
+              "points": 3,
+              "series": "74486514719",
+              "sigma_local": 3.26172,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "burst"
+            },
+            {
+              "cycle_slot": 5,
+              "index": 2437,
+              "magnitude": 26.686800000000016,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 4.447800000000003,
+              "sigma_multiple": 6.0,
+              "sigma_source": "mad",
+              "sign": 1.0,
+              "type": "spike"
+            },
+            {
+              "cycle_slot": 4,
+              "index": 2507,
+              "magnitude": -28.9107,
+              "points": 1,
+              "series": "74486514719",
+              "sigma_local": 2.89107,
+              "sigma_multiple": 10.0,
+              "sigma_source": "mad",
+              "sign": -1.0,
+              "type": "spike"
+            }
+          ]
+        },
+        "protocol_version": "t1b_training_flip_v2",
+        "role": "T1b formal Query Qf.  Frozen before any training or scoring.",
+        "skips": {
+          "72203812897": [],
+          "72259003927": [],
+          "72329003935": [],
+          "72422093820": [],
+          "72435653866": [],
+          "72438093819": [],
+          "72511654737": [],
+          "72529014768": [],
+          "72605654791": [],
+          "72654014936": [
+            {
+              "index": 2533,
+              "reason": "event_would_leave_the_block"
+            }
+          ],
+          "72793494248": [],
+          "74486514719": []
+        },
+        "spacing_rejections": {
+          "72203812897": 1,
+          "72259003927": 0,
+          "72329003935": 7,
+          "72422093820": 3,
+          "72435653866": 3,
+          "72438093819": 2,
+          "72511654737": 0,
+          "72529014768": 6,
+          "72605654791": 1,
+          "72654014936": 4,
+          "72793494248": 5,
+          "74486514719": 0
+        }
+      },
+      "region": {
+        "end": 2560,
+        "start": 2100
+      }
+    }
+  },
+  "part_c": {
+    "ad_arms": "not_reached",
+    "b3_query_never_processed": {
+      "expected_program_calls": 120,
+      "holds": true,
+      "program_calls": 120,
+      "rule": "v6._apply_program is called only inside t1.build_pbuffers, on [120, 900) slices; the Query arrays are never an argument"
+    },
+    "c2_same_byte": {
+      "all_equal": true,
+      "assertion": "np.array_equal between the bytes handed to the ridge stack and the bytes handed to the AD detector, on every shared index of the one P(B) buffer, per (series, program, anchor)",
+      "comparisons": 600,
+      "failures": [],
+      "note": "both Consumers slice one buffer by construction; this pass is the online guard that no code path re-derives, re-applies P, or hands over a copy that is not the same bytes"
+    },
+    "forecasting_source": "not_reached",
+    "pbuffers": {
+      "program_calls": 120,
+      "reproducible_on_recall": true
+    }
+  },
+  "part_d": "not_reached -- the run stopped at a3_readability_gate before the aggregate-layer judgment; no flip claim is made or implied",
+  "protocol_version": "t1b_training_flip_v2",
+  "role": "T1b: one P(training block), two *trained* Consumers, both scored on a fixed independent unprocessed Query -- is the training data's utility itself task-flipped?",
+  "roster": {
+    "eval": [
+      "99999903062",
+      "99999904140",
+      "99999923908",
+      "99999963862"
+    ],
+    "source": "noaa_fresh_cohort_v2.step_2_health_check_v2",
+    "train": [
+      "72203812897",
+      "72259003927",
+      "72329003935",
+      "72422093820",
+      "72435653866",
+      "72438093819",
+      "72511654737",
+      "72529014768",
+      "72605654791",
+      "72654014936",
+      "72793494248",
+      "74486514719"
+    ]
+  },
+  "sealed_discipline": "NOAA 2025 / beyond_17520 / SMD test+labels: zero reads; robust-z (49/3.5) served as injection-visibility oracle only, never as the main AD Consumer",
+  "stopped_at_stage": "a3_readability_gate",
+  "verdict": "AD_TRAINABLE_SPEC_DEFECT",
+  "verdict_evidence_grade": "POSITIVE_CONTROL",
+  "wall_seconds": 1.368893200007733
+}

@@ -1,0 +1,128 @@
+{
+  "protocol_version": "t6_42f_acquisition_census_v1",
+  "entry": "manual census after Part 0; no runner flag required for a stop",
+  "part_0_sha": "d594fcfaae756f6ab70cc84b50693de9eb1d9aa4",
+  "evidence_grade": "INSTRUMENT",
+  "counts_as_capability_claim": false,
+  "one_shot": true,
+  "budgets": {"llm": 0, "ad_fits": 0, "forecast_retrains": 0, "downloads": 0},
+  "forbidden_reads": ["NOAA 2025", "beyond_17520", "SMD", "NAB resampling"],
+  "selection_rule": {
+    "prefer": "Yahoo S5 A1Benchmark",
+    "fallback": "UCR-AD",
+    "mix_two_libraries": false,
+    "length_gate": "MIN_LENGTH=1000 (T6, R1-3)",
+    "eligibility": {
+      "context_exposure_allowed": ["UNSEEN", "AGGREGATE_SEEN", "INSTANCE_SEEN"],
+      "outcome_exposure_required": "SEALED",
+      "unavailable_if": ["outcome=EXPOSED", "outcome unverifiable"]
+    }
+  },
+  "search_roots_name_only": [
+    "data/",
+    "data/tsquality -> shared_tsq_datasets",
+    "/mnt/c/Users/辉/desktop/agent",
+    "/mnt/c/Users/辉/desktop",
+    "/mnt/c/Users/辉/Downloads",
+    "/mnt/d",
+    "/home/lijia321",
+    "sibling SelfEvolvingHarnessTS-deepseek/data"
+  ],
+  "candidates": [
+    {
+      "id": "yahoo_s5_a1benchmark",
+      "priority": 1,
+      "exists_locally": false,
+      "paths_found": [],
+      "license": null,
+      "can_commit_raw": false,
+      "structure": null,
+      "label_form": null,
+      "public_schema_notes": "not present; schema not inspected from bytes",
+      "exposure": {
+        "context": "AGGREGATE_SEEN",
+        "outcome": "SEALED",
+        "outcome_verifiable": true,
+        "note": "named in roadmap/stage reports as a planned #42f/#42g target; no file values loaded; no labels opened"
+      },
+      "historical_citations": [
+        "docs/ROADMAP_POST_V1_2026-08-22.md",
+        "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md",
+        "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md"
+      ],
+      "eligible": false,
+      "ineligible_because": "files absent"
+    },
+    {
+      "id": "ucr_ad_anomaly_archive",
+      "priority": 2,
+      "exists_locally": false,
+      "paths_found": [],
+      "license": null,
+      "can_commit_raw": false,
+      "structure": null,
+      "label_form": null,
+      "public_schema_notes": "not present",
+      "exposure": {
+        "context": "AGGREGATE_SEEN",
+        "outcome": "SEALED",
+        "outcome_verifiable": true,
+        "note": "named as #42f fallback; no UCR_Anomaly / UCR-AD archive on disk"
+      },
+      "historical_citations": [
+        "docs/ROADMAP_POST_V1_2026-08-22.md",
+        "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md",
+        "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md"
+      ],
+      "eligible": false,
+      "ineligible_because": "files absent"
+    },
+    {
+      "id": "ucr_task_context_classification_zips",
+      "priority": null,
+      "exists_locally": true,
+      "paths_found": ["data/ucr_task_context/*.zip"],
+      "license": "UCR Time Series Classification Archive (not inspected beyond filenames)",
+      "can_commit_raw": false,
+      "structure": {
+        "kind": "classification_zip_bundle",
+        "file_count_named": 40,
+        "sample_names": [
+          "BeetleFly.zip", "BirdChicken.zip", "Coffee.zip", "Computers.zip",
+          "ECG200.zip", "GunPoint.zip"
+        ],
+        "note": "filenames identify the UCR *classification* archive, not the anomaly archive; no unzip; no column/label read"
+      },
+      "label_form": "unknown_without_unzip; expected class labels, not AD events",
+      "exposure": {
+        "context": "INSTANCE_SEEN",
+        "outcome": "SEALED",
+        "outcome_verifiable": true,
+        "note": "zip names and sizes seen; archive not extracted; no AD outcome used"
+      },
+      "eligible": false,
+      "ineligible_because": "wrong task family (classification, not univariate labeled AD); would be LAYOUT_UNEXPECTED_STOP if forced"
+    }
+  ],
+  "excluded_by_book": [
+    {"id": "nab", "reason": "NAB no longer sampled; AdExchange outcomes already EXPOSED"},
+    {"id": "noaa_2025", "reason": "zero read; already EXPOSED"},
+    {"id": "beyond_17520", "reason": "zero read"},
+    {"id": "smd", "reason": "zero read; multivariate entity mismatch"}
+  ],
+  "chosen": null,
+  "alternate_registered": ["yahoo_s5_a1benchmark", "ucr_ad_anomaly_archive"],
+  "part_b_freeze": {
+    "issued": false,
+    "roster": null,
+    "vaults": null,
+    "reason": "no qualified local candidate; freeze skipped by book"
+  },
+  "undeclared_pre_registrations": [
+    "Part B freeze list / dual vaults not produced because Part A stopped"
+  ],
+  "verdict": {
+    "verdict": "NO_LOCAL_SEALED_CANDIDATE",
+    "next": "user download decision; do not download in this book"
+  }
+}

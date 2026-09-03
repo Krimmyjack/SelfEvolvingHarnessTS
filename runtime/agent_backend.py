@@ -25,6 +25,14 @@ DEFAULT_AGENT_BASE_URL = "https://api.agicto.cn/v1"
 OPENAI_SDK_VERSION = "2.45.0"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _CANONICAL_NAME = re.compile(r"^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$")
+# call_id 是纯关联标识：只用于同一轮内的重复检测（精确相等）和回显进
+# tool-result/1（该 schema 对 call_id 无 pattern）。下游没有任何按小写
+# 归一的查表、路径或名字解析，因此大小写不携带语义。实测（G2 T233 rerun）
+# 模型会把序列 uid 直接拼进 call_id（inspect_T234_summary），uid 本身是
+# 大写，于是四个 Task 以 AGENT_PROTOCOL_ERROR 结束。这里只放宽字母大小写，
+# 不放宽首字符必须是字母、也不放宽字符集；tool_name 仍走 _CANONICAL_NAME
+# ——它要去 declared_tools 里查表，是有语义的。
+_CORRELATION_ID = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)*$")
 _CAPABILITY_FLAGS = MappingProxyType(
     {
         "native_tools": False,
@@ -203,9 +211,14 @@ def _validate_envelope(value: object) -> dict[str, Any]:
         expected = {"schema_version", "kind", "call_id", "tool_name", "arguments"}
         if set(value) != expected:
             raise ValueError("tool_request envelope has unexpected fields")
-        for field_name in ("call_id", "tool_name"):
-            if not isinstance(value[field_name], str) or not _CANONICAL_NAME.fullmatch(value[field_name]):
-                raise ValueError(f"{field_name} must be canonical")
+        if not isinstance(value["call_id"], str) or not _CORRELATION_ID.fullmatch(
+            value["call_id"]
+        ):
+            raise ValueError("call_id must be canonical")
+        if not isinstance(value["tool_name"], str) or not _CANONICAL_NAME.fullmatch(
+            value["tool_name"]
+        ):
+            raise ValueError("tool_name must be canonical")
         if not isinstance(value["arguments"], dict):
             raise ValueError("tool arguments must be an object")
     elif kind == "no_proposal":
@@ -235,6 +248,126 @@ def parse_agent_envelope(assistant_text: str) -> tuple[Mapping[str, object] | No
     return _freeze_json(envelope), "VALID_AGENT_ENVELOPE"
 
 
+def _json_document_spans(text: str) -> list[tuple[int, int]]:
+    """顶层 JSON 文档的 (start, end) 片段列表（brace 匹配 + 字符串/转义
+    感知）。遇到未闭合文档即停止（其后无完整文档可言）。"""
+    spans: list[tuple[int, int]] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] != "{":
+            i += 1
+            continue
+        depth = 0
+        in_string = False
+        escaped = False
+        j = i
+        closed = False
+        while j < n:
+            ch = text[j]
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif ch == "\\":
+                    escaped = True
+                elif ch == '"':
+                    in_string = False
+            elif ch == '"':
+                in_string = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    spans.append((i, j + 1))
+                    closed = True
+                    break
+            j += 1
+        if not closed:
+            break  # 未闭合——后续内容不再扫描
+        i = j + 1
+    return spans
+
+
+def _whitespace_only(text: str) -> bool:
+    return not text.strip()
+
+
+def rescue_prose_wrapped_envelope(
+    assistant_text: str,
+) -> tuple[str | None, str]:
+    """恢复"被普通说明文字包住的、恰好一个"合法 envelope。
+
+    实测（G2 收口）：模型写了一句自然语言理由，后面跟一个语法完全合法的
+    tool_request。严格解析拒绝，重试也拒绝，整个 Task 以
+    AGENT_PROTOCOL_ERROR 结束——这不是模型给错了动作，是它多说了一句话。
+
+    有界得很死，只补这一类：
+
+      顶层 JSON 文档**恰好一个**，且该文档能通过现有 envelope schema。
+      文档前后可以是普通文字。
+
+    仍然拒绝：零个或两个以上 JSON 文档（多文档歧义由
+    rescue_trailing_envelope 单独处理其已观察到的那一类）、文档本身不合
+    schema。不放宽 schema，不放宽执行权限，不猜测模型意图——只是把它已经
+    写对的那一个信封取出来。
+    """
+    if not isinstance(assistant_text, str) or not assistant_text.strip():
+        return None, "NOT_RESCUED"
+    spans = _json_document_spans(assistant_text)
+    if len(spans) != 1:
+        return None, "NOT_RESCUED"
+    start, end = spans[0]
+    try:
+        document = parse_json_document(assistant_text[start:end].encode("utf-8"))
+        envelope = _validate_envelope(document)
+    except (ValueError, TypeError):
+        return None, "NOT_RESCUED"
+    return (
+        canonical_json_bytes(envelope).decode("utf-8"),
+        "RECOVERED_PROSE_WRAPPED_ENVELOPE",
+    )
+
+
+def rescue_trailing_envelope(
+    assistant_text: str,
+) -> tuple[str | None, str]:
+    """窄信封救援（P0，用户裁决 2026-08-14）：只恢复**已观察到的**错误类——
+
+      严格解析失败 且 恰好两个完整顶层 JSON 文档 且 两文档之间/前后只有
+      空白 且 第一个是合法 tool_request 信封 且 第二个也是合法 agent
+      envelope（任意 kind）且 尾部无其他非空内容。
+
+    命中 → 返回 (规范化首信封 JSON 文本, "RECOVERED_TRAILING_ENVELOPE")；
+    调用方须用首信封继续正常循环，并把对话中的 assistant_text 规范化
+    为该文本（原始双 JSON 不得写回对话）。未命中 → (None, "NOT_RESCUED")。
+
+    禁止泛化：stage_result 打头、第二个文档非法、三个及以上文档、任意
+    夹杂文本均不救援（保持错误重试路径）。"""
+    if not isinstance(assistant_text, str) or not assistant_text.strip():
+        return None, "NOT_RESCUED"
+    spans = _json_document_spans(assistant_text)
+    if len(spans) != 2:
+        return None, "NOT_RESCUED"
+    (s1, e1), (s2, e2) = spans
+    if not _whitespace_only(assistant_text[:s1]):
+        return None, "NOT_RESCUED"
+    if not _whitespace_only(assistant_text[e1:s2]):
+        return None, "NOT_RESCUED"
+    if not _whitespace_only(assistant_text[e2:]):
+        return None, "NOT_RESCUED"
+    try:
+        first = parse_json_document(assistant_text[s1:e1].encode("utf-8"))
+        _validate_envelope(first)
+        second = parse_json_document(assistant_text[s2:e2].encode("utf-8"))
+        _validate_envelope(second)
+    except (TypeError, ValueError, UnicodeError):
+        return None, "NOT_RESCUED"
+    if first.get("kind") != "tool_request":
+        return None, "NOT_RESCUED"
+    return canonical_json_bytes(first).decode("utf-8"), "RECOVERED_TRAILING_ENVELOPE"
+
+
 @dataclass(frozen=True)
 class AgentResponse:
     transport_ok: bool
@@ -245,6 +378,10 @@ class AgentResponse:
     finish_reason: str = ""
     provider_metadata: Mapping[str, object] = field(default_factory=dict)
     cache_receipt: object | None = None
+    # 窄信封救援标记（P0 2026-08-14）：空串 = 未救援；
+    # "RECOVERED_TRAILING_ENVELOPE" = 双 JSON 拼接已按首 tool_request
+    # 信封救援（assistant_text 已规范化为首信封）。
+    parse_recovery: str = ""
 
     def __post_init__(self) -> None:
         canonical_json_bytes(self.raw_response)
@@ -329,6 +466,39 @@ class BudgetedAgentBackend:
         return response
 
 
+def _relay_error_payload(completion: object) -> str | None:
+    """The relay's error object, when a transport-success carries one.
+
+    Returns a short public description when the payload has an ``error``
+    member and no usable ``choices``; ``None`` otherwise, which is every
+    ordinary response including a legitimately empty one.
+    """
+    choices = getattr(completion, "choices", None)
+    if choices:
+        return None
+    error = getattr(completion, "error", None)
+    if error is None:
+        extra = getattr(completion, "model_extra", None)
+        if isinstance(extra, Mapping):
+            error = extra.get("error")
+    if error is None:
+        dump = getattr(completion, "model_dump", None)
+        if callable(dump):
+            try:
+                payload = dump(mode="json")
+            except (AttributeError, TypeError, ValueError):
+                payload = None
+            if isinstance(payload, Mapping):
+                error = payload.get("error")
+    if error is None:
+        return None
+    if isinstance(error, Mapping):
+        code = error.get("code") or error.get("type") or "api_error"
+        message = error.get("message") or ""
+        return "%s: %s" % (code, str(message)[:200])
+    return str(error)[:200]
+
+
 class AgictoChatCompletionsBackend:
     def __init__(
         self,
@@ -389,6 +559,25 @@ class AgictoChatCompletionsBackend:
                     f"relay transport failed ({type(exc).__name__})"
                 ) from None
             raise
+        # 中转在上游过载时返回 HTTP 200，body 只有一个 error 对象、没有
+        # choices（实测 2026-08-22：{"error":{"code":"api_error","message":
+        # "Service load is too high, please try again later"}}，Claude 全族
+        # 命中、同一时刻 gpt-5.6-luna 正常）。SDK 把 200 当成功解析，下面
+        # 的 choices 取空、content 取空，于是一次服务宕机被构造成
+        # transport_ok=True 的空回答，一路伪装成信封协议失败：
+        # _RetryingTransport 不重试（没有异常），agent_core 对着空串把两次
+        # 静态反馈重试用光，调用方最后读到 "invalid agent-envelope/1"。
+        # #24/#25 两次 SLOW_ENVELOPE_PROTOCOL_FAILURE 都是这么来的。
+        # 这里只认一件事：payload 里带 error 且没有可用 choices —— 那就是
+        # 传输层没拿到答复，按 AgentTransportError 抛，让既有的退避重试和
+        # INCONCLUSIVE_TRANSPORT 口径接手。正常的空回复（有 choices、
+        # content 为空）不受影响，仍走原路。
+        relay_error = _relay_error_payload(completion)
+        if relay_error is not None:
+            raise AgentTransportError(
+                "relay returned an error payload with HTTP success: %s"
+                % relay_error
+            )
         choices = getattr(completion, "choices", ())
         choice = choices[0] if choices else None
         message = getattr(choice, "message", None)
@@ -396,6 +585,30 @@ class AgictoChatCompletionsBackend:
         if not isinstance(assistant_text, str):
             assistant_text = ""
         envelope, parse_status = parse_agent_envelope(assistant_text)
+        parse_recovery = ""
+        recovered_original = ""
+        if parse_status != "VALID_AGENT_ENVELOPE":
+            # P0 窄信封救援（用户裁决 2026-08-14）：双 JSON 拼接 → 首
+            # tool_request 信封按正常循环处理；assistant_text 规范化为
+            # 首信封（原始双 JSON 不得写回对话）。
+            rescued_text, recovery = rescue_trailing_envelope(assistant_text)
+            if rescued_text is None:
+                rescued_text, recovery = rescue_prose_wrapped_envelope(
+                    assistant_text
+                )
+            if rescued_text is not None:
+                rescued_envelope, rescued_status = parse_agent_envelope(
+                    rescued_text
+                )
+                if rescued_status == "VALID_AGENT_ENVELOPE":
+                    # 原始输出保留在 raw_response 里；对话里换成规范化信封，
+                    # 并记录恢复类型，避免"恢复"在读数里变成隐形。
+                    original_text = assistant_text
+                    assistant_text = rescued_text
+                    envelope = rescued_envelope
+                    parse_status = rescued_status
+                    parse_recovery = recovery
+                    recovered_original = original_text
         try:
             raw_response = completion.model_dump(mode="json")
         except (AttributeError, TypeError):
@@ -405,6 +618,7 @@ class AgictoChatCompletionsBackend:
             }
         usage = getattr(completion, "usage", None)
         provider_metadata = {
+            "recovered_original_text": recovered_original[:500],
             "response_id": getattr(completion, "id", ""),
             "returned_model": getattr(completion, "model", ""),
             "finish_reason": getattr(choice, "finish_reason", "") if choice else "",
@@ -421,6 +635,7 @@ class AgictoChatCompletionsBackend:
             parse_status=parse_status,
             finish_reason=provider_metadata["finish_reason"],
             provider_metadata=provider_metadata,
+            parse_recovery=parse_recovery,
         )
 
 
@@ -477,4 +692,5 @@ __all__ = [
     "ReplayAgentBackend",
     "ReplayTapeMiss",
     "parse_agent_envelope",
+    "rescue_trailing_envelope",
 ]

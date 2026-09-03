@@ -1,0 +1,439 @@
+{
+ "protocol_version": "s1_curriculum_four_arms_v1",
+ "curriculum_name": "S1 four-arm evolution curriculum",
+ "evidence_grade": "DEVELOPMENT",
+ "git_head": "e64c68444923725351fcf99ad7652e87cb884690",
+ "python": "3.10.19",
+ "selection_rules": {
+  "source_artifacts": [
+   "artifacts/functional/e2/s1a_r3_pool_census.json (family_key, learnability, held-in headroom)",
+   "artifacts/functional/e2/s1_oracle/*.json (oracle set, per-operator legality / cohort modified fraction / held-in headroom, cell size)"
+  ],
+  "total_points": "cell.official_train_rows x series_length, the same point count the S1a-r3 census enumerated the pool with",
+  "tie_break": "ascending (total_points, unit_id); no outcome may reorder",
+  "harm_evidence": "an oracle-scored unit qualifies when outlier_mad or outlier_iqr is legal on it (verifier passed and cohort modified fraction <= 0.10) and its held-in headroom is <= -0.005, i.e. materially harmful on held-in.  Take the two smallest-total-points qualifiers whose family_key differ.",
+  "learnable_positive": "learnability == LEARNABLE, family_key distinct from each other and from both harm units.  Take the two largest held-in headroom.",
+  "identity": "oracle_set is exactly identity (or empty).  Take the two smallest-total-points units whose family_key differ.",
+  "heldout_only_temptation": "learnability == HELDOUT_ONLY, not already selected.  Prefer a family_key no other selected unit uses; take the smallest total points.  If every HELDOUT_ONLY family is already used, drop the family preference and take the smallest total points.",
+  "unit_disjointness": "no unit id may appear twice in the course",
+  "forward_order": "harm A -> learnable A -> harm B -> identity A -> learnable B -> HELDOUT_ONLY -> identity B.  Design intent: the guard should be compilable after the second harm unit, so every unit after it tests whether the guard actually fires.",
+  "reverse_order": "the exact reverse of the forward order",
+  "domain_namespace": "unit_id (dataset__injection).  The whole course runs at one condition (fit_only_artifact), so dataset alone would collapse two curriculum units of the same substrate into one counted Task and the guard census (risk_skill._task_of) would undercount."
+ },
+ "candidate_counts": {
+  "oracle_units_available": 45,
+  "harm_qualifiers": 12,
+  "learnable_after_family_exclusion": 13,
+  "identity_available": 22,
+  "heldout_only_available": 8
+ },
+ "selected_groups": {
+  "harm_evidence": [
+   {
+    "unit_id": "MoteStrain__impulse_v2",
+    "family_key": "MoteStrain",
+    "total_points": 1680,
+    "learnability": "HELDOUT_ONLY",
+    "oracle_set": [
+     "hampel_filter"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [
+     {
+      "program": "outlier_mad",
+      "heldin_headroom": -0.16666666666666663,
+      "heldout_utility": -0.05830670926517567,
+      "cohort_modified_fraction": 0.05442176870748299
+     },
+     {
+      "program": "outlier_iqr",
+      "heldin_headroom": -0.16666666666666663,
+      "heldout_utility": -0.07987220447284338,
+      "cohort_modified_fraction": 0.05442176870748299
+     }
+    ],
+    "why": "materially harmful legal outlier program on held-in: outlier_mad(held-in -0.1667), outlier_iqr(held-in -0.1667); smallest-points qualifier in its family"
+   },
+   {
+    "unit_id": "Coffee__impulse_v2",
+    "family_key": "Coffee",
+    "total_points": 8008,
+    "learnability": "N/A",
+    "oracle_set": [
+     "identity"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [
+     {
+      "program": "outlier_mad",
+      "heldin_headroom": -0.25,
+      "heldout_utility": -0.4285714285714286,
+      "cohort_modified_fraction": 0.027972027972027972
+     },
+     {
+      "program": "outlier_iqr",
+      "heldin_headroom": -0.25,
+      "heldout_utility": -0.4285714285714286,
+      "cohort_modified_fraction": 0.027972027972027972
+     }
+    ],
+    "why": "materially harmful legal outlier program on held-in: outlier_mad(held-in -0.2500), outlier_iqr(held-in -0.2500); smallest-points qualifier in its family"
+   }
+  ],
+  "learnable_positive": [
+   {
+    "unit_id": "ECGFiveDays__impulse_v2",
+    "family_key": "ECGFamily",
+    "total_points": 3128,
+    "learnability": "LEARNABLE",
+    "oracle_set": [
+     "repair_burst_segment"
+    ],
+    "heldin_headroom": 0.5714285714285714,
+    "harmful_outlier_operators": [],
+    "why": "LEARNABLE with held-in headroom 0.5714, the largest available in a family unused by the harm units"
+   },
+   {
+    "unit_id": "GunPoint__impulse_v2",
+    "family_key": "GunPointFamily",
+    "total_points": 7500,
+    "learnability": "LEARNABLE",
+    "oracle_set": [
+     "hampel_filter"
+    ],
+    "heldin_headroom": 0.4666666666666667,
+    "harmful_outlier_operators": [],
+    "why": "LEARNABLE with held-in headroom 0.4667, the largest available in a family unused by the harm units"
+   }
+  ],
+  "identity": [
+   {
+    "unit_id": "SonyAIBORobotSurface1__burst_cls2",
+    "family_key": "SonyAIBOFamily",
+    "total_points": 1400,
+    "learnability": "N/A",
+    "oracle_set": [
+     "identity"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [],
+    "why": "oracle set is identity, so the correct end state is to change nothing; smallest-points identity unit in its family"
+   },
+   {
+    "unit_id": "MoteStrain__burst_cls2",
+    "family_key": "MoteStrain",
+    "total_points": 1680,
+    "learnability": "N/A",
+    "oracle_set": [
+     "identity"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [],
+    "why": "oracle set is identity, so the correct end state is to change nothing; smallest-points identity unit in its family"
+   }
+  ],
+  "heldout_only_temptation": [
+   {
+    "unit_id": "BeetleFly__burst_cls2",
+    "family_key": "BeetleFly",
+    "total_points": 10240,
+    "learnability": "HELDOUT_ONLY",
+    "oracle_set": [
+     "outlier_iqr",
+     "hampel_filter"
+    ],
+    "heldin_headroom": 0.0,
+    "harmful_outlier_operators": [],
+    "why": "HELDOUT_ONLY: the oracle-set program helps held-out (0.1000) but held-in cannot approve it (headroom 0.0000) -- the abstention temptation"
+   }
+  ]
+ },
+ "forward_order": [
+  "MoteStrain__impulse_v2",
+  "ECGFiveDays__impulse_v2",
+  "Coffee__impulse_v2",
+  "SonyAIBORobotSurface1__burst_cls2",
+  "GunPoint__impulse_v2",
+  "BeetleFly__burst_cls2",
+  "MoteStrain__burst_cls2"
+ ],
+ "reverse_order": [
+  "MoteStrain__burst_cls2",
+  "BeetleFly__burst_cls2",
+  "GunPoint__impulse_v2",
+  "SonyAIBORobotSurface1__burst_cls2",
+  "Coffee__impulse_v2",
+  "ECGFiveDays__impulse_v2",
+  "MoteStrain__impulse_v2"
+ ],
+ "units": [
+  {
+   "forward_position": 1,
+   "unit_id": "MoteStrain__impulse_v2",
+   "dataset": "MoteStrain",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "harm_evidence",
+   "family_key": "MoteStrain",
+   "learnability": "HELDOUT_ONLY",
+   "total_points": 1680,
+   "official_train_rows": 20,
+   "series_length": 84,
+   "n_heldin": 6,
+   "n_heldout": 1252,
+   "oracle_set": [
+    "hampel_filter"
+   ],
+   "menu_oracle_program": "hampel_filter",
+   "harmful_outlier_operators": [
+    {
+     "program": "outlier_mad",
+     "heldin_headroom": -0.16666666666666663,
+     "heldout_utility": -0.05830670926517567,
+     "cohort_modified_fraction": 0.05442176870748299
+    },
+    {
+     "program": "outlier_iqr",
+     "heldin_headroom": -0.16666666666666663,
+     "heldout_utility": -0.07987220447284338,
+     "cohort_modified_fraction": 0.05442176870748299
+    }
+   ]
+  },
+  {
+   "forward_position": 2,
+   "unit_id": "ECGFiveDays__impulse_v2",
+   "dataset": "ECGFiveDays",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "learnable_positive",
+   "family_key": "ECGFamily",
+   "learnability": "LEARNABLE",
+   "total_points": 3128,
+   "official_train_rows": 23,
+   "series_length": 136,
+   "n_heldin": 7,
+   "n_heldout": 861,
+   "oracle_set": [
+    "repair_burst_segment"
+   ],
+   "menu_oracle_program": "repair_burst_segment",
+   "harmful_outlier_operators": []
+  },
+  {
+   "forward_position": 3,
+   "unit_id": "Coffee__impulse_v2",
+   "dataset": "Coffee",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "harm_evidence",
+   "family_key": "Coffee",
+   "learnability": "N/A",
+   "total_points": 8008,
+   "official_train_rows": 28,
+   "series_length": 286,
+   "n_heldin": 8,
+   "n_heldout": 28,
+   "oracle_set": [
+    "identity"
+   ],
+   "menu_oracle_program": "identity",
+   "harmful_outlier_operators": [
+    {
+     "program": "outlier_mad",
+     "heldin_headroom": -0.25,
+     "heldout_utility": -0.4285714285714286,
+     "cohort_modified_fraction": 0.027972027972027972
+    },
+    {
+     "program": "outlier_iqr",
+     "heldin_headroom": -0.25,
+     "heldout_utility": -0.4285714285714286,
+     "cohort_modified_fraction": 0.027972027972027972
+    }
+   ]
+  },
+  {
+   "forward_position": 4,
+   "unit_id": "SonyAIBORobotSurface1__burst_cls2",
+   "dataset": "SonyAIBORobotSurface1",
+   "injection": "burst_cls2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "identity",
+   "family_key": "SonyAIBOFamily",
+   "learnability": "N/A",
+   "total_points": 1400,
+   "official_train_rows": 20,
+   "series_length": 70,
+   "n_heldin": 7,
+   "n_heldout": 601,
+   "oracle_set": [
+    "identity"
+   ],
+   "menu_oracle_program": "identity",
+   "harmful_outlier_operators": []
+  },
+  {
+   "forward_position": 5,
+   "unit_id": "GunPoint__impulse_v2",
+   "dataset": "GunPoint",
+   "injection": "impulse_v2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "learnable_positive",
+   "family_key": "GunPointFamily",
+   "learnability": "LEARNABLE",
+   "total_points": 7500,
+   "official_train_rows": 50,
+   "series_length": 150,
+   "n_heldin": 15,
+   "n_heldout": 150,
+   "oracle_set": [
+    "hampel_filter"
+   ],
+   "menu_oracle_program": "hampel_filter",
+   "harmful_outlier_operators": []
+  },
+  {
+   "forward_position": 6,
+   "unit_id": "BeetleFly__burst_cls2",
+   "dataset": "BeetleFly",
+   "injection": "burst_cls2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "heldout_only_temptation",
+   "family_key": "BeetleFly",
+   "learnability": "HELDOUT_ONLY",
+   "total_points": 10240,
+   "official_train_rows": 20,
+   "series_length": 512,
+   "n_heldin": 6,
+   "n_heldout": 20,
+   "oracle_set": [
+    "outlier_iqr",
+    "hampel_filter"
+   ],
+   "menu_oracle_program": "outlier_iqr",
+   "harmful_outlier_operators": []
+  },
+  {
+   "forward_position": 7,
+   "unit_id": "MoteStrain__burst_cls2",
+   "dataset": "MoteStrain",
+   "injection": "burst_cls2",
+   "condition": "fit_only_artifact",
+   "consumer": "ridge-raw-plus-difference-v1",
+   "metric": "accuracy",
+   "group": "identity",
+   "family_key": "MoteStrain",
+   "learnability": "N/A",
+   "total_points": 1680,
+   "official_train_rows": 20,
+   "series_length": 84,
+   "n_heldin": 6,
+   "n_heldout": 1252,
+   "oracle_set": [
+    "identity"
+   ],
+   "menu_oracle_program": "identity",
+   "harmful_outlier_operators": []
+  }
+ ],
+ "family_census": {
+  "families_in_course": [
+   "BeetleFly",
+   "Coffee",
+   "ECGFamily",
+   "GunPointFamily",
+   "MoteStrain",
+   "SonyAIBOFamily"
+  ],
+  "distinct_families": 6,
+  "repeated_families": [
+   "MoteStrain"
+  ],
+  "repeated_substrates": [
+   "MoteStrain"
+  ]
+ },
+ "shortfalls": [],
+ "budgets": {
+  "llm_per_unit_per_adaptive_arm": 15,
+  "fit_per_unit_per_arm": 25,
+  "llm_per_slow_integration": 6,
+  "llm_total_cap": 400,
+  "fit_total_cap": 900,
+  "wall_seconds_cap": 10800,
+  "over_cap_verdict": "COMPUTE_BUDGET_EXCEEDED"
+ },
+ "arms": {
+  "Static": "no adaptation; identity frozen and deployed on every unit; only the scoring fit is spent",
+  "A3-reset": "cold start from h0 on every unit; zero carry between units",
+  "K0-fixed": "every unit starts from the same K0; normal in-unit held-in adaptation; no write-back between units",
+  "A5-online": "same K0 start and in-unit protocol; full Slow integration between units including the risk lifecycle; the pool evolves with the course"
+ },
+ "k0_definition": {
+  "base": "methods/ttha/harness/h0 (the three bootstrap Skills)",
+  "bootstrap_skills": [
+   "inspect_and_localize",
+   "build_contrastive_candidates",
+   "select_or_identity_and_verify"
+  ],
+  "inert_slow_card": {
+   "skill_id": "source_investigation_cls_v1",
+   "source": "artifacts/functional/e2/t6_cls_op_r2_three_arms.json",
+   "try_clause": "NO_AUTHORIZED_ACTIVE_RECOMMENDATION",
+   "allowed_tools": [],
+   "carries_frozen_steps": false
+  },
+  "excluded_on_purpose": "the C40 Target-local hampel capability is NOT in K0.  It is a frozen-steps capability bound to one Source domain; placing it in K0 would leak an answer across domains and contaminate both K0-fixed and A5-online."
+ },
+ "domain_binding_hooks": {
+  "1_stamp": "unit_id (dataset__injection).  The whole course runs at one condition (fit_only_artifact), so dataset alone would collapse two curriculum units of the same substrate into one counted Task and the guard census (risk_skill._task_of) would undercount.",
+  "2_carry_wall": "a Target-local capability (frozen program steps; not an experience card) is dropped at the unit boundary unless its stamp equals the next unit's domain_namespace",
+  "3_scope_v1": "a Source-derived experience card reaches the next unit's Fast surface only when task_kind, consumer_id and metric match, its authorizing pattern-view intersection is non-empty and is satisfied by the next unit's binned deployment-visible pattern view, and its Program geometry is a real operator.  Dataset name is not an axis."
+ },
+ "pre_registered_readout": {
+  "primary": "A5-online must be non-inferior to both A3-reset and K0-fixed on quality (cumulative held-out utility) and on harm (harm events, worst-class harm), and must improve at least one of cumulative regret or cumulative total cost by a material margin",
+  "material_threshold": 0.005,
+  "verdict_ceiling_for_a_single_order_single_run": "S1_DEVELOPMENT_EVOLUTION_SIGNAL",
+  "judged_in": "S1c.  This book freezes the readout and does not judge it."
+ },
+ "not_in_this_book": "the full course is not run here.  This entry freezes the course and the readout only; S1c runs it.",
+ "oracle_isolation": {
+  "mechanism": "builtins.open, io.open, os.open, Path.open, Path.read_text and Path.read_bytes are wrapped at module import; any path containing artifacts/functional/e2/s1_oracle/ raises OracleIsolationBreach while the phase is 'arm'",
+  "arm_phase_attempts": 0,
+  "arm_phase_attempts_blocked": 0,
+  "arm_phase_leaks": [],
+  "deliberate_probe_rows": [],
+  "judge_phase_keys_read": [],
+  "unblocked_reads_by_phase": {
+   "setup": 0,
+   "select": 45,
+   "judge": 0
+  },
+  "holds": true
+ },
+ "wall_seconds": 0.31,
+ "obligations": {
+  "methods_package_unmodified": true,
+  "runtime_contracts_operators_unmodified": true,
+  "shared_runner_unmodified": true,
+  "no_llm": true,
+  "no_arm_ran": true,
+  "no_oracle_rescore": true,
+  "sealed_artifacts_not_rewritten": true,
+  "full_curriculum_not_run": true,
+  "downloads": 0
+ }
+}

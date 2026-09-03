@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from pathlib import Path
 
 from SelfEvolvingHarnessTS.contracts.candidate import Candidate
@@ -35,7 +36,18 @@ def test_identity_and_valid_imputation_receipts_are_public_mechanical_facts() ->
     assert repaired.receipt.status == "valid"
     assert repaired.receipt.execution_ok is True
     assert repaired.receipt.finite_output is True
-    assert repaired.receipt.modified_fraction == 1 / 3
+    # #42k Part D: modified_fraction counts *rewritten observed values* only.
+    # Filling the NaN changes nothing that was observed, so the cap -- which
+    # exists to protect observed data -- reads 0.0 here.  The fill itself
+    # stays visible on the receipt: the output is finite and it is not
+    # effect-equivalent to identity.
+    assert repaired.receipt.modified_fraction == 0.0
+    assert repaired.receipt.modified_region_fractions == ()
+    assert repaired.receipt.effect_equivalent_to_identity is False
+    assert repaired.receipt.warnings == ()
+    assert repaired.prepared_values is not None
+    assert bool(np.isfinite(repaired.prepared_values).all())
+    assert repaired.prepared_values[1] == pytest.approx(2.0)
 
     forbidden = {
         "utility_u",

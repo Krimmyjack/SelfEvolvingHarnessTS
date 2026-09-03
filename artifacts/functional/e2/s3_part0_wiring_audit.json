@@ -1,0 +1,556 @@
+{
+  "protocol_version": "s3_part0_wiring_audit_v1",
+  "evidence_grade": "code_audit_read_only",
+  "written_by": "S3 Part 0 wiring audit (allocation / probe-slot surface)",
+  "date": "2026-08-29",
+  "llm_calls": 0,
+  "consumer_fits": 0,
+  "downloads": 0,
+  "git_operations": 0,
+  "pilot_protocol": "docs/STAGE3_PILOT_FREEZE_DRAFT_2026-08-29.md",
+  "seed_artifact": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+  "seed_failure_name_in_protocol": "SUPPLY_DISPLACEMENT",
+  "import_root_used_by_s2a": "SelfEvolvingHarnessTS.methods.ttha (not evaluation/.../agentic/runner.run_agentic_fast_path)",
+  "runner_py_role": {
+    "file": "evaluation/functional/task_episode_harness/agentic/runner.py",
+    "what_s2a_imports": "live_transport only (lines 286-304; called from run_e2_s2a_forecast_curriculum.py:151-155)",
+    "what_s2a_does_not_use": "run_agentic_fast_path / _deprioritized_probe_order. That is a parallel Task-Episode Fast Path, not the S2a live loop."
+  },
+
+  "injection_points": {
+    "supply_candidate": [
+      {
+        "step": "mint cand_skill_<skill_id> from retrieved CAPABILITY body Frozen program steps",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:325-370",
+        "id_and_source": "candidate_id=cand_skill_{skill.skill_id}, source=skill:{skill.skill_id}"
+      },
+      {
+        "step": "supply-rung filter: only entries with risk_guards.authority.supplies_candidates is True",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:377-407"
+      },
+      {
+        "step": "card authority flags written at compile (supplies_candidates=true, grants_execution=false, requires_target_support=true)",
+        "file_line": "evaluation/functional/task_episode_harness/agentic/source_skill.py:637-646"
+      },
+      {
+        "step": "S2a compiles forecast card after producer dual-gate POSITIVE, installs on A5 only",
+        "file_line": "evaluation/functional/run_e2_s2a_forecast_curriculum.py:663-673 (_compile_forecast_card), :1091-1114 (install after producer)"
+      },
+      {
+        "step": "merge into the list handed to CandidatePool.build",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1072-1121"
+      }
+    ],
+    "autonomous_candidate": [
+      {
+        "step": "Fast propose LLM stage (skipped only if inspect already failed and a supply rung is in view)",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1014-1059"
+      },
+      {
+        "step": "compile agent payload to Candidate(..., source='agent'); Agent cannot emit identity",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:410-438"
+      },
+      {
+        "step": "context noop-op filter (does not read gain)",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1066-1071"
+      }
+    ],
+    "pool_cap": [
+      {
+        "step": "h0 candidate_policy.total_k=4 (identity_slots=1, agent_program_slots=3)",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/harness/h0/candidate_policy.json:3-5"
+      },
+      {
+        "step": "S2a TaskContext.maximum_candidates = 1 + SUPPORT_TRIAL_BUDGET = 3",
+        "file_line": "evaluation/functional/run_e2_s2a_forecast_curriculum.py:88 (SUPPORT_TRIAL_BUDGET=2), :140"
+      },
+      {
+        "step": "effective total_k = min(snapshot.total_k, maximum_candidates) then CandidatePool.build prepends identity and truncates",
+        "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1174-1180; runtime/candidate_pool.py:41-69"
+      }
+    ]
+  },
+
+  "allocation_logic": {
+    "probe_budget_constant": {
+      "name": "SUPPORT_TRIAL_BUDGET",
+      "value": 2,
+      "passed_as": "run_online_round(..., budget=SUPPORT_TRIAL_BUDGET)",
+      "file_line": "evaluation/functional/run_e2_s2a_forecast_curriculum.py:88, :382-391"
+    },
+    "merge_order_before_pool": {
+      "rule": "retrieved skill candidates split ACTIVE / DRAFT(requires_target_support) / signed-risk degraded; S2a supply cards are DRAFT",
+      "if_active_present": "(*active[:1], *agent[:1], *draft[:1], *degraded[:1]) — ACTIVE reserves the first program slot",
+      "if_only_draft": "(*agent[:1], *draft[:1], *degraded[:1]) — DRAFT does not displace the agent slot",
+      "file_line": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1084-1121"
+    },
+    "supply_forced_probe_slot": {
+      "exists": false,
+      "note": "A DRAFT supply card may occupy a pool program slot after the kept agent proposal, but nothing reserves a Support probe for it."
+    },
+    "probe_order": {
+      "rule": "chosen (Fast select, if non-identity) first, then remaining pool order; optional Domain Ordering Card is a permutation only",
+      "file_line": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:399-421",
+      "ordering_card_on_s2a": "S2a does not pass ordering_program_family (default None). No ordering card is installed on the S2a snapshots, so _select_ordering_card returns None and probe_order_after_card == probe_order_before_card. Selector: online_loop.py:296-324, :415-421."
+    },
+    "winner_rule": {
+      "rule": "first legal Support probe whose Episode.relation == POSITIVE becomes winner and the loop breaks; remaining budget is not spent to compare gains",
+      "positive_definition": "classify_relation: aggregate >= +0.005 and every per-series >= -0.005",
+      "file_line": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:424-472; SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:411-451",
+      "no_gain_argmax": true,
+      "no_tie_break_among_probed": "vacuous: at most one POSITIVE is accepted before stop"
+    },
+    "deploy_after_round": {
+      "heldin_ledger": "incumbent updates only if delayed approves (approved_skill_id set); else previous incumbent or identity",
+      "file_line": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:766-790; evaluation/functional/run_e2_s2a_forecast_curriculum.py:399-400",
+      "heldout": "Fast-only recall: first ACTIVE capability with frozen steps that is applicable and (if requires_target_support) already in approved_skill_ids; else incumbent; else identity",
+      "file_line_recall": "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:1235-1295; evaluation/functional/run_e2_s2a_forecast_curriculum.py:535-570",
+      "supply_card_cannot_be_recalled_as_deploy": "s2a_forecast_supply_v0 has requires_target_support=true and grants_execution=false; unless its skill_id is in approved_skill_ids it is skipped by _frozen_recall"
+    },
+    "unit4_r2_replay": {
+      "protocol_claim": "supply card entered the pool and was adopted, displacing better self-proposed robust_mad_outlier_repair; counterfactual -0.1206",
+      "artifact_fact": "A5 unit 4 adopted the self-proposed candidate; the supply candidate was never probed",
+      "contradicts_protocol_adoption_clause": true,
+      "a5": {
+        "json_path": "rows[?(@.position==4 && @.arm=='A5-online')]",
+        "pool": ["identity", "robust_mad_outlier_repair", "cand_skill_s2a_forecast_supply_v0"],
+        "chosen": "robust_mad_outlier_repair",
+        "supplied_ids": ["cand_skill_s2a_forecast_supply_v0"],
+        "self_proposed_ids": ["robust_mad_outlier_repair"],
+        "scope_match.forecast": true,
+        "proposals.robust_mad.outcome": "probe",
+        "proposals.robust_mad.gain": 1.0496601063949504,
+        "proposals.supply.outcome": "not_reached_support_budget_exhausted",
+        "proposals.supply.operators": ["hampel_filter"],
+        "winner_program": [{"op": "outlier_mad", "params": {}}],
+        "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+        "active_skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_mad",
+        "applied_ops": ["outlier_mad"],
+        "heldout_gain": 3.786303416048806
+      },
+      "a3": {
+        "json_path": "rows[?(@.position==4 && @.arm=='A3-reset')]",
+        "pool": ["identity", "local_hampel_outlier_repair"],
+        "chosen": "identity",
+        "probe_order_effect": "chosen identity is omitted from the probe head, so the remaining pool member is probed first",
+        "winner_program": [{"op": "hampel_filter"}],
+        "applied_ops": ["hampel_filter"],
+        "heldout_gain": 3.9069250666971445
+      },
+      "k0": {
+        "heldout_gain": 3.9069250666971445,
+        "applied_ops": ["hampel_filter"],
+        "note": "unit 4 is not in predictions[P6].material_divergences (A3≡K0 here)"
+      },
+      "counterfactual_minus_0_1206": {
+        "formula": "A5.heldout_gain - A3.heldout_gain",
+        "value": -0.1206216506483385,
+        "rounded_in_protocol": -0.1206,
+        "programs": "A5 outlier_mad vs A3 hampel_filter (same family as the unprobed supply card)"
+      },
+      "code_path_that_actually_ran": [
+        "fast_agent.py:1119-1121 DRAFT merge kept agent then supply → pool identity+mad+cand_skill (both program slots filled; no truncation of either)",
+        "fast_agent.py:1277-1297 Fast select chose robust_mad_outlier_repair",
+        "online_loop.py:399-403 probe_order = [robust_mad, identity, cand_skill] (identity has no compiled steps so only program ids in the evaluate loop's pool filter :384)",
+        "online_loop.py:424-472 first probe mad is POSITIVE → winner=mad, break; supply never evaluated",
+        "online_loop.py:676-701 allow_fast_skill mints fast_winner_..._outlier_mad (winner is not cand_skill_*)",
+        "cls._frozen_recall deploys that approved winner, not s2a_forecast_supply_v0"
+      ],
+      "how_p3_counted_conversion": {
+        "file_line": "evaluation/functional/run_e2_s2a_forecast_curriculum.py:802-805",
+        "rule": "strong role AND candidate_sources.supplied AND deploy_source != identity",
+        "note": "this counts 'card in pool + some non-identity deploy', not 'supply candidate was the winner'"
+      }
+    }
+  },
+
+  "defacto_policy": {
+    "one_sentence": "S2a spends at most two Support probes; the pool is identity plus up to two programs (min(h0 total_k=4, maximum_candidates=3)); a DRAFT supply card is appended after one kept agent proposal and does not reserve a probe; probe order is Fast-select chosen first then the rest of the pool; the first Support-POSITIVE stops the loop with no gain comparison; held-out deploy is frozen recall of an approved ACTIVE workflow, not the supply card.",
+    "probe_budget": 2,
+    "pool_program_slots": 2,
+    "supply_reserved_probe_slots": 0,
+    "supply_pool_slot_when_draft": "kept if room after agent[:1]; both fit under cap=3 on unit 4",
+    "sort_rule": "chosen_first_then_pool",
+    "compare_rule": "first_positive_in_probe_order",
+    "tie_rule": "vacuous (loop stops at first POSITIVE)",
+    "ordering_card": "inactive on S2a"
+  },
+
+  "frozen_out_of_edit_surface": {
+    "probe_budget": {
+      "name": "SUPPORT_TRIAL_BUDGET",
+      "value": 2,
+      "file_line": "evaluation/functional/run_e2_s2a_forecast_curriculum.py:88",
+      "reason": "pilot forbids changing total probe budget"
+    },
+    "maximum_candidates": {
+      "value": 3,
+      "file_line": "evaluation/functional/run_e2_s2a_forecast_curriculum.py:140",
+      "reason": "coupled as 1+SUPPORT_TRIAL_BUDGET; changing it changes pool/probe shape"
+    }
+  },
+
+  "proposed_params": [
+    {
+      "name": "skill_slot_merge_rule",
+      "current": "draft_does_not_displace_agent",
+      "legal_domain": [
+        "draft_does_not_displace_agent",
+        "supply_then_agent",
+        "agent_then_supply",
+        "interleave_one_each"
+      ],
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1112-1121",
+      "does_not_change_probe_budget": true,
+      "note": "ACTIVE-reserved-first (lines 1115-1118) is unused for S2a supply cards because requires_target_support=true makes them DRAFT"
+    },
+    {
+      "name": "supply_reserved_probe_slots",
+      "current": 0,
+      "legal_domain": [0, 1],
+      "constraint": "reserved + remaining = SUPPORT_TRIAL_BUDGET (2); never 2 (would freeze out autonomous probes) and never raise the cap",
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:424-426 (budget loop) plus a new reservation before the chosen-first order at :399-403",
+      "does_not_change_probe_budget": true
+    },
+    {
+      "name": "probe_order_rule",
+      "current": "chosen_first_then_pool",
+      "legal_domain": [
+        "chosen_first_then_pool",
+        "pool_as_built",
+        "supply_first_then_agent",
+        "agent_first_then_supply"
+      ],
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:399-403",
+      "does_not_change_probe_budget": true,
+      "note": "Domain Ordering Card permutation (online_loop.py:415-421; ordering_card.py:257-283) is a separate unused path on S2a; editing it would not change r2 unit 4"
+    },
+    {
+      "name": "first_positive_stop",
+      "current": true,
+      "legal_domain": [true, false],
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:459-472",
+      "does_not_change_probe_budget": true,
+      "note": "false still spends at most budget=2; it only withholds the early break so a second candidate can be probed. POSITIVE remains defined by classify_relation (G3)."
+    },
+    {
+      "name": "winner_compare_rule",
+      "current": "first_positive_in_probe_order",
+      "legal_domain": [
+        "first_positive_in_probe_order",
+        "max_support_gain_among_probed_positive"
+      ],
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:459-472",
+      "does_not_change_probe_budget": true,
+      "note": "max_support_gain is only meaningful when first_positive_stop=false or two POSITIVEs are otherwise both probed. It must not change the POSITIVE predicate."
+    },
+    {
+      "name": "tie_break_rule",
+      "current": "probe_order",
+      "legal_domain": [
+        "probe_order",
+        "prefer_self_proposed",
+        "prefer_supplied"
+      ],
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:459-472 (only if winner_compare_rule can draw)",
+      "does_not_change_probe_budget": true,
+      "note": "vacuous under current first_positive_stop=true"
+    },
+    {
+      "name": "agent_proposals_kept",
+      "current": 1,
+      "legal_domain": [1, 2],
+      "constraint": "kept agent programs + in-pool supply programs <= pool_program_slots (2); identity always present",
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1117-1121 (the [:1] slices)",
+      "does_not_change_probe_budget": true
+    },
+    {
+      "name": "displacement_margin",
+      "current": 0.0,
+      "legal_domain": [0.0, 0.01, 0.05],
+      "edit_locus": "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:459-472 (compare already-probed POSITIVE gains only)",
+      "does_not_change_probe_budget": true,
+      "must_not_alias": "MATERIAL_THRESHOLD / HARM_BAR / classify_relation (stay 0.005)"
+    }
+  ],
+
+  "g3_separation": [
+    {
+      "gate": "dual_gate",
+      "meaning": "Support POSITIVE drafts; delayed POSITIVE is the only LOCAL_ACTIVE / approve path; CONFLICT does not get execution right",
+      "file_line": [
+        "SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:411-451 (classify_relation)",
+        "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:239-242 (Support → LOCAL_DRAFT only if POSITIVE)",
+        "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:247-278 (_update_delayed_status)",
+        "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:459-465 (winner requires relation==POSITIVE)",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:638-641 (_supply_row requires POSITIVE and LOCAL_ACTIVE)",
+        "evaluation/functional/run_e2_t6_cls_op_shared_harness.py:766-790 (incumbent only if approved_skill_id)"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "proposed params only reorder / reserve / compare already-classified POSITIVE probes; they do not change classify_relation or LOCAL_ACTIVE mapping"
+    },
+    {
+      "gate": "capacity_gate",
+      "meaning": "forecast cell TRAIN>=40, each half>=20 (CELL_WIDTH=60)",
+      "file_line": [
+        "evaluation/functional/run_e2_s2a_forecast_oracle.py:45-48 (N_TRAIN=40, N_FACE=20, N_HELDOUT=20, CELL_WIDTH=60)",
+        "evaluation/functional/run_e2_s2a_natural_pool.py:4",
+        "evaluation/functional/run_e2_s2a_electricity_sweep.py:232-256 (same width recut)"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "cell sizing is data construction; no proposed param reads N_TRAIN/N_FACE"
+    },
+    {
+      "gate": "harm_threshold",
+      "meaning": "material/harm line ±0.005; held-out harm_event if worst series < -HARM_BAR; Support gain < -M increments harm_count",
+      "file_line": [
+        "SelfEvolvingHarnessTS/methods/ttha/signed_radius.py:40 (MATERIAL_THRESHOLD=0.005)",
+        "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:61 (M = MATERIAL_THRESHOLD)",
+        "SelfEvolvingHarnessTS/methods/ttha/online_loop.py:473-475",
+        "SelfEvolvingHarnessTS/methods/ttha/experience_memory.py:408, :434-448",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:93 (HARM_BAR=0.005), :530"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "displacement_margin is an optional compare among already-POSITIVE probes; legal domain is disjoint from 0.005 and must not be wired into classify_relation"
+    },
+    {
+      "gate": "overreach_guards",
+      "meaning": "supply card grants_execution=false; Agent cannot emit identity; verifier + modified-fraction cap; Slow off; experiment program menu only",
+      "file_line": [
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:639-646 (grants_execution=false, requires_target_support=true)",
+        "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:422-423 (Agent cannot supply runtime identity)",
+        "SelfEvolvingHarnessTS/methods/ttha/fast_agent.py:1181-1211 (_verification_limits + verify_candidate)",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:124-130 (forbidden_modifications), :140 (maximum_modified_fraction=0.35), :388 (allow_slow=False)",
+        "runtime/candidate_pool.py:83-95 (require_choice must name a pool member)"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "no proposed param grants execution, widens the operator menu, raises the fraction cap, or turns Slow on"
+    },
+    {
+      "gate": "isolation_guards",
+      "meaning": "G2 classification-card three faces must stay zero; oracle keys must not enter arm views; per-unit/per-arm fresh state",
+      "file_line": [
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:326-341 (_g2_faces on CLS_SKILL_ID=sa1_supply_scope_v2)",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:1076-1083 (S2A_G2_LEAK stop)",
+        "evaluation/functional/run_e2_s1_curriculum_four_arms.py:86-87, :108-168 (PHASE_ARM blocks paths containing /s1_oracle/)",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:577 (sets PHASE_ARM), :581-585 (_new_state per unit/arm)",
+        "evaluation/functional/run_e2_s2a_forecast_oracle.py:55 (ORACLE_BANNER); s2a_course_frozen.json oracle_isolation field"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "G2 counters and oracle wrappers are unread by allocation params. Note: the armed wrapper token is s1_oracle, not s2a_oracle (see open_questions)."
+    },
+    {
+      "gate": "ladder_v2_threshold",
+      "meaning": "supply tier price = 1 distinct unguided POSITIVE Task; S2a additionally requires that Episode LOCAL_ACTIVE before compile",
+      "file_line": [
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:319 (SUPPLY_TIER_MIN_DISTINCT_TASKS=1)",
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:362-424 (supply_tier_audit)",
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:695-751 (compile_supply_tier)",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:629-660 (_supply_row), :663-673, :1120 (produced_by=ladder_v2_compile_supply_tier)"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "card compile/install sits after the producer unit and before later units; allocation params do not change min_distinct_tasks or the POSITIVE∧LOCAL_ACTIVE seed filter"
+    },
+    {
+      "gate": "scope_match_semantics",
+      "meaning": "machine AST evaluate_applicability on observable_applicability; retrieval drops non-matches; S2a forecast card used n=1 source intersection (pattern_family=None), not S1a family axis",
+      "file_line": [
+        "SelfEvolvingHarnessTS/methods/ttha/retrieval.py:90-96 (evaluate_applicability)",
+        "SelfEvolvingHarnessTS/methods/ttha/retrieval.py:278-282 (Fast view keeps only matched capabilities)",
+        "evaluation/functional/run_e2_s1_curriculum_four_arms.py:1208-1232 (_scope_match_by_skill_id)",
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:477-527 (five_axis_scope)",
+        "evaluation/functional/task_episode_harness/agentic/source_skill.py:555-576 (supply_applicability)",
+        "evaluation/functional/run_e2_s2a_forecast_curriculum.py:667 (pattern_family=None on compile)"
+      ],
+      "proposed_params_touch": false,
+      "why_separated": "no proposed param edits AST leaves, evaluate_applicability, or five_axis_scope"
+    }
+  ],
+
+  "seed_trace_fields": [
+    {
+      "path": "protocol",
+      "why": "must be s2a_forecast_curriculum_v1"
+    },
+    {
+      "path": "seed",
+      "why": "r2"
+    },
+    {
+      "path": "course[3]",
+      "why": "unit electricity_impulsive_outlier_04, role strong_beneficiary_2, position 4"
+    },
+    {
+      "path": "version_chain[0]",
+      "why": "s2a_forecast_supply_v0 sha b5058018… produced_by ladder_v2_compile_supply_tier after electricity_impulsive_outlier_03"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].candidate_sources",
+      "fields": ["supplied", "self_proposed", "supplied_ids", "self_proposed_ids", "dedup_swallowed", "dedup_detail"],
+      "observed": {
+        "supplied_ids": ["cand_skill_s2a_forecast_supply_v0"],
+        "self_proposed_ids": ["robust_mad_outlier_repair"],
+        "dedup_detail.scope_match": true,
+        "dedup_detail.supplied_in_pool": true,
+        "dedup_detail.why": "not the dedup case: the supply did reach the pool"
+      }
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].scope_match",
+      "fields": ["classification", "forecast"]
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].pool"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].chosen"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].retrieved_skill_ids"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].scope_match_by_skill_id.s2a_forecast_supply_v0"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].proposals[]",
+      "fields": ["candidate_id", "operators", "family", "chosen_by_select", "outcome", "gain", "source_skill_id"]
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].probes[]"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].winner_program"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].rounds[0].episodes[]",
+      "fields": ["source_skill_id", "workflow_signature", "relation", "local_status", "support_gain", "delayed_gain", "support_effect", "delayed_effect"]
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A5-online')].deployment",
+      "fields": ["deploy_source", "deploy_why", "active_skill_id", "applied_program", "heldout_gain", "harm_event"]
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='A3-reset')].heldout_gain",
+      "why": "counterfactual baseline; A3 deployed hampel_filter at +3.9069250666971445"
+    },
+    {
+      "path": "rows[?(@.position==4 && @.arm=='K0-fixed')].heldout_gain",
+      "why": "same +3.9069250666971445 as A3 on this unit"
+    },
+    {
+      "path": "predictions[?(@.id=='P3')].observed",
+      "why": "protocol cited P3; instrument lists supplied_ids and self_proposed_ids for unit 4"
+    },
+    {
+      "path": "predictions[?(@.id=='P6')].observed",
+      "why": "material A3/K0 divergences are units 1 and 3, not unit 4"
+    },
+    {
+      "path": "artifacts/functional/e2/s2a_g1_run1_r2.md Units table row pos=4",
+      "why": "Static +0.0000 / A3 +3.9069 / K0 +3.9069 / A5 +3.7863"
+    }
+  ],
+
+  "course_material": {
+    "note": "inventory only; pilot course composition is frozen on the main line, not chosen here",
+    "s2a_live_course_used": [
+      "electricity_impulsive_outlier_03",
+      "traffic_clean_identity_00",
+      "electricity_impulsive_outlier_01",
+      "electricity_impulsive_outlier_04",
+      "traffic_gap_00"
+    ],
+    "electricity_0_299_five_cells": {
+      "source": "artifacts/functional/e2/s2a_g0_electricity_sweep.json predeclared_cut + electricity.cells; recut evaluation/functional/run_e2_s2a_electricity_sweep.py:232-256",
+      "series_index_span": "0-299 (5 × CELL_WIDTH=60)",
+      "all": [
+        "electricity_impulsive_outlier_00",
+        "electricity_impulsive_outlier_01",
+        "electricity_impulsive_outlier_02",
+        "electricity_impulsive_outlier_03",
+        "electricity_impulsive_outlier_04"
+      ],
+      "used_in_s2a_frozen_course": [
+        "electricity_impulsive_outlier_01",
+        "electricity_impulsive_outlier_03",
+        "electricity_impulsive_outlier_04"
+      ],
+      "unused_available": [
+        "electricity_impulsive_outlier_00",
+        "electricity_impulsive_outlier_02"
+      ],
+      "leftover_series_not_cells": "300-319 + OT (21 names); not cut into cells"
+    },
+    "traffic_recut_0_419_seven_cells": {
+      "source": "evaluation/functional/run_e2_s2a_forecast_oracle.py:45-114 (6 impulse + 1 gap); listed in s2a_g0_electricity_sweep.json traffic/merged tables",
+      "series_index_span": "0-419 (7 × 60)",
+      "all": [
+        "traffic_impulsive_outlier_00",
+        "traffic_impulsive_outlier_01",
+        "traffic_impulsive_outlier_02",
+        "traffic_impulsive_outlier_03",
+        "traffic_impulsive_outlier_04",
+        "traffic_impulsive_outlier_05",
+        "traffic_gap_00"
+      ],
+      "used_in_s2a_frozen_course": [
+        "traffic_gap_00"
+      ],
+      "unused_available": [
+        "traffic_impulsive_outlier_00",
+        "traffic_impulsive_outlier_01",
+        "traffic_impulsive_outlier_02",
+        "traffic_impulsive_outlier_03",
+        "traffic_impulsive_outlier_04",
+        "traffic_impulsive_outlier_05"
+      ],
+      "not_in_this_seven": {
+        "unit_id": "traffic_clean_identity_00",
+        "series": "420-479 leftover after the 0-419 recut (s2a_course_frozen.json clean_cell)",
+        "used_in_s2a_course": true
+      }
+    },
+    "available_unused_cell_list": [
+      "electricity_impulsive_outlier_00",
+      "electricity_impulsive_outlier_02",
+      "traffic_impulsive_outlier_00",
+      "traffic_impulsive_outlier_01",
+      "traffic_impulsive_outlier_02",
+      "traffic_impulsive_outlier_03",
+      "traffic_impulsive_outlier_04",
+      "traffic_impulsive_outlier_05"
+    ]
+  },
+
+  "open_questions": [
+    {
+      "id": "Q1",
+      "severity": "blocks_seed_narrative",
+      "question": "STAGE3 / STAGE_REPORT name the seed as 'supply card adopted, displacing better robust_mad' (SUPPLY_DISPLACEMENT). The r2 artifact shows the opposite adoption: robust_mad was chosen, probed, POSITIVE, minted, and deployed; cand_skill_s2a_forecast_supply_v0 (hampel) is outcome=not_reached_support_budget_exhausted. The −0.1206 figure is A5(mad)−A3(hampel). Main line must re-state the seed (adoption vs first-positive-stop leaving supply unprobed vs in-view changing propose) before LLM-edit reads a false story."
+    },
+    {
+      "id": "Q2",
+      "question": "Whether the A5 propose of mad (vs A3/K0 hampel on the same unit) was caused by the supply card being in view, or is LLM variance, is not identified in the artifact. Do not treat that causal story as fact."
+    },
+    {
+      "id": "Q3",
+      "question": "S1 PHASE_ARM isolation token is s1_oracle only (run_e2_s1_curriculum_four_arms.py:87, :108-115). S2a oracle keys live under artifacts/functional/e2/s2a_oracle/. Whether s2a_oracle is mechanically blocked during PHASE_ARM is not shown in S2a runner code; freeze file only carries a banner string."
+    },
+    {
+      "id": "Q4",
+      "question": "S2a does not call s1._arm_isolation. Four-arm isolation is structural (_new_state per unit/arm, Static skips _run_round) but not the S1 check function. Confirm whether that function is in the G3 isolation list for this pilot."
+    },
+    {
+      "id": "Q5",
+      "question": "A parallel Fast Path exists in evaluation/functional/task_episode_harness/agentic/fast_path.py (LLM select after each probe, material-threshold mechanical gate). S2a does not call it. Stage 3 edits must name the TTHA online_loop/fast_agent loci; editing agentic fast_path would miss the seed path."
+    },
+    {
+      "id": "Q6",
+      "question": "Whether first_positive_stop=false is Random-legal: it does not raise SUPPORT_TRIAL_BUDGET but raises expected probes spent (1→up to 2). Protocol says 不增减总预算; it does not say 必须花满. Needs a one-line ruling."
+    },
+    {
+      "id": "Q7",
+      "question": "methods/ttha/ is a second tree besides SelfEvolvingHarnessTS/methods/ttha/. S2a imports the latter. This audit did not byte-compare the two trees."
+    }
+  ]
+}

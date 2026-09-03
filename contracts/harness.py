@@ -63,9 +63,10 @@ def _require_exact_fields(
     expected: frozenset[str],
     *,
     artifact: str,
+    optional: frozenset[str] = frozenset(),
 ) -> None:
     missing = expected - set(payload)
-    extra = set(payload) - expected
+    extra = set(payload) - expected - optional
     if missing:
         raise ValueError(f"{artifact} missing required fields: {sorted(missing)}")
     if extra:
@@ -113,6 +114,13 @@ class SkillEntry:
     observable_applicability: Mapping[str, object]
     allowed_tools: tuple[str, ...]
     risk_guards: Mapping[str, object]
+    # SCOPE (2026-09-01): which *served* series this Skill treats, stated as a
+    # predicate over deployment-visible features.  Optional, so every entry
+    # written before this field still constructs.  The resolved UID set is
+    # deliberately absent: those names do not exist in the next Target, so a
+    # Skill that stored them would resolve to nothing there and look like a
+    # deliberate abstention rather than a Scope that no longer transfers.
+    serving_scope: Mapping[str, object] | None = None
 
 
 @dataclass(frozen=True)
@@ -188,6 +196,10 @@ class EditManifest:
     predicted_data_effect: tuple[str, ...] = ()
     automatically_selected_risk_cases: tuple[str, ...] = ()
     falsification_condition: tuple[str, ...] = ()
+    # P3.1-B2（用户裁决 2026-08-11）：Typed Patch Binding——Slow Agent
+    # 选择 FailurePatternCard 白名单中的 Patch ID（Runtime-owned 冻结
+    # steps），不再手写 frozen steps。可选字段（最小结构化变更）。
+    patch_id: str | None = None
 
     def __post_init__(self) -> None:
         _require_canonical_id(self.edit_id, field="edit_id")
@@ -269,6 +281,54 @@ _SKILL_FIELDS = frozenset(
         "risk_guards",
     }
 )
+#: SCOPE (2026-09-01): permitted but not required, so every entry written
+#: before the field still loads unchanged.
+_SKILL_OPTIONAL_FIELDS = frozenset({"serving_scope"})
+_SCOPE_KINDS = frozenset(
+    {"all_serving_series", "serving_series_predicate", "none"})
+_SCOPE_OPERATORS = frozenset({"<=", ">=", "<", ">"})
+
+
+def _require_serving_scope(value: object) -> Mapping[str, object]:
+    """A Scope over deployment-visible features, never over series names.
+
+    The UID check is not decoration: a Skill that named series would resolve to
+    nothing in the next Target and present as a deliberate abstention rather
+    than as a Scope that failed to transfer.
+    """
+    if not isinstance(value, Mapping):
+        raise ValueError("serving_scope must be an object")
+    kind = value.get("scope_type")
+    if kind not in _SCOPE_KINDS:
+        raise ValueError("serving_scope scope_type must be one of %s"
+                         % sorted(_SCOPE_KINDS))
+    clauses = value.get("predicate") or ()
+    if not isinstance(clauses, Sequence) or isinstance(clauses, (str, bytes)):
+        raise ValueError("serving_scope predicate must be a list")
+    if kind == "serving_series_predicate" and not clauses:
+        raise ValueError("a predicate Scope needs at least one clause")
+    if kind != "serving_series_predicate" and clauses:
+        raise ValueError("%s takes no predicate clauses" % kind)
+    for clause in clauses:
+        if not isinstance(clause, Mapping):
+            raise ValueError("each Scope clause must be an object")
+        if set(clause) != {"feature", "op", "threshold"}:
+            raise ValueError(
+                "a Scope clause takes exactly feature, op and threshold")
+        feature = clause["feature"]
+        if not isinstance(feature, str) or len(feature) < 4:
+            raise ValueError(
+                "a Scope clause must name a deployment-visible feature, not a "
+                "series")
+        if clause["op"] not in _SCOPE_OPERATORS:
+            raise ValueError("Scope clause op must be one of %s"
+                             % sorted(_SCOPE_OPERATORS))
+        if isinstance(clause["threshold"], bool) or not isinstance(
+                clause["threshold"], (int, float)):
+            raise ValueError("Scope clause threshold must be numeric")
+    return value
+
+
 _MEMORY_FIELDS = frozenset(
     {
         "schema_version",
@@ -285,7 +345,8 @@ def load_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
     if not isinstance(payload, Mapping):
         raise ValueError("SkillEntry must be an object")
     _reject_forbidden_fields(payload)
-    _require_exact_fields(payload, _SKILL_FIELDS, artifact="SkillEntry")
+    _require_exact_fields(payload, _SKILL_FIELDS, artifact="SkillEntry",
+                          optional=_SKILL_OPTIONAL_FIELDS)
     if payload["schema_version"] != "skill-entry/1":
         raise ValueError("SkillEntry schema_version must be skill-entry/1")
     skill_id = _require_canonical_id(payload["skill_id"], field="skill_id")
@@ -315,14 +376,61 @@ def load_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
         observable_applicability=_freeze_json(applicability),
         allowed_tools=allowed_tools,
         risk_guards=_freeze_json(risk_guards),
+        serving_scope=(
+            _freeze_json(_require_serving_scope(payload["serving_scope"]))
+            if payload.get("serving_scope") is not None else None),
     )
 
 
+_LEARNED_SKILL_KINDS = frozenset({SkillKind.CAPABILITY, SkillKind.SAFETY})
+
+
 def load_learned_skill_entry(payload: Mapping[str, object]) -> SkillEntry:
+    """Load a machine-added Skill.
+
+    Two kinds live here, and the difference is what they are allowed to do.
+    A ``capability`` carries a frozen program and is supplied to the Fast pool
+    as an executable candidate.  A ``safety`` carries no program at all: it
+    reaches the Agent as retrieved knowledge and is skipped by
+    ``_skill_frozen_candidates``, so it can lower a family's priority but can
+    never put one on the table.  That asymmetry is the whole point of letting
+    SAFETY into this directory -- negative Target evidence needs a carrier,
+    and it must be one that cannot propose.
+    """
     skill = load_skill_entry(payload)
-    if skill.skill_kind is not SkillKind.CAPABILITY:
-        raise ValueError("learned SkillEntry must have skill_kind=capability")
+    if skill.skill_kind not in _LEARNED_SKILL_KINDS:
+        raise ValueError(
+            "learned SkillEntry must have skill_kind=capability or safety")
+    if skill.skill_kind is SkillKind.SAFETY and "Frozen program steps:" in (
+        skill.body or ""
+    ):
+        raise ValueError(
+            "safety SkillEntry must not carry a frozen program "
+            "(body contains 'Frozen program steps:'): a risk Skill "
+            "deprioritizes and must never supply a candidate")
+    _reject_mixed_card_authority(skill)
     return skill
+
+
+def _reject_mixed_card_authority(skill: SkillEntry) -> None:
+    """最小权限守卫（2026-08-16，本地评审第 2 条）。
+
+    Ordering Card（``risk_guards.card_kind == "ordering-control/1"``）与
+    Executable Program Skill 共用 ``skill-entry/1`` 载体和 ``skills/learned/``
+    目录。二者权限不同：前者**只重排** Fast 已供应的候选，后者经
+    ``_skill_frozen_candidates`` 变成可执行候选（``cand_skill_<id>``）。
+
+    真正的分界只有一条——body 里有没有 ``Frozen program steps:`` 这个字面
+    marker。若一张卡**同时**声明 ordering 身份又带上该 marker，它会同时拿到
+    两种权限，后续任何「顺序改进 vs 程序改进」的归因都会被污染。
+    这里在**加载期**直接拒绝，而不是靠构造方自觉。
+    """
+    guards = skill.risk_guards or {}
+    if guards.get("card_kind") == "ordering-control/1" and             "Frozen program steps:" in (skill.body or ""):
+        raise ValueError(
+            "ordering-control/1 card must not carry a frozen program "
+            "(body contains 'Frozen program steps:'): an ordering card "
+            "reorders supplied candidates and must never supply one")
 
 
 def load_memory_entry(payload: Mapping[str, object]) -> MemoryEntry:

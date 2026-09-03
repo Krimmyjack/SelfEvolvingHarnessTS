@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
@@ -23,6 +24,39 @@ from .compiler import (
     skill_entry_to_dict,
     snapshot_to_dict,
 )
+
+
+def _replace_directory(temporary: Path, destination: Path,
+                       attempts: int = 10, delay: float = 0.2) -> None:
+    """Publish a freshly written snapshot tree, tolerating a transient lock.
+
+    ``os.replace`` on a *directory* is a Windows ``MoveFileEx``, and it fails
+    with ``WinError 5`` while any handle is still open anywhere inside the
+    source tree -- which a virus scanner or the search indexer routinely holds
+    for a moment after a few dozen files have just been written into it.  It is
+    timing-dependent and it took out a live Source run at its first origin,
+    after the run had already spent six LLM calls.
+
+    Retrying is the whole fix.  Nothing about what is published changes: the
+    same bytes land at the same content-addressed path, and a destination that
+    appears underneath us is handled by the caller's collision check rather
+    than being overwritten here.
+    """
+    last: OSError | None = None
+    for attempt in range(attempts):
+        try:
+            os.replace(temporary, destination)
+            return
+        except PermissionError as exc:  # noqa: PERF203 - the retry is the point
+            last = exc
+            if destination.exists():
+                # Someone else published the same content while we waited; the
+                # caller compares bytes, so hand the decision back to it.
+                raise
+            time.sleep(delay * (attempt + 1))
+        except OSError as exc:
+            raise exc
+    raise last if last is not None else OSError("snapshot publish failed")
 
 
 @dataclass(frozen=True)
@@ -76,9 +110,14 @@ class SnapshotStore:
             canonical_text_bytes(snapshot.instruction.encode("utf-8"))
         )
         for skill in snapshot.skills:
+            # SAFETY is machine-added like a capability, so it belongs in
+            # learned/ -- which is also where the surface catalog's
+            # skill_library.entries path_template writes it.  The bootstrap
+            # directory is a fixed, authored set (compiler enforces the exact
+            # ID list), so a minted Skill could never be read back from there.
             directory = (
                 "bootstrap"
-                if skill.skill_kind in {SkillKind.BOOTSTRAP_PROCEDURE, SkillKind.SAFETY}
+                if skill.skill_kind is SkillKind.BOOTSTRAP_PROCEDURE
                 else "learned"
             )
             _write_json(
@@ -156,7 +195,7 @@ class SnapshotStore:
                     raise ValueError("snapshot directory collision with different bytes")
                 shutil.rmtree(temporary)
             else:
-                os.replace(temporary, destination)
+                _replace_directory(temporary, destination)
             self._write_provenance(snapshot, parent_sha)
         except Exception:
             if temporary.exists():
@@ -201,7 +240,7 @@ class SnapshotStore:
                 stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.replace(temporary, self.active_path)
+            _replace_directory(temporary, self.active_path)
         finally:
             if temporary.exists():
                 temporary.unlink()
