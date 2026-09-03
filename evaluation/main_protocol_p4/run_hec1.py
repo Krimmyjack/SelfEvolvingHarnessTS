@@ -1441,13 +1441,26 @@ class OuterSlowAgent:
     is dropped by ``scope_threshold_tool.clause_from_slow`` and recorded as
     ``LLM_THRESHOLD_IGNORED``.  Removing the field would rotate the snapshot
     lock for no method gain, so the enforcement lives in the tool.
+
+    ``snapshot`` is the arm's active snapshot, and it is required rather than
+    optional: ``core.run_stage`` reads ``harness_view.instruction`` to build the
+    system message, so a plain ``{}`` raises ``AttributeError`` on the first
+    call that actually needs Slow.  Phase S never reached this path (both of its
+    outer steps found no candidate needing Slow, so ``llm_outer`` was 0) and the
+    end-to-end tests scripted the outer Slow, so nothing exercised it until the
+    first Forward attempt -- which is why that attempt is an instrument record
+    (``RUN_BLOCKED_NO_VERDICT``) and not a reading.  The view is resolved the
+    same way ``scope_clause_agent`` resolves it for the Source line: Slow's role
+    with empty public features, so no Target observation reaches the Slow view
+    through this door.
     """
 
     def __init__(self, core: Any, *, vocabulary: Sequence[str],
-                 guard: "BudgetGuard") -> None:
+                 guard: "BudgetGuard", snapshot: Any) -> None:
         self.core = core
         self.vocabulary = [str(name) for name in vocabulary]
         self.guard = guard
+        self.snapshot = snapshot
         self.calls: list[dict[str, Any]] = []
 
     def __call__(self, *, candidate: Mapping[str, Any],
@@ -1479,7 +1492,11 @@ class OuterSlowAgent:
         from SelfEvolvingHarnessTS.methods.ttha.agent_core import (  # noqa: PLC0415
             AgentRole,
         )
+        from SelfEvolvingHarnessTS.methods.ttha.retrieval import (  # noqa: PLC0415
+            resolve_harness_view,
+        )
 
+        view = resolve_harness_view(self.snapshot, {}, role="slow")
         self.guard.reserve(kind="outer",
                            where={"candidate": candidate.get("kind")})
         try:
@@ -1488,11 +1505,11 @@ class OuterSlowAgent:
                 stage="edit",
                 case_id="hec1-outer-%s" % candidate.get("kind", "step"),
                 public_input=public_input,
-                harness_view={},
+                harness_view=view,
                 output_schema_name="slow_scope_clause_v1",
                 output_schema=self.core.load_stage_schema(
                     "slow_scope_clause_v1"),
-                source_snapshot_sha="",
+                source_snapshot_sha=self.snapshot.runtime_bundle_sha,
                 task_context_sha="",
                 validation_retries=1,
             )
@@ -1635,6 +1652,19 @@ class Arm:
                 "carried_drafts": 0,
                 "dropped_drafts": dropped_drafts}
 
+    def active_snapshot(self) -> Any:
+        """What this arm would ask Slow with.
+
+        A resumed course replays its cells from checkpoints and never calls
+        ``begin_unit``, so ``_method`` can still be ``None`` when an outer step
+        runs.  The start snapshot is then the honest answer -- the arm has
+        learned nothing this process -- rather than a ``None`` that would only
+        fail once Slow was actually asked.
+        """
+        if self._method is None:
+            return self.start_snapshot
+        return self._method._active_snapshot()
+
     def snapshot_skill_ids(self) -> list[str]:
         if self._method is None:
             return []
@@ -1660,7 +1690,10 @@ class Arm:
                    total_steps: int = 0) -> dict[str, Any] | None:
         if not self.spec.outer:
             return None
-        slow = (self.outer_slow_factory(self._core, self.guard)
+        # The arm's own active snapshot goes in: the Slow view is resolved from
+        # it, so an online arm that has learned something asks with what it has.
+        slow = (self.outer_slow_factory(self._core, self.guard,
+                                        self.active_snapshot())
                 if self.outer_slow_factory is not None else None)
         screen = replay_screen_for(self.processed, self.ledgers,
                                    self.replay_cache)
@@ -2311,7 +2344,7 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
         return machinery["agentic"]._default_backend_factory(
             int(contract.PER_UNIT_ARM_BUDGET["llm_calls"]))
 
-    def outer_slow_factory(core, guard_):
+    def outer_slow_factory(core, guard_, snapshot):
         if offline:
             def scripted(*, candidate, rejected):
                 guard_.reserve(kind="outer", where={"offline": True})
@@ -2323,7 +2356,7 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
                         "rationale": "scripted: spiky series only"}
             return scripted
         return OuterSlowAgent(core, vocabulary=contract.SCOPE_CLASS["vocabulary"],
-                              guard=guard_)
+                              guard=guard_, snapshot=snapshot)
 
     arms = [Arm(spec, root=root, machinery=machinery,
                 start_snapshot=(k0_snapshot if spec.start == "k0" else h0),

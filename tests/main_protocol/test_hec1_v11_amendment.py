@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -153,6 +154,159 @@ def test_the_census_key_is_task_program_and_root_scope():
     assert left == same
     assert len({left, other_scope, other_params, other_order,
                 reversed_order}) == 5
+
+
+# ---------------------------------------------------------------------------
+# the outer Slow's own call path
+# ---------------------------------------------------------------------------
+
+HARMED = {"a": 0.4, "b": 0.3, "c": 0.2, "d": -0.9, "e": -0.8}
+
+
+class _OneClauseBackend:
+    """A relay that answers, so everything above the wire is the real thing.
+
+    The mock stops at the reply: ``TTHAAgentCore.run_stage`` builds the real
+    system message from the real resolved Harness view, validates against the
+    real ``slow_scope_clause_v1`` schema, and only the bytes that would have
+    come back over HTTP are supplied here.  That is the layer the first Forward
+    attempt died above -- ``harness_view={}`` never reached a backend at all.
+    """
+
+    def __init__(self) -> None:
+        self.requests: list[Any] = []
+
+    def complete(self, request: Any) -> Any:
+        from SelfEvolvingHarnessTS.runtime.agent_backend import AgentResponse
+
+        self.requests.append(request)
+        return AgentResponse.valid(
+            {"schema_version": "agent-envelope/1", "kind": "stage_result",
+             "stage": "edit",
+             "payload": {"scope_clause": {"feature": Z, "op": ">=",
+                                          "threshold": 4.0},
+                         "rationale": "test: spiky series only"}},
+            raw_response={"id": "test-one-clause"})
+
+
+def _real_core(backend):
+    import numpy as np
+
+    from SelfEvolvingHarnessTS.methods.ttha.agent_core import TTHAAgentCore
+    from SelfEvolvingHarnessTS.methods.ttha.public_tools import (
+        LocalPublicToolGateway,
+    )
+
+    return TTHAAgentCore(
+        backend,
+        LocalPublicToolGateway(np.zeros(8, dtype=np.float64),
+                               task_kind="forecast"),
+        model="test-model", base_url=runner.OFFLINE_BASE_URL)
+
+
+def _h0_snapshot():
+    from SelfEvolvingHarnessTS.methods.ttha.harness.compiler import (
+        compile_snapshot,
+    )
+
+    return compile_snapshot(ROOT / "methods/ttha/harness/h0", verify_lock=False)
+
+
+def test_the_outer_slow_asks_through_the_real_stage_on_a_narrow_candidate():
+    """The regression the 28 end-to-end cells could not catch.
+
+    Every offline course scripts the outer Slow, so no test had ever driven
+    ``OuterSlowAgent`` itself; and Phase S's two outer steps found no candidate
+    that needed a clause (``llm_outer`` 0), so the live path was first entered
+    by Forward's A3-online at unit 5 -- and died there on ``harness_view={}``.
+    This drives a real NARROW candidate through ``consolidate`` into the real
+    ``run_stage``, with only the relay's reply supplied.
+    """
+    backend = _OneClauseBackend()
+    snapshot = _h0_snapshot()
+    guard = runner.BudgetGuard(ordering_cap=8, per_unit_arm_cap=8,
+                               ledgers=runner.Ledgers())
+    slow = runner.OuterSlowAgent(
+        _real_core(backend), vocabulary=contract.SCOPE_CLASS["vocabulary"],
+        guard=guard, snapshot=snapshot)
+
+    ledger = drafts.DraftLedger()
+    key = outer_loop.census_key(TASK, [{"op": "outlier_mad", "params": {}}],
+                                WIDE)
+    bank = [_bank_row(1176, HARMED, WIDE), _bank_row(1896, HARMED, WIDE)]
+    step = outer_loop.consolidate(
+        bank=bank, ledger=ledger, k_index=1, slow=slow, replay=_replay(),
+        held_lineage_keys=[key])
+
+    narrowing = [row for row in step.candidates if row["kind"] == "NARROW"]
+    assert narrowing, "no NARROW candidate; the Slow path was never entered"
+    assert step.to_dict()["slow_calls"] >= 1
+    assert backend.requests, "run_stage never reached the relay"
+    assert slow.calls and slow.calls[0]["returned"] == {
+        "feature": Z, "op": ">=", "threshold": 4.0}
+
+
+def test_the_outer_slow_resolves_a_real_harness_view_not_an_empty_dict():
+    """``run_stage`` reads ``harness_view.instruction``; a dict has none."""
+    backend = _OneClauseBackend()
+    snapshot = _h0_snapshot()
+    slow = runner.OuterSlowAgent(
+        _real_core(backend), vocabulary=contract.SCOPE_CLASS["vocabulary"],
+        guard=runner.BudgetGuard(ordering_cap=4, per_unit_arm_cap=4,
+                                 ledgers=runner.Ledgers()),
+        snapshot=snapshot)
+    payload = slow(candidate={"kind": "NARROW", "rows": [],
+                              "base_scope": WIDE,
+                              "program_steps": [{"op": "outlier_mad",
+                                                 "params": {}}]},
+                   rejected=())
+    assert payload["scope_clause"]["feature"] == Z
+    request = backend.requests[0]
+    system = "\n".join(str(message.get("content") or "")
+                       for message in request.messages
+                       if message.get("role") == "system")
+    # The bootstrap instruction and the h0 procedural Skills are what Slow is
+    # supposed to be looking at; an empty view would carry neither.
+    assert system.strip(), "no system message was built"
+    assert "Resolved Harness" in system
+    assert "inspect_and_localize" in system
+    # And the snapshot identity travels with the call.
+    assert request.source_harness_snapshot_sha == snapshot.runtime_bundle_sha
+
+
+def test_the_runner_hands_the_arm_snapshot_to_the_outer_slow_factory():
+    """Wiring lock: the factory takes a snapshot, and the arm passes its own."""
+    import inspect
+
+    source = inspect.getsource(runner.Arm.outer_step)
+    assert "self.active_snapshot()" in source
+    assert "harness_view={}" not in inspect.getsource(runner.OuterSlowAgent)
+    params = inspect.signature(runner.OuterSlowAgent.__init__).parameters
+    assert "snapshot" in params
+    # Required, not defaulted: the class cannot be constructed unarmed again.
+    assert params["snapshot"].default is inspect.Parameter.empty
+
+
+def test_a_resumed_arm_still_has_a_snapshot_to_ask_with():
+    """Resume replays cells from checkpoints and never calls begin_unit.
+
+    ``_method`` is then still None when the outer step runs, so the snapshot
+    has to come from somewhere that exists -- the arm's start snapshot, which
+    is the truthful answer for an arm that has learned nothing this process.
+    """
+    spec = runner.arm_specs(k0_empty=True)[-1]
+    assert spec.outer, "expected the online arm"
+    arm = runner.Arm(spec, root=ROOT / "_scratch" / "resume_snapshot_probe",
+                     machinery={}, start_snapshot=_h0_snapshot(),
+                     ledgers=runner.Ledgers(),
+                     guard=runner.BudgetGuard(ordering_cap=1,
+                                              per_unit_arm_cap=1,
+                                              ledgers=runner.Ledgers()),
+                     backend_factory=None, outer_slow_factory=None,
+                     offline=True)
+    assert arm._method is None
+    assert arm.active_snapshot() is arm.start_snapshot
+    assert arm.active_snapshot().runtime_bundle_sha
 
 
 # ---------------------------------------------------------------------------

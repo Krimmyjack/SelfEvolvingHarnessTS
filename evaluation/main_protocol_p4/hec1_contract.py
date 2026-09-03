@@ -98,6 +98,43 @@ CODE_FREEZE = {
                    "orderings, no dirty runner file, no shakedown artifact",
     "no_new_hash_infrastructure": True,
 }
+
+#: Phase S and Phase T did not run on the same commit, and the readout must say
+#: so rather than let a reader assume one commit covers the whole course.  The
+#: first Forward attempt died on the outer loop's first live Slow call
+#: (``harness_view={}`` where ``core.run_stage`` reads ``.instruction``), was
+#: ruled ``RUN_BLOCKED_NO_VERDICT``, and Forward restarted from unit 0 on the
+#: fixed commit rather than resuming -- one ordering, one commit.  Phase S is
+#: **not** re-run because it provably never executed the defective line: both
+#: of its outer steps found no candidate needing a clause, so its ledger
+#: records ``llm_outer = 0``.  K0's formation chain (inner Support -> delayed ->
+#: authority gate) does not touch this path either.
+CODE_PROVENANCE_ERRATUM = {
+    "phase_s_commit": "e33f036457e481bd2e5a1eb04fd240e51d3cba00",
+    "phase_t_commit": "the fix commit; recorded per artifact in code_state",
+    "diff_between_them": (
+        "OuterSlowAgent's harness_view construction only: the view is now "
+        "resolved with resolve_harness_view(snapshot, {}, role='slow') as the "
+        "Source line's scope_clause_agent already did, and the arm's own "
+        "active snapshot is threaded in"),
+    "why_phase_s_is_not_re_run": (
+        "Phase S never reached the changed path: ledgers.llm_outer == 0 and "
+        "both outer steps recorded slow_calls == 0"),
+    "why_forward_did_not_resume": (
+        "one ordering runs on one commit; resuming 5 units from the previous "
+        "commit onto the fixed one would put two code versions in one curve, "
+        "which is the same reason the v1 Forward was demoted to shakedown"),
+    "blocked_attempt": {
+        "run_root": ".hec1_runs/forward_v11_attempt1_blocked",
+        "verdict": "RUN_BLOCKED_NO_VERDICT",
+        "units_completed_before_the_fault": 4,
+        "llm_spent": 35,
+        "counted_as": "instrument overhead, listed separately like the "
+                      "shakedown; enters no curve and no readout whitelist",
+        "no_course_artifact": "the course JSON was never written, so there is "
+                              "nothing for the readout to reject",
+    },
+}
 STAGE = "HEC1_CONTRACT"
 DATA_VERSION = v1.DATA_VERSION
 
@@ -1264,6 +1301,7 @@ def to_dict() -> dict[str, Any]:
         "skill_taxonomy": SKILL_TAXONOMY,
         "naming": NAMING,
         "code_freeze": CODE_FREEZE,
+        "code_provenance_erratum": CODE_PROVENANCE_ERRATUM,
         "replay_share_record": REPLAY_SHARE_RECORD,
         "supersedes_version": SUPERSEDES_VERSION,
         "stopping_rules": STOPPING_RULES,
