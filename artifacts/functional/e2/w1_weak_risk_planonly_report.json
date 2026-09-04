@@ -1,0 +1,33 @@
+{
+  "experiment_id": "v1-weak-risk-planonly",
+  "llm_call_count": 4,
+  "risk_semantics": "== Risk semantics (important) ==\n- Weak risk (negative evidence from an uncalibrated context, 'weak reference'): the operator is downgraded below UNKNOWN candidates, but this is NOT a global prohibition. After UNKNOWN candidates have been exhausted and Support budget remains, one bounded probe of a weak-risk operator is allowed — the probe itself is the confirmation.\n- Strong risk (context-matched or target-local negative evidence): avoid or abstain — do not probe.",
+  "setting": "plan-only（不评估新 outcome）；metr offset=80 weak 路径 + uci strong 负控；luna temp=0；总调用 4",
+  "strong": {
+    "avoided": true,
+    "calls": [
+      {
+        "chosen": "cand_denoise_median",
+        "raw": "{\"chosen_candidate_id\":\"cand_denoise_median\",\"evidence_refs\":[\"Reference 2\"],\"rationale\":\"Probe the UNKNOWN candidate. winsorize carries strong risk and should not be probed, while the historical mixed evidence specifically supports treating it as risky.\"}"
+      },
+      {
+        "chosen": "cand_denoise_median",
+        "raw": "{\"chosen_candidate_id\":\"cand_denoise_median\",\"evidence_refs\":[\"Reference 2\"],\"rationale\":\"cand_denoise_median is UNKNOWN and should be probed before cand_winsorize, which carries strong risk.\"}"
+      }
+    ],
+    "render_is_strong": false
+  },
+  "verdict": "WEAK_RISK_GRADED_PASS",
+  "weak": {
+    "render_is_weak": true,
+    "select1": {
+      "chosen": "cand_denoise_median",
+      "raw": "{\"chosen_candidate_id\":\"cand_denoise_median\",\"evidence_refs\":[\"Reference 3\"],\"rationale\":\"cand_winsorize carries weak negative historical evidence and is downgraded below UNKNOWN candidates. Probe cand_denoise_median first.\"}"
+    },
+    "select2": {
+      "chosen": "cand_winsorize",
+      "raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"Reference 3\"],\"rationale\":\"UNKNOWN candidates are exhausted and Support budget remains. The winsorize evidence is weak rather than strong, so one bounded confirmation probe is allowed despite its negative historical signal.\"}"
+    },
+    "sequence_ok": true
+  }
+}

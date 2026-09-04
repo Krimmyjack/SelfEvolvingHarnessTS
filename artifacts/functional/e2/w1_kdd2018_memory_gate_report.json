@@ -1,0 +1,114 @@
+{
+  "experiment_id": "v1-kdd2018-memory-gate",
+  "note": "P4.0 零新数据 plan-only Gate（已暴露 KDD Context；跨域 Monash outlier-family Source；不读新 Target outcome）",
+  "pool": [
+    "winsorize",
+    "outlier_mad",
+    "hampel_filter"
+  ],
+  "arms": {
+    "M_source": [
+      {
+        "label": "M_source_rep1",
+        "chosen": "cand_winsorize",
+        "top2": [
+          "winsorize"
+        ],
+        "pool": [
+          "identity",
+          "cand_winsorize"
+        ],
+        "reference_rendered": true,
+        "instruction_head": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 1: candidate operators ['winsorize'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibrated, fewer than the minimum histo"
+      },
+      {
+        "label": "M_source_rep2",
+        "chosen": "cand_winsorize",
+        "top2": [
+          "winsorize"
+        ],
+        "pool": [
+          "identity",
+          "cand_winsorize"
+        ],
+        "reference_rendered": true,
+        "instruction_head": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 1: candidate operators ['winsorize'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibrated, fewer than the minimum histo"
+      }
+    ],
+    "M_remove": [
+      {
+        "label": "M_remove_rep1",
+        "chosen": "cand_outlier_mad",
+        "top2": [
+          "outlier_mad",
+          "winsorize"
+        ],
+        "pool": [
+          "identity",
+          "cand_winsorize",
+          "cand_outlier_mad",
+          "cand_hampel_filter"
+        ],
+        "reference_rendered": false,
+        "instruction_head": ""
+      },
+      {
+        "label": "M_remove_rep2",
+        "chosen": "cand_outlier_mad",
+        "top2": [
+          "outlier_mad",
+          "winsorize"
+        ],
+        "pool": [
+          "identity",
+          "cand_winsorize",
+          "cand_outlier_mad",
+          "cand_hampel_filter"
+        ],
+        "reference_rendered": false,
+        "instruction_head": ""
+      }
+    ],
+    "M_signswap": [
+      {
+        "label": "M_signswap_rep1",
+        "chosen": "cand_outlier_mad",
+        "top2": [
+          "outlier_mad",
+          "hampel_filter"
+        ],
+        "pool": [
+          "identity",
+          "cand_outlier_mad",
+          "cand_hampel_filter"
+        ],
+        "reference_rendered": true,
+        "instruction_head": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 3: candidate operators ['winsorize'] carried only negative evidence in historical experience (harmful Support/delayed windows; weak reference: no context matching). Avoid them unless current evidence c"
+      },
+      {
+        "label": "M_signswap_rep2",
+        "chosen": "identity",
+        "top2": [
+          "outlier_mad",
+          "hampel_filter"
+        ],
+        "pool": [
+          "identity",
+          "cand_outlier_mad",
+          "cand_hampel_filter"
+        ],
+        "reference_rendered": true,
+        "instruction_head": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 3: candidate operators ['winsorize'] carried only negative evidence in historical experience (harmful Support/delayed windows; weak reference: no context matching). Avoid them unless current evidence c"
+      }
+    ]
+  },
+  "checks": {
+    "1_resolver_renders": true,
+    "2_top2_stable": true,
+    "3_top2_differs": true,
+    "4_direction_explainable": true,
+    "5_no_voting": true
+  },
+  "llm_api_call_count": 6,
+  "verdict": "MEMORY_ACTION_SIGNAL"
+}

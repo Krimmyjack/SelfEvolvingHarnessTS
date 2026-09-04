@@ -1,0 +1,54 @@
+{
+  "case": {
+    "delayed_origin": 976,
+    "origin": 928,
+    "step_a": "impute_ssm",
+    "step_b": "outlier_iqr",
+    "support": {
+      "A_only": -0.15432,
+      "A_to_B": -0.10249,
+      "B_only": 0.04386,
+      "identity": null
+    }
+  },
+  "delayed_runner_side_not_in_feedback": {
+    "A_only": null,
+    "A_to_B": -0.01342,
+    "B_only": 0.02719
+  },
+  "executable_patch_extracted": null,
+  "experiment_id": "v1-counterfactual-attribution-e0",
+  "llm_api_call_count": 2,
+  "outcome": "NO_EXECUTABLE_PATCH",
+  "proposed_manifest": {
+    "edit_id": "localize-sign-flip-repair",
+    "new_value": null,
+    "operation": "PATCH",
+    "target_pattern_id": "gefcom-impute-ssm-to-outlier-iqr-sign-flip",
+    "target_surface_id": "bootstrap_skills.entries/inspect_and_localize.body"
+  },
+  "structural_preflight": {
+    "base_sha_matches_snapshot": true,
+    "falsification_condition": [
+      "The agent proposes a repair without inspecting public localization or continuity evidence.",
+      "The agent merges disjoint high-deviation subregions into one broad modification without public support.",
+      "The agent modifies more than 35 percent of the observed surface or changes behavior outside the localized candidate region."
+    ],
+    "first_fault_face_encoded": "program",
+    "minimal_patch": {
+      "value": "Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence before proposing any repair. For broad low-density regions with a high robust-z signal, preserve disjoint narrow hypotheses as separate candidate regions rather than merging the entire span. When sequential workflow evidence shows a sign flip or conflicting probe directions, keep the repair local, retain runtime identity as a control, and abstain unless the public evidence identifies an observable repair surface."
+    },
+    "new_value_summary": null,
+    "operation": "PATCH",
+    "operation_allowed": true,
+    "predicted_agent_behavior_change": [
+      "retrieve_skill:inspect_and_localize",
+      "scope_modified_fraction<=0.35",
+      "localization_iou>=0.0"
+    ],
+    "preflight": "ACCEPTED",
+    "stage": "manifest",
+    "surface_in_catalog": true,
+    "target_surface_id": "bootstrap_skills.entries/inspect_and_localize.body"
+  }
+}

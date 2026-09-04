@@ -1,0 +1,165 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "This Target was exposed in another Program family. A PASS supports the mechanism and authorizes independent confirmation, but cannot promote or activate the Candidate.",
+  "compute": {
+    "consumer_fit_count": 3,
+    "llm_api_call_count": 0
+  },
+  "context_exposure": "INSTANCE_SEEN_IN_OTHER_PROGRAM_FAMILIES",
+  "dataset": "UCI Air Quality",
+  "experiment_id": "E2.79-natural-imputation-UCI-Air-Quality-Target-pilot",
+  "feasibility_rejections": [
+    {
+      "channel": "CO(GT)",
+      "reason": "NO_ACTIONABLE_EVALUATION_ORIGIN"
+    }
+  ],
+  "gate": {
+    "A5_harmful_role_count_zero": false,
+    "A5_macro_strictly_greater_than_A3": false,
+    "at_least_one_role_has_material_headroom": false,
+    "passed": false,
+    "source_order_changes_behavior": true
+  },
+  "information_boundary": {
+    "query_outcome_role": "EVALUATOR_ONLY",
+    "query_target_availability_used_for_retrospective_admission": true,
+    "query_target_values_used_for_planning_or_confirmation": false,
+    "repair_truth_used": false,
+    "support_feedback": "historical_observed_forecasting_outcome",
+    "target_context_or_outcome_fresh_for_project": false
+  },
+  "outcome_exposure": "EXPOSED_BY_THIS_PILOT",
+  "scientific_role": "exposed natural Target pilot of a frozen Source Workflow order versus equal-budget Target-only probe ordering",
+  "source": {
+    "license": "CC BY 4.0",
+    "missing_semantics": "official -200 missing marker converted to NaN",
+    "url": "https://archive.ics.uci.edu/dataset/360/air+quality"
+  },
+  "source_candidate": {
+    "report": "artifacts/functional/e2/natural_imputation_cold_start_contract_repair_report.json",
+    "status": "CANDIDATE",
+    "workflow_order": [
+      "W_period_median_imputation",
+      "W_ar_imputation"
+    ]
+  },
+  "summary": {
+    "A5_harmful_role_count": 1,
+    "A5_minus_A3": -0.10826036628867886,
+    "adapt_auc": {
+      "A3": -0.2165207325773577,
+      "A5": -0.32478109886603657
+    },
+    "material_headroom_role_count": 0,
+    "role_count": 1,
+    "source_order_behavior_change_role_count": 1
+  },
+  "target_roles": [
+    {
+      "adaptation": {
+        "A3_adaptation_auc": -0.2165207325773577,
+        "A3_equal_budget_order_average_curve": [
+          {
+            "budget": 0,
+            "fixed_query_gain": 0.0
+          },
+          {
+            "budget": 1,
+            "fixed_query_gain": -0.2165207325773577
+          },
+          {
+            "budget": 2,
+            "fixed_query_gain": -0.4330414651547154
+          }
+        ],
+        "A5_adaptation_auc": -0.32478109886603657,
+        "A5_harm_count": 2,
+        "A5_minus_A3": -0.10826036628867886,
+        "A5_source_order_curve": [
+          {
+            "abstained": true,
+            "budget": 0,
+            "fixed_query_gain": 0.0,
+            "selected_workflow": "IDENTITY"
+          },
+          {
+            "abstained": false,
+            "budget": 1,
+            "fixed_query_gain": -0.4330414651547154,
+            "selected_workflow": "W_period_median_imputation"
+          },
+          {
+            "abstained": false,
+            "budget": 2,
+            "fixed_query_gain": -0.4330414651547154,
+            "selected_workflow": "W_period_median_imputation"
+          }
+        ]
+      },
+      "channel": "NO2(GT)",
+      "geometry": {
+        "evaluation_stop": 9288,
+        "query_origin": 9288,
+        "query_outcome_role": "EVALUATOR_ONLY",
+        "query_target_availability_used_for_retrospective_admission": true,
+        "query_target_values_used_for_planning_or_confirmation": false,
+        "repair_truth_used": false,
+        "support_feedback": "historical_observed_forecasting_outcome",
+        "support_origins": [
+          9240,
+          9216,
+          9192
+        ]
+      },
+      "programs": [
+        {
+          "combined_gain_vs_identity": 0.0,
+          "combined_loss": 1.0636883809931696,
+          "query_gain_vs_identity": 0.0,
+          "query_loss": 0.7497165169774131,
+          "support_gain_vs_identity": 0.0,
+          "support_loss": 1.1683456689984217,
+          "training_row_count": 110,
+          "workflow_id": "IDENTITY"
+        },
+        {
+          "combined_gain_vs_identity": 0.019374192591808503,
+          "combined_loss": 1.0443141884013611,
+          "query_gain_vs_identity": -0.4330414651547154,
+          "query_loss": 1.1827579821321286,
+          "support_gain_vs_identity": 0.17017941184064977,
+          "support_loss": 0.998166257157772,
+          "training_row_count": 110,
+          "workflow_id": "W_period_median_imputation"
+        },
+        {
+          "combined_gain_vs_identity": -0.0012560468896762877,
+          "combined_loss": 1.064944427882846,
+          "query_gain_vs_identity": -0.0019859225717837603,
+          "query_loss": 0.7517024395491969,
+          "support_gain_vs_identity": -0.0010127549956406856,
+          "support_loss": 1.1693584239940624,
+          "training_row_count": 110,
+          "workflow_id": "W_ar_imputation"
+        }
+      ],
+      "public_context": {
+        "maximum_run_length": 96,
+        "missing_fraction": 0.12363636363636364,
+        "natural_missing_values_present": true,
+        "period": 24,
+        "training_window_count": 110
+      },
+      "validation": {
+        "A5_above_equal_budget_A3": false,
+        "A5_harm_zero": false,
+        "material_query_headroom": false,
+        "menu_oracle_query_gain_evaluator_only": 0.0,
+        "menu_oracle_workflow_evaluator_only": "IDENTITY",
+        "source_order_changes_early_behavior": true
+      }
+    }
+  ],
+  "verdict": "NATURAL_IMPUTATION_TARGET_PILOT_FAIL"
+}

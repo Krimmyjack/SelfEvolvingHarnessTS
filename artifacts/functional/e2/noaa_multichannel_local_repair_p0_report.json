@@ -1,0 +1,102 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "Single-dataset exposed P0 only. A pass establishes natural Program headroom and risk, not a Witness, Capability, cross-dataset transfer, or LLM Harness-update result.",
+  "compute": {
+    "consumer_fit_count": 4,
+    "llm_api_call_count": 0,
+    "proxy_call_count": 0
+  },
+  "consumer": "Ridge(alpha=1.0, unpenalized intercept)",
+  "dataset": "NOAA Global Hourly 2024",
+  "experiment_id": "E2-natural-NOAA-multichannel-local-repair-P0",
+  "gate": {
+    "at_least_four_eligible_stations": false,
+    "at_least_one_identity_optimal_station": false,
+    "at_least_two_material_positive_stations": true,
+    "passed": false
+  },
+  "information_boundary": {
+    "context_exposure": "INSTANCE_SEEN",
+    "development_only": true,
+    "evaluation_requires_clean_context_and_target": true,
+    "outcome_exposure": "EXPOSED",
+    "repair_reads_forecast_target": false,
+    "repair_uses_current_context_only": true
+  },
+  "metric": "per-origin sMASE",
+  "program_family": {
+    "binding": "within-context median(TMP-DEW) on observed pairs; fill only originally missing TMP points where DEW is visible",
+    "candidate": "LOCAL_DEWPOINT_DELTA_REPAIR",
+    "fallback": "TEMPORAL_LINEAR_FILL",
+    "incumbent": "TEMPORAL_LINEAR_FILL",
+    "peer_channel": "DEW",
+    "scope": "natural local missing runs <=12 hours with >=0.8 peer coverage",
+    "target_channel": "TMP"
+  },
+  "scientific_role": "natural Program headroom and matched-risk census",
+  "station_results": [
+    {
+      "affected_missing_point_count": 14,
+      "affected_training_row_count": 12,
+      "baseline_query_loss": 1.3026922700998032,
+      "baseline_support_loss": 1.2125092973014868,
+      "candidate_query_loss": 1.3198862551717956,
+      "candidate_support_loss": 1.1752559590773715,
+      "combined_gain": 0.010029676576061464,
+      "evaluation_anchor_range": [
+        6528,
+        8640
+      ],
+      "evaluation_window_count": 40,
+      "median_absolute_repair_delta": 13.600000000000001,
+      "peer_binding_coverage": 1.0,
+      "peer_bound_point_count": 14,
+      "query_gain": -0.017193985071992435,
+      "station_id": "72562624091",
+      "support_gain": 0.03725333822411536,
+      "training_window_count": 229
+    },
+    {
+      "affected_missing_point_count": 8,
+      "affected_training_row_count": 8,
+      "baseline_query_loss": 1.2521978353044376,
+      "baseline_support_loss": 1.3844329491962442,
+      "candidate_query_loss": 1.217900315214769,
+      "candidate_support_loss": 1.3545217616669787,
+      "combined_gain": 0.03210435380946719,
+      "evaluation_anchor_range": [
+        6240,
+        8400
+      ],
+      "evaluation_window_count": 40,
+      "median_absolute_repair_delta": 18.349999999999998,
+      "peer_binding_coverage": 1.0,
+      "peer_bound_point_count": 8,
+      "query_gain": 0.03429752008966869,
+      "station_id": "72650014972",
+      "support_gain": 0.02991118752926547,
+      "training_window_count": 233
+    }
+  ],
+  "summary": {
+    "dataset_macro_combined_gain": 0.021067015192764327,
+    "eligible_station_count": 2,
+    "harmful_station_count": 0,
+    "harmful_station_ids": [],
+    "identity_optimal_station_count": 0,
+    "material_gain_threshold": 0.005,
+    "maximum_combined_gain": 0.03210435380946719,
+    "minimum_combined_gain": 0.010029676576061464,
+    "positive_station_count": 2,
+    "positive_station_ids": [
+      "72562624091",
+      "72650014972"
+    ],
+    "rejected_station_counts": {
+      "FEWER_THAN_TWO_AFFECTED_TRAINING_ROWS": 62
+    },
+    "source_file_count": 64
+  },
+  "task": "forecasting",
+  "verdict": "PROGRAM_HEADROOM_OR_MATCHED_RISK_FAIL"
+}

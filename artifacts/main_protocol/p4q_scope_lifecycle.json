@@ -1,0 +1,98 @@
+{
+  "stage": "P4Q_SCOPE_LIFECYCLE",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T21:20:16.563520+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_MECHANISM_WIRING",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "harness_experiments_run": 0
+  },
+  "steps": [
+    {
+      "step": "1_loop_accepts_scope",
+      "what": "run_online_round takes candidate_scopes and scope_resolver, both defaulting to None",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "2_candidate_carries_predicate",
+      "what": "the predicate reaches the probe through candidate_scopes",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "3_runtime_resolves_to_uids",
+      "what": "the probe loop resolves the predicate at the origin and hands the set to the executor",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "4_episode_records_both_forms",
+      "what": "program_geometry stores the predicate and the resolved UIDs, the latter marked resolved_is_skill_field=False",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "5_skill_stores_predicate_only",
+      "what": "handle_fast_winner writes serving_scope into the skill entry; no UID is stored",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "6_support_b_replay_uses_the_same_scope",
+      "what": "the winner's replay evaluator carries the same resolved set, so approval judges the execution that earned the probe",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "7_patch_revises_the_predicate",
+      "what": "a Slow PATCH carrying a tighter predicate reaches the slow event, replaces the winner's Scope and bumps the revision to 2",
+      "coverage": "END_TO_END"
+    },
+    {
+      "step": "8_re_encounter_executes_the_new_version",
+      "what": "the revised predicate resolves to strictly fewer series, and a stored predicate re-resolves against a different Target's series",
+      "coverage": "END_TO_END"
+    }
+  ],
+  "suites": [
+    {
+      "target": "tests/main_protocol/test_scope_spec.py",
+      "summary": "10 passed in 0.19s",
+      "passed": true
+    },
+    {
+      "target": "tests/main_protocol/test_scoped_serving_behaviour_lock.py",
+      "summary": "6 passed in 3.44s",
+      "passed": true
+    },
+    {
+      "target": "tests/main_protocol/test_scope_lifecycle.py",
+      "summary": "8 passed in 20.65s",
+      "passed": true
+    }
+  ],
+  "additive_discipline": "the default branch keeps the historical *call shape*, not merely the historical default value: an injected executor or method that only accepts the old signature must not receive a new keyword. Ignoring this broke all nine tests in tests/functional/test_bounded_admission_lifecycle.py once",
+  "regression_gate": {
+    "baseline": "artifacts/main_protocol/p4p_failure_baseline.json",
+    "suites": [
+      "tests/main_protocol",
+      "tests/methods",
+      "tests/functional"
+    ],
+    "note": "tests/functional was missing from the first baseline, which is exactly where run_online_round is driven; a real regression went unflagged until a manual snapshot comparison caught it",
+    "known_pre_existing": {
+      "tests/methods": "33 failing nodes, mostly H0 snapshot lock",
+      "tests/functional": "one collection error: test_skill_revocation.py:166 uses a PEP 701 f-string that Python 3.10 cannot parse"
+    }
+  },
+  "contract_changes": {
+    "contracts/schemas/skill_entry_v1.json": "optional serving_scope property; required[] unchanged, so every existing entry still validates",
+    "contracts/harness.py": "SkillEntry gains an optional serving_scope field, and _require_exact_fields gains an explicit optional set so the record stays exact for everything else; the loader validates the predicate and refuses a clause that names a series",
+    "why_needed": "without both, a Slow PATCH carrying a Scope fails to apply with EditShapeError and the Skill can never store one"
+  },
+  "not_covered": [
+    "Classification serving path: still serves unprepared features and has no raw fallback pipeline (p4o gate 7)",
+    "a real second encounter: step 8 is shown by re-resolution, not by a second round retrieving the stored Skill and executing it",
+    "any utility claim: no Harness experiment has been run"
+  ],
+  "verdict": "SCOPE_LIFECYCLE_DRIVEN_END_TO_END_0_LLM",
+  "releases": "nothing; a single-cell live smoke confirming a real Agent emits a legal Scope is the next gate before Static/A3/A5 is frozen"
+}

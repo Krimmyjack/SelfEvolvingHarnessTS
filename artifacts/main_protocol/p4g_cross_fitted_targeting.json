@@ -1,0 +1,933 @@
+{
+  "stage": "P4G_CROSS_FITTED_TARGETING",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T14:20:45.738451+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_OFFLINE_DIAGNOSTIC",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "reads_only": "the persisted per-series gain tensor"
+  },
+  "design": {
+    "programs_in_tensor": 396,
+    "distinct_effects_readable_everywhere": 68,
+    "programs_replaced_by_param_correction": 102,
+    "menu_size": 6,
+    "menu_includes_raw": true,
+    "targeter": "DecisionTreeClassifier(max_depth=3, min_samples_leaf=2)",
+    "features": [
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient"
+    ],
+    "feature_count": 15,
+    "primary_scheme": "cross_face",
+    "why_primary": "the binding constraint is inside one origin: A/B admitted sets are disjoint at 1176 and 2616 and one face admits nothing at 1896 and 2376, so unseen-series-group is the question that precedes unseen-origin"
+  },
+  "cross_face": {
+    "summary": {
+      "folds": 12,
+      "mean_best_fixed": 0.26291,
+      "mean_targeter": 0.190797,
+      "mean_per_series_oracle": 0.610602,
+      "folds_where_targeter_beats_best_fixed": 5,
+      "folds_where_best_fixed_clears_budget": 1,
+      "folds_where_targeter_clears_budget": 2,
+      "mean_oracle_headroom_over_best_fixed": 0.347692
+    },
+    "folds": [
+      {
+        "menu": [
+          "impute_ema>outlier_iqr",
+          "hampel_filter[global_z_min=0.0,n_sigmas=4.5,window=25]",
+          "hampel_filter[global_z_min=0.0,n_sigmas=3.0,window=25]",
+          "impute_ema>winsorize",
+          "period_median_complete>hampel_filter",
+          "hampel_filter[global_z_min=0.0,n_sigmas=6.0,window=25]",
+          "raw"
+        ],
+        "best_fixed_choice": "impute_ema>outlier_iqr",
+        "targeter_choice_histogram": {
+          "impute_ema>outlier_iqr": 9,
+          "hampel_filter[global_z_min=0.0,n_sigmas=4.5,window=25]": 3,
+          "hampel_filter[global_z_min=0.0,n_sigmas=3.0,window=25]": 8
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.192411,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.701971,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.255469,
+          "harmed_fraction": 0.3,
+          "max_single_series_harm": 1.146875,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.628298,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.063057,
+        "oracle_minus_best_fixed": 0.435887,
+        "targeter_share_of_oracle_gap": 0.1447,
+        "note": null,
+        "origin": 1176,
+        "train_face": "support_a",
+        "test_face": "support_b"
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "impute_fft>winsorize",
+          "impute_ar>winsorize",
+          "winsorize>winsorize",
+          "winsorize",
+          "period_median_complete>hampel_filter",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "impute_ar>winsorize": 6,
+          "winsorize>winsorize": 6,
+          "period_median_complete>hampel_filter": 8
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.238817,
+          "harmed_fraction": 0.35,
+          "max_single_series_harm": 1.050319,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": -0.1025,
+          "harmed_fraction": 0.6,
+          "max_single_series_harm": 1.309543,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.8675,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.341316,
+        "oracle_minus_best_fixed": 0.628684,
+        "targeter_share_of_oracle_gap": -0.5429,
+        "note": null,
+        "origin": 1176,
+        "train_face": "support_b",
+        "test_face": "support_a"
+      },
+      {
+        "menu": [
+          "period_complete>winsorize",
+          "impute_fft>outlier_iqr",
+          "period_complete>outlier_mad",
+          "impute_ar>winsorize",
+          "impute_fft>winsorize",
+          "period_complete>outlier_iqr",
+          "raw"
+        ],
+        "best_fixed_choice": "period_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_complete>winsorize": 8,
+          "impute_fft>outlier_iqr": 9,
+          "impute_ar>winsorize": 2,
+          "impute_fft>winsorize": 1
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": -0.128003,
+          "harmed_fraction": 0.55,
+          "max_single_series_harm": 1.333573,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": -0.070135,
+          "harmed_fraction": 0.7,
+          "max_single_series_harm": 1.333573,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.347582,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.057868,
+        "oracle_minus_best_fixed": 0.475585,
+        "targeter_share_of_oracle_gap": 0.1217,
+        "note": null,
+        "origin": 1896,
+        "train_face": "support_a",
+        "test_face": "support_b"
+      },
+      {
+        "menu": [
+          "impute_ar>outlier_mad",
+          "impute_ar>winsorize",
+          "impute_fft>winsorize",
+          "winsorize",
+          "winsorize>winsorize",
+          "impute_ema>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "impute_ar>outlier_mad",
+        "targeter_choice_histogram": {
+          "impute_ar>winsorize": 4,
+          "winsorize": 2,
+          "impute_ema>winsorize": 5,
+          "raw": 9
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.594728,
+          "harmed_fraction": 0.15,
+          "max_single_series_harm": 0.177377,
+          "clears_bounded_budget": true
+        },
+        "targeter": {
+          "mean_gain": 0.335938,
+          "harmed_fraction": 0.15,
+          "max_single_series_harm": 0.182769,
+          "clears_bounded_budget": true
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.820273,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.25879,
+        "oracle_minus_best_fixed": 0.225546,
+        "targeter_share_of_oracle_gap": -1.1474,
+        "note": null,
+        "origin": 1896,
+        "train_face": "support_b",
+        "test_face": "support_a"
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_mad",
+          "period_median_complete>outlier_iqr",
+          "period_complete>outlier_iqr",
+          "period_complete>winsorize",
+          "period_median_complete[cycles=3,min_donors=1,period=24]",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_median_complete>outlier_mad": 7,
+          "period_complete>outlier_iqr": 12,
+          "period_complete>winsorize": 1
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.191927,
+          "harmed_fraction": 0.5,
+          "max_single_series_harm": 0.863198,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.074751,
+          "harmed_fraction": 0.55,
+          "max_single_series_harm": 1.334695,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.522412,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.117176,
+        "oracle_minus_best_fixed": 0.330485,
+        "targeter_share_of_oracle_gap": -0.3546,
+        "note": null,
+        "origin": 2136,
+        "train_face": "support_a",
+        "test_face": "support_b"
+      },
+      {
+        "menu": [
+          "impute_ema>winsorize",
+          "impute_fft>winsorize",
+          "impute_ema>outlier_iqr",
+          "impute_ar>winsorize",
+          "outlier_mad>winsorize",
+          "winsorize>outlier_mad",
+          "raw"
+        ],
+        "best_fixed_choice": "impute_ema>winsorize",
+        "targeter_choice_histogram": {
+          "impute_ema>winsorize": 1,
+          "impute_fft>winsorize": 1,
+          "impute_ar>winsorize": 13,
+          "winsorize>outlier_mad": 5
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.343271,
+          "harmed_fraction": 0.1,
+          "max_single_series_harm": 0.533938,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.25734,
+          "harmed_fraction": 0.15,
+          "max_single_series_harm": 0.435978,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.537326,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.085931,
+        "oracle_minus_best_fixed": 0.194056,
+        "targeter_share_of_oracle_gap": -0.4428,
+        "note": null,
+        "origin": 2136,
+        "train_face": "support_b",
+        "test_face": "support_a"
+      },
+      {
+        "menu": [
+          "impute_ema>outlier_iqr",
+          "period_median_complete[cycles=4,min_donors=3,period=24]",
+          "period_median_complete>outlier_mad",
+          "impute_fft>outlier_iqr",
+          "period_median_complete[cycles=3,min_donors=3,period=24]",
+          "impute_fft>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "impute_ema>outlier_iqr",
+        "targeter_choice_histogram": {
+          "impute_ema>outlier_iqr": 8,
+          "impute_fft>outlier_iqr": 8,
+          "period_median_complete[cycles=3,min_donors=3,period=24]": 4
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.118253,
+          "harmed_fraction": 0.3,
+          "max_single_series_harm": 0.456109,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.009827,
+          "harmed_fraction": 0.45,
+          "max_single_series_harm": 1.269156,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.345221,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.108427,
+        "oracle_minus_best_fixed": 0.226967,
+        "targeter_share_of_oracle_gap": -0.4777,
+        "note": null,
+        "origin": 2376,
+        "train_face": "support_a",
+        "test_face": "support_b"
+      },
+      {
+        "menu": [
+          "impute_ar>winsorize",
+          "impute_fft>winsorize",
+          "winsorize>winsorize",
+          "winsorize",
+          "period_median_complete[cycles=4,min_donors=3,period=24]",
+          "impute_ema>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "impute_ar>winsorize",
+        "targeter_choice_histogram": {
+          "impute_ar>winsorize": 15,
+          "winsorize>winsorize": 5
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.202107,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.911499,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.134117,
+          "harmed_fraction": 0.25,
+          "max_single_series_harm": 0.911499,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.518808,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.06799,
+        "oracle_minus_best_fixed": 0.316701,
+        "targeter_share_of_oracle_gap": -0.2147,
+        "note": null,
+        "origin": 2376,
+        "train_face": "support_b",
+        "test_face": "support_a"
+      },
+      {
+        "menu": [
+          "period_median_complete>outlier_mad",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete>winsorize",
+          "period_complete>winsorize",
+          "period_complete>outlier_mad",
+          "hampel_filter>outlier_mad",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>outlier_mad",
+        "targeter_choice_histogram": {
+          "period_median_complete>outlier_iqr": 12,
+          "period_median_complete>winsorize": 7,
+          "period_complete>winsorize": 1
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.198494,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.903886,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.341755,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.670891,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.524397,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.143261,
+        "oracle_minus_best_fixed": 0.325903,
+        "targeter_share_of_oracle_gap": 0.4396,
+        "note": null,
+        "origin": 2616,
+        "train_face": "support_a",
+        "test_face": "support_b"
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "period_median_complete[cycles=3,min_donors=3,period=24]",
+          "hampel_filter[global_z_min=0.0,n_sigmas=4.5,window=25]",
+          "impute_ar>outlier_mad",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete[cycles=4,min_donors=2,period=24]",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_median_complete>winsorize": 4,
+          "period_median_complete[cycles=3,min_donors=3,period=24]": 6,
+          "hampel_filter[global_z_min=0.0,n_sigmas=4.5,window=25]": 10
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.703927,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.867314,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.363988,
+          "harmed_fraction": 0.35,
+          "max_single_series_harm": 2.106017,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 1.048738,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.339939,
+        "oracle_minus_best_fixed": 0.344811,
+        "targeter_share_of_oracle_gap": -0.9859,
+        "note": null,
+        "origin": 2616,
+        "train_face": "support_b",
+        "test_face": "support_a"
+      },
+      {
+        "menu": [
+          "period_complete>outlier_iqr",
+          "period_complete>outlier_mad",
+          "period_median_complete>outlier_iqr",
+          "period_complete>winsorize",
+          "period_median_complete>outlier_mad",
+          "period_median_complete>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "period_complete>outlier_iqr",
+        "targeter_choice_histogram": {
+          "period_complete>outlier_iqr": 2,
+          "period_complete>outlier_mad": 6,
+          "period_median_complete>outlier_iqr": 10,
+          "period_median_complete>winsorize": 2
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.190765,
+          "harmed_fraction": 0.35,
+          "max_single_series_harm": 0.107203,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.233111,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.076118,
+          "clears_bounded_budget": true
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.417798,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.042347,
+        "oracle_minus_best_fixed": 0.227033,
+        "targeter_share_of_oracle_gap": 0.1865,
+        "note": null,
+        "origin": 2856,
+        "train_face": "support_a",
+        "test_face": "support_b"
+      },
+      {
+        "menu": [
+          "period_median_complete[cycles=4,min_donors=2,period=24]",
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_mad",
+          "period_median_complete",
+          "period_median_complete[cycles=3,min_donors=1,period=24]",
+          "period_median_complete>outlier_iqr",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete[cycles=4,min_donors=2,period=24]",
+        "targeter_choice_histogram": {
+          "period_median_complete[cycles=4,min_donors=2,period=24]": 6,
+          "period_median_complete>winsorize": 8,
+          "period_median_complete>outlier_mad": 3,
+          "period_median_complete": 3
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.308219,
+          "harmed_fraction": 0.4,
+          "max_single_series_harm": 0.771028,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.455905,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.373431,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.748865,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.147686,
+        "oracle_minus_best_fixed": 0.440646,
+        "targeter_share_of_oracle_gap": 0.3352,
+        "note": null,
+        "origin": 2856,
+        "train_face": "support_b",
+        "test_face": "support_a"
+      }
+    ]
+  },
+  "cross_origin": {
+    "summary": {
+      "folds": 6,
+      "mean_best_fixed": 0.285264,
+      "mean_targeter": 0.277994,
+      "mean_per_series_oracle": 0.618849,
+      "folds_where_targeter_beats_best_fixed": 3,
+      "folds_where_best_fixed_clears_budget": 1,
+      "folds_where_targeter_clears_budget": 1,
+      "mean_oracle_headroom_over_best_fixed": 0.333585
+    },
+    "folds": [
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete>outlier_mad",
+          "period_complete>outlier_iqr",
+          "impute_fft>winsorize",
+          "period_complete>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_median_complete>winsorize": 4,
+          "period_median_complete>outlier_iqr": 2,
+          "period_complete>outlier_iqr": 9,
+          "impute_fft>winsorize": 16,
+          "raw": 9
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.312505,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 1.050319,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.215251,
+          "harmed_fraction": 0.25,
+          "max_single_series_harm": 1.8858,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.670423,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.097254,
+        "oracle_minus_best_fixed": 0.357918,
+        "targeter_share_of_oracle_gap": -0.2717,
+        "note": null,
+        "held_out_origin": 1176
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete>outlier_mad",
+          "impute_ema>outlier_iqr",
+          "period_complete>outlier_iqr",
+          "impute_fft>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "impute_ema>outlier_iqr": 40
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.199773,
+          "harmed_fraction": 0.525,
+          "max_single_series_harm": 1.024852,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.178786,
+          "harmed_fraction": 0.35,
+          "max_single_series_harm": 0.796217,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.599662,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.020987,
+        "oracle_minus_best_fixed": 0.399889,
+        "targeter_share_of_oracle_gap": -0.0525,
+        "note": null,
+        "held_out_origin": 1896
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete>outlier_mad",
+          "period_complete>outlier_iqr",
+          "impute_ema>outlier_iqr",
+          "impute_fft>winsorize",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_median_complete>winsorize": 1,
+          "period_median_complete>outlier_iqr": 5,
+          "period_complete>outlier_iqr": 22,
+          "impute_ema>outlier_iqr": 4,
+          "impute_fft>winsorize": 8
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.354575,
+          "harmed_fraction": 0.4,
+          "max_single_series_harm": 0.863198,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.416148,
+          "harmed_fraction": 0.3,
+          "max_single_series_harm": 1.284497,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.618724,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.061573,
+        "oracle_minus_best_fixed": 0.264149,
+        "targeter_share_of_oracle_gap": 0.2331,
+        "note": null,
+        "held_out_origin": 2136
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete>outlier_mad",
+          "period_complete>outlier_iqr",
+          "impute_fft>winsorize",
+          "impute_ema>outlier_iqr",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_median_complete>winsorize": 2,
+          "period_complete>outlier_iqr": 5,
+          "impute_ema>outlier_iqr": 33
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.189294,
+          "harmed_fraction": 0.325,
+          "max_single_series_harm": 0.520986,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.155515,
+          "harmed_fraction": 0.3,
+          "max_single_series_harm": 1.034411,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.443243,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": -0.033779,
+        "oracle_minus_best_fixed": 0.253949,
+        "targeter_share_of_oracle_gap": -0.133,
+        "note": null,
+        "held_out_origin": 2376
+      },
+      {
+        "menu": [
+          "impute_ema>outlier_iqr",
+          "impute_fft>winsorize",
+          "period_median_complete>winsorize",
+          "period_median_complete>outlier_mad",
+          "period_median_complete>outlier_iqr",
+          "period_complete>outlier_iqr",
+          "raw"
+        ],
+        "best_fixed_choice": "impute_ema>outlier_iqr",
+        "targeter_choice_histogram": {
+          "impute_ema>outlier_iqr": 9,
+          "impute_fft>winsorize": 31
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.216044,
+          "harmed_fraction": 0.325,
+          "max_single_series_harm": 0.763113,
+          "clears_bounded_budget": false
+        },
+        "targeter": {
+          "mean_gain": 0.256462,
+          "harmed_fraction": 0.25,
+          "max_single_series_harm": 0.721354,
+          "clears_bounded_budget": false
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.769453,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.040417,
+        "oracle_minus_best_fixed": 0.553408,
+        "targeter_share_of_oracle_gap": 0.073,
+        "note": null,
+        "held_out_origin": 2616
+      },
+      {
+        "menu": [
+          "period_median_complete>winsorize",
+          "impute_fft>winsorize",
+          "period_median_complete>outlier_iqr",
+          "period_median_complete>outlier_mad",
+          "impute_ema>outlier_iqr",
+          "period_complete>outlier_iqr",
+          "raw"
+        ],
+        "best_fixed_choice": "period_median_complete>winsorize",
+        "targeter_choice_histogram": {
+          "period_median_complete>winsorize": 24,
+          "impute_ema>outlier_iqr": 16
+        },
+        "raw": {
+          "mean_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": false
+        },
+        "best_fixed": {
+          "mean_gain": 0.439396,
+          "harmed_fraction": 0.15,
+          "max_single_series_harm": 0.254768,
+          "clears_bounded_budget": true
+        },
+        "targeter": {
+          "mean_gain": 0.4458,
+          "harmed_fraction": 0.175,
+          "max_single_series_harm": 0.254768,
+          "clears_bounded_budget": true
+        },
+        "per_series_oracle": {
+          "mean_gain": 0.611591,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "clears_bounded_budget": true
+        },
+        "targeter_minus_best_fixed": 0.006404,
+        "oracle_minus_best_fixed": 0.172194,
+        "targeter_share_of_oracle_gap": 0.0372,
+        "note": null,
+        "held_out_origin": 2856
+      }
+    ]
+  },
+  "verdict": "FEATURES_DO_NOT_BEAT_A_FIXED_CHOICE",
+  "what_this_does_not_claim": [
+    "a null does not condemn targeting as a mechanism; it indicts this feature vocabulary and this menu",
+    "the tree is a diagnostic baseline, not the proposed method",
+    "no held-out or fresh data was touched; this is oracle-space development diagnosis"
+  ],
+  "releases": "NONE"
+}

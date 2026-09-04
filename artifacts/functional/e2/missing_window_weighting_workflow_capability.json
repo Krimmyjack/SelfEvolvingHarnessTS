@@ -1,0 +1,60 @@
+{
+  "capability_id": "missing_window_weighting_workflow_v1",
+  "status": "REJECTED_AFTER_INDEPENDENT_DATASET_CONFIRMATION",
+  "task_context": {
+    "task": "forecasting",
+    "consumer": "shared frozen Ridge",
+    "metric": "per-series sMASE",
+    "requires_observable_natural_missing_mask": true,
+    "requires_mixed_reliable_and_unreliable_training_windows": true,
+    "requires_known_seasonal_period": true
+  },
+  "workflow_supply": [
+    "ATTENUATE_MISSING_WINDOW(weight=0.25)",
+    "EXCLUDE_MISSING_WINDOW(weight=0.0)"
+  ],
+  "observation": {
+    "type": "missing_window_composition_plus_historical_policy_episode",
+    "context_fields": [
+      "unreliable_training_window_fraction",
+      "median_missing_fraction_within_unreliable_windows"
+    ],
+    "retrieval_use": "retrieve a Source PolicyEpisode only to order Program probes",
+    "confirmation": "phase-aligned historical outcomes on current Target identities ending before the Query cutoff",
+    "utility_claim": "neither Source retrieval nor historical response is a universal utility certificate"
+  },
+  "control": {
+    "type": "stop_on_first_positive",
+    "execute_when": "historical Target gain > 0",
+    "continue_when": "historical Target gain <= 0",
+    "fallback": "KEEP_ALL after minimal within-window linear fill"
+  },
+  "risk": {
+    "minimum_distinct_historical_origins": 2,
+    "abstain_if_training_windows_are_all_reliable_or_all_unreliable": true,
+    "abstain_if_no_positive_historical_confirmation": true,
+    "do_not_use_current_query_future_for_retrieval_or_confirmation": true,
+    "do_not_treat_proxy_or_source_gain_as_current_target_utility": true
+  },
+  "evidence": {
+    "source_program_headroom_datasets": 2,
+    "source_identity_optimal_datasets": 1,
+    "independent_natural_target_roles_passing_frozen_replay": 1,
+    "supported_reports": [
+      "natural_missing_window_weighting_p0_report.json",
+      "natural_missing_window_weighting_p1_report.json",
+      "natural_missing_window_weighting_origin_coverage_report.json"
+    ],
+    "independent_confirmation_reports": [
+      "natural_missing_window_weighting_air_quality_report.json"
+    ],
+    "rejected_updates": [
+      "high-unreliable-window-prevalence Scope",
+      "nearest-to-second Source distance ratio Risk"
+    ],
+    "failure_report_that_created_reliability_guard": "natural_missing_window_weighting_p2_report.json"
+  },
+  "current_use": "CONTRAINDICATION_AND_FAILURE_EPISODE_ONLY",
+  "retirement_reason": "On the independent UCI Air Quality target, the Program family retained material positive headroom and A5 caused no harm, but the Source-ordered probe was weaker than target-only order averaging, so Source Memory did not reduce adaptation cost.",
+  "claim_limit": "Rejected provisional Forecasting Skill version. It remains useful as negative Action-Response evidence and as a Slow-Path failure episode, but must not be retrieved as an active Fast-Path Capability."
+}

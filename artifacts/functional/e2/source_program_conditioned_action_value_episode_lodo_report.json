@@ -1,0 +1,384 @@
+{
+  "capability_claim": false,
+  "causal_hypothesis": "The signed value of masking one training row x 12-step block is more retrievable across datasets from train-row Context, local block geometry, and visible eval Context than from pooled or global evidence.",
+  "claim_limit": "Zero-new-fit LODO sign retrieval on fully exposed Source outcomes. Source proxy labels and held-out exact labels are development evidence. Retrieval does not execute a cohort, establish group utility, create Memory/Router state, promote a Capability, or demonstrate transfer. Reported selected actual marginal-credit means/sums are singleton diagnostics and must not be interpreted as grouped policy utility.",
+  "configuration": {
+    "consumer_fit_count": 0,
+    "context_exposure": "INSTANCE_SEEN",
+    "dataset_identity_used_as_feature": false,
+    "datasets": [
+      "legacy_monash:fred_md",
+      "legacy_monash:nn5_daily",
+      "metr_la",
+      "monash:traffic_hourly"
+    ],
+    "diagnostic_only": true,
+    "episode_count": 1152,
+    "feature_names": {
+      "global": [
+        "eval__last_minus_median_centroid",
+        "eval__period_lag_correlation_centroid",
+        "eval__trend_centroid",
+        "program__block_length_to_period",
+        "program__block_start_fraction",
+        "program__known_period"
+      ],
+      "program_conditioned": [
+        "block__left_boundary_jump_abs",
+        "block__mean",
+        "block__period_aligned_residual_abs_mean",
+        "block__std",
+        "block__trend",
+        "delta__row_eval_last_minus_median_abs",
+        "delta__row_eval_period_lag_correlation_abs",
+        "delta__row_eval_trend_abs",
+        "eval__last_minus_median_centroid",
+        "eval__period_lag_correlation_centroid",
+        "eval__trend_centroid",
+        "program__block_length_to_period",
+        "program__block_start_fraction",
+        "program__known_period",
+        "row__last_minus_median",
+        "row__period_lag_correlation",
+        "row__trend"
+      ]
+    },
+    "heldout_truth": "sign(mean of fold-A/fold-B exact singleton credit)",
+    "outcome_exposure": "EXPOSED",
+    "pooled_rule": "majority source proxy sign across the LODO bank; ties abstain",
+    "program_id": "mask_training_row_from_12_step_output_block",
+    "retrieval": "leave-one-dataset-out; source-bank z-score; Euclidean top-3; source proxy-sign majority vote; neighbor proxy-credit mean is reported only as a fixed agreement diagnostic",
+    "source_label": "sign(mean of fold-A/fold-B first-order singleton proxy credit)",
+    "target_outcome_derived_feature": false,
+    "target_proxy_label_used": false,
+    "top_k": 3,
+    "views": [
+      "pooled",
+      "global",
+      "program_conditioned"
+    ]
+  },
+  "dataset_macro": {
+    "global": {
+      "dataset_macro_balanced_accuracy": 0.5,
+      "dataset_macro_exposure_fraction": 1.0,
+      "dataset_macro_false_exposure_fraction_among_exposed": 0.4609375,
+      "dataset_macro_false_exposure_fraction_of_all": 0.4609375,
+      "dataset_macro_selected_actual_marginal_credit_mean": 0.0028079203488666784,
+      "dataset_macro_selected_actual_marginal_credit_sum": 0.808681060473603,
+      "dataset_macro_sign_accuracy": 0.5390625,
+      "harmful_dataset_count": 1
+    },
+    "pooled": {
+      "dataset_macro_balanced_accuracy": 0.5,
+      "dataset_macro_exposure_fraction": 1.0,
+      "dataset_macro_false_exposure_fraction_among_exposed": 0.4609375,
+      "dataset_macro_false_exposure_fraction_of_all": 0.4609375,
+      "dataset_macro_selected_actual_marginal_credit_mean": 0.0028079203488666784,
+      "dataset_macro_selected_actual_marginal_credit_sum": 0.808681060473603,
+      "dataset_macro_sign_accuracy": 0.5390625,
+      "harmful_dataset_count": 1
+    },
+    "program_conditioned": {
+      "dataset_macro_balanced_accuracy": 0.5038120837102091,
+      "dataset_macro_exposure_fraction": 0.5616319444444444,
+      "dataset_macro_false_exposure_fraction_among_exposed": 0.4511154354904355,
+      "dataset_macro_false_exposure_fraction_of_all": 0.265625,
+      "dataset_macro_selected_actual_marginal_credit_mean": 0.003770787732602063,
+      "dataset_macro_selected_actual_marginal_credit_sum": 0.627300626100387,
+      "dataset_macro_sign_accuracy": 0.4913194444444444,
+      "harmful_dataset_count": 1
+    }
+  },
+  "formal_transfer": false,
+  "gates": {
+    "material_balanced_accuracy_delta": 0.02,
+    "program_conditioned_ba_margin_over_best_pooled_or_global": 0.0038120837102091354,
+    "program_conditioned_false_exposure_not_worse_than_both_baselines": true,
+    "program_conditioned_harmful_dataset_count_not_worse_than_both_baselines": true,
+    "program_conditioned_sign_premise_pass": false
+  },
+  "lodo_folds": [
+    {
+      "heldout_dataset": "legacy_monash:fred_md",
+      "source_datasets": [
+        "legacy_monash:nn5_daily",
+        "metr_la",
+        "monash:traffic_hourly"
+      ],
+      "target_episode_count": 288,
+      "views": {
+        "global": {
+          "metrics": {
+            "actual_positive_fraction": 0.5069444444444444,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": true,
+            "false_exposure_count": 142,
+            "false_exposure_fraction_among_exposed": 0.4930555555555556,
+            "false_exposure_fraction_of_all": 0.4930555555555556,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": -0.002386461953919684,
+            "selected_actual_marginal_credit_sum": -0.6873010427288689,
+            "sign_accuracy": 0.5069444444444444,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 1.0
+          },
+          "source_episode_count": 864
+        },
+        "pooled": {
+          "metrics": {
+            "actual_positive_fraction": 0.5069444444444444,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": true,
+            "false_exposure_count": 142,
+            "false_exposure_fraction_among_exposed": 0.4930555555555556,
+            "false_exposure_fraction_of_all": 0.4930555555555556,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": -0.002386461953919684,
+            "selected_actual_marginal_credit_sum": -0.6873010427288689,
+            "sign_accuracy": 0.5069444444444444,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": null
+          },
+          "source_episode_count": 864
+        },
+        "program_conditioned": {
+          "metrics": {
+            "actual_positive_fraction": 0.5069444444444444,
+            "balanced_accuracy": 0.4906424850472699,
+            "episode_count": 288,
+            "exposure_is_harmful": true,
+            "false_exposure_count": 97,
+            "false_exposure_fraction_among_exposed": 0.5,
+            "false_exposure_fraction_of_all": 0.3368055555555556,
+            "predicted_exposure_fraction": 0.6736111111111112,
+            "selected_actual_marginal_credit_count": 194,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": -0.0027703734158676715,
+            "selected_actual_marginal_credit_sum": -0.5374524426783284,
+            "sign_accuracy": 0.4930555555555556,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 0.9409722222222222
+          },
+          "source_episode_count": 864
+        }
+      }
+    },
+    {
+      "heldout_dataset": "legacy_monash:nn5_daily",
+      "source_datasets": [
+        "legacy_monash:fred_md",
+        "metr_la",
+        "monash:traffic_hourly"
+      ],
+      "target_episode_count": 288,
+      "views": {
+        "global": {
+          "metrics": {
+            "actual_positive_fraction": 0.6041666666666666,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 114,
+            "false_exposure_fraction_among_exposed": 0.3958333333333333,
+            "false_exposure_fraction_of_all": 0.3958333333333333,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.0031274230788532536,
+            "selected_actual_marginal_credit_sum": 0.9006978467097372,
+            "sign_accuracy": 0.6041666666666666,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 1.0
+          },
+          "source_episode_count": 864
+        },
+        "pooled": {
+          "metrics": {
+            "actual_positive_fraction": 0.6041666666666666,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 114,
+            "false_exposure_fraction_among_exposed": 0.3958333333333333,
+            "false_exposure_fraction_of_all": 0.3958333333333333,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.0031274230788532536,
+            "selected_actual_marginal_credit_sum": 0.9006978467097372,
+            "sign_accuracy": 0.6041666666666666,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": null
+          },
+          "source_episode_count": 864
+        },
+        "program_conditioned": {
+          "metrics": {
+            "actual_positive_fraction": 0.6041666666666666,
+            "balanced_accuracy": 0.515728977616455,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 20,
+            "false_exposure_fraction_among_exposed": 0.35714285714285715,
+            "false_exposure_fraction_of_all": 0.06944444444444445,
+            "predicted_exposure_fraction": 0.19444444444444445,
+            "selected_actual_marginal_credit_count": 56,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.0025020640793720805,
+            "selected_actual_marginal_credit_sum": 0.14011558844483651,
+            "sign_accuracy": 0.4513888888888889,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 0.9340277777777778
+          },
+          "source_episode_count": 864
+        }
+      }
+    },
+    {
+      "heldout_dataset": "metr_la",
+      "source_datasets": [
+        "legacy_monash:fred_md",
+        "legacy_monash:nn5_daily",
+        "monash:traffic_hourly"
+      ],
+      "target_episode_count": 288,
+      "views": {
+        "global": {
+          "metrics": {
+            "actual_positive_fraction": 0.5590277777777778,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 127,
+            "false_exposure_fraction_among_exposed": 0.4409722222222222,
+            "false_exposure_fraction_of_all": 0.4409722222222222,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.010178205438916822,
+            "selected_actual_marginal_credit_sum": 2.9313231664080432,
+            "sign_accuracy": 0.5590277777777778,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 1.0
+          },
+          "source_episode_count": 864
+        },
+        "pooled": {
+          "metrics": {
+            "actual_positive_fraction": 0.5590277777777778,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 127,
+            "false_exposure_fraction_among_exposed": 0.4409722222222222,
+            "false_exposure_fraction_of_all": 0.4409722222222222,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.010178205438916822,
+            "selected_actual_marginal_credit_sum": 2.9313231664080432,
+            "sign_accuracy": 0.5590277777777778,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": null
+          },
+          "source_episode_count": 864
+        },
+        "program_conditioned": {
+          "metrics": {
+            "actual_positive_fraction": 0.5590277777777778,
+            "balanced_accuracy": 0.5235486868489265,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 80,
+            "false_exposure_fraction_among_exposed": 0.42328042328042326,
+            "false_exposure_fraction_of_all": 0.2777777777777778,
+            "predicted_exposure_fraction": 0.65625,
+            "selected_actual_marginal_credit_count": 189,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.015082335625313572,
+            "selected_actual_marginal_credit_sum": 2.8505614331842635,
+            "sign_accuracy": 0.5416666666666666,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 0.75
+          },
+          "source_episode_count": 864
+        }
+      }
+    },
+    {
+      "heldout_dataset": "monash:traffic_hourly",
+      "source_datasets": [
+        "legacy_monash:fred_md",
+        "legacy_monash:nn5_daily",
+        "metr_la"
+      ],
+      "target_episode_count": 288,
+      "views": {
+        "global": {
+          "metrics": {
+            "actual_positive_fraction": 0.4861111111111111,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 148,
+            "false_exposure_fraction_among_exposed": 0.5138888888888888,
+            "false_exposure_fraction_of_all": 0.5138888888888888,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.0003125148316163219,
+            "selected_actual_marginal_credit_sum": 0.0900042715055007,
+            "sign_accuracy": 0.4861111111111111,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 1.0
+          },
+          "source_episode_count": 864
+        },
+        "pooled": {
+          "metrics": {
+            "actual_positive_fraction": 0.4861111111111111,
+            "balanced_accuracy": 0.5,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 148,
+            "false_exposure_fraction_among_exposed": 0.5138888888888888,
+            "false_exposure_fraction_of_all": 0.5138888888888888,
+            "predicted_exposure_fraction": 1.0,
+            "selected_actual_marginal_credit_count": 288,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.0003125148316163219,
+            "selected_actual_marginal_credit_sum": 0.0900042715055007,
+            "sign_accuracy": 0.4861111111111111,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": null
+          },
+          "source_episode_count": 864
+        },
+        "program_conditioned": {
+          "metrics": {
+            "actual_positive_fraction": 0.4861111111111111,
+            "balanced_accuracy": 0.48532818532818534,
+            "episode_count": 288,
+            "exposure_is_harmful": false,
+            "false_exposure_count": 109,
+            "false_exposure_fraction_among_exposed": 0.5240384615384616,
+            "false_exposure_fraction_of_all": 0.3784722222222222,
+            "predicted_exposure_fraction": 0.7222222222222222,
+            "selected_actual_marginal_credit_count": 208,
+            "selected_actual_marginal_credit_is_not_group_utility": true,
+            "selected_actual_marginal_credit_mean": 0.0002691246415902705,
+            "selected_actual_marginal_credit_sum": 0.05597792545077629,
+            "sign_accuracy": 0.4791666666666667,
+            "sign_vote_vs_neighbor_mean_credit_sign_agreement": 0.8576388888888888
+          },
+          "source_episode_count": 864
+        }
+      }
+    }
+  ],
+  "memory_claim": false,
+  "next_step_if_fail": "Close this frozen Context representation; do not add fields against the same exposed outcome without a new failure mechanism.",
+  "next_step_if_pass": "Only then test whether the frozen Source prior improves B=1/2 exact-grouped query utility; do not write Memory or connect A5 yet.",
+  "router_claim": false,
+  "schema_version": "e2-program-conditioned-action-value-episode-lodo/1",
+  "scientific_role": "zero_new_consumer_fit_exposed_program_conditioned_action_value_sign_premise",
+  "source_report": "artifacts/functional/e2/source_natural_block_action_value_headroom_report.json",
+  "target_query_opened": false,
+  "verdict": "PROGRAM_CONDITIONED_ACTION_VALUE_SIGN_PREMISE_FAIL"
+}

@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 from collections.abc import Mapping, Sequence
 from datetime import datetime
@@ -51,6 +52,7 @@ from typing import Any
 from evaluation.main_protocol_p4 import main_experiment_contract as v1
 from evaluation.main_protocol_p4 import main_experiment_contract_v2 as v2
 from evaluation.main_protocol_p4 import main_experiment_contract_v3 as v3
+from evaluation.main_protocol_p4 import hec1_scoreability as scoreability
 from evaluation.main_protocol_p4 import outer_loop
 from evaluation.main_protocol_p4 import p4b_contract as bounded
 from evaluation.main_protocol_p4 import restricted_draft as drafts
@@ -90,11 +92,64 @@ CODE_FREEZE = {
         "evaluation/main_protocol_p4/scoped_serving_evaluator.py",
         "evaluation/main_protocol_p4/scope_narrowing_preflight.py",
         "evaluation/main_protocol_p4/scope_initializer.py",
+        "evaluation/main_protocol_p4/audit_hec1_instrument.py",
     ),
     "recorded_as": "artifact.code_state = {code_commit, runner_files_dirty}",
     "asserted_by": "audit_hec1_readout: one code_commit across the three "
                    "orderings, no dirty runner file, no shakedown artifact",
     "no_new_hash_infrastructure": True,
+}
+
+#: Phase S and Phase T did not run on the same commit, and the readout must say
+#: so rather than let a reader assume one commit covers the whole course.  The
+#: first Forward attempt died on the outer loop's first live Slow call
+#: (``harness_view={}`` where ``core.run_stage`` reads ``.instruction``), was
+#: ruled ``RUN_BLOCKED_NO_VERDICT``, and Forward restarted from unit 0 on the
+#: fixed commit rather than resuming -- one ordering, one commit.  Phase S is
+#: **not** re-run because it provably never executed the defective line: both
+#: of its outer steps found no candidate needing a clause, so its ledger
+#: records ``llm_outer = 0``.  K0's formation chain (inner Support -> delayed ->
+#: authority gate) does not touch this path either.
+CODE_PROVENANCE_ERRATUM = {
+    "phase_s_commit": "e33f036457e481bd2e5a1eb04fd240e51d3cba00",
+    "phase_t_commit": "the fix commit; recorded per artifact in code_state",
+    "diff_between_them": (
+        "Outer Slow harness_view/source provenance; then a per-arm-per-outer-"
+        "step independent backend/core capped at 2 physical requests billed to "
+        "llm_outer; then scientific STOP_TRANSPORT/403 as RunFault so an "
+        "identity-only quota failure cannot pass the instrument gate"),
+    "why_phase_s_is_not_re_run": (
+        "Phase S never reached the changed path: ledgers.llm_outer == 0 and "
+        "both outer steps recorded slow_calls == 0"),
+    "why_forward_did_not_resume": (
+        "one ordering runs on one commit; resuming a blocked attempt onto the "
+        "fixed one would put two code versions in one curve"),
+    "blocked_attempts": (
+        {
+            "run_root": ".hec1_runs/forward_v11_attempt1_blocked",
+            "verdict": "RUN_BLOCKED_NO_VERDICT",
+            "units_completed_before_the_fault": 4,
+            "llm_spent": 35,
+            "counted_as": "instrument overhead; enters no curve",
+        },
+        {
+            "run_label_prefix": "v11fix_",
+            "verdict": "RUN_BLOCKED_NO_VERDICT__TRANSPORT_QUOTA",
+            "llm_spent": 0,
+            "why": "HTTP 403 insufficient_quota became identity UnitFault and "
+                   "the eight instrument checks still passed",
+            "counted_as": "instrument overhead; enters no curve; do not resume",
+        },
+        {
+            "run_label_prefix": "v11live_",
+            "verdict": "RUN_BLOCKED_NO_VERDICT__OUTER_BACKEND_BUDGET_LEAK",
+            "units_completed_before_the_fault": 5,
+            "llm_spent": 39,
+            "why": "outer Slow reused the inner cell backend already spent at 5",
+            "counted_as": "instrument overhead; new Forward envelope restarts "
+                          "at 500; do not resume",
+        },
+    ),
 }
 STAGE = "HEC1_CONTRACT"
 DATA_VERSION = v1.DATA_VERSION
@@ -303,7 +358,8 @@ AUTO_CONTINUE_CONDITIONS = (
     "the contract is frozen and the live loop passed its 0-LLM end-to-end test",
     "Phase S completed all 13 units",
     "the K0 mechanical audit passed; an empty K0 is a legal freeze too",
-    "the eight mechanical instrument checks passed for the finished ordering",
+    "the mechanical instrument checks passed for the finished ordering, "
+    "including the transport-failure backstop",
     "whether to continue reads instrument health only, never the effect's sign",
     "a fault may only be repaired as an instrument and resumed from a "
     "checkpoint; no scientific re-throw",
@@ -809,7 +865,7 @@ def budget_arithmetic() -> dict[str, Any]:
         "best_safe_global_fit_cap": BEST_SAFE_GLOBAL_FIT_CAP,
         "sum_of_released_envelopes": sum(LLM_CAPS.values()),
         "reverse_and_interleaved": (
-            "each released at 500, entered automatically when the eight "
+            "each released at 500, entered automatically when the "
             "mechanical instrument checks pass and never on the effect's sign"
         ),
     }
@@ -911,12 +967,64 @@ STATISTICS = {
     ),
 }
 
+#: sol v1.1: a difference has to be **material**, not merely positive.  The
+#: material line is per unit, so the course-level line is that line times the
+#: number of units that can carry a point -- 0.005 x 23 = 0.115.  A terminal
+#: difference of +0.02 over 23 units is 23 readings of nearly nothing, and
+#: calling it evolution would be reading noise as a curve.
+P1_MATERIAL_TERMINAL_DIFFERENCE = round(
+    RISK["material"] * scoreability.SCOREABLE_UNITS, 6)
+
+#: The 0-LLM control sol froze beside the arms.  Same probe budget, same risk
+#: gate, no Slow and no memory: it answers "how much of the curve is the search
+#: rather than the accumulation".  It is **not** part of the Harness and never
+#: supplies a candidate to one.
+VALIDATION_SEARCH_BASELINE = {
+    "required": True,
+    "llm_calls": 0,
+    "budget": "the same per-unit probe budget as an arm",
+    "risk_gate": "the same bounded_risk_v1 and the same coverage floor",
+    "memory": "none; nothing is carried between units",
+    "enters_the_harness": False,
+    "why": (
+        "a per-unit search under the same budget and the same gate is what "
+        "separates 'the Harness accumulated something' from 'this many probes "
+        "on this menu find something'.  Without it a positive curve cannot be "
+        "told apart from the probe budget doing the work"
+    ),
+    "reported_as": "a comparator column, never an arm and never a Skill source",
+}
+
+#: sol v1.1: if Phase S is empty again, diagnose the supply exhaustively -- and
+#: do not let the diagnosis become this round's treatment.
+PHASE_S_EMPTY_AGAIN = {
+    "then": "run an exhaustive 0-LLM supply diagnostic over the frozen menu",
+    "answers": (
+        "whether any program in the frozen space would have been POSITIVE on "
+        "two or more Source units, which separates 'the Harness did not find "
+        "it' from 'it is not there'"
+    ),
+    "must_not": (
+        "generate this round's K0.  A card found by exhaustive enumeration was "
+        "not formed by the Harness, and using it would make A5's treatment an "
+        "artefact of the diagnostic rather than of accumulation"
+    ),
+    "k0_stays": "empty, recorded A5_TREATMENT_EMPTY",
+}
+
 PREREGISTERED = {
     "P1_evolution": {
         "claim": "online minus frozen cumulative safe utility on the evaluation "
-                 "face ends above 0 in at least 2 of 3 orderings and in at "
-                 "least 3 of 4 cohorts; harm online does not exceed frozen; "
-                 "monotonic growth is not required",
+                 "face ends **at or above %.3f** in at least 2 of 3 orderings "
+                 "and is above 0 in at least 3 of 4 cohorts; harm online does "
+                 "not exceed frozen; monotonic growth is not required"
+                 % P1_MATERIAL_TERMINAL_DIFFERENCE,
+        "material_terminal_difference": P1_MATERIAL_TERMINAL_DIFFERENCE,
+        "why_a_material_line": (
+            "0.005 per unit x %d scoreable units.  A terminal difference of a "
+            "few hundredths over 23 units is 23 readings of nearly nothing; "
+            "positive is not the same as material"
+            % scoreability.SCOREABLE_UNITS),
         "first_fault_if_not": {
             "recall deploys worse than frozen searching on the spot":
                 "Scope too wide -- the memory face",
@@ -950,14 +1058,33 @@ PREREGISTERED = {
 VERDICTS = {
     "HEC1_EVOLUTION_SUPPORTED": "P1 and P2 both hold",
     "HEC1_P1_ONLY__RECALL_ACCUMULATION": (
-        "P1 holds and P2 fails: the curve is positive but no revised Draft "
-        "survived a re-encounter.  The claim narrows to ADD / recall-driven "
-        "accumulation (probe slots released, cards recalled) and may never be "
-        "written as Scope-revision evolution (sol final ruling §8).  Does not "
-        "qualify for the Phase F seal under ruling §7"),
+        "P1 holds and P2 fails: the curve is material but no revised Draft "
+        "survived a re-encounter.  The claim is **feedback-driven "
+        "Skill-library evolution** (equivalently: Skill acquisition "
+        "evolution) -- cards formed from held-in feedback, recalled, and "
+        "released probe slots.  Three phrasings are forbidden for this "
+        "verdict (sol v1.1): **Scope-revision evolution** (no revision "
+        "survived), **the complete A5 system** (that needs a non-empty K0 and "
+        "P2), and **cross-domain / transfer** anything (Phase S and Phase T "
+        "are the same dataset, so accumulation here is within-dataset and "
+        "cross-cohort at most).  Does not qualify for the Phase F seal"),
+    "P1_only_permitted_phrasings": (
+        "feedback-driven Skill-library evolution",
+        "Skill acquisition evolution",
+    ),
+    "P1_only_forbidden_phrasings": (
+        "Scope-revision evolution",
+        "the complete A5 system",
+        "cross-domain transfer",
+    ),
     "HEC1_EVOLUTION_NOT_SUPPORTED": "P1 fails, with its first fault named",
-    "HEC1_INCONCLUSIVE": "fewer than 0.8 N_T units completed, or the three "
-                         "orderings are not all in",
+    "HEC1_INCONCLUSIVE": (
+        "an ordering reached fewer than %d valid paired curve points, or the "
+        "three orderings are not all in.  The floor is ceil(0.8 x %d scoreable "
+        "units), not of the %d scheduled ones: three units carry no observed "
+        "truth in their evaluation horizon and can never contribute a point"
+        % (scoreability.MIN_PAIRED_CURVE_POINTS, scoreability.SCOREABLE_UNITS,
+           scoreability.SCHEDULED_UNITS)),
     "RUN_BLOCKED_NO_VERDICT": "an instrument fault; never a scientific verdict",
     "h1_h3_annotation": ["CONSISTENT", "MIXED", "NOT_OBSERVED"],
     "P2_definition": (
@@ -1091,6 +1218,18 @@ PHASE_F = {
     ),
     "never_automatic": True,
     "held_out_reads_so_far": 0,
+    # sol v1.1: all three terminal states are evaluated and the headline is
+    # their macro-average.  Reporting the best ordering would be choosing the
+    # result after seeing it, and the orderings are not independent replicates
+    # -- they are one course in three sequences.
+    "evaluates": "the terminal state of all three orderings",
+    "headline": "the macro-average across the three orderings",
+    "may_not": [
+        "report a single ordering as the result",
+        "choose which ordering to open on",
+        "drop an ordering whose terminal state looks worse",
+    ],
+    "per_ordering_reported": "yes, beside the macro-average, never instead",
 }
 
 BOUNDARY = {
@@ -1179,6 +1318,7 @@ def to_dict() -> dict[str, Any]:
         "skill_taxonomy": SKILL_TAXONOMY,
         "naming": NAMING,
         "code_freeze": CODE_FREEZE,
+        "code_provenance_erratum": CODE_PROVENANCE_ERRATUM,
         "replay_share_record": REPLAY_SHARE_RECORD,
         "supersedes_version": SUPERSEDES_VERSION,
         "stopping_rules": STOPPING_RULES,
@@ -1186,6 +1326,10 @@ def to_dict() -> dict[str, Any]:
         "boundary": BOUNDARY,
         "census_key": CENSUS_KEY,
         "served_denominator": SERVED_DENOMINATOR,
+        "scoreability": scoreability.to_dict(),
+        "validation_search_baseline": VALIDATION_SEARCH_BASELINE,
+        "phase_s_empty_again": PHASE_S_EMPTY_AGAIN,
+        "p1_material_terminal_difference": P1_MATERIAL_TERMINAL_DIFFERENCE,
         "auto_continue_conditions": list(AUTO_CONTINUE_CONDITIONS),
         "ratification": {
             **RATIFICATION,
@@ -1331,6 +1475,28 @@ def assert_frozen() -> dict[str, Any]:
 
     if UNIT_PROTOCOL["inner_loop_immediate_slow"]:
         failures.append("the inner-loop Slow call is not closed")
+
+    # The three unit counts, re-derived rather than restated.  int(0.8 x 23) is
+    # 18 and 18/23 is 78.3%, so the rounding is checked and not assumed.
+    if scoreability.SCHEDULED_UNITS != len(phase_t or ()):
+        failures.append(
+            "the scoreability manifest schedules %d units and the course has %d"
+            % (scoreability.SCHEDULED_UNITS, len(phase_t or ())))
+    if (scoreability.SCOREABLE_UNITS
+            != scoreability.SCHEDULED_UNITS - len(scoreability.UNSCOREABLE_UNITS)):
+        failures.append("the scoreable count is not scheduled minus unscoreable")
+    if scoreability.MIN_PAIRED_CURVE_POINTS != math.ceil(
+            scoreability.COMPLETION_FRACTION * scoreability.SCOREABLE_UNITS):
+        failures.append("the paired-point floor is not ceil(fraction x scoreable)")
+    if (scoreability.MIN_PAIRED_CURVE_POINTS / scoreability.SCOREABLE_UNITS
+            < scoreability.COMPLETION_FRACTION):
+        failures.append(
+            "the paired-point floor is below the declared completion fraction")
+    declared_units = {(row["block"], row["origin"]) for row in (phase_t or ())}
+    for block, origin in scoreability.UNSCOREABLE_UNITS:
+        if (block, origin) not in declared_units:
+            failures.append(
+                "unscoreable unit %s x %s is not in the course" % (block, origin))
     if sum(LLM_CAPS.values()) > TOTAL_LLM_HARD_CAP:
         failures.append("the released envelopes exceed the total hard cap")
     if len(CONFIRMED_BY_SOL) != 13:
@@ -1351,6 +1517,21 @@ def assert_frozen() -> dict[str, Any]:
         failures.append("a sign test crept back into the P1 criteria")
     if "HEC1_P1_ONLY__RECALL_ACCUMULATION" not in VERDICTS:
         failures.append("the narrowed P1-only verdict is missing")
+    if P1_MATERIAL_TERMINAL_DIFFERENCE != round(
+            RISK["material"] * scoreability.SCOREABLE_UNITS, 6):
+        failures.append("the P1 material line is not material x scoreable")
+    for phrase in VERDICTS["P1_only_forbidden_phrasings"]:
+        if phrase in str(VERDICTS["HEC1_P1_ONLY__RECALL_ACCUMULATION"]).replace(
+                "**%s**" % phrase, ""):
+            failures.append("a forbidden P1-only phrasing is used as a claim")
+    if VALIDATION_SEARCH_BASELINE["enters_the_harness"]:
+        failures.append("the validation-search baseline entered the Harness")
+    if VALIDATION_SEARCH_BASELINE["llm_calls"] != 0:
+        failures.append("the validation-search baseline is not 0-LLM")
+    if PHASE_S_EMPTY_AGAIN["k0_stays"] != "empty, recorded A5_TREATMENT_EMPTY":
+        failures.append("the exhaustive diagnostic may not produce a K0")
+    if PHASE_F.get("headline") != "the macro-average across the three orderings":
+        failures.append("Phase F stopped reporting the macro-average")
     if PHASE_F["never_automatic"] is not True:
         failures.append("Phase F stopped requiring a human release")
     failures.extend(_hardcoded_denominator_scan())

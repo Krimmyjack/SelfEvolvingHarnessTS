@@ -1,0 +1,107 @@
+{
+  "experiment_id": "v1-s3b-normal-entry-adoption",
+  "note": "S3b：真实正常入口 adoption/removal 对照（审查者 P0——S3 verdict 修正后补测）——development exposure——零新 Claim——不称 fresh 验证",
+  "apparatus": {
+    "domain": "nn5",
+    "time_roles": {
+      "d_patch": 632,
+      "heldin": 680,
+      "delayed": 728,
+      "entry": 728
+    },
+    "whitelist": [
+      "impute_ar",
+      "impute_ssm"
+    ]
+  },
+  "evidence": {
+    "failure_632": -0.07892256471269943,
+    "d_patch_impute": {
+      "impute_ar": 0.09658885562326547,
+      "impute_ssm": 0.0696691196287309
+    }
+  },
+  "slow_choice": {
+    "reused_from_s3": {
+      "edit_intent": "ADD_TARGET_LOCAL_SKILL",
+      "patch_id": "patch-replace-repair_level_shift-with-impute_ar",
+      "reason": "impute_ar has the higher positive public Action-Response gain (0.0966 vs 0.0697) and addresses the workflow decision error.",
+      "expected_change": "Replace repair_level_shift with impute_ar to improve support gain at @632."
+    },
+    "resolved_op": "impute_ar"
+  },
+  "support_chain": {
+    "stage": "pending",
+    "triggered": true,
+    "material_negative": true,
+    "relation": "NEGATIVE",
+    "card_workflow": [
+      "repair_level_shift"
+    ],
+    "edit_id": "replace-repair_level_shift-with-impute_ar",
+    "target_surface_id": "skill_library.entries/single_repair_level_shift_replacement",
+    "operation": "ADD",
+    "frozen_program": [
+      {
+        "op": "impute_ar",
+        "params": {}
+      }
+    ],
+    "patch_id": "patch-replace-repair_level_shift-with-impute_ar",
+    "support_gain": 0.09658885562326547,
+    "support_passed": true
+  },
+  "heldin": {
+    "origin": 680,
+    "gain": 0.02763605538277747
+  },
+  "delayed": {
+    "stage": "approved",
+    "delayed_gain": 0.04297543355252431,
+    "snapshot_updated": true
+  },
+  "skill_persisted": {
+    "skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify",
+      "single_repair_level_shift_replacement"
+    ],
+    "frozen_op": "impute_ar"
+  },
+  "entry_H1": {
+    "probes": [
+      [
+        "cand_skill_single_repair_level_shift_replacement",
+        0.04297543355252431
+      ]
+    ],
+    "episodes_written": [
+      "nn5_s3b_H1_target_single_repair_level_shift_replacement_s3b_H1_entry_p1"
+    ],
+    "skill_retrieved": true,
+    "skill_selected": false,
+    "executed_gains": [
+      0.04297543355252431
+    ]
+  },
+  "entry_H0": {
+    "probes": [],
+    "episodes_written": [],
+    "skill_retrieved": false,
+    "skill_selected": false,
+    "executed_gains": []
+  },
+  "utility": {
+    "U_H1": 0.04297543355252431,
+    "U_H0": 0.26115204938975767,
+    "delta": -0.21817661583723336
+  },
+  "verdict": "ADHERENCE_SELECTION_GAP",
+  "checks": {
+    "retrieved": true,
+    "selected": false,
+    "removal_changed": true,
+    "utility_ok": false
+  }
+}

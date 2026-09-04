@@ -1,0 +1,95 @@
+{
+  "experiment_id": "v1-e0-hardening-check",
+  "note": "E0 Operational Semantics Hardening 验收（零新数据/零live LLM）",
+  "checks": {
+    "E0_1_draft_chosen_not_authorized": true,
+    "E0_1b_draft_support_then_authorized": true,
+    "E0_2_first_positive_uses_receipt_index": true,
+    "E0_3_slow_replay_in_trajectory": true,
+    "E0_6_contracts_passed": true,
+    "E0_4_delayed_none_not_zero": true,
+    "E0_4b_delayed_none_keeps_unevaluated": true,
+    "E0_5_memory_status_public": true,
+    "E0_7_status_classification": true
+  },
+  "details": {
+    "draft_only": {
+      "chosen_proposal": "cand_skill_draft_outlier_mad",
+      "authorized_deployment": null,
+      "probes": [
+        {
+          "candidate_id": "cand_skill_draft_outlier_mad",
+          "kind": "probe",
+          "gain": -0.060764531483190165,
+          "passed": true
+        }
+      ],
+      "abstained": true
+    },
+    "draft_positive": {
+      "chosen_proposal": "cand_skill_draft_winsorize",
+      "authorized_deployment": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "gain": [
+        0.4000053662007894
+      ]
+    },
+    "traffic_a3": {
+      "first_positive_support_receipt_index": 2,
+      "receipts": 2,
+      "probes": [
+        [
+          "cand_denoise_median",
+          "probe",
+          0.0
+        ],
+        [
+          "cand_winsorize",
+          "probe",
+          0.25733337625677066
+        ]
+      ]
+    },
+    "slow_trajectory": {
+      "probes": [
+        [
+          "cand_outlier_iqr",
+          "probe",
+          -0.1302066421576531
+        ],
+        [
+          "replay:patch-replace-outlier_iqr-with-winsorize",
+          "slow_replay",
+          0.4000053662007894
+        ]
+      ],
+      "slow_replay_receipts": 1,
+      "captured_contracts": [
+        "outlier_iqr",
+        "winsorize"
+      ],
+      "captured_task_context": null
+    },
+    "memory_status": {
+      "A5": "rendered",
+      "A3": "no_memory"
+    },
+    "current_status": {
+      "draft": [
+        "draft_outlier_mad"
+      ],
+      "active": [],
+      "restricted": [],
+      "bootstrap": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ]
+    }
+  },
+  "verdict": "E0_HARDENING_PASS"
+}

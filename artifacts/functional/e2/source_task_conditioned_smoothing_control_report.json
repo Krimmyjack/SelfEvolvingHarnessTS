@@ -1,0 +1,145 @@
+{
+  "capability_promotion": false,
+  "causal_hypothesis": "With the same natural backgrounds and fixed classifier, training-input smoothing helps a coarse low-frequency task under high-frequency training noise, but should be abstained from when a legal local event carries the label.",
+  "claim_limit": "Controlled mechanism calibration on exposed Traffic/FRED Source natural backgrounds. It is not natural prevalence, Capability promotion, or Source-to-Target transfer evidence.",
+  "configuration": {
+    "classifier": "RidgeClassifier(alpha=1.0, fit_intercept=True, solver=svd)",
+    "classifier_representation": "24 fixed temporal landmarks at offset 4/stride 8 plus 23 successive landmark differences",
+    "coarse_signal_amplitude": 0.75,
+    "coarse_training_artifact_multiplier": -2.5,
+    "datasets": [
+      "monash:traffic_hourly",
+      "legacy_monash:fred_md"
+    ],
+    "event_signal_amplitude": 3.0,
+    "frozen_direction_gate": {
+      "all_datasets_required": true,
+      "maximum_event_gain": -0.05,
+      "minimum_coarse_gain": 0.05
+    },
+    "labels_per_natural_background": 2,
+    "natural_base_series": true,
+    "parameter_search": false,
+    "program": "centered moving-average smoothing over every complete training input; classifier refit from scratch; evaluation inputs untouched",
+    "smoothing_width": 9,
+    "training_anchors": [
+      240,
+      300,
+      360,
+      420,
+      480,
+      540
+    ],
+    "window_length": 192
+  },
+  "consumer_fit_count": 8,
+  "dataset_evidence": [
+    {
+      "dataset_gate_pass": false,
+      "dataset_id": "monash:traffic_hourly",
+      "natural_background_pairing": {
+        "eval_background_count": 8,
+        "labels_per_background": 2,
+        "same_backgrounds_and_labels_across_task_worlds": true,
+        "train_background_count": 72,
+        "train_eval_series_disjoint": true
+      },
+      "task_worlds": {
+        "coarse_pattern": {
+          "direction_pass": true,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain >= 0.05",
+          "incumbent_accuracy": 0.0,
+          "program_accuracy": 1.0,
+          "program_changed_training_input": true,
+          "program_gain": 1.0,
+          "task_context": {
+            "evaluation_condition": "clean",
+            "label_evidence": "global_low_frequency_ramp_direction",
+            "task_conditioned_action": "execute_smoothing",
+            "training_condition": "deterministic_high_frequency_acquisition_noise"
+          },
+          "train_instance_count": 144
+        },
+        "event_evidence": {
+          "direction_pass": false,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain <= -0.05",
+          "incumbent_accuracy": 1.0,
+          "program_accuracy": 1.0,
+          "program_changed_training_input": true,
+          "program_gain": 0.0,
+          "task_context": {
+            "evaluation_condition": "legal_matched_event",
+            "label_evidence": "localized_one_step_event_polarity",
+            "task_conditioned_action": "abstain_keep_incumbent",
+            "training_condition": "legal_matched_event"
+          },
+          "train_instance_count": 144
+        }
+      }
+    },
+    {
+      "dataset_gate_pass": false,
+      "dataset_id": "legacy_monash:fred_md",
+      "natural_background_pairing": {
+        "eval_background_count": 8,
+        "labels_per_background": 2,
+        "same_backgrounds_and_labels_across_task_worlds": true,
+        "train_background_count": 72,
+        "train_eval_series_disjoint": true
+      },
+      "task_worlds": {
+        "coarse_pattern": {
+          "direction_pass": true,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain >= 0.05",
+          "incumbent_accuracy": 0.0625,
+          "program_accuracy": 0.9375,
+          "program_changed_training_input": true,
+          "program_gain": 0.875,
+          "task_context": {
+            "evaluation_condition": "clean",
+            "label_evidence": "global_low_frequency_ramp_direction",
+            "task_conditioned_action": "execute_smoothing",
+            "training_condition": "deterministic_high_frequency_acquisition_noise"
+          },
+          "train_instance_count": 144
+        },
+        "event_evidence": {
+          "direction_pass": false,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain <= -0.05",
+          "incumbent_accuracy": 1.0,
+          "program_accuracy": 1.0,
+          "program_changed_training_input": true,
+          "program_gain": 0.0,
+          "task_context": {
+            "evaluation_condition": "legal_matched_event",
+            "label_evidence": "localized_one_step_event_polarity",
+            "task_conditioned_action": "abstain_keep_incumbent",
+            "training_condition": "legal_matched_event"
+          },
+          "train_instance_count": 144
+        }
+      }
+    }
+  ],
+  "evidence_stage": "DEVELOPMENT_CONTROL",
+  "formal_transfer": false,
+  "natural_prevalence_claim": false,
+  "overall": {
+    "all_dataset_task_contrasts_pass": false,
+    "dataset_count": 2,
+    "passing_dataset_count": 0
+  },
+  "schema_version": "e2-task-conditioned-smoothing-control/1",
+  "scientific_role": "controlled_task_conditioned_program_mechanism_calibration",
+  "target_query_opened": false,
+  "uci_values_read": false,
+  "verdict": "TASK_CONDITIONED_SMOOTHING_CONTROL_FAIL"
+}

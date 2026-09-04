@@ -1,0 +1,103 @@
+{
+  "experiment_id": "v1-matched-budget-four-arm",
+  "note": "P6：Batch 机制收益归因四臂基线（预注册：docs/P6_MATCHED_BUDGET_FOUR_ARM_PREREGISTRATION.md）——development exposure——零新 Claim",
+  "arms": {
+    "A": {
+      "arm": "A_single_episode_slow",
+      "pos": {
+        "event": {
+          "stage": "no_manifest",
+          "triggered": true,
+          "material_negative": true,
+          "relation": "NEGATIVE",
+          "card_workflow": [
+            "winsorize"
+          ],
+          "no_proposal_reason": "no_authorized_minimal_edit"
+        },
+        "calls": 1,
+        "series": "T117",
+        "origin": 888
+      },
+      "neg": {
+        "event": {
+          "stage": "no_manifest",
+          "triggered": true,
+          "material_negative": true,
+          "relation": "NEGATIVE",
+          "card_workflow": [
+            "winsorize"
+          ],
+          "no_proposal_reason": "no_authorized_minimal_edit"
+        },
+        "calls": 1,
+        "series": "T100",
+        "origin": 600
+      }
+    },
+    "B": {
+      "arm": "B_group_fault_v0",
+      "pos": {
+        "event": {
+          "stage": "no_manifest",
+          "no_proposal_reason": "no_authorized_minimal_edit"
+        },
+        "calls": 1
+      },
+      "neg": {
+        "event": {
+          "stage": "no_manifest",
+          "no_proposal_reason": "no_authorized_minimal_edit"
+        },
+        "calls": 1
+      }
+    },
+    "C": {
+      "arm": "C_batch_context_conditioned",
+      "pos": {
+        "source": "witness_v3",
+        "verdict": "GROUP_TYPED_PATCH_MECHANISM_PASS",
+        "patch": "patch-replace-winsorize-with-hampel_filter",
+        "stage": "pending",
+        "calls": 1
+      },
+      "neg": {
+        "source": "wave4a_r2",
+        "verdict": "EVIDENCE_GROUNDED_ABSTAIN",
+        "reason": "insufficient_public_evidence"
+      }
+    },
+    "D": {
+      "arm": "D_pipeline_search",
+      "pos": {
+        "source": "evc_dev_A",
+        "runtime_choice": "hampel_filter",
+        "stage": "pending"
+      },
+      "neg": {
+        "source": "evc_dev_B",
+        "runtime_choice": null,
+        "stage": "evidence_abstain",
+        "zero_llm": true
+      }
+    }
+  },
+  "results": {
+    "E_pos_correctness": {
+      "A": "abstain",
+      "B": "abstain",
+      "C": "correct",
+      "D": "correct"
+    },
+    "E_neg_behavior": {
+      "A": "abstain",
+      "B": "abstain",
+      "C": "abstain",
+      "D": "abstain"
+    },
+    "note": "A 臂 E_neg 为行为记录（单条路径设计上不可见组级 no-headroom——single_window_adopt = 组级陷阱暴露）",
+    "evidence_verdict": "BATCH_EVIDENCE_CONTRIBUTES",
+    "search_verdict": "DETERMINISTIC_SEARCH_SUFFICES",
+    "verdict": "BATCH_EVIDENCE_CONTRIBUTES+DETERMINISTIC_SEARCH_SUFFICES"
+  }
+}

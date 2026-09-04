@@ -1,0 +1,276 @@
+{
+  "stage": "P4L_PHASE2_FROZEN_DECISIONS",
+  "written_at": "2026-09-01T17:51:23.920382+08:00",
+  "derived_from": "cohort 1 only",
+  "cohort_2_read_by_this_step": false,
+  "cohort": "cohort_1",
+  "origins": [
+    1176,
+    2136,
+    2376,
+    2616,
+    2856
+  ],
+  "menus": {
+    "O0": [
+      {
+        "entry": "period_median_complete>winsorize@identity",
+        "program_id": "period_median_complete>winsorize",
+        "view": "identity",
+        "row": 224,
+        "cohort_1_mean_gain": 0.370629
+      },
+      {
+        "entry": "period_median_complete>outlier_iqr@identity",
+        "program_id": "period_median_complete>outlier_iqr",
+        "view": "identity",
+        "row": 216,
+        "cohort_1_mean_gain": 0.352156
+      },
+      {
+        "entry": "period_median_complete>outlier_mad@identity",
+        "program_id": "period_median_complete>outlier_mad",
+        "view": "identity",
+        "row": 220,
+        "cohort_1_mean_gain": 0.348563
+      },
+      {
+        "entry": "impute_ema>outlier_iqr@identity",
+        "program_id": "impute_ema>outlier_iqr",
+        "view": "identity",
+        "row": 132,
+        "cohort_1_mean_gain": 0.324854
+      },
+      {
+        "entry": "period_complete>outlier_iqr@identity",
+        "program_id": "period_complete>outlier_iqr",
+        "view": "identity",
+        "row": 196,
+        "cohort_1_mean_gain": 0.299675
+      },
+      {
+        "entry": "impute_fft>winsorize@identity",
+        "program_id": "impute_fft>winsorize",
+        "view": "identity",
+        "row": 156,
+        "cohort_1_mean_gain": 0.291515
+      },
+      {
+        "entry": "raw@identity",
+        "program_id": "raw",
+        "view": "identity",
+        "row": 0,
+        "cohort_1_mean_gain": 0.0
+      }
+    ],
+    "O1": [
+      {
+        "entry": "period_median_complete>winsorize@identity",
+        "program_id": "period_median_complete>winsorize",
+        "view": "identity",
+        "row": 224,
+        "cohort_1_mean_gain": 0.370629
+      },
+      {
+        "entry": "period_median_complete>outlier_iqr@identity",
+        "program_id": "period_median_complete>outlier_iqr",
+        "view": "identity",
+        "row": 216,
+        "cohort_1_mean_gain": 0.352156
+      },
+      {
+        "entry": "period_median_complete>outlier_mad@identity",
+        "program_id": "period_median_complete>outlier_mad",
+        "view": "identity",
+        "row": 220,
+        "cohort_1_mean_gain": 0.348563
+      },
+      {
+        "entry": "period_median_complete>outlier_iqr@reversible_seasonal_adjust",
+        "program_id": "period_median_complete>outlier_iqr",
+        "view": "reversible_seasonal_adjust",
+        "row": 218,
+        "cohort_1_mean_gain": 0.34241
+      },
+      {
+        "entry": "impute_ema>outlier_iqr@identity",
+        "program_id": "impute_ema>outlier_iqr",
+        "view": "identity",
+        "row": 132,
+        "cohort_1_mean_gain": 0.324854
+      },
+      {
+        "entry": "period_median_complete>outlier_mad@reversible_seasonal_adjust",
+        "program_id": "period_median_complete>outlier_mad",
+        "view": "reversible_seasonal_adjust",
+        "row": 222,
+        "cohort_1_mean_gain": 0.324698
+      },
+      {
+        "entry": "raw@identity",
+        "program_id": "raw",
+        "view": "identity",
+        "row": 0,
+        "cohort_1_mean_gain": 0.0
+      }
+    ]
+  },
+  "best_fixed": {
+    "O0": {
+      "entry": "period_median_complete>winsorize@identity",
+      "program_id": "period_median_complete>winsorize",
+      "view": "identity",
+      "row": 224,
+      "cohort_1_mean_gain": 0.370629,
+      "chosen_because": "highest mean per-series gain on cohort 1"
+    },
+    "O1": {
+      "entry": "period_median_complete>winsorize@identity",
+      "program_id": "period_median_complete>winsorize",
+      "view": "identity",
+      "row": 224,
+      "cohort_1_mean_gain": 0.370629,
+      "chosen_because": "highest mean per-series gain on cohort 1"
+    }
+  },
+  "targeters": {
+    "X0_O0": {
+      "feature_set": "X0",
+      "space": "O0",
+      "trained_on_cells": 200,
+      "distinct_labels": 7,
+      "structure": {
+        "estimator": "sklearn.tree.DecisionTreeClassifier",
+        "max_depth": 3,
+        "min_samples_leaf": 2,
+        "random_state": 0,
+        "menu_size": 6,
+        "menu_always_includes_raw": true,
+        "hyperparameter_search": "NOT_AUTHORISED"
+      },
+      "label_histogram": {
+        "period_median_complete>winsorize@identity": 35,
+        "period_median_complete>outlier_iqr@identity": 20,
+        "period_median_complete>outlier_mad@identity": 16,
+        "impute_ema>outlier_iqr@identity": 44,
+        "period_complete>outlier_iqr@identity": 33,
+        "impute_fft>winsorize@identity": 37,
+        "raw@identity": 15
+      }
+    },
+    "X1_O0": {
+      "feature_set": "X1",
+      "space": "O0",
+      "trained_on_cells": 200,
+      "distinct_labels": 7,
+      "structure": {
+        "estimator": "sklearn.tree.DecisionTreeClassifier",
+        "max_depth": 3,
+        "min_samples_leaf": 2,
+        "random_state": 0,
+        "menu_size": 6,
+        "menu_always_includes_raw": true,
+        "hyperparameter_search": "NOT_AUTHORISED"
+      },
+      "label_histogram": {
+        "period_median_complete>winsorize@identity": 35,
+        "period_median_complete>outlier_iqr@identity": 20,
+        "period_median_complete>outlier_mad@identity": 16,
+        "impute_ema>outlier_iqr@identity": 44,
+        "period_complete>outlier_iqr@identity": 33,
+        "impute_fft>winsorize@identity": 37,
+        "raw@identity": 15
+      }
+    },
+    "X0_O1": {
+      "feature_set": "X0",
+      "space": "O1",
+      "trained_on_cells": 200,
+      "distinct_labels": 7,
+      "structure": {
+        "estimator": "sklearn.tree.DecisionTreeClassifier",
+        "max_depth": 3,
+        "min_samples_leaf": 2,
+        "random_state": 0,
+        "menu_size": 6,
+        "menu_always_includes_raw": true,
+        "hyperparameter_search": "NOT_AUTHORISED"
+      },
+      "label_histogram": {
+        "period_median_complete>winsorize@identity": 39,
+        "period_median_complete>outlier_iqr@identity": 19,
+        "period_median_complete>outlier_mad@identity": 17,
+        "period_median_complete>outlier_iqr@reversible_seasonal_adjust": 24,
+        "impute_ema>outlier_iqr@identity": 65,
+        "period_median_complete>outlier_mad@reversible_seasonal_adjust": 19,
+        "raw@identity": 17
+      }
+    },
+    "X1_O1": {
+      "feature_set": "X1",
+      "space": "O1",
+      "trained_on_cells": 200,
+      "distinct_labels": 7,
+      "structure": {
+        "estimator": "sklearn.tree.DecisionTreeClassifier",
+        "max_depth": 3,
+        "min_samples_leaf": 2,
+        "random_state": 0,
+        "menu_size": 6,
+        "menu_always_includes_raw": true,
+        "hyperparameter_search": "NOT_AUTHORISED"
+      },
+      "label_histogram": {
+        "period_median_complete>winsorize@identity": 39,
+        "period_median_complete>outlier_iqr@identity": 19,
+        "period_median_complete>outlier_mad@identity": 17,
+        "period_median_complete>outlier_iqr@reversible_seasonal_adjust": 24,
+        "impute_ema>outlier_iqr@identity": 65,
+        "period_median_complete>outlier_mad@reversible_seasonal_adjust": 19,
+        "raw@identity": 17
+      }
+    }
+  },
+  "feature_names": {
+    "X0": [
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient"
+    ],
+    "X1": [
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "trend_strength",
+      "seasonal_strength",
+      "spectral_entropy",
+      "acf_lag_1",
+      "acf_at_period",
+      "volatility_drift"
+    ]
+  }
+}

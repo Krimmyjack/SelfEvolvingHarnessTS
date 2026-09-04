@@ -1,0 +1,281 @@
+{
+  "experiment_id": "GRID0_FEEDBACK_RESOLUTION",
+  "revision": 2,
+  "date_drafted": "2026-08-15",
+  "state": "FROZEN_BEFORE_ANY_RUN",
+  "_freeze_rule": "批准后由 phase_grid0_freeze() 写入主报告 grid0_protocol，state = FROZEN_BEFORE_ANY_RUN。已存在 grid0_protocol 或 grid0 已有结果则拒绝。冻结后除 grid_size（由成本探针按预注册规则定一次）外不得修改。",
+  "rev2_changes": [
+    "钉住训练 anchor 集为 [312,372,432,492,552]（origin=600 时合法的 5 个，在所有更大 origin 上均合法）——消除训练集嵌套累积混淆",
+    "origin 集从 7 个改为 6 个 {600,672,744,816,888,960}，origin 轴语义变为纯评估点",
+    "F2/C4/C5 改为基于 ScopeExecutor.training_windows(origin) 的真实窗口集合，复用 verify() 的 modified fraction",
+    "F3 cohort_tail_shift_sync（恒≈0.5）改为 cohort_tail_shift_deviation",
+    "A6 固定模型规格与 skill score 定义；比较 F1 vs F1+F2",
+    "P1B 阈值改为 skill>=0.15 且增量>=0.05（两方向）；补 F3 分支判据",
+    "删除 observation SHA、删除五套正式工件，改为一个 checkpoint + 主报告"
+  ],
+  "framing": "Instrument / Observation 承重实验，不计为 Harness Capability 进展。成功标准是三选一的结构裁定，不是显著 p 值。",
+  "question": "同一固定 Program 的下游效用中，是否存在运行前可见、且跨 cohort 可迁移的 Observation，能写进已建成 Rule Card 的 applicability.feature 字段？",
+  "instrument_finding_on_record": {
+    "discovery": "v6._evaluate 的训练集 = 所有 anchor+HORIZON <= origin 的窗口；anchors=range(312,853,60) 封顶 852。因此不同 origin 的训练集是嵌套前缀（3→10 个窗口），gain(origin) 是同一批 anchor 的累积平均，7 个 origin 并不独立；且 origin 同时改变训练集组成与评估点。",
+    "pilot_reinterpretation": "试点中 @792(8窗口) → @840(9窗口) 仅增加 anchor=792 一个训练窗口，三条 series 同时翻负 —— 是该窗口对全 cohort 有害，经累积平均传导。共模效应真实存在，但从评估 anchor 集进入，不是从预测 origin 进入。",
+    "fix": "钉住 anchor 集 → 训练集组成恒定 → origin 轴变为纯评估点 → A1 的 origin 因子可解释、跨 cohort 共模检验有意义。副作用：每格更便宜。"
+  },
+  "cohorts": {
+    "cohort_A": {
+      "dataset": "kdd2018",
+      "target_series_count": 25,
+      "fallback_series_count": 15,
+      "exclusions": {
+        "existing_dev": [
+          "T1",
+          "T10",
+          "T100",
+          "T101"
+        ],
+        "sealed_census_eval": [
+          "T13",
+          "T128",
+          "T129",
+          "T130",
+          "T131",
+          "T132",
+          "T133",
+          "T134"
+        ],
+        "previously_exposed": [
+          "T117"
+        ]
+      },
+      "virgin_pool_size": 257,
+      "exposure_consequence": "入选 series 永久标记 development_exposed，不再作为 fresh Target"
+    },
+    "cohort_B": {
+      "role": "第二 cohort —— 分离 cohort-time 与 program-relative window geometry",
+      "target_series_count": 10,
+      "fallback_series_count": 8,
+      "candidate_order": [
+        "metr_la",
+        "monash:traffic_hourly"
+      ],
+      "selection_rule": "确定性：metr_la 通过全部资格检查且合格数达标则用；否则回退 monash:traffic_hourly。不得看 Outcome 后改选。",
+      "prediction_on_record": "metr_la changed_total 样本 189-436/1024（18%-43%），可能大量超 0.35 部署上限，回退分支或将触发。仅供事后核对，不改判定规则。",
+      "data_path": "registry = artifacts/frozen/benchmark_v02/series_registry.jsonl；values = data/benchmark_v0_2/clean_base/<dir>/values.npy；join 键 = series_uid",
+      "evaluator": "nsu._evaluate_kdd 是通用 ridge/sMASE 评估器（a5v3 已在 uci_electricity 上使用），cohort_B 无需新评估器；只需 _a5_config 式的 per-dataset config"
+    }
+  },
+  "fixed_instrument": {
+    "program": [
+      {
+        "op": "outlier_mad",
+        "params": {}
+      }
+    ],
+    "baseline": "identity",
+    "training_anchors_PINNED": [
+      312,
+      372,
+      432,
+      492,
+      552
+    ],
+    "anchor_pinning_rationale": "origin=600 时合法的 5 个 anchor，在全部 6 个 origin 上均合法 → 训练集组成对所有 cell 恒定",
+    "origin_set": [
+      600,
+      672,
+      744,
+      816,
+      888,
+      960
+    ],
+    "origin_derivation": "origin ≡ 0 (mod PERIOD=24)；origin >= 600（钉住 anchor 集的合法下界）；origin + HORIZON(48) <= 1024（cohort_B 长度）；均匀间隔 72 = 3 periods",
+    "origin_semantics": "纯评估点。训练集不随 origin 变化。",
+    "legacy_comparability": "@600 与试点 batch1/usel 逐字同构（同 anchors、同 program、同评估器）—— 提供一次免费复现校验",
+    "period": 24,
+    "horizon": 48,
+    "context_length": 192,
+    "material_threshold_M": 0.005,
+    "deployment_cap": "maximum_modified_fraction = 0.35（窗口级，ScopeExecutor.verify 逐窗口判定）",
+    "code_path": "ScopeExecutor(_support_roster(series, values), vals, config_with_pinned_anchors, evaluate_fn=nsu._evaluate_kdd).evaluate(steps, origin)",
+    "llm_calls": 0
+  },
+  "eligibility_census": {
+    "_discipline": "零 Outcome。不读取任何 gain。",
+    "checks": [
+      "C1 不在排除名单（cohort_A）/ registry virgin（cohort_B）",
+      "C2 frequency == hourly 且 length >= 1008",
+      "C3 全部 5 个钉住 anchor 的训练窗口与全部 6 个评估窗口完整、无 NaN、无自然缺失",
+      "C4 Program 确实行动：在 5 个训练窗口中 >= 3 个上 outlier_mad 产生修改（用 ScopeExecutor.training_windows + run_pipeline dry-run，不评估 Consumer）",
+      "C5 部署合法性：全部 5 个训练窗口的 modified_fraction <= 0.35。复用 ScopeExecutor.verify() 的窗口级判定，不另写一套。任一窗口越界 → 整条 series 淘汰（不允许只丢一格，避免选择性缺失）",
+      "C6 cohort_B 附加：全 cohort 共享同步绝对时间轴"
+    ],
+    "note_on_C5": "N4v2 的 eligibility 只查 changed_total > 0，未验证部署修改比例。C5 是补上这个现有风险检查，不是新建 Gate。",
+    "selection_after_filter": "通过全部检查的 series 按 series_id 自然序排序取前 N。确定性、outcome-blind。",
+    "checkpoint": "结果并入 grid0 checkpoint 的 census 段，含每条候选的淘汰原因"
+  },
+  "grid_size_decision_rule": {
+    "_authority": "规模只由成本探针实测耗时决定，不得看任何新 Outcome。冻结后不扩编，即使结果不显著。",
+    "primary": {
+      "cohort_A": 25,
+      "cohort_B": 10,
+      "origins": 6,
+      "cells": 210
+    },
+    "fallback": {
+      "cohort_A": 15,
+      "cohort_B": 8,
+      "origins": 6,
+      "cells": 138
+    },
+    "hard_caps": {
+      "wall_clock_hours": 8,
+      "llm_calls": 0
+    },
+    "rule": "实测单格中位耗时 t：210*t <= 8h → primary；否则 fallback；138*t > 8h → 暂停回报，不得自行再缩。",
+    "floor": "总 series 数 < 12 → 不跑，回报用户"
+  },
+  "execution_order": {
+    "_critical": "Observation 必须在任何新 Consumer utility 之前算完。顺序不得颠倒。",
+    "steps": [
+      "S1 资格 census（零 Outcome）",
+      "S2 停下 —— 用户审批 exposure 名单，登记到普通 split/roster 文件",
+      "S3 逐 cell 计算 F1/F2/F3（含 dry-run，不评估 Consumer）",
+      "S4 打开 Consumer utility（可断点续跑）",
+      "S5 P1A 统计（只出数，不裁定）",
+      "S6 P1B 分支裁定（主控 agent）"
+    ]
+  },
+  "observation_families": {
+    "_discipline": "公式在此冻结。不增加候选特征、不做特征搜索、本轮不用 LTSV/TimeInf。只使用 series[:origin] 与训练窗口 dry-run 掩码，不读 origin 之后的值、不读 gain。",
+    "F1_control_existing": {
+      "role": "控制组 —— 当前 Observation 面",
+      "source": "extract_public_features(series[:origin], task_kind='forecast')，逐字复用"
+    },
+    "F2_program_relative_window_geometry": {
+      "role": "候选可部署 Observation",
+      "basis": "对 ScopeExecutor.training_windows(origin) 返回的 5 个真实训练窗口逐窗口计算，再按窗口等权聚合（均值）。每个窗口 w 长 240，Modified_w = {t : outlier_mad(w)(t) != w(t)}",
+      "fields": {
+        "modified_fraction_mean": "各窗口 |Modified_w| / 240 的均值（与 verify() 判定的口径一致）",
+        "modified_fraction_max": "各窗口 modified fraction 的最大值",
+        "modified_in_target_share": "各窗口中落在 target 段 [192,240) 的修改点占该窗口修改点的比例，均值",
+        "modified_run_count_norm": "各窗口 Modified_w 的极大连续段数 / max(1,|Modified_w|)，均值（1=全散点，→0=整块）",
+        "modified_amplitude_ratio": "各窗口 mean(|w'-w| over Modified_w) / (MAD(w)+1e-12)，均值",
+        "acting_window_share": "5 个窗口中 Modified_w 非空的比例"
+      }
+    },
+    "F3_cohort_time_context": {
+      "role": "候选 cohort 同步 Observation。同一 origin 上跨同 cohort 其他 series 聚合，全部 leave-one-out。",
+      "fields": {
+        "cohort_acting_series_fraction": "同 cohort 同 origin 下 F2.acting_window_share > 0 的 series 比例（LOO）",
+        "cohort_mean_modified_fraction": "同 cohort 同 origin 下 modified_fraction_mean 的均值（LOO）",
+        "cohort_tail_shift_deviation": "当前 series 的 train_tail_shift 减去 LOO cohort 中位数（train_tail_shift = |median(x[origin-48:origin]) - median(x[:origin-48])| / (MAD(x)+1e-12)）",
+        "cohort_mean_z_peak": "同 cohort 同 origin 下 local_robust_z_peak 的均值（LOO）"
+      }
+    }
+  },
+  "estimand": {
+    "primary_unit": "series（不是 cell）",
+    "primary_statistic": "同一 series 上 6 个 origin 的等权平均 gain",
+    "secondary": [
+      "正向 origin 比例",
+      "材料性 harm 比例（gain < -M）",
+      "最差单 origin harm"
+    ],
+    "repeated_measures_rule": "origins 是同一 series 内的重复评估点，不是独立样本。所有推断自由度按 series 计（25+10 或 15+8）。",
+    "raw_retention": "逐 origin 原始 gain 全部保留 —— 时间异质性与 cohort 共模的必要证据"
+  },
+  "analysis_plan_P1A": {
+    "_discipline": "统计量在此冻结。P1A 只出数不裁定，输出不含 verdict 字段。见结果后不得新增统计量。",
+    "model_spec_for_A6_A8": {
+      "standardize": "训练集内标准化（均值/标准差取自训练 cohort）",
+      "model": "Ridge, alpha=1, 不惩罚截距",
+      "fit_unit": "cell 级拟合，但每条 series 总权重相同",
+      "test_metric": "测试 MSE 按 series 宏平均",
+      "skill_score": "1 - MSE_model / MSE_baseline，baseline = 训练集 gain 均值"
+    },
+    "items": [
+      "A1 方差分量：series / origin / cohort / residual，同时报原始 R² 与 adjusted R²",
+      "A2 LOO-series skill score",
+      "A3 LOO-origin skill score",
+      "A4 blocked permutation：series 内打乱 origin、保留每 series 符号边际，检验跨 series 符号一致列数",
+      "A5 逐 series 符号一致性",
+      "A6【最承重】跨 cohort 迁移：A 训练 → B 测试，B 训练 → A 测试；每个方向分别报 skill(F1) 与 skill(F1+F2)",
+      "A7 F3 增量：skill(F1+F2+F3) 相对 skill(F1+F2) 的 LOO-series 增量，两 cohort 各自报",
+      "A8 cohort-specific origin 项在控制 F1+F2 后是否仍材料性降低残差（嵌套模型比较）"
+    ],
+    "anti_overfitting_rules": [
+      "absolute origin 只作诊断 nuisance factor，不得写进任何 Rule trigger",
+      "P1B 之后不得从多个特征中后验挑最好阈值",
+      "阈值只能在一个 cohort 拟合、另一个验证，不得双向调参",
+      "本实验不产生 Rule Card，不写 applicability.threshold"
+    ]
+  },
+  "p1b_branch_rules": {
+    "WINDOW_GEOMETRY_SIGNAL": {
+      "condition": "两个跨 cohort 方向均满足：skill(F1+F2) >= 0.15 且 skill(F1+F2) - skill(F1) >= 0.05",
+      "action": "实现一个 window-relative Observation，写入 Rule Card 的 applicability.feature；随后开 P2 Gate 校准"
+    },
+    "COHORT_TIME_SIGNAL": {
+      "condition": "上条不成立，但 A7 的 F3 增量在两个 cohort 均 >= 0.10",
+      "action": "实现一个 cohort 同步 Observation；随后开 P2"
+    },
+    "RESIDUAL_DOMINATED": {
+      "condition": "以上均不成立",
+      "action": "关闭当前 outlier_mad Scope family。不调 Gate、不建 Rule Card、不跑自然进化。裁定写作结构性负结论：当前反馈残差主导。"
+    },
+    "note": "三种结果都能明确决定下一步 —— 这是本批 exposure 值得消耗的理由。"
+  },
+  "artifacts": {
+    "_principle": "不建五套正式工件。一个运行 checkpoint + 主报告的 protocol/verdict。",
+    "checkpoint": "artifacts/functional/e2/grid0_checkpoint.json（census / observations / cells / statistics 四段，可断点续跑）",
+    "report_keys": [
+      "grid0_protocol",
+      "grid0"
+    ],
+    "tests": "一个承重 integration test（端到端小网格 + 信息墙断言）；不为每个字段扩建测试矩阵"
+  },
+  "stop_conditions": [
+    "机械层断裂 → 报告、不重跑、不二次修复",
+    "总 series 数 < 12 → 不跑，回报",
+    "fallback 规模仍超 8h → 暂停回报，不得自行再缩",
+    "出现读取 origin 之后数值或读取 gain 的信息墙违例 → 立即停止并作废该阶段产物"
+  ],
+  "claim_boundary": "只测量反馈分辨率与 Observation 可迁移性。不宣称 Harness Capability 进展、不宣称跨域迁移、不产生 Shared Capability、不改 Skill/Select/Memory、不改任何现有 Gate。",
+  "expected_llm_calls": 0,
+  "grid_size_decision_STEP4": {
+    "decided_by": "main agent, 2026-08-15",
+    "input": "成本探针实测单格中位耗时 t = 0.012989s（本地 agent）；主控 agent 独立复核 8 格 accepted，中位 0.0106s",
+    "rule_applied": "210*t <= 8h -> primary",
+    "evaluation": "210*t ≈ 2.7s，比 8h 上限低约 4 个数量级",
+    "decision": "PRIMARY",
+    "frozen_scale": {
+      "cohort_A": 25,
+      "cohort_B": 10,
+      "origins": 6,
+      "cells": 210
+    },
+    "note_on_rule_power": "成本规则在本次没有区分力——compute 不是约束，exposure 才是。此处如实记录：规则被求值并落在 primary 区，不是规则做了筛选工作。",
+    "no_expansion": "尽管 compute 近乎免费，规模不上调。25+10 是已批准的 exposure 上限，且冻结后不扩编。compute 富余只允许在 P1B 之后用于已暴露 series 上的零-exposure 复算。"
+  },
+  "rev3_notes_on_record": {
+    "_status": "APPEND_ONLY — 不改任何规则/阈值/公式，仅登记 rev2 钉住 anchors 之后才成立的三条事实",
+    "N1_instrument_liveness_verified": {
+      "finding": "ScopeExecutor.evaluate 在 verification.passed=False 时提前返回，不跑 baseline/candidate。被拒格的耗时远低于正常格，因此成本探针若命中被拒格，外推无效。",
+      "check": "主控 agent 在已暴露 T1/T10/T100/T101 × origin{600,960} 复跑 8 格：全部 passed=True、rejected_windows=0、gain 有定义、n_train_windows=5。第 3 步的 t 测的是真实工作量。仅读 passed/error/behavior_point_count，未读 gain。"
+    },
+    "N2_F2_is_origin_invariant": {
+      "finding": "钉住 anchors 之后训练集对所有 origin 恒定，因此 F2（程序-窗口几何）在同一 series 内跨 origin 完全不变。实测 behavior_point_count：T1=43、T10=103、T100=30 在 origin 600 与 960 完全相同。",
+      "consequence": "三族观测轴由此干净分离：F1 = series×origin，F2 = 仅 series，F3 = cohort×origin。F2 假设的有效样本量是 series 数（35），不是 cell 数（210）。",
+      "no_rule_change_needed": "A2/A7 已是 LOO-series，A6 是跨 cohort 训练/测试，留出单位本来就在 series 或 cohort 级，不存在 cell 级泄漏。model_spec 的 cell 级拟合 + series 等权仍有效，因为 F1/F3 确实随 origin 变化。"
+    },
+    "N3_power_limitation_declared_before_any_run": {
+      "finding": "A6 要求两个跨 cohort 方向都达标。B→A 方向的 F2 部分实际只由 10 条 series 支撑，是整套判定的功效瓶颈。",
+      "pre_declared_reading": "若最终落 RESIDUAL_DOMINATED，verdict 必须写成『在本功效下、尤其 B→A 方向未观测到信号』，不得表述为『不存在窗口几何信号』。",
+      "explicitly_not_doing": "不因此上调 cohort_B 规模——那会破坏预注册的规模规则与 exposure 上限。"
+    },
+    "N4_census_must_not_call_evaluate": {
+      "rule": "第 5 步资格 census 只允许调 ScopeExecutor.verify()，禁止调 evaluate()。verify() 在钉住的 5 个训练窗口上跑算子并给出逐窗口修改比例，足以判定『窗口完整』『modified_fraction 全 ≤0.35』『算子确实行动』三项，且全程不计算 gain——信息墙在代码层面成立，而不是靠『算了但不看』。",
+      "acting_criterion": "算子确实行动 = 钉住的 5 个窗口上逐窗口修改点数之和 > 0",
+      "criterion_is_non_vacuous": "已暴露 series 中 T101 的 behavior_point_count = 0（origin 600 与 960 均为 0），即 outlier_mad 在该 series 上什么都没做。该格 passed=True 且 gain 有定义，但属于退化格。这条资格判据会真的淘汰 series，不是摆设。"
+    }
+  }
+}

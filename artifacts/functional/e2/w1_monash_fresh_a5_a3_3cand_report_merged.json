@@ -1,0 +1,789 @@
+{
+  "config": {
+    "anchors": [
+      312,
+      372,
+      432,
+      492,
+      552,
+      612,
+      672,
+      732,
+      792,
+      852
+    ],
+    "budget": 2,
+    "context_length": 192,
+    "horizon": 48,
+    "period": 7,
+    "sampling": "daily_regular",
+    "target_rounds": [
+      [
+        792,
+        840
+      ],
+      [
+        888,
+        936
+      ]
+    ]
+  },
+  "experiment_id": "v1-monash-fresh-matched-budget-a5-a3",
+  "interpretation": "三候选预算二装置下：Source Memory 未改变 LLM 排序（三 pair 的 A5/A3 chosen 逐轮相同）也未改变 Runtime 探测集合（探测序逐轮相同；候选 > 预算时排序后的前二被验证，第三候选从未进入预算）。数据层面 A5/A3 行为完全一致。",
+  "mechanical_checks": {
+    "1_all_passed_multi_origin_verify": true,
+    "2_cohorts_disjoint": true,
+    "3_balanced_composition": true,
+    "4_daily_config_frozen": true,
+    "5_consumes_candidate_program_steps": true,
+    "6_arms_symmetric": true,
+    "7_single_run_per_pair": true,
+    "8_source_episodes_all_kept": true
+  },
+  "metrics": {
+    "pair1": {
+      "A3": {
+        "abstention_count": 0,
+        "delayed_utility": 0.004805,
+        "first_positive_probe": {
+          "probe": 2,
+          "round": 1
+        },
+        "harm_count": 1,
+        "harm_magnitude_sum": 0.03164,
+        "probe_count": 3,
+        "skill_written": true,
+        "support_count": 3,
+        "winner_op": "skill_pair1-a3-skill-v1"
+      },
+      "A5": {
+        "abstention_count": 0,
+        "delayed_utility": 0.004805,
+        "first_positive_probe": {
+          "probe": 2,
+          "round": 1
+        },
+        "harm_count": 1,
+        "harm_magnitude_sum": 0.03164,
+        "probe_count": 3,
+        "skill_written": true,
+        "support_count": 3,
+        "winner_op": "skill_pair1-a5-skill-v1"
+      }
+    },
+    "pair2": {
+      "A3": {
+        "abstention_count": 0,
+        "delayed_utility": 0.015878,
+        "first_positive_probe": {
+          "probe": 2,
+          "round": 1
+        },
+        "harm_count": 1,
+        "harm_magnitude_sum": 0.087403,
+        "probe_count": 3,
+        "skill_written": true,
+        "support_count": 3,
+        "winner_op": "skill_pair2-a3-skill-v1"
+      },
+      "A5": {
+        "abstention_count": 0,
+        "delayed_utility": 0.015878,
+        "first_positive_probe": {
+          "probe": 2,
+          "round": 1
+        },
+        "harm_count": 1,
+        "harm_magnitude_sum": 0.087403,
+        "probe_count": 3,
+        "skill_written": true,
+        "support_count": 3,
+        "winner_op": "skill_pair2-a5-skill-v1"
+      }
+    },
+    "pair3": {
+      "A3": {
+        "abstention_count": 1,
+        "delayed_utility": -0.005582,
+        "first_positive_probe": {
+          "probe": 2,
+          "round": 1
+        },
+        "harm_count": 3,
+        "harm_magnitude_sum": 0.24357,
+        "probe_count": 4,
+        "skill_written": false,
+        "support_count": 4,
+        "winner_op": "winsorize"
+      },
+      "A5": {
+        "abstention_count": 1,
+        "delayed_utility": -0.005582,
+        "first_positive_probe": {
+          "probe": 2,
+          "round": 1
+        },
+        "harm_count": 3,
+        "harm_magnitude_sum": 0.24357,
+        "probe_count": 4,
+        "skill_written": false,
+        "support_count": 4,
+        "winner_op": "winsorize"
+      }
+    }
+  },
+  "pairs": [
+    {
+      "arms": {
+        "A3": {
+          "rounds": [
+            {
+              "chosen": "cand_repair_level_shift",
+              "delayed_gain": 0.006939065209849549,
+              "final_relation": "POSITIVE",
+              "origin": 792,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "repair_level_shift",
+                "winsorize"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair1_A3_r1_p1",
+                  "gain": -0.031639898214639084,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": -6.0,
+                    "region_end_fraction": 0.29545454545454547,
+                    "region_start_fraction": 0.18434343434343434
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_winsorize_pair1_A3_r1_p2",
+                  "gain": 0.11599759537540488,
+                  "op": "winsorize",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 1,
+              "skill_written": "winsorize",
+              "winner": "winsorize"
+            },
+            {
+              "chosen": "cand_skill_pair1-a3-skill-v1",
+              "delayed_gain": -0.002134035006877033,
+              "final_relation": "CONFLICT",
+              "origin": 888,
+              "pool": [
+                "identity",
+                "cand_skill_pair1-a3-skill-v1",
+                "cand_repair_level_shift"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "skill_pair1-a3-skill-v1",
+                "repair_level_shift"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_skill_pair1-a3-skill-v1_pair1_A3_r2_p1",
+                  "gain": 0.005651399639927668,
+                  "op": "skill_pair1-a3-skill-v1",
+                  "params": {},
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 2,
+              "winner": "skill_pair1-a3-skill-v1"
+            }
+          ]
+        },
+        "A5": {
+          "rounds": [
+            {
+              "chosen": "cand_repair_level_shift",
+              "delayed_gain": 0.006939065209849549,
+              "final_relation": "POSITIVE",
+              "origin": 792,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "repair_level_shift",
+                "winsorize"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair1_A5_r1_p1",
+                  "gain": -0.031639898214639084,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": -6.0,
+                    "region_end_fraction": 0.29545454545454547,
+                    "region_start_fraction": 0.18434343434343434
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_winsorize_pair1_A5_r1_p2",
+                  "gain": 0.11599759537540488,
+                  "op": "winsorize",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 1,
+              "skill_written": "winsorize",
+              "winner": "winsorize"
+            },
+            {
+              "chosen": "cand_skill_pair1-a5-skill-v1",
+              "delayed_gain": -0.002134035006877033,
+              "final_relation": "CONFLICT",
+              "origin": 888,
+              "pool": [
+                "identity",
+                "cand_skill_pair1-a5-skill-v1",
+                "cand_repair_level_shift"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "skill_pair1-a5-skill-v1",
+                "repair_level_shift"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_skill_pair1-a5-skill-v1_pair1_A5_r2_p1",
+                  "gain": 0.005651399639927668,
+                  "op": "skill_pair1-a5-skill-v1",
+                  "params": {},
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 2,
+              "winner": "skill_pair1-a5-skill-v1"
+            }
+          ]
+        }
+      },
+      "name": "pair1",
+      "source": {
+        "delayed_gain": null,
+        "final_relation": null,
+        "origin": 600,
+        "probes": [
+          {
+            "delayed_gain": 0.046457102761631175,
+            "episode_id": "monash_weather_daily_target_repair_level_shift_pair1_src_s1_p1",
+            "gain": 0.07497861467138622,
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": -4.775,
+              "region_end_fraction": 0.29833333333333334,
+              "region_start_fraction": 0.15333333333333332
+            },
+            "passed": true,
+            "probe": 1,
+            "relation": "POSITIVE"
+          },
+          {
+            "delayed_gain": 0.03561160909550676,
+            "episode_id": "monash_weather_daily_target_winsorize_pair1_src_s1_p2",
+            "gain": 0.11395217039956274,
+            "op": "winsorize",
+            "params": {},
+            "passed": true,
+            "probe": 2,
+            "relation": "POSITIVE"
+          },
+          {
+            "delayed_gain": 0.06896853417211735,
+            "episode_id": "monash_weather_daily_target_outlier_iqr_pair1_src_s1_p3",
+            "gain": 0.13914375414715696,
+            "op": "outlier_iqr",
+            "params": {},
+            "passed": true,
+            "probe": 3,
+            "relation": "POSITIVE"
+          }
+        ],
+        "winner": null
+      },
+      "source_cohort": "C0",
+      "source_episode_count": 3,
+      "target_cohort": "C1"
+    },
+    {
+      "arms": {
+        "A3": {
+          "rounds": [
+            {
+              "chosen": "identity",
+              "delayed_gain": 0.005437638472727491,
+              "final_relation": "POSITIVE",
+              "origin": 792,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "abstained",
+              "probe_order": [
+                "repair_level_shift",
+                "winsorize"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair2_A3_r1_p1",
+                  "gain": -0.08740265087643584,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": 4.1376649257833975,
+                    "region_end_fraction": 0.1388888888888889,
+                    "region_start_fraction": 0.06818181818181818
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_winsorize_pair2_A3_r1_p2",
+                  "gain": 0.16419057035539475,
+                  "op": "winsorize",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 1,
+              "skill_written": "winsorize",
+              "winner": "winsorize"
+            },
+            {
+              "chosen": "",
+              "delayed_gain": 0.010440820710508891,
+              "final_relation": "POSITIVE",
+              "origin": 888,
+              "pool": [
+                "identity",
+                "cand_skill_pair2-a3-skill-v1",
+                "cand_repair_level_shift"
+              ],
+              "prepare_error": "AgentProtocolError: 'NoneType' object is not subscriptable",
+              "prepare_status": "failed",
+              "probe_order": [
+                "skill_pair2-a3-skill-v1",
+                "repair_level_shift"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_skill_pair2-a3-skill-v1_pair2_A3_r2_p1",
+                  "gain": 0.1312206116770911,
+                  "op": "skill_pair2-a3-skill-v1",
+                  "params": {},
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 2,
+              "winner": "skill_pair2-a3-skill-v1"
+            }
+          ]
+        },
+        "A5": {
+          "rounds": [
+            {
+              "chosen": "identity",
+              "delayed_gain": 0.005437638472727491,
+              "final_relation": "POSITIVE",
+              "origin": 792,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "abstained",
+              "probe_order": [
+                "repair_level_shift",
+                "winsorize"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair2_A5_r1_p1",
+                  "gain": -0.08740265087643584,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": 4.1376649257833975,
+                    "region_end_fraction": 0.1388888888888889,
+                    "region_start_fraction": 0.06818181818181818
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_winsorize_pair2_A5_r1_p2",
+                  "gain": 0.16419057035539475,
+                  "op": "winsorize",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 1,
+              "skill_written": "winsorize",
+              "winner": "winsorize"
+            },
+            {
+              "chosen": "cand_skill_pair2-a5-skill-v1",
+              "delayed_gain": 0.010440820710508891,
+              "final_relation": "POSITIVE",
+              "origin": 888,
+              "pool": [
+                "identity",
+                "cand_skill_pair2-a5-skill-v1",
+                "cand_repair_level_shift"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "skill_pair2-a5-skill-v1",
+                "repair_level_shift"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_skill_pair2-a5-skill-v1_pair2_A5_r2_p1",
+                  "gain": 0.1312206116770911,
+                  "op": "skill_pair2-a5-skill-v1",
+                  "params": {},
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 2,
+              "winner": "skill_pair2-a5-skill-v1"
+            }
+          ]
+        }
+      },
+      "name": "pair2",
+      "source": {
+        "delayed_gain": null,
+        "final_relation": null,
+        "origin": 600,
+        "probes": [
+          {
+            "delayed_gain": -0.3238922118190539,
+            "episode_id": "monash_weather_daily_target_repair_level_shift_pair2_src_s1_p1",
+            "gain": 0.0182363484204906,
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": 4.75,
+              "region_end_fraction": 0.6916666666666667,
+              "region_start_fraction": 0.5766666666666667
+            },
+            "passed": true,
+            "probe": 1,
+            "relation": "CONFLICT"
+          },
+          {
+            "delayed_gain": 0.14511224803014344,
+            "episode_id": "monash_weather_daily_target_winsorize_pair2_src_s1_p2",
+            "gain": 0.11323385152197973,
+            "op": "winsorize",
+            "params": {},
+            "passed": true,
+            "probe": 2,
+            "relation": "POSITIVE"
+          },
+          {
+            "delayed_gain": 0.09208948175597698,
+            "episode_id": "monash_weather_daily_target_outlier_iqr_pair2_src_s1_p3",
+            "gain": -0.0742967005920514,
+            "op": "outlier_iqr",
+            "params": {},
+            "passed": true,
+            "probe": 3,
+            "relation": "CONFLICT"
+          }
+        ],
+        "winner": null
+      },
+      "source_cohort": "C2",
+      "source_episode_count": 3,
+      "target_cohort": "C3"
+    },
+    {
+      "arms": {
+        "A3": {
+          "rounds": [
+            {
+              "chosen": "cand_repair_level_shift",
+              "delayed_gain": -0.005581614299098092,
+              "final_relation": "CONFLICT",
+              "origin": 792,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "repair_level_shift",
+                "winsorize"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair3_A3_r1_p1",
+                  "gain": -0.06822736476646774,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": 6.117829127990589,
+                    "region_end_fraction": 0.5050505050505051,
+                    "region_start_fraction": 0.43308080808080807
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_winsorize_pair3_A3_r1_p2",
+                  "gain": 0.21347769676199713,
+                  "op": "winsorize",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 1,
+              "winner": "winsorize"
+            },
+            {
+              "chosen": "cand_repair_level_shift",
+              "delayed_gain": null,
+              "final_relation": null,
+              "origin": 888,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "repair_level_shift",
+                "outlier_iqr"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair3_A3_r2_p1",
+                  "gain": -0.16624428394481416,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": 6.117829127990589,
+                    "region_end_fraction": 0.45045045045045046,
+                    "region_start_fraction": 0.38626126126126126
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_outlier_iqr_pair3_A3_r2_p2",
+                  "gain": -0.009098505942255919,
+                  "op": "outlier_iqr",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "NEGATIVE"
+                }
+              ],
+              "round": 2,
+              "winner": null
+            }
+          ]
+        },
+        "A5": {
+          "rounds": [
+            {
+              "chosen": "cand_repair_level_shift",
+              "delayed_gain": -0.005581614299098092,
+              "final_relation": "CONFLICT",
+              "origin": 792,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": null,
+              "prepare_status": "prepared",
+              "probe_order": [
+                "repair_level_shift",
+                "winsorize"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair3_A5_r1_p1",
+                  "gain": -0.06822736476646774,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": 6.117829127990589,
+                    "region_end_fraction": 0.5050505050505051,
+                    "region_start_fraction": 0.43308080808080807
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_winsorize_pair3_A5_r1_p2",
+                  "gain": 0.21347769676199713,
+                  "op": "winsorize",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "POSITIVE"
+                }
+              ],
+              "round": 1,
+              "winner": "winsorize"
+            },
+            {
+              "chosen": "",
+              "delayed_gain": null,
+              "final_relation": null,
+              "origin": 888,
+              "pool": [
+                "identity",
+                "cand_repair_level_shift",
+                "cand_winsorize",
+                "cand_outlier_iqr"
+              ],
+              "prepare_error": "AgentProtocolError: 'NoneType' object is not subscriptable",
+              "prepare_status": "failed",
+              "probe_order": [
+                "repair_level_shift",
+                "outlier_iqr"
+              ],
+              "probes": [
+                {
+                  "episode_id": "monash_weather_daily_target_repair_level_shift_pair3_A5_r2_p1",
+                  "gain": -0.16624428394481416,
+                  "op": "repair_level_shift",
+                  "params": {
+                    "estimated_offset": 6.117829127990589,
+                    "region_end_fraction": 0.45045045045045046,
+                    "region_start_fraction": 0.38626126126126126
+                  },
+                  "passed": true,
+                  "probe": 1,
+                  "relation": "NEGATIVE"
+                },
+                {
+                  "episode_id": "monash_weather_daily_target_outlier_iqr_pair3_A5_r2_p2",
+                  "gain": -0.009098505942255919,
+                  "op": "outlier_iqr",
+                  "params": {},
+                  "passed": true,
+                  "probe": 2,
+                  "relation": "NEGATIVE"
+                }
+              ],
+              "round": 2,
+              "winner": null
+            }
+          ]
+        }
+      },
+      "name": "pair3",
+      "source": {
+        "delayed_gain": null,
+        "final_relation": null,
+        "origin": 600,
+        "probes": [
+          {
+            "delayed_gain": -0.02510045194105981,
+            "episode_id": "monash_weather_daily_target_repair_level_shift_pair3_src_s1_p1",
+            "gain": 0.15120049751407616,
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": 3.875,
+              "region_end_fraction": 0.7266666666666667,
+              "region_start_fraction": 0.5916666666666667
+            },
+            "passed": true,
+            "probe": 1,
+            "relation": "CONFLICT"
+          },
+          {
+            "delayed_gain": 0.06428839639573924,
+            "episode_id": "monash_weather_daily_target_winsorize_pair3_src_s1_p2",
+            "gain": 0.13265301716490452,
+            "op": "winsorize",
+            "params": {},
+            "passed": true,
+            "probe": 2,
+            "relation": "POSITIVE"
+          },
+          {
+            "delayed_gain": -0.009848324407877529,
+            "episode_id": "monash_weather_daily_target_outlier_iqr_pair3_src_s1_p3",
+            "gain": -0.00455108487403022,
+            "op": "outlier_iqr",
+            "params": {},
+            "passed": true,
+            "probe": 3,
+            "relation": "NEGATIVE"
+          }
+        ],
+        "winner": null
+      },
+      "source_cohort": "C4",
+      "source_episode_count": 3,
+      "target_cohort": "C5"
+    }
+  ],
+  "scope": "组成平衡的 Monash Weather 温度变量 cohort（mintemp+maxtemp 10/10）；不扩展为全部 Weather/跨变量类型/Shared Capability",
+  "verdict": "INCONCLUSIVE_PROTOCOL_FAILURE"
+}

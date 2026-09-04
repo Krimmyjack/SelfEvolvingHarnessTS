@@ -1,0 +1,232 @@
+{
+  "arms": {
+    "A3": {
+      "arm": "A3",
+      "first_positive_probe_index": 2,
+      "frozen_steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "llm_calls": 2,
+      "patch_call": {
+        "attempts": [
+          "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"probe_remove_step_a\",\"incumbent full-workflow support gain\"],\"rationale\":\"Dropping step A and retaining step B improves support gain to +0.04386, while the incumbent A -> B workflow is harmful at -0.10249 and retaining only A is worse at -0.15432.\"}"
+        ],
+        "payload": {
+          "evidence_refs": [
+            "probe_remove_step_a",
+            "incumbent full-workflow support gain"
+          ],
+          "patch_id": "REMOVE_STEP_A",
+          "rationale": "Dropping step A and retaining step B improves support gain to +0.04386, while the incumbent A -> B workflow is harmful at -0.10249 and retaining only A is worse at -0.15432."
+        }
+      },
+      "patch_id": "REMOVE_STEP_A",
+      "patch_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nYou ran counterfactual probes on the failing two-step Workflow. Choose the update direction based on the probe results below.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_ssm  B: outlier_iqr\n  incumbent full-workflow support gain: -0.10249\n\n== Opened probe results (support decision point 928; gain > 0 = better than no preprocessing) ==\n  probe probe_remove_step_b (A only): -0.15432\n  probe probe_remove_step_a (B only): +0.04386\n\n== Legal patch IDs ==\n  KEEP           keep A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN        no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. ABSTAIN is valid if the opened probe results are insufficient.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+      "probe_call": {
+        "attempts": [
+          "{\"probe_order\":[\"probe_remove_step_b\",\"probe_remove_step_a\"],\"rationale\":\"The decision point has substantial missingness and long missing runs, so removing impute_ssm is expected to remain harmful and is less likely to produce a positive ablation. Test A only first to determine whether outlier_iqr is responsible for the negative support gain; if it is not, B only provides the remaining attribution signal.\"}"
+        ],
+        "payload": {
+          "probe_order": [
+            "probe_remove_step_b",
+            "probe_remove_step_a"
+          ],
+          "rationale": "The decision point has substantial missingness and long missing runs, so removing impute_ssm is expected to remain harmful and is less likely to produce a positive ablation. Test A only first to determine whether outlier_iqr is responsible for the negative support gain; if it is not, B only provides the remaining attribution signal."
+        }
+      },
+      "probe_evals": [
+        {
+          "error": null,
+          "gain": -0.15431641254038198,
+          "label": "A only",
+          "probe": "probe_remove_step_b",
+          "verification_passed": true
+        },
+        {
+          "error": null,
+          "gain": 0.043862404445872194,
+          "label": "B only",
+          "probe": "probe_remove_step_a",
+          "verification_passed": true
+        }
+      ],
+      "probe_order": [
+        "probe_remove_step_b",
+        "probe_remove_step_a"
+      ],
+      "probe_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nA two-step Workflow failed at support decision point 928. Before proposing a fix, you may run at most two counterfactual probes: each probe evaluates one leave-one-step-out version of the Workflow on the SAME support decision point.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_ssm\n  B: outlier_iqr\n  incumbent full-workflow support gain: -0.10249 (negative or non-positive = failure trigger)\n\n== Public context at the decision point ==\n{\n  \"change.coverage_delta\": -0.09375,\n  \"change.maximum_missing_run_length_delta\": 18.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.006749,\n  \"change.median_normalized_seasonal_residual_delta\": 0.060396,\n  \"change.median_robust_center_delta\": 10261.25,\n  \"change.median_robust_scale_delta\": 7116.85065,\n  \"change.missing_run_count_delta\": 20.0,\n  \"recent.coverage\": 0.90625,\n  \"recent.maximum_missing_run_length\": 18.0,\n  \"recent.median_acf_at_calendar_period\": 0.935338,\n  \"recent.median_normalized_seasonal_residual\": 0.20182,\n  \"recent.median_robust_center\": 81433.75,\n  \"recent.median_robust_scale\": 24846.8934,\n  \"recent.missing_run_count\": 20.0\n}\n\n== Legal probes (budget: at most 2, each evaluates one ablated version; the results are NOT known until you run them) ==\n  probe_remove_step_a   evaluate B only (drop step A)\n  probe_remove_step_b   evaluate A only (drop step B)\n\n== Your task ==\nChoose the probe order that most efficiently localizes the failure (the first probe you expect to reveal a positive or informative ablation). You may order both probes or a single one.\nOutput JSON only: {\"probe_order\": [\"<probe>\", ...], \"rationale\": \"...\"}",
+      "replay": {
+        "compiler": {
+          "checked_windows": 120,
+          "passed": true,
+          "rejected_windows": []
+        },
+        "delayed": {
+          "gain": 0.027190356020410977,
+          "opened_after_patch_freeze": true,
+          "origin": 976
+        },
+        "support": {
+          "gain": 0.043862404445872194,
+          "origin": 928
+        }
+      }
+    },
+    "A5": {
+      "arm": "A5",
+      "first_positive_probe_index": 1,
+      "frozen_steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "llm_calls": 2,
+      "patch_call": {
+        "attempts": [
+          "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"probe_remove_step_a\",\"gefcom outlier_iqr @928\"],\"rationale\":\"Dropping step A improves support from the incumbent negative gain (-0.10249) to +0.04386. Step B is independently supported as positive, while step A has conflicting delayed evidence.\"}"
+        ],
+        "payload": {
+          "evidence_refs": [
+            "probe_remove_step_a",
+            "gefcom outlier_iqr @928"
+          ],
+          "patch_id": "REMOVE_STEP_A",
+          "rationale": "Dropping step A improves support from the incumbent negative gain (-0.10249) to +0.04386. Step B is independently supported as positive, while step A has conflicting delayed evidence."
+        }
+      },
+      "patch_id": "REMOVE_STEP_A",
+      "patch_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nYou ran counterfactual probes on the failing two-step Workflow. Choose the update direction based on the probe results below.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_ssm  B: outlier_iqr\n  incumbent full-workflow support gain: -0.10249\n\n== Opened probe results (support decision point 928; gain > 0 = better than no preprocessing) ==\n  probe probe_remove_step_a (B only): +0.04386\n\n== Experience memory (signed) ==\n  - gefcom outlier_iqr @928: support +0.04386 delayed +0.02719 → POSITIVE\n  - gefcom impute_fft @928: support +0.01849 delayed -0.03496 → CONFLICT\n\n== Legal patch IDs ==\n  KEEP           keep A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN        no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. ABSTAIN is valid if the opened probe results are insufficient.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+      "probe_call": {
+        "attempts": [
+          "{\"probe_order\":[\"probe_remove_step_a\",\"probe_remove_step_b\"],\"rationale\":\"Evaluate B only first because outlier_iqr has prior positive support at decision point 928, making this ablation the most likely to reveal a positive contribution and isolate impute_ssm as the failure source. Evaluate A only second to distinguish whether the failure is specific to B's interaction or already present after A.\"}"
+        ],
+        "payload": {
+          "probe_order": [
+            "probe_remove_step_a",
+            "probe_remove_step_b"
+          ],
+          "rationale": "Evaluate B only first because outlier_iqr has prior positive support at decision point 928, making this ablation the most likely to reveal a positive contribution and isolate impute_ssm as the failure source. Evaluate A only second to distinguish whether the failure is specific to B's interaction or already present after A."
+        }
+      },
+      "probe_evals": [
+        {
+          "error": null,
+          "gain": 0.043862404445872194,
+          "label": "B only",
+          "probe": "probe_remove_step_a",
+          "verification_passed": true
+        }
+      ],
+      "probe_order": [
+        "probe_remove_step_a",
+        "probe_remove_step_b"
+      ],
+      "probe_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nA two-step Workflow failed at support decision point 928. Before proposing a fix, you may run at most two counterfactual probes: each probe evaluates one leave-one-step-out version of the Workflow on the SAME support decision point.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_ssm\n  B: outlier_iqr\n  incumbent full-workflow support gain: -0.10249 (negative or non-positive = failure trigger)\n\n== Public context at the decision point ==\n{\n  \"change.coverage_delta\": -0.09375,\n  \"change.maximum_missing_run_length_delta\": 18.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.006749,\n  \"change.median_normalized_seasonal_residual_delta\": 0.060396,\n  \"change.median_robust_center_delta\": 10261.25,\n  \"change.median_robust_scale_delta\": 7116.85065,\n  \"change.missing_run_count_delta\": 20.0,\n  \"recent.coverage\": 0.90625,\n  \"recent.maximum_missing_run_length\": 18.0,\n  \"recent.median_acf_at_calendar_period\": 0.935338,\n  \"recent.median_normalized_seasonal_residual\": 0.20182,\n  \"recent.median_robust_center\": 81433.75,\n  \"recent.median_robust_scale\": 24846.8934,\n  \"recent.missing_run_count\": 20.0\n}\n\n== Experience memory (signed) ==\n  - gefcom outlier_iqr @928: support +0.04386 delayed +0.02719 → POSITIVE\n  - gefcom impute_fft @928: support +0.01849 delayed -0.03496 → CONFLICT\n\n== Legal probes (budget: at most 2, each evaluates one ablated version; the results are NOT known until you run them) ==\n  probe_remove_step_a   evaluate B only (drop step A)\n  probe_remove_step_b   evaluate A only (drop step B)\n\n== Your task ==\nChoose the probe order that most efficiently localizes the failure (the first probe you expect to reveal a positive or informative ablation). You may order both probes or a single one.\nOutput JSON only: {\"probe_order\": [\"<probe>\", ...], \"rationale\": \"...\"}",
+      "replay": {
+        "compiler": {
+          "checked_windows": 120,
+          "passed": true,
+          "rejected_windows": []
+        },
+        "delayed": {
+          "gain": 0.027190356020410977,
+          "opened_after_patch_freeze": true,
+          "origin": 976
+        },
+        "support": {
+          "gain": 0.043862404445872194,
+          "origin": 928
+        }
+      }
+    },
+    "M_swap": {
+      "arm": "M_swap",
+      "first_positive_probe_index": 1,
+      "frozen_steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "llm_calls": 1,
+      "patch_call": {
+        "attempts": [
+          "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"probe_remove_step_a\",\"incumbent_full_workflow_support_gain\"],\"rationale\":\"Dropping step A and keeping B improves support from -0.10249 for the incumbent workflow to +0.04386 in the opened probe, indicating that removing A is the supported update direction.\"}"
+        ],
+        "payload": {
+          "evidence_refs": [
+            "probe_remove_step_a",
+            "incumbent_full_workflow_support_gain"
+          ],
+          "patch_id": "REMOVE_STEP_A",
+          "rationale": "Dropping step A and keeping B improves support from -0.10249 for the incumbent workflow to +0.04386 in the opened probe, indicating that removing A is the supported update direction."
+        }
+      },
+      "patch_id": "REMOVE_STEP_A",
+      "patch_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nYou ran counterfactual probes on the failing two-step Workflow. Choose the update direction based on the probe results below.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_ssm  B: outlier_iqr\n  incumbent full-workflow support gain: -0.10249\n\n== Opened probe results (support decision point 928; gain > 0 = better than no preprocessing) ==\n  probe probe_remove_step_a (B only): +0.04386\n\n== Experience memory (signed) ==\n  - gefcom outlier_iqr @928: support -0.04386 delayed -0.02719 → NEGATIVE (signed relation inverted for causal diagnosis)\n  - gefcom impute_fft @928: support +0.01849 delayed +0.03496 → POSITIVE (signed relation inverted for causal diagnosis)\n\n== Legal patch IDs ==\n  KEEP           keep A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN        no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. ABSTAIN is valid if the opened probe results are insufficient.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+      "probe_evals": [
+        {
+          "error": null,
+          "gain": 0.043862404445872194,
+          "label": "B only",
+          "probe": "probe_remove_step_a",
+          "verification_passed": true
+        }
+      ],
+      "probe_order": [
+        "probe_remove_step_a",
+        "probe_remove_step_b"
+      ],
+      "probe_plan_replay": true,
+      "replay": {
+        "compiler": {
+          "checked_windows": 120,
+          "passed": true,
+          "rejected_windows": []
+        },
+        "delayed": {
+          "gain": 0.027190356020410977,
+          "opened_after_patch_freeze": true,
+          "origin": 976
+        },
+        "support": {
+          "gain": 0.043862404445872194,
+          "origin": 928
+        }
+      }
+    }
+  },
+  "case": {
+    "delayed_origin": 976,
+    "origin": 928,
+    "step_a": "impute_ssm",
+    "step_b": "outlier_iqr",
+    "support": {
+      "A_only": -0.15432,
+      "A_to_B": -0.10249,
+      "B_only": 0.04386,
+      "identity": null
+    }
+  },
+  "checks": {
+    "a5_first_positive_earlier_or_equal": true,
+    "a5_no_worse_harm": true,
+    "a5_patch_differs_from_a3": false,
+    "a5_probe_plan_differs_from_a3": true,
+    "swap_changes_decision": false
+  },
+  "experiment_id": "v1-memory-guided-probing",
+  "information_wall": {
+    "delayed_not_in_any_prompt": false,
+    "delayed_opened_after_patch_freeze": true,
+    "note": "程序断言自 prompt 文本计算；语义面泄漏（memory 行含当前案例数值）会如实暴露为 False",
+    "patch_prompt_only_opened_probes": true,
+    "probe_choice_prompt_has_no_ablation_gains": false
+  },
+  "llm_api_call_count": 5,
+  "verdict": "MEMORY_GUIDED_PROBING_SOURCE_EXPERIENCE_HAS_ACTUAL_VALUE"
+}

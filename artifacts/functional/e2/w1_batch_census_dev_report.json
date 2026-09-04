@@ -1,0 +1,573 @@
+{
+  "experiment_id": "v1-batch-census-dev",
+  "note": "Wave 3：全量 Exposed Evidence Census + 预声明 development block（development exposure——零新 Claim——不形成 跨域/迁移结论）",
+  "pre_registered": {
+    "dev_series": [
+      "T1",
+      "T10",
+      "T100",
+      "T101"
+    ],
+    "origins": [
+      600,
+      792,
+      888,
+      984
+    ],
+    "eval_series": [
+      "T128",
+      "T129",
+      "T13",
+      "T130",
+      "T131",
+      "T132",
+      "T133",
+      "T134"
+    ]
+  },
+  "exposed": {
+    "families": {
+      "winsorize|POSITIVE": {
+        "workflow": "winsorize",
+        "sign": "POSITIVE",
+        "series": [
+          "T117"
+        ],
+        "episodes": [
+          {
+            "series": "T117",
+            "origin": 600,
+            "gain": 0.006710386297263504
+          },
+          {
+            "series": "T117",
+            "origin": 792,
+            "gain": 0.07326346040876652
+          }
+        ]
+      },
+      "winsorize|NEGATIVE": {
+        "workflow": "winsorize",
+        "sign": "NEGATIVE",
+        "series": [
+          "T117"
+        ],
+        "episodes": [
+          {
+            "series": "T117",
+            "origin": 888,
+            "gain": -0.1426334267351992
+          },
+          {
+            "series": "T117",
+            "origin": 984,
+            "gain": -0.08411687539427182
+          }
+        ]
+      },
+      "outlier_mad|POSITIVE": {
+        "workflow": "outlier_mad",
+        "sign": "POSITIVE",
+        "series": [
+          "T117"
+        ],
+        "episodes": [
+          {
+            "series": "T117",
+            "origin": 888,
+            "gain": 0.11986118246492228
+          }
+        ]
+      },
+      "outlier_mad|NEGATIVE": {
+        "workflow": "outlier_mad",
+        "sign": "NEGATIVE",
+        "series": [
+          "T117"
+        ],
+        "episodes": [
+          {
+            "series": "T117",
+            "origin": 984,
+            "gain": -0.060764531483190165
+          }
+        ]
+      },
+      "level_shift|POSITIVE": {
+        "workflow": "level_shift",
+        "sign": "POSITIVE",
+        "series": [
+          "T153"
+        ],
+        "episodes": [
+          {
+            "series": "T153",
+            "origin": 600,
+            "gain": 2.5061806208169566
+          },
+          {
+            "series": "T153",
+            "origin": 600,
+            "gain": 2.5061806208169566
+          }
+        ]
+      },
+      "level_shift|NEGATIVE": {
+        "workflow": "level_shift",
+        "sign": "NEGATIVE",
+        "series": [
+          "T153"
+        ],
+        "episodes": [
+          {
+            "series": "T153",
+            "origin": 792,
+            "gain": -0.5405587846272975
+          }
+        ]
+      },
+      "repair_level_shift|NEGATIVE": {
+        "workflow": "repair_level_shift",
+        "sign": "NEGATIVE",
+        "series": [
+          "T153"
+        ],
+        "episodes": [
+          {
+            "series": "T153",
+            "origin": 792,
+            "gain": -0.5405587846272975
+          }
+        ]
+      },
+      "repair_level_shift|POSITIVE": {
+        "workflow": "repair_level_shift",
+        "sign": "POSITIVE",
+        "series": [
+          "T153"
+        ],
+        "episodes": [
+          {
+            "series": "T153",
+            "origin": 888,
+            "gain": 2.02076964497536
+          }
+        ]
+      }
+    },
+    "notes": [
+      "E31 winsorize instrument-invalid（scale floor）——不构成 material 失败 Episode——census 按 VALIDITY 纪律排除"
+    ],
+    "e31_winsorize_instrument": {
+      "gain": null,
+      "passed": true,
+      "error": "RuntimeError: training context reached scale floor"
+    },
+    "cross_series_families": []
+  },
+  "exposed_verdict": "CENSUS_EXPOSED_NO_CROSS_SERIES_FAMILY",
+  "development_skipped": [],
+  "development_rounds": {
+    "T1": [
+      {
+        "origin": 600,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.05312801767468045
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T1_target_winsorize_census_T1_600_p1"
+        ]
+      },
+      {
+        "origin": 792,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.27234392179686084
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T1_target_winsorize_census_T1_792_p1"
+        ]
+      },
+      {
+        "origin": 888,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.015448824427035879
+          ],
+          [
+            "cand_outlier_mad",
+            -0.002871009254668211
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T1_target_winsorize_census_T1_888_p1",
+          "kdd2018_dev_T1_target_outlier_mad_census_T1_888_p2"
+        ]
+      },
+      {
+        "origin": 984,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.08778457252803373
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T1_target_winsorize_census_T1_984_p1"
+        ]
+      }
+    ],
+    "T10": [
+      {
+        "origin": 600,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.04887324425857553
+          ],
+          [
+            "cand_outlier_mad",
+            -0.04699599947334576
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T10_target_winsorize_census_T10_600_p1",
+          "kdd2018_dev_T10_target_outlier_mad_census_T10_600_p2"
+        ]
+      },
+      {
+        "origin": 792,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.07124998740200095
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T10_target_winsorize_census_T10_792_p1"
+        ]
+      },
+      {
+        "origin": 888,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.032415223262408865
+          ],
+          [
+            "cand_outlier_mad",
+            0.0029457029644843757
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T10_target_winsorize_census_T10_888_p1",
+          "kdd2018_dev_T10_target_outlier_mad_census_T10_888_p2"
+        ]
+      },
+      {
+        "origin": 984,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.15204092393206592
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T10_target_winsorize_census_T10_984_p1"
+        ]
+      }
+    ],
+    "T100": [
+      {
+        "origin": 600,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.16439602463408765
+          ],
+          [
+            "cand_outlier_mad",
+            0.28776088892638985
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T100_target_winsorize_census_T100_600_p1",
+          "kdd2018_dev_T100_target_outlier_mad_census_T100_600_p2"
+        ]
+      },
+      {
+        "origin": 792,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.2905255653551535
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T100_target_winsorize_census_T100_792_p1"
+        ]
+      },
+      {
+        "origin": 888,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.03868390208881667
+          ],
+          [
+            "cand_outlier_mad",
+            0.1423245540507111
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T100_target_winsorize_census_T100_888_p1",
+          "kdd2018_dev_T100_target_outlier_mad_census_T100_888_p2"
+        ]
+      },
+      {
+        "origin": 984,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.2033049337453987
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T100_target_winsorize_census_T100_984_p1"
+        ]
+      }
+    ],
+    "T101": [
+      {
+        "origin": 600,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.0051065530802527626
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T101_target_winsorize_census_T101_600_p1"
+        ]
+      },
+      {
+        "origin": 792,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.0028280115122629734
+          ],
+          [
+            "cand_outlier_mad",
+            0.0
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T101_target_winsorize_census_T101_792_p1",
+          "kdd2018_dev_T101_target_outlier_mad_census_T101_792_p2"
+        ]
+      },
+      {
+        "origin": 888,
+        "probes": [
+          [
+            "cand_winsorize",
+            0.004803996422884205
+          ],
+          [
+            "cand_outlier_mad",
+            0.0
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T101_target_winsorize_census_T101_888_p1",
+          "kdd2018_dev_T101_target_outlier_mad_census_T101_888_p2"
+        ]
+      },
+      {
+        "origin": 984,
+        "probes": [
+          [
+            "cand_winsorize",
+            -0.02434660784991416
+          ],
+          [
+            "cand_outlier_mad",
+            0.0
+          ]
+        ],
+        "episodes_written": [
+          "kdd2018_dev_T101_target_winsorize_census_T101_984_p1",
+          "kdd2018_dev_T101_target_outlier_mad_census_T101_984_p2"
+        ]
+      }
+    ]
+  },
+  "development_families": [
+    {
+      "workflow": "winsorize",
+      "sign": "NEGATIVE",
+      "n_episodes": 6,
+      "independent_series": [
+        "T1",
+        "T10",
+        "T100",
+        "T101"
+      ],
+      "n_series": 4,
+      "origins": [
+        600,
+        888,
+        984
+      ],
+      "episodes": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": -0.16439602463408765
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.04887324425857553
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": -0.03868390208881667
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.032415223262408865
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": -0.02434660784991416
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.015448824427035879
+        }
+      ],
+      "min_gain": -0.16439602463408765,
+      "max_gain": -0.015448824427035879,
+      "replacement_headroom": {
+        "winsorize": {
+          "per_episode_gains": [
+            {
+              "series": "T100",
+              "origin": 600,
+              "gain": -0.16439602463408765
+            },
+            {
+              "series": "T10",
+              "origin": 600,
+              "gain": -0.04887324425857553
+            },
+            {
+              "series": "T100",
+              "origin": 888,
+              "gain": -0.03868390208881667
+            },
+            {
+              "series": "T10",
+              "origin": 888,
+              "gain": -0.032415223262408865
+            },
+            {
+              "series": "T101",
+              "origin": 984,
+              "gain": -0.02434660784991416
+            },
+            {
+              "series": "T1",
+              "origin": 888,
+              "gain": -0.015448824427035879
+            }
+          ],
+          "common_positive": false
+        },
+        "outlier_mad": {
+          "per_episode_gains": [
+            {
+              "series": "T100",
+              "origin": 600,
+              "gain": 0.28776088892638985
+            },
+            {
+              "series": "T10",
+              "origin": 600,
+              "gain": -0.04699599947334576
+            },
+            {
+              "series": "T100",
+              "origin": 888,
+              "gain": 0.1423245540507111
+            },
+            {
+              "series": "T10",
+              "origin": 888,
+              "gain": 0.0029457029644843757
+            },
+            {
+              "series": "T101",
+              "origin": 984,
+              "gain": 0.0
+            },
+            {
+              "series": "T1",
+              "origin": 888,
+              "gain": -0.002871009254668211
+            }
+          ],
+          "common_positive": false
+        },
+        "hampel_filter": {
+          "per_episode_gains": [
+            {
+              "series": "T100",
+              "origin": 600,
+              "gain": -0.08100393680437046
+            },
+            {
+              "series": "T10",
+              "origin": 600,
+              "gain": 0.033122865502676735
+            },
+            {
+              "series": "T100",
+              "origin": 888,
+              "gain": -0.07646564032435121
+            },
+            {
+              "series": "T10",
+              "origin": 888,
+              "gain": -0.11744769997066684
+            },
+            {
+              "series": "T101",
+              "origin": 984,
+              "gain": 0.0005833962578585261
+            },
+            {
+              "series": "T1",
+              "origin": 888,
+              "gain": 0.005433239438771942
+            }
+          ],
+          "common_positive": false
+        }
+      }
+    }
+  ],
+  "verdict": "DEVELOPMENT_FAMILY_FOUND"
+}

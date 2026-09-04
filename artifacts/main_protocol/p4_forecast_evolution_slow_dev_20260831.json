@@ -1,0 +1,336 @@
+{
+  "stage": "P4_FORECAST_EVOLUTION_SLOW_CONNECTION_REPAIR_DEV",
+  "status": "COMPLETE",
+  "started_at": "2026-08-31T02:47:52+08:00",
+  "completed_at": "2026-08-31T02:49:21+08:00",
+  "evidence_grade": "MECHANISM_DEVELOPMENT_EXPOSED_NO_H3_RELEASE",
+  "release": {
+    "source": "artifacts/main_protocol/p4_split_gate_forecast_b8_llm8_20260830.json",
+    "checks": {
+      "p4_evolution_remains_held": true,
+      "rq3_not_exercised": true,
+      "natural_final_closed": true,
+      "final_reads_zero": true
+    },
+    "gate_before": "HELD__RQ3_NOT_EXERCISED",
+    "gate_after_authorized": false
+  },
+  "scope": {
+    "dataset": "KDD Cup 2018 with missing values",
+    "data_role": "EXPOSED_DEVELOPMENT_HELD_IN",
+    "fresh_or_held_out_claim": false,
+    "performance_rerun": false,
+    "p4_evolution_release": false,
+    "origins": [
+      600,
+      648,
+      696
+    ],
+    "origin_selection_rule": "first three chronological exposed development origins; no Outcome-based origin selection",
+    "natural_agent_first_fault_required": true,
+    "controlled_card_or_forced_answer": false,
+    "support_a_series_count": 20,
+    "support_b_series_count": 20,
+    "agent_inaccessible_identity_reference_fits_precomputed": 4
+  },
+  "budget": {
+    "per_method_cell": {
+      "support_a_max": 7,
+      "support_b_max": 1,
+      "llm_call_max": 8,
+      "token_max": 60000,
+      "wall_seconds_max": 2700,
+      "cheap_probe_max": 24
+    },
+    "program_supply_verifier_only_cap": 8,
+    "global_llm_call_cap": 32
+  },
+  "program_space": {
+    "fast_legal_inventory_source": "P1 frozen eligible Forecast registry",
+    "fast_legal_operators": [
+      "impute_linear",
+      "impute_fft",
+      "impute_ema",
+      "period_complete",
+      "period_median_complete",
+      "impute_ar",
+      "denoise_savgol",
+      "denoise_wavelet",
+      "denoise_median",
+      "smooth_ma",
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad",
+      "hampel_filter",
+      "repair_level_shift",
+      "fft_decompose",
+      "smooth_ema",
+      "resample_uniform"
+    ],
+    "slow_verified_whitelist_source": "existing frozen Forecast B=8 Common-DSL order",
+    "slow_verified_whitelist_operators": [
+      "impute_linear",
+      "hampel_filter",
+      "winsorize",
+      "outlier_iqr",
+      "impute_fft",
+      "impute_ema",
+      "period_complete"
+    ],
+    "new_operator_count": 0,
+    "outcome_selects_option": false
+  },
+  "backend_mode": "live",
+  "chain": {
+    "next_fast_used_pending_harness": false,
+    "next_fast_causal_evidence": {
+      "pending_skill_id": null,
+      "fast_selected_pending_steps": false,
+      "edited_skill_retrieved": false,
+      "chosen_candidate_source_skill_id": null,
+      "edited_skill_selected": false,
+      "runtime_winner_matches_pending": false
+    },
+    "support_b": {
+      "origin": 648,
+      "face": "support_b",
+      "event": {},
+      "gain": null
+    },
+    "support_b_approved": false,
+    "promotion_activated": false,
+    "update_operation": null,
+    "versioned_revision_evidence": {
+      "passed": false,
+      "operation": null,
+      "target_skill_id": null,
+      "revision_before": null,
+      "revision_after": null
+    },
+    "versioned_revision": false,
+    "first_fault": {
+      "chosen_candidate_id": "repair_level_excursion",
+      "chosen_candidate_source_skill_id": null,
+      "chosen_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {}
+        }
+      ],
+      "candidate_ids": [
+        "identity",
+        "repair_level_excursion",
+        "repair_extreme_deviation"
+      ],
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "winner_candidate_id": "",
+      "winner_steps": [],
+      "winner_delayed_relations": [],
+      "probes": [
+        {
+          "candidate_id": "repair_level_excursion",
+          "kind": "verifier_rejected",
+          "gain": null,
+          "passed": false
+        },
+        {
+          "candidate_id": "repair_extreme_deviation",
+          "kind": "probe",
+          "gain": -0.02522988376273183,
+          "passed": true
+        }
+      ],
+      "support_receipts_used": 1,
+      "slow_replay_receipts_used": 0,
+      "program_supply_verifier_requests": 7,
+      "program_supply_verifier_blocked": 0,
+      "harm_count": 1,
+      "harm_magnitude": 0.02522988376273183,
+      "abstained": true,
+      "slow_event": {
+        "stage": "abstained_by_agent",
+        "triggered": true,
+        "material_negative": true,
+        "relation": "NEGATIVE",
+        "card_workflow": [
+          "outlier_mad"
+        ],
+        "no_proposal_reason": "no_authorized_minimal_edit",
+        "verified_patch_ids": [
+          "forecast-existing-program-hampel_filter",
+          "forecast-existing-program-winsorize",
+          "forecast-existing-program-outlier_iqr"
+        ],
+        "relevant_capability_skill_ids": [],
+        "retrieved_relevant_capability_skill_ids": [],
+        "verified_choice_offered": true,
+        "invalid_option_count": 0,
+        "program_supply_verifier_requests": 7
+      },
+      "support_b_gain": null,
+      "consumer_fits": {
+        "support_a": 1,
+        "support_b": 0
+      },
+      "usage": {
+        "support_a_fits": 1,
+        "support_b_fits": 0,
+        "cheap_probes": 12,
+        "llm_calls": 6,
+        "input_tokens": 30288,
+        "output_tokens": 1503,
+        "tokens": 31791,
+        "accepted_updates": 0,
+        "wall_seconds": 54.62
+      },
+      "usage_checks": {
+        "support_a_within_cap": true,
+        "support_b_within_cap": true,
+        "cheap_probes_within_cap": true,
+        "llm_calls_within_cap": true,
+        "tokens_within_cap": true,
+        "accepted_updates_within_cap": true,
+        "wall_seconds_within_cap": true
+      }
+    },
+    "reencounter": null,
+    "reencounter_causal_skill_use": false,
+    "reencounter_material_improvement": false
+  },
+  "llm_budget_instrument": {
+    "classification": "PRE_CALL_HARD_GUARD",
+    "frozen_per_cell_cap": 8,
+    "global_cap": 32,
+    "global_calls": 6,
+    "scope_calls": {
+      "adaptation-first/A5-online": 6
+    },
+    "scope_caps": {
+      "adaptation-first/A5-online": 8
+    },
+    "call_records": [
+      {
+        "scope_id": "adaptation-first/A5-online",
+        "scope_call": 1,
+        "role": "fast",
+        "stage": "inspect",
+        "stage_call_index": 0,
+        "purpose": "stage_initial",
+        "global_call": 1,
+        "reached_backend": true,
+        "budget_charged": true
+      },
+      {
+        "scope_id": "adaptation-first/A5-online",
+        "scope_call": 2,
+        "role": "fast",
+        "stage": "inspect",
+        "stage_call_index": 1,
+        "purpose": "tool_followup",
+        "global_call": 2,
+        "reached_backend": true,
+        "budget_charged": true
+      },
+      {
+        "scope_id": "adaptation-first/A5-online",
+        "scope_call": 3,
+        "role": "fast",
+        "stage": "propose",
+        "stage_call_index": 0,
+        "purpose": "stage_initial",
+        "global_call": 3,
+        "reached_backend": true,
+        "budget_charged": true
+      },
+      {
+        "scope_id": "adaptation-first/A5-online",
+        "scope_call": 4,
+        "role": "fast",
+        "stage": "propose",
+        "stage_call_index": 1,
+        "purpose": "tool_followup",
+        "global_call": 4,
+        "reached_backend": true,
+        "budget_charged": true
+      },
+      {
+        "scope_id": "adaptation-first/A5-online",
+        "scope_call": 5,
+        "role": "fast",
+        "stage": "select",
+        "stage_call_index": 0,
+        "purpose": "stage_initial",
+        "global_call": 5,
+        "reached_backend": true,
+        "budget_charged": true
+      },
+      {
+        "scope_id": "adaptation-first/A5-online",
+        "scope_call": 6,
+        "role": "slow",
+        "stage": "edit",
+        "stage_call_index": 0,
+        "purpose": "stage_initial",
+        "global_call": 6,
+        "reached_backend": true,
+        "budget_charged": true
+      }
+    ],
+    "blocked_records": []
+  },
+  "protocol_errors": [],
+  "claim_boundary": {
+    "p4_performance_run2_unchanged": true,
+    "p4_evolution_before": "HELD__RQ3_NOT_EXERCISED",
+    "p4_evolution_after": "HELD__DEVELOPMENT_RESULT_REQUIRES_REVIEW",
+    "natural_final_release": false,
+    "natural_final_outcome_reads": 0,
+    "new_sha_or_hash_infrastructure": false
+  },
+  "backend_target": {
+    "base_url": "https://nowaterapi.xyz/v1",
+    "model": "gpt-5.6-sol",
+    "source": "M0_AGENT_*"
+  },
+  "initial_knowledge": {
+    "source": {
+      "status": "PASS",
+      "source": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+      "producer_selection_rule": "unique role=producer and arm=A5-online",
+      "skill_id": "s2a_forecast_supply_v0",
+      "task_consumer_metric": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE"
+      },
+      "requires_target_support": true,
+      "supplies_candidates": true,
+      "grants_execution": false,
+      "evidence_semantics": "legacy source supply-only soft prior",
+      "kdd_capability_claim": false,
+      "beneficiary_conversion_claim": false
+    },
+    "k0_a5_same_initial_snapshot": true
+  },
+  "budget_validation": {
+    "cells": {
+      "first_fault": {
+        "support_a_within_cap": true,
+        "support_b_within_cap": true,
+        "cheap_probes_within_cap": true,
+        "llm_calls_within_cap": true,
+        "tokens_within_cap": true,
+        "accepted_updates_within_cap": true,
+        "wall_seconds_within_cap": true
+      }
+    },
+    "global_llm_calls_within_cap": true,
+    "all_cells_within_caps": true,
+    "passed": true
+  },
+  "verdict": "SLOW_UPDATE_NOT_PENDING__H3_HELD"
+}

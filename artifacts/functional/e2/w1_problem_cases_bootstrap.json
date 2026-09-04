@@ -1,0 +1,276 @@
+{
+  "experiment_id": "v1-problem-cases-bootstrap",
+  "note": "S0：三初始 Problem Case 机械引导（旧报告字段直读——零 LLM 零新评估）+ 确定性分类/选项屏蔽/reconciliation 端到端验证。case_id 为普通顺序 ID——同一性由字段比较判定。development exposure——零新 Claim——不声称 Batch Evolution 已有效。",
+  "cases": [
+    {
+      "case_id": "case-0001",
+      "name": "supply-gap_forecast-ridge_outlier",
+      "fault_type": "WORKFLOW_SUPPLY_GAP",
+      "task_consumer": "forecast|ridge|sMASE",
+      "observable_context": {
+        "defect_family": "winsorize/outlier"
+      },
+      "failed_behavior": "winsorize material negative 重复窗口：wave3 6 窗 × 4 series + block2 T105 3 窗——无共同正向替代",
+      "workflow_and_effect": {
+        "workflow_sig": "winsorize",
+        "response_class": "NEGATIVE",
+        "min_gain": -0.16439602463408765,
+        "n_windows": 9
+      },
+      "response_class": "NEGATIVE",
+      "supporting_episode_ids": [
+        "T100@600",
+        "T10@600",
+        "T100@888",
+        "T10@888",
+        "T101@984",
+        "T1@888",
+        "T105@792",
+        "T105@984",
+        "T105@600"
+      ],
+      "positive_contrasts": [
+        {
+          "window": "T1@600",
+          "gain": 0.05312801767468045
+        },
+        {
+          "window": "T1@792",
+          "gain": 0.27234392179686084
+        },
+        {
+          "window": "T1@984",
+          "gain": 0.08778457252803373
+        },
+        {
+          "window": "T10@792",
+          "gain": 0.07124998740200095
+        },
+        {
+          "window": "T10@984",
+          "gain": 0.15204092393206592
+        },
+        {
+          "window": "T100@792",
+          "gain": 0.2905255653551535
+        },
+        {
+          "window": "T100@984",
+          "gain": 0.2033049337453987
+        },
+        {
+          "window": "T101@600",
+          "gain": 0.0051065530802527626
+        },
+        {
+          "window": "T102@600",
+          "gain": 0.040386403220033174
+        },
+        {
+          "window": "T102@792",
+          "gain": 0.021406885866374736
+        },
+        {
+          "window": "T102@888",
+          "gain": 0.05149896544687582
+        },
+        {
+          "window": "T102@984",
+          "gain": 0.026658151934364938
+        },
+        {
+          "window": "T103@600",
+          "gain": 0.026039616437639967
+        },
+        {
+          "window": "T103@792",
+          "gain": 0.11930661105018459
+        },
+        {
+          "window": "T103@984",
+          "gain": 0.1929324001948376
+        },
+        {
+          "window": "T104@600",
+          "gain": 0.030139129825214273
+        },
+        {
+          "window": "T104@792",
+          "gain": 0.17631923196022448
+        },
+        {
+          "window": "T104@888",
+          "gain": 0.0601288293998391
+        },
+        {
+          "window": "T104@984",
+          "gain": 0.7498571901939921
+        },
+        {
+          "window": "T105@888",
+          "gain": 0.01583229669074604
+        }
+      ],
+      "negative_contrasts": [],
+      "conflicts": [],
+      "known_headroom": {
+        "status": "none_common_positive",
+        "details": "outlier_mad/hampel_filter 全非共同正向（wave3 6 窗 + block2 3 窗已测）+ 54 supply 穷举无全过候选"
+      },
+      "verified_fix": null,
+      "status": "STABLE_CASE",
+      "scope_note": "仅限 forecast|ridge|sMASE × winsorize/outlier × 当前 DSL——不泛化'所有 outlier 问题无解'"
+    },
+    {
+      "case_id": "case-0002",
+      "name": "temporal-risk_forecast-ridge_winsorize",
+      "fault_type": "SCOPE_MEMORY_RISK_ERROR",
+      "task_consumer": "forecast|ridge|sMASE",
+      "observable_context": {
+        "defect_family": "winsorize",
+        "series": [
+          "T117"
+        ]
+      },
+      "failed_behavior": "T117 winsorize 负 @888/@984 → hampel 组内 Support 全正但 delayed 显著翻负",
+      "workflow_and_effect": {
+        "workflow_sig": "winsorize",
+        "response_class": "NEGATIVE"
+      },
+      "response_class": "NEGATIVE",
+      "supporting_episode_ids": [
+        "T117@888",
+        "T117@984"
+      ],
+      "positive_contrasts": [
+        {
+          "window": "T117@888",
+          "gain": 0.033984644049736445,
+          "candidate": "hampel_filter"
+        },
+        {
+          "window": "T117@984",
+          "gain": 0.01504251303971138,
+          "candidate": "hampel_filter"
+        }
+      ],
+      "negative_contrasts": [
+        {
+          "window": "T117@1032",
+          "gain": -0.11660631332403537,
+          "stage": "delayed_rejected"
+        }
+      ],
+      "conflicts": [],
+      "known_headroom": {
+        "status": "common_positive",
+        "candidate": "hampel_filter"
+      },
+      "verified_fix": null,
+      "candidate_patch": "patch-replace-winsorize-with-hampel_filter",
+      "status": "STABLE_CASE",
+      "scope_note": "Support 正 + delayed 负 = temporal risk——修改只能 DRAFT，delayed 拒绝是正确行为"
+    },
+    {
+      "case_id": "case-0003",
+      "name": "no-actionable_forecast-ridge_t105-winsorize",
+      "fault_type": "NO_ACTIONABLE_FAULT",
+      "task_consumer": "forecast|ridge|sMASE",
+      "observable_context": {
+        "defect_family": "winsorize",
+        "series": [
+          "T105"
+        ]
+      },
+      "failed_behavior": "T105 单 series winsorize 负 3 窗（600/792/984）——block2 未复现跨 series family；两替代已测全失败",
+      "workflow_and_effect": {
+        "workflow_sig": "winsorize",
+        "response_class": "NEGATIVE"
+      },
+      "response_class": "NEGATIVE",
+      "supporting_episode_ids": [
+        "T105@792",
+        "T105@984",
+        "T105@600"
+      ],
+      "positive_contrasts": [
+        {
+          "window": "T105@888",
+          "gain": 0.01583229669074604
+        }
+      ],
+      "negative_contrasts": [],
+      "conflicts": [],
+      "known_headroom": {
+        "status": "none_common_positive",
+        "details": "outlier_mad 三窗 0.0（无离群点可修）/hampel_filter 三窗 <M——动作空间已测空"
+      },
+      "verified_fix": null,
+      "status": "STABLE_CASE",
+      "scope_note": "不得强建 Scope/Skill——保底通道 Case；单 series 未复现跨 series family"
+    },
+    {
+      "case_id": "case-0004",
+      "name": "decision-gap_forecast-ridge_imputation",
+      "fault_type": "WORKFLOW_DECISION_ERROR",
+      "task_consumer": "forecast|ridge|sMASE",
+      "observable_context": {
+        "defect_family": "missingness",
+        "domain": "nn5"
+      },
+      "failed_behavior": "initial entry selected repair_level_shift with material negative Support while a positive imputation replacement was measured",
+      "workflow_and_effect": {
+        "workflow_sig": "repair_level_shift",
+        "response_class": "NEGATIVE"
+      },
+      "response_class": "NEGATIVE",
+      "supporting_episode_ids": [
+        "nn5@632"
+      ],
+      "positive_contrasts": [],
+      "negative_contrasts": [],
+      "conflicts": [],
+      "known_headroom": {
+        "status": "pending_verification"
+      },
+      "verified_fix": null,
+      "status": "CANDIDATE_CASE"
+    }
+  ],
+  "trace": [
+    {
+      "group": "wave3-winsorize-family",
+      "selectable": [
+        "WORKFLOW_SUPPLY_GAP"
+      ],
+      "chosen": "WORKFLOW_SUPPLY_GAP",
+      "classify_error": "",
+      "matched_cases": [
+        "case-0001"
+      ],
+      "case_action": "MATCH_ADD_EVIDENCE"
+    },
+    {
+      "group": "t117-winsorize-group",
+      "selectable": [
+        "SCOPE_MEMORY_RISK_ERROR"
+      ],
+      "chosen": "SCOPE_MEMORY_RISK_ERROR",
+      "classify_error": "",
+      "matched_cases": [
+        "case-0002"
+      ],
+      "case_action": "MATCH_ADD_EVIDENCE"
+    },
+    {
+      "group": "t105-winsorize-cluster",
+      "selectable": [],
+      "chosen": "NO_ACTIONABLE_FAULT",
+      "classify_error": "",
+      "matched_cases": [
+        "case-0003"
+      ],
+      "case_action": "MATCH_ADD_EVIDENCE"
+    }
+  ]
+}

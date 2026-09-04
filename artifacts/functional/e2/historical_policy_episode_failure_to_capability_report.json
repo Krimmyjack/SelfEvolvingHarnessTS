@@ -1,0 +1,69 @@
+{
+  "experiment_id": "E2.57-historical-policy-failure-to-capability",
+  "stage": "failure_card_to_typed_harness_patch",
+  "fresh_evidence": false,
+  "consumer_fit_count": 0,
+  "new_query_outcome_opened": false,
+  "proposal_origin": "deterministic failure-card compiler baseline",
+  "failure_pattern_card": {
+    "card_id": "historical_policy_episode_first_faults_v1",
+    "evidence_reports": [
+      "electricity_hourly_policy_memory_promotion_report.json",
+      "m4_hourly_historical_policy_context_promotion_report.json"
+    ],
+    "first_faults": [
+      {
+        "surface": "observation",
+        "code": "GLOBAL_WORKFLOW_ORDER_NOT_TARGET_CONTEXTUALIZED",
+        "counterfactual_repair": "order probes using a legal phase-aligned historical PolicyEpisode"
+      },
+      {
+        "surface": "harness_update_policy",
+        "code": "CONFIRMED_POSITIVE_WORKFLOW_OVERWRITTEN",
+        "counterfactual_repair": "stop after the first positive exact current-Support confirmation"
+      }
+    ],
+    "allowed_patch_surfaces": [
+      "observation",
+      "harness_update_policy"
+    ],
+    "forbidden_changes": [
+      "program_supply",
+      "consumer",
+      "metric",
+      "memory_schema"
+    ]
+  },
+  "typed_patch": {
+    "patch_id": "add_historical_policy_observation_and_stop_control_v1",
+    "operations": [
+      {
+        "operation": "ADD_OBSERVATION",
+        "value": "phase_aligned_historical_policy_episode"
+      },
+      {
+        "operation": "PATCH_CONTROL",
+        "value": "stop_on_first_positive"
+      }
+    ],
+    "unchanged": [
+      "program_supply",
+      "consumer",
+      "metric",
+      "memory_schema"
+    ]
+  },
+  "compiled_capability_behavior_checks": {
+    "workflow_supply_equivalent": true,
+    "observation_equivalent": true,
+    "control_equivalent": true,
+    "risk_equivalent": true
+  },
+  "downstream_evidence": {
+    "development_patch_replay": "historical_policy_stop_on_first_positive_replay_report.json",
+    "memory_read_replay": "historical_policy_episode_capability_memory_replay_report.json",
+    "new_target_memory_execution": "kdd_historical_policy_skill_memory_target_report.json"
+  },
+  "claim_limit": "Proves deterministic failure-to-typed-patch compilation and verified downstream behavior; does not prove an LLM independently discovered the patch.",
+  "verdict": "FAILURE_TO_TYPED_CAPABILITY_UPDATE_PASS"
+}

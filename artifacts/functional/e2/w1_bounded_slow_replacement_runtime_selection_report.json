@@ -1,0 +1,109 @@
+{
+  "case": {
+    "a": "denoise_median",
+    "b": "outlier_iqr",
+    "c1": "winsorize",
+    "c2": "outlier_mad",
+    "delayed": 952,
+    "delayed_AB": -0.06125772464287427,
+    "delayed_AC1": 0.2572125429345453,
+    "domain": "gefcom2012_load",
+    "gain_AB": -0.1302066421576531,
+    "gain_A_only": 0.0,
+    "gain_B_only": -0.1302066421576531,
+    "origin": 904,
+    "support_AC1": 0.4000053662007894
+  },
+  "checks": {
+    "abstain_count": 1,
+    "case": {
+      "a": "denoise_median",
+      "b": "outlier_iqr",
+      "c1": "winsorize",
+      "c2": "outlier_mad",
+      "delayed": 952,
+      "delayed_AB": -0.06125772464287427,
+      "delayed_AC1": 0.2572125429345453,
+      "domain": "gefcom2012_load",
+      "gain_AB": -0.1302066421576531,
+      "gain_A_only": 0.0,
+      "gain_B_only": -0.1302066421576531,
+      "origin": 904,
+      "support_AC1": 0.4000053662007894
+    },
+    "case_headroom_confirmed": true,
+    "controller_applied": true,
+    "delayed_positive": true,
+    "diversity_ok": true,
+    "executed_program_matches_frozen": true,
+    "llm_calls": 3,
+    "llm_calls_le_4": true,
+    "next_round_actual_adoption": true,
+    "next_round_executed": true,
+    "recheck_delayed_AC1": 0.2572125429345453,
+    "recheck_gain_AB": -0.1302066421576531,
+    "recheck_gain_AC1": 0.4000053662007894,
+    "recheck_gain_A_only": 0.0,
+    "recheck_passed_AB": true,
+    "removal_changes_action": true,
+    "runtime_winner": "winsorize",
+    "support_gains": {
+      "outlier_mad": -0.06460853040767356,
+      "winsorize": 0.4000053662007894
+    },
+    "winner_episode_relation_after_delayed": "POSITIVE"
+  },
+  "experiment_id": "v1-bounded-slow-replacement-runtime-selection",
+  "llm_api_call_count": 3,
+  "proposals": [
+    {
+      "call": 1,
+      "manifest": {
+        "edit_id": "add_mad_replacement_workflow",
+        "frozen_program": [
+          {
+            "op": "denoise_median",
+            "params": {
+              "strength": 1.0,
+              "window": 1
+            }
+          },
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ],
+        "selected_replacement": "outlier_mad",
+        "skill_id": "forecast_median_mad_replacement",
+        "target_surface_id": "skill_library.entries/forecast_median_mad_replacement"
+      },
+      "preflight_ok": true,
+      "selected": "outlier_mad"
+    },
+    {
+      "call": 2,
+      "manifest": {
+        "edit_id": "add_gefcom2012_denoise_median_winsorize",
+        "frozen_program": [
+          {
+            "op": "denoise_median",
+            "params": {
+              "strength": 1.0,
+              "window": 1
+            }
+          },
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ],
+        "selected_replacement": "winsorize",
+        "skill_id": "gefcom2012_denoise_median_winsorize",
+        "target_surface_id": "skill_library.entries/gefcom2012_denoise_median_winsorize"
+      },
+      "preflight_ok": true,
+      "selected": "winsorize"
+    }
+  ],
+  "verdict": "BOUNDED_SLOW_REPLACEMENT_PASS"
+}

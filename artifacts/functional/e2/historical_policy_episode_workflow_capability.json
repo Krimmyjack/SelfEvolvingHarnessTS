@@ -1,0 +1,48 @@
+{
+  "capability_id": "historical_policy_episode_workflow_v1",
+  "status": "CROSS_DATASET_SUPPORTED",
+  "task_context": {
+    "task": "forecasting",
+    "consumer": "shared frozen Ridge",
+    "metric": "per-series sMASE",
+    "requires_regular_panel": true,
+    "requires_known_seasonal_period": true,
+    "requires_current_support_feedback": true,
+    "requires_scale_valid_training_and_evaluation_contexts": true
+  },
+  "workflow_supply": [
+    "W_rowblock",
+    "W_curation",
+    "W_temporal_origin"
+  ],
+  "observation": {
+    "type": "phase_aligned_historical_policy_episode",
+    "visibility": "targets end before current query cutoff",
+    "use": "order workflow probes by descending historical exact gain",
+    "utility_claim": "observation only; not a current-query utility certificate"
+  },
+  "control": {
+    "type": "stop_on_first_positive",
+    "confirmation": "current Support exact grouped gain > 0",
+    "continue_when": "current Support exact grouped gain <= 0",
+    "fallback": "IDENTITY"
+  },
+  "risk": {
+    "abstain_if_no_positive_confirmation": true,
+    "do_not_use_query_future_for_ordering_or_confirmation": true,
+    "do_not_allow_later_probe_to_overwrite_confirmed_workflow": true
+  },
+  "evidence": {
+    "independent_natural_target_count": 3,
+    "supported_reports": [
+      "pedestrian_counts_historical_policy_skill_confirmation_report.json",
+      "rideshare_historical_policy_skill_confirmation_report.json",
+      "kdd_historical_policy_skill_memory_target_report.json"
+    ],
+    "development_confirmation": [
+      "m4_hourly_stop_rule_fresh_cohort_report.json"
+    ],
+    "failure_that_created_observation": "electricity_hourly_policy_memory_promotion_report.json",
+    "failure_that_created_control_update": "m4_hourly_historical_policy_context_promotion_report.json"
+  }
+}

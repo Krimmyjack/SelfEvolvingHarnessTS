@@ -1,0 +1,138 @@
+{
+  "arms": {
+    "backend_explored_r1": {
+      "ctrl": [
+        "impute_linear"
+      ],
+      "writeback": [
+        "impute_linear"
+      ]
+    },
+    "r1_ctrl": {
+      "candidate_pool_order": [
+        "cand_skill_outlie-target-v1"
+      ],
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "origin": 832,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ]
+    },
+    "r1_writeback": {
+      "candidate_pool_order": [
+        "cand_skill_outlie-target-v1"
+      ],
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "origin": 832,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ]
+    },
+    "r2_ctrl": {
+      "candidate_pool_order": [
+        "cand_skill_outlie-target-v1",
+        "cand_impute_fft"
+      ],
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "origin": 928,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ]
+    },
+    "r2_writeback": {
+      "candidate_pool_order": [
+        "cand_impute_fft",
+        "cand_skill_outlie-target-v1"
+      ],
+      "chosen": "cand_impute_fft",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "impute_fft",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "origin": 928,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ]
+    }
+  },
+  "boundary": "development positive-control mechanism：R1@832 使用的 Skill 由 @928/@976 已暴露数据生成（时间上来自未来）；两臂共享同一 Skill，验证反馈控制机械链，不称在线迁移/自然纵向能力证据",
+  "checks": {
+    "actionable_inventory_consistent": true,
+    "backend_exploration_synced_before_r2": true,
+    "delayed_real_receipt": true,
+    "delayed_updates_same_episode": true,
+    "episode_relation_after_delayed": "NEGATIVE",
+    "no_future_read_before_r2_decision": true,
+    "no_handcrafted_sign_flip": "structure: no hardcoded sign flip in script; real support_gain=-0.06047126403247982, real delayed_gain=-0.05790430223373555",
+    "non_overlap_asserted": true,
+    "r1_arms_same_chosen": true,
+    "r1_arms_same_pool": true,
+    "r1_arms_same_steps": true,
+    "r1_delayed_gain": -0.05790430223373555,
+    "r1_support_gain": -0.06047126403247982,
+    "r1_support_real_receipt": true,
+    "r2_arms_expected_difference": true,
+    "r2_ctrl_skill_priority": true,
+    "r2_writeback_skill_degraded": true,
+    "writeback_only_wb_arm": true
+  },
+  "experiment_id": "v1-normal-entry-automatic-feedback-writeback",
+  "interface": "TTHAMethod.append_experience_episode / update_experience_episode / bind_round_data（最小接口，无新 Schema/Store）",
+  "llm_api_call_count": 0,
+  "origins": {
+    "r1": 832,
+    "r2": 928,
+    "window_assertions": {
+      "data_length": 1024,
+      "r1_delayed_ends": 928,
+      "r2_delayed_ends": 1024,
+      "r2_minus_r1_equals_2h": true
+    }
+  },
+  "skill": {
+    "frozen_steps": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "skill_id": "outlie-target-v1"
+  },
+  "verdict": "NORMAL_ENTRY_AUTOMATIC_FEEDBACK_WRITEBACK_DEVELOPMENT_MECHANISM_PASS"
+}

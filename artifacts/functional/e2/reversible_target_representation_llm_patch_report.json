@@ -1,0 +1,103 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "A contract-valid proposal is not an effective Harness update. The patch must change behavior and improve local deterministic replay before any fresh Target or Capability claim.",
+  "compute": {
+    "consumer_fit_count": 0,
+    "llm_api_call_count": 1
+  },
+  "experiment_id": "E2-live-LLM-new-representation-failure-patch-proposal",
+  "gate": {
+    "passed": true
+  },
+  "inputs": {
+    "correct_patch_value_supplied": false,
+    "dataset_identities_sent": false,
+    "effect_magnitudes_sent": false,
+    "internal_report_sent": false,
+    "p0_report": "artifacts/functional/e2/natural_reversible_target_representation_p0_report.json",
+    "raw_time_series_sent": false
+  },
+  "llm_plan": {
+    "consumer_changes": [],
+    "diagnosed_first_fault": "REPRESENTATION_EFFECT_IS_CONTEXT_CONDITIONED",
+    "diagnosis": "A representation action is not uniformly safe across natural environments, and a single positive Support response can falsely confirm transport to the current evaluation cohort. Add bounded transport evidence before ordering or execution while retaining supported representation actions.",
+    "expected_behavior_change": "Positive Support is no longer sufficient by itself to authorize transport; useful representation actions remain available when current support and pre-cutoff contextual transport evidence agree.",
+    "falsification_condition": "Deterministic local replay accepts a representation after a positive current Support probe despite pre-cutoff historical transport evidence that is discordant with the current context.",
+    "memory_schema_changes": [],
+    "metric_changes": [],
+    "minimum_target_feedback_units": 1,
+    "new_programs": [],
+    "observation_requirements": [
+      {
+        "evidence_source": "READ_TRAINING_CONTEXT",
+        "name": "training-visible context compatibility",
+        "scope": "Observe the current training-visible period bucket and baseline-fit context without dataset identity."
+      },
+      {
+        "evidence_source": "READ_PHASE_ALIGNED_HISTORICAL_POLICY_EPISODES",
+        "name": "historical support transport consistency",
+        "scope": "Observe whether prior phase-aligned policy episodes ending before the current Query cutoff show support transport consistent with the current context, without dataset identity."
+      },
+      {
+        "evidence_source": "PROBE_CURRENT_TARGET_SUPPORT",
+        "name": "current target support status",
+        "scope": "Observe the current Target Support label for the candidate representation without reading the Query future."
+      }
+    ],
+    "patch_id": "observe_transport_before_execution",
+    "primary_operation": "ADD_OBSERVATION",
+    "provider": {
+      "base_url": "https://api.agicto.cn/v1",
+      "completion_tokens": 1025,
+      "prompt_tokens": 5439,
+      "requested_model": "gpt-5.5",
+      "returned_model": "gpt-5.5"
+    },
+    "risk_guards": [
+      "ABSTAIN when current Target Support is CONTRAINDICATED_OR_UNRESOLVED.",
+      "ABSTAIN when historical phase-aligned transport evidence is absent or discordant with the current training-visible context.",
+      "ABSTAIN when the decision would require current Query future information."
+    ],
+    "scope_condition": "UNCHANGED",
+    "uses_query_future": false,
+    "workflow_steps": [
+      {
+        "behavior": "Bind the candidate decision to training-visible context only.",
+        "primitive": "READ_TRAINING_CONTEXT",
+        "step": 1
+      },
+      {
+        "behavior": "Check prior action-response transport evidence ending before the current Query cutoff.",
+        "primitive": "READ_PHASE_ALIGNED_HISTORICAL_POLICY_EPISODES",
+        "step": 2
+      },
+      {
+        "behavior": "Read the current support label for the candidate representation.",
+        "primitive": "PROBE_CURRENT_TARGET_SUPPORT",
+        "step": 3
+      },
+      {
+        "behavior": "Order supported representation actions only when transport evidence is present and non-discordant; otherwise include ABSTAIN.",
+        "primitive": "ORDER_PROGRAMS",
+        "step": 4
+      },
+      {
+        "behavior": "Execute the selected representation program only after the bounded observation checks pass.",
+        "primitive": "EXECUTE_PROGRAM",
+        "step": 5
+      }
+    ]
+  },
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 1025,
+    "prompt_tokens": 5439,
+    "requested_model": "gpt-5.5",
+    "returned_model": "gpt-5.5"
+  },
+  "scientific_role": "new natural Failure Dossier to bounded typed patch proposal",
+  "validation": {
+    "contract_violations": []
+  },
+  "verdict": "LLM_NEW_FAILURE_PATCH_PROPOSAL_ACCEPTED_FOR_LOCAL_REPLAY"
+}

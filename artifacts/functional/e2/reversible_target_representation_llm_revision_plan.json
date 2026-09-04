@@ -1,0 +1,76 @@
+{
+  "consumer_changes": [],
+  "diagnosed_first_fault": "HISTORICAL_AND_SINGLE_SUPPORT_AGREEMENT_NOT_DECISION_SUFFICIENT",
+  "diagnosis": "The rejected patch treated phase-aligned historical transport plus one current positive Support response as decision-sufficient, but replay shows that same evidence pattern can precede either harmful or supported execution.",
+  "expected_behavior_change": "Cases with only historical transport plus a single positive Support response no longer execute; execution remains possible when independent split current Support agreement and regime stability both confirm an existing action.",
+  "falsification_condition": "An observable replay in which all split support agreement and regime stability guards pass but the executed existing action is harmful, or a supported replay with all guards passing is abstained.",
+  "memory_schema_changes": [],
+  "metric_changes": [],
+  "minimum_target_feedback_units": 2,
+  "new_programs": [],
+  "patch_id": "split_support_stability_gate",
+  "primary_operation": "COMPOSE_WORKFLOW",
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 1608,
+    "prompt_tokens": 780,
+    "requested_model": "gpt-5.5",
+    "returned_model": "gpt-5.5"
+  },
+  "risk_guards": [
+    "ABSTAIN if fewer than two current Target Support units are available.",
+    "ABSTAIN if the split current support views do not agree on the same existing action.",
+    "ABSTAIN if split current support agreement does not match the phase-aligned historical policy direction.",
+    "ABSTAIN if regime stability is not confirmed before execution.",
+    "ABSTAIN if no existing admissible action remains after ordering."
+  ],
+  "supersedes_patch_id": "observe_transport_before_execution",
+  "uses_query_future": false,
+  "workflow_steps": [
+    {
+      "behavior": "Load the admissible training cutoff, phase alignment, and existing program-family eligibility without reading query future.",
+      "primitive": "READ_TRAINING_CONTEXT",
+      "step": 1
+    },
+    {
+      "behavior": "Retain only pre-cutoff phase-aligned historical policy episodes for the existing candidate actions.",
+      "primitive": "READ_PHASE_ALIGNED_HISTORICAL_POLICY_EPISODES",
+      "step": 2
+    },
+    {
+      "behavior": "Collect two bounded current Target Support units for the eligible candidate action set.",
+      "primitive": "PROBE_CURRENT_TARGET_SUPPORT",
+      "step": 3
+    },
+    {
+      "behavior": "Partition the two current Target Support units into disjoint support views before making an execution decision.",
+      "primitive": "SPLIT_CURRENT_SUPPORT_COHORT",
+      "step": 4
+    },
+    {
+      "behavior": "Require both split current support views to agree with each other and with the phase-aligned historical policy direction for the same existing action.",
+      "primitive": "CHECK_SUPPORT_AGREEMENT",
+      "step": 5
+    },
+    {
+      "behavior": "Require the training context and phase-aligned historical policy episodes to indicate a stable admissible regime for the agreed existing action.",
+      "primitive": "CHECK_REGIME_STABILITY",
+      "step": 6
+    },
+    {
+      "behavior": "Order only existing admissible actions that passed split support agreement and regime stability.",
+      "primitive": "ORDER_PROGRAMS",
+      "step": 7
+    },
+    {
+      "behavior": "Execute the top ordered existing action only when all prior checks pass.",
+      "primitive": "EXECUTE_PROGRAM",
+      "step": 8
+    },
+    {
+      "behavior": "Otherwise abstain from adaptation and allow the existing raw-target fallback path.",
+      "primitive": "ABSTAIN",
+      "step": 9
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "experiment_id": "v1-e31-dev-regression",
+  "note": "E31 主链修正开发回归（用户裁决 2026-08-12——零新 Claim；同 prior control/Slow 绑定 active/adoption 程序匹配/R4 计预算/逐 receipt harm；Source 仅自然——不承重跨域）",
+  "source_content_ok": false,
+  "natural_source_episodes": [
+    "monash_weather_daily_target_winsorize_p40_src_pair1"
+  ],
+  "arms": {
+    "A5": {
+      "rounds": [
+        {
+          "origin": 600,
+          "probes": [
+            [
+              "level_shift_repair",
+              2.5061806208169566
+            ]
+          ],
+          "winner": [
+            {
+              "op": "repair_level_shift",
+              "params": {
+                "estimated_offset": -65.5,
+                "region_end_fraction": 0.355,
+                "region_start_fraction": 0.23
+              }
+            }
+          ],
+          "receipts": 1,
+          "delayed_utility": 1.2347753493435603,
+          "approved_skill_id": "fast_winner_repair_level_shift",
+          "slow_event_stage": null,
+          "memory_resolution": "rendered"
+        },
+        {
+          "origin": 792,
+          "probes": [
+            [
+              "level_shift_repair",
+              -0.5405587846272975
+            ],
+            [
+              "replay:patch-replace-winsorize-with-outlier_mad",
+              -0.7263912603145755
+            ]
+          ],
+          "winner": null,
+          "receipts": 2,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "slow_event_stage": "support_rejected",
+          "memory_resolution": "rendered_empty"
+        },
+        {
+          "origin": 888,
+          "probes": [],
+          "winner": null,
+          "receipts": 0,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "slow_event_stage": null,
+          "memory_resolution": "rendered"
+        }
+      ],
+      "r4": {
+        "pool": [
+          "identity",
+          "repair_local_level_shift"
+        ],
+        "retrieved": [
+          "fast_winner_repair_level_shift"
+        ],
+        "probes": [
+          [
+            "repair_local_level_shift",
+            4.2035439368926735
+          ]
+        ],
+        "winner": [
+          {
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": -65.5,
+              "region_end_fraction": 0.21646341463414634,
+              "region_start_fraction": 0.1402439024390244
+            }
+          }
+        ],
+        "receipts": 1,
+        "probed_skill_program": true,
+        "winner_is_skill_program": true
+      },
+      "removal_pool": [
+        "identity",
+        "level_shift_repair"
+      ],
+      "removal_no_skill": true,
+      "total_support_receipts": 4,
+      "first_positive_round": 1,
+      "receipt_harm": [
+        {
+          "round": 792,
+          "candidate": "level_shift_repair",
+          "gain": -0.5405587846272975
+        },
+        {
+          "round": 792,
+          "candidate": "replay:patch-replace-winsorize-with-outlier_mad",
+          "gain": -0.7263912603145755
+        }
+      ],
+      "total_harm": 2,
+      "total_harm_magnitude": 1.26695,
+      "harm_before_recovery": 0,
+      "harm_before_magnitude": 0.0,
+      "approved_skill_id": "fast_winner_repair_level_shift",
+      "feedback_to_reliable_local_skill": 1,
+      "abstained": false
+    },
+    "A3": {
+      "rounds": [
+        {
+          "origin": 600,
+          "probes": [
+            [
+              "repair_local_level_shift",
+              2.5061806208169566
+            ]
+          ],
+          "winner": [
+            {
+              "op": "repair_level_shift",
+              "params": {
+                "estimated_offset": -65.5,
+                "region_end_fraction": 0.355,
+                "region_start_fraction": 0.23
+              }
+            }
+          ],
+          "receipts": 1,
+          "delayed_utility": 1.2347753493435603,
+          "approved_skill_id": "fast_winner_repair_level_shift",
+          "slow_event_stage": null,
+          "memory_resolution": "no_memory"
+        },
+        {
+          "origin": 792,
+          "probes": [],
+          "winner": null,
+          "receipts": 0,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "slow_event_stage": null,
+          "memory_resolution": "rendered"
+        },
+        {
+          "origin": 888,
+          "probes": [],
+          "winner": null,
+          "receipts": 0,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "slow_event_stage": null,
+          "memory_resolution": "rendered"
+        }
+      ],
+      "r4": {
+        "pool": [
+          "identity",
+          "cand_skill_fast_winner_repair_level_shift"
+        ],
+        "retrieved": [
+          "fast_winner_repair_level_shift"
+        ],
+        "probes": [
+          [
+            "cand_skill_fast_winner_repair_level_shift",
+            4.2035439368926735
+          ]
+        ],
+        "winner": [
+          {
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": -65.5,
+              "region_end_fraction": 0.21646341463414634,
+              "region_start_fraction": 0.1402439024390244
+            }
+          }
+        ],
+        "receipts": 1,
+        "probed_skill_program": true,
+        "winner_is_skill_program": true
+      },
+      "removal_pool": [
+        "identity",
+        "repair_level_shift_region"
+      ],
+      "removal_no_skill": true,
+      "total_support_receipts": 2,
+      "first_positive_round": 1,
+      "receipt_harm": [],
+      "total_harm": 0,
+      "total_harm_magnitude": 0,
+      "harm_before_recovery": 0,
+      "harm_before_magnitude": 0.0,
+      "approved_skill_id": "fast_winner_repair_level_shift",
+      "feedback_to_reliable_local_skill": 1,
+      "abstained": false
+    }
+  },
+  "checks": {
+    "M1_prior_control_symmetric": true,
+    "M2_slow_binds_active": true,
+    "M3_adoption_skill_program": true,
+    "M4_r4_in_budget": true,
+    "M5_receipt_level_harm": true
+  },
+  "verdict": "SOURCE_CONTENT_UNAVAILABLE"
+}

@@ -1,0 +1,156 @@
+{
+  "experiment_id": "v1-p2-a5-vs-a3",
+  "note": "Wave 4：Source Experience 价值实验（P2-v3 Context-bound 经验 → 等预算 Target 适应——同域机制检查 held-out origins——不称 fresh——development exposure——零新 Claim）",
+  "apparatus": {
+    "domain": "nn5",
+    "target_series": "07992b43",
+    "target_origin": 672,
+    "delayed_origin": 720,
+    "candidate_dsl": [
+      "repair_level_shift",
+      "impute_ar",
+      "impute_ssm",
+      "impute_fft",
+      "impute_ema",
+      "impute_linear"
+    ],
+    "source": {
+      "n_episodes": 24,
+      "note": "deterministic census probe——非 Fast 自然轨迹"
+    }
+  },
+  "a5_retrieval": {
+    "pack_found": true,
+    "pack": {
+      "positive": {
+        "episode_id": "nn5_p2src_1025b235_impute_fft_632",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "forecast|ridge|sMASE",
+        "domain_namespace": "nn5",
+        "context_summary": {
+          "local_pattern": {
+            "missing_fraction": 0.03639240506329114,
+            "longest_missing_run_fraction": 0.007911392405063292,
+            "estimated_region_start_fraction": 0.10443037974683544,
+            "estimated_region_end_fraction": 0.9636075949367089,
+            "period_reliability": 0.3616071428571428,
+            "period_change_score": 0.0
+          },
+          "delayed_pattern": {},
+          "program_geometry": {
+            "scope": "training_rows",
+            "program_steps": [
+              {
+                "op": "impute_fft",
+                "params": {}
+              }
+            ]
+          },
+          "per_view_gain": [],
+          "support_origin": 632
+        },
+        "workflow_signature": "impute_fft",
+        "support_response": {
+          "gain": 0.020542575090948922,
+          "accepted": false
+        },
+        "delayed_response": {
+          "evaluated": false,
+          "gain": null
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "p2v3_deterministic_census"
+        ]
+      },
+      "negative": {
+        "episode_id": "nn5_p2src_1025b235_impute_fft_600",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "forecast|ridge|sMASE",
+        "domain_namespace": "nn5",
+        "context_summary": {
+          "local_pattern": {
+            "missing_fraction": 0.03666666666666667,
+            "longest_missing_run_fraction": 0.008333333333333333,
+            "estimated_region_start_fraction": 0.11,
+            "estimated_region_end_fraction": 0.9383333333333334,
+            "period_reliability": 0.3133928571428571,
+            "period_change_score": 0.0
+          },
+          "delayed_pattern": {},
+          "program_geometry": {
+            "scope": "training_rows",
+            "program_steps": [
+              {
+                "op": "impute_fft",
+                "params": {}
+              }
+            ]
+          },
+          "per_view_gain": [],
+          "support_origin": 600
+        },
+        "workflow_signature": "impute_fft",
+        "support_response": {
+          "gain": -0.013543673978684057,
+          "accepted": false
+        },
+        "delayed_response": {
+          "evaluated": false,
+          "gain": null
+        },
+        "relation": "NEGATIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "p2v3_deterministic_census"
+        ]
+      },
+      "conflict": null,
+      "evidence_sufficient": true,
+      "retrieval_note": "24 valid episodes; same-domain-first; signed pack (pos/neg/conflict)"
+    },
+    "ambiguous_memory": true,
+    "prequential_filter": {
+      "injected": 24,
+      "excluded_later_than_target": 12
+    }
+  },
+  "arm_A3": {
+    "probes": [],
+    "memory_resolution_status": "no_memory",
+    "first_pos_probes": null,
+    "neg_probes": 0,
+    "harm": 0,
+    "abstained": true,
+    "chosen_op": null,
+    "max_gain": null,
+    "chosen_op_clean": null,
+    "delayed_gain": null
+  },
+  "arm_A5": {
+    "probes": [],
+    "memory_resolution_status": "contrast_pack",
+    "first_pos_probes": null,
+    "neg_probes": 0,
+    "harm": 0,
+    "abstained": true,
+    "chosen_op": null,
+    "max_gain": null,
+    "chosen_op_clean": null,
+    "delayed_gain": null
+  },
+  "utility": {
+    "A3_delayed": null,
+    "A5_delayed": null,
+    "A5_not_worse": null,
+    "improved": false
+  },
+  "verdict": "CONFLICT_MEMORY_SAFE_ABSTAIN"
+}

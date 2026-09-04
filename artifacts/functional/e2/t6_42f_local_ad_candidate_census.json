@@ -1,0 +1,252 @@
+{
+  "protocol_version": "t6_42f_local_ad_candidate_census_v1",
+  "book": "#42f-local-r2",
+  "evidence_grade": "INSTRUMENT",
+  "counts_as_capability_claim": false,
+  "budgets": {"llm": 0, "ad_fits": 0, "forecast_retrains": 0, "downloads": 0},
+  "data_root": "C:\\Users\\辉\\Desktop\\Agent\\shared_tsq_datasets",
+  "label_values_read": false,
+  "label_files_inspected_for": ["existence", "path", "format", "shape_or_header", "prior_exposure_records"],
+  "old_forecasting_screens_not_transplanted_as_ad_veto": true,
+  "current_consumer": {
+    "id": "aegists_iforest_v1",
+    "metric": "macro_event_f1",
+    "input_shape": "one univariate series; truth = list of event row-sets",
+    "needs_deterministic_event_map": true
+  },
+  "candidates": [
+    {
+      "id": "SMD",
+      "native_task": "multivariate server-machine anomaly detection (OmniAnomaly ServerMachineDataset)",
+      "source": "thuml/Time-Series-Library packed release; official per-machine files previously fetched from NetManAIOps/OmniAnomaly to scratchpad only",
+      "local_files": [
+        "SMD/SMD_train.npy",
+        "SMD/SMD_test.npy",
+        "SMD/SMD_test_label.npy",
+        "SMD/SMD_train.pkl",
+        "SMD/SMD_test.pkl",
+        "SMD/SMD_test_label.pkl"
+      ],
+      "license_redistribution": "research dump via TSLib; official OmniAnomaly files were not committed; raw remains untracked",
+      "entities": 28,
+      "channels": 38,
+      "train_shape": [708405, 38],
+      "test_shape": [708420, 38],
+      "label_file": "SMD/SMD_test_label.npy",
+      "label_shape": [708420],
+      "label_format": "1-D float32 array aligned to packed test rows",
+      "label_granularity": "entity-level (machine / packed-row), not channel-level",
+      "official_train_test": true,
+      "train_is_concatenated_entities": true,
+      "entity_index_on_disk": false,
+      "entity_index_recoverable_from_prior_provenance": true,
+      "prior_artifacts": [
+        "artifacts/functional/e2/smd_entity_structure_v1.json",
+        "artifacts/functional/e2/smd_target_readiness_v1.json",
+        "artifacts/functional/e2/smd_target_readiness_v2.json",
+        "artifacts/functional/e2/s1_health_v1.json",
+        "artifacts/functional/e2/shared_capability_s0_census_v1.json"
+      ],
+      "old_screen": {
+        "task": "forecasting third-domain / shared-capability",
+        "consumer_judge": "forecast windows + public-phenomenon / usable-channel bars",
+        "verdict": "ELIGIBLE as forecasting third-domain candidate after entity correction",
+        "not_an_ad_veto": true
+      },
+      "exposure": {
+        "train_values": {"context": "INSTANCE_SEEN", "outcome": "EXPOSED", "note": "S1 health + readiness v1/v2 read official train development windows"},
+        "test_values": {"context": "INSTANCE_SEEN", "outcome": "SEALED", "note": "shape header read this round and historically; values not used as AD outcome"},
+        "test_labels": {"context": "AGGREGATE_SEEN", "outcome": "SEALED", "note": "file exists; shape [708420] recorded; no label values read in this book or in readiness v1/v2"}
+      },
+      "fixed_channel_rule_already_on_file": {
+        "exists": true,
+        "rule": "cardinality>20 on each machine [0,1104); intersection across 28 machines; pick max median cardinality, tie lowest index",
+        "chosen_channel_index": 18,
+        "outcome_blind": true,
+        "uses_labels": false,
+        "claim_cap_if_used": "fixed-channel proxy, not full multivariate capability",
+        "alignment_caveat": "column-index aligned; no channel dictionary"
+      },
+      "aegists_iforest_v1_mechanical": "yes if each machine is one univariate series from a frozen channel and packed-row labels are mapped to events by a synthetic-fixture-proven contiguous-run rule; official test must stay sealed until #42g Part D",
+      "exam_split_support": {
+        "official_train_as_base_fit": true,
+        "test_prefix_as_held_in_feedback": "possible only if test is later split by a pre-registered time cut inside official test; current #42g 0.7n-on-whole-series is incompatible with official train/test and would be LAYOUT_UNEXPECTED_STOP if forced",
+        "test_suffix_as_sealed_held_out": "official test currently treated as a single sealed block; further intra-test split is not pre-registered here"
+      },
+      "adapter_path": "C",
+      "adapter_path_name": "CHANNEL_AS_SERIES_WEAK_LABEL",
+      "why_not_B": "a FIXED_CHANNEL_PER_ENTITY series can be built, but labels remain machine-level: the same 1-D label would be attached to the chosen channel. That is a weak-label risk, not an independent channel sample. Promoting it to B would overclaim.",
+      "why_not_A": "native entity is 38-channel multivariate",
+      "enters_current_univariate_42g": false
+    },
+    {
+      "id": "MSL",
+      "native_task": "multivariate spacecraft telemetry anomaly detection (Mars Science Laboratory / NASA)",
+      "source": "TSLib anomaly-detection dump",
+      "local_files": ["MSL/MSL_train.npy", "MSL/MSL_test.npy", "MSL/MSL_test_label.npy"],
+      "license_redistribution": "NASA/JPL telemetry research dump via TSLib; not committed to this git repo",
+      "entities": "unknown in packed files; historically treated as one concatenated multivariate stream",
+      "channels": 55,
+      "train_shape": [58317, 55],
+      "test_shape": [73729, 55],
+      "label_file": "MSL/MSL_test_label.npy",
+      "label_shape": [73729],
+      "label_format": "1-D bool array aligned to packed test rows",
+      "label_granularity": "system/stream-level, not channel-level",
+      "official_train_test": true,
+      "entity_index_on_disk": false,
+      "entity_index_recoverable_from_prior_provenance": false,
+      "prior_artifacts": ["artifacts/functional/e2/shared_capability_s0_census_v1.json"],
+      "old_screen": {
+        "task": "forecasting third-domain census",
+        "verdict": "FAILS_DEGENERATE_CHANNELS (1/55 continuous; 54 binary/constant)",
+        "not_an_ad_veto": true,
+        "note": "that bar was for forecastable continuous channels, not AD legality"
+      },
+      "exposure": {
+        "train_values": {"context": "INSTANCE_SEEN", "outcome": "EXPOSED", "note": "S0 read a 3072-row development prefix of train"},
+        "test_values": {"context": "INSTANCE_SEEN", "outcome": "SEALED"},
+        "test_labels": {"context": "AGGREGATE_SEEN", "outcome": "SEALED", "note": "existence+shape only this round"}
+      },
+      "public_schema": "S0 note: channel 0 measurement, remaining channels mostly commands (same family as SMAP)",
+      "aegists_iforest_v1_mechanical": "no honest multi-entity univariate exam: no recoverable entity roster; channel-as-series would copy one stream label onto 55 channels",
+      "exam_split_support": {
+        "official_train_as_base_fit": true,
+        "test_prefix_held_in_plus_suffix_held_out": "only as a single packed stream; not a multi-entity #42g roster"
+      },
+      "adapter_path": "D",
+      "adapter_path_name": "MULTIVARIATE_CONSUMER_ADAPTER_REQUIRED",
+      "why": "labels are 1-D over the packed multivariate stream; command channels are not independent AD series; no entity index",
+      "enters_current_univariate_42g": false
+    },
+    {
+      "id": "SMAP",
+      "native_task": "multivariate spacecraft telemetry anomaly detection (Soil Moisture Active Passive / NASA)",
+      "source": "TSLib anomaly-detection dump",
+      "local_files": ["SMAP/SMAP_train.npy", "SMAP/SMAP_test.npy", "SMAP/SMAP_test_label.npy"],
+      "license_redistribution": "NASA/JPL telemetry research dump via TSLib; not committed",
+      "entities": "unknown in packed files; treated as one concatenated multivariate stream",
+      "channels": 25,
+      "train_shape": [135183, 25],
+      "test_shape": [427617, 25],
+      "label_file": "SMAP/SMAP_test_label.npy",
+      "label_shape": [427617],
+      "label_format": "1-D bool array aligned to packed test rows",
+      "label_granularity": "system/stream-level, not channel-level",
+      "official_train_test": true,
+      "entity_index_on_disk": false,
+      "entity_index_recoverable_from_prior_provenance": false,
+      "prior_artifacts": ["artifacts/functional/e2/shared_capability_s0_census_v1.json"],
+      "old_screen": {
+        "task": "forecasting third-domain census",
+        "verdict": "FAILS_DEGENERATE_CHANNELS (1/25 continuous)",
+        "not_an_ad_veto": true
+      },
+      "exposure": {
+        "train_values": {"context": "INSTANCE_SEEN", "outcome": "EXPOSED", "note": "S0 3072-row train prefix"},
+        "test_values": {"context": "INSTANCE_SEEN", "outcome": "SEALED"},
+        "test_labels": {"context": "AGGREGATE_SEEN", "outcome": "SEALED"}
+      },
+      "public_schema": "S0: channel 0 is the measurement; others are commands",
+      "aegists_iforest_v1_mechanical": "a single-channel (ch0) proxy would still be one stream, not a multi-entity exam; copying the 1-D label onto command channels is forbidden",
+      "exam_split_support": {
+        "official_train_as_base_fit": true,
+        "multi_entity_roster": false
+      },
+      "adapter_path": "D",
+      "adapter_path_name": "MULTIVARIATE_CONSUMER_ADAPTER_REQUIRED",
+      "why": "same packed-stream + system-level label structure as MSL",
+      "enters_current_univariate_42g": false
+    },
+    {
+      "id": "PSM",
+      "native_task": "multivariate pooled-server anomaly detection (eBay Pooled Server Metrics)",
+      "source": "TSLib dump of eBay PSM",
+      "local_files": ["PSM/train.csv", "PSM/test.csv", "PSM/test_label.csv"],
+      "license_redistribution": "eBay research dump via TSLib; not committed; redistribution restricted by original release",
+      "entities": 1,
+      "channels": 25,
+      "train_shape": [132481, 26],
+      "test_shape": [87841, 26],
+      "train_header": ["timestamp_(min)", "feature_0" , "...", "feature_24"],
+      "label_file": "PSM/test_label.csv",
+      "label_header": ["timestamp_(min)", "label"],
+      "label_rows": 87841,
+      "label_format": "independent csv, one label column aligned to test timestamps",
+      "label_granularity": "system-level (one label per timestamp across all features)",
+      "official_train_test": true,
+      "prior_artifacts": ["artifacts/functional/e2/g3_candidate_screening_v3.json"],
+      "old_screen": {
+        "task": "forecasting G3 fresh-family screen",
+        "verdict": "REJECTED_NO_PUBLIC_PHENOMENON (pre-normalized channels)",
+        "not_an_ad_veto": true,
+        "note": "that was Operator-DSL headroom for forecasting, not AD outcome legality"
+      },
+      "exposure": {
+        "train_values": {"context": "INSTANCE_SEEN", "outcome": "EXPOSED", "note": "g3 screening read train structure / phenomena, no AD labels"},
+        "test_values": {"context": "INSTANCE_SEEN", "outcome": "SEALED", "note": "this round: header + row count only"},
+        "test_labels": {"context": "AGGREGATE_SEEN", "outcome": "SEALED", "note": "header timestamp_(min),label and row count; no label values printed or aggregated"}
+      },
+      "aegists_iforest_v1_mechanical": "interface-shaped if one feature is frozen as the series, but the label is still system-level; 25 channels are not 25 datasets",
+      "exam_split_support": {
+        "official_train_as_base_fit": true,
+        "test_prefix_held_in_plus_suffix_held_out": "possible on the single official test timeline; yields one entity, below a multi-entity #42g roster"
+      },
+      "adapter_path": "D",
+      "adapter_path_name": "MULTIVARIATE_CONSUMER_ADAPTER_REQUIRED",
+      "secondary_note": "CHANNEL_AS_SERIES_WEAK_LABEL if one pre-registered feature were used; still one entity and weak labels. Not enough for LOCAL_UNIVARIATE_PROXY_TARGET_AVAILABLE.",
+      "enters_current_univariate_42g": false
+    },
+    {
+      "id": "SWaT",
+      "native_task": "multivariate industrial-control anomaly detection (iTrust Secure Water Treatment)",
+      "source": "TSLib dump; original iTrust xlsx plus converted csv",
+      "local_files": [
+        "SWaT/SWaT_Dataset_Normal_v1.xlsx",
+        "SWaT/SWaT_Dataset_Attack_v0.xlsx",
+        "SWaT/swat_train.csv",
+        "SWaT/swat_train2.csv",
+        "SWaT/swat2.csv",
+        "SWaT/swat_raw.csv",
+        "SWaT/data.py"
+      ],
+      "license_redistribution": "iTrust SWaT request-and-license; typically non-redistributable; must stay untracked",
+      "entities": 1,
+      "channels": 51,
+      "train_file_used_in_old_screen": "swat2.csv",
+      "swat2_shape": [449919, 52],
+      "swat_train2_shape": [495000, 52],
+      "header_tail": ["P602", "P603", "Normal/Attack"],
+      "label_form": "inline last column Normal/Attack on value tables (and original xlsx)",
+      "label_granularity": "system-level attack flag, not sensor-level",
+      "official_train_test": "Normal_v1 vs Attack_v0 is the official protocol; not a 0.7n cut",
+      "xlsx_opened": false,
+      "prior_artifacts": ["artifacts/functional/e2/g3_candidate_screening_v3.json"],
+      "old_screen": {
+        "task": "forecasting G3 fresh-family screen on swat2.csv",
+        "verdict": "REJECTED_SUBSTRATE (15/52 columns clean vs bar 20; actuators near-constant)",
+        "not_an_ad_veto": true
+      },
+      "exposure": {
+        "converted_csv_values": {"context": "INSTANCE_SEEN", "outcome": "EXPOSED", "note": "g3 screening used swat2.csv values for substrate/phenomenon, not attack labels as AD truth"},
+        "inline_attack_column": {"context": "AGGREGATE_SEEN", "outcome": "SEALED", "note": "column name Normal/Attack seen in header; no attack/normal values counted this round"},
+        "xlsx": {"context": "AGGREGATE_SEEN", "outcome": "SEALED", "note": "bytes only; not opened"}
+      },
+      "inline_label_isolation": "possible in principle by R1-5 splitter, but that still yields one plant entity with a system-level flag",
+      "aegists_iforest_v1_mechanical": "not as a multi-entity univariate exam; plant-level attack flag cannot be copied onto 51 sensors as independent samples",
+      "exam_split_support": {
+        "official_normal_as_base_fit": true,
+        "official_attack_as_test": true,
+        "incompatible_with_0_7n_on_one_file": true
+      },
+      "adapter_path": "D",
+      "adapter_path_name": "MULTIVARIATE_CONSUMER_ADAPTER_REQUIRED",
+      "enters_current_univariate_42g": false
+    }
+  ],
+  "verdict": {
+    "verdict": "LOCAL_TARGET_REQUIRES_MULTIVARIATE_ADAPTER",
+    "reason": "All five local AD dumps are multivariate. SMD is the only multi-entity sealed-test candidate, and even its frozen channel-18 proxy would attach machine-level labels (path C), which this book forbids presenting as independent univariate samples. MSL/SMAP/PSM/SWaT need a multivariate Consumer to interpret system-level labels. No candidate is AS_IS_UNIVARIATE. None clears FIXED_CHANNEL_PER_ENTITY without weak-label overclaim. Yahoo download is therefore not forced by emptiness; it remains a user choice if the exam must stay univariate without a new adapter.",
+    "yahoo_download_not_auto_resumed": true
+  }
+}

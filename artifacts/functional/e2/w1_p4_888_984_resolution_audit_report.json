@@ -1,0 +1,4328 @@
+{
+  "experiment_id": "v1-p4-888-984-resolution-audit",
+  "note": "Zero-LLM resolution audit of the two discovery origins 888/984 under one shared matched 9-anchor training configuration. No Slow call, no Harness update, no Gate change, no feature changes.",
+  "origins": [
+    888,
+    984
+  ],
+  "programs": [
+    "outlier_mad",
+    "hampel_filter"
+  ],
+  "matched_train_config": {
+    "anchors": [
+      312,
+      372,
+      432,
+      492,
+      552,
+      612,
+      672,
+      732,
+      792
+    ],
+    "n_anchors": 9,
+    "train_series": [
+      "T117",
+      "T118",
+      "T119",
+      "T12",
+      "T120",
+      "T121",
+      "T122",
+      "T123",
+      "T124",
+      "T125",
+      "T126",
+      "T127"
+    ],
+    "eval_series": [
+      "T128",
+      "T129",
+      "T13",
+      "T130",
+      "T131",
+      "T132",
+      "T133",
+      "T134"
+    ],
+    "note": "Both origins share this exact anchor list; each per-series gain is evaluated on the frozen 12-series train roster plus that one eval series."
+  },
+  "per_series_gain_matrix": {
+    "T128": {
+      "888": {
+        "outlier_mad": -0.03088254630488574,
+        "hampel_filter": -0.046839729082789106
+      },
+      "984": {
+        "outlier_mad": 0.0416450325207014,
+        "hampel_filter": 1.0010887988021189e-05
+      }
+    },
+    "T129": {
+      "888": {
+        "outlier_mad": 0.09291403566676193,
+        "hampel_filter": -0.4854600249635579
+      },
+      "984": {
+        "outlier_mad": 0.19648307920549357,
+        "hampel_filter": 0.08343822199995432
+      }
+    },
+    "T13": {
+      "888": {
+        "outlier_mad": 0.5894190058832999,
+        "hampel_filter": 0.3720558187319438
+      },
+      "984": {
+        "outlier_mad": -0.06246000682137387,
+        "hampel_filter": -0.06807515195430636
+      }
+    },
+    "T130": {
+      "888": {
+        "outlier_mad": 0.055400665664752546,
+        "hampel_filter": -0.4124516227967532
+      },
+      "984": {
+        "outlier_mad": 0.2677555785261303,
+        "hampel_filter": 0.33122335459609986
+      }
+    },
+    "T131": {
+      "888": {
+        "outlier_mad": 0.34002517729949755,
+        "hampel_filter": -0.4068641978610268
+      },
+      "984": {
+        "outlier_mad": 0.18709473838117074,
+        "hampel_filter": 0.017702097349654666
+      }
+    },
+    "T132": {
+      "888": {
+        "outlier_mad": -0.01866429044602902,
+        "hampel_filter": -0.4659777340568967
+      },
+      "984": {
+        "outlier_mad": -0.45961677311295257,
+        "hampel_filter": 0.024253814319944
+      }
+    },
+    "T133": {
+      "888": {
+        "outlier_mad": 0.10485067754560595,
+        "hampel_filter": -0.4652222454727335
+      },
+      "984": {
+        "outlier_mad": -0.11515881092192604,
+        "hampel_filter": -0.14228329208795865
+      }
+    },
+    "T134": {
+      "888": {
+        "outlier_mad": -0.17417326559134527,
+        "hampel_filter": 0.07562034459700606
+      },
+      "984": {
+        "outlier_mad": -0.44660811782154997,
+        "hampel_filter": -0.16101303281142676
+      }
+    }
+  },
+  "per_origin_summaries": {
+    "888": {
+      "cohort_gain_by_program": {
+        "outlier_mad": 0.11986118246470723,
+        "hampel_filter": -0.2293924238631009
+      },
+      "cohort_winner": [
+        "outlier_mad"
+      ],
+      "cohort_delta_outlier_minus_hampel": {
+        "mean": 0.3492536063278081,
+        "sd": 0.3317469115343231,
+        "se": 0.11729024539180677,
+        "n": 8,
+        "abs_mean_over_se": 2.9776867220383956
+      },
+      "per_series_winners": {
+        "T128": [
+          "outlier_mad"
+        ],
+        "T129": [
+          "outlier_mad"
+        ],
+        "T13": [
+          "outlier_mad"
+        ],
+        "T130": [
+          "outlier_mad"
+        ],
+        "T131": [
+          "outlier_mad"
+        ],
+        "T132": [
+          "outlier_mad"
+        ],
+        "T133": [
+          "outlier_mad"
+        ],
+        "T134": [
+          "hampel_filter"
+        ]
+      },
+      "per_series_winner_counts": {
+        "outlier_mad": 7,
+        "hampel_filter": 1
+      },
+      "split_half_enumeration": {
+        "n_partitions": 70,
+        "agreement_count": 70,
+        "disagreement_count": 0,
+        "tie_half_count": 0,
+        "agreement_rate": 1.0,
+        "agreement_rate_interpretation": "descriptive stability measure only; the 70 partitions share the same 8 series and are not independent Bernoulli units, so no formal binomial test is applied",
+        "half_level_winner_counts": {
+          "outlier_mad": 0,
+          "hampel_filter": 0
+        },
+        "n_half_level_winners_counted": 140,
+        "rule": "winner = program with higher mean gain over the 4-series half; agreement = both halves have unique and equal winner; tie half counts as neither agree nor disagree",
+        "rows": [
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T130"
+            ],
+            "half_b_series": [
+              "T131",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.17671279022748215,
+              "hampel_filter": -0.1431738895277891
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.0630095747019323,
+              "hampel_filter": -0.3156109581984127
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T131"
+            ],
+            "half_b_series": [
+              "T130",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.2478689181361684,
+              "hampel_filter": -0.1417770332938575
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.008146553206753948,
+              "hampel_filter": -0.3170078144323443
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T132"
+            ],
+            "half_b_series": [
+              "T130",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.15819655119978676,
+              "hampel_filter": -0.15655541734282497
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.0815258137296277,
+              "hampel_filter": -0.30222943038337685
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T133"
+            ],
+            "half_b_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1890752931976955,
+              "hampel_filter": -0.15636654519678417
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.05064707173171895,
+              "hampel_filter": -0.30241830252941765
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T134"
+            ],
+            "half_b_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1193193074134577,
+              "hampel_filter": -0.021155897679349278
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.12040305751595676,
+              "hampel_filter": -0.43762895004685254
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T131"
+            ],
+            "half_b_series": [
+              "T13",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.11436433308153157,
+              "hampel_filter": -0.33790389367603174
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.12535803184788288,
+              "hampel_filter": -0.12088095405017008
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T132"
+            ],
+            "half_b_series": [
+              "T13",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.02469196614514993,
+              "hampel_filter": -0.3526822777249992
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.2150303987842645,
+              "hampel_filter": -0.1061025700012026
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T133"
+            ],
+            "half_b_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.05557070814305867,
+              "hampel_filter": -0.3524934055789584
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.18415165678635578,
+              "hampel_filter": -0.1062914421472434
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.014185277641179134,
+              "hampel_filter": -0.21728275806152353
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.25390764257059356,
+              "hampel_filter": -0.2415020896646783
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.09584809405383618,
+              "hampel_filter": -0.3512854214910676
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.14387427087557828,
+              "hampel_filter": -0.1074994262351342
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.12672683605174492,
+              "hampel_filter": -0.3510965493450268
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.11299552887766953,
+              "hampel_filter": -0.107688298381175
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.05697085026750712,
+              "hampel_filter": -0.21588590182759193
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.18275151466190734,
+              "hampel_filter": -0.24289894589860989
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.03705446911536328,
+              "hampel_filter": -0.3658749333939943
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.20266789581405117,
+              "hampel_filter": -0.09290991433220752
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.032701516668874525,
+              "hampel_filter": -0.2306642858765594
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.27242388159828895,
+              "hampel_filter": -0.2281205618496424
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.0018227746709657822,
+              "hampel_filter": -0.2304754137305186
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.24154513960038024,
+              "hampel_filter": -0.2283094339956832
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_b_series": [
+              "T129",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.23849057563566606,
+              "hampel_filter": -0.12352493275215631
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.0012317892937483976,
+              "hampel_filter": -0.3352599149740455
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_b_series": [
+              "T129",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.14881820869928442,
+              "hampel_filter": -0.1383033168011238
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.09090415623013004,
+              "hampel_filter": -0.32048153092507803
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.17969695069719316,
+              "hampel_filter": -0.138114444655083
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.0600254142322213,
+              "hampel_filter": -0.3206704030711188
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.10994096491295535,
+              "hampel_filter": -0.002903797137648101
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1297814000164591,
+              "hampel_filter": -0.4558810505885537
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.21997433660797067,
+              "hampel_filter": -0.1369064605671922
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.01974802832144379,
+              "hampel_filter": -0.3218783871590096
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.2508530786058794,
+              "hampel_filter": -0.1367175884211514
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.011130713676464954,
+              "hampel_filter": -0.3220672593050504
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1810970928216416,
+              "hampel_filter": -0.0015069409037165027
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.05862527210777285,
+              "hampel_filter": -0.4572779068224853
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.16118071166949777,
+              "hampel_filter": -0.15149597247011887
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.07854165325991669,
+              "hampel_filter": -0.30728887525608295
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.09142472588525996,
+              "hampel_filter": -0.016285324952683977
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1482976390441545,
+              "hampel_filter": -0.44249952277351784
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1223034678831687,
+              "hampel_filter": -0.01609645280664318
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.11741889704624575,
+              "hampel_filter": -0.44268839491955864
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.08646975155333383,
+              "hampel_filter": -0.33303332094936644
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.15325261337608062,
+              "hampel_filter": -0.12575152677683538
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.11734849355124258,
+              "hampel_filter": -0.33284444880332564
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.12237387137817188,
+              "hampel_filter": -0.12594039892287617
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.04759250776700477,
+              "hampel_filter": -0.19763380128589075
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.19212985716240968,
+              "hampel_filter": -0.26115104644031106
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.027676126614860935,
+              "hampel_filter": -0.3476228328522931
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.21204623831455352,
+              "hampel_filter": -0.1111620148739087
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.04207985916937687,
+              "hampel_filter": -0.21241218533485823
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.2818022240987913,
+              "hampel_filter": -0.2463726623913436
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.011201117171468128,
+              "hampel_filter": -0.21222331318881743
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.25092348210088256,
+              "hampel_filter": -0.24656153453738439
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.09883225452354719,
+              "hampel_filter": -0.3462259766183615
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.14089011040586727,
+              "hampel_filter": -0.1125588711078403
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.02907626873930938,
+              "hampel_filter": -0.21101532910092663
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.21064609619010508,
+              "hampel_filter": -0.2477695186252752
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.05995501073721812,
+              "hampel_filter": -0.21082645695488583
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.17976735419219633,
+              "hampel_filter": -0.24795839077131598
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.02971735619916352,
+              "hampel_filter": -0.2256048410038533
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.26943972112857795,
+              "hampel_filter": -0.2331800067223485
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_b_series": [
+              "T128",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.26943972112857795,
+              "hampel_filter": -0.2331800067223485
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.02971735619916352,
+              "hampel_filter": -0.2256048410038533
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.17976735419219633,
+              "hampel_filter": -0.24795839077131598
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.05995501073721812,
+              "hampel_filter": -0.21082645695488583
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.21064609619010508,
+              "hampel_filter": -0.2477695186252752
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.02907626873930938,
+              "hampel_filter": -0.21101532910092663
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.14089011040586727,
+              "hampel_filter": -0.1125588711078403
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.09883225452354719,
+              "hampel_filter": -0.3462259766183615
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.25092348210088256,
+              "hampel_filter": -0.24656153453738439
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.011201117171468128,
+              "hampel_filter": -0.21222331318881743
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.2818022240987913,
+              "hampel_filter": -0.2463726623913436
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.04207985916937687,
+              "hampel_filter": -0.21241218533485823
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.21204623831455352,
+              "hampel_filter": -0.1111620148739087
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.027676126614860935,
+              "hampel_filter": -0.3476228328522931
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.19212985716240968,
+              "hampel_filter": -0.26115104644031106
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.04759250776700477,
+              "hampel_filter": -0.19763380128589075
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.12237387137817188,
+              "hampel_filter": -0.12594039892287617
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.11734849355124258,
+              "hampel_filter": -0.33284444880332564
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.15325261337608062,
+              "hampel_filter": -0.12575152677683538
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.08646975155333383,
+              "hampel_filter": -0.33303332094936644
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.11741889704624575,
+              "hampel_filter": -0.44268839491955864
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1223034678831687,
+              "hampel_filter": -0.01609645280664318
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1482976390441545,
+              "hampel_filter": -0.44249952277351784
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.09142472588525996,
+              "hampel_filter": -0.016285324952683977
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.07854165325991669,
+              "hampel_filter": -0.30728887525608295
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.16118071166949777,
+              "hampel_filter": -0.15149597247011887
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.05862527210777285,
+              "hampel_filter": -0.4572779068224853
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1810970928216416,
+              "hampel_filter": -0.0015069409037165027
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.011130713676464954,
+              "hampel_filter": -0.3220672593050504
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.2508530786058794,
+              "hampel_filter": -0.1367175884211514
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.01974802832144379,
+              "hampel_filter": -0.3218783871590096
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.21997433660797067,
+              "hampel_filter": -0.1369064605671922
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1297814000164591,
+              "hampel_filter": -0.4558810505885537
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.10994096491295535,
+              "hampel_filter": -0.002903797137648101
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.0600254142322213,
+              "hampel_filter": -0.3206704030711188
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.17969695069719316,
+              "hampel_filter": -0.138114444655083
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.09090415623013004,
+              "hampel_filter": -0.32048153092507803
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.14881820869928442,
+              "hampel_filter": -0.1383033168011238
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.0012317892937483976,
+              "hampel_filter": -0.3352599149740455
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.23849057563566606,
+              "hampel_filter": -0.12352493275215631
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.24154513960038024,
+              "hampel_filter": -0.2283094339956832
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.0018227746709657822,
+              "hampel_filter": -0.2304754137305186
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.27242388159828895,
+              "hampel_filter": -0.2281205618496424
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.032701516668874525,
+              "hampel_filter": -0.2306642858765594
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.20266789581405117,
+              "hampel_filter": -0.09290991433220752
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.03705446911536328,
+              "hampel_filter": -0.3658749333939943
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.18275151466190734,
+              "hampel_filter": -0.24289894589860989
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.05697085026750712,
+              "hampel_filter": -0.21588590182759193
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.11299552887766953,
+              "hampel_filter": -0.107688298381175
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.12672683605174492,
+              "hampel_filter": -0.3510965493450268
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.14387427087557828,
+              "hampel_filter": -0.1074994262351342
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.09584809405383618,
+              "hampel_filter": -0.3512854214910676
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.2539076425705936,
+              "hampel_filter": -0.2415020896646783
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.014185277641179134,
+              "hampel_filter": -0.21728275806152353
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.18415165678635578,
+              "hampel_filter": -0.1062914421472434
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.05557070814305867,
+              "hampel_filter": -0.3524934055789584
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.2150303987842645,
+              "hampel_filter": -0.1061025700012026
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.02469196614514993,
+              "hampel_filter": -0.3526822777249992
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.12535803184788288,
+              "hampel_filter": -0.12088095405017008
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.11436433308153157,
+              "hampel_filter": -0.33790389367603174
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.12040305751595676,
+              "hampel_filter": -0.43762895004685254
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1193193074134577,
+              "hampel_filter": -0.021155897679349278
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.05064707173171895,
+              "hampel_filter": -0.30241830252941765
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1890752931976955,
+              "hampel_filter": -0.15636654519678417
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.0815258137296277,
+              "hampel_filter": -0.30222943038337685
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.15819655119978676,
+              "hampel_filter": -0.15655541734282497
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.008146553206753948,
+              "hampel_filter": -0.3170078144323443
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.2478689181361684,
+              "hampel_filter": -0.1417770332938575
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T131",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T130"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.0630095747019323,
+              "hampel_filter": -0.3156109581984127
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.17671279022748215,
+              "hampel_filter": -0.1431738895277891
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "agree"
+          }
+        ]
+      }
+    },
+    "984": {
+      "cohort_gain_by_program": {
+        "outlier_mad": -0.048858160005538304,
+        "hampel_filter": 0.010657002787493638
+      },
+      "cohort_winner": [
+        "hampel_filter"
+      ],
+      "cohort_delta_outlier_minus_hampel": {
+        "mean": -0.05951516279303194,
+        "sd": 0.21888051818339307,
+        "se": 0.07738594933855132,
+        "n": 8,
+        "abs_mean_over_se": 0.769069363388727
+      },
+      "per_series_winners": {
+        "T128": [
+          "outlier_mad"
+        ],
+        "T129": [
+          "outlier_mad"
+        ],
+        "T13": [
+          "outlier_mad"
+        ],
+        "T130": [
+          "hampel_filter"
+        ],
+        "T131": [
+          "outlier_mad"
+        ],
+        "T132": [
+          "hampel_filter"
+        ],
+        "T133": [
+          "outlier_mad"
+        ],
+        "T134": [
+          "hampel_filter"
+        ]
+      },
+      "per_series_winner_counts": {
+        "outlier_mad": 5,
+        "hampel_filter": 3
+      },
+      "split_half_enumeration": {
+        "n_partitions": 70,
+        "agreement_count": 34,
+        "disagreement_count": 36,
+        "tie_half_count": 0,
+        "agreement_rate": 0.4857142857142857,
+        "agreement_rate_interpretation": "descriptive stability measure only; the 70 partitions share the same 8 series and are not independent Bernoulli units, so no formal binomial test is applied",
+        "half_level_winner_counts": {
+          "outlier_mad": 0,
+          "hampel_filter": 0
+        },
+        "n_half_level_winners_counted": 140,
+        "rule": "winner = program with higher mean gain over the 4-series half; agreement = both halves have unique and equal winner; tie half counts as neither agree nor disagree",
+        "rows": [
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T130"
+            ],
+            "half_b_series": [
+              "T131",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.11085592085773785,
+              "hampel_filter": 0.08664910888243396
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.20857224086881446,
+              "hampel_filter": -0.06533510330744668
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T131"
+            ],
+            "half_b_series": [
+              "T130",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.09069071082149796,
+              "hampel_filter": 0.008268794570822663
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.18840703083257457,
+              "hampel_filter": 0.013045211004164614
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T132"
+            ],
+            "half_b_series": [
+              "T130",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.07098716705203287,
+              "hampel_filter": 0.009906723813394996
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.02672915295904374,
+              "hampel_filter": 0.01140728176159228
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T133"
+            ],
+            "half_b_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.015127323495723766,
+              "hampel_filter": -0.031727552788580665
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.11284364350680037,
+              "hampel_filter": 0.05304155836356794
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T134"
+            ],
+            "half_b_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.06773500322918222,
+              "hampel_filter": -0.036409987969447694
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.02998131678189439,
+              "hampel_filter": 0.05772399354443497
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T131"
+            ],
+            "half_b_series": [
+              "T13",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.173244607158374,
+              "hampel_filter": 0.10809342120842422
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.27096092716945064,
+              "hampel_filter": -0.08677941563343694
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T132"
+            ],
+            "half_b_series": [
+              "T13",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.011566729284843175,
+              "hampel_filter": 0.10973135045099655
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.10928304929591978,
+              "hampel_filter": -0.08841734487600927
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T133"
+            ],
+            "half_b_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.09768121983259981,
+              "hampel_filter": 0.06809707384902089
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.19539753984367642,
+              "hampel_filter": -0.04678306827403361
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.014818893107693826,
+              "hampel_filter": 0.06341463866815386
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.11253521311877043,
+              "hampel_filter": -0.042100633093166584
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.008598480751396714,
+              "hampel_filter": 0.03135103613938525
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.08911783925967989,
+              "hampel_filter": -0.010037030564397975
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.07751600979635992,
+              "hampel_filter": -0.01028324046259041
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.17523232980743653,
+              "hampel_filter": 0.031597246037577686
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.005346316928546063,
+              "hampel_filter": -0.014965675643457438
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.09237000308253054,
+              "hampel_filter": 0.036279681218444715
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.08416186807717091,
+              "hampel_filter": -0.008645311220018076
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.013554451933905698,
+              "hampel_filter": 0.029959316795005353
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.1670241948020769,
+              "hampel_filter": -0.013327746400885104
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.06930787479100028,
+              "hampel_filter": 0.03464175197587238
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T129",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.08090970425432026,
+              "hampel_filter": -0.054962023002860766
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.01680661575675635,
+              "hampel_filter": 0.07627602857784804
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_b_series": [
+              "T129",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.10850883565165714,
+              "hampel_filter": 0.07021507771985905
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.20622515566273378,
+              "hampel_filter": -0.04890107214487177
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_b_series": [
+              "T129",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.053169042221873686,
+              "hampel_filter": 0.07185300696243138
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.04454727778920292,
+              "hampel_filter": -0.050539001387444105
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.03294544832588295,
+              "hampel_filter": 0.03021873036045572
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.13066176833695956,
+              "hampel_filter": -0.008904724785468443
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.049916878399023035,
+              "hampel_filter": 0.02553629517958869
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.04779944161205357,
+              "hampel_filter": -0.004222289604601415
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.07333425225811357,
+              "hampel_filter": -0.006527307349179917
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.024382067752963033,
+              "hampel_filter": 0.027841312924167194
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.012780238289643059,
+              "hampel_filter": -0.04816158395115558
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.11049655830071967,
+              "hampel_filter": 0.06947558952614286
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.07008208843526292,
+              "hampel_filter": -0.05284401913202261
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.027634231575813684,
+              "hampel_filter": 0.07415802470700988
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.14889763958388777,
+              "hampel_filter": -0.046523654708583245
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.05118131957281116,
+              "hampel_filter": 0.06783766028357052
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.23175996630879375,
+              "hampel_filter": -0.051206089889450274
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.13404364629771715,
+              "hampel_filter": 0.07252009546443755
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.14564547576103712,
+              "hampel_filter": -0.09284036649142594
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.04792915574996051,
+              "hampel_filter": 0.11415437206641321
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.009219644078762468,
+              "hampel_filter": 0.09329731928842164
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.10693596408983908,
+              "hampel_filter": -0.07198331371343436
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.0953341346265191,
+              "hampel_filter": 0.051663042686445976
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.1930504546375957,
+              "hampel_filter": -0.0303490371114587
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.012471807901613119,
+              "hampel_filter": 0.04698060750557895
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.11018812791268973,
+              "hampel_filter": -0.02566660193059167
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.06634374324701173,
+              "hampel_filter": 0.05330097192901831
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.03137257676406488,
+              "hampel_filter": -0.03198696635403103
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.1492060699719177,
+              "hampel_filter": 0.04861853674815128
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.0514897499608411,
+              "hampel_filter": -0.027304531173164004
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.06309157942416108,
+              "hampel_filter": 0.006984260146175619
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.03462474058691553,
+              "hampel_filter": 0.014329745428811658
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.08650895328325162,
+              "hampel_filter": -0.02507934238259299
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.011207366727824991,
+              "hampel_filter": 0.046393347957580267
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.1693712800081576,
+              "hampel_filter": -0.029761777563460018
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.07165495999708099,
+              "hampel_filter": 0.051075783138447295
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.08325678946040097,
+              "hampel_filter": -0.07139605416543568
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.014459530550675642,
+              "hampel_filter": 0.09271005974042296
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T128",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.2449346673339318,
+              "hampel_filter": -0.06975812492286335
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.1472183473228552,
+              "hampel_filter": 0.09107213049785062
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_b_series": [
+              "T128",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.1472183473228552,
+              "hampel_filter": 0.09107213049785062
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.2449346673339318,
+              "hampel_filter": -0.06975812492286335
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.014459530550675642,
+              "hampel_filter": 0.09271005974042296
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.08325678946040097,
+              "hampel_filter": -0.07139605416543568
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.07165495999708099,
+              "hampel_filter": 0.051075783138447295
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.1693712800081576,
+              "hampel_filter": -0.029761777563460018
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.011207366727824991,
+              "hampel_filter": 0.046393347957580267
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.08650895328325162,
+              "hampel_filter": -0.02507934238259299
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.03462474058691553,
+              "hampel_filter": 0.014329745428811658
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.06309157942416108,
+              "hampel_filter": 0.006984260146175619
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.0514897499608411,
+              "hampel_filter": -0.027304531173164004
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.1492060699719177,
+              "hampel_filter": 0.04861853674815128
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.03137257676406488,
+              "hampel_filter": -0.03198696635403103
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.06634374324701173,
+              "hampel_filter": 0.05330097192901831
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.11018812791268973,
+              "hampel_filter": -0.02566660193059167
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.012471807901613119,
+              "hampel_filter": 0.04698060750557895
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.1930504546375957,
+              "hampel_filter": -0.0303490371114587
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.0953341346265191,
+              "hampel_filter": 0.051663042686445976
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.10693596408983908,
+              "hampel_filter": -0.07198331371343436
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.009219644078762468,
+              "hampel_filter": 0.09329731928842164
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.04792915574996051,
+              "hampel_filter": 0.11415437206641321
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.14564547576103712,
+              "hampel_filter": -0.09284036649142594
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.13404364629771715,
+              "hampel_filter": 0.07252009546443755
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.23175996630879375,
+              "hampel_filter": -0.051206089889450274
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.05118131957281116,
+              "hampel_filter": 0.06783766028357052
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.14889763958388777,
+              "hampel_filter": -0.046523654708583245
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.027634231575813684,
+              "hampel_filter": 0.07415802470700988
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.07008208843526292,
+              "hampel_filter": -0.05284401913202261
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.11049655830071967,
+              "hampel_filter": 0.06947558952614286
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.012780238289643059,
+              "hampel_filter": -0.04816158395115558
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.024382067752963033,
+              "hampel_filter": 0.027841312924167194
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.07333425225811357,
+              "hampel_filter": -0.006527307349179917
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.04779944161205357,
+              "hampel_filter": -0.004222289604601415
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.049916878399023035,
+              "hampel_filter": 0.02553629517958869
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.13066176833695956,
+              "hampel_filter": -0.008904724785468443
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.03294544832588295,
+              "hampel_filter": 0.03021873036045572
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.04454727778920292,
+              "hampel_filter": -0.050539001387444105
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.053169042221873686,
+              "hampel_filter": 0.07185300696243138
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T129",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T13",
+              "T130",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.20622515566273378,
+              "hampel_filter": -0.04890107214487177
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.10850883565165714,
+              "hampel_filter": 0.07021507771985905
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T132"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T133",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.01680661575675635,
+              "hampel_filter": 0.07627602857784804
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.08090970425432026,
+              "hampel_filter": -0.054962023002860766
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": 0.06930787479100028,
+              "hampel_filter": 0.03464175197587238
+            },
+            "half_a_winner": [
+              "outlier_mad"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.1670241948020769,
+              "hampel_filter": -0.013327746400885104
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T131",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T132",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.013554451933905698,
+              "hampel_filter": 0.029959316795005353
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.08416186807717091,
+              "hampel_filter": -0.008645311220018076
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.09237000308253054,
+              "hampel_filter": 0.036279681218444715
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.005346316928546063,
+              "hampel_filter": -0.014965675643457438
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.17523232980743653,
+              "hampel_filter": 0.031597246037577686
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.07751600979635992,
+              "hampel_filter": -0.01028324046259041
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T130",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T131",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.08911783925967989,
+              "hampel_filter": -0.010037030564397975
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.008598480751396714,
+              "hampel_filter": 0.03135103613938525
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.11253521311877043,
+              "hampel_filter": -0.042100633093166584
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.014818893107693826,
+              "hampel_filter": 0.06341463866815386
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.19539753984367642,
+              "hampel_filter": -0.04678306827403361
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.09768121983259981,
+              "hampel_filter": 0.06809707384902089
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.10928304929591978,
+              "hampel_filter": -0.08841734487600927
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.011566729284843175,
+              "hampel_filter": 0.10973135045099655
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T13",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T130",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.27096092716945064,
+              "hampel_filter": -0.08677941563343694
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.173244607158374,
+              "hampel_filter": 0.10809342120842422
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T133"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T134"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.02998131678189439,
+              "hampel_filter": 0.05772399354443497
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.06773500322918222,
+              "hampel_filter": -0.036409987969447694
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T131",
+              "T132",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T133"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.11284364350680037,
+              "hampel_filter": 0.05304155836356794
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.015127323495723766,
+              "hampel_filter": -0.031727552788580665
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T131",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T132"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.02672915295904374,
+              "hampel_filter": 0.01140728176159228
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": -0.07098716705203287,
+              "hampel_filter": 0.009906723813394996
+            },
+            "half_b_winner": [
+              "hampel_filter"
+            ],
+            "split_half_winner_agreement": "agree"
+          },
+          {
+            "half_a_series": [
+              "T130",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T131"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.1884070308325746,
+              "hampel_filter": 0.013045211004164614
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.09069071082149796,
+              "hampel_filter": 0.008268794570822663
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          },
+          {
+            "half_a_series": [
+              "T131",
+              "T132",
+              "T133",
+              "T134"
+            ],
+            "half_b_series": [
+              "T128",
+              "T129",
+              "T13",
+              "T130"
+            ],
+            "half_a_program_means": {
+              "outlier_mad": -0.20857224086881446,
+              "hampel_filter": -0.06533510330744668
+            },
+            "half_a_winner": [
+              "hampel_filter"
+            ],
+            "half_b_program_means": {
+              "outlier_mad": 0.11085592085773785,
+              "hampel_filter": 0.08664910888243396
+            },
+            "half_b_winner": [
+              "outlier_mad"
+            ],
+            "split_half_winner_agreement": "disagree"
+          }
+        ]
+      }
+    }
+  },
+  "origin_split_half_stable": {
+    "888": true,
+    "984": false
+  },
+  "stability_rule": "origin label is split-half stable only if all 70 4/4 partitions agree on a unique winner",
+  "cohort_level_directions_opposite": true,
+  "verdict": "INITIAL_ANTI_DIAGONAL_NOT_ESTABLISHED_AT_N8",
+  "interpretation": "At 888 every one of the 70 split halves chooses outlier_mad (agreement 70/70), so that label is stable. At 984 the two programs are close (cohort delta mean -0.0595, SE 0.0774, |mean|/SE = 0.77) and the split-half winner agrees in only 34/70 partitions. That 48.6% rate is a descriptive stability measure only: the 70 partitions share the same 8 series and are not independent units, so no formal binomial test is applied. The agreement rate alone indicates the 984 winner is not resolved at n=8. One of the two discovery labels is not established at n=8, so the initial anti-diagonal is not established. Close the K1/n=8/per-origin program selection line; do not continue replacing conditioning signals or building Workflows.",
+  "branch_result": "EITHER_ORIGIN_UNSTABLE -> K1_N8_PER_ORIGIN_PROGRAM_SELECTION_CLOSED"
+}

@@ -1,0 +1,43 @@
+{
+  "experiment_id": "v1-context-bound-skill-rebinding",
+  "note": "Context-bound Skill rebinding 验证（用户裁决 2026-08-12；已暴露 T117 @888；真实 LLM 一次运行；零新 outcome）",
+  "r1_params": {
+    "estimated_offset": 56.0,
+    "region_end_fraction": 0.1717171717171717,
+    "region_start_fraction": 0.04671717171717172
+  },
+  "expected_from_features": {
+    "region_start_fraction": 0.041666666666666664,
+    "region_end_fraction": 0.15315315315315314,
+    "estimated_offset": 56.0
+  },
+  "skill_program_carried_by": [
+    "level_shift_local_repair"
+  ],
+  "pool": [
+    "identity",
+    "level_shift_local_repair"
+  ],
+  "skill_gain": 0.12742568650230512,
+  "probes": [
+    [
+      "level_shift_local_repair",
+      0.12742568650230512
+    ]
+  ],
+  "removal_pool": [
+    "identity",
+    "cand_winsorize",
+    "cand_outlier_mad",
+    "cand_hampel_filter"
+  ],
+  "checks": {
+    "C1_rebound_params_differ": true,
+    "C2_rebound_matches_features": true,
+    "C3_skill_program_in_pool": true,
+    "C4_skill_program_probed": true,
+    "C5_removal_path_differs": true
+  },
+  "llm_api_call_count": 6,
+  "verdict": "CONTEXT_BOUND_SKILL_REBINDING_DEV_PASS"
+}

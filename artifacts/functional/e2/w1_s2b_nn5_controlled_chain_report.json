@@ -1,0 +1,98 @@
+{
+  "experiment_id": "v1-s2-nn5-controlled-chain",
+  "note": "S2：NN5 missingness 受控正例完整链（development positive control——零新 Claim——不称 fresh 验证）",
+  "apparatus": {
+    "domain": "nn5",
+    "timeline": {
+      "ss": 536,
+      "sd": 584,
+      "ts": 632,
+      "td": 680
+    },
+    "roster_n": 20,
+    "series_len": 791,
+    "whitelist": [
+      "impute_ar",
+      "impute_ssm"
+    ],
+    "apparatus_corrections": [
+      {
+        "issue": "pre-registered held-in origin 776 exceeds series length 791 (776+48>791) — instrument failure; corrected to 728 (in pre-registered origin set)",
+        "resolution": "held-in/adoption/removal @728"
+      },
+      {
+        "issue": "repair_level_shift @728 = +0.261 (positive) — group of 2 not formed; pre-registered branch: single-path",
+        "resolution": "single-episode path @632"
+      }
+    ]
+  },
+  "failure_windows": {
+    "632": -0.07892256471269943,
+    "728": 0.26115204938975767
+  },
+  "known_positive_at_632": {
+    "impute_ar": 0.09658885562326547,
+    "impute_ssm": 0.0696691196287309
+  },
+  "classification": {
+    "selectable": [
+      "WORKFLOW_DECISION_ERROR"
+    ],
+    "answer": {
+      "fault_type": "WORKFLOW_DECISION_ERROR",
+      "proposed_case_action": "NEW_CASE",
+      "matched_case_id": null,
+      "evidence_refs": [
+        "ep:632",
+        "alt:impute_ar@632",
+        "alt:impute_ssm@632"
+      ],
+      "reason": "A positive candidate existed but was not proposed or selected: impute_ar@632 gained +0.0966 and impute_ssm@632 gained +0.0697, while the selected repair_level_shift candidate lost -0.0789."
+    },
+    "normalized": "WORKFLOW_DECISION_ERROR",
+    "classify_error": "",
+    "checks": {
+      "structure": true,
+      "no_masked_selection": true,
+      "refs_resolvable": true
+    },
+    "llm_calls": 1
+  },
+  "reconciliation": {
+    "fault_type": "WORKFLOW_DECISION_ERROR",
+    "matched": [
+      "case-0004"
+    ],
+    "action": "MATCH_ADD_EVIDENCE"
+  },
+  "case_write": {
+    "action": "reuse_from_s2",
+    "case_id": "case-0004",
+    "by": "Runtime"
+  },
+  "slow_edit": {
+    "event": {
+      "stage": "apply_failed",
+      "triggered": true,
+      "material_negative": true,
+      "relation": "NEGATIVE",
+      "card_workflow": [
+        "repair_level_shift"
+      ],
+      "edit_id": "replace-repair-level-shift-with-impute-ar",
+      "target_surface_id": "failure_pattern_card.workflow",
+      "operation": "PATCH",
+      "frozen_program": [
+        {
+          "op": "impute_ar",
+          "params": {}
+        }
+      ],
+      "patch_id": "patch-replace-repair_level_shift-with-impute_ar",
+      "error": "ValueError: target must resolve to exactly one Harness surface; matches=0"
+    },
+    "llm_calls": 1,
+    "chosen_patch": "patch-replace-repair_level_shift-with-impute_ar"
+  },
+  "verdict": "SINGLE_SUPPORT_APPLY_FAILED"
+}

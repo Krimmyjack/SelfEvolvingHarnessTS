@@ -1,0 +1,905 @@
+{
+  "stage": "P4Y_ORACLE_SCOPE_BOUND",
+  "written_at": "2026-09-02T01:18:33.620538+08:00",
+  "evidence_grade": "UPPER_BOUND_SELECTED_ON_OUTCOMES_NOT_A_POLICY",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "contract": {
+    "stage": "P4Y0_ORACLE_SCOPE_CONTRACT",
+    "frozen_before": "any oracle result was computed",
+    "question": "does the class of Scope revision Slow is allowed to write contain one that would have cleared the tail budget on these probes",
+    "eligible_refusal_reasons": [
+      "harmed_fraction_over_budget",
+      "single_series_harm_over_budget"
+    ],
+    "revision_class": {
+      "form": "the probe's own Scope, conjoined with at most one new clause",
+      "max_added_clauses": 1,
+      "may_widen": false,
+      "why_not": "a series outside the original Scope never ran through the Program, so no counterfactual for it exists in the artifact; widening would have to invent one",
+      "operators": [
+        "<=",
+        ">=",
+        "<",
+        ">"
+      ],
+      "feature_vocabulary": "the numeric keys of extract_public_features on the strictly pre-origin window, i.e. exactly what scope_initializer and the live resolver read",
+      "forbidden": [
+        "naming a series UID, which ScopeSpec refuses at construction",
+        "any feature not visible at deployment time",
+        "any Outcome as a predicate input"
+      ]
+    },
+    "feasibility_lines": {
+      "min_aggregate_gain": 0.005,
+      "max_harmed_fraction": 0.2,
+      "max_single_series_harm": 0.3,
+      "min_treated_series": 5,
+      "served_series": 20,
+      "why_a_coverage_floor": "narrowing to almost nothing passes the risk budget trivially and deploys nothing; a floor declared before the run is what stops a degenerate abstention from being read as a success",
+      "thresholds_changed": 0
+    },
+    "scoring_basis": {
+      "aggregate_gain": "mean over all served series, excluded ones counted as 0.0",
+      "harmed_fraction": "harmed / served, matching online_loop._risk_profile",
+      "harmed_series": "per-series gain < -0.005",
+      "max_single_series_harm": "-min(per-series gain), floored at 0.0",
+      "coverage": "treated / served, matching the contract's coverage semantics"
+    },
+    "leakage_guard": {
+      "the_bound_is_not_a_policy": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+      "must_not_be_fed_back": [
+        "the feature or threshold the oracle selected",
+        "the identity of the excluded series",
+        "the ranking of candidate clauses"
+      ],
+      "must_not_change": [
+        "the Slow prompt or any instruction text",
+        "the candidate ordering or the programs probed",
+        "scope_initializer's family table or thresholds",
+        "the admission thresholds"
+      ],
+      "what_may_be_carried_forward": "one bit -- whether the frozen class contains a feasible Scope -- which decides whether Slow budget is spent at all"
+    },
+    "verdicts": {
+      "FEASIBLE_SCOPE_EXISTS": "at least one probe admits a Scope in the frozen class that clears all four lines; Slow's task is well-posed and a later Slow failure is attributable to Slow rather than to the class",
+      "NO_FEASIBLE_SCOPE_IN_FROZEN_CLASS": "no probe does; stop before spending LLM budget.  This does NOT by itself say the Observation vocabulary is insufficient -- the same null is produced by a Program that is simply wrong for this data, and by the Scope's coupling of two decisions (whether to clean a served context, and whether to serve that series from the Program-fitted model), which one predicate cannot separate.  T30 is the standing counter-example: harmed with zero points modified, purely by routing"
+    },
+    "diagnostic_unconstrained_bound": {
+      "role": "interpretation only, never a verdict input",
+      "deployable": false,
+      "why_not": "it names series, which ScopeSpec refuses by construction"
+    },
+    "boundary": {
+      "llm_calls": 0,
+      "new_evaluations": 0,
+      "consumer_fits": 0,
+      "held_out_reads": 0,
+      "thresholds_changed": 0,
+      "operators_added": 0,
+      "artifacts_overwritten": 0
+    },
+    "exactness": "scoped_evaluate builds its training corpus from role=='train' rows and never reads the scope, so the Program model is scope-independent and an excluded served series scores exactly 0.0 against Static; re-scoring a subset is arithmetic on recorded per-series gains, not a re-estimate"
+  },
+  "probes_audited": 7,
+  "probes": [
+    {
+      "origin": 1896,
+      "candidate_id": "hampel_local_extreme_deviation",
+      "program": [
+        "hampel_filter"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "harmed_fraction_over_budget",
+      "as_deployed": {
+        "treated": 14,
+        "coverage": 0.7,
+        "aggregate_gain": 0.029175,
+        "harmed_count": 6,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 1.3231,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 94,
+        "feasible_count": 2,
+        "feasible": true
+      },
+      "best_near_miss_if_infeasible": null,
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 8,
+        "coverage": 0.4,
+        "aggregate_gain": 0.175161,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": [
+          {
+            "added_clause": {
+              "feature": "local_robust_z_peak",
+              "op": "<=",
+              "threshold": 4.247382848590824
+            },
+            "excluded_count": 8,
+            "treated": 6,
+            "coverage": 0.3,
+            "aggregate_gain": 0.041279,
+            "harmed_count": 2,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.187388,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "local_robust_z_peak",
+              "op": "<=",
+              "threshold": 4.1031521201492875
+            },
+            "excluded_count": 9,
+            "treated": 5,
+            "coverage": 0.25,
+            "aggregate_gain": 0.039382,
+            "harmed_count": 2,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.187388,
+            "clears_all_lines": true
+          }
+        ]
+      }
+    },
+    {
+      "origin": 1896,
+      "candidate_id": "mad_local_extreme_deviation",
+      "program": [
+        "outlier_mad"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "single_series_harm_over_budget",
+      "as_deployed": {
+        "treated": 14,
+        "coverage": 0.7,
+        "aggregate_gain": 0.31991,
+        "harmed_count": 3,
+        "harmed_fraction": 0.15,
+        "max_single_series_harm": 0.463705,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 94,
+        "feasible_count": 19,
+        "feasible": true
+      },
+      "best_near_miss_if_infeasible": null,
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 11,
+        "coverage": 0.55,
+        "aggregate_gain": 0.34629,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": [
+          {
+            "added_clause": {
+              "feature": "estimated_region_end_fraction",
+              "op": ">",
+              "threshold": 0.3958333333333333
+            },
+            "excluded_count": 4,
+            "treated": 10,
+            "coverage": 0.5,
+            "aggregate_gain": 0.339531,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_end_fraction",
+              "op": ">",
+              "threshold": 0.3541666666666667
+            },
+            "excluded_count": 3,
+            "treated": 11,
+            "coverage": 0.55,
+            "aggregate_gain": 0.336645,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.057706,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_end_fraction",
+              "op": ">",
+              "threshold": 0.4739583333333333
+            },
+            "excluded_count": 5,
+            "treated": 9,
+            "coverage": 0.45,
+            "aggregate_gain": 0.332491,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_end_fraction",
+              "op": ">",
+              "threshold": 0.5572916666666666
+            },
+            "excluded_count": 7,
+            "treated": 7,
+            "coverage": 0.35,
+            "aggregate_gain": 0.289684,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "local_robust_z_peak",
+              "op": ">",
+              "threshold": 3.822114303700706
+            },
+            "excluded_count": 4,
+            "treated": 10,
+            "coverage": 0.5,
+            "aggregate_gain": 0.271677,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.057706,
+            "clears_all_lines": true
+          }
+        ]
+      }
+    },
+    {
+      "origin": 2136,
+      "candidate_id": "hampel_filter_extreme_deviation",
+      "program": [
+        "hampel_filter"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "harmed_fraction_over_budget",
+      "as_deployed": {
+        "treated": 15,
+        "coverage": 0.75,
+        "aggregate_gain": 0.045664,
+        "harmed_count": 7,
+        "harmed_fraction": 0.35,
+        "max_single_series_harm": 2.134044,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 144,
+        "feasible_count": 0,
+        "feasible": false
+      },
+      "best_near_miss_if_infeasible": {
+        "added_clause": {
+          "feature": "estimated_region_end_fraction",
+          "op": ">",
+          "threshold": 0.8229166666666666
+        },
+        "excluded_count": 10,
+        "treated": 5,
+        "coverage": 0.25,
+        "aggregate_gain": 0.240936,
+        "harmed_count": 1,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 1.297168,
+        "clears_all_lines": false,
+        "blocked_by": [
+          "single_series_harm_over_budget"
+        ]
+      },
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 8,
+        "coverage": 0.4,
+        "aggregate_gain": 0.357612,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": []
+      }
+    },
+    {
+      "origin": 2136,
+      "candidate_id": "outlier_mad_extreme_deviation",
+      "program": [
+        "outlier_mad"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "single_series_harm_over_budget",
+      "as_deployed": {
+        "treated": 15,
+        "coverage": 0.75,
+        "aggregate_gain": 0.267208,
+        "harmed_count": 4,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.501802,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 144,
+        "feasible_count": 11,
+        "feasible": true
+      },
+      "best_near_miss_if_infeasible": null,
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 11,
+        "coverage": 0.55,
+        "aggregate_gain": 0.337541,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": [
+          {
+            "added_clause": {
+              "feature": "level_region_end_fraction",
+              "op": "<=",
+              "threshold": 0.7083333333333334
+            },
+            "excluded_count": 7,
+            "treated": 8,
+            "coverage": 0.4,
+            "aggregate_gain": 0.315678,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "period_change_score",
+              "op": "<=",
+              "threshold": 0.0
+            },
+            "excluded_count": 7,
+            "treated": 8,
+            "coverage": 0.4,
+            "aggregate_gain": 0.304816,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.147041,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_level_offset",
+              "op": "<=",
+              "threshold": 0.0
+            },
+            "excluded_count": 9,
+            "treated": 6,
+            "coverage": 0.3,
+            "aggregate_gain": 0.294437,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": "<=",
+              "threshold": 0.4270833333333333
+            },
+            "excluded_count": 10,
+            "treated": 5,
+            "coverage": 0.25,
+            "aggregate_gain": 0.289705,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "local_robust_z_peak",
+              "op": ">",
+              "threshold": 4.740706480892641
+            },
+            "excluded_count": 10,
+            "treated": 5,
+            "coverage": 0.25,
+            "aggregate_gain": 0.289578,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          }
+        ]
+      }
+    },
+    {
+      "origin": 2376,
+      "candidate_id": "robust_outlier_repair",
+      "program": [
+        "outlier_mad"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "single_series_harm_over_budget",
+      "as_deployed": {
+        "treated": 15,
+        "coverage": 0.75,
+        "aggregate_gain": 0.654247,
+        "harmed_count": 2,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.33964,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 84,
+        "feasible_count": 22,
+        "feasible": true
+      },
+      "best_near_miss_if_infeasible": null,
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 13,
+        "coverage": 0.65,
+        "aggregate_gain": 0.675249,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": [
+          {
+            "added_clause": {
+              "feature": "longest_missing_run_fraction",
+              "op": "<=",
+              "threshold": 0.015625
+            },
+            "excluded_count": 3,
+            "treated": 12,
+            "coverage": 0.6,
+            "aggregate_gain": 0.637238,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.080398,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "longest_missing_run_fraction",
+              "op": "<=",
+              "threshold": 0.005208333333333333
+            },
+            "excluded_count": 4,
+            "treated": 11,
+            "coverage": 0.55,
+            "aggregate_gain": 0.60356,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.080398,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": ">",
+              "threshold": 0.17708333333333334
+            },
+            "excluded_count": 8,
+            "treated": 7,
+            "coverage": 0.35,
+            "aggregate_gain": 0.44299,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_end_fraction",
+              "op": "<=",
+              "threshold": 0.4739583333333333
+            },
+            "excluded_count": 6,
+            "treated": 9,
+            "coverage": 0.45,
+            "aggregate_gain": 0.426936,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.080398,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": ">",
+              "threshold": 0.1875
+            },
+            "excluded_count": 9,
+            "treated": 6,
+            "coverage": 0.3,
+            "aggregate_gain": 0.409311,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          }
+        ]
+      }
+    },
+    {
+      "origin": 2616,
+      "candidate_id": "repair_extreme_deviation",
+      "program": [
+        "outlier_mad"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "harmed_fraction_over_budget",
+      "as_deployed": {
+        "treated": 13,
+        "coverage": 0.65,
+        "aggregate_gain": 0.28627,
+        "harmed_count": 6,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 0.161128,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 88,
+        "feasible_count": 31,
+        "feasible": true
+      },
+      "best_near_miss_if_infeasible": null,
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 7,
+        "coverage": 0.35,
+        "aggregate_gain": 0.310506,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": [
+          {
+            "added_clause": {
+              "feature": "period_reliability",
+              "op": ">",
+              "threshold": 0.128125
+            },
+            "excluded_count": 5,
+            "treated": 8,
+            "coverage": 0.4,
+            "aggregate_gain": 0.306879,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.072533,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "missing_fraction",
+              "op": "<=",
+              "threshold": 0.078125
+            },
+            "excluded_count": 4,
+            "treated": 9,
+            "coverage": 0.45,
+            "aggregate_gain": 0.305462,
+            "harmed_count": 2,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.072533,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": "<=",
+              "threshold": 0.3333333333333333
+            },
+            "excluded_count": 3,
+            "treated": 10,
+            "coverage": 0.5,
+            "aggregate_gain": 0.300434,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.100557,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": "<=",
+              "threshold": 0.4114583333333333
+            },
+            "excluded_count": 2,
+            "treated": 11,
+            "coverage": 0.55,
+            "aggregate_gain": 0.298848,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.100557,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "missing_fraction",
+              "op": "<=",
+              "threshold": 0.08854166666666667
+            },
+            "excluded_count": 3,
+            "treated": 10,
+            "coverage": 0.5,
+            "aggregate_gain": 0.297405,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.161128,
+            "clears_all_lines": true
+          }
+        ]
+      }
+    },
+    {
+      "origin": 2856,
+      "candidate_id": "repair_extreme_deviation",
+      "program": [
+        "outlier_mad"
+      ],
+      "original_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "original_refusal_reason": "single_series_harm_over_budget",
+      "as_deployed": {
+        "treated": 18,
+        "coverage": 0.9,
+        "aggregate_gain": 0.203139,
+        "harmed_count": 4,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.883409,
+        "clears_all_lines": false
+      },
+      "alignment_check": {
+        "out_of_scope_series_all_scored_zero": true,
+        "misaligned_uids": []
+      },
+      "search": {
+        "distinct_subsets_reachable_by_one_clause": 136,
+        "feasible_count": 8,
+        "feasible": true
+      },
+      "best_near_miss_if_infeasible": null,
+      "diagnostic_unconstrained_uid_level_bound": {
+        "treated": 14,
+        "coverage": 0.7,
+        "aggregate_gain": 0.323144,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "clears_all_lines": true,
+        "deployable": false,
+        "blocked_by": [],
+        "reading": "naming series directly clears the lines, so a separating set exists; whether a legal predicate can express it is what the frozen class above tests"
+      },
+      "quarantined_do_not_feed_back": {
+        "why": "it selects its predicate with knowledge of the per-series gains; deploying it would be selection on the Outcome",
+        "feasible_revisions": [
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": "<=",
+              "threshold": 0.020833333333333332
+            },
+            "excluded_count": 6,
+            "treated": 12,
+            "coverage": 0.6,
+            "aggregate_gain": 0.290302,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.200757,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "estimated_region_start_fraction",
+              "op": "<=",
+              "threshold": 0.015625
+            },
+            "excluded_count": 13,
+            "treated": 5,
+            "coverage": 0.25,
+            "aggregate_gain": 0.207095,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "longest_missing_run_fraction",
+              "op": ">",
+              "threshold": 0.020833333333333332
+            },
+            "excluded_count": 9,
+            "treated": 9,
+            "coverage": 0.45,
+            "aggregate_gain": 0.196372,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "missing_fraction",
+              "op": ">",
+              "threshold": 0.125
+            },
+            "excluded_count": 10,
+            "treated": 8,
+            "coverage": 0.4,
+            "aggregate_gain": 0.189709,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "clears_all_lines": true
+          },
+          {
+            "added_clause": {
+              "feature": "longest_missing_run_fraction",
+              "op": ">",
+              "threshold": 0.005208333333333333
+            },
+            "excluded_count": 8,
+            "treated": 10,
+            "coverage": 0.5,
+            "aggregate_gain": 0.186334,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.200757,
+            "clears_all_lines": true
+          }
+        ]
+      }
+    }
+  ],
+  "counts": {
+    "probes_with_a_feasible_scope_in_class": 6,
+    "probes_where_uid_level_selection_would_clear": 7,
+    "alignment_failures": 0
+  },
+  "verdict": "FEASIBLE_SCOPE_EXISTS",
+  "verdict_meaning": "at least one probe admits a Scope in the frozen class that clears all four lines; Slow's task is well-posed and a later Slow failure is attributable to Slow rather than to the class",
+  "fault_localisation_if_null": null,
+  "boundary": {
+    "llm_calls": 0,
+    "new_evaluations": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "artifacts_overwritten": 0
+  },
+  "sources": [
+    "p4w_source_line.json"
+  ]
+}

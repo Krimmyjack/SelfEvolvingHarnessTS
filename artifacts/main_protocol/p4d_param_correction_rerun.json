@@ -1,0 +1,3244 @@
+{
+  "stage": "P4D_PARAM_CORRECTION_RERUN",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T14:19:36.590251+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_INSTRUMENT_CORRECTION",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "corrects": "artifacts/main_protocol/p4d_gap_repairability_audit.json",
+  "supersedes_numbers": false,
+  "frozen_p1_common_dsl_edited": false,
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 1236,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "operators_added": 0,
+    "thresholds_changed": 0
+  },
+  "correction": {
+    "parameters": {
+      "period_complete": {
+        "period": 24
+      },
+      "impute_ar": {
+        "period": 24
+      },
+      "repair_level_shift": {
+        "period": 24
+      }
+    },
+    "why": {
+      "period_complete": "s1_impute.py:105-109 returns interp_nan(y) when period < 2, so at period=0 it is linear interpolation and identical to identity; its ZERO_BEHAVIOR reading was the instrument",
+      "impute_ar": "order resolves to max(8, period); the operator's docstring records linear 2.00 / AR(8) 1.33 / AR(24) 0.34, so period=0 ran AR(8) and could not see the seasonal lag",
+      "repair_level_shift": "accepts period but declares no public property for it; corrected for consistency with the Classification line"
+    },
+    "scope": "declared in this module only; run_forecast_p1._params is the frozen P1 Common DSL that P1-P4c ran against and is unchanged"
+  },
+  "programs_rerun": 102,
+  "programs_whose_reading_changed": 28,
+  "programs_newly_stable": [],
+  "rows": [
+    {
+      "program_id": "period_complete",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_linear>period_complete",
+      "corrected_steps": [
+        {
+          "op": "impute_linear",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_linear>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "impute_linear",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_linear>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "impute_linear",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_fft>period_complete",
+      "corrected_steps": [
+        {
+          "op": "impute_fft",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_fft>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "impute_fft",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_fft>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "impute_fft",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ema>period_complete",
+      "corrected_steps": [
+        {
+          "op": "impute_ema",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ema>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "impute_ema",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ema>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "impute_ema",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>impute_linear",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_linear",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>impute_fft",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_fft",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>impute_ema",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_ema",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>period_complete",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>period_median_complete",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>denoise_savgol",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_savgol",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>denoise_wavelet",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_wavelet",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>denoise_median",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>smooth_ma",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "smooth_ma",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>winsorize",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>outlier_iqr",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>outlier_mad",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>hampel_filter",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "hampel_filter",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>fft_decompose",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "fft_decompose",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>smooth_ema",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "smooth_ema",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_complete>resample_uniform",
+      "corrected_steps": [
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "resample_uniform",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_median_complete>period_complete",
+      "corrected_steps": [
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_median_complete>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "period_median_complete>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>impute_linear",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_linear",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>impute_fft",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_fft",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>impute_ema",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_ema",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>period_complete",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>period_median_complete",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>denoise_savgol",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_savgol",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>denoise_wavelet",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_wavelet",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>denoise_median",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>smooth_ma",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "smooth_ma",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>winsorize",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>outlier_iqr",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>outlier_mad",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>hampel_filter",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "hampel_filter",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>fft_decompose",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "fft_decompose",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>smooth_ema",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "smooth_ema",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "impute_ar>resample_uniform",
+      "corrected_steps": [
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "resample_uniform",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_savgol>period_complete",
+      "corrected_steps": [
+        {
+          "op": "denoise_savgol",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_savgol>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "denoise_savgol",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_savgol>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "denoise_savgol",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_wavelet>period_complete",
+      "corrected_steps": [
+        {
+          "op": "denoise_wavelet",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_wavelet>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "denoise_wavelet",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_wavelet>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "denoise_wavelet",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_median>period_complete",
+      "corrected_steps": [
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_median>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "denoise_median>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "smooth_ma>period_complete",
+      "corrected_steps": [
+        {
+          "op": "smooth_ma",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "smooth_ma>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "smooth_ma",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "smooth_ma>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "smooth_ma",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "winsorize>period_complete",
+      "corrected_steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "winsorize>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "winsorize>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "outlier_iqr>period_complete",
+      "corrected_steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "outlier_iqr>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "outlier_iqr>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "outlier_mad>period_complete",
+      "corrected_steps": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "outlier_mad>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "outlier_mad>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "hampel_filter>period_complete",
+      "corrected_steps": [
+        {
+          "op": "hampel_filter",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "hampel_filter>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "hampel_filter",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "hampel_filter>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "hampel_filter",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>impute_linear",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_linear",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>impute_fft",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_fft",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>impute_ema",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_ema",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>period_complete",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>period_median_complete",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>denoise_savgol",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_savgol",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>denoise_wavelet",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_wavelet",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>denoise_median",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>smooth_ma",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "smooth_ma",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>winsorize",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>outlier_iqr",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>outlier_mad",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>hampel_filter",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "hampel_filter",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>fft_decompose",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "fft_decompose",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>smooth_ema",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "smooth_ema",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "repair_level_shift>resample_uniform",
+      "corrected_steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        },
+        {
+          "op": "resample_uniform",
+          "params": {}
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "fft_decompose>period_complete",
+      "corrected_steps": [
+        {
+          "op": "fft_decompose",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "fft_decompose>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "fft_decompose",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "fft_decompose>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "fft_decompose",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "smooth_ema>period_complete",
+      "corrected_steps": [
+        {
+          "op": "smooth_ema",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "smooth_ema>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "smooth_ema",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "smooth_ema>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "smooth_ema",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "resample_uniform>period_complete",
+      "corrected_steps": [
+        {
+          "op": "resample_uniform",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "resample_uniform>impute_ar",
+      "corrected_steps": [
+        {
+          "op": "resample_uniform",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [
+        [
+          1176,
+          "support_a"
+        ],
+        [
+          1176,
+          "support_b"
+        ],
+        [
+          1896,
+          "support_a"
+        ],
+        [
+          1896,
+          "support_b"
+        ],
+        [
+          2136,
+          "support_a"
+        ],
+        [
+          2136,
+          "support_b"
+        ],
+        [
+          2376,
+          "support_a"
+        ],
+        [
+          2376,
+          "support_b"
+        ],
+        [
+          2616,
+          "support_a"
+        ],
+        [
+          2616,
+          "support_b"
+        ],
+        [
+          2856,
+          "support_a"
+        ],
+        [
+          2856,
+          "support_b"
+        ]
+      ],
+      "reading_changed": true,
+      "newly_stable_origins": []
+    },
+    {
+      "program_id": "resample_uniform>repair_level_shift",
+      "corrected_steps": [
+        {
+          "op": "resample_uniform",
+          "params": {}
+        },
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "period": 24
+          }
+        }
+      ],
+      "faces_whose_reading_changed": [],
+      "reading_changed": false,
+      "newly_stable_origins": []
+    }
+  ],
+  "corrected_tensor": {
+    "path": "artifacts/main_protocol/p4d_param_corrected_gain.npz",
+    "shape": [
+      102,
+      6,
+      2,
+      20
+    ],
+    "axes": [
+      "program",
+      "origin",
+      "face",
+      "series"
+    ]
+  },
+  "wall_seconds": 353.0,
+  "verdict": "CORRECTION_CHANGES_READINGS_WITHOUT_NEW_STABILITY",
+  "releases": "NONE"
+}

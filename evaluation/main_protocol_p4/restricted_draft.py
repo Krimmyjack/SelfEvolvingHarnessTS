@@ -247,6 +247,12 @@ class RestrictedDraft:
     verification_attempts: int = 0
     history: list[dict[str, Any]] = field(default_factory=list)
 
+    #: Task x Consumer x typed Program x root Scope (sol v1.1 A).  Carried on
+    #: the Draft so a closed lineage can be recognised without re-deriving it,
+    #: which is what stops a closed key reopening under a fresh shell with its
+    #: revision and verification counters back at zero.
+    census_key: str | None = None
+
     #: Never true in this class.  Present so that any consumer asking "may I
     #: deploy this?" gets an answer rather than having to infer one.
     deployable: bool = False
@@ -290,6 +296,7 @@ class RestrictedDraft:
             "delayed_failures": [dict(row) for row in self.delayed_failures],
             "support_readings": [dict(row) for row in self.support_readings],
             "revision_history": [dict(row) for row in self.revision_history],
+            "census_key": self.census_key,
             "state": self.state,
             "verification_attempts": self.verification_attempts,
             "max_verification_attempts": MAX_VERIFICATION_ATTEMPTS,
@@ -351,11 +358,30 @@ class DraftLedger:
         self.drafts.append(draft)
         return draft
 
+    def lineage_keys(self) -> set[str]:
+        """Every census key this ledger has ever opened -- open and closed.
+
+        Closed included on purpose (sol v1.1 A): a closed key that could reopen
+        would arrive with ``revisions=0`` and ``verification_attempts=0``, which
+        is how a Draft walks past its bounds one legal-looking step at a time.
+        """
+        return {str(draft.census_key) for draft in self.drafts
+                if draft.census_key}
+
+    def by_census_key(self, key: str | None) -> RestrictedDraft | None:
+        if not key:
+            return None
+        for draft in self.drafts:
+            if draft.census_key == str(key):
+                return draft
+        return None
+
     def open_restricted(self, *,
                         program_steps: Sequence[tuple[str, Mapping[str, Any]]],
                         root_scope: Mapping[str, Any],
                         current_scope: Mapping[str, Any],
                         origin: int,
+                        census_key: str | None = None,
                         provenance: Mapping[str, Any] | None = None,
                         ) -> RestrictedDraft:
         """A Draft opened by the outer loop, before any verification face.
@@ -367,6 +393,11 @@ class DraftLedger:
         state, no verification attempts and no deployment rights, and it earns
         an ``Active`` only by clearing Support and delayed on a *new* unit.
         """
+        if census_key and self.by_census_key(census_key) is not None:
+            raise ValueError(
+                "census key %r already has a lineage in this course; reopening "
+                "it under a new shell would reset the revision and "
+                "verification counters" % census_key)
         self._minted += 1
         draft = RestrictedDraft(
             draft_id="%s%d" % (RESUPPLY_PREFIX, self._minted),
@@ -376,6 +407,7 @@ class DraftLedger:
             current_scope=dict(current_scope),
             revisions=0,
             created_at_origin=int(origin),
+            census_key=str(census_key) if census_key else None,
         )
         draft.history.append({
             "event": "opened_by_outer_loop",

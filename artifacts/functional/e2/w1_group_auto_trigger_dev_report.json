@@ -1,0 +1,116 @@
+{
+  "experiment_id": "v1-group-auto-trigger-dev",
+  "note": "GROUP_FAULT 自动触发接入主链 dev 验证（sealed 确定性；T117 已暴露四轮；零新 Claim——delayed @936/@1032 为时间边界窗口）",
+  "origins": [
+    600,
+    792,
+    888,
+    984
+  ],
+  "rounds": [
+    {
+      "origin": 600,
+      "probes": [
+        [
+          "cand_winsorize",
+          0.006710386297263504
+        ]
+      ],
+      "winner": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "group_slow": null,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 792,
+      "probes": [
+        [
+          "cand_winsorize",
+          0.07326346040876652
+        ]
+      ],
+      "winner": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "group_slow": null,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 888,
+      "probes": [
+        [
+          "cand_winsorize",
+          -0.1426334267351992
+        ],
+        [
+          "cand_outlier_mad",
+          0.11986118246492228
+        ]
+      ],
+      "winner": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "group_slow": null,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 984,
+      "probes": [
+        [
+          "cand_winsorize",
+          -0.08411687539427182
+        ],
+        [
+          "cand_outlier_mad",
+          -0.060764531483190165
+        ]
+      ],
+      "winner": null,
+      "group_slow": {
+        "stage": "pending",
+        "edit_id": "group_winsorize_replacement",
+        "group_capsule": {
+          "n_episodes": 2,
+          "workflow": "winsorize",
+          "sign": "NEGATIVE"
+        },
+        "frozen_program": [
+          {
+            "op": "hampel_filter",
+            "params": {
+              "window": 3,
+              "n_sigmas": 0.1,
+              "global_z_min": 1.0
+            }
+          }
+        ],
+        "patch_id": "patch-replace-winsorize-with-hampel_filter",
+        "group_replay": [
+          {
+            "origin": 888,
+            "gain": 0.033984644049736445
+          },
+          {
+            "origin": 984,
+            "gain": 0.01504251303971138
+          }
+        ],
+        "holdout_gain": 0.0013144587058273594
+      },
+      "approved_skill_id": null
+    }
+  ],
+  "n_group_triggers": 1,
+  "verdict": "GROUP_AUTO_TRIGGER_DEV_PASS",
+  "reason": "auto group trigger chain complete: stage=pending delayed=delayed_rejected (delayed_gain=-0.11660631332403537)"
+}

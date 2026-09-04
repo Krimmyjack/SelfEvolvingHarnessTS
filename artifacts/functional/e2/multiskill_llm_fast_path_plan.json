@@ -1,0 +1,53 @@
+{
+  "planner_id": "llm_multiskill_fast_path_v1",
+  "planner_runtime": "gpt-5.6-sol-high isolated subagent invocation",
+  "llm_api_integrated": false,
+  "decisions": [
+    {
+      "context_id": "forecast_regular_panel",
+      "capability_id": "historical_policy_episode_workflow_v1",
+      "decision": "RETRIEVE_AND_PROBE",
+      "workflow_steps": [
+        "phase-aligned historical PolicyEpisode orders W_rowblock/W_curation/W_temporal_origin",
+        "current exact Support probes in order",
+        "stop on first positive",
+        "otherwise IDENTITY"
+      ],
+      "reason_codes": ["forecasting_match", "all_applicability_met", "support_feedback_available"]
+    },
+    {
+      "context_id": "forecast_scale_invalid",
+      "capability_id": null,
+      "decision": "NO_APPLICABLE_SKILL",
+      "workflow_steps": [],
+      "reason_codes": ["scale_invalid", "applicability_failed", "probe_forbidden"]
+    },
+    {
+      "context_id": "classification_fit_only_artifact",
+      "capability_id": "controlled_classification_local_event_dynamic_binding_v1",
+      "decision": "RETRIEVE_AND_EXECUTE_BOUND_REPAIR",
+      "workflow_steps": [
+        "observe cross-cohort class-conditioned impulse topology",
+        "bind current-fit pattern nodes",
+        "center-excluded local median repair"
+      ],
+      "reason_codes": ["classification_match", "fit_only_artifact", "current_fit_binding", "no_event_erasure_risk"]
+    },
+    {
+      "context_id": "classification_stable_event",
+      "capability_id": "controlled_classification_local_event_dynamic_binding_v1",
+      "decision": "RETRIEVE_AND_ABSTAIN",
+      "workflow_steps": ["ABSTAIN_KEEP_INCUMBENT"],
+      "reason_codes": ["stable_task_event", "event_erasure_risk"]
+    },
+    {
+      "context_id": "unsupported_anomaly",
+      "capability_id": null,
+      "decision": "NO_APPLICABLE_SKILL",
+      "workflow_steps": [],
+      "reason_codes": ["unsupported_task", "no_promoted_skill"]
+    }
+  ],
+  "unpromoted_skills_selected": [],
+  "new_skills_invented": []
+}

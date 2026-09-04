@@ -1,0 +1,125 @@
+{
+  "a3": {
+    "first_positive_probe": 2,
+    "harm": 0,
+    "harm_magnitude": 0,
+    "instrument_rejected": [],
+    "probe_order": [
+      "cand_impute_linear",
+      "cand_impute_fft"
+    ],
+    "support_gains": [
+      0.0,
+      0.018493
+    ]
+  },
+  "a3_delayed": {
+    "impute_fft": {
+      "delayed_gain": -0.034961114121462966,
+      "episode_id": "gefcom_target_impute_fft_origin928",
+      "local_status": "RESTRICTED",
+      "relation": "CONFLICT"
+    },
+    "impute_linear": {
+      "delayed_gain": 0.0,
+      "episode_id": "gefcom_target_impute_linear_origin928",
+      "local_status": "EPISODE_ONLY",
+      "relation": "ABSTAIN"
+    }
+  },
+  "a3_retrieval": [
+    {
+      "chosen": "cand_impute_linear",
+      "compilation": "ok",
+      "probe_index": 0,
+      "reference1": false,
+      "retrieved_memory_ids": []
+    },
+    {
+      "chosen": "cand_impute_fft",
+      "compilation": "ok",
+      "probe_index": 1,
+      "reference1": false,
+      "retrieved_memory_ids": []
+    }
+  ],
+  "a5": {
+    "first_positive_probe": null,
+    "harm": 1,
+    "harm_magnitude": 0.163598,
+    "instrument_rejected": [],
+    "probe_order": [
+      "cand_winsorize",
+      "cand_impute_linear"
+    ],
+    "support_gains": [
+      -0.163598,
+      0.0
+    ]
+  },
+  "a5_delayed": {
+    "impute_linear": {
+      "delayed_gain": 0.0,
+      "episode_id": "gefcom_target_impute_linear_origin928",
+      "local_status": "EPISODE_ONLY",
+      "relation": "ABSTAIN"
+    },
+    "winsorize": {
+      "delayed_gain": 0.6099994164925304,
+      "episode_id": "gefcom_target_winsorize_origin928",
+      "local_status": "EPISODE_ONLY",
+      "relation": "CONFLICT"
+    }
+  },
+  "a5_retrieval": [
+    {
+      "chosen": "cand_winsorize",
+      "compilation": "ok",
+      "probe_index": 0,
+      "reference1": true,
+      "retrieved_memory_ids": []
+    },
+    {
+      "chosen": "cand_impute_linear",
+      "compilation": "ok",
+      "probe_index": 1,
+      "reference1": false,
+      "retrieved_memory_ids": []
+    }
+  ],
+  "agent_control": {
+    "explore": true,
+    "note": "两臂同一 Agent，唯一初始差异 = Source Memory（P0-1 修复）"
+  },
+  "domain": "gefcom",
+  "experiment_id": "v1-scope-executor-loop",
+  "llm_api_call_count": 0,
+  "loop_checks": {
+    "consumes_result_program": true,
+    "delayed_only_new_episodes": true,
+    "delayed_recomputed": true,
+    "episode_id_distinct": true,
+    "immediate_writeback": true,
+    "memory_drives_next_probe": true,
+    "support_receipt": true,
+    "window_verifier_035": true
+  },
+  "replay": {
+    "chosen": "cand_impute_linear",
+    "nature": "counterfactual_replay",
+    "note": "delayed 打开后在同一 support origin 928 的 prepare——不是时间上的下一轮；真实纵向结论需 1024 之后空间的链",
+    "reference1": false,
+    "retrieved_memory_ids": []
+  },
+  "seed_episode": {
+    "episode_id": "gefcom_target_winsorize_origin832",
+    "operator": "winsorize",
+    "origin": 832
+  },
+  "seed_preserved": true,
+  "slice": {
+    "delayed": 976,
+    "support": 928
+  },
+  "verdict": "SCOPE_EXECUTOR_MECHANISM_PASS_A5_NEGATIVE_TRANSFER_CANDIDATE"
+}

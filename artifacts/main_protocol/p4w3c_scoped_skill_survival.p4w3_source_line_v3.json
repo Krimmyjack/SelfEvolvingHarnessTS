@@ -1,0 +1,77 @@
+{
+  "stage": "P4W3C_SCOPED_SKILL_SURVIVAL",
+  "written_at": "2026-09-02T20:08:25.328301+08:00",
+  "reads": {
+    "artifact": "p4w3_source_line_v3.json",
+    "store": ".p4w3_interrupted_store"
+  },
+  "is_read_only": true,
+  "run_label": null,
+  "run_verdict": "SOURCE_SKILL_SURVIVED",
+  "llm_calls": 30,
+  "run_ledger": null,
+  "activated_skill_ids": [
+    "fast_winner_forecast_ridge_smase_outlier_iqr"
+  ],
+  "skills_in_store": [
+    "fast_winner_forecast_ridge_smase_hampel_filter",
+    "scope_narrowed_942dccd4ee"
+  ],
+  "skills": [
+    {
+      "skill_id": "fast_winner_forecast_ridge_smase_outlier_iqr",
+      "found_in_store": false,
+      "store_path": null,
+      "activated_at_origin": 2376,
+      "gated_predicate": [
+        {
+          "feature": "estimated_region_start_fraction",
+          "op": "<=",
+          "threshold": 0.5
+        },
+        {
+          "feature": "local_robust_z_peak",
+          "op": ">=",
+          "threshold": 3.0
+        }
+      ],
+      "persisted_predicate": null,
+      "delayed_reading": {
+        "read_origin": 2424,
+        "treated": 9,
+        "served": 20,
+        "aggregate_gain": 0.131727,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.047242,
+        "passes": true,
+        "failed_lines": []
+      },
+      "re_encounter_reading": {
+        "read_origin": 2616,
+        "treated": 12,
+        "served": 20,
+        "aggregate_gain": 0.282499,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.18069,
+        "passes": true,
+        "failed_lines": []
+      },
+      "checks": {
+        "found_in_the_store_audited": false,
+        "scope_persisted_to_disk": false,
+        "delayed_gate_passed": true,
+        "independent_re_encounter_passed": true,
+        "stored_predicate_matches_the_gated_one": false
+      },
+      "all_four_hold": false
+    }
+  ],
+  "scoped_survivors": [],
+  "verdict": "NO_SCOPED_SKILL_SURVIVED",
+  "what_this_does_not_claim": "a success rate.  This is one trajectory on one cohort and one origin order; the live Fast proposal is stochastic and two v3 runs already diverged on these same five origins.  Replication is Phase S's, with different cohorts and a pre-registered number of trajectories",
+  "boundary": {
+    "held_out_reads": 0,
+    "artifacts_overwritten": 0,
+    "arms_touched": 0
+  }
+}

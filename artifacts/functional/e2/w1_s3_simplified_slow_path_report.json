@@ -1,0 +1,87 @@
+{
+  "experiment_id": "v1-s3-simplified-slow-path",
+  "note": "S3：简化 Slow Path（用户裁决：Agent 语义决策 + Compiler 机械编译）——NN5 正控第三次尝试——development exposure——零新 Claim——不称 fresh 验证",
+  "apparatus": {
+    "domain": "nn5",
+    "timeline": {
+      "ss": 536,
+      "sd": 584,
+      "ts": 632,
+      "td": 680
+    },
+    "roster_n": 20,
+    "series_len": 791,
+    "whitelist": [
+      "impute_ar",
+      "impute_ssm"
+    ],
+    "heldin": 728,
+    "design": "Agent 只选 edit_intent/patch_id——Runtime 编译 Manifest——门链复用"
+  },
+  "evidence": {
+    "failure_632": -0.07892256471269943,
+    "d_patch_impute": {
+      "impute_ar": 0.09658885562326547,
+      "impute_ssm": 0.0696691196287309
+    }
+  },
+  "slow_choice": {
+    "answer": {
+      "edit_intent": "ADD_TARGET_LOCAL_SKILL",
+      "patch_id": "patch-replace-repair_level_shift-with-impute_ar",
+      "reason": "impute_ar has the higher positive public Action-Response gain (0.0966 vs 0.0697) and addresses the workflow decision error.",
+      "expected_change": "Replace repair_level_shift with impute_ar to improve support gain at @632."
+    },
+    "llm_calls": 1,
+    "resolved_op": "impute_ar"
+  },
+  "support_chain": {
+    "stage": "pending",
+    "triggered": true,
+    "material_negative": true,
+    "relation": "NEGATIVE",
+    "card_workflow": [
+      "repair_level_shift"
+    ],
+    "edit_id": "replace-repair_level_shift-with-impute_ar",
+    "target_surface_id": "skill_library.entries/single_repair_level_shift_replacement",
+    "operation": "ADD",
+    "frozen_program": [
+      {
+        "op": "impute_ar",
+        "params": {}
+      }
+    ],
+    "patch_id": "patch-replace-repair_level_shift-with-impute_ar",
+    "support_gain": 0.09658885562326547,
+    "support_passed": true
+  },
+  "heldin": {
+    "origin": 728,
+    "gain": 0.04297543355252431
+  },
+  "delayed": {
+    "stage": "approved",
+    "delayed_gain": 0.02763605538277747,
+    "snapshot_updated": true
+  },
+  "skill": {
+    "skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify",
+      "single_repair_level_shift_replacement"
+    ],
+    "frozen_op": "impute_ar",
+    "runtime_gain_at_728": 0.04297543355252431
+  },
+  "llm_entry": {
+    "calls": 1,
+    "adopted_skill": true,
+    "raw_prefix": "{\"chosen\":\"cand_skill_impute_ar\"}"
+  },
+  "removal": {
+    "no_skill_repair_gain_728": 0.26115204938975767
+  },
+  "verdict": "CONTROLLED_EVOLUTION_CHAIN_PASS"
+}

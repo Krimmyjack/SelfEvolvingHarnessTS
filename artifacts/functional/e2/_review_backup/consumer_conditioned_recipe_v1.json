@@ -1,0 +1,592 @@
+{
+  "protocol_version": "consumer_conditioned_recipe_v1",
+  "llm_api_call_count": 0,
+  "deterministic": true,
+  "role": "engineering effect measurement of whether the batch recipe is Consumer-structure-conditioned; not authorization evidence, no Skill written, no Fast/Slow path entered",
+  "consumer_variant_scope": "per_channel exists only inside this experiment runner; the frozen pooled Consumer (v6._evaluate, one ridge on stacked training windows) is unchanged",
+  "per_channel_definition": "same window construction, same ridge (alpha=1, unpenalized intercept); each training channel fits its own ridge on its own windows; each eval channel is predicted by the equal-weight mean of those channel-wise ridges",
+  "data_exposure": "already-exposed development cohorts only; traffic uses development origins 1104/1368/1800 and does not cross sealed_from_index=3072; no NOAA, no KDD W3, no g3_final_query_outcome",
+  "caveat": "The delayed window participates in recipe adoption, so both columns of a recipe are in-selection.  Pooled composition numbers for electricity and T233 are loaded from the already-accepted headroom artifact when present; traffic pooled composition is run here if that artifact has no traffic row.  per_channel numbers are produced in this session.",
+  "cohorts": [
+    {
+      "cohort": "electricity",
+      "exposure": "G3_DEVELOPMENT_SOURCE_FAMILY_OVERLAP: the UCI Electricity family has prior Outcome exposure in this project, so this run supports Pipeline, Episode-reuse, tool-decision, Target-local Skill and Slow Update claims, and no cross-domain fresh claim",
+      "support_origins": [
+        3072,
+        3120,
+        3168
+      ],
+      "delayed_origins": [
+        3216,
+        3264,
+        3312
+      ],
+      "judgment": "CONSUMER_STRUCTURE_CHANGES_RECIPE",
+      "composition_flip": true,
+      "recipe_changed": true,
+      "interaction": {
+        "pooled": -0.23044519709724862,
+        "per_channel": -0.05249970121652359
+      },
+      "composition": {
+        "pooled": {
+          "verdict": "COMPOSITION_NO_HEADROOM",
+          "best_single_program": "winsorize",
+          "headline": {
+            "support": {
+              "identity": 0.0,
+              "best_single_program": 0.01174051526581559,
+              "composition": -0.01906855800574264,
+              "composition_minus_best_single": -0.030809073271558227
+            },
+            "delayed": {
+              "identity": 0.0,
+              "best_single_program": 2.1940316504781104e-05,
+              "composition": -0.213512197017208,
+              "composition_minus_best_single": -0.2135341373337128,
+              "ordering_preserved": false,
+              "window_role": "the delayed origins of the same frozen Task; already exposed development data, no sealed Outcome opened",
+              "selection_independence": "the per-series argmax was fixed on Support alone and is not re-fit here, so this column is out-of-selection"
+            }
+          },
+          "interaction": {
+            "sum_of_chosen_per_series_gains": 0.21137663909150597,
+            "validated_composition_gain": -0.01906855800574264,
+            "interaction": -0.23044519709724862,
+            "note": "The two differ because the Consumer is retrained once on the whole treated batch; per-series gains are not additive and were never summed to produce the validated number."
+          },
+          "source": "loaded from artifacts/functional/e2/batch_composition_headroom_v1.json"
+        },
+        "per_channel": {
+          "verdict": "SELECTIVE_COMPOSITION_HEADROOM_PRESENT",
+          "best_single_program": "denoise_median",
+          "headline": {
+            "support": {
+              "identity": 0.0,
+              "best_single_program": 0.11477706660792286,
+              "composition": 0.12794884770979822,
+              "composition_minus_best_single": 0.013171781101875363
+            },
+            "delayed": {
+              "identity": 0.0,
+              "best_single_program": 0.1182090602454432,
+              "composition": 0.14466222688831018,
+              "composition_minus_best_single": 0.026453166642866982,
+              "ordering_preserved": true,
+              "window_role": "the delayed origins of the same frozen Task; already exposed development data, no sealed Outcome opened",
+              "selection_independence": "the per-series argmax was fixed on Support alone and is not re-fit here, so this column is out-of-selection"
+            }
+          },
+          "interaction": {
+            "sum_of_chosen_per_series_gains": 0.1804485489263218,
+            "validated_composition_gain": 0.12794884770979822,
+            "interaction": -0.05249970121652359,
+            "note": "The two differ because the Consumer is retrained once on the whole treated batch; per-series gains are not additive and were never summed to produce the validated number."
+          },
+          "source": "run in this session under consumer_variant=per_channel"
+        }
+      },
+      "recipe": {
+        "pooled": {
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "1",
+              "2",
+              "6"
+            ],
+            "excluded_series_count": 3,
+            "treated_series_count": 9,
+            "how_to_apply": "apply `outlier_iqr` to every training series except ['1', '2', '6'], then retrain the Consumer once"
+          },
+          "comparison": {
+            "support": {
+              "adopted": 0.03464312207313532,
+              "best_full_batch": 0.01174051526581559,
+              "identity": 0.0
+            },
+            "delayed": {
+              "adopted": 0.016342695212762604,
+              "best_full_batch": 2.1940316504781104e-05,
+              "identity": 0.0
+            },
+            "best_full_batch_program": "winsorize"
+          },
+          "adoption_path": "masked plan cleared the delayed stability check",
+          "programs_searched": [
+            "winsorize",
+            "outlier_iqr"
+          ],
+          "harm_account": {
+            "adopted": {
+              "harmed_eval_series_count": 1,
+              "harmed_eval_series_total_harm": 0.010755354094145556,
+              "harmed_eval_series": [
+                "17"
+              ]
+            },
+            "best_full_batch": {
+              "harmed_eval_series_count": 4,
+              "harmed_eval_series_total_harm": 0.09358307180807823,
+              "harmed_eval_series": [
+                "12",
+                "13",
+                "15",
+                "17"
+              ]
+            },
+            "identity": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            }
+          }
+        },
+        "per_channel": {
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "denoise_median",
+            "excluded_series": [
+              "10",
+              "3",
+              "4"
+            ],
+            "excluded_series_count": 3,
+            "treated_series_count": 9,
+            "how_to_apply": "apply `denoise_median` to every training series except ['10', '3', '4'], then retrain the Consumer once"
+          },
+          "comparison": {
+            "support": {
+              "adopted": 0.12935877470240767,
+              "best_full_batch": 0.11477706660792286,
+              "identity": 0.0
+            },
+            "delayed": {
+              "adopted": 0.13852340221127663,
+              "best_full_batch": 0.1182090602454432,
+              "identity": 0.0
+            },
+            "best_full_batch_program": "denoise_median"
+          },
+          "adoption_path": "masked plan cleared the delayed stability check",
+          "programs_searched": [
+            "denoise_median",
+            "smooth_ma"
+          ],
+          "harm_account": {
+            "adopted": {
+              "harmed_eval_series_count": 1,
+              "harmed_eval_series_total_harm": 0.029666661363195106,
+              "harmed_eval_series": [
+                "12"
+              ]
+            },
+            "best_full_batch": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            },
+            "identity": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            }
+          }
+        }
+      },
+      "per_channel_menu_scan": {
+        "denoise_median": 0.11477706660792286,
+        "hampel_filter": -0.12848888635565492,
+        "outlier_iqr": 0.03692363255891631,
+        "outlier_mad": 0.0026765822872424996,
+        "repair_level_shift": 0.0023615762973234894,
+        "smooth_ma": 0.03975481495772511,
+        "winsorize": 0.036621313766056506
+      }
+    },
+    {
+      "cohort": "T233",
+      "exposure": "already exposed development data; not fresh",
+      "support_origins": [
+        3072,
+        3120,
+        3168
+      ],
+      "delayed_origins": [
+        3216,
+        3264,
+        3312
+      ],
+      "judgment": "CONSUMER_STRUCTURE_CHANGES_RECIPE",
+      "composition_flip": true,
+      "recipe_changed": true,
+      "interaction": {
+        "pooled": -0.2530268471008915,
+        "per_channel": -0.017264265862857973
+      },
+      "composition": {
+        "pooled": {
+          "verdict": "COMPOSITION_NO_HEADROOM",
+          "best_single_program": "winsorize",
+          "headline": {
+            "support": {
+              "identity": 0.0,
+              "best_single_program": 0.07215558404058357,
+              "composition": 0.00637476639209783,
+              "composition_minus_best_single": -0.06578081764848574
+            },
+            "delayed": {
+              "identity": 0.0,
+              "best_single_program": 0.11662707574145732,
+              "composition": -0.3769556342213898,
+              "composition_minus_best_single": -0.4935827099628471,
+              "ordering_preserved": false,
+              "window_role": "the delayed origins of the same frozen Task; already exposed development data, no sealed Outcome opened",
+              "selection_independence": "the per-series argmax was fixed on Support alone and is not re-fit here, so this column is out-of-selection"
+            }
+          },
+          "interaction": {
+            "sum_of_chosen_per_series_gains": 0.25940161349298935,
+            "validated_composition_gain": 0.00637476639209783,
+            "interaction": -0.2530268471008915,
+            "note": "The two differ because the Consumer is retrained once on the whole treated batch; per-series gains are not additive and were never summed to produce the validated number."
+          },
+          "source": "loaded from artifacts/functional/e2/batch_composition_headroom_v1.json"
+        },
+        "per_channel": {
+          "verdict": "SELECTIVE_COMPOSITION_HEADROOM_PRESENT",
+          "best_single_program": "smooth_ma",
+          "headline": {
+            "support": {
+              "identity": 0.0,
+              "best_single_program": 0.016909569200764744,
+              "composition": 0.059980037892853576,
+              "composition_minus_best_single": 0.04307046869208883
+            },
+            "delayed": {
+              "identity": 0.0,
+              "best_single_program": -0.14627536986412382,
+              "composition": -0.03433209959100484,
+              "composition_minus_best_single": 0.11194327027311898,
+              "ordering_preserved": false,
+              "window_role": "the delayed origins of the same frozen Task; already exposed development data, no sealed Outcome opened",
+              "selection_independence": "the per-series argmax was fixed on Support alone and is not re-fit here, so this column is out-of-selection"
+            }
+          },
+          "interaction": {
+            "sum_of_chosen_per_series_gains": 0.07724430375571155,
+            "validated_composition_gain": 0.059980037892853576,
+            "interaction": -0.017264265862857973,
+            "note": "The two differ because the Consumer is retrained once on the whole treated batch; per-series gains are not additive and were never summed to produce the validated number."
+          },
+          "source": "run in this session under consumer_variant=per_channel"
+        }
+      },
+      "recipe": {
+        "pooled": {
+          "adopted_plan": {
+            "kind": "BEST_FULL_BATCH",
+            "program": "winsorize",
+            "excluded_series": [],
+            "excluded_series_count": 0,
+            "treated_series_count": 12,
+            "how_to_apply": "apply `winsorize` to every training series, then retrain the Consumer once"
+          },
+          "comparison": {
+            "support": {
+              "adopted": 0.07215558404058357,
+              "best_full_batch": 0.07215558404058357,
+              "identity": 0.0
+            },
+            "delayed": {
+              "adopted": 0.11662707574145732,
+              "best_full_batch": 0.11662707574145732,
+              "identity": 0.0
+            },
+            "best_full_batch_program": "winsorize"
+          },
+          "adoption_path": "no masked plan cleared the delayed stability check; fell back to the best full-batch plan, whose delayed gain is positive",
+          "programs_searched": [
+            "winsorize",
+            "outlier_iqr"
+          ],
+          "harm_account": {
+            "adopted": {
+              "harmed_eval_series_count": 2,
+              "harmed_eval_series_total_harm": 0.6786475831282432,
+              "harmed_eval_series": [
+                "T264",
+                "T266"
+              ]
+            },
+            "best_full_batch": {
+              "harmed_eval_series_count": 2,
+              "harmed_eval_series_total_harm": 0.6786475831282432,
+              "harmed_eval_series": [
+                "T264",
+                "T266"
+              ]
+            },
+            "identity": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            }
+          }
+        },
+        "per_channel": {
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "smooth_ma",
+            "excluded_series": [
+              "T233",
+              "T236",
+              "T246",
+              "T247",
+              "T254",
+              "T256"
+            ],
+            "excluded_series_count": 6,
+            "treated_series_count": 6,
+            "how_to_apply": "apply `smooth_ma` to every training series except ['T233', 'T236', 'T246', 'T247', 'T254', 'T256'], then retrain the Consumer once"
+          },
+          "comparison": {
+            "support": {
+              "adopted": 0.03277070768985527,
+              "best_full_batch": 0.016909569200764744,
+              "identity": 0.0
+            },
+            "delayed": {
+              "adopted": -0.07614772878600962,
+              "best_full_batch": -0.14627536986412382,
+              "identity": 0.0
+            },
+            "best_full_batch_program": "smooth_ma"
+          },
+          "adoption_path": "masked plan cleared the delayed stability check",
+          "programs_searched": [
+            "smooth_ma",
+            "winsorize"
+          ],
+          "harm_account": {
+            "adopted": {
+              "harmed_eval_series_count": 1,
+              "harmed_eval_series_total_harm": 0.01108409473895459,
+              "harmed_eval_series": [
+                "T264"
+              ]
+            },
+            "best_full_batch": {
+              "harmed_eval_series_count": 2,
+              "harmed_eval_series_total_harm": 0.11469066551413991,
+              "harmed_eval_series": [
+                "T264",
+                "T266"
+              ]
+            },
+            "identity": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            }
+          }
+        }
+      },
+      "per_channel_menu_scan": {
+        "denoise_median": 0.0043421990330570785,
+        "hampel_filter": -0.010929058950794511,
+        "outlier_iqr": 0.00491496202605773,
+        "outlier_mad": -0.0001661190563091002,
+        "repair_level_shift": 0.004499533144557939,
+        "smooth_ma": 0.016909569200764744,
+        "winsorize": 0.008666229329661579
+      }
+    },
+    {
+      "cohort": "traffic",
+      "exposure": "STRUCTURALLY_ACCEPTED_BUT_SOURCE_FAMILY_EXPOSURE_UNRESOLVED: PeMS SF Bay Area / monash:traffic_hourly family has unresolved prior exposure; this run uses development origins (1104/1368/1800) only and does not open a sealed Outcome",
+      "support_origins": [
+        1104,
+        1368
+      ],
+      "delayed_origins": [
+        1800
+      ],
+      "judgment": "CONSUMER_STRUCTURE_CHANGES_RECIPE",
+      "composition_flip": false,
+      "recipe_changed": true,
+      "interaction": {
+        "pooled": -0.36601088349272015,
+        "per_channel": -0.06701769757934511
+      },
+      "composition": {
+        "pooled": {
+          "verdict": "SELECTIVE_COMPOSITION_HEADROOM_PRESENT",
+          "best_single_program": "outlier_iqr",
+          "headline": {
+            "support": {
+              "identity": 0.0,
+              "best_single_program": 0.6074409393531839,
+              "composition": 0.6581551234004271,
+              "composition_minus_best_single": 0.05071418404724326
+            },
+            "delayed": {
+              "identity": 0.0,
+              "best_single_program": 1.0197743357219498,
+              "composition": 0.7318816706045966,
+              "composition_minus_best_single": -0.2878926651173531,
+              "ordering_preserved": false,
+              "window_role": "the delayed origins of the same frozen Task; already exposed development data, no sealed Outcome opened",
+              "selection_independence": "the per-series argmax was fixed on Support alone and is not re-fit here, so this column is out-of-selection"
+            }
+          },
+          "interaction": {
+            "sum_of_chosen_per_series_gains": 1.0241660068931473,
+            "validated_composition_gain": 0.6581551234004271,
+            "interaction": -0.36601088349272015,
+            "note": "The two differ because the Consumer is retrained once on the whole treated batch; per-series gains are not additive and were never summed to produce the validated number."
+          },
+          "source": "run in this session under consumer_variant=pooled"
+        },
+        "per_channel": {
+          "verdict": "SELECTIVE_COMPOSITION_HEADROOM_PRESENT",
+          "best_single_program": "outlier_iqr",
+          "headline": {
+            "support": {
+              "identity": 0.0,
+              "best_single_program": 0.2993128092600331,
+              "composition": 0.38282688092631,
+              "composition_minus_best_single": 0.08351407166627689
+            },
+            "delayed": {
+              "identity": 0.0,
+              "best_single_program": 0.3482156275538379,
+              "composition": 0.33951838587017225,
+              "composition_minus_best_single": -0.008697241683665646,
+              "ordering_preserved": false,
+              "window_role": "the delayed origins of the same frozen Task; already exposed development data, no sealed Outcome opened",
+              "selection_independence": "the per-series argmax was fixed on Support alone and is not re-fit here, so this column is out-of-selection"
+            }
+          },
+          "interaction": {
+            "sum_of_chosen_per_series_gains": 0.4498445785056551,
+            "validated_composition_gain": 0.38282688092631,
+            "interaction": -0.06701769757934511,
+            "note": "The two differ because the Consumer is retrained once on the whole treated batch; per-series gains are not additive and were never summed to produce the validated number."
+          },
+          "source": "run in this session under consumer_variant=per_channel"
+        }
+      },
+      "recipe": {
+        "pooled": {
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "6"
+            ],
+            "excluded_series_count": 1,
+            "treated_series_count": 11,
+            "how_to_apply": "apply `outlier_iqr` to every training series except ['6'], then retrain the Consumer once"
+          },
+          "comparison": {
+            "support": {
+              "adopted": 0.6652773536462215,
+              "best_full_batch": 0.6074409393531839,
+              "identity": 0.0
+            },
+            "delayed": {
+              "adopted": 1.0470750569907492,
+              "best_full_batch": 1.0197743357219498,
+              "identity": 0.0
+            },
+            "best_full_batch_program": "outlier_iqr"
+          },
+          "adoption_path": "masked plan cleared the delayed stability check",
+          "programs_searched": [
+            "outlier_iqr",
+            "outlier_mad"
+          ],
+          "harm_account": {
+            "adopted": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            },
+            "best_full_batch": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            },
+            "identity": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            }
+          }
+        },
+        "per_channel": {
+          "adopted_plan": {
+            "kind": "MASKED_PLAN",
+            "program": "outlier_iqr",
+            "excluded_series": [
+              "3",
+              "8"
+            ],
+            "excluded_series_count": 2,
+            "treated_series_count": 10,
+            "how_to_apply": "apply `outlier_iqr` to every training series except ['3', '8'], then retrain the Consumer once"
+          },
+          "comparison": {
+            "support": {
+              "adopted": 0.3031836970220849,
+              "best_full_batch": 0.2993128092600331,
+              "identity": 0.0
+            },
+            "delayed": {
+              "adopted": 0.35547178578423166,
+              "best_full_batch": 0.3482156275538379,
+              "identity": 0.0
+            },
+            "best_full_batch_program": "outlier_iqr"
+          },
+          "adoption_path": "masked plan cleared the delayed stability check",
+          "programs_searched": [
+            "outlier_iqr",
+            "winsorize"
+          ],
+          "harm_account": {
+            "adopted": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            },
+            "best_full_batch": {
+              "harmed_eval_series_count": 1,
+              "harmed_eval_series_total_harm": 0.030575871500249985,
+              "harmed_eval_series": [
+                "19"
+              ]
+            },
+            "identity": {
+              "harmed_eval_series_count": 0,
+              "harmed_eval_series_total_harm": 0.0,
+              "harmed_eval_series": []
+            }
+          }
+        }
+      },
+      "per_channel_menu_scan": {
+        "denoise_median": 0.15845516869085957,
+        "hampel_filter": 0.10359081635912801,
+        "outlier_iqr": 0.2993128092600331,
+        "outlier_mad": 0.2540717739299928,
+        "repair_level_shift": 0.008035752752639298,
+        "smooth_ma": 0.20523161623814568,
+        "winsorize": 0.26546990327561126
+      }
+    }
+  ],
+  "wall_seconds": 329.5615801999811
+}

@@ -1,0 +1,5057 @@
+{
+ "rows": [
+  {
+   "position": 1,
+   "unit_id": "PowerCons__burst_cls2",
+   "role": "producer_A",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.11666666666666659,
+   "regret": 0.11666666666666659,
+   "heldout_recall_by_class": {
+    "0": 0.7444444444444445,
+    "1": 0.6666666666666666
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 4.05,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 1,
+   "unit_id": "PowerCons__burst_cls2",
+   "role": "producer_A",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.11666666666666659,
+   "regret": 0.11666666666666659,
+   "heldout_recall_by_class": {
+    "0": 0.7444444444444445,
+    "1": 0.6666666666666666
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 5,
+   "probes": 2,
+   "seconds": 83.95,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "hampel",
+    "level_shift"
+   ],
+   "rounds": [
+    {
+     "unit_id": "PowerCons__burst_cls2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "PowerCons",
+     "domain_namespace": "PowerCons__burst_cls2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "local_hampel_repair",
+      "level_shift_repair"
+     ],
+     "chosen": "level_shift_repair",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "local_hampel_repair",
+       "operators": [
+        "hampel_filter"
+       ],
+       "family": "hampel",
+       "steps": [
+        [
+         "hampel_filter",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "probe",
+       "gain": 0.1428571428571428,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "level_shift_repair",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "hampel",
+      "level_shift"
+     ],
+     "probe_order_before_card": [
+      "level_shift_repair",
+      "local_hampel_repair"
+     ],
+     "probe_order_after_card": [
+      "level_shift_repair",
+      "local_hampel_repair"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "level_shift_repair",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      },
+      {
+       "candidate_id": "local_hampel_repair",
+       "kind": "probe",
+       "gain": 0.1428571428571428,
+       "passed": true,
+       "operators": [
+        "hampel_filter"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "hampel"
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": 0.0,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "hampel_filter",
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "PowerCons__burst_cls2_target_hampel_filter_a3-reset_PowerCons__burst_cls2_r1_p1",
+       "domain_namespace": "PowerCons__burst_cls2",
+       "task_episode_id": "PowerCons__burst_cls2",
+       "workflow_signature": "hampel_filter",
+       "relation": "NEUTRAL",
+       "evidence_level": "DELAYED",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.1428571428571428,
+       "delayed_gain": 0.0,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.1428571428571428,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0714285714285714
+       },
+       "delayed_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_0"
+        ],
+        "min_per_series_gain": -0.07692307692307687
+       }
+      }
+     ],
+     "consumer_fits_after": 4,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 2,
+     "seconds": 75.73
+    }
+   ]
+  },
+  {
+   "position": 1,
+   "unit_id": "PowerCons__burst_cls2",
+   "role": "producer_A",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.11666666666666659,
+   "regret": 0.11666666666666659,
+   "heldout_recall_by_class": {
+    "0": 0.7444444444444445,
+    "1": 0.6666666666666666
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 1,
+   "probes": 1,
+   "seconds": 87.64,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift"
+   ],
+   "rounds": [
+    {
+     "unit_id": "PowerCons__burst_cls2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "PowerCons",
+     "domain_namespace": "PowerCons__burst_cls2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "repair_level_excursion"
+     ],
+     "chosen": "repair_level_excursion",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 1,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "repair_level_excursion",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "level_shift"
+     ],
+     "probe_order_before_card": [
+      "repair_level_excursion"
+     ],
+     "probe_order_after_card": [
+      "repair_level_excursion"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "repair_level_excursion",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 1,
+     "seconds": 79.52
+    }
+   ]
+  },
+  {
+   "position": 1,
+   "unit_id": "PowerCons__burst_cls2",
+   "role": "producer_A",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+   "applied_program": [
+    {
+     "op": "outlier_iqr",
+     "params": {}
+    }
+   ],
+   "applied_ops": [
+    "outlier_iqr"
+   ],
+   "heldout_utility": 0.0444444444444444,
+   "menu_oracle_heldout_utility": 0.11666666666666659,
+   "regret": 0.07222222222222219,
+   "heldout_recall_by_class": {
+    "0": 0.6777777777777778,
+    "1": 0.8222222222222222
+   },
+   "worst_class_delta": -0.06666666666666665,
+   "harm_event": true,
+   "llm_calls": 6,
+   "consumer_fits": 6,
+   "probes": 1,
+   "seconds": 106.52,
+   "approved_skill_ids": [
+    "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_outlier_iqr"
+   ],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "PowerCons__burst_cls2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "PowerCons",
+     "domain_namespace": "PowerCons__burst_cls2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "intrinsic_iqr_outlier_repair"
+     ],
+     "chosen": "intrinsic_iqr_outlier_repair",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 1,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "intrinsic_iqr_outlier_repair",
+       "operators": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_iqr",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.1071428571428571,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "intrinsic_iqr_outlier_repair"
+     ],
+     "probe_order_after_card": [
+      "intrinsic_iqr_outlier_repair"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "intrinsic_iqr_outlier_repair",
+       "kind": "probe",
+       "gain": 0.1071428571428571,
+       "passed": true,
+       "operators": [
+        "outlier_iqr"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "outlier_iqr",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": 0.038461538461538436,
+     "approved_skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_outlier_iqr",
+     "activated": true,
+     "winner_delayed_approved": true,
+     "incumbent_before_round": null,
+     "incumbent_after_round": [
+      {
+       "op": "outlier_iqr",
+       "params": {}
+      }
+     ],
+     "minted_skill_ids": [
+      "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_outlier_iqr"
+     ],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_iqr"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "PowerCons__burst_cls2_target_outlier_iqr_a5-online_PowerCons__burst_cls2_r1_p1",
+       "domain_namespace": "PowerCons__burst_cls2",
+       "task_episode_id": "PowerCons__burst_cls2",
+       "workflow_signature": "outlier_iqr",
+       "relation": "POSITIVE",
+       "evidence_level": "DELAYED",
+       "local_status": "LOCAL_ACTIVE",
+       "support_gain": 0.1071428571428571,
+       "delayed_gain": 0.038461538461538436,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.1071428571428571,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.038461538461538436,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       }
+      }
+     ],
+     "consumer_fits_after": 4,
+     "llm_calls_this_round": 6,
+     "candidate_executions": 1,
+     "seconds": 98.34
+    }
+   ]
+  },
+  {
+   "position": 2,
+   "unit_id": "BeetleFly__impulse_v2",
+   "role": "identity_A",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.6,
+    "1": 0.3
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 4.74,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 2,
+   "unit_id": "BeetleFly__impulse_v2",
+   "role": "identity_A",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.6,
+    "1": 0.3
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 3,
+   "probes": 2,
+   "seconds": 96.76,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "BeetleFly__impulse_v2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "BeetleFly",
+     "domain_namespace": "BeetleFly__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "localized_level_shift_repair",
+      "intrinsic_extreme_outlier_repair"
+     ],
+     "chosen": "intrinsic_extreme_outlier_repair",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "zero",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "localized_level_shift_repair",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      },
+      {
+       "candidate_id": "intrinsic_extreme_outlier_repair",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": -0.25,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "level_shift",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "intrinsic_extreme_outlier_repair",
+      "localized_level_shift_repair"
+     ],
+     "probe_order_after_card": [
+      "intrinsic_extreme_outlier_repair",
+      "localized_level_shift_repair"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "intrinsic_extreme_outlier_repair",
+       "kind": "probe",
+       "gain": -0.25,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "localized_level_shift_repair",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 1,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_mad",
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "BeetleFly__impulse_v2_target_outlier_mad_a3-reset_BeetleFly__impulse_v2_r1_p1",
+       "domain_namespace": "BeetleFly__impulse_v2",
+       "task_episode_id": "BeetleFly__impulse_v2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEGATIVE",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": -0.25,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.25,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_0"
+        ],
+        "min_per_series_gain": -0.5
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 2,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 2,
+     "seconds": 87.34
+    }
+   ]
+  },
+  {
+   "position": 2,
+   "unit_id": "BeetleFly__impulse_v2",
+   "role": "identity_A",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.6,
+    "1": 0.3
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 3,
+   "probes": 2,
+   "seconds": 97.12,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "BeetleFly__impulse_v2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "BeetleFly",
+     "domain_namespace": "BeetleFly__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "localized_level_shift_repair",
+      "intrinsic_extreme_outlier_repair"
+     ],
+     "chosen": "intrinsic_extreme_outlier_repair",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "zero",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "localized_level_shift_repair",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      },
+      {
+       "candidate_id": "intrinsic_extreme_outlier_repair",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": -0.25,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "level_shift",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "intrinsic_extreme_outlier_repair",
+      "localized_level_shift_repair"
+     ],
+     "probe_order_after_card": [
+      "intrinsic_extreme_outlier_repair",
+      "localized_level_shift_repair"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "intrinsic_extreme_outlier_repair",
+       "kind": "probe",
+       "gain": -0.25,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "localized_level_shift_repair",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 1,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_mad",
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "BeetleFly__impulse_v2_target_outlier_mad_k0-fixed_BeetleFly__impulse_v2_r1_p1",
+       "domain_namespace": "BeetleFly__impulse_v2",
+       "task_episode_id": "BeetleFly__impulse_v2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEGATIVE",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": -0.25,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.25,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_0"
+        ],
+        "min_per_series_gain": -0.5
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 2,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 2,
+     "seconds": 87.44
+    }
+   ]
+  },
+  {
+   "position": 2,
+   "unit_id": "BeetleFly__impulse_v2",
+   "role": "identity_A",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.6,
+    "1": 0.3
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 6,
+   "consumer_fits": 3,
+   "probes": 2,
+   "seconds": 133.59,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "BeetleFly__impulse_v2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "BeetleFly",
+     "domain_namespace": "BeetleFly__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "probe_extreme_deviation_iqr",
+      "repair_localized_level_excursion"
+     ],
+     "chosen": "probe_extreme_deviation_iqr",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "rendered",
+     "proposal_count": 2,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "zero",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "probe_extreme_deviation_iqr",
+       "operators": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_iqr",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": -0.25,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "repair_localized_level_excursion",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "level_shift",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "probe_extreme_deviation_iqr",
+      "repair_localized_level_excursion"
+     ],
+     "probe_order_after_card": [
+      "probe_extreme_deviation_iqr",
+      "repair_localized_level_excursion"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "probe_extreme_deviation_iqr",
+       "kind": "probe",
+       "gain": -0.25,
+       "passed": true,
+       "operators": [
+        "outlier_iqr"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "repair_localized_level_excursion",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 1,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_iqr",
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "BeetleFly__impulse_v2_target_outlier_iqr_a5-online_BeetleFly__impulse_v2_r1_p1",
+       "domain_namespace": "BeetleFly__impulse_v2",
+       "task_episode_id": "BeetleFly__impulse_v2",
+       "workflow_signature": "outlier_iqr",
+       "relation": "NEGATIVE",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": -0.25,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.25,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_0"
+        ],
+        "min_per_series_gain": -0.5
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 2,
+     "llm_calls_this_round": 6,
+     "candidate_executions": 2,
+     "seconds": 119.96
+    }
+   ]
+  },
+  {
+   "position": 3,
+   "unit_id": "GunPoint__impulse_v2",
+   "role": "producer_B",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.4066666666666667,
+   "regret": 0.4066666666666667,
+   "heldout_recall_by_class": {
+    "0": 0.32894736842105265,
+    "1": 0.33783783783783783
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 9.51,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 3,
+   "unit_id": "GunPoint__impulse_v2",
+   "role": "producer_B",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.4066666666666667,
+   "regret": 0.4066666666666667,
+   "heldout_recall_by_class": {
+    "0": 0.32894736842105265,
+    "1": 0.33783783783783783
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 1,
+   "probes": 1,
+   "seconds": 164.18,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPoint__impulse_v2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "GunPoint",
+     "domain_namespace": "GunPoint__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "repair_local_level_shift"
+     ],
+     "chosen": "identity",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 1,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "zero",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": true,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "repair_local_level_shift",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "level_shift"
+     ],
+     "probe_order_before_card": [
+      "repair_local_level_shift"
+     ],
+     "probe_order_after_card": [
+      "repair_local_level_shift"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "repair_local_level_shift",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 1,
+     "seconds": 132.92
+    }
+   ]
+  },
+  {
+   "position": 3,
+   "unit_id": "GunPoint__impulse_v2",
+   "role": "producer_B",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.4066666666666667,
+   "regret": 0.4066666666666667,
+   "heldout_recall_by_class": {
+    "0": 0.32894736842105265,
+    "1": 0.33783783783783783
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 1,
+   "probes": 2,
+   "seconds": 168.4,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPoint__impulse_v2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "GunPoint",
+     "domain_namespace": "GunPoint__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "repair_local_level_excursion",
+      "repair_local_extreme_deviation"
+     ],
+     "chosen": "repair_local_extreme_deviation",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "zero",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "repair_local_level_excursion",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      },
+      {
+       "candidate_id": "repair_local_extreme_deviation",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "level_shift",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "repair_local_extreme_deviation",
+      "repair_local_level_excursion"
+     ],
+     "probe_order_after_card": [
+      "repair_local_extreme_deviation",
+      "repair_local_level_excursion"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "repair_local_extreme_deviation",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "repair_local_level_excursion",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_mad",
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 2,
+     "seconds": 149.38
+    }
+   ]
+  },
+  {
+   "position": 3,
+   "unit_id": "GunPoint__impulse_v2",
+   "role": "producer_B",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.4066666666666667,
+   "regret": 0.4066666666666667,
+   "heldout_recall_by_class": {
+    "0": 0.32894736842105265,
+    "1": 0.33783783783783783
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 3,
+   "probes": 2,
+   "seconds": 115.51,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "level_shift",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPoint__impulse_v2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "GunPoint",
+     "domain_namespace": "GunPoint__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "outlier_iqr_extreme_deviation",
+      "repair_level_shift_local_excursion"
+     ],
+     "chosen": "outlier_iqr_extreme_deviation",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "rendered",
+     "proposal_count": 2,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "zero",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "outlier_iqr_extreme_deviation",
+       "operators": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_iqr",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "repair_level_shift_local_excursion",
+       "operators": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift",
+       "steps": [
+        [
+         "repair_level_shift",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "level_shift",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "outlier_iqr_extreme_deviation",
+      "repair_level_shift_local_excursion"
+     ],
+     "probe_order_after_card": [
+      "outlier_iqr_extreme_deviation",
+      "repair_level_shift_local_excursion"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "outlier_iqr_extreme_deviation",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_iqr"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "repair_level_shift_local_excursion",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "repair_level_shift"
+       ],
+       "operators_from_candidate_id": [
+        "repair_level_shift"
+       ],
+       "family": "level_shift"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_iqr",
+       "repair_level_shift"
+      ],
+      "probed_operators": [
+       "outlier_iqr",
+       "repair_level_shift"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "GunPoint__impulse_v2_target_outlier_iqr_a5-online_GunPoint__impulse_v2_r1_p1",
+       "domain_namespace": "GunPoint__impulse_v2",
+       "task_episode_id": "GunPoint__impulse_v2",
+       "workflow_signature": "outlier_iqr",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.25
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 2,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 2,
+     "seconds": 94.66
+    }
+   ]
+  },
+  {
+   "position": 4,
+   "unit_id": "GunPointOldVersusYoung__impulse_v2",
+   "role": "beneficiary_strong",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.18412698412698414,
+   "regret": 0.18412698412698414,
+   "heldout_recall_by_class": {
+    "0": 0.58,
+    "1": 0.593939393939394
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 11.7,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 4,
+   "unit_id": "GunPointOldVersusYoung__impulse_v2",
+   "role": "beneficiary_strong",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.18412698412698414,
+   "regret": 0.18412698412698414,
+   "heldout_recall_by_class": {
+    "0": 0.58,
+    "1": 0.593939393939394
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 1,
+   "probes": 2,
+   "seconds": 234.26,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "GunPointOldVersusYoung",
+     "domain_namespace": "GunPointOldVersusYoung__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "outlier_mad_regime",
+      "winsorize_regime"
+     ],
+     "chosen": "outlier_mad_regime",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "outlier_mad_regime",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      },
+      {
+       "candidate_id": "winsorize_regime",
+       "operators": [
+        "winsorize"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "winsorize",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "outlier_mad_regime",
+      "winsorize_regime"
+     ],
+     "probe_order_after_card": [
+      "outlier_mad_regime",
+      "winsorize_regime"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "outlier_mad_regime",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "winsorize_regime",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "winsorize"
+       ],
+       "operators_from_candidate_id": [
+        "winsorize"
+       ],
+       "family": "outlier_threshold"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_mad",
+       "winsorize"
+      ],
+      "probed_operators": [
+       "outlier_mad",
+       "winsorize"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 2,
+     "seconds": 210.39
+    }
+   ]
+  },
+  {
+   "position": 4,
+   "unit_id": "GunPointOldVersusYoung__impulse_v2",
+   "role": "beneficiary_strong",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.18412698412698414,
+   "regret": 0.18412698412698414,
+   "heldout_recall_by_class": {
+    "0": 0.58,
+    "1": 0.593939393939394
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 6,
+   "consumer_fits": 5,
+   "probes": 2,
+   "seconds": 199.24,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "GunPointOldVersusYoung",
+     "domain_namespace": "GunPointOldVersusYoung__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "extreme_deviation_mad",
+      "extreme_deviation_iqr"
+     ],
+     "chosen": "extreme_deviation_mad",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "extreme_deviation_mad",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      },
+      {
+       "candidate_id": "extreme_deviation_iqr",
+       "operators": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_iqr",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "probe",
+       "gain": 0.09523809523809523,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "extreme_deviation_mad",
+      "extreme_deviation_iqr"
+     ],
+     "probe_order_after_card": [
+      "extreme_deviation_mad",
+      "extreme_deviation_iqr"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "extreme_deviation_mad",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "extreme_deviation_iqr",
+       "kind": "probe",
+       "gain": 0.09523809523809523,
+       "passed": true,
+       "operators": [
+        "outlier_iqr"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "outlier_iqr",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": -0.15000000000000002,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_iqr",
+       "outlier_mad"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "GunPointOldVersusYoung__impulse_v2_target_outlier_iqr_k0-fixed_GunPointOldVersusYoung__impulse_v2_r1_p1",
+       "domain_namespace": "GunPointOldVersusYoung__impulse_v2",
+       "task_episode_id": "GunPointOldVersusYoung__impulse_v2",
+       "workflow_signature": "outlier_iqr",
+       "relation": "NEGATIVE",
+       "evidence_level": "DELAYED",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.09523809523809523,
+       "delayed_gain": -0.15000000000000002,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.09523809523809523,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.09090909090909088
+       },
+       "delayed_effect": {
+        "relation": "NEGATIVE",
+        "classification_basis": "aggregate < -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": -0.15000000000000002,
+        "aggregate_direction": "degraded",
+        "series_read": 2,
+        "harmed_series_count": 2,
+        "harmed_series": [
+         "view_0",
+         "view_1"
+        ],
+        "min_per_series_gain": -0.19999999999999996
+       }
+      }
+     ],
+     "consumer_fits_after": 4,
+     "llm_calls_this_round": 6,
+     "candidate_executions": 2,
+     "seconds": 178.05
+    }
+   ]
+  },
+  {
+   "position": 4,
+   "unit_id": "GunPointOldVersusYoung__impulse_v2",
+   "role": "beneficiary_strong",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.18412698412698414,
+   "regret": 0.18412698412698414,
+   "heldout_recall_by_class": {
+    "0": 0.58,
+    "1": 0.593939393939394
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 1,
+   "probes": 1,
+   "seconds": 185.45,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPointOldVersusYoung__impulse_v2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "GunPointOldVersusYoung",
+     "domain_namespace": "GunPointOldVersusYoung__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "outlier_mad_extreme_deviation"
+     ],
+     "chosen": "outlier_mad_extreme_deviation",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "rendered_empty",
+     "proposal_count": 1,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "outlier_mad_extreme_deviation",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "verifier_rejected",
+       "gain": null,
+       "verifier_passed": false
+      }
+     ],
+     "proposal_families": [
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "outlier_mad_extreme_deviation"
+     ],
+     "probe_order_after_card": [
+      "outlier_mad_extreme_deviation"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "outlier_mad_extreme_deviation",
+       "kind": "verifier_rejected",
+       "gain": null,
+       "passed": false,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_mad"
+      ],
+      "probed_operators": [
+       "outlier_mad"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 1,
+     "seconds": 143.29
+    }
+   ]
+  },
+  {
+   "position": 5,
+   "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+   "role": "beneficiary_weak",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.19303797468354422,
+   "regret": 0.19303797468354422,
+   "heldout_recall_by_class": {
+    "0": 0.6385542168674698,
+    "1": 0.7533333333333333
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 17.18,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 5,
+   "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+   "role": "beneficiary_weak",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.19303797468354422,
+   "regret": 0.19303797468354422,
+   "heldout_recall_by_class": {
+    "0": 0.6385542168674698,
+    "1": 0.7533333333333333
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 3,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 246.49,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": [
+    {
+     "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "GunPointMaleVersusFemale",
+     "domain_namespace": "GunPointMaleVersusFemale__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity"
+     ],
+     "chosen": "identity",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 0,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": true,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      }
+     ],
+     "proposal_families": [],
+     "probe_order_before_card": [],
+     "probe_order_after_card": [],
+     "ordering_card_id": null,
+     "probes": [],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 3,
+     "candidate_executions": 0,
+     "seconds": 213.42
+    }
+   ]
+  },
+  {
+   "position": 5,
+   "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+   "role": "beneficiary_weak",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_ACTIVE_SKILL_RECALL",
+   "applied_program": [
+    {
+     "op": "hampel_filter",
+     "params": {}
+    }
+   ],
+   "applied_ops": [
+    "hampel_filter"
+   ],
+   "heldout_utility": 0.18670886075949367,
+   "menu_oracle_heldout_utility": 0.19303797468354422,
+   "regret": 0.006329113924050556,
+   "heldout_recall_by_class": {
+    "0": 0.8674698795180723,
+    "1": 0.8933333333333333
+   },
+   "worst_class_delta": 0.14,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 6,
+   "probes": 1,
+   "seconds": 254.1,
+   "approved_skill_ids": [
+    "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+   ],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "hampel"
+   ],
+   "rounds": [
+    {
+     "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "GunPointMaleVersusFemale",
+     "domain_namespace": "GunPointMaleVersusFemale__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "hampel_extreme_deviation"
+     ],
+     "chosen": "hampel_extreme_deviation",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 1,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "hampel_extreme_deviation",
+       "operators": [
+        "hampel_filter"
+       ],
+       "family": "hampel",
+       "steps": [
+        [
+         "hampel_filter",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.19047619047619047,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "hampel"
+     ],
+     "probe_order_before_card": [
+      "hampel_extreme_deviation"
+     ],
+     "probe_order_after_card": [
+      "hampel_extreme_deviation"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "hampel_extreme_deviation",
+       "kind": "probe",
+       "gain": 0.19047619047619047,
+       "passed": true,
+       "operators": [
+        "hampel_filter"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "hampel"
+      }
+     ],
+     "winner_program": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "abstained": false,
+     "harm_count": 0,
+     "delayed_utility": 0.052631578947368474,
+     "approved_skill_id": "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter",
+     "activated": true,
+     "winner_delayed_approved": true,
+     "incumbent_before_round": null,
+     "incumbent_after_round": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "minted_skill_ids": [
+      "fast_winner_classification_ridge_raw_plus_difference_v1_accuracy_hampel_filter"
+     ],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "hampel_filter"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "GunPointMaleVersusFemale__impulse_v2_target_hampel_filter_k0-fixed_GunPointMaleVersusFemale__impulse_v2_r1_p1",
+       "domain_namespace": "GunPointMaleVersusFemale__impulse_v2",
+       "task_episode_id": "GunPointMaleVersusFemale__impulse_v2",
+       "workflow_signature": "hampel_filter",
+       "relation": "POSITIVE",
+       "evidence_level": "DELAYED",
+       "local_status": "LOCAL_ACTIVE",
+       "support_gain": 0.19047619047619047,
+       "delayed_gain": 0.052631578947368474,
+       "support_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.19047619047619047,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.18181818181818177
+       },
+       "delayed_effect": {
+        "relation": "POSITIVE",
+        "classification_basis": "aggregate >= +0.005 and every per-series reading >= -0.005",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.052631578947368474,
+        "aggregate_direction": "improved",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       }
+      }
+     ],
+     "consumer_fits_after": 4,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 1,
+     "seconds": 221.06
+    }
+   ]
+  },
+  {
+   "position": 5,
+   "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+   "role": "beneficiary_weak",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.19303797468354422,
+   "regret": 0.19303797468354422,
+   "heldout_recall_by_class": {
+    "0": 0.6385542168674698,
+    "1": 0.7533333333333333
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 3,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 245.47,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": [
+    {
+     "unit_id": "GunPointMaleVersusFemale__impulse_v2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "GunPointMaleVersusFemale",
+     "domain_namespace": "GunPointMaleVersusFemale__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity"
+     ],
+     "chosen": "",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "rendered",
+     "proposal_count": 0,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "very_low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      }
+     ],
+     "proposal_families": [],
+     "probe_order_before_card": [],
+     "probe_order_after_card": [],
+     "ordering_card_id": null,
+     "probes": [],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 3,
+     "candidate_executions": 0,
+     "seconds": 208.7
+    }
+   ]
+  },
+  {
+   "position": 6,
+   "unit_id": "Herring__impulse_v2",
+   "role": "heldout_only",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.046875,
+   "regret": 0.046875,
+   "heldout_recall_by_class": {
+    "0": 0.4473684210526316,
+    "1": 0.46153846153846156
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 20.84,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 6,
+   "unit_id": "Herring__impulse_v2",
+   "role": "heldout_only",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.046875,
+   "regret": 0.046875,
+   "heldout_recall_by_class": {
+    "0": 0.4473684210526316,
+    "1": 0.46153846153846156
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 118.35,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": [
+    {
+     "unit_id": "Herring__impulse_v2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "Herring",
+     "domain_namespace": "Herring__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity"
+     ],
+     "chosen": "identity",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 0,
+     "support_receipts": 0,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "medium",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": true,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      }
+     ],
+     "proposal_families": [],
+     "probe_order_before_card": [],
+     "probe_order_after_card": [],
+     "ordering_card_id": null,
+     "probes": [],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [],
+     "consumer_fits_after": 0,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 0,
+     "seconds": 78.25
+    }
+   ]
+  },
+  {
+   "position": 6,
+   "unit_id": "Herring__impulse_v2",
+   "role": "heldout_only",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.046875,
+   "regret": 0.046875,
+   "heldout_recall_by_class": {
+    "0": 0.4473684210526316,
+    "1": 0.46153846153846156
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 4,
+   "probes": 2,
+   "seconds": 125.54,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "Herring__impulse_v2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "Herring",
+     "domain_namespace": "Herring__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "outlier_iqr_extreme_deviation",
+      "outlier_mad_extreme_deviation"
+     ],
+     "chosen": "outlier_iqr_extreme_deviation",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "medium",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "outlier_iqr_extreme_deviation",
+       "operators": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_iqr",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "outlier_mad_extreme_deviation",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "outlier_iqr_extreme_deviation",
+      "outlier_mad_extreme_deviation"
+     ],
+     "probe_order_after_card": [
+      "outlier_iqr_extreme_deviation",
+      "outlier_mad_extreme_deviation"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "outlier_iqr_extreme_deviation",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_iqr"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_iqr"
+       ],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "outlier_mad_extreme_deviation",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_iqr",
+       "outlier_mad"
+      ],
+      "probed_operators": [
+       "outlier_iqr",
+       "outlier_mad"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "Herring__impulse_v2_target_outlier_iqr_k0-fixed_Herring__impulse_v2_r1_p1",
+       "domain_namespace": "Herring__impulse_v2",
+       "task_episode_id": "Herring__impulse_v2",
+       "workflow_signature": "outlier_iqr",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.25
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "Herring__impulse_v2_target_outlier_mad_k0-fixed_Herring__impulse_v2_r1_p2",
+       "domain_namespace": "Herring__impulse_v2",
+       "task_episode_id": "Herring__impulse_v2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.25
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 3,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 2,
+     "seconds": 86.62
+    }
+   ]
+  },
+  {
+   "position": 6,
+   "unit_id": "Herring__impulse_v2",
+   "role": "heldout_only",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.046875,
+   "regret": 0.046875,
+   "heldout_recall_by_class": {
+    "0": 0.4473684210526316,
+    "1": 0.46153846153846156
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 4,
+   "probes": 2,
+   "seconds": 128.67,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "burst",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "Herring__impulse_v2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "Herring",
+     "domain_namespace": "Herring__impulse_v2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "repair_local_burst",
+      "remove_extreme_outliers"
+     ],
+     "chosen": "remove_extreme_outliers",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "rendered_empty",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "low",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "medium",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": false,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "repair_local_burst",
+       "operators": [
+        "repair_burst_segment"
+       ],
+       "family": "burst",
+       "steps": [
+        [
+         "repair_burst_segment",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "remove_extreme_outliers",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "burst",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "remove_extreme_outliers",
+      "repair_local_burst"
+     ],
+     "probe_order_after_card": [
+      "remove_extreme_outliers",
+      "repair_local_burst"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "remove_extreme_outliers",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "repair_local_burst",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "repair_burst_segment"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "burst"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [],
+      "probed_operators": [
+       "outlier_mad",
+       "repair_burst_segment"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "Herring__impulse_v2_target_outlier_mad_a5-online_Herring__impulse_v2_r1_p1",
+       "domain_namespace": "Herring__impulse_v2",
+       "task_episode_id": "Herring__impulse_v2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 1,
+        "harmed_series": [
+         "view_1"
+        ],
+        "min_per_series_gain": -0.25
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "Herring__impulse_v2_target_repair_burst_segment_a5-online_Herring__impulse_v2_r1_p2",
+       "domain_namespace": "Herring__impulse_v2",
+       "task_episode_id": "Herring__impulse_v2",
+       "workflow_signature": "repair_burst_segment",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 3,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 2,
+     "seconds": 89.65
+    }
+   ]
+  },
+  {
+   "position": 7,
+   "unit_id": "BirdChicken__burst_cls2",
+   "role": "identity_B",
+   "arm": "Static",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.4,
+    "1": 0.6
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 0,
+   "consumer_fits": 1,
+   "probes": 0,
+   "seconds": 20.85,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [],
+   "rounds": []
+  },
+  {
+   "position": 7,
+   "unit_id": "BirdChicken__burst_cls2",
+   "role": "identity_B",
+   "arm": "A3-reset",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.4,
+    "1": 0.6
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 5,
+   "consumer_fits": 3,
+   "probes": 1,
+   "seconds": 150.62,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "BirdChicken__burst_cls2",
+     "round": "r1",
+     "arm": "A3-reset",
+     "dataset": "BirdChicken",
+     "domain_namespace": "BirdChicken__burst_cls2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "outlier_mad_extreme_deviation"
+     ],
+     "chosen": "outlier_mad_extreme_deviation",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 1,
+     "support_receipts": 1,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "medium",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": true,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "outlier_mad_extreme_deviation",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "outlier_mad_extreme_deviation"
+     ],
+     "probe_order_after_card": [
+      "outlier_mad_extreme_deviation"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "outlier_mad_extreme_deviation",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_mad"
+      ],
+      "probed_operators": [
+       "outlier_mad"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "BirdChicken__burst_cls2_target_outlier_mad_a3-reset_BirdChicken__burst_cls2_r1_p1",
+       "domain_namespace": "BirdChicken__burst_cls2",
+       "task_episode_id": "BirdChicken__burst_cls2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 2,
+     "llm_calls_this_round": 5,
+     "candidate_executions": 1,
+     "seconds": 109.64
+    }
+   ]
+  },
+  {
+   "position": 7,
+   "unit_id": "BirdChicken__burst_cls2",
+   "role": "identity_B",
+   "arm": "K0-fixed",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.4,
+    "1": 0.6
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 4,
+   "probes": 2,
+   "seconds": 120.74,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "burst",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "BirdChicken__burst_cls2",
+     "round": "r1",
+     "arm": "K0-fixed",
+     "dataset": "BirdChicken",
+     "domain_namespace": "BirdChicken__burst_cls2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "localized_outlier_mad",
+      "localized_burst_repair"
+     ],
+     "chosen": "localized_outlier_mad",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "no_memory",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "medium",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": true,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "localized_outlier_mad",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "localized_burst_repair",
+       "operators": [
+        "repair_burst_segment"
+       ],
+       "family": "burst",
+       "steps": [
+        [
+         "repair_burst_segment",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "burst",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "localized_outlier_mad",
+      "localized_burst_repair"
+     ],
+     "probe_order_after_card": [
+      "localized_outlier_mad",
+      "localized_burst_repair"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "localized_outlier_mad",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "localized_burst_repair",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "repair_burst_segment"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "burst"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [],
+     "risk_lifecycle": {
+      "events": [],
+      "risk_skill_ids": [],
+      "candidate_families": []
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_mad"
+      ],
+      "probed_operators": [
+       "outlier_mad",
+       "repair_burst_segment"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "BirdChicken__burst_cls2_target_outlier_mad_k0-fixed_BirdChicken__burst_cls2_r1_p1",
+       "domain_namespace": "BirdChicken__burst_cls2",
+       "task_episode_id": "BirdChicken__burst_cls2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "BirdChicken__burst_cls2_target_repair_burst_segment_k0-fixed_BirdChicken__burst_cls2_r1_p2",
+       "domain_namespace": "BirdChicken__burst_cls2",
+       "task_episode_id": "BirdChicken__burst_cls2",
+       "workflow_signature": "repair_burst_segment",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 3,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 2,
+     "seconds": 80.75
+    }
+   ]
+  },
+  {
+   "position": 7,
+   "unit_id": "BirdChicken__burst_cls2",
+   "role": "identity_B",
+   "arm": "A5-online",
+   "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+   "applied_program": [],
+   "applied_ops": [],
+   "heldout_utility": 0.0,
+   "menu_oracle_heldout_utility": 0.0,
+   "regret": 0.0,
+   "heldout_recall_by_class": {
+    "0": 0.4,
+    "1": 0.6
+   },
+   "worst_class_delta": 0.0,
+   "harm_event": false,
+   "llm_calls": 4,
+   "consumer_fits": 4,
+   "probes": 2,
+   "seconds": 123.24,
+   "approved_skill_ids": [],
+   "supply_candidates_in_pool": 0,
+   "supply_probed": 0,
+   "agent_families": [
+    "burst",
+    "outlier_threshold"
+   ],
+   "rounds": [
+    {
+     "unit_id": "BirdChicken__burst_cls2",
+     "round": "r1",
+     "arm": "A5-online",
+     "dataset": "BirdChicken",
+     "domain_namespace": "BirdChicken__burst_cls2",
+     "task_consumer_key": "classification|ridge-raw-plus-difference-v1|accuracy",
+     "pool": [
+      "identity",
+      "localized_outlier_mad",
+      "localized_burst_repair"
+     ],
+     "chosen": "localized_outlier_mad",
+     "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+     ],
+     "memory_resolution": "rendered_empty",
+     "proposal_count": 2,
+     "support_receipts": 2,
+     "fast_features_binned": {
+      "clipping_probe_direction": "unknown",
+      "denoising_probe_direction": "unknown",
+      "estimated_level_offset": "medium",
+      "estimated_region_end_fraction": "high",
+      "estimated_region_start_fraction": "low",
+      "imputation_probe_direction": "unknown",
+      "level_excursion_score": "high",
+      "level_only_post_shift_support_sufficient": true,
+      "level_probe_direction": "unknown",
+      "level_region_end_fraction": "very_low",
+      "level_region_fraction": "very_low",
+      "local_robust_z_peak": "high",
+      "longest_missing_run_fraction": "zero",
+      "missing_fraction": "zero",
+      "outlier_region_end_fraction": "very_low",
+      "period_change_score": "high",
+      "period_evidence_status": "OK",
+      "period_reliability": "high",
+      "period_repair_available": false,
+      "post_shift_support_sufficient": true,
+      "task_kind": "classification"
+     },
+     "fast_features_raw_keys": [
+      "clipping_probe_direction",
+      "denoising_probe_direction",
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "imputation_probe_direction",
+      "level_excursion_score",
+      "level_only_post_shift_support_sufficient",
+      "level_probe_direction",
+      "level_region_end_fraction",
+      "level_region_fraction",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "outlier_region_end_fraction",
+      "period_change_score",
+      "period_evidence_status",
+      "period_reliability",
+      "period_repair_available",
+      "post_shift_support_sufficient",
+      "task_kind"
+     ],
+     "proposals": [
+      {
+       "candidate_id": "identity",
+       "operators": [],
+       "family": "identity",
+       "steps": null,
+       "compiled": false,
+       "chosen_by_select": false,
+       "outcome": "dropped_before_probe_no_compiled_steps",
+       "gain": null,
+       "verifier_passed": null
+      },
+      {
+       "candidate_id": "localized_outlier_mad",
+       "operators": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold",
+       "steps": [
+        [
+         "outlier_mad",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": true,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      },
+      {
+       "candidate_id": "localized_burst_repair",
+       "operators": [
+        "repair_burst_segment"
+       ],
+       "family": "burst",
+       "steps": [
+        [
+         "repair_burst_segment",
+         {}
+        ]
+       ],
+       "compiled": true,
+       "chosen_by_select": false,
+       "outcome": "probe",
+       "gain": 0.0,
+       "verifier_passed": true
+      }
+     ],
+     "proposal_families": [
+      "burst",
+      "outlier_threshold"
+     ],
+     "probe_order_before_card": [
+      "localized_outlier_mad",
+      "localized_burst_repair"
+     ],
+     "probe_order_after_card": [
+      "localized_outlier_mad",
+      "localized_burst_repair"
+     ],
+     "ordering_card_id": null,
+     "probes": [
+      {
+       "candidate_id": "localized_outlier_mad",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "outlier_mad"
+       ],
+       "operators_from_candidate_id": [
+        "outlier_mad"
+       ],
+       "family": "outlier_threshold"
+      },
+      {
+       "candidate_id": "localized_burst_repair",
+       "kind": "probe",
+       "gain": 0.0,
+       "passed": true,
+       "operators": [
+        "repair_burst_segment"
+       ],
+       "operators_from_candidate_id": [],
+       "family": "burst"
+      }
+     ],
+     "winner_program": null,
+     "abstained": true,
+     "harm_count": 0,
+     "delayed_utility": null,
+     "approved_skill_id": null,
+     "activated": false,
+     "winner_delayed_approved": false,
+     "incumbent_before_round": null,
+     "incumbent_after_round": null,
+     "minted_skill_ids": [
+      "target_risk_outlier_mad",
+      "target_risk_repair_burst_segment"
+     ],
+     "risk_lifecycle": {
+      "events": [
+       {
+        "stage": "added",
+        "skill_id": "target_risk_outlier_mad",
+        "family": "outlier_mad",
+        "distinct_negative_task_count": 2,
+        "negative_task_ids": [
+         "BirdChicken__burst_cls2",
+         "Herring__impulse_v2"
+        ],
+        "observable_applicability": {
+         "const": true
+        },
+        "runtime_bundle_sha": "564e084aa2ef9f72c63f343ec5c18509663288b7cdb20619f1e01b04633fb39d"
+       },
+       {
+        "stage": "added",
+        "skill_id": "target_risk_repair_burst_segment",
+        "family": "repair_burst_segment",
+        "distinct_negative_task_count": 2,
+        "negative_task_ids": [
+         "BirdChicken__burst_cls2",
+         "Herring__impulse_v2"
+        ],
+        "observable_applicability": {
+         "const": true
+        },
+        "runtime_bundle_sha": "68822e1e7ad011264e04f7efd851cf44b9f5c4d8fc6ad49f07cc91a5df0d120c"
+       }
+      ],
+      "risk_skill_ids": [
+       "target_risk_outlier_mad",
+       "target_risk_repair_burst_segment"
+      ],
+      "candidate_families": [
+       "outlier_mad",
+       "repair_burst_segment"
+      ]
+     },
+     "guard_readout": {
+      "guarded_operators_in_fast_view": [],
+      "pool_operators": [
+       "outlier_mad"
+      ],
+      "probed_operators": [
+       "outlier_mad",
+       "repair_burst_segment"
+      ],
+      "guarded_and_not_probed": [],
+      "guarded_but_probed_anyway": []
+     },
+     "episodes": [
+      {
+       "episode_id": "BirdChicken__burst_cls2_target_outlier_mad_a5-online_BirdChicken__burst_cls2_r1_p1",
+       "domain_namespace": "BirdChicken__burst_cls2",
+       "task_episode_id": "BirdChicken__burst_cls2",
+       "workflow_signature": "outlier_mad",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      },
+      {
+       "episode_id": "BirdChicken__burst_cls2_target_repair_burst_segment_a5-online_BirdChicken__burst_cls2_r1_p2",
+       "domain_namespace": "BirdChicken__burst_cls2",
+       "task_episode_id": "BirdChicken__burst_cls2",
+       "workflow_signature": "repair_burst_segment",
+       "relation": "NEUTRAL",
+       "evidence_level": "SUPPORT",
+       "local_status": "EPISODE_ONLY",
+       "support_gain": 0.0,
+       "delayed_gain": null,
+       "support_effect": {
+        "relation": "NEUTRAL",
+        "classification_basis": "aggregate within +/-0.005 of zero",
+        "material_threshold": 0.005,
+        "consumer_id": "ridge-raw-plus-difference-v1",
+        "aggregate_gain": 0.0,
+        "aggregate_direction": "unchanged",
+        "series_read": 2,
+        "harmed_series_count": 0,
+        "harmed_series": [],
+        "min_per_series_gain": 0.0
+       },
+       "delayed_effect": null
+      }
+     ],
+     "consumer_fits_after": 3,
+     "llm_calls_this_round": 4,
+     "candidate_executions": 2,
+     "seconds": 82.87
+    }
+   ]
+  }
+ ],
+ "events": [
+  {
+   "after_position": 1,
+   "after_unit": "PowerCons__burst_cls2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  },
+  {
+   "after_position": 2,
+   "after_unit": "BeetleFly__impulse_v2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  },
+  {
+   "after_position": 3,
+   "after_unit": "GunPoint__impulse_v2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  },
+  {
+   "after_position": 4,
+   "after_unit": "GunPointOldVersusYoung__impulse_v2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  },
+  {
+   "after_position": 5,
+   "after_unit": "GunPointMaleVersusFemale__impulse_v2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  },
+  {
+   "after_position": 6,
+   "after_unit": "Herring__impulse_v2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  },
+  {
+   "after_position": 7,
+   "after_unit": "BirdChicken__burst_cls2",
+   "supply_rows": 1,
+   "audit": [
+    {
+     "program": "outlier_iqr",
+     "unguided_positive_tasks": [
+      "PowerCons__burst_cls2"
+     ],
+     "unguided_positive": 1,
+     "conditioned_positive": 0,
+     "opposing_negative": 0,
+     "opposing_negative_tasks": [],
+     "immaterial": 0,
+     "min_distinct_tasks": 2,
+     "supply_authorized": false,
+     "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks"
+    }
+   ],
+   "withheld_because": "fewer_than_2_distinct_unguided_positive_tasks",
+   "card_compiled": false,
+   "already_installed": false,
+   "llm_calls": 0
+  }
+ ],
+ "ledger": {
+  "llm": 96,
+  "fit": 68
+ },
+ "wall_seconds": 3284.5
+}

@@ -368,9 +368,21 @@ def census(bank: Sequence[Mapping[str, Any]], *,
     return ordered
 
 
+def census_key(task_consumer_key: Any, program_steps: Any,
+               root_scope: Any) -> str:
+    """The identity a lineage is kept under: Task x Consumer x Program x root Scope.
+
+    The same string the census builds, exposed so a Draft, an Active card and a
+    census group can all be compared on one key instead of on a program name.
+    """
+    return "%s|%s@%s" % (str(task_consumer_key or ""),
+                        _program_signature(program_steps),
+                        _root_scope_signature(root_scope))
+
+
 def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
                        ledger: drafts.DraftLedger,
-                       active_program_signatures: Sequence[str] = (),
+                       held_lineage_keys: Sequence[str] = (),
                        ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """The three candidate classes, plus the drift-signal table.
 
@@ -378,15 +390,31 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
     revision candidates: their evidence points at the Observation or the
     Program, so they are listed as drift signals for the census to carry and
     for the report to count, and the outer loop does not try to narrow them.
+
+    Deduplication is on the **full census key** and over the key's whole
+    lineage in this course -- Active, open and closed alike (sol v1.1 A).  Two
+    consequences, and both are the point:
+
+    * a key that has already been closed cannot come back as a fresh ADD.  A new
+      shell would carry its own ``revisions=0`` and ``verification_attempts=0``,
+      which is precisely how a Draft walks past the two-revision and
+      three-verification bounds one legal-looking step at a time.
+    * the same program under a *different* root Scope is a different candidate,
+      because it treats a different set of series.
+
+    What is held is therefore read from the lineage itself, not inferred from
+    which bank rows happen to carry a ``source_skill_id``: a card can hold a key
+    without any row in this window naming it.
     """
-    held = {str(name) for name in active_program_signatures}
+    held = {str(key) for key in held_lineage_keys} | ledger.lineage_keys()
     candidates: list[dict[str, Any]] = []
     signals: list[dict[str, Any]] = []
 
     for group in groups:
         signature = str(group["program_signature"])
+        key = str(group.get("census_key") or "")
         if (group["positive_units"] >= MIN_POSITIVE_UNITS_FOR_ADD
-                and signature not in held):
+                and key not in held):
             candidates.append({
                 "kind": "ADD",
                 "task_consumer_key": group["task_consumer_key"],
@@ -415,11 +443,15 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
                     % group["positive_units"]),
             })
         if (group["adverse_units"] >= MIN_ADVERSE_UNITS_FOR_NARROWING
-                and signature in held):
+                and key in held):
             candidates.append({
                 "kind": "NARROW",
                 "task_consumer_key": group["task_consumer_key"],
                 "program_signature": signature,
+                "census_key": key,
+                "root_scope_signature": group.get("root_scope_signature"),
+                "root_scope": (dict(group["root_scope"])
+                               if group.get("root_scope") else None),
                 "program_steps": list(group["program_steps"]),
                 "rows": list(group["rows"]),
                 "skill_ids": list(group["source_skill_ids"]),
@@ -608,6 +640,9 @@ def _clause_for(candidate: Mapping[str, Any], *, slow: Callable[..., Any],
         payload = slow(candidate=candidate, rejected=rejected_directions)
         record.slow_calls += 1
         attempts += 1
+        if isinstance(payload, Mapping) and payload.get("outcome") == (
+                "OUTER_LLM_BUDGET_SPENT"):
+            return {"outcome": "OUTER_LLM_BUDGET_SPENT"}
         if payload is None:
             return {"outcome": "SLOW_ABSTAINED"}
         result = tool.clause_from_slow(
@@ -640,7 +675,7 @@ def consolidate(*, bank: Sequence[Mapping[str, Any]],
                 replay: Callable[..., Mapping[str, Any]] | None = None,
                 budget: OuterBudget | None = None,
                 policy: tool_module.Policy = tool_module.BOUNDED_RISK_V1,
-                active_program_signatures: Sequence[str] = (),
+                held_lineage_keys: Sequence[str] = (),
                 bank_boundary: Mapping[str, Any] | None = None,
                 rng: Any = None,
                 ) -> OuterStepRecord:
@@ -680,8 +715,7 @@ def consolidate(*, bank: Sequence[Mapping[str, Any]],
             "positive_units", "adverse_units")}
         for group in groups]
     candidates, signals = propose_candidates(
-        groups, ledger=ledger,
-        active_program_signatures=active_program_signatures)
+        groups, ledger=ledger, held_lineage_keys=held_lineage_keys)
     record.drift_signals = signals
     if not candidates:
         record.empty_reason = "the census produced no candidate"
@@ -806,6 +840,7 @@ def consolidate(*, bank: Sequence[Mapping[str, Any]],
             root_scope=dict(candidate.get("root_scope") or scope or {}),
             current_scope=dict(scope or {}),
             origin=int(k_index),
+            census_key=candidate.get("census_key"),
             provenance={
                 "outer_step": int(k_index),
                 "kind": candidate["kind"],

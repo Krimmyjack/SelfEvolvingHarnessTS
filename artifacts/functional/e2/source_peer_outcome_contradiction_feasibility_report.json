@@ -1,0 +1,487 @@
+{
+  "capability_claim": false,
+  "causal_hypothesis": "A target block that contradicts the outcome consensus of training peers with similar standardized history is more likely to be a beneficial row x block removal action.",
+  "claim_limit": "This is an exposed Source-only ranking feasibility test. The score is a Program-specific TRAIN observation and cached W23 exact singleton credit is used only as the exposed outcome label. No cohort is executed, no Consumer is fit, and no Utility, Capability, Memory, Router, or transfer claim is established.",
+  "configuration": {
+    "blocks": [
+      [
+        0,
+        12
+      ],
+      [
+        12,
+        24
+      ],
+      [
+        24,
+        36
+      ],
+      [
+        36,
+        48
+      ]
+    ],
+    "candidate_residual_formula": "mean across 12 target points of abs(candidate_target - pointwise_peer_consensus)",
+    "consumer_fit_count": 0,
+    "context_exposure": "INSTANCE_SEEN",
+    "contradiction_score_formula": "candidate_residual / (peer_dispersion + 1e-6)",
+    "datasets": [
+      "monash:traffic_hourly",
+      "legacy_monash:fred_md",
+      "legacy_monash:nn5_daily",
+      "metr_la"
+    ],
+    "development_only": true,
+    "outcome_exposure": "EXPOSED",
+    "outcome_label": "positive iff mean(fold_a, fold_b exact_singleton_attribution_credit) > 0",
+    "peer_dispersion_formula": "mean across 12 target points of the pointwise median across K peers of abs(peer_target - pointwise_peer_consensus)",
+    "peer_k": 5,
+    "peer_scope": "same dataset and same output block; exclude every row sharing the candidate series_uid; rank remaining rows by 192-step standardized-context Euclidean distance",
+    "peer_target_consensus_formula": "pointwise median of the K standardized peer target blocks",
+    "program_id": "mask_one_training_row_from_ridge_loss_for_one_12_step_output_block",
+    "ranking_scope": "within each dataset x 12-step block",
+    "score_reads_evaluation_future": false,
+    "score_reads_exact_credit": false,
+    "score_reads_training_context": true,
+    "score_reads_training_target": true,
+    "score_uses_dataset_id_as_feature": false,
+    "top_quartile_count_per_block": 18,
+    "training_rows_per_dataset": 72
+  },
+  "consumer_fit_count": 0,
+  "dataset_evidence": [
+    {
+      "action_count": 288,
+      "dataset_id": "monash:traffic_hourly",
+      "metrics": {
+        "action_count": 288,
+        "all_action_mean_exact_credit": 0.0003125148316163219,
+        "all_action_positive_fraction": 0.4861111111111111,
+        "tie_aware_auroc": 0.4297779922779923,
+        "top_quartile_action_count": 72,
+        "top_quartile_mean_exact_credit": 0.0018714543234229501,
+        "top_quartile_positive_fraction": 0.4166666666666667,
+        "top_quartile_positive_fraction_uplift": -0.06944444444444442
+      },
+      "per_block": [
+        {
+          "block_half_open": [
+            0,
+            12
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.00030757323207124883,
+            "all_action_positive_fraction": 0.5416666666666666,
+            "contradiction_score_max": 9.393312790073786,
+            "contradiction_score_median": 1.9130283407711524,
+            "contradiction_score_min": 0.44617831529071644,
+            "exact_positive_action_count": 39,
+            "tie_aware_auroc": 0.39083139083139085,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 9.52797079369473e-05,
+            "top_quartile_positive_fraction": 0.3333333333333333,
+            "top_quartile_positive_fraction_uplift": -0.20833333333333331
+          }
+        },
+        {
+          "block_half_open": [
+            12,
+            24
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": -0.0018323974593901057,
+            "all_action_positive_fraction": 0.4027777777777778,
+            "contradiction_score_max": 13.26558626010907,
+            "contradiction_score_median": 2.260828567008427,
+            "contradiction_score_min": 0.5091344157097576,
+            "exact_positive_action_count": 29,
+            "tie_aware_auroc": 0.51242983159583,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.005923888869638686,
+            "top_quartile_positive_fraction": 0.5,
+            "top_quartile_positive_fraction_uplift": 0.09722222222222221
+          }
+        },
+        {
+          "block_half_open": [
+            24,
+            36
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.0015971771106241099,
+            "all_action_positive_fraction": 0.5416666666666666,
+            "contradiction_score_max": 8.24068064525442,
+            "contradiction_score_median": 1.742757147930548,
+            "contradiction_score_min": 0.453141005259632,
+            "exact_positive_action_count": 39,
+            "tie_aware_auroc": 0.46153846153846156,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.002540434848557393,
+            "top_quartile_positive_fraction": 0.5555555555555556,
+            "top_quartile_positive_fraction_uplift": 0.01388888888888895
+          }
+        },
+        {
+          "block_half_open": [
+            36,
+            48
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.0011777064431600344,
+            "all_action_positive_fraction": 0.4583333333333333,
+            "contradiction_score_max": 9.448209695998386,
+            "contradiction_score_median": 1.8534488848072195,
+            "contradiction_score_min": 0.5152444393215573,
+            "exact_positive_action_count": 33,
+            "tie_aware_auroc": 0.37839937839937837,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": -0.0010737861324412257,
+            "top_quartile_positive_fraction": 0.2777777777777778,
+            "top_quartile_positive_fraction_uplift": -0.18055555555555552
+          }
+        }
+      ],
+      "training_row_count": 72
+    },
+    {
+      "action_count": 288,
+      "dataset_id": "legacy_monash:fred_md",
+      "metrics": {
+        "action_count": 288,
+        "all_action_mean_exact_credit": -0.002386461953919684,
+        "all_action_positive_fraction": 0.5069444444444444,
+        "tie_aware_auroc": 0.4784391279181941,
+        "top_quartile_action_count": 72,
+        "top_quartile_mean_exact_credit": -0.0024374916332541626,
+        "top_quartile_positive_fraction": 0.4583333333333333,
+        "top_quartile_positive_fraction_uplift": -0.048611111111111105
+      },
+      "per_block": [
+        {
+          "block_half_open": [
+            0,
+            12
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": -0.00021413822143875633,
+            "all_action_positive_fraction": 0.5555555555555556,
+            "contradiction_score_max": 12.92454120429366,
+            "contradiction_score_median": 1.5007717322859802,
+            "contradiction_score_min": 0.10481372917674253,
+            "exact_positive_action_count": 40,
+            "tie_aware_auroc": 0.46015625,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": -0.0019497302647465216,
+            "top_quartile_positive_fraction": 0.3888888888888889,
+            "top_quartile_positive_fraction_uplift": -0.16666666666666669
+          }
+        },
+        {
+          "block_half_open": [
+            12,
+            24
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": -0.0009505369975430363,
+            "all_action_positive_fraction": 0.5694444444444444,
+            "contradiction_score_max": 12.908911803426678,
+            "contradiction_score_median": 1.4155091258808152,
+            "contradiction_score_min": 0.09451992168830553,
+            "exact_positive_action_count": 41,
+            "tie_aware_auroc": 0.47128245476003144,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": -0.0026768683546729327,
+            "top_quartile_positive_fraction": 0.5,
+            "top_quartile_positive_fraction_uplift": -0.06944444444444442
+          }
+        },
+        {
+          "block_half_open": [
+            24,
+            36
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": -0.0030945971168999894,
+            "all_action_positive_fraction": 0.4444444444444444,
+            "contradiction_score_max": 11.335646709667333,
+            "contradiction_score_median": 1.4742472827007387,
+            "contradiction_score_min": 0.08003225735284415,
+            "exact_positive_action_count": 32,
+            "tie_aware_auroc": 0.4390625,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": -0.004750715734045228,
+            "top_quartile_positive_fraction": 0.3888888888888889,
+            "top_quartile_positive_fraction_uplift": -0.055555555555555525
+          }
+        },
+        {
+          "block_half_open": [
+            36,
+            48
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": -0.005286575479796953,
+            "all_action_positive_fraction": 0.4583333333333333,
+            "contradiction_score_max": 29.195394885023333,
+            "contradiction_score_median": 1.4289262545801775,
+            "contradiction_score_min": 0.1601070428096164,
+            "exact_positive_action_count": 33,
+            "tie_aware_auroc": 0.5508935508935509,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": -0.0003726521795519666,
+            "top_quartile_positive_fraction": 0.5555555555555556,
+            "top_quartile_positive_fraction_uplift": 0.09722222222222227
+          }
+        }
+      ],
+      "training_row_count": 72
+    },
+    {
+      "action_count": 288,
+      "dataset_id": "legacy_monash:nn5_daily",
+      "metrics": {
+        "action_count": 288,
+        "all_action_mean_exact_credit": 0.0031274230788532536,
+        "all_action_positive_fraction": 0.6041666666666666,
+        "tie_aware_auroc": 0.5133595482960275,
+        "top_quartile_action_count": 72,
+        "top_quartile_mean_exact_credit": 0.0035665812031414426,
+        "top_quartile_positive_fraction": 0.5416666666666666,
+        "top_quartile_positive_fraction_uplift": -0.0625
+      },
+      "per_block": [
+        {
+          "block_half_open": [
+            0,
+            12
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.001480065810230781,
+            "all_action_positive_fraction": 0.6666666666666666,
+            "contradiction_score_max": 4.844863021942091,
+            "contradiction_score_median": 1.5998348677700527,
+            "contradiction_score_min": 0.7590324743001595,
+            "exact_positive_action_count": 48,
+            "tie_aware_auroc": 0.5303819444444444,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.0013217623270617245,
+            "top_quartile_positive_fraction": 0.6111111111111112,
+            "top_quartile_positive_fraction_uplift": -0.05555555555555547
+          }
+        },
+        {
+          "block_half_open": [
+            12,
+            24
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.0044113431373915,
+            "all_action_positive_fraction": 0.6388888888888888,
+            "contradiction_score_max": 6.656425012356308,
+            "contradiction_score_median": 1.692951967215615,
+            "contradiction_score_min": 0.6544468961023671,
+            "exact_positive_action_count": 46,
+            "tie_aware_auroc": 0.4874581939799331,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.0062903637823783255,
+            "top_quartile_positive_fraction": 0.6111111111111112,
+            "top_quartile_positive_fraction_uplift": -0.02777777777777768
+          }
+        },
+        {
+          "block_half_open": [
+            24,
+            36
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.0039061199603063687,
+            "all_action_positive_fraction": 0.5833333333333334,
+            "contradiction_score_max": 9.97632976151529,
+            "contradiction_score_median": 1.5459078860635478,
+            "contradiction_score_min": 0.5711975738291332,
+            "exact_positive_action_count": 42,
+            "tie_aware_auroc": 0.5976190476190476,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.009607350929976959,
+            "top_quartile_positive_fraction": 0.6111111111111112,
+            "top_quartile_positive_fraction_uplift": 0.02777777777777779
+          }
+        },
+        {
+          "block_half_open": [
+            36,
+            48
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.0027121634074843653,
+            "all_action_positive_fraction": 0.5277777777777778,
+            "contradiction_score_max": 5.439263982818138,
+            "contradiction_score_median": 1.6253408588027156,
+            "contradiction_score_min": 0.699129425909043,
+            "exact_positive_action_count": 38,
+            "tie_aware_auroc": 0.4504643962848297,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": -0.0029531522268512376,
+            "top_quartile_positive_fraction": 0.3333333333333333,
+            "top_quartile_positive_fraction_uplift": -0.19444444444444448
+          }
+        }
+      ],
+      "training_row_count": 72
+    },
+    {
+      "action_count": 288,
+      "dataset_id": "metr_la",
+      "metrics": {
+        "action_count": 288,
+        "all_action_mean_exact_credit": 0.010178205438916822,
+        "all_action_positive_fraction": 0.5590277777777778,
+        "tie_aware_auroc": 0.5679072724605077,
+        "top_quartile_action_count": 72,
+        "top_quartile_mean_exact_credit": 0.01896281153209464,
+        "top_quartile_positive_fraction": 0.6388888888888888,
+        "top_quartile_positive_fraction_uplift": 0.07986111111111105
+      },
+      "per_block": [
+        {
+          "block_half_open": [
+            0,
+            12
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.0039652864605289,
+            "all_action_positive_fraction": 0.5833333333333334,
+            "contradiction_score_max": 6.86256363822887,
+            "contradiction_score_median": 1.7784548357836982,
+            "contradiction_score_min": 0.534559834017557,
+            "exact_positive_action_count": 42,
+            "tie_aware_auroc": 0.5785714285714286,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.013164776837399488,
+            "top_quartile_positive_fraction": 0.7222222222222222,
+            "top_quartile_positive_fraction_uplift": 0.13888888888888884
+          }
+        },
+        {
+          "block_half_open": [
+            12,
+            24
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.014808563790306614,
+            "all_action_positive_fraction": 0.5416666666666666,
+            "contradiction_score_max": 7.023019018291662,
+            "contradiction_score_median": 1.526362450776973,
+            "contradiction_score_min": 0.15224038597227904,
+            "exact_positive_action_count": 39,
+            "tie_aware_auroc": 0.4794094794094794,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.027527759695092774,
+            "top_quartile_positive_fraction": 0.6111111111111112,
+            "top_quartile_positive_fraction_uplift": 0.06944444444444453
+          }
+        },
+        {
+          "block_half_open": [
+            24,
+            36
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.014998432623206492,
+            "all_action_positive_fraction": 0.5,
+            "contradiction_score_max": 8.723131792420062,
+            "contradiction_score_median": 1.590927017639614,
+            "contradiction_score_min": 0.31400893313044176,
+            "exact_positive_action_count": 36,
+            "tie_aware_auroc": 0.5848765432098766,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.028159152129924894,
+            "top_quartile_positive_fraction": 0.6111111111111112,
+            "top_quartile_positive_fraction_uplift": 0.11111111111111116
+          }
+        },
+        {
+          "block_half_open": [
+            36,
+            48
+          ],
+          "metrics": {
+            "action_count": 72,
+            "all_action_mean_exact_credit": 0.006940538881625282,
+            "all_action_positive_fraction": 0.6111111111111112,
+            "contradiction_score_max": 5.0734509408181445,
+            "contradiction_score_median": 2.1157390955880224,
+            "contradiction_score_min": 0.3958184080862855,
+            "exact_positive_action_count": 44,
+            "tie_aware_auroc": 0.5681818181818182,
+            "top_quartile_action_count": 18,
+            "top_quartile_mean_exact_credit": 0.006999557465961401,
+            "top_quartile_positive_fraction": 0.6111111111111112,
+            "top_quartile_positive_fraction_uplift": 0.0
+          }
+        }
+      ],
+      "training_row_count": 72
+    }
+  ],
+  "dataset_macro": {
+    "all_action_positive_fraction": 0.5390625,
+    "datasets_auroc_above_0_5": 2,
+    "datasets_top_quartile_mean_exact_credit_positive": 3,
+    "tie_aware_auroc": 0.49737098523818035,
+    "top_quartile_mean_exact_credit": 0.005490838856351217,
+    "top_quartile_positive_fraction": 0.5138888888888888,
+    "top_quartile_positive_fraction_uplift": -0.02517361111111112
+  },
+  "formal_transfer": false,
+  "gates": {
+    "at_least_3_of_4_datasets_auroc_above_0_5": {
+      "observed": 2,
+      "pass": false,
+      "threshold": 3
+    },
+    "at_least_3_of_4_datasets_top_quartile_mean_exact_credit_positive": {
+      "observed": 3,
+      "pass": true,
+      "threshold": 3
+    },
+    "dataset_macro_tie_aware_auroc_at_least_0_60": {
+      "observed": 0.49737098523818035,
+      "pass": false,
+      "threshold": 0.6
+    },
+    "dataset_macro_top_quartile_positive_fraction_uplift_at_least_0_10": {
+      "observed": -0.02517361111111112,
+      "pass": false,
+      "threshold": 0.1
+    },
+    "thresholds_frozen_before_run": true
+  },
+  "memory_claim": false,
+  "next_step": "Close peer outcome contradiction as an applicability Observation; do not add fields.",
+  "observation_supported": false,
+  "original_uci_target_query_opened": false,
+  "question": "Does disagreement between a training target block and targets of fixed-K peers with similar visible history rank actions whose removal is beneficial?",
+  "router_claim": false,
+  "schema_version": "e2-peer-outcome-contradiction-feasibility/1",
+  "scientific_role": "development_exposed_program_specific_observation_feasibility",
+  "source_report": "artifacts/functional/e2/source_natural_block_action_value_headroom_report.json",
+  "target_query_opened": false,
+  "utility_claim": false,
+  "verdict": "PEER_OUTCOME_CONTRADICTION_FEASIBILITY_FAIL"
+}

@@ -1,0 +1,34 @@
+S0 checker 审计 + reviewer 裁决记录（2026-08-13，三角色流程）
+
+Checker 审计结论（只读，七项全 PASS）：
+  a) 事实映射 PASS——三 Case 全部数值与四份报告逐字一致（含全精度浮点）
+  b) 硬约束合规 PASS——无 hash/sha 身份字段、无向量/Schema/Ledger、
+     未修改 group_fault.py/method.py/slow_agent.py/agent_core.py
+  c) 选项屏蔽 PASS——五类机械证据条件与用户裁决逐条一致
+  d) Reconciliation PASS——CONFLICT 优先、决策相关字段差异集、
+     context 差异不单独构成 NEW
+  e) 测试 24/24 实测通过
+  f) 漏斗数字重算一致（100/38/42/20/3 组/1 edit/H1=0）
+  g) T153 未写成自然 Diagnosis witness（产物零命中）
+  承重问题：无。
+
+非承重发现 7 项 → reviewer 裁决：
+  1. case-0002 数值 3 位取整（0.034/0.015/−0.1166）→ 已修：bootstrap
+     从 witness v3 报告程序读取全精度（group_replay/delayed_gain）。
+  2. evidence_t117 手写常量 → 已修：报告程序读取（同上）。
+  3. 漏斗 ② 区 bar 宽度分母错（3 组为分母致超宽）→ 已修：分母改为
+     组内窗口总数 11。
+  4. viz 硬编码 T117 两窗 gain → 已修：census exposed families 直读。
+  5. git 无 S0 提交（工作区含先前班次未提交改动）——记录在案，
+     提交决策归用户。
+  6. case-0001 positive_contrasts 含 block2 T102-104 正窗（12 个）——
+     接受（全部为已暴露 winsorize 正窗口，事实无误，docstring 已声明
+     口径"census rounds 直读"）。
+  7. reconcile 边界：case=POSITIVE vs group=CONFLICT → ABSTAIN
+     （_opposite 只定义 NEGATIVE 相反集）——与用户裁决字面口径一致，
+     S1 接通时若需扩展再显式裁决。
+
+reviewer 主线检查：S0 仍服务于自然 Harness 更新主线（fault_cases +
+Case store = 诊断 Memory；零新 Claim；漏斗如实呈现 H1=0 目标）。
+裁决：S0 关闭，进入 S1（选择题接口 witness——verdict 仅限
+BOUNDED_FAULT_SELECTION_WIRING_PASS）。

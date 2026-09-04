@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Case Evolution 当前状态漏斗（S0 + S3 正控链）</title>
+<style>
+  body { font-family: system-ui, "Microsoft YaHei", sans-serif;
+         margin: 2rem auto; max-width: 900px; padding: 0 1rem;
+         color: #1a1a1a; }
+  h1 { font-size: 1.3rem; }
+  h2 { font-size: 1.0rem; color: #444; margin-top: 2rem; }
+  .row { display: flex; align-items: center; margin: .55rem 0; }
+  .label { width: 300px; font-size: .85rem; flex-shrink: 0; }
+  .barwrap { flex: 1; background: #eee; border-radius: 3px; }
+  .bar { height: 22px; border-radius: 3px; min-width: 24px;
+         display: flex; align-items: center; }
+  .count { padding-left: 6px; font-size: .78rem; color: #fff;
+           font-weight: 600; text-shadow: 0 1px 1px #00000055; }
+  .sub { width: 320px; font-size: .72rem; color: #666;
+         padding-left: .8rem; }
+  .note { font-size: .78rem; color: #555; line-height: 1.5; }
+  .foot { margin-top: 2rem; font-size: .72rem; color: #888; }
+</style>
+</head>
+<body>
+<h1>Case Evolution — 当前状态漏斗（S0，2026-08-13）</h1>
+<p class="note">全部数据来自已暴露报告（development exposure——零新
+评估——零新 Claim）。本图如实呈现旧班次结果在"受限 Case 驱动"框架下的
+位置，不声称 Batch Evolution 已有效。</p>
+
+<h2>① 全部轨迹（probe 行）：100</h2>
+<div class="row"><div class="label">positive（≥ +0.005）</div><div class="barwrap"><div class="bar" style="width:38.0%;background:#2e7d32"><span class="count">38</span></div></div><div class="sub"></div></div>
+<div class="row"><div class="label">neutral</div><div class="barwrap"><div class="bar" style="width:20.0%;background:#9e9e9e"><span class="count">20</span></div></div><div class="sub"></div></div>
+<div class="row"><div class="label">negative（< −0.005）</div><div class="barwrap"><div class="bar" style="width:42.0%;background:#c62828"><span class="count">42</span></div></div><div class="sub"></div></div>
+
+<h2>② 重复失败组（同 workflow+sign ≥2 窗口）：3 组 / 11 窗</h2>
+<div class="row"><div class="label">wave3 winsorize family（4 series × 6 窗） — WORKFLOW_SUPPLY_GAP</div><div class="barwrap"><div class="bar" style="width:54.5%;background:#c62828"><span class="count">6</span></div></div><div class="sub">MATCH_ADD_EVIDENCE → case-0001</div></div><div class="row"><div class="label">T105 winsorize cluster（单 series × 3 窗） — NO_ACTIONABLE_FAULT</div><div class="barwrap"><div class="bar" style="width:27.3%;background:#e65100"><span class="count">3</span></div></div><div class="sub">MATCH_ADD_EVIDENCE → case-0003</div></div><div class="row"><div class="label">T117 winsorize group（同 series × 2 窗） — SCOPE_MEMORY_RISK_ERROR</div><div class="barwrap"><div class="bar" style="width:18.2%;background:#c62828"><span class="count">2</span></div></div><div class="sub">MATCH_ADD_EVIDENCE → case-0002</div></div>
+
+<h2>③ 受限五类 / 保底通道分类（确定性——fault_cases）</h2>
+<p class="note">选项屏蔽：无机械证据的类不可选。三个组分别落在
+WORKFLOW_SUPPLY_GAP（headroom 全失败 + 54 supply 穷举）/
+NO_ACTIONABLE_FAULT（两替代已测全失败——动作空间已测空）/
+SCOPE_MEMORY_RISK_ERROR（Support 正 + delayed 负——时间风险已测）。
+TASK_INTERPRETATION_ERROR 与 QUALITY_DIAGNOSIS_ERROR 无机械证据
+工件——如实屏蔽。</p>
+
+<h2>④ Case reconciliation：3 × MATCH_ADD_EVIDENCE</h2>
+<p class="note">三个组分别补充证据到三个初始 Case（普通顺序 ID——
+同一性由字段比较判定，无 Hash/SHA 身份体系）。</p>
+
+<h2>⑤ Edit：1 提案</h2>
+<p class="note">T117 hampel typed patch —— pending → delayed_rejected ——
+hampel 组内 Support 全正 / delayed @1032 −0.1166 拒绝。delayed 拒绝是正确行为（temporal-risk Case）。</p>
+
+<h2>⑥ H0 → H1：1（受控正控——NN5 development single-Episode）</h2>
+<p class="note">受限 Case 框架完整链首次跑通（S3/S3b）——详见下节。
+这是受控正例（development positive control），非自然 Batch——自然
+多轨迹归纳是下一阶段目标（P2 missingness 自然 block）。</p>
+
+<h2>⑦ 受限 Case 框架正控链（S3/S3b——已通过部分）</h2>
+<div class="row"><div class="label">失败（NN5 @632 repair_level_shift −0.0789）</div><div class="barwrap"><div class="bar" style="width:28px;background:#c62828"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">受限错误类型（WORKFLOW_DECISION_ERROR——确定性）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">Agent 选择 Edit Intent（impute_ar——D_patch 数值依据）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">Runtime 编译 Manifest（Agent 语义决策/Compiler 机械编译）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">Support/delayed（632→680→728 时间角色）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">Skill 持久化（single_repair_level_shift_replacement）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">正常入口检索（H1 候选池含 cand_skill_*）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">Support 授权执行（H1 +0.043 vs H0 abstain 0）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<div class="row"><div class="label">removal 行为变化（H0 空池 vs H1 探测 skill）</div><div class="barwrap"><div class="bar" style="width:28px;background:#2e7d32"><span class="count">✓</span></div></div><div class="sub">实线</div></div>
+<p class="note">NN5 development single-Episode 正控（S3/S3b——零新 Claim）。H1 实际执行 learned Skill +0.0430 vs 真实 H0（候选池空=abstain/identity）0 → 相对 abstain 改善 +0.0430（CONTROLLED_POLICY_GAIN_OVER_ABSTAIN）。存在未选择的更优 Workflow（repair_level_shift @728 +0.261）——oracle/headroom regret ≈ 0.2182——系统尚未找到已知更优 Workflow。未证明：自然 Batch 归纳 / Source Memory 价值。</p>
+
+<div class="foot">
+数据来源：w1_batch_census_dev_report.json（wave3 rounds）+
+w1_block2_census_ec_dev_report.json（block2 rounds）+
+w1_program_supply_dev_report.json（54 行）+ witness v3（T117 2 窗）+
+w1_problem_cases_bootstrap.json（三 Case + trace）。生成器：
+evaluation/functional/run_v1_case_funnel_viz.py。
+</div>
+</body>
+</html>

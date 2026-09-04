@@ -1,0 +1,4691 @@
+{
+  "stage": "P4F_MATCHED_COMPOSITION_CONTRAST",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T14:18:03.870797+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_MATCHED_ARM_CONTRAST",
+  "question": "is the origin-2856 gain attributable to the gaps, to the composition, or to the order",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 432,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "operators_added": 0,
+    "thresholds_changed": 0
+  },
+  "design": {
+    "roster_support_a": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T119",
+      "T12"
+    ],
+    "roster_support_b": [
+      "T120",
+      "T121",
+      "T122",
+      "T123",
+      "T124",
+      "T125",
+      "T126",
+      "T127",
+      "T128",
+      "T129",
+      "T13",
+      "T130",
+      "T131",
+      "T132",
+      "T133",
+      "T134",
+      "T135",
+      "T137",
+      "T138",
+      "T139"
+    ],
+    "origins": [
+      1176,
+      1896,
+      2136,
+      2376,
+      2616,
+      2856
+    ],
+    "arms": [
+      {
+        "arm_id": "identity",
+        "family": "baseline",
+        "steps": []
+      },
+      {
+        "arm_id": "period_median_complete",
+        "family": "completion_alone",
+        "steps": [
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete",
+        "family": "completion_alone",
+        "steps": [
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr",
+        "family": "outlier_alone",
+        "steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad",
+        "family": "outlier_alone",
+        "steps": [
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize",
+        "family": "outlier_alone",
+        "steps": [
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>outlier_iqr",
+        "family": "completion_then_outlier",
+        "steps": [
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          },
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr>period_median_complete",
+        "family": "outlier_then_completion",
+        "steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          },
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>outlier_mad",
+        "family": "completion_then_outlier",
+        "steps": [
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          },
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad>period_median_complete",
+        "family": "outlier_then_completion",
+        "steps": [
+          {
+            "op": "outlier_mad",
+            "params": {}
+          },
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>winsorize",
+        "family": "completion_then_outlier",
+        "steps": [
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          },
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize>period_median_complete",
+        "family": "outlier_then_completion",
+        "steps": [
+          {
+            "op": "winsorize",
+            "params": {}
+          },
+          {
+            "op": "period_median_complete",
+            "params": {
+              "period": 24,
+              "cycles": 3,
+              "min_donors": 2
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>outlier_iqr",
+        "family": "completion_then_outlier",
+        "steps": [
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          },
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr>period_complete",
+        "family": "outlier_then_completion",
+        "steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          },
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>outlier_mad",
+        "family": "completion_then_outlier",
+        "steps": [
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          },
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad>period_complete",
+        "family": "outlier_then_completion",
+        "steps": [
+          {
+            "op": "outlier_mad",
+            "params": {}
+          },
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>winsorize",
+        "family": "completion_then_outlier",
+        "steps": [
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          },
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize>period_complete",
+        "family": "outlier_then_completion",
+        "steps": [
+          {
+            "op": "winsorize",
+            "params": {}
+          },
+          {
+            "op": "period_complete",
+            "params": {
+              "period": 24
+            }
+          }
+        ]
+      }
+    ],
+    "data_versions": [
+      "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+      "EXPOSED_DEVELOPMENT__KDD2018_WITHOUT_MISSING"
+    ],
+    "matched_on": "same UIDs, same origins, same faces, same programs"
+  },
+  "with_missing": {
+    "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+    "arms": [
+      {
+        "arm_id": "identity",
+        "family": "baseline",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete",
+        "family": "completion_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": -0.011792,
+              "harmed_series": 13,
+              "max_single_series_harm": 1.330892,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.185264,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.378951,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.29502,
+              "harmed_series": 9,
+              "max_single_series_harm": 1.052465,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.314807,
+              "harmed_series": 13,
+              "max_single_series_harm": 1.696129,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.272116,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.561646,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.096449,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.675573,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.156124,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.714768,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.036711,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.713372,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.372336,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.803319,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.250487,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.433904,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.516755,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.288462,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.303792,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.125163,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete",
+        "family": "completion_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": -0.027342,
+              "harmed_series": 13,
+              "max_single_series_harm": 1.108816,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.217885,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.647936,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.572299,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.368921,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.129438,
+              "harmed_series": 12,
+              "max_single_series_harm": 0.864937,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.273862,
+              "harmed_series": 7,
+              "max_single_series_harm": 2.235227,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.081392,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.803545,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.092996,
+              "harmed_series": 10,
+              "max_single_series_harm": 0.835112,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.009967,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.994118,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.45781,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.674841,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.116907,
+              "harmed_series": 10,
+              "max_single_series_harm": 1.123907,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.436222,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.736144,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.107731,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.346185,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr",
+        "family": "outlier_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.279629,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.137522,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.100252,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.289589,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.288661,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.00999,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.12896,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.303087,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.163006,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.341583,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.070371,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.393671,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad",
+        "family": "outlier_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.14559,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.949517,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.304678,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.102705,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.424732,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.173032,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.055547,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.569995,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.292558,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.43889,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.275742,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.0797,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.101519,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.471266,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.043147,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.858562,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.511211,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.265173,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.213251,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.337262,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.402636,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.77372,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.099431,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.650676,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize",
+        "family": "outlier_alone",
+        "stable_origins": [
+          2136
+        ],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.14118,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.309128,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.347895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.723234,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.358487,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.697454,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.081138,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.454205,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.25879,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.278922,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.236527,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.058222,
+              "admitted": true
+            },
+            "stable_on_both_faces": true
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.14457,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.757638,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.185663,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.5173,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.306903,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.435026,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.152814,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.91185,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.336944,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.938818,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.040269,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.418414,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>outlier_iqr",
+        "family": "completion_then_outlier",
+        "stable_origins": [
+          2856
+        ],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.299527,
+              "harmed_series": 6,
+              "max_single_series_harm": 1.110831,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.239263,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.194058,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.54331,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.844564,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.177603,
+              "harmed_series": 13,
+              "max_single_series_harm": 0.864916,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.486665,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.239445,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.188424,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.784701,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.231227,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.390052,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.102167,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.424154,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.73626,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.854948,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.300627,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.670891,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.649614,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.017225,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.287785,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.076118,
+              "admitted": true
+            },
+            "stable_on_both_faces": true
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr>period_median_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.279629,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.137522,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.100252,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.289589,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.288661,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.00999,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.12896,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.303087,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.163006,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.341583,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.070371,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.393671,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>outlier_mad",
+        "family": "completion_then_outlier",
+        "stable_origins": [
+          2856
+        ],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.381772,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.990962,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.227767,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.394608,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.576566,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.702619,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.200136,
+              "harmed_series": 13,
+              "max_single_series_harm": 1.174792,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.491525,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.212976,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.189912,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.810549,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.254628,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.493197,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.058739,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.712809,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.755302,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.965516,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.198494,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.903886,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.610798,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.185067,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.316694,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.099177,
+              "admitted": true
+            },
+            "stable_on_both_faces": true
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad>period_median_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.14559,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.949517,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.304678,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.102705,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.424732,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.173032,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.055547,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.569995,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.292558,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.43889,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.275742,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.0797,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.101519,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.471266,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.043147,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.858562,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.511211,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.265173,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.213251,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.337262,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.402636,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.77372,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.099431,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.650676,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>winsorize",
+        "family": "completion_then_outlier",
+        "stable_origins": [
+          2856
+        ],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.238817,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.050319,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.386193,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.126741,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.571389,
+              "harmed_series": 8,
+              "max_single_series_harm": 1.024852,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.171844,
+              "harmed_series": 13,
+              "max_single_series_harm": 0.885649,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.517224,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.253541,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.191927,
+              "harmed_series": 10,
+              "max_single_series_harm": 0.863198,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.231408,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.520986,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.14718,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.491335,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.703927,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.867314,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.41082,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.436946,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.562038,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.254768,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.316754,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.036438,
+              "admitted": true
+            },
+            "stable_on_both_faces": true
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize>period_median_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [
+          2136
+        ],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.14118,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.309128,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.347895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.723234,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.358487,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.697454,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.081138,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.454205,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.25879,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.278922,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.236527,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.058222,
+              "admitted": true
+            },
+            "stable_on_both_faces": true
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.14457,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.757638,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.185663,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.5173,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.306903,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.435026,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.152814,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.91185,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.336944,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.938818,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.040269,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.418414,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>outlier_iqr",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.273491,
+              "harmed_series": 9,
+              "max_single_series_harm": 1.08323,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.301904,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.550558,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.615911,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.495249,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.021847,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.93297,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.438492,
+              "harmed_series": 5,
+              "max_single_series_harm": 1.136653,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.157316,
+              "harmed_series": 11,
+              "max_single_series_harm": 1.334695,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.040247,
+              "harmed_series": 10,
+              "max_single_series_harm": 0.986613,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.131754,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.034411,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.589101,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.737828,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.17918,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.81308,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.694505,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.223358,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.190765,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.107203,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr>period_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.279629,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.137522,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.100252,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.289589,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.288661,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.00999,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.12896,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.303087,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.163006,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.341583,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "WINDOW_VERIFIER_REJECTED (1 windows)"
+            },
+            "support_b": {
+              "aggregate_gain": 0.070371,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.393671,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>outlier_mad",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.278992,
+              "harmed_series": 9,
+              "max_single_series_harm": 1.068145,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.29001,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.229724,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.660299,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.768283,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.108035,
+              "harmed_series": 13,
+              "max_single_series_harm": 1.42071,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.402158,
+              "harmed_series": 4,
+              "max_single_series_harm": 1.174099,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.084932,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.44474,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": -0.023044,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.100952,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.05528,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.020643,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.607322,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.838213,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.061985,
+              "harmed_series": 8,
+              "max_single_series_harm": 1.262143,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.650187,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.217079,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.170752,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.282961,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad>period_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.14559,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.949517,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.304678,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.102705,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.424732,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.173032,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.055547,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.569995,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.292558,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.43889,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.275742,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.0797,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.101519,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.471266,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.043147,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.858562,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.511211,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.265173,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.213251,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.337262,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.402636,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.77372,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.099431,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.650676,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>winsorize",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.331556,
+              "harmed_series": 8,
+              "max_single_series_harm": 1.38649,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.169099,
+              "harmed_series": 6,
+              "max_single_series_harm": 1.006639,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.683518,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.757208,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": -0.128003,
+              "harmed_series": 11,
+              "max_single_series_harm": 1.333573,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.421227,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.877758,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.066159,
+              "harmed_series": 12,
+              "max_single_series_harm": 1.673076,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.050027,
+              "harmed_series": 12,
+              "max_single_series_harm": 0.974637,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.086445,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.743206,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.658158,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.631027,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.105402,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.802303,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.632546,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.217036,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.207462,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.237997,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize>period_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [
+          2136
+        ],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.14118,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.309128,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.347895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.723234,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.358487,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.697454,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.081138,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.454205,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.25879,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.278922,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.236527,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.058222,
+              "admitted": true
+            },
+            "stable_on_both_faces": true
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.14457,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.757638,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.185663,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.5173,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.306903,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.435026,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.152814,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.91185,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.336944,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.938818,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.040269,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.418414,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      }
+    ]
+  },
+  "without_missing": {
+    "data_version": "EXPOSED_DEVELOPMENT__KDD2018_WITHOUT_MISSING",
+    "arms": [
+      {
+        "arm_id": "identity",
+        "family": "baseline",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete",
+        "family": "completion_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete",
+        "family": "completion_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.0,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr",
+        "family": "outlier_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.216482,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.452421,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": -0.195489,
+              "harmed_series": 12,
+              "max_single_series_harm": 3.409994,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.116438,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.663291,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.115987,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.425155,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.204876,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.275112,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.174102,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.1636,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad",
+        "family": "outlier_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.505086,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.114481,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.217881,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.36472,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 1.17524,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.167581,
+              "harmed_series": 8,
+              "max_single_series_harm": 3.485378,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.122668,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.189878,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.112804,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.831892,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.475914,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.477958,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.066657,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.332239,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.563345,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.099526,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.25106,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.192843,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.447895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.12641,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.18295,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.176603,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize",
+        "family": "outlier_alone",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.396699,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.787407,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.344133,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.003558,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.798466,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.207996,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.012031,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.902718,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": -0.050795,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.981683,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.259328,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.015274,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.237548,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.006531,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.186346,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.083495,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.410958,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.877739,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.222956,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.174903,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.252482,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.423222,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.198316,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.26625,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>outlier_iqr",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.216482,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.452421,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": -0.195489,
+              "harmed_series": 12,
+              "max_single_series_harm": 3.409994,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.116438,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.663291,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.115987,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.425155,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.204876,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.275112,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.174102,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.1636,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr>period_median_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.216482,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.452421,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": -0.195489,
+              "harmed_series": 12,
+              "max_single_series_harm": 3.409994,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.116438,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.663291,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.115987,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.425155,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.204876,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.275112,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.174102,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.1636,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>outlier_mad",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.505086,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.114481,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.217881,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.36472,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 1.17524,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.167581,
+              "harmed_series": 8,
+              "max_single_series_harm": 3.485378,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.122668,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.189878,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.112804,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.831892,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.475914,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.477958,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.066657,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.332239,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.563345,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.099526,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.25106,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.192843,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.447895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.12641,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.18295,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.176603,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad>period_median_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.505086,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.114481,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.217881,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.36472,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 1.17524,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.167581,
+              "harmed_series": 8,
+              "max_single_series_harm": 3.485378,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.122668,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.189878,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.112804,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.831892,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.475914,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.477958,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.066657,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.332239,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.563345,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.099526,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.25106,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.192843,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.447895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.12641,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.18295,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.176603,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_median_complete>winsorize",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.396699,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.787407,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.344133,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.003558,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.798466,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.207996,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.012031,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.902718,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": -0.050795,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.981683,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.259328,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.015274,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.237548,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.006531,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.186346,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.083495,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.410958,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.877739,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.222956,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.174903,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.252482,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.423222,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.198316,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.26625,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize>period_median_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.396699,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.787407,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.344133,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.003558,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.798466,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.207996,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.012031,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.902718,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": -0.050795,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.981683,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.259328,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.015274,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.237548,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.006531,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.186346,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.083495,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.410958,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.877739,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.222956,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.174903,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.252482,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.423222,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.198316,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.26625,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>outlier_iqr",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.216482,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.452421,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": -0.195489,
+              "harmed_series": 12,
+              "max_single_series_harm": 3.409994,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.116438,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.663291,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.115987,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.425155,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.204876,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.275112,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.174102,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.1636,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_iqr>period_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.216482,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.452421,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": -0.195489,
+              "harmed_series": 12,
+              "max_single_series_harm": 3.409994,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.116438,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.663291,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.115987,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.425155,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.204876,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.275112,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "failed": "RuntimeError: training context reached scale floor"
+            },
+            "support_b": {
+              "aggregate_gain": 0.174102,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.1636,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>outlier_mad",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.505086,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.114481,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.217881,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.36472,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 1.17524,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.167581,
+              "harmed_series": 8,
+              "max_single_series_harm": 3.485378,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.122668,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.189878,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.112804,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.831892,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.475914,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.477958,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.066657,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.332239,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.563345,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.099526,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.25106,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.192843,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.447895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.12641,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.18295,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.176603,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "outlier_mad>period_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.505086,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.114481,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.217881,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.36472,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 1.17524,
+              "harmed_series": 0,
+              "max_single_series_harm": 0.0,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": -0.167581,
+              "harmed_series": 8,
+              "max_single_series_harm": 3.485378,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": 0.122668,
+              "harmed_series": 7,
+              "max_single_series_harm": 0.189878,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.112804,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.831892,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.475914,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.477958,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.066657,
+              "harmed_series": 8,
+              "max_single_series_harm": 0.332239,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.563345,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.099526,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.25106,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.192843,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.447895,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.12641,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.18295,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.176603,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "period_complete>winsorize",
+        "family": "completion_then_outlier",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.396699,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.787407,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.344133,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.003558,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.798466,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.207996,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.012031,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.902718,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": -0.050795,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.981683,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.259328,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.015274,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.237548,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.006531,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.186346,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.083495,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.410958,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.877739,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.222956,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.174903,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.252482,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.423222,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.198316,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.26625,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      },
+      {
+        "arm_id": "winsorize>period_complete",
+        "family": "outlier_then_completion",
+        "stable_origins": [],
+        "per_origin": [
+          {
+            "origin": 1176,
+            "support_a": {
+              "aggregate_gain": 0.396699,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.787407,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.344133,
+              "harmed_series": 3,
+              "max_single_series_harm": 1.003558,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 1896,
+            "support_a": {
+              "aggregate_gain": 0.798466,
+              "harmed_series": 2,
+              "max_single_series_harm": 0.207996,
+              "admitted": true
+            },
+            "support_b": {
+              "aggregate_gain": 0.012031,
+              "harmed_series": 9,
+              "max_single_series_harm": 0.902718,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2136,
+            "support_a": {
+              "aggregate_gain": -0.050795,
+              "harmed_series": 11,
+              "max_single_series_harm": 0.981683,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.259328,
+              "harmed_series": 1,
+              "max_single_series_harm": 0.015274,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2376,
+            "support_a": {
+              "aggregate_gain": 0.237548,
+              "harmed_series": 7,
+              "max_single_series_harm": 1.006531,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.186346,
+              "harmed_series": 3,
+              "max_single_series_harm": 0.083495,
+              "admitted": true
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2616,
+            "support_a": {
+              "aggregate_gain": 0.410958,
+              "harmed_series": 6,
+              "max_single_series_harm": 0.877739,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.222956,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.174903,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          },
+          {
+            "origin": 2856,
+            "support_a": {
+              "aggregate_gain": 0.252482,
+              "harmed_series": 4,
+              "max_single_series_harm": 0.423222,
+              "admitted": false
+            },
+            "support_b": {
+              "aggregate_gain": 0.198316,
+              "harmed_series": 5,
+              "max_single_series_harm": 0.26625,
+              "admitted": false
+            },
+            "stable_on_both_faces": false
+          }
+        ]
+      }
+    ]
+  },
+  "attribution": {
+    "completion_is_inert_on_filled_cache": true,
+    "sanity_check_reading": "completion operators do nothing once the gaps are filled, as they must",
+    "per_pair_per_origin": [
+      {
+        "origin": 1176,
+        "completion": "period_median_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.299527,
+          "best_part": -0.011792,
+          "excess_over_best_part": 0.311319,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.239263,
+          "best_part": 0.279629,
+          "excess_over_best_part": -0.040366,
+          "reverse": 0.279629,
+          "order_effect": -0.040366,
+          "same_arm_on_filled_data": 0.216482
+        }
+      },
+      {
+        "origin": 1896,
+        "completion": "period_median_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.54331,
+          "best_part": 0.29502,
+          "excess_over_best_part": 0.24829,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": -0.177603,
+          "best_part": 0.100252,
+          "excess_over_best_part": -0.277855,
+          "reverse": 0.100252,
+          "order_effect": -0.277855,
+          "same_arm_on_filled_data": -0.195489
+        }
+      },
+      {
+        "origin": 2136,
+        "completion": "period_median_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.486665,
+          "best_part": 0.272116,
+          "excess_over_best_part": 0.214549,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.188424,
+          "best_part": 0.288661,
+          "excess_over_best_part": -0.100237,
+          "reverse": 0.288661,
+          "order_effect": -0.100237,
+          "same_arm_on_filled_data": 0.116438
+        }
+      },
+      {
+        "origin": 2376,
+        "completion": "period_median_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.231227,
+          "best_part": 0.156124,
+          "excess_over_best_part": 0.075103,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.102167,
+          "best_part": 0.12896,
+          "excess_over_best_part": -0.026793,
+          "reverse": 0.12896,
+          "order_effect": -0.026793,
+          "same_arm_on_filled_data": 0.115987
+        }
+      },
+      {
+        "origin": 2616,
+        "completion": "period_median_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.73626,
+          "best_part": 0.372336,
+          "excess_over_best_part": 0.363924,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.300627,
+          "best_part": 0.250487,
+          "excess_over_best_part": 0.05014,
+          "reverse": 0.163006,
+          "order_effect": 0.137621,
+          "same_arm_on_filled_data": 0.204876
+        }
+      },
+      {
+        "origin": 2856,
+        "completion": "period_median_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.649614,
+          "best_part": 0.516755,
+          "excess_over_best_part": 0.132859,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.287785,
+          "best_part": 0.303792,
+          "excess_over_best_part": -0.016007,
+          "reverse": 0.070371,
+          "order_effect": 0.217414,
+          "same_arm_on_filled_data": 0.174102
+        }
+      },
+      {
+        "origin": 1176,
+        "completion": "period_median_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.381772,
+          "best_part": 0.14559,
+          "excess_over_best_part": 0.236182,
+          "reverse": 0.14559,
+          "order_effect": 0.236182,
+          "same_arm_on_filled_data": 0.505086
+        },
+        "support_b": {
+          "pair": 0.227767,
+          "best_part": 0.304678,
+          "excess_over_best_part": -0.076911,
+          "reverse": 0.304678,
+          "order_effect": -0.076911,
+          "same_arm_on_filled_data": 0.217881
+        }
+      },
+      {
+        "origin": 1896,
+        "completion": "period_median_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.576566,
+          "best_part": 0.424732,
+          "excess_over_best_part": 0.151834,
+          "reverse": 0.424732,
+          "order_effect": 0.151834,
+          "same_arm_on_filled_data": 1.17524
+        },
+        "support_b": {
+          "pair": -0.200136,
+          "best_part": -0.055547,
+          "excess_over_best_part": -0.144589,
+          "reverse": -0.055547,
+          "order_effect": -0.144589,
+          "same_arm_on_filled_data": -0.167581
+        }
+      },
+      {
+        "origin": 2136,
+        "completion": "period_median_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.491525,
+          "best_part": 0.292558,
+          "excess_over_best_part": 0.198967,
+          "reverse": 0.292558,
+          "order_effect": 0.198967,
+          "same_arm_on_filled_data": 0.122668
+        },
+        "support_b": {
+          "pair": 0.189912,
+          "best_part": 0.275742,
+          "excess_over_best_part": -0.08583,
+          "reverse": 0.275742,
+          "order_effect": -0.08583,
+          "same_arm_on_filled_data": 0.112804
+        }
+      },
+      {
+        "origin": 2376,
+        "completion": "period_median_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.254628,
+          "best_part": 0.156124,
+          "excess_over_best_part": 0.098504,
+          "reverse": 0.101519,
+          "order_effect": 0.153109,
+          "same_arm_on_filled_data": 0.475914
+        },
+        "support_b": {
+          "pair": 0.058739,
+          "best_part": 0.043147,
+          "excess_over_best_part": 0.015592,
+          "reverse": 0.043147,
+          "order_effect": 0.015592,
+          "same_arm_on_filled_data": 0.066657
+        }
+      },
+      {
+        "origin": 2616,
+        "completion": "period_median_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.755302,
+          "best_part": 0.511211,
+          "excess_over_best_part": 0.244091,
+          "reverse": 0.511211,
+          "order_effect": 0.244091,
+          "same_arm_on_filled_data": 0.563345
+        },
+        "support_b": {
+          "pair": 0.198494,
+          "best_part": 0.250487,
+          "excess_over_best_part": -0.051993,
+          "reverse": 0.213251,
+          "order_effect": -0.014757,
+          "same_arm_on_filled_data": 0.25106
+        }
+      },
+      {
+        "origin": 2856,
+        "completion": "period_median_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.610798,
+          "best_part": 0.516755,
+          "excess_over_best_part": 0.094043,
+          "reverse": 0.402636,
+          "order_effect": 0.208162,
+          "same_arm_on_filled_data": 0.447895
+        },
+        "support_b": {
+          "pair": 0.316694,
+          "best_part": 0.303792,
+          "excess_over_best_part": 0.012902,
+          "reverse": 0.099431,
+          "order_effect": 0.217263,
+          "same_arm_on_filled_data": 0.18295
+        }
+      },
+      {
+        "origin": 1176,
+        "completion": "period_median_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.238817,
+          "best_part": 0.14118,
+          "excess_over_best_part": 0.097637,
+          "reverse": 0.14118,
+          "order_effect": 0.097637,
+          "same_arm_on_filled_data": 0.396699
+        },
+        "support_b": {
+          "pair": 0.386193,
+          "best_part": 0.347895,
+          "excess_over_best_part": 0.038298,
+          "reverse": 0.347895,
+          "order_effect": 0.038298,
+          "same_arm_on_filled_data": 0.344133
+        }
+      },
+      {
+        "origin": 1896,
+        "completion": "period_median_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.571389,
+          "best_part": 0.358487,
+          "excess_over_best_part": 0.212902,
+          "reverse": 0.358487,
+          "order_effect": 0.212902,
+          "same_arm_on_filled_data": 0.798466
+        },
+        "support_b": {
+          "pair": -0.171844,
+          "best_part": 0.081138,
+          "excess_over_best_part": -0.252982,
+          "reverse": 0.081138,
+          "order_effect": -0.252982,
+          "same_arm_on_filled_data": 0.012031
+        }
+      },
+      {
+        "origin": 2136,
+        "completion": "period_median_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.517224,
+          "best_part": 0.272116,
+          "excess_over_best_part": 0.245108,
+          "reverse": 0.25879,
+          "order_effect": 0.258434,
+          "same_arm_on_filled_data": -0.050795
+        },
+        "support_b": {
+          "pair": 0.191927,
+          "best_part": 0.236527,
+          "excess_over_best_part": -0.0446,
+          "reverse": 0.236527,
+          "order_effect": -0.0446,
+          "same_arm_on_filled_data": 0.259328
+        }
+      },
+      {
+        "origin": 2376,
+        "completion": "period_median_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.231408,
+          "best_part": 0.156124,
+          "excess_over_best_part": 0.075284,
+          "reverse": 0.14457,
+          "order_effect": 0.086838,
+          "same_arm_on_filled_data": 0.237548
+        },
+        "support_b": {
+          "pair": 0.14718,
+          "best_part": 0.185663,
+          "excess_over_best_part": -0.038483,
+          "reverse": 0.185663,
+          "order_effect": -0.038483,
+          "same_arm_on_filled_data": 0.186346
+        }
+      },
+      {
+        "origin": 2616,
+        "completion": "period_median_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.703927,
+          "best_part": 0.372336,
+          "excess_over_best_part": 0.331591,
+          "reverse": 0.306903,
+          "order_effect": 0.397024,
+          "same_arm_on_filled_data": 0.410958
+        },
+        "support_b": {
+          "pair": 0.41082,
+          "best_part": 0.250487,
+          "excess_over_best_part": 0.160333,
+          "reverse": 0.152814,
+          "order_effect": 0.258006,
+          "same_arm_on_filled_data": 0.222956
+        }
+      },
+      {
+        "origin": 2856,
+        "completion": "period_median_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.562038,
+          "best_part": 0.516755,
+          "excess_over_best_part": 0.045283,
+          "reverse": 0.336944,
+          "order_effect": 0.225094,
+          "same_arm_on_filled_data": 0.252482
+        },
+        "support_b": {
+          "pair": 0.316754,
+          "best_part": 0.303792,
+          "excess_over_best_part": 0.012962,
+          "reverse": 0.040269,
+          "order_effect": 0.276485,
+          "same_arm_on_filled_data": 0.198316
+        }
+      },
+      {
+        "origin": 1176,
+        "completion": "period_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.273491,
+          "best_part": -0.027342,
+          "excess_over_best_part": 0.300833,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.301904,
+          "best_part": 0.279629,
+          "excess_over_best_part": 0.022275,
+          "reverse": 0.279629,
+          "order_effect": 0.022275,
+          "same_arm_on_filled_data": 0.216482
+        }
+      },
+      {
+        "origin": 1896,
+        "completion": "period_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.615911,
+          "best_part": 0.572299,
+          "excess_over_best_part": 0.043612,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": -0.021847,
+          "best_part": 0.100252,
+          "excess_over_best_part": -0.122099,
+          "reverse": 0.100252,
+          "order_effect": -0.122099,
+          "same_arm_on_filled_data": -0.195489
+        }
+      },
+      {
+        "origin": 2136,
+        "completion": "period_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.438492,
+          "best_part": 0.273862,
+          "excess_over_best_part": 0.16463,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.157316,
+          "best_part": 0.288661,
+          "excess_over_best_part": -0.131345,
+          "reverse": 0.288661,
+          "order_effect": -0.131345,
+          "same_arm_on_filled_data": 0.116438
+        }
+      },
+      {
+        "origin": 2376,
+        "completion": "period_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.040247,
+          "best_part": 0.092996,
+          "excess_over_best_part": -0.052749,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.131754,
+          "best_part": 0.12896,
+          "excess_over_best_part": 0.002794,
+          "reverse": 0.12896,
+          "order_effect": 0.002794,
+          "same_arm_on_filled_data": 0.115987
+        }
+      },
+      {
+        "origin": 2616,
+        "completion": "period_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.589101,
+          "best_part": 0.45781,
+          "excess_over_best_part": 0.131291,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.17918,
+          "best_part": 0.163006,
+          "excess_over_best_part": 0.016174,
+          "reverse": 0.163006,
+          "order_effect": 0.016174,
+          "same_arm_on_filled_data": 0.204876
+        }
+      },
+      {
+        "origin": 2856,
+        "completion": "period_complete",
+        "outlier": "outlier_iqr",
+        "support_a": {
+          "pair": 0.694505,
+          "best_part": 0.436222,
+          "excess_over_best_part": 0.258283,
+          "reverse": null,
+          "order_effect": null,
+          "same_arm_on_filled_data": null
+        },
+        "support_b": {
+          "pair": 0.190765,
+          "best_part": 0.107731,
+          "excess_over_best_part": 0.083034,
+          "reverse": 0.070371,
+          "order_effect": 0.120394,
+          "same_arm_on_filled_data": 0.174102
+        }
+      },
+      {
+        "origin": 1176,
+        "completion": "period_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.278992,
+          "best_part": 0.14559,
+          "excess_over_best_part": 0.133402,
+          "reverse": 0.14559,
+          "order_effect": 0.133402,
+          "same_arm_on_filled_data": 0.505086
+        },
+        "support_b": {
+          "pair": 0.29001,
+          "best_part": 0.304678,
+          "excess_over_best_part": -0.014668,
+          "reverse": 0.304678,
+          "order_effect": -0.014668,
+          "same_arm_on_filled_data": 0.217881
+        }
+      },
+      {
+        "origin": 1896,
+        "completion": "period_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.660299,
+          "best_part": 0.572299,
+          "excess_over_best_part": 0.088,
+          "reverse": 0.424732,
+          "order_effect": 0.235567,
+          "same_arm_on_filled_data": 1.17524
+        },
+        "support_b": {
+          "pair": -0.108035,
+          "best_part": -0.055547,
+          "excess_over_best_part": -0.052488,
+          "reverse": -0.055547,
+          "order_effect": -0.052488,
+          "same_arm_on_filled_data": -0.167581
+        }
+      },
+      {
+        "origin": 2136,
+        "completion": "period_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.402158,
+          "best_part": 0.292558,
+          "excess_over_best_part": 0.1096,
+          "reverse": 0.292558,
+          "order_effect": 0.1096,
+          "same_arm_on_filled_data": 0.122668
+        },
+        "support_b": {
+          "pair": 0.084932,
+          "best_part": 0.275742,
+          "excess_over_best_part": -0.19081,
+          "reverse": 0.275742,
+          "order_effect": -0.19081,
+          "same_arm_on_filled_data": 0.112804
+        }
+      },
+      {
+        "origin": 2376,
+        "completion": "period_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": -0.023044,
+          "best_part": 0.101519,
+          "excess_over_best_part": -0.124563,
+          "reverse": 0.101519,
+          "order_effect": -0.124563,
+          "same_arm_on_filled_data": 0.475914
+        },
+        "support_b": {
+          "pair": 0.05528,
+          "best_part": 0.043147,
+          "excess_over_best_part": 0.012133,
+          "reverse": 0.043147,
+          "order_effect": 0.012133,
+          "same_arm_on_filled_data": 0.066657
+        }
+      },
+      {
+        "origin": 2616,
+        "completion": "period_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.607322,
+          "best_part": 0.511211,
+          "excess_over_best_part": 0.096111,
+          "reverse": 0.511211,
+          "order_effect": 0.096111,
+          "same_arm_on_filled_data": 0.563345
+        },
+        "support_b": {
+          "pair": 0.061985,
+          "best_part": 0.213251,
+          "excess_over_best_part": -0.151266,
+          "reverse": 0.213251,
+          "order_effect": -0.151266,
+          "same_arm_on_filled_data": 0.25106
+        }
+      },
+      {
+        "origin": 2856,
+        "completion": "period_complete",
+        "outlier": "outlier_mad",
+        "support_a": {
+          "pair": 0.650187,
+          "best_part": 0.436222,
+          "excess_over_best_part": 0.213965,
+          "reverse": 0.402636,
+          "order_effect": 0.247551,
+          "same_arm_on_filled_data": 0.447895
+        },
+        "support_b": {
+          "pair": 0.170752,
+          "best_part": 0.107731,
+          "excess_over_best_part": 0.063021,
+          "reverse": 0.099431,
+          "order_effect": 0.071321,
+          "same_arm_on_filled_data": 0.18295
+        }
+      },
+      {
+        "origin": 1176,
+        "completion": "period_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.331556,
+          "best_part": 0.14118,
+          "excess_over_best_part": 0.190376,
+          "reverse": 0.14118,
+          "order_effect": 0.190376,
+          "same_arm_on_filled_data": 0.396699
+        },
+        "support_b": {
+          "pair": 0.169099,
+          "best_part": 0.347895,
+          "excess_over_best_part": -0.178796,
+          "reverse": 0.347895,
+          "order_effect": -0.178796,
+          "same_arm_on_filled_data": 0.344133
+        }
+      },
+      {
+        "origin": 1896,
+        "completion": "period_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.683518,
+          "best_part": 0.572299,
+          "excess_over_best_part": 0.111219,
+          "reverse": 0.358487,
+          "order_effect": 0.325031,
+          "same_arm_on_filled_data": 0.798466
+        },
+        "support_b": {
+          "pair": -0.128003,
+          "best_part": 0.081138,
+          "excess_over_best_part": -0.209141,
+          "reverse": 0.081138,
+          "order_effect": -0.209141,
+          "same_arm_on_filled_data": 0.012031
+        }
+      },
+      {
+        "origin": 2136,
+        "completion": "period_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.421227,
+          "best_part": 0.273862,
+          "excess_over_best_part": 0.147365,
+          "reverse": 0.25879,
+          "order_effect": 0.162437,
+          "same_arm_on_filled_data": -0.050795
+        },
+        "support_b": {
+          "pair": 0.066159,
+          "best_part": 0.236527,
+          "excess_over_best_part": -0.170368,
+          "reverse": 0.236527,
+          "order_effect": -0.170368,
+          "same_arm_on_filled_data": 0.259328
+        }
+      },
+      {
+        "origin": 2376,
+        "completion": "period_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.050027,
+          "best_part": 0.14457,
+          "excess_over_best_part": -0.094543,
+          "reverse": 0.14457,
+          "order_effect": -0.094543,
+          "same_arm_on_filled_data": 0.237548
+        },
+        "support_b": {
+          "pair": 0.086445,
+          "best_part": 0.185663,
+          "excess_over_best_part": -0.099218,
+          "reverse": 0.185663,
+          "order_effect": -0.099218,
+          "same_arm_on_filled_data": 0.186346
+        }
+      },
+      {
+        "origin": 2616,
+        "completion": "period_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.658158,
+          "best_part": 0.45781,
+          "excess_over_best_part": 0.200348,
+          "reverse": 0.306903,
+          "order_effect": 0.351255,
+          "same_arm_on_filled_data": 0.410958
+        },
+        "support_b": {
+          "pair": 0.105402,
+          "best_part": 0.152814,
+          "excess_over_best_part": -0.047412,
+          "reverse": 0.152814,
+          "order_effect": -0.047412,
+          "same_arm_on_filled_data": 0.222956
+        }
+      },
+      {
+        "origin": 2856,
+        "completion": "period_complete",
+        "outlier": "winsorize",
+        "support_a": {
+          "pair": 0.632546,
+          "best_part": 0.436222,
+          "excess_over_best_part": 0.196324,
+          "reverse": 0.336944,
+          "order_effect": 0.295602,
+          "same_arm_on_filled_data": 0.252482
+        },
+        "support_b": {
+          "pair": 0.207462,
+          "best_part": 0.107731,
+          "excess_over_best_part": 0.099731,
+          "reverse": 0.040269,
+          "order_effect": 0.167193,
+          "same_arm_on_filled_data": 0.198316
+        }
+      }
+    ]
+  },
+  "wall_seconds": 40.6,
+  "releases": "NONE"
+}

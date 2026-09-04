@@ -1,0 +1,50 @@
+{
+  "experiment_id": "v1-kdd2018-headroom-diagnosis",
+  "note": "development 归因（零 LLM；已暴露 cohort；不产生新 Claim/不消费 virgin）",
+  "origin": 600,
+  "delayed": 648,
+  "results": [
+    {
+      "op": "winsorize",
+      "verifier": true,
+      "checked_windows": 60,
+      "support_gain": -0.028884925444964127,
+      "support_passed": true,
+      "behavior_point_count": 1124,
+      "delayed_gain": 0.09537601232449466,
+      "delayed_ok": true
+    },
+    {
+      "op": "outlier_iqr",
+      "verifier": false,
+      "checked_windows": 60
+    },
+    {
+      "op": "outlier_mad",
+      "verifier": true,
+      "checked_windows": 60,
+      "support_gain": -0.0013703976823362662,
+      "support_passed": true,
+      "behavior_point_count": 284,
+      "delayed_gain": -0.11746137035165916,
+      "delayed_ok": false
+    },
+    {
+      "op": "hampel_filter",
+      "verifier": true,
+      "checked_windows": 60,
+      "support_gain": -0.24059255595771822,
+      "support_passed": true,
+      "behavior_point_count": 812,
+      "delayed_gain": -0.016756949098693852,
+      "delayed_ok": false
+    }
+  ],
+  "has_headroom": [],
+  "stable_negative": [
+    "outlier_mad",
+    "hampel_filter"
+  ],
+  "context_unstable": [],
+  "verdict": "KDD_OUTLIER_REPLACEMENT_NO_HEADROOM"
+}

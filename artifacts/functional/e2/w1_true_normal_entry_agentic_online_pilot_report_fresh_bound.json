@@ -1,0 +1,213 @@
+{
+  "actionable_context_check": [
+    {
+      "center_delta": -0.0011000009253621101,
+      "coverage": 1.0,
+      "level_shift": false,
+      "missing": false,
+      "origin": 648,
+      "outlier_signal": false,
+      "seasonal_residual": 0.14204077803139892
+    },
+    {
+      "center_delta": 0.0007500005885958672,
+      "coverage": 1.0,
+      "level_shift": false,
+      "missing": false,
+      "origin": 744,
+      "outlier_signal": false,
+      "seasonal_residual": 0.14767809151057737
+    },
+    {
+      "center_delta": -0.018725001253187656,
+      "coverage": 1.0,
+      "level_shift": false,
+      "missing": false,
+      "origin": 840,
+      "outlier_signal": false,
+      "seasonal_residual": 0.17278185022169887
+    }
+  ],
+  "behavior_changed": true,
+  "budget_per_round": 2,
+  "cohort_offset": 520,
+  "dataset": "monash:traffic_hourly",
+  "experiment_id": "v1-true-normal-entry-agentic-online-pilot_fresh_bound",
+  "fault_checks": {},
+  "first_fault": null,
+  "harm_after_memory_round": false,
+  "interpretation": "memory_attributed_behavior_change",
+  "llm_api_call_count": 7,
+  "remove_ctrl_flipped": true,
+  "rounds": [
+    [
+      648,
+      696
+    ],
+    [
+      744,
+      792
+    ],
+    [
+      840,
+      888
+    ]
+  ],
+  "rounds_log": [
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.median_acf_at_calendar_period\",\"change.median_acf_at_calendar_period_delta\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"No signed experience or strong context-matched",
+          "pool": [
+            "identity",
+            "cand_repair_level_shift",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        },
+        {
+          "attempt": 2,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.median_acf_at_calendar_period\",\"change.median_robust_center_delta\",\"change.median_robust_scale_delta\"],\"rationale\":\"Choose the identity candidate for the Support probe. The series has ful",
+          "pool": [
+            "identity",
+            "cand_repair_level_shift",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        }
+      ],
+      "delayed_origin": 696,
+      "memory_after": [],
+      "origin": 648,
+      "receipt_count": 0,
+      "round": 1
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"change.coverage_delta\",\"change.missing_run_count_delta\",\"change.median_acf_at_calendar_period_delta\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"Choose the identity candidate for the",
+          "pool": [
+            "identity",
+            "cand_repair_level_shift",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        },
+        {
+          "attempt": 2,
+          "chosen": "cand_repair_level_shift",
+          "delayed_gain": 0.0799549526364487,
+          "episode_id": "monash:traffic_hourly_target_cand_repair_level_shift_pilot2_r2a2",
+          "gain": 0.13381904858718263,
+          "kind": "support",
+          "llm_rationale": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"recent.median_robust_scale\",\"recent.median_robust_center\",\"change.median_robust_center_delta\",\"change.median_robust_scale_delta\"],\"rationale\":\"The estimated level offset (0.05905) is large relative to the recent robust scale (0.04047",
+          "pool": [
+            "identity",
+            "cand_repair_level_shift",
+            "cand_denoise_median"
+          ],
+          "program": [
+            {
+              "op": "repair_level_shift",
+              "params": {
+                "estimated_offset": 0.059049999341368675,
+                "region_end_fraction": 0.14112903225806453,
+                "region_start_fraction": 0.06720430107526881
+              }
+            }
+          ],
+          "relation": "POSITIVE",
+          "verifier_passed": true
+        }
+      ],
+      "delayed_origin": 792,
+      "memory_after": [
+        {
+          "episode_id": "monash:traffic_hourly_target_cand_repair_level_shift_pilot2_r2a2",
+          "relation": "POSITIVE"
+        }
+      ],
+      "origin": 744,
+      "receipt_count": 1,
+      "round": 2
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"change.median_acf_at_calendar_period_delta\",\"change.median_normalized_seasonal_residual_delta\",\"recent.coverage\",\"recent.missing_run_count\"],\"rationale\":\"The series is fully covered with no missing runs, while the observed change shows reduced cale",
+          "pool": [
+            "identity",
+            "cand_denoise_median",
+            "cand_winsorize"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        },
+        {
+          "attempt": 2,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.median_acf_at_calendar_period\",\"recent.median_robust_scale\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"The series is complete with no missing runs, retains substanti",
+          "pool": [
+            "identity",
+            "cand_denoise_median",
+            "cand_winsorize"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        }
+      ],
+      "ctrl_remove_last": {
+        "abstained": false,
+        "chosen": "identity",
+        "flip_vs_prev": true,
+        "pool": [
+          "identity",
+          "cand_denoise_median",
+          "cand_winsorize"
+        ]
+      },
+      "delayed_origin": 888,
+      "memory_after": [
+        {
+          "episode_id": "monash:traffic_hourly_target_cand_repair_level_shift_pilot2_r2a2",
+          "relation": "POSITIVE"
+        }
+      ],
+      "origin": 840,
+      "receipt_count": 0,
+      "round": 3
+    }
+  ],
+  "supply_ok": true,
+  "verdict": "INCONCLUSIVE_LLM_VARIANCE"
+}

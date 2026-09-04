@@ -1,0 +1,69 @@
+{
+  "protocol_version": "placebo_guidance_v1",
+  "frozen_at": "2026-08-19T22:10:00+08:00",
+  "role": "conditional third-arm material; do not run until the first A5>A3 positive difference appears on the official AB",
+  "true_source": "artifacts/functional/e2/g3d1_source_derived_skill.json slow.patched_guidance",
+  "true_guidance": "Supply only minimal effect-distinct candidates when public evidence is sufficient after the shift. For `repair_level_shift`, keep proposals conditional on `post_shift_support_sufficient` and prefer the smallest candidate set that is supported by repeated public evidence. Do not introduce exception combinations or broader recommendations unless they are independently supported by at least two distinct tasks.",
+  "placebo_guidance": "Supply only minimal effect-distinct candidates justified by a careful reading of the public information at hand. Keep the proposal list modest, avoid spreading effort thinly, and prefer the smallest candidate set that is supported by repeated public evidence. Do not introduce exception combinations or broader recommendations without independently repeated public evidence from prior work.",
+  "structure": {
+    "true": [
+      "conditioned sentence: public evidence sufficient after the shift",
+      "minimal-candidate sentence: repair_level_shift conditional on post_shift_support_sufficient",
+      "evidence-threshold sentence: at least two distinct tasks"
+    ],
+    "placebo": [
+      "general sentence of similar length and tone, no operator / observable / condition",
+      "minimal-candidate sentence of similar length and tone, no operator / observable / condition",
+      "evidence-discipline sentence of similar length and tone, no numeric threshold"
+    ]
+  },
+  "length": {
+    "true_chars": 410,
+    "true_words": 52,
+    "true_sentences": 3,
+    "placebo_chars": 390,
+    "placebo_words": 54,
+    "placebo_sentences": 3
+  },
+  "form_check": {
+    "banned_operator_names": [
+      "repair_level_shift",
+      "hampel_filter",
+      "outlier_iqr",
+      "outlier_mad",
+      "period_complete",
+      "period_median_complete",
+      "impute_ar",
+      "smooth_ema",
+      "winsorize"
+    ],
+    "banned_observable_names": [
+      "post_shift_support_sufficient",
+      "local_robust_z_peak",
+      "level_excursion_score",
+      "estimated_level_offset",
+      "estimated_region_start_fraction",
+      "estimated_region_end_fraction",
+      "missing_fraction",
+      "period_change_score"
+    ],
+    "banned_condition_or_threshold_phrases": [
+      "after the shift",
+      "at least two",
+      "two distinct",
+      ">=2",
+      "0.005"
+    ],
+    "hits_in_placebo": [],
+    "passed": true
+  },
+  "usage_protocol": {
+    "trigger": "Run once, only after the official A5 vs A3 AB (post R1+R2+T1) first shows a positive difference on the pre-registered main readout.",
+    "not_before": "Do not rewrite this placebo text before that run. Do not run it speculatively to hunt a result.",
+    "arm_construction": "Third arm A5-placebo. Same Agent, tools, Operator DSL, Runtime, Consumer, Judge, Target Support budget, and frozen snapshot as A5. The only difference versus A5 is candidate_policy.proposal_guidance: placebo_guidance instead of true_guidance.",
+    "unique_difference_declaration": "A5-placebo minus A5 = guidance text only.",
+    "main_readout": "Same as the official AB, with T5口径 names: LOCAL_ACTIVE count, first material-positive task index, harmful probes under both material-harm and all-negative, real_support_probe_count (never charged_probe_cost as a probe count), abstention count.",
+    "interpretation": "If A5 beats A3 and A5-placebo does not, the difference is attributable to guidance content. If A5-placebo also beats A3, the difference may be 'an extra paragraph changed behaviour' rather than the Source-derived content.",
+    "zero_llm_until_trigger": true
+  }
+}

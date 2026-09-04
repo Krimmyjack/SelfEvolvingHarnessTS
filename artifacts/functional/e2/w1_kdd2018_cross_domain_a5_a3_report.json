@@ -1,0 +1,262 @@
+{
+  "experiment_id": "v1-kdd2018-cross-domain-a5-a3",
+  "note": "P4.1 跨域 matched-budget（Monash winsorize Source → KDD Target；claim 限定：单 Target 只称'跨数据集复用候选证据'）",
+  "cohort": [
+    "T117",
+    "T118",
+    "T119",
+    "T12",
+    "T120",
+    "T121",
+    "T122",
+    "T123",
+    "T124",
+    "T125",
+    "T126",
+    "T127",
+    "T128",
+    "T129",
+    "T13",
+    "T130",
+    "T131",
+    "T132",
+    "T133",
+    "T134"
+  ],
+  "source_episodes": [
+    "monash_weather_daily_target_winsorize_p40_src_pair1"
+  ],
+  "arms": {
+    "A5": {
+      "rounds": [
+        {
+          "origin": 600,
+          "pool": [
+            "identity",
+            "cand_winsorize"
+          ],
+          "probes": [
+            {
+              "probe": 1,
+              "op": "winsorize",
+              "gain": 0.006710386297263504,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_winsorize_p41_a5_r1_p1",
+              "delayed_gain": 0.4477427081486751,
+              "relation_after_delayed": "POSITIVE"
+            }
+          ],
+          "protocol_failure": false,
+          "chosen": "cand_winsorize",
+          "round": 1
+        },
+        {
+          "origin": 792,
+          "pool": [
+            "identity",
+            "cand_winsorize",
+            "cand_outlier_mad",
+            "cand_hampel_filter"
+          ],
+          "probes": [
+            {
+              "probe": 1,
+              "op": "winsorize",
+              "gain": 0.07326346040876652,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_winsorize_p41_a5_r2_p1",
+              "delayed_gain": 0.3884834674026916,
+              "relation_after_delayed": "POSITIVE"
+            }
+          ],
+          "protocol_failure": false,
+          "chosen": "cand_winsorize",
+          "round": 2
+        },
+        {
+          "origin": 888,
+          "pool": [
+            "identity",
+            "cand_winsorize"
+          ],
+          "probes": [
+            {
+              "probe": 1,
+              "op": "winsorize",
+              "gain": -0.1426334267351992,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_winsorize_p41_a5_r3_p1",
+              "delayed_gain": -0.029557154427061638,
+              "relation_after_delayed": "NEGATIVE"
+            }
+          ],
+          "protocol_failure": false,
+          "chosen": "cand_winsorize",
+          "support_event": {
+            "stage": "pending",
+            "triggered": true,
+            "material_negative": true,
+            "relation": "NEGATIVE",
+            "card_workflow": [
+              "winsorize"
+            ],
+            "edit_id": "winsorize_negative_outlier_mad",
+            "target_surface_id": "skill_library.entries/winsorize_negative_outlier_mad",
+            "operation": "ADD",
+            "frozen_program": [
+              {
+                "op": "outlier_mad",
+                "params": {}
+              }
+            ],
+            "patch_id": "patch-winsorize-to-outlier_mad",
+            "support_gain": 0.11986118246492228,
+            "support_passed": true
+          },
+          "delayed_event": {
+            "stage": "approved",
+            "delayed_gain": 0.11130676455839139,
+            "snapshot_updated": true
+          },
+          "round": 3
+        }
+      ],
+      "metrics": {
+        "probe_count": 3,
+        "support_count": 3,
+        "first_positive": {
+          "round": 1,
+          "probe": 1
+        },
+        "harm_count": 1,
+        "harm_sum": 0.142633,
+        "delayed_utility": 0.806669,
+        "abstention_count": 0,
+        "skill_formed": true
+      },
+      "triggered": true
+    },
+    "A3": {
+      "rounds": [
+        {
+          "origin": 600,
+          "pool": [
+            "identity",
+            "cand_winsorize",
+            "cand_outlier_mad",
+            "cand_hampel_filter"
+          ],
+          "probes": [
+            {
+              "probe": 1,
+              "op": "winsorize",
+              "gain": 0.006710386297263504,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_winsorize_p41_a3_r1_p1",
+              "delayed_gain": 0.4477427081486751,
+              "relation_after_delayed": "POSITIVE"
+            }
+          ],
+          "protocol_failure": false,
+          "chosen": "cand_winsorize",
+          "round": 1
+        },
+        {
+          "origin": 792,
+          "pool": [
+            "identity",
+            "cand_winsorize"
+          ],
+          "probes": [
+            {
+              "probe": 1,
+              "op": "winsorize",
+              "gain": 0.07326346040876652,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_winsorize_p41_a3_r2_p1",
+              "delayed_gain": 0.3884834674026916,
+              "relation_after_delayed": "POSITIVE"
+            }
+          ],
+          "protocol_failure": false,
+          "chosen": "cand_winsorize",
+          "round": 2
+        },
+        {
+          "origin": 888,
+          "pool": [
+            "identity",
+            "cand_winsorize",
+            "cand_outlier_mad",
+            "cand_hampel_filter"
+          ],
+          "probes": [
+            {
+              "probe": 1,
+              "op": "winsorize",
+              "gain": -0.1426334267351992,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_winsorize_p41_a3_r3_p1",
+              "delayed_gain": -0.029557154427061638,
+              "relation_after_delayed": "NEGATIVE"
+            },
+            {
+              "probe": 2,
+              "op": "outlier_mad",
+              "gain": 0.11986118246492228,
+              "passed": true,
+              "episode_id": "kdd_cup_2018_target_outlier_mad_p41_a3_r3_p2",
+              "delayed_gain": 0.11130676455839139,
+              "relation_after_delayed": "POSITIVE"
+            }
+          ],
+          "protocol_failure": false,
+          "chosen": "cand_winsorize",
+          "support_event": {
+            "stage": "pending",
+            "triggered": true,
+            "material_negative": true,
+            "relation": "NEGATIVE",
+            "card_workflow": [
+              "winsorize"
+            ],
+            "edit_id": "add_winsorize_negative_forecast_mad_skill",
+            "target_surface_id": "skill_library.entries/avoid_negative_winsorize_forecast",
+            "operation": "ADD",
+            "frozen_program": [
+              {
+                "op": "outlier_mad",
+                "params": {}
+              }
+            ],
+            "patch_id": "patch-winsorize-to-outlier_mad",
+            "support_gain": 0.11986118246492228,
+            "support_passed": true
+          },
+          "delayed_event": {
+            "stage": "approved",
+            "delayed_gain": 0.11130676455839139,
+            "snapshot_updated": true
+          },
+          "round": 3
+        }
+      ],
+      "metrics": {
+        "probe_count": 4,
+        "support_count": 4,
+        "first_positive": {
+          "round": 1,
+          "probe": 1
+        },
+        "harm_count": 1,
+        "harm_sum": 0.142633,
+        "delayed_utility": 0.806669,
+        "abstention_count": 0,
+        "skill_formed": true
+      },
+      "triggered": true
+    }
+  },
+  "llm_api_call_count": 3,
+  "verdict": "NO_SIGNAL"
+}

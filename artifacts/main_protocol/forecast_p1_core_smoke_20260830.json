@@ -1,0 +1,1554 @@
+{
+  "protocol_version": "v1.2.1-Core",
+  "stage": "P1_COMMON_DSL_AND_CORE_BASELINE_SMOKE",
+  "task_tranche": "forecast",
+  "evidence_grade": "INFRASTRUCTURE",
+  "verdict": "FORECAST_P1_CORE_BASELINE_SMOKE_PASS",
+  "forecast_component_pass": true,
+  "overall_p1_complete": false,
+  "release_p2": false,
+  "pending_p1_task_tranches": [
+    "classification",
+    "anomaly_detection"
+  ],
+  "p0b_release": {
+    "status": "PASS",
+    "source": "artifacts/main_protocol/p0_readiness_20260830.json",
+    "p0b_audit": "P0B_COMPLETE",
+    "p1_release": true
+  },
+  "data": {
+    "dataset": "KDD Cup 2018 with missing values",
+    "data_role": "EXPOSED_DEVELOPMENT",
+    "roster_path": "artifacts/functional/e2/w1_kdd2018_frozen_cohort.jsonl",
+    "cache_path": "data/kdd2018/series_cache.npz",
+    "support_a_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T106",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T112",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118"
+    ],
+    "support_b_series": [
+      "T119",
+      "T12",
+      "T120",
+      "T121",
+      "T122",
+      "T123",
+      "T125",
+      "T126",
+      "T127",
+      "T128",
+      "T129",
+      "T13",
+      "T131",
+      "T132",
+      "T133",
+      "T134",
+      "T135",
+      "T137",
+      "T138",
+      "T139"
+    ],
+    "best_fixed_selection_support_a_series": [
+      "T14",
+      "T140",
+      "T141",
+      "T142",
+      "T143",
+      "T144",
+      "T145",
+      "T146",
+      "T147",
+      "T148",
+      "T149",
+      "T15",
+      "T150",
+      "T151",
+      "T152",
+      "T153",
+      "T155",
+      "T156",
+      "T157",
+      "T158"
+    ],
+    "best_fixed_selection_support_b_series": [
+      "T159",
+      "T161",
+      "T162",
+      "T163",
+      "T164",
+      "T165",
+      "T166",
+      "T167",
+      "T168",
+      "T169",
+      "T17",
+      "T170",
+      "T171",
+      "T173",
+      "T174",
+      "T175",
+      "T176",
+      "T177",
+      "T178",
+      "T179"
+    ],
+    "best_fixed_selection_disjoint_from_target": true,
+    "selection_rule": "lexicographically first 80 exposed KDD cache series readable under the current task-legal global single-step inventory using only origin-visible windows; first 40 target, next 40 disjoint Best-Fixed selection cell, each split 20/20",
+    "selection_uses_support_or_future_utility": false,
+    "structurally_readable_pool_count": 247,
+    "structurally_excluded_series_count": 23,
+    "development_query_evaluations": 0,
+    "natural_final_outcome_reads": 0,
+    "traffic_or_solar_loader_available": false
+  },
+  "consumer": {
+    "id": "pooled_ridge_a1",
+    "implementation": "existing pooled/shared Ridge",
+    "primary_metric": "sMASE",
+    "utility_definition": "U_forecast = -sMASE",
+    "delta_definition": "delta_U = U(method) - U(identity)"
+  },
+  "split": {
+    "origin": 600,
+    "horizon": 48,
+    "period": 24,
+    "support_a_count": 20,
+    "support_b_count": 20,
+    "training_series_per_face": 20,
+    "query_count": 0
+  },
+  "execution_order": [
+    "common_dsl_contract_without_outcome",
+    "best_fixed_frozen_on_disjoint_exposed_evolution_cell",
+    "target_consumer_diagnostics"
+  ],
+  "budget_caps": {
+    "full_support_evaluations": 4,
+    "raw_consumer_fits": 4,
+    "cheap_probes": 12,
+    "llm_calls": 4,
+    "tokens": 40000,
+    "accepted_updates": 1
+  },
+  "common_dsl_contract": {
+    "status": "PASS",
+    "inventory_policy": "current task-legal global single-step workflows",
+    "identity_available": true,
+    "effect_distinct_inventory_count_from_p0b": 18,
+    "eligible_operator_count": 18,
+    "consumer_evaluations": 0,
+    "contract_overhead": {
+      "candidate_verifier_requests": 18,
+      "verified_windows": 1800,
+      "charged_to_method_cell_b4": false
+    },
+    "mandatory_fixed_programs_not_executable": [],
+    "rows": [
+      {
+        "program": "impute_linear",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "impute_fft",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "impute_ema",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "period_complete",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "period_median_complete",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "impute_ar",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "denoise_savgol",
+        "compile": "PASS",
+        "verifier": "SAFE_REJECT",
+        "checked_windows": 100,
+        "modified_windows": 100,
+        "rejection_codes": [
+          "MODIFICATION_FRACTION_EXCEEDED"
+        ]
+      },
+      {
+        "program": "denoise_wavelet",
+        "compile": "PASS",
+        "verifier": "SAFE_REJECT",
+        "checked_windows": 100,
+        "modified_windows": 100,
+        "rejection_codes": [
+          "MODIFICATION_FRACTION_EXCEEDED"
+        ]
+      },
+      {
+        "program": "denoise_median",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      },
+      {
+        "program": "smooth_ma",
+        "compile": "PASS",
+        "verifier": "SAFE_REJECT",
+        "checked_windows": 100,
+        "modified_windows": 100,
+        "rejection_codes": [
+          "MODIFICATION_FRACTION_EXCEEDED"
+        ]
+      },
+      {
+        "program": "winsorize",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 100,
+        "rejection_codes": []
+      },
+      {
+        "program": "outlier_iqr",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 40,
+        "rejection_codes": []
+      },
+      {
+        "program": "outlier_mad",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 32,
+        "rejection_codes": []
+      },
+      {
+        "program": "hampel_filter",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 98,
+        "rejection_codes": []
+      },
+      {
+        "program": "repair_level_shift",
+        "compile": "PASS",
+        "verifier": "SAFE_REJECT",
+        "checked_windows": 100,
+        "modified_windows": 27,
+        "rejection_codes": [
+          "MODIFICATION_FRACTION_EXCEEDED"
+        ]
+      },
+      {
+        "program": "fft_decompose",
+        "compile": "PASS",
+        "verifier": "SAFE_REJECT",
+        "checked_windows": 100,
+        "modified_windows": 100,
+        "rejection_codes": [
+          "MODIFICATION_FRACTION_EXCEEDED"
+        ]
+      },
+      {
+        "program": "smooth_ema",
+        "compile": "PASS",
+        "verifier": "SAFE_REJECT",
+        "checked_windows": 100,
+        "modified_windows": 100,
+        "rejection_codes": [
+          "MODIFICATION_FRACTION_EXCEEDED"
+        ]
+      },
+      {
+        "program": "resample_uniform",
+        "compile": "PASS",
+        "verifier": "PASS",
+        "checked_windows": 100,
+        "modified_windows": 0,
+        "rejection_codes": []
+      }
+    ]
+  },
+  "methods": [
+    {
+      "method": "Identity",
+      "status": "PASS",
+      "selected_program": "identity",
+      "implementation": "existing pooled/shared Ridge on unchanged input",
+      "readings": {
+        "support_a": {
+          "smase": 2.0690534863693095,
+          "utility": -2.0690534863693095,
+          "per_series_smase": [
+            2.9792880007610423,
+            0.8990033553735011,
+            1.3237050009418099,
+            2.6217634128579705,
+            3.3156124028900145,
+            0.7839164432573819,
+            0.757358329564344,
+            1.1486194043515328,
+            4.475779910612133,
+            2.7344651857893165,
+            1.7275757201476896,
+            2.7119450183590423,
+            1.0764766227830507,
+            1.3507726730888332,
+            1.3441448838090355,
+            4.554776323457269,
+            2.9422772750085957,
+            2.377027008953278,
+            1.016907320768624,
+            1.239655434611725
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        },
+        "support_b": {
+          "smase": 2.1644264418177395,
+          "utility": -2.1644264418177395,
+          "per_series_smase": [
+            1.3892054103580254,
+            1.499188298446197,
+            4.147636592594472,
+            1.4872266150784996,
+            1.4854886948318702,
+            1.7683819908482201,
+            1.565479694769761,
+            2.5607387659955667,
+            2.4344803370135524,
+            2.6720287533286142,
+            0.9452263034013946,
+            1.8091488897324266,
+            1.4052270789695007,
+            4.892185970807333,
+            2.2706840169283367,
+            2.7896534139855635,
+            1.0796925507925261,
+            1.313291594310411,
+            3.2738231685161234,
+            2.4997406956463912
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.0,
+        "within_caps": true
+      },
+      "details": {
+        "elementwise_unchanged": true
+      }
+    },
+    {
+      "method": "Best Fixed Per-task",
+      "status": "PASS",
+      "selected_program": "winsorize",
+      "implementation": "production select_best_fixed frozen on a disjoint EXPOSED cell, then carried unchanged to the target cell",
+      "readings": {
+        "target": {
+          "support_a": {
+            "smase": 2.006468568338067,
+            "utility": -2.006468568338067,
+            "per_series_smase": [
+              2.888988533512875,
+              0.8051401957050682,
+              1.352417451384857,
+              2.486984211756583,
+              3.285713776304339,
+              0.5056295557158359,
+              0.6497692460574082,
+              1.101037765288597,
+              4.28013365424082,
+              2.7555057349150918,
+              1.6874388268993439,
+              2.6604579492885985,
+              0.9750273553979192,
+              1.5310416918143344,
+              1.4591368143456147,
+              4.711396523400058,
+              2.8467742088994274,
+              2.160405872611282,
+              0.9621328988524596,
+              1.0242391003708355
+            ],
+            "behavior_point_count": 1838,
+            "delta_u_vs_identity": 0.06258491803124233
+          },
+          "support_b": {
+            "smase": 2.066603355226312,
+            "utility": -2.066603355226312,
+            "per_series_smase": [
+              1.3418336812798077,
+              1.3914274730314877,
+              3.851301898384507,
+              1.3645767993609814,
+              1.3363397951393239,
+              1.559890341857959,
+              1.3044347041390585,
+              2.4433884140769173,
+              2.498918806687009,
+              2.7543063682110804,
+              0.9697513751661315,
+              1.7452819532506385,
+              1.4577602059665655,
+              4.749642245778818,
+              2.1987633950308685,
+              2.8893164738890698,
+              0.7993099732526778,
+              1.1430200096666483,
+              2.9353477672366592,
+              2.5974554231200306
+            ],
+            "behavior_point_count": 1852,
+            "delta_u_vs_identity": 0.09782308659142736
+          }
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.332,
+        "within_caps": true
+      },
+      "details": {
+        "formal_evolution_winner_frozen": true,
+        "scientific_selection_claim": false,
+        "selection_uses_target_support": false,
+        "selection_disjoint_from_target": true,
+        "candidate_rule": "every effect-distinct Common-DSL program that passes the Evolution-cell contextual verifier",
+        "selection_candidate_count": 12,
+        "selection_programs": [
+          "identity",
+          "impute_linear",
+          "impute_fft",
+          "impute_ema",
+          "period_complete",
+          "period_median_complete",
+          "impute_ar",
+          "denoise_median",
+          "winsorize",
+          "outlier_iqr",
+          "outlier_mad",
+          "hampel_filter"
+        ],
+        "safe_rejected_programs": [
+          "denoise_savgol",
+          "denoise_wavelet",
+          "smooth_ma",
+          "repair_level_shift",
+          "fft_decompose",
+          "smooth_ema"
+        ],
+        "effect_aliases": {
+          "resample_uniform": "identity"
+        },
+        "program_space_coverage_complete": true,
+        "cost_by_phase": {
+          "evolution_selection": {
+            "full_support_evaluations": 12,
+            "raw_consumer_fits": 12,
+            "candidate_verifier_requests": 17,
+            "verified_windows": 1700,
+            "llm_calls": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 4.032,
+            "charged_to_target_b4": false
+          },
+          "target_frozen_diagnostic": {
+            "full_support_evaluations": 2,
+            "raw_consumer_fits": 2,
+            "charged_to_target_b4": true
+          }
+        }
+      }
+    },
+    {
+      "method": "Fixed Linear-impute",
+      "status": "PASS",
+      "selected_program": "impute_linear",
+      "implementation": "frozen one-step Common-DSL heuristic",
+      "readings": {
+        "support_a": {
+          "smase": 2.0690534863693095,
+          "utility": -2.0690534863693095,
+          "per_series_smase": [
+            2.9792880007610423,
+            0.8990033553735011,
+            1.3237050009418099,
+            2.6217634128579705,
+            3.3156124028900145,
+            0.7839164432573819,
+            0.757358329564344,
+            1.1486194043515328,
+            4.475779910612133,
+            2.7344651857893165,
+            1.7275757201476896,
+            2.7119450183590423,
+            1.0764766227830507,
+            1.3507726730888332,
+            1.3441448838090355,
+            4.554776323457269,
+            2.9422772750085957,
+            2.377027008953278,
+            1.016907320768624,
+            1.239655434611725
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        },
+        "support_b": {
+          "smase": 2.1644264418177395,
+          "utility": -2.1644264418177395,
+          "per_series_smase": [
+            1.3892054103580254,
+            1.499188298446197,
+            4.147636592594472,
+            1.4872266150784996,
+            1.4854886948318702,
+            1.7683819908482201,
+            1.565479694769761,
+            2.5607387659955667,
+            2.4344803370135524,
+            2.6720287533286142,
+            0.9452263034013946,
+            1.8091488897324266,
+            1.4052270789695007,
+            4.892185970807333,
+            2.2706840169283367,
+            2.7896534139855635,
+            1.0796925507925261,
+            1.313291594310411,
+            3.2738231685161234,
+            2.4997406956463912
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.211,
+        "within_caps": true
+      },
+      "details": {}
+    },
+    {
+      "method": "Fixed Hampel",
+      "status": "PASS",
+      "selected_program": "hampel_filter",
+      "implementation": "frozen one-step Common-DSL heuristic",
+      "readings": {
+        "support_a": {
+          "smase": 2.1421615326612438,
+          "utility": -2.1421615326612438,
+          "per_series_smase": [
+            3.258664950857806,
+            1.0623138807029844,
+            1.202111668859497,
+            2.780949860127563,
+            3.508867605432524,
+            0.9286044644404522,
+            1.2358281484306988,
+            1.3590613580098858,
+            4.501114997269876,
+            2.995043039024827,
+            1.4031404784923456,
+            2.8357249570313217,
+            1.2553783076440783,
+            1.3870473400628702,
+            1.4176425137865467,
+            4.369378970738322,
+            2.8062537105428826,
+            2.405664187791696,
+            0.8501972064025963,
+            1.2802430075761067
+          ],
+          "behavior_point_count": 978,
+          "delta_u_vs_identity": -0.07310804629193424
+        },
+        "support_b": {
+          "smase": 2.265309044258437,
+          "utility": -2.265309044258437,
+          "per_series_smase": [
+            1.609714265753645,
+            1.4356200143626372,
+            3.509709259953118,
+            1.5967933235054743,
+            1.6028930188273225,
+            1.58563864934841,
+            1.7176330441347762,
+            2.8368442434544505,
+            2.566330068232421,
+            2.744210921749771,
+            1.3553666793999717,
+            2.0298967645163954,
+            1.8904756634632138,
+            4.978778208671833,
+            2.3138298094873924,
+            2.96199460396197,
+            1.239522687147916,
+            1.3700675714240615,
+            3.386442104862526,
+            2.574419982911441
+          ],
+          "behavior_point_count": 913,
+          "delta_u_vs_identity": -0.10088260244069769
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.442,
+        "within_caps": true
+      },
+      "details": {}
+    },
+    {
+      "method": "Fixed Winsor",
+      "status": "PASS",
+      "selected_program": "winsorize",
+      "implementation": "frozen one-step Common-DSL heuristic",
+      "readings": {
+        "support_a": {
+          "smase": 2.006468568338067,
+          "utility": -2.006468568338067,
+          "per_series_smase": [
+            2.888988533512875,
+            0.8051401957050682,
+            1.352417451384857,
+            2.486984211756583,
+            3.285713776304339,
+            0.5056295557158359,
+            0.6497692460574082,
+            1.101037765288597,
+            4.28013365424082,
+            2.7555057349150918,
+            1.6874388268993439,
+            2.6604579492885985,
+            0.9750273553979192,
+            1.5310416918143344,
+            1.4591368143456147,
+            4.711396523400058,
+            2.8467742088994274,
+            2.160405872611282,
+            0.9621328988524596,
+            1.0242391003708355
+          ],
+          "behavior_point_count": 1838,
+          "delta_u_vs_identity": 0.06258491803124233
+        },
+        "support_b": {
+          "smase": 2.066603355226312,
+          "utility": -2.066603355226312,
+          "per_series_smase": [
+            1.3418336812798077,
+            1.3914274730314877,
+            3.851301898384507,
+            1.3645767993609814,
+            1.3363397951393239,
+            1.559890341857959,
+            1.3044347041390585,
+            2.4433884140769173,
+            2.498918806687009,
+            2.7543063682110804,
+            0.9697513751661315,
+            1.7452819532506385,
+            1.4577602059665655,
+            4.749642245778818,
+            2.1987633950308685,
+            2.8893164738890698,
+            0.7993099732526778,
+            1.1430200096666483,
+            2.9353477672366592,
+            2.5974554231200306
+          ],
+          "behavior_point_count": 1852,
+          "delta_u_vs_identity": 0.09782308659142736
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.333,
+        "within_caps": true
+      },
+      "details": {}
+    },
+    {
+      "method": "Fixed IQR",
+      "status": "PASS",
+      "selected_program": "outlier_iqr",
+      "implementation": "frozen one-step Common-DSL heuristic",
+      "readings": {
+        "support_a": {
+          "smase": 2.1415287207678757,
+          "utility": -2.1415287207678757,
+          "per_series_smase": [
+            3.1422525760656956,
+            0.874401774546514,
+            1.4077969972377404,
+            2.725165393246223,
+            3.3299324857308332,
+            0.8620208969986523,
+            0.817727889816304,
+            1.2327822998578803,
+            4.613503051913694,
+            2.885613155976439,
+            1.8195058689790191,
+            2.7139657202261276,
+            1.1020969645803036,
+            1.448559621281002,
+            1.3810233245742956,
+            4.635136540599723,
+            3.0915882483846255,
+            2.425547713932328,
+            1.0598791340855598,
+            1.2620747573245488
+          ],
+          "behavior_point_count": 232,
+          "delta_u_vs_identity": -0.07247523439856618
+        },
+        "support_b": {
+          "smase": 2.188775895144079,
+          "utility": -2.188775895144079,
+          "per_series_smase": [
+            1.3019634835496956,
+            1.4602389832440146,
+            4.268587923602606,
+            1.4679655063592676,
+            1.4955532342500513,
+            1.5567214158078686,
+            1.441231410289702,
+            2.5184515616732543,
+            2.5533523250733836,
+            2.760528288005234,
+            1.2139440942204487,
+            1.8013199939245597,
+            1.699931029049918,
+            4.981823214520379,
+            2.3121665994572154,
+            2.8019372978639794,
+            1.0052042086011912,
+            1.3118394590102285,
+            3.207737231993135,
+            2.615020642385447
+          ],
+          "behavior_point_count": 263,
+          "delta_u_vs_identity": -0.024349453326339532
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.337,
+        "within_caps": true
+      },
+      "details": {}
+    },
+    {
+      "method": "Parallel Best-of-N@4",
+      "status": "PASS",
+      "selected_program": "winsorize",
+      "implementation": "independent Common-DSL candidate evaluations",
+      "readings": {
+        "support_a_candidates": {
+          "impute_linear": {
+            "smase": 2.0690534863693095,
+            "utility": -2.0690534863693095,
+            "per_series_smase": [
+              2.9792880007610423,
+              0.8990033553735011,
+              1.3237050009418099,
+              2.6217634128579705,
+              3.3156124028900145,
+              0.7839164432573819,
+              0.757358329564344,
+              1.1486194043515328,
+              4.475779910612133,
+              2.7344651857893165,
+              1.7275757201476896,
+              2.7119450183590423,
+              1.0764766227830507,
+              1.3507726730888332,
+              1.3441448838090355,
+              4.554776323457269,
+              2.9422772750085957,
+              2.377027008953278,
+              1.016907320768624,
+              1.239655434611725
+            ],
+            "behavior_point_count": 0,
+            "delta_u_vs_identity": 0.0
+          },
+          "hampel_filter": {
+            "smase": 2.1421615326612438,
+            "utility": -2.1421615326612438,
+            "per_series_smase": [
+              3.258664950857806,
+              1.0623138807029844,
+              1.202111668859497,
+              2.780949860127563,
+              3.508867605432524,
+              0.9286044644404522,
+              1.2358281484306988,
+              1.3590613580098858,
+              4.501114997269876,
+              2.995043039024827,
+              1.4031404784923456,
+              2.8357249570313217,
+              1.2553783076440783,
+              1.3870473400628702,
+              1.4176425137865467,
+              4.369378970738322,
+              2.8062537105428826,
+              2.405664187791696,
+              0.8501972064025963,
+              1.2802430075761067
+            ],
+            "behavior_point_count": 978,
+            "delta_u_vs_identity": -0.07310804629193424
+          },
+          "winsorize": {
+            "smase": 2.006468568338067,
+            "utility": -2.006468568338067,
+            "per_series_smase": [
+              2.888988533512875,
+              0.8051401957050682,
+              1.352417451384857,
+              2.486984211756583,
+              3.285713776304339,
+              0.5056295557158359,
+              0.6497692460574082,
+              1.101037765288597,
+              4.28013365424082,
+              2.7555057349150918,
+              1.6874388268993439,
+              2.6604579492885985,
+              0.9750273553979192,
+              1.5310416918143344,
+              1.4591368143456147,
+              4.711396523400058,
+              2.8467742088994274,
+              2.160405872611282,
+              0.9621328988524596,
+              1.0242391003708355
+            ],
+            "behavior_point_count": 1838,
+            "delta_u_vs_identity": 0.06258491803124233
+          }
+        },
+        "support_b": {
+          "smase": 2.066603355226312,
+          "utility": -2.066603355226312,
+          "per_series_smase": [
+            1.3418336812798077,
+            1.3914274730314877,
+            3.851301898384507,
+            1.3645767993609814,
+            1.3363397951393239,
+            1.559890341857959,
+            1.3044347041390585,
+            2.4433884140769173,
+            2.498918806687009,
+            2.7543063682110804,
+            0.9697513751661315,
+            1.7452819532506385,
+            1.4577602059665655,
+            4.749642245778818,
+            2.1987633950308685,
+            2.8893164738890698,
+            0.7993099732526778,
+            1.1430200096666483,
+            2.9353477672366592,
+            2.5974554231200306
+          ],
+          "behavior_point_count": 1852,
+          "delta_u_vs_identity": 0.09782308659142736
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 4,
+        "raw_consumer_fits": 4,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.684,
+        "within_caps": true
+      },
+      "details": {
+        "candidate_count": 3,
+        "performance_claim": false
+      }
+    },
+    {
+      "method": "Sequential Refinement@4",
+      "status": "PASS",
+      "selected_program": "winsorize",
+      "implementation": "feedback-conditioned second Common-DSL proposal",
+      "readings": {
+        "step_1": {
+          "program": "winsorize",
+          "smase": 2.006468568338067,
+          "utility": -2.006468568338067,
+          "per_series_smase": [
+            2.888988533512875,
+            0.8051401957050682,
+            1.352417451384857,
+            2.486984211756583,
+            3.285713776304339,
+            0.5056295557158359,
+            0.6497692460574082,
+            1.101037765288597,
+            4.28013365424082,
+            2.7555057349150918,
+            1.6874388268993439,
+            2.6604579492885985,
+            0.9750273553979192,
+            1.5310416918143344,
+            1.4591368143456147,
+            4.711396523400058,
+            2.8467742088994274,
+            2.160405872611282,
+            0.9621328988524596,
+            1.0242391003708355
+          ],
+          "behavior_point_count": 1838,
+          "delta_u_vs_identity": 0.06258491803124233
+        },
+        "step_2": {
+          "program": "outlier_iqr",
+          "smase": 2.1415287207678757,
+          "utility": -2.1415287207678757,
+          "per_series_smase": [
+            3.1422525760656956,
+            0.874401774546514,
+            1.4077969972377404,
+            2.725165393246223,
+            3.3299324857308332,
+            0.8620208969986523,
+            0.817727889816304,
+            1.2327822998578803,
+            4.613503051913694,
+            2.885613155976439,
+            1.8195058689790191,
+            2.7139657202261276,
+            1.1020969645803036,
+            1.448559621281002,
+            1.3810233245742956,
+            4.635136540599723,
+            3.0915882483846255,
+            2.425547713932328,
+            1.0598791340855598,
+            1.2620747573245488
+          ],
+          "behavior_point_count": 232,
+          "delta_u_vs_identity": -0.07247523439856618
+        },
+        "support_b": {
+          "smase": 2.066603355226312,
+          "utility": -2.066603355226312,
+          "per_series_smase": [
+            1.3418336812798077,
+            1.3914274730314877,
+            3.851301898384507,
+            1.3645767993609814,
+            1.3363397951393239,
+            1.559890341857959,
+            1.3044347041390585,
+            2.4433884140769173,
+            2.498918806687009,
+            2.7543063682110804,
+            0.9697513751661315,
+            1.7452819532506385,
+            1.4577602059665655,
+            4.749642245778818,
+            2.1987633950308685,
+            2.8893164738890698,
+            0.7993099732526778,
+            1.1430200096666483,
+            2.9353477672366592,
+            2.5974554231200306
+          ],
+          "behavior_point_count": 1852,
+          "delta_u_vs_identity": 0.09782308659142736
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 3,
+        "raw_consumer_fits": 3,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.466,
+        "within_caps": true
+      },
+      "details": {
+        "step_2_received_step_1_feedback": true,
+        "step_2_rule": "negative step-1 delta selects Hampel; otherwise IQR",
+        "performance_claim": false
+      }
+    },
+    {
+      "method": "Frozen H0",
+      "status": "PASS",
+      "selected_program": "identity",
+      "implementation": "production H0 Fast path; no Support adaptation or writeback",
+      "readings": {
+        "support_a": {
+          "smase": 2.0690534863693095,
+          "utility": -2.0690534863693095,
+          "per_series_smase": [
+            2.9792880007610423,
+            0.8990033553735011,
+            1.3237050009418099,
+            2.6217634128579705,
+            3.3156124028900145,
+            0.7839164432573819,
+            0.757358329564344,
+            1.1486194043515328,
+            4.475779910612133,
+            2.7344651857893165,
+            1.7275757201476896,
+            2.7119450183590423,
+            1.0764766227830507,
+            1.3507726730888332,
+            1.3441448838090355,
+            4.554776323457269,
+            2.9422772750085957,
+            2.377027008953278,
+            1.016907320768624,
+            1.239655434611725
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 1,
+        "raw_consumer_fits": 1,
+        "cheap_probes": 3,
+        "llm_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 2.946,
+        "within_caps": true
+      },
+      "details": {
+        "candidate_count": 1,
+        "fast_candidate_verifier_requests": 3,
+        "writeback": false,
+        "protocol_errors": []
+      }
+    },
+    {
+      "method": "Static",
+      "status": "PASS",
+      "selected_program": "identity",
+      "implementation": "independent zero-lifecycle Static baseline plus Identity Consumer diagnostic",
+      "readings": {
+        "support_a": {
+          "smase": 2.0690534863693095,
+          "utility": -2.0690534863693095,
+          "per_series_smase": [
+            2.9792880007610423,
+            0.8990033553735011,
+            1.3237050009418099,
+            2.6217634128579705,
+            3.3156124028900145,
+            0.7839164432573819,
+            0.757358329564344,
+            1.1486194043515328,
+            4.475779910612133,
+            2.7344651857893165,
+            1.7275757201476896,
+            2.7119450183590423,
+            1.0764766227830507,
+            1.3507726730888332,
+            1.3441448838090355,
+            4.554776323457269,
+            2.9422772750085957,
+            2.377027008953278,
+            1.016907320768624,
+            1.239655434611725
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        },
+        "support_b": {
+          "smase": 2.1644264418177395,
+          "utility": -2.1644264418177395,
+          "per_series_smase": [
+            1.3892054103580254,
+            1.499188298446197,
+            4.147636592594472,
+            1.4872266150784996,
+            1.4854886948318702,
+            1.7683819908482201,
+            1.565479694769761,
+            2.5607387659955667,
+            2.4344803370135524,
+            2.6720287533286142,
+            0.9452263034013946,
+            1.8091488897324266,
+            1.4052270789695007,
+            4.892185970807333,
+            2.2706840169283367,
+            2.7896534139855635,
+            1.0796925507925261,
+            1.313291594310411,
+            3.2738231685161234,
+            2.4997406956463912
+          ],
+          "behavior_point_count": 0,
+          "delta_u_vs_identity": 0.0
+        }
+      },
+      "usage": {
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 2,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.18,
+        "within_caps": true
+      },
+      "details": {
+        "prepare_calls": 0,
+        "episode_writes": 0,
+        "delayed_open_calls": 0,
+        "accepted_updates": 0,
+        "writeback_attempts": 0,
+        "store_created": false,
+        "protocol_errors": []
+      }
+    },
+    {
+      "method": "A3-reset",
+      "status": "PASS",
+      "selected_program": "identity",
+      "implementation": "production TTHAMethod + run_online_round + Support-B wall",
+      "readings": {
+        "support_receipts": 0,
+        "support_delta_u_vs_identity": null,
+        "support_candidate_utility": null,
+        "delayed_delta_u_vs_identity": null,
+        "delayed_candidate_utility": null,
+        "abstained": true,
+        "harm_count": 0
+      },
+      "usage": {
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "cheap_probes": 3,
+        "llm_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 3.296,
+        "within_caps": true
+      },
+      "details": {
+        "initial_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "writeback_channel": false,
+        "unit_state_discarded": true,
+        "next_unit_base": "shared_initial_state",
+        "carried_episode_count": 0,
+        "carried_new_skill_count": 0,
+        "retained_update": false,
+        "writeback_treatment": "NOT_EXERCISED",
+        "writeback_persisted_to_evolution_store": false,
+        "candidate_count": 1,
+        "chosen_program_steps": [],
+        "approved_after_support_b": false,
+        "method_state_changed_inside_isolated_unit": false,
+        "existing_source_prior_confirmed": false,
+        "cross_task_faces": {
+          "retrieval": 0,
+          "scope_match": 0,
+          "supply": 0,
+          "episode": 0
+        },
+        "forecast_source_faces": {
+          "retrieval": 0,
+          "scope_match": 0,
+          "supply": 0,
+          "support_probe": 0
+        },
+        "forecast_source_scope_fail_closed": true,
+        "fast_candidate_verifier_requests": 3,
+        "receipt_accounting": {
+          "requests_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "unique_receipt_requests_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "cache_hits_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "duplicate_requests": 0,
+          "unique_candidate_verifier_requests": 0,
+          "verified_windows_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          }
+        },
+        "identity_baseline_cache_reused": true,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "protocol_errors": []
+      }
+    },
+    {
+      "method": "K0-fixed",
+      "status": "PASS",
+      "selected_program": "identity",
+      "implementation": "production TTHAMethod + run_online_round + Support-B wall",
+      "readings": {
+        "support_receipts": 0,
+        "support_delta_u_vs_identity": null,
+        "support_candidate_utility": null,
+        "delayed_delta_u_vs_identity": null,
+        "delayed_candidate_utility": null,
+        "abstained": true,
+        "harm_count": 0
+      },
+      "usage": {
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "cheap_probes": 3,
+        "llm_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 3.187,
+        "within_caps": true
+      },
+      "details": {
+        "initial_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "s2a_forecast_supply_v0",
+          "sa1_supply_scope_v2",
+          "select_or_identity_and_verify"
+        ],
+        "writeback_channel": false,
+        "unit_state_discarded": true,
+        "next_unit_base": "shared_initial_state",
+        "carried_episode_count": 0,
+        "carried_new_skill_count": 0,
+        "retained_update": false,
+        "writeback_treatment": "NOT_EXERCISED",
+        "writeback_persisted_to_evolution_store": false,
+        "candidate_count": 1,
+        "chosen_program_steps": [],
+        "approved_after_support_b": false,
+        "method_state_changed_inside_isolated_unit": false,
+        "existing_source_prior_confirmed": false,
+        "cross_task_faces": {
+          "retrieval": 0,
+          "scope_match": 0,
+          "supply": 0,
+          "episode": 0
+        },
+        "forecast_source_faces": {
+          "retrieval": 0,
+          "scope_match": 0,
+          "supply": 0,
+          "support_probe": 0
+        },
+        "forecast_source_scope_fail_closed": true,
+        "fast_candidate_verifier_requests": 3,
+        "receipt_accounting": {
+          "requests_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "unique_receipt_requests_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "cache_hits_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "duplicate_requests": 0,
+          "unique_candidate_verifier_requests": 0,
+          "verified_windows_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          }
+        },
+        "identity_baseline_cache_reused": true,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "protocol_errors": []
+      }
+    },
+    {
+      "method": "A5-online",
+      "status": "PASS",
+      "selected_program": "identity",
+      "implementation": "production TTHAMethod + run_online_round + Support-B wall",
+      "readings": {
+        "support_receipts": 0,
+        "support_delta_u_vs_identity": null,
+        "support_candidate_utility": null,
+        "delayed_delta_u_vs_identity": null,
+        "delayed_candidate_utility": null,
+        "abstained": true,
+        "harm_count": 0
+      },
+      "usage": {
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "cheap_probes": 3,
+        "llm_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 3.26,
+        "within_caps": true
+      },
+      "details": {
+        "initial_skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "s2a_forecast_supply_v0",
+          "sa1_supply_scope_v2",
+          "select_or_identity_and_verify"
+        ],
+        "writeback_channel": true,
+        "unit_state_discarded": false,
+        "next_unit_base": "shared_initial_state",
+        "carried_episode_count": 0,
+        "carried_new_skill_count": 0,
+        "retained_update": false,
+        "writeback_treatment": "NOT_EXERCISED",
+        "writeback_persisted_to_evolution_store": false,
+        "candidate_count": 1,
+        "chosen_program_steps": [],
+        "approved_after_support_b": false,
+        "method_state_changed_inside_isolated_unit": false,
+        "existing_source_prior_confirmed": false,
+        "cross_task_faces": {
+          "retrieval": 0,
+          "scope_match": 0,
+          "supply": 0,
+          "episode": 0
+        },
+        "forecast_source_faces": {
+          "retrieval": 0,
+          "scope_match": 0,
+          "supply": 0,
+          "support_probe": 0
+        },
+        "forecast_source_scope_fail_closed": true,
+        "fast_candidate_verifier_requests": 3,
+        "receipt_accounting": {
+          "requests_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "unique_receipt_requests_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "cache_hits_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          },
+          "duplicate_requests": 0,
+          "unique_candidate_verifier_requests": 0,
+          "verified_windows_by_face": {
+            "support_a": 0,
+            "support_b": 0
+          }
+        },
+        "identity_baseline_cache_reused": true,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "protocol_errors": []
+      }
+    }
+  ],
+  "aegists_adapter": {
+    "status": "STRUCTURALLY_INCOMPATIBLE",
+    "tier": "related-work",
+    "reason": "the reference implementation couples its hierarchical RL action space, labels/reward, and task models; it does not expose a pure selector over this project's frozen Common DSL / Consumer / B=4 contract",
+    "checks": {
+      "uses_own_hierarchical_rl_action_space": true,
+      "requires_labels_inside_cleaning_environment": true,
+      "uses_own_task_models": true,
+      "does_not_export_project_typed_workflow": true
+    },
+    "source_tree_read_only": true,
+    "blocking": false
+  },
+  "backend": {
+    "mode": "scripted",
+    "production_format_exercised": true,
+    "live_transport_exercised": false,
+    "global_llm_calls": 8,
+    "global_input_tokens": 0,
+    "global_output_tokens": 0,
+    "k0_a5_same_initial_state": true,
+    "k0_a5_initial_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "s2a_forecast_supply_v0",
+      "sa1_supply_scope_v2",
+      "select_or_identity_and_verify"
+    ],
+    "k0_a5_forecast_supply_contract": {
+      "status": "PASS",
+      "source": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+      "producer_selection_rule": "unique role=producer and arm=A5-online",
+      "skill_id": "s2a_forecast_supply_v0",
+      "task_consumer_metric": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE"
+      },
+      "requires_target_support": true,
+      "supplies_candidates": true,
+      "grants_execution": false,
+      "evidence_semantics": "legacy source supply-only soft prior",
+      "kdd_capability_claim": false,
+      "beneficiary_conversion_claim": false
+    },
+    "temporary_store_removed_after_run": true
+  },
+  "protocol_errors": {
+    "natural_final_outcome_reads": 0,
+    "development_query_evaluations": 0,
+    "task_mismatch_execution": 0,
+    "cross_task_skill_leakage": 0,
+    "historical_skill_bypassed_support": 0,
+    "wrong_promotion": 0
+  },
+  "blocking_failures": [],
+  "performance_or_headroom_claim": false,
+  "treatment_or_capability_claim": false,
+  "wall_seconds": 46.776
+}

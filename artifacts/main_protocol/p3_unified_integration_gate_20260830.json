@@ -1,0 +1,1018 @@
+{
+  "protocol_version": "v1.2.1-Core",
+  "stage": "P3_CLASSIFICATION_AD_ROSTER_VERTICAL_INTEGRATION",
+  "evidence_grade": "INTEGRATION_WITH_CONTROLLED_POLICY_REPLAY",
+  "verdict": "P3_UNIFIED_VERTICAL_INTEGRATION_PASS__P4_HELD",
+  "p3_integration_complete": true,
+  "release_p4": false,
+  "p4_executed": false,
+  "live_outcome_release": false,
+  "release_scope": "NONE",
+  "upstream": {
+    "p0_roster": {
+      "source": "artifacts/main_protocol/p0_readiness_20260830.json",
+      "classification": {
+        "exposed_train_development": [
+          "Epilepsy2",
+          "GunPoint",
+          "PowerCons"
+        ],
+        "sealed_final": [
+          "Adiac",
+          "ArrowHead"
+        ],
+        "sealed_test_member_bytes_read": 0
+      },
+      "anomaly_detection": {
+        "structural_roster_count": 65,
+        "exposed_development_count": 24,
+        "sealed_final_count": 41,
+        "sealed_final_label": [
+          "Yahoo S5 sealed 41"
+        ],
+        "sealed_csv_bytes_read": 0
+      },
+      "forecast": {
+        "sealed_final": [
+          "Traffic leftover 480..861",
+          "Solar-Energy all 137"
+        ],
+        "opened_by_p3": false
+      }
+    },
+    "p1": {
+      "source": "artifacts/main_protocol/p1_core_baseline_smoke_20260830.json",
+      "overall_p1_complete": true,
+      "three_task_roster_exact": true,
+      "thirteen_methods_per_task": true,
+      "classification_metric": "Macro-F1",
+      "classification_production_lifecycle": true,
+      "ad_method_gate": {
+        "status": "NOT_RELEASED_BY_P1",
+        "current_first_fault": "#44a-r2 PROGRAM_CONSUMER_LAYER_FAULT_CONFIRMED / INVERTED_EFFECT_OBSERVED",
+        "p1_scope": "INFRASTRUCTURE_ONLY",
+        "ad_evolution_release": false
+      }
+    },
+    "p2_forecast": {
+      "source": "artifacts/main_protocol/p2_forecast_single_flow_pilot_20260830.json",
+      "executed_by_p3": false,
+      "p2_complete": true,
+      "treatment_recomputed": true,
+      "evidence_grade": "MECHANISM",
+      "claim_ceiling": "RISK_CONTROL_ONLY"
+    }
+  },
+  "roster_contract": {
+    "tasks": [
+      "forecast",
+      "classification",
+      "anomaly_detection"
+    ],
+    "arms": [
+      "Static",
+      "A3-reset",
+      "K0-fixed",
+      "A5-online"
+    ],
+    "methods": [
+      "Identity",
+      "Best Fixed Per-task",
+      "Fixed Linear-impute",
+      "Fixed Hampel",
+      "Fixed Winsor",
+      "Fixed IQR",
+      "Parallel Best-of-N@4",
+      "Sequential Refinement@4",
+      "Frozen H0",
+      "Static",
+      "A3-reset",
+      "K0-fixed",
+      "A5-online"
+    ],
+    "data": {
+      "source": "artifacts/main_protocol/p0_readiness_20260830.json",
+      "classification": {
+        "exposed_train_development": [
+          "Epilepsy2",
+          "GunPoint",
+          "PowerCons"
+        ],
+        "sealed_final": [
+          "Adiac",
+          "ArrowHead"
+        ],
+        "sealed_test_member_bytes_read": 0
+      },
+      "anomaly_detection": {
+        "structural_roster_count": 65,
+        "exposed_development_count": 24,
+        "sealed_final_count": 41,
+        "sealed_final_label": [
+          "Yahoo S5 sealed 41"
+        ],
+        "sealed_csv_bytes_read": 0
+      },
+      "forecast": {
+        "sealed_final": [
+          "Traffic leftover 480..861",
+          "Solar-Energy all 137"
+        ],
+        "opened_by_p3": false
+      }
+    },
+    "forecast_mode": "READ_ONLY_REUSE_P2",
+    "classification_mode": "EXPOSED_TRAIN_MACRO_F1_CONTROLLED_SCOPE_POLICY_REPLAY",
+    "anomaly_detection_mode": "EXPOSED_YAHOO24_IDENTITY_ONLY_METHOD_GATE"
+  },
+  "budget_caps": {
+    "full_support_evaluations": 4,
+    "support_a_full_evaluations": 3,
+    "support_b_full_evaluations": 1,
+    "cheap_probes": 12,
+    "llm_calls": 4,
+    "tokens": 40000,
+    "accepted_updates": 1,
+    "raw_consumer_fits": "REPORTED_SEPARATELY_NOT_A_B4_GATE"
+  },
+  "task_components": {
+    "forecast": {
+      "mode": "READ_ONLY_REUSE_P2",
+      "treatment_facts": {
+        "positive_support_before_update": true,
+        "legal_update": true,
+        "retained_across_unit": true,
+        "later_reencounter": true,
+        "later_behavior_influenced": true,
+        "surviving_usable_skill": false,
+        "revalidated_after_revision": false,
+        "update_kind": "REVOKE"
+      },
+      "treatment_state": {
+        "state": "TERMINAL_RISK_CONTROL",
+        "claim_ceiling": "RISK_CONTROL_ONLY"
+      },
+      "claim_ceiling": "RISK_CONTROL_ONLY",
+      "p3_incremental_cost": {
+        "full_support_evaluations": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "raw_consumer_fits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.0
+      },
+      "boundaries": {
+        "forecast_runner_invocations": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    "classification": {
+      "task": "classification",
+      "integration_status": "PASS",
+      "evidence_grade": "CONTROLLED_REAL_CONSUMER_POLICY_REPLAY",
+      "consumer": {
+        "id": "ridge-raw-plus-difference-v1",
+        "primary_metric": "Macro-F1",
+        "secondary_metrics": [
+          "Accuracy",
+          "per-class recall",
+          "worst-class recall"
+        ]
+      },
+      "data": {
+        "role": "EXPOSED_TRAIN_ONLY",
+        "datasets": [
+          "Epilepsy2",
+          "GunPoint",
+          "PowerCons"
+        ],
+        "sealed_final_roster": [
+          "Adiac",
+          "ArrowHead"
+        ],
+        "sealed_final_opened_by_p3": false,
+        "qualification_context": "Epilepsy2",
+        "refusing_and_reencounter_context": "PowerCons",
+        "surface_counts": {
+          "Epilepsy2": {
+            "fit": 40,
+            "support_a": 20,
+            "support_b": 20
+          },
+          "GunPoint": {
+            "fit": 25,
+            "support_a": 12,
+            "support_b": 13
+          },
+          "PowerCons": {
+            "fit": 90,
+            "support_a": 44,
+            "support_b": 46
+          }
+        },
+        "fit_support_a_support_b_disjoint": true,
+        "official_test_member_bytes_read": 0,
+        "held_out_requests": 0,
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0
+      },
+      "controlled_scope_edit_replay": {
+        "status": "CONTROLLED_SCOPE_POLICY_REPLAY_PASS",
+        "skill_id": "p3_cls_hampel_scope",
+        "program": "hampel_filter",
+        "card_role": "CONTROLLED_SUPPLY_ONLY_MECHANISM_CARD",
+        "source_learned": false,
+        "autonomous_failure_diagnosis": false,
+        "post_hoc_capability_claim": false,
+        "evidence_independence": {
+          "qualification_and_revalidation_reuse_exposed_surfaces": true,
+          "conflict_and_reencounter_reuse_exposed_surface": true,
+          "fresh_replica": false,
+          "generalization_claim": false
+        },
+        "qualification": {
+          "support_a": {
+            "identity_macro_f1": 0.797979797979798,
+            "candidate_macro_f1": 0.849624060150376,
+            "delta_u_vs_identity": 0.05164426217057794,
+            "relation": "POSITIVE",
+            "identity_accuracy": 0.8,
+            "candidate_accuracy": 0.85,
+            "identity_worst_class_recall": 0.7,
+            "candidate_worst_class_recall": 0.8,
+            "identity_recall_by_class": {
+              "0": 0.7,
+              "1": 0.9
+            },
+            "candidate_recall_by_class": {
+              "0": 0.8,
+              "1": 0.9
+            },
+            "candidate_behavior_point_count": 658
+          },
+          "support_b": {
+            "identity_macro_f1": 0.7916666666666667,
+            "candidate_macro_f1": 0.898989898989899,
+            "delta_u_vs_identity": 0.10732323232323226,
+            "relation": "POSITIVE",
+            "identity_accuracy": 0.8,
+            "candidate_accuracy": 0.9,
+            "identity_worst_class_recall": 0.6,
+            "candidate_worst_class_recall": 0.8,
+            "identity_recall_by_class": {
+              "0": 0.6,
+              "1": 1.0
+            },
+            "candidate_recall_by_class": {
+              "0": 0.8,
+              "1": 1.0
+            },
+            "candidate_behavior_point_count": 658
+          }
+        },
+        "conflict": {
+          "support_a": {
+            "identity_macro_f1": 0.8625,
+            "candidate_macro_f1": 0.8401660612350804,
+            "delta_u_vs_identity": -0.022333938764919625,
+            "relation": "NEGATIVE",
+            "identity_accuracy": 0.8636363636363636,
+            "candidate_accuracy": 0.8409090909090909,
+            "identity_worst_class_recall": 0.7727272727272727,
+            "candidate_worst_class_recall": 0.7727272727272727,
+            "identity_recall_by_class": {
+              "0": 0.7727272727272727,
+              "1": 0.9545454545454546
+            },
+            "candidate_recall_by_class": {
+              "0": 0.7727272727272727,
+              "1": 0.9090909090909091
+            },
+            "candidate_behavior_point_count": 573
+          }
+        },
+        "revision": {
+          "kind": "SEMANTIC_SCOPE_NARROW",
+          "changed_fields": [
+            "observable_applicability"
+          ],
+          "entry_revision_counter_changed": false,
+          "body_unchanged": true,
+          "skill_id_unchanged": true,
+          "exclusion_leaf_count": 10,
+          "exclusion_axes": [
+            "estimated_level_offset",
+            "estimated_region_end_fraction",
+            "estimated_region_start_fraction",
+            "level_excursion_score",
+            "level_region_end_fraction",
+            "level_region_fraction",
+            "local_robust_z_peak",
+            "outlier_region_end_fraction",
+            "period_change_score",
+            "post_shift_support_sufficient"
+          ],
+          "semantic_scope_edits": 1,
+          "production_update_executed": false,
+          "accepted_updates": 0,
+          "pending_before_delayed": false,
+          "independent_delayed_approval": false
+        },
+        "revalidation": {
+          "support_a": {
+            "identity_macro_f1": 0.797979797979798,
+            "candidate_macro_f1": 0.849624060150376,
+            "delta_u_vs_identity": 0.05164426217057794,
+            "relation": "POSITIVE",
+            "identity_accuracy": 0.8,
+            "candidate_accuracy": 0.85,
+            "identity_worst_class_recall": 0.7,
+            "candidate_worst_class_recall": 0.8,
+            "identity_recall_by_class": {
+              "0": 0.7,
+              "1": 0.9
+            },
+            "candidate_recall_by_class": {
+              "0": 0.8,
+              "1": 0.9
+            },
+            "candidate_behavior_point_count": 658
+          },
+          "support_b": {
+            "identity_macro_f1": 0.7916666666666667,
+            "candidate_macro_f1": 0.898989898989899,
+            "delta_u_vs_identity": 0.10732323232323226,
+            "relation": "POSITIVE",
+            "identity_accuracy": 0.8,
+            "candidate_accuracy": 0.9,
+            "identity_worst_class_recall": 0.6,
+            "candidate_worst_class_recall": 0.8,
+            "identity_recall_by_class": {
+              "0": 0.6,
+              "1": 1.0
+            },
+            "candidate_recall_by_class": {
+              "0": 0.8,
+              "1": 1.0
+            },
+            "candidate_behavior_point_count": 658
+          }
+        },
+        "later_policy_replay": {
+          "k0_supply": {
+            "retrieved": true,
+            "supplied": true,
+            "program_steps": [
+              [
+                "hampel_filter",
+                {}
+              ]
+            ]
+          },
+          "a5_supply": {
+            "retrieved": false,
+            "supplied": false,
+            "program_steps": []
+          },
+          "k0_candidate_macro_f1": 0.8401660612350804,
+          "a5_identity_macro_f1": 0.8625,
+          "a5_minus_k0_utility": 0.022333938764919625,
+          "a5_action": "WITHHOLD_CONTROLLED_CARD_AND_USE_IDENTITY",
+          "autonomous_abstention_claim": false,
+          "same_surface_replay": true,
+          "independent_reencounter": false
+        },
+        "gate_checks": {
+          "initial_support_a_positive": true,
+          "initial_support_b_positive": true,
+          "later_material_conflict": true,
+          "initial_card_retrieved_and_supplied_on_both_contexts": true,
+          "only_scope_changed": true,
+          "same_skill_and_program_survived": true,
+          "revised_scope_retains_positive_context": true,
+          "revised_scope_withholds_refusing_context": true,
+          "revalidation_support_a_positive": true,
+          "revalidation_support_b_positive": true,
+          "k0_replays_old_card_on_same_surface": true,
+          "controlled_policy_changes_later_same_surface_supply": true,
+          "one_semantic_scope_edit": true
+        },
+        "claim_ceiling": "MECHANICAL_SCOPE_NARROWING_REPLAY"
+      },
+      "treatment_facts": {
+        "legal_update": false,
+        "controlled_semantic_edit": true,
+        "retained_across_unit": true,
+        "later_reencounter": false,
+        "later_same_surface_replay": true,
+        "later_behavior_influenced": true,
+        "surviving_usable_skill": true,
+        "revalidated_after_revision": false,
+        "retained_context_replay_positive": true,
+        "update_kind": "SEMANTIC_SCOPE_NARROW_REPLAY"
+      },
+      "cost_rows": [
+        {
+          "task": "classification",
+          "arm": "K0-fixed/controlled-policy initial qualification",
+          "target": "Epilepsy2",
+          "usage": {
+            "full_support_evaluations": {
+              "support_a": 1,
+              "support_b": 1
+            },
+            "raw_consumer_fits": {
+              "support_a": 2,
+              "support_b": 2
+            },
+            "cache_hits": {
+              "support_a": 0,
+              "support_b": 0
+            },
+            "cheap_probes": 0,
+            "llm_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 0.042
+          }
+        },
+        {
+          "task": "classification",
+          "arm": "controlled scope-edit policy replay",
+          "target": "PowerCons",
+          "usage": {
+            "full_support_evaluations": {
+              "support_a": 1,
+              "support_b": 0
+            },
+            "raw_consumer_fits": {
+              "support_a": 2,
+              "support_b": 0
+            },
+            "cache_hits": {
+              "support_a": 0,
+              "support_b": 0
+            },
+            "cheap_probes": 1,
+            "llm_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 0.036
+          }
+        },
+        {
+          "task": "classification",
+          "arm": "controlled retained-context policy replay",
+          "target": "Epilepsy2",
+          "usage": {
+            "full_support_evaluations": {
+              "support_a": 1,
+              "support_b": 1
+            },
+            "raw_consumer_fits": {
+              "support_a": 2,
+              "support_b": 2
+            },
+            "cache_hits": {
+              "support_a": 0,
+              "support_b": 0
+            },
+            "cheap_probes": 0,
+            "llm_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 0.04
+          }
+        },
+        {
+          "task": "classification",
+          "arm": "K0-fixed same-surface replay",
+          "target": "PowerCons",
+          "usage": {
+            "full_support_evaluations": {
+              "support_a": 1,
+              "support_b": 0
+            },
+            "raw_consumer_fits": {
+              "support_a": 2,
+              "support_b": 0
+            },
+            "cache_hits": {
+              "support_a": 0,
+              "support_b": 0
+            },
+            "cheap_probes": 0,
+            "llm_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 0.033
+          }
+        },
+        {
+          "task": "classification",
+          "arm": "controlled narrowed-policy same-surface replay",
+          "target": "PowerCons",
+          "usage": {
+            "full_support_evaluations": {
+              "support_a": 1,
+              "support_b": 0
+            },
+            "raw_consumer_fits": {
+              "support_a": 1,
+              "support_b": 0
+            },
+            "cache_hits": {
+              "support_a": 0,
+              "support_b": 0
+            },
+            "cheap_probes": 1,
+            "llm_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 0.0
+          }
+        }
+      ],
+      "boundaries": {
+        "official_test_member_bytes_read": 0,
+        "held_out_requests": 0,
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "live_provider_calls": 0
+      },
+      "rq3_status": "NOT_EXERCISED",
+      "natural_performance_claim": false,
+      "source_transfer_claim": false,
+      "wall_seconds": 0.376
+    },
+    "anomaly_detection": {
+      "task": "anomaly_detection",
+      "integration_status": "PASS",
+      "diagnostic_verdict": "AD_P3_TRAIN_ONLY_ROSTER_ADAPTER_PASS__METHOD_GATE_CLOSED",
+      "evidence_grade": "INSTRUMENT",
+      "consumer": {
+        "id": "aegists_iforest_v1",
+        "primary_metric": "macro Event-F1",
+        "program": "identity"
+      },
+      "data": {
+        "role": "EXPOSED_DEVELOPMENT_TRAIN_ONLY",
+        "dataset": "Yahoo S5 A1",
+        "roster_count": 24,
+        "roster": [
+          "real_1.csv",
+          "real_10.csv",
+          "real_11.csv",
+          "real_12.csv",
+          "real_13.csv",
+          "real_14.csv",
+          "real_15.csv",
+          "real_16.csv",
+          "real_17.csv",
+          "real_18.csv",
+          "real_19.csv",
+          "real_2.csv",
+          "real_20.csv",
+          "real_21.csv",
+          "real_22.csv",
+          "real_23.csv",
+          "real_24.csv",
+          "real_25.csv",
+          "real_26.csv",
+          "real_27.csv",
+          "real_28.csv",
+          "real_29.csv",
+          "real_3.csv",
+          "real_30.csv"
+        ],
+        "full_structural_roster_count": 65,
+        "sealed_final_count": 41,
+        "sealed_final_opened_by_p3": false,
+        "window_plan": "r1: train [0,.30), Support-A [.30,.40), Support-B [.40,.50)",
+        "training_window_count": 24,
+        "training_window_length_min": 426,
+        "training_window_length_max": 438,
+        "geometry_pass": true
+      },
+      "readings": {
+        "support_a": {
+          "macro_event_f1": 0.17361111111111113,
+          "pooled_event_f1": 0.015873015873015876,
+          "per_series_event_f1": {
+            "real_1.csv": 0.0,
+            "real_10.csv": 0.0,
+            "real_11.csv": 0.0,
+            "real_12.csv": 0.0,
+            "real_13.csv": 0.0,
+            "real_14.csv": 1.0,
+            "real_15.csv": 0.0,
+            "real_16.csv": 0.0,
+            "real_17.csv": 1.0,
+            "real_18.csv": 0.0,
+            "real_19.csv": 0.0,
+            "real_2.csv": 0.0,
+            "real_20.csv": 0.16666666666666669,
+            "real_21.csv": 0.0,
+            "real_22.csv": 1.0,
+            "real_23.csv": 1.0,
+            "real_24.csv": 0.0,
+            "real_25.csv": 0.0,
+            "real_26.csv": 0.0,
+            "real_27.csv": 0.0,
+            "real_28.csv": 0.0,
+            "real_29.csv": 0.0,
+            "real_3.csv": 0.0,
+            "real_30.csv": 0.0
+          }
+        },
+        "support_b": {
+          "macro_event_f1": 0.1875,
+          "pooled_event_f1": 0.019607843137254905,
+          "per_series_event_f1": {
+            "real_1.csv": 0.0,
+            "real_10.csv": 1.0,
+            "real_11.csv": 0.0,
+            "real_12.csv": 0.0,
+            "real_13.csv": 0.0,
+            "real_14.csv": 1.0,
+            "real_15.csv": 0.0,
+            "real_16.csv": 0.0,
+            "real_17.csv": 0.0,
+            "real_18.csv": 0.0,
+            "real_19.csv": 0.0,
+            "real_2.csv": 0.0,
+            "real_20.csv": 0.0,
+            "real_21.csv": 0.0,
+            "real_22.csv": 1.0,
+            "real_23.csv": 0.5,
+            "real_24.csv": 0.0,
+            "real_25.csv": 0.0,
+            "real_26.csv": 1.0,
+            "real_27.csv": 0.0,
+            "real_28.csv": 0.0,
+            "real_29.csv": 0.0,
+            "real_3.csv": 0.0,
+            "real_30.csv": 0.0
+          }
+        }
+      },
+      "behavior": {
+        "status": "NOT_EXERCISED",
+        "deployed_program": "identity",
+        "production_agent_executed_in_p3": false,
+        "episodes_written": 0,
+        "skills_written": 0,
+        "store_updates": 0,
+        "accepted_updates": 0,
+        "forced_identity_is_not_autonomous_abstention": true
+      },
+      "method_gate": {
+        "source": "artifacts/functional/e2/t6_44a_r2_yahoo_positive_control.json",
+        "status": "NOT_PASSED",
+        "verdict": "PROGRAM_CONSUMER_LAYER_FAULT_CONFIRMED",
+        "secondary": "INVERTED_EFFECT_OBSERVED",
+        "b1_effect_confirmed_rates": [],
+        "b2_executed": false,
+        "ad_evolution_allowed": false
+      },
+      "treatment_facts": {
+        "legal_update": false,
+        "retained_across_unit": false,
+        "later_reencounter": false,
+        "later_behavior_influenced": false,
+        "surviving_usable_skill": false,
+        "revalidated_after_revision": false,
+        "update_kind": "NONE"
+      },
+      "cost_rows": [
+        {
+          "task": "anomaly_detection",
+          "arm": "method-gate identity diagnostic",
+          "target": "Yahoo exposed first-24",
+          "usage": {
+            "full_support_evaluations": {
+              "support_a": 1,
+              "support_b": 1
+            },
+            "raw_consumer_fits": {
+              "support_a": 24,
+              "support_b": 0
+            },
+            "cache_hits": {
+              "support_a": 0,
+              "support_b": 24
+            },
+            "cheap_probes": 0,
+            "llm_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "tokens": 0,
+            "accepted_updates": 0,
+            "wall_seconds": 13.706
+          }
+        }
+      ],
+      "boundaries": {
+        "held_in_label_requests": 48,
+        "held_out_requests": 0,
+        "all_label_requests_before_heldout": true,
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "production_agent_calls": 0,
+        "episode_writes": 0,
+        "skill_writes": 0,
+        "store_updates": 0
+      },
+      "rq3_status": "NOT_EXERCISED",
+      "release_p4_ad": false,
+      "natural_performance_claim": false,
+      "wall_seconds": 13.706
+    }
+  },
+  "derived_treatment_state": {
+    "forecast": {
+      "state": "TERMINAL_RISK_CONTROL",
+      "claim_ceiling": "RISK_CONTROL_ONLY"
+    },
+    "classification": {
+      "state": "NO_TREATMENT",
+      "claim_ceiling": "NO_ADAPTATION_CLAIM"
+    },
+    "anomaly_detection": {
+      "state": "NO_TREATMENT",
+      "claim_ceiling": "NO_ADAPTATION_CLAIM"
+    }
+  },
+  "revision_concern_gate": {
+    "status": "PARTIAL_MECHANICAL_SCOPE_REPLAY__PRODUCTION_REVISION_PENDING",
+    "revoke_only_is_sufficient": false,
+    "required_chain": [
+      "positive qualification",
+      "later material conflict",
+      "bounded production nonterminal revision",
+      "independent delayed revalidation and promotion",
+      "later independent reencounter behavior change",
+      "surviving useful context"
+    ],
+    "observed_semantic_edit": "SCOPE_NARROW",
+    "production_update_observed": false,
+    "revision_counter_increment_observed": false,
+    "independent_delayed_approval_observed": false,
+    "independent_reencounter_observed": false,
+    "same_surface_policy_replay_observed": true,
+    "controlled_mechanism_only": true,
+    "natural_skill_evolution_claim": false,
+    "remaining_requirements": [
+      "production pending update",
+      "independent Support-B approval",
+      "promoted revision with incremented version",
+      "independent later-context survival or benefit"
+    ],
+    "p4_failure_rule": "if formal Evolution only generates and revokes, classify it as risk control rather than sustained Skill evolution"
+  },
+  "unified_cost_rows": [
+    {
+      "task": "classification",
+      "arm": "K0-fixed/controlled-policy initial qualification",
+      "target": "Epilepsy2",
+      "usage": {
+        "full_support_evaluations": {
+          "support_a": 1,
+          "support_b": 1
+        },
+        "raw_consumer_fits": {
+          "support_a": 2,
+          "support_b": 2
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.042
+      }
+    },
+    {
+      "task": "classification",
+      "arm": "controlled scope-edit policy replay",
+      "target": "PowerCons",
+      "usage": {
+        "full_support_evaluations": {
+          "support_a": 1,
+          "support_b": 0
+        },
+        "raw_consumer_fits": {
+          "support_a": 2,
+          "support_b": 0
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 1,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.036
+      }
+    },
+    {
+      "task": "classification",
+      "arm": "controlled retained-context policy replay",
+      "target": "Epilepsy2",
+      "usage": {
+        "full_support_evaluations": {
+          "support_a": 1,
+          "support_b": 1
+        },
+        "raw_consumer_fits": {
+          "support_a": 2,
+          "support_b": 2
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.04
+      }
+    },
+    {
+      "task": "classification",
+      "arm": "K0-fixed same-surface replay",
+      "target": "PowerCons",
+      "usage": {
+        "full_support_evaluations": {
+          "support_a": 1,
+          "support_b": 0
+        },
+        "raw_consumer_fits": {
+          "support_a": 2,
+          "support_b": 0
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.033
+      }
+    },
+    {
+      "task": "classification",
+      "arm": "controlled narrowed-policy same-surface replay",
+      "target": "PowerCons",
+      "usage": {
+        "full_support_evaluations": {
+          "support_a": 1,
+          "support_b": 0
+        },
+        "raw_consumer_fits": {
+          "support_a": 1,
+          "support_b": 0
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 1,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.0
+      }
+    },
+    {
+      "task": "anomaly_detection",
+      "arm": "method-gate identity diagnostic",
+      "target": "Yahoo exposed first-24",
+      "usage": {
+        "full_support_evaluations": {
+          "support_a": 1,
+          "support_b": 1
+        },
+        "raw_consumer_fits": {
+          "support_a": 24,
+          "support_b": 0
+        },
+        "cache_hits": {
+          "support_a": 0,
+          "support_b": 24
+        },
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 13.706
+      }
+    }
+  ],
+  "budget_gate": {
+    "status": "PASS",
+    "failures": [],
+    "forecast_p2_cost_reused_not_recharged": true
+  },
+  "protocol_errors": {
+    "forecast_runner_invocations": 0,
+    "classification_official_test_member_bytes_read": 0,
+    "classification_held_out_requests": 0,
+    "ad_held_out_requests": 0,
+    "development_query_evaluations": 0,
+    "natural_final_outcome_reads": 0,
+    "live_provider_calls": 0,
+    "ad_agent_calls": 0,
+    "ad_episode_writes": 0,
+    "ad_skill_writes": 0,
+    "p4_runner_invocations": 0
+  },
+  "blocking_failures": [],
+  "p4_gate": {
+    "release_p4": false,
+    "release_scope": "NONE",
+    "by_task": {
+      "forecast": {
+        "treatment_state": "TERMINAL_RISK_CONTROL",
+        "method_gate_passed": true,
+        "rq3_exercisable": false,
+        "claim_ceiling": "RISK_CONTROL_ONLY"
+      },
+      "classification": {
+        "treatment_state": "NO_TREATMENT",
+        "method_gate_passed": false,
+        "production_revision_gate_passed": false,
+        "rq3_exercisable": false,
+        "claim_ceiling": "NO_ADAPTATION_CLAIM"
+      },
+      "anomaly_detection": {
+        "treatment_state": "NO_TREATMENT",
+        "method_gate_passed": false,
+        "rq3_exercisable": false,
+        "claim_ceiling": "NO_ADAPTATION_CLAIM"
+      }
+    },
+    "blocking_failures": [
+      "AD #44a positive control is not passed",
+      "AD Treatment reachability is not formed",
+      "Classification production revision reachability is not formed"
+    ],
+    "p4_executed": false,
+    "natural_final_release": false
+  },
+  "claim_boundaries": {
+    "p3_integration_claim": true,
+    "classification_scope_policy_replay": true,
+    "classification_nonterminal_production_revision_claim": false,
+    "classification_autonomous_diagnosis_claim": false,
+    "natural_data_performance_improvement_claim": false,
+    "source_experience_learning_claim": false,
+    "cross_dataset_transfer_claim": false,
+    "ad_safe_behavior_claim": false,
+    "p4_evolution_release": false,
+    "natural_final_release": false
+  },
+  "wall_seconds": 16.674
+}

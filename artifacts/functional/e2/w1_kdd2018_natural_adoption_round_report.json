@@ -1,0 +1,97 @@
+{
+  "experiment_id": "v1-kdd2018-natural-adoption-round",
+  "note": "P4.2 自然更新回路闭合检查：P4.1 批准 snapshot 在 R4 正常入口的检索/选择/执行 + removal 对照（零新 LLM）",
+  "origin": 984,
+  "delayed": 1032,
+  "approved_snapshot_sha": "96f83039e4e9dec4ba7583d6b9e755afe3cf556e75bdb5daccc5438b81bacaa4",
+  "skill": {
+    "skill_id": "winsorize_negative_outlier_mad",
+    "allowed_tools": [
+      "outlier_mad"
+    ],
+    "observable_applicability": {
+      "all": [
+        {
+          "feature": "task_kind",
+          "op": "==",
+          "value": "forecast"
+        },
+        {
+          "feature": "clipping_probe_direction",
+          "op": "==",
+          "value": "negative"
+        }
+      ]
+    }
+  },
+  "features_at_origin": {
+    "task_kind": "forecast",
+    "clipping_probe_direction": "unknown",
+    "imputation_probe_direction": "unknown",
+    "denoising_probe_direction": "unknown",
+    "level_probe_direction": "unknown"
+  },
+  "arms": {
+    "ADOPT": {
+      "arm": "ADOPT",
+      "status": "prepared",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "chosen": "cand_winsorize",
+      "chosen_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "executed": true,
+      "support_gain": -0.08411687539427182,
+      "support_passed": true,
+      "delayed_gain": 0.1993229191734609
+    },
+    "REMOVE": {
+      "arm": "REMOVE",
+      "status": "prepared",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "chosen": "cand_winsorize",
+      "chosen_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "executed": true,
+      "support_gain": -0.08411687539427182,
+      "support_passed": true,
+      "delayed_gain": 0.1993229191734609
+    }
+  },
+  "checks": {
+    "C1_skill_in_snapshot": true,
+    "C2_skill_retrieved": false,
+    "C3_chosen_is_skill": false,
+    "C4_executed": true,
+    "C5_removal_differs": false
+  },
+  "verdict": "ADOPTION_RETRIEVAL_GATE_BLOCKED",
+  "reason": "skill in snapshot but not retrieved at next-round normal entry; clipping_probe_direction='unknown' (evaluation harness never supplies fixed_probe_panel) vs skill applicability requires 'negative'"
+}

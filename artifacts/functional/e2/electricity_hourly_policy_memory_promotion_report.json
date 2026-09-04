@@ -1,0 +1,213 @@
+{
+  "A5_harmful": false,
+  "A5_minus_A3": -0.13237296558778722,
+  "adapt_auc": {
+    "A3": 0.19855944838168083,
+    "A5": 0.06618648279389361,
+    "Oracle": 0.33093241396946804
+  },
+  "bindings": {
+    "W_curation": {
+      "donor": "T8",
+      "donor_weight": 0.0,
+      "program": "EXCLUDE_DONOR",
+      "removal_strength": 1.0,
+      "selected_rows": [
+        7,
+        19,
+        31,
+        43,
+        55,
+        67
+      ],
+      "support_exact_gain": -0.015525117104667696,
+      "support_first_order_proxy_gain": 0.026316554536907982
+    },
+    "W_rowblock": {
+      "blocks": [
+        {
+          "all_rows_guard_retained_index": null,
+          "block_half_open": [
+            0,
+            12
+          ],
+          "selected_row_count": 40
+        },
+        {
+          "all_rows_guard_retained_index": null,
+          "block_half_open": [
+            12,
+            24
+          ],
+          "selected_row_count": 40
+        },
+        {
+          "all_rows_guard_retained_index": null,
+          "block_half_open": [
+            24,
+            36
+          ],
+          "selected_row_count": 31
+        },
+        {
+          "all_rows_guard_retained_index": null,
+          "block_half_open": [
+            36,
+            48
+          ],
+          "selected_row_count": 44
+        }
+      ],
+      "support_exact_gain": -0.5979964364106436
+    },
+    "W_temporal_origin": {
+      "binding": {
+        "origin": 300,
+        "origin_weight": 0.0,
+        "program": "EXCLUDE_ORIGIN_GROUP",
+        "removal_strength": 1.0,
+        "selected_rows": [
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "support_first_order_proxy_gain": 0.030594223914597374
+      },
+      "candidate_count": 12,
+      "decision": "EXECUTE",
+      "grouped_small_matrix_solve_count": 1,
+      "per_support_series_exact_gain": [
+        -0.04657982940400396,
+        0.3153225333062972,
+        0.35274719856165393,
+        0.4353642444200554
+      ],
+      "positive_support_series_fraction": 0.75,
+      "support_exact_gain": 0.2642135367210007,
+      "workflow_id": "W_temporal_origin"
+    }
+  },
+  "compute": {
+    "grouped_small_matrix_solve_count": 6,
+    "per_action_consumer_refit_count": 0,
+    "ridge_reference_solve_count": 1
+  },
+  "evidence_boundary": {
+    "bindings_and_memory_order_frozen_before_query": true,
+    "context_exposure": "PARTIAL_INSTANCE_SEEN_FORMAT_CHECK",
+    "original_uci_opened": false,
+    "outcome_exposure": "EXPOSED_ONCE_FOR_PROMOTION",
+    "persistent_memory_built": false,
+    "query_logical_materialization_count": 1,
+    "query_reads_before_freeze": 0,
+    "target_query_opened": false
+  },
+  "experiment_id": "E2.47-electricity-hourly-policy-memory-promotion",
+  "gate_passed": false,
+  "oracle_order_evaluator_only": [
+    "W_temporal_origin",
+    "W_rowblock",
+    "W_curation"
+  ],
+  "protocol": {
+    "budgets": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "consumer": "frozen Ridge and per-series sMASE",
+    "dataset": "Monash Electricity Hourly",
+    "frequency": "hourly",
+    "future_bounds_half_open": [
+      928,
+      976
+    ],
+    "period": 24,
+    "train_stop": 928,
+    "workflow_supply": [
+      "W_temporal_origin",
+      "W_rowblock",
+      "W_curation"
+    ]
+  },
+  "roster": {
+    "query": [
+      "T17",
+      "T18",
+      "T19",
+      "T20"
+    ],
+    "support": [
+      "T13",
+      "T14",
+      "T15",
+      "T16"
+    ],
+    "train": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10",
+      "T11",
+      "T12"
+    ]
+  },
+  "source_memory_order": [
+    "W_rowblock",
+    "W_curation",
+    "W_temporal_origin"
+  ],
+  "stage": "one_shot_source_promotion",
+  "verdict": "SOURCE_POLICY_MEMORY_PROMOTION_REJECTED",
+  "workflow_outcomes": {
+    "W_curation": {
+      "per_query_series_gain": [
+        0.20311737909309002,
+        0.0748030561782933,
+        0.1964453319086934,
+        -0.20120537597993593
+      ],
+      "query_gain": 0.0682900978000352,
+      "support_gain": -0.015525117104667696,
+      "workflow_id": "W_curation"
+    },
+    "W_rowblock": {
+      "per_query_series_gain": [
+        -0.09118614449364615,
+        -0.15596685524414067,
+        -0.5479895578307425,
+        0.3006192914540391
+      ],
+      "query_gain": -0.12363081652862257,
+      "support_gain": -0.5979964364106436,
+      "workflow_id": "W_rowblock"
+    },
+    "W_temporal_origin": {
+      "per_query_series_gain": [
+        0.5401675196292477,
+        0.5252605124407916,
+        0.4464697931442725,
+        0.07657776183913478
+      ],
+      "query_gain": 0.39711889676336165,
+      "support_gain": 0.2642135367210007,
+      "workflow_id": "W_temporal_origin"
+    }
+  }
+}

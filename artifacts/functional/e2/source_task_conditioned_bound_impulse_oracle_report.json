@@ -1,0 +1,258 @@
+{
+  "capability_claim": false,
+  "capability_promotion": false,
+  "causal_hypothesis": "If W43 failed because the global detector touched the wrong points, then an oracle bound to the four true impulse nodes should recover coarse-task utility while destroying matched legal event evidence.",
+  "claim_limit": "Private oracle-bound development headroom on exposed Traffic/FRED Source backgrounds. No deployable Observation exists; this is not Capability, promotion, natural prevalence, or transfer evidence.",
+  "configuration": {
+    "classifier_representation": "W43 frozen complete raw 192-point sequence plus 191 first differences",
+    "coarse_signal_amplitude": 0.75,
+    "consumer": "RidgeClassifier(alpha=1.0, fit_intercept=True, solver=svd)",
+    "datasets": [
+      "monash:traffic_hourly",
+      "legacy_monash:fred_md"
+    ],
+    "frozen_direction_gate": {
+      "all_datasets_required": true,
+      "maximum_event_gain": -0.05,
+      "minimum_coarse_gain": 0.05
+    },
+    "labels_per_natural_background": 2,
+    "natural_base_series": true,
+    "parameter_search": false,
+    "program_binding": {
+      "all_unbound_points_preserved_exactly": true,
+      "binding": "private_oracle_four_pattern_nodes",
+      "evaluation_inputs_processed": false,
+      "positions": [
+        12,
+        36,
+        156,
+        180
+      ],
+      "replacement": "center-excluded median of i-3:i and i+1:i+4",
+      "window": 7
+    },
+    "shared_spike_amplitude": 16.0,
+    "shared_spike_positions": [
+      12,
+      36,
+      156,
+      180
+    ],
+    "training_anchors": [
+      240,
+      300,
+      360,
+      420,
+      480,
+      540
+    ],
+    "window_length": 192
+  },
+  "consumer_fit_count": 8,
+  "dataset_evidence": [
+    {
+      "dataset_gate_pass": false,
+      "dataset_id": "monash:traffic_hourly",
+      "natural_background_pairing": {
+        "eval_background_count": 8,
+        "labels_per_background": 2,
+        "same_backgrounds_and_labels_across_task_worlds": true,
+        "train_background_count": 72,
+        "train_eval_series_disjoint": true
+      },
+      "task_worlds": {
+        "coarse_pattern": {
+          "direction_pass": true,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain >= 0.05",
+          "incumbent_accuracy": 0.625,
+          "program_accuracy": 0.9375,
+          "program_gain": 0.3125,
+          "task_context": {
+            "bound_impulse_semantics": "training_only_acquisition_artifact",
+            "label_evidence": "global_low_frequency_ramp_direction",
+            "task_conditioned_action": "execute_bound_repair"
+          },
+          "train_instance_count": 144,
+          "training_input_modification": {
+            "bound_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "comparison_tolerance": 1e-12,
+            "exact_modified_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "modified_point_count": 576,
+            "modified_point_fraction": 0.020833333333333332,
+            "modified_points_per_row": 4,
+            "modified_row_count": 144,
+            "modified_row_fraction": 1.0,
+            "only_bound_positions_changed": true,
+            "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+            "same_exact_positions_on_every_training_row": true,
+            "total_point_count": 27648,
+            "total_row_count": 144
+          }
+        },
+        "event_evidence": {
+          "direction_pass": false,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain <= -0.05",
+          "incumbent_accuracy": 1.0,
+          "program_accuracy": 1.0,
+          "program_gain": 0.0,
+          "task_context": {
+            "bound_impulse_semantics": "legal_task_evidence",
+            "label_evidence": "sparse_local_event_pattern",
+            "task_conditioned_action": "abstain_keep_incumbent"
+          },
+          "train_instance_count": 144,
+          "training_input_modification": {
+            "bound_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "comparison_tolerance": 1e-12,
+            "exact_modified_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "modified_point_count": 576,
+            "modified_point_fraction": 0.020833333333333332,
+            "modified_points_per_row": 4,
+            "modified_row_count": 144,
+            "modified_row_fraction": 1.0,
+            "only_bound_positions_changed": true,
+            "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+            "same_exact_positions_on_every_training_row": true,
+            "total_point_count": 27648,
+            "total_row_count": 144
+          }
+        }
+      }
+    },
+    {
+      "dataset_gate_pass": false,
+      "dataset_id": "legacy_monash:fred_md",
+      "natural_background_pairing": {
+        "eval_background_count": 8,
+        "labels_per_background": 2,
+        "same_backgrounds_and_labels_across_task_worlds": true,
+        "train_background_count": 72,
+        "train_eval_series_disjoint": true
+      },
+      "task_worlds": {
+        "coarse_pattern": {
+          "direction_pass": true,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain >= 0.05",
+          "incumbent_accuracy": 0.5,
+          "program_accuracy": 0.9375,
+          "program_gain": 0.4375,
+          "task_context": {
+            "bound_impulse_semantics": "training_only_acquisition_artifact",
+            "label_evidence": "global_low_frequency_ramp_direction",
+            "task_conditioned_action": "execute_bound_repair"
+          },
+          "train_instance_count": 144,
+          "training_input_modification": {
+            "bound_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "comparison_tolerance": 1e-12,
+            "exact_modified_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "modified_point_count": 576,
+            "modified_point_fraction": 0.020833333333333332,
+            "modified_points_per_row": 4,
+            "modified_row_count": 144,
+            "modified_row_fraction": 1.0,
+            "only_bound_positions_changed": true,
+            "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+            "same_exact_positions_on_every_training_row": true,
+            "total_point_count": 27648,
+            "total_row_count": 144
+          }
+        },
+        "event_evidence": {
+          "direction_pass": false,
+          "eval_instance_count": 16,
+          "evaluation_input_processed": false,
+          "fixed_direction_requirement": "gain <= -0.05",
+          "incumbent_accuracy": 1.0,
+          "program_accuracy": 1.0,
+          "program_gain": 0.0,
+          "task_context": {
+            "bound_impulse_semantics": "legal_task_evidence",
+            "label_evidence": "sparse_local_event_pattern",
+            "task_conditioned_action": "abstain_keep_incumbent"
+          },
+          "train_instance_count": 144,
+          "training_input_modification": {
+            "bound_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "comparison_tolerance": 1e-12,
+            "exact_modified_positions": [
+              12,
+              36,
+              156,
+              180
+            ],
+            "modified_point_count": 576,
+            "modified_point_fraction": 0.020833333333333332,
+            "modified_points_per_row": 4,
+            "modified_row_count": 144,
+            "modified_row_fraction": 1.0,
+            "only_bound_positions_changed": true,
+            "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+            "same_exact_positions_on_every_training_row": true,
+            "total_point_count": 27648,
+            "total_row_count": 144
+          }
+        }
+      }
+    }
+  ],
+  "deployable_observation_available": false,
+  "development_headroom_only": true,
+  "evidence_stage": "DEVELOPMENT_CONTROL",
+  "formal_transfer": false,
+  "natural_prevalence_claim": false,
+  "next_step": "Close the task-conditioned impulse-repair family.",
+  "oracle_bound_nodes": true,
+  "overall": {
+    "all_dataset_task_contrasts_pass": false,
+    "dataset_count": 2,
+    "passing_dataset_count": 0
+  },
+  "schema_version": "e2-task-conditioned-bound-impulse-oracle/1",
+  "scientific_role": "private_bound_program_binding_headroom_control",
+  "target_query_opened": false,
+  "uci_values_read": false,
+  "verdict": "TASK_CONDITIONED_BOUND_IMPULSE_ORACLE_FAIL"
+}

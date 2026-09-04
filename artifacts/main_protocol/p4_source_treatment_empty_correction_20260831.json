@@ -1,0 +1,196 @@
+{
+  "stage": "P4_SOURCE_TREATMENT_EMPTY_CORRECTION",
+  "verdict": "SOURCE_TREATMENT_EMPTY",
+  "written_at": "2026-08-31T15:49:04.323214+08:00",
+  "corrects": "artifacts/main_protocol/p4_forecast_performance_b8_llm8_run2_20260830.json",
+  "supersedes_numbers": false,
+  "reading": "the audited Source card is present in every A5-online and K0-fixed unit's store and was retrieved in none of them; its Scope matches no origin in the study.  The collected H1/H2/H3 numbers stand as measured, but A5-K0 and A5-A3 may not be attributed to accumulated historical knowledge: on this data there was no accumulation treatment to attribute them to.",
+  "what_the_old_receipt_claimed": {
+    "k0_a5_initial_semantics_equal": true,
+    "correction": "true but vacuous: the shared semantics are a card that never activates, so equality of starting knowledge implies equality of effective starting knowledge only in the trivial sense"
+  },
+  "card": {
+    "skill_id": "s2a_forecast_supply_v0",
+    "contract": {
+      "status": "PASS",
+      "source": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+      "producer_selection_rule": "unique role=producer and arm=A5-online",
+      "skill_id": "s2a_forecast_supply_v0",
+      "task_consumer_metric": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE"
+      },
+      "requires_target_support": true,
+      "supplies_candidates": true,
+      "grants_execution": false,
+      "evidence_semantics": "legacy source supply-only soft prior",
+      "kdd_capability_claim": false,
+      "beneficiary_conversion_claim": false
+    },
+    "observable_applicability": {
+      "all": [
+        {
+          "feature": "task_kind",
+          "op": "==",
+          "value": "forecast"
+        },
+        {
+          "feature": "estimated_level_offset",
+          "op": "==",
+          "value": "zero"
+        },
+        {
+          "feature": "estimated_region_end_fraction",
+          "op": "==",
+          "value": "high"
+        },
+        {
+          "feature": "estimated_region_start_fraction",
+          "op": "==",
+          "value": "high"
+        },
+        {
+          "feature": "level_excursion_score",
+          "op": "==",
+          "value": "zero"
+        },
+        {
+          "feature": "local_robust_z_peak",
+          "op": "==",
+          "value": "high"
+        },
+        {
+          "feature": "longest_missing_run_fraction",
+          "op": "==",
+          "value": "zero"
+        },
+        {
+          "feature": "missing_fraction",
+          "op": "==",
+          "value": "zero"
+        },
+        {
+          "feature": "period_change_score",
+          "op": "==",
+          "value": "high"
+        },
+        {
+          "feature": "period_evidence_status",
+          "op": "==",
+          "value": "OK"
+        },
+        {
+          "feature": "period_reliability",
+          "op": "==",
+          "value": "high"
+        }
+      ]
+    }
+  },
+  "retrieval_census_old_p4": [
+    {
+      "arm": "A3-reset",
+      "units": 24,
+      "card_in_store": 0,
+      "card_retrieved": 0,
+      "card_used": 0
+    },
+    {
+      "arm": "A5-online",
+      "units": 24,
+      "card_in_store": 24,
+      "card_retrieved": 0,
+      "card_used": 0
+    },
+    {
+      "arm": "K0-fixed",
+      "units": 24,
+      "card_in_store": 24,
+      "card_retrieved": 0,
+      "card_used": 0
+    }
+  ],
+  "scope_census_old_p4_origins": {
+    "match_count": 0,
+    "origins": [
+      {
+        "origin": 600,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 648,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 696,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 744,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 792,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 840,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 888,
+        "applicable": false,
+        "why": 11
+      },
+      {
+        "origin": 936,
+        "applicable": false,
+        "why": 11
+      }
+    ]
+  },
+  "scope_census_p4b_blocks": {
+    "skill_id": "s2a_forecast_supply_v0",
+    "origins_checked": [
+      1176,
+      1416,
+      1656,
+      1896,
+      2136,
+      2376,
+      2616,
+      2856,
+      3096,
+      3576,
+      3816,
+      4056,
+      4296,
+      4584,
+      4824,
+      6600
+    ],
+    "matched_origins": [],
+    "match_count": 0,
+    "minimum_for_an_accumulation_study": 1,
+    "accumulation_treatment_active": false,
+    "consequence_if_zero": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it",
+    "consumer_fits": 0,
+    "outcome_reads": 0,
+    "llm_calls": 0
+  },
+  "consequences": [
+    "old P4 H3 (A5 - K0) is uninformative about accumulation, independently of the CONFLICT gate",
+    "P4b drops the A3 and K0 arms and does not claim accumulation benefit; see contract.NOT_TESTED_HERE",
+    "a future accumulation study must pass the Scope-match gate: at least one pre-audited Source Skill applicable at a held-in origin, and widening an existing card's Scope to pass it is inadmissible"
+  ],
+  "consumer_fits": 0,
+  "outcome_reads": 0,
+  "llm_calls": 0
+}

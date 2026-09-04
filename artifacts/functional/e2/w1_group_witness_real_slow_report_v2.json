@@ -1,0 +1,232 @@
+{
+  "experiment_id": "v1-group-witness-real-slow",
+  "note": "Wave 2 v2：受控 Witness 验证（真实 Slow Agent 消费组级证据——零新 Claim——已暴露窗口 replay；delayed @1032 为时间边界窗口 replay）。v1 暴露 typed-patch 绑定规则未注入 Agent 输入（两次无 patch_id → 契约强制拒绝——接线 fault）——修复（typed_patch_binding_rule + 白名单错误反馈 + stage 如实命名）后重跑。",
+  "group": {
+    "workflow": "winsorize",
+    "sign": "NEGATIVE",
+    "episodes": [
+      "kdd_cup_2018_target_winsorize_w2_T117_888",
+      "kdd_cup_2018_target_winsorize_w2_T117_984"
+    ]
+  },
+  "capsule": {
+    "workflow": "winsorize",
+    "sign": "NEGATIVE",
+    "n_episodes": 2,
+    "origins": [
+      888,
+      984
+    ],
+    "cohort_gain": {
+      "min": -0.1426,
+      "max": -0.0841,
+      "mean": -0.1134
+    },
+    "delayed_signs": {
+      "unevaluated": 2
+    },
+    "per_episode_rows": [
+      {
+        "episode_id": "kdd_cup_2018_target_winsorize_w2_T117_888",
+        "origin": 888,
+        "workflow_signature": "winsorize",
+        "program_steps": [
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ],
+        "support_gain": -0.1426334267351992,
+        "delayed_gain": null,
+        "per_view_gain": [
+          0.040115709663648635,
+          -0.45217344965290174,
+          0.48646532059832737,
+          -0.3679735290524455,
+          -0.5138285263530817,
+          -0.3681966495744149,
+          0.272893028315883,
+          -0.23836931782660886
+        ]
+      },
+      {
+        "episode_id": "kdd_cup_2018_target_winsorize_w2_T117_984",
+        "origin": 984,
+        "workflow_signature": "winsorize",
+        "program_steps": [
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ],
+        "support_gain": -0.08411687539427182,
+        "delayed_gain": null,
+        "per_view_gain": [
+          0.0020686668172371636,
+          -0.07454796138896191,
+          -0.10897782455940874,
+          -0.03894150579404143,
+          -0.5313685640237582,
+          -0.41291372373686674,
+          0.3328806425164542,
+          0.15886526701517045
+        ]
+      }
+    ],
+    "view_alignment": {
+      "established": true,
+      "common_view_ids": [
+        "T128",
+        "T129",
+        "T13",
+        "T130",
+        "T131",
+        "T132",
+        "T133",
+        "T134"
+      ],
+      "aligned_rows": [
+        {
+          "view_id": "T128",
+          "gains": [
+            0.040115709663648635,
+            0.0020686668172371636
+          ],
+          "worsen_count": 0,
+          "improve_count": 1
+        },
+        {
+          "view_id": "T129",
+          "gains": [
+            -0.45217344965290174,
+            -0.07454796138896191
+          ],
+          "worsen_count": 2,
+          "improve_count": 0
+        },
+        {
+          "view_id": "T13",
+          "gains": [
+            0.48646532059832737,
+            -0.10897782455940874
+          ],
+          "worsen_count": 1,
+          "improve_count": 1
+        },
+        {
+          "view_id": "T130",
+          "gains": [
+            -0.3679735290524455,
+            -0.03894150579404143
+          ],
+          "worsen_count": 2,
+          "improve_count": 0
+        },
+        {
+          "view_id": "T131",
+          "gains": [
+            -0.5138285263530817,
+            -0.5313685640237582
+          ],
+          "worsen_count": 2,
+          "improve_count": 0
+        },
+        {
+          "view_id": "T132",
+          "gains": [
+            -0.3681966495744149,
+            -0.41291372373686674
+          ],
+          "worsen_count": 2,
+          "improve_count": 0
+        },
+        {
+          "view_id": "T133",
+          "gains": [
+            0.272893028315883,
+            0.3328806425164542
+          ],
+          "worsen_count": 0,
+          "improve_count": 2
+        },
+        {
+          "view_id": "T134",
+          "gains": [
+            -0.23836931782660886,
+            0.15886526701517045
+          ],
+          "worsen_count": 1,
+          "improve_count": 1
+        }
+      ]
+    },
+    "contrast_cases": {
+      "positive": [],
+      "conflict": []
+    }
+  },
+  "headroom": {
+    "outlier_mad": {
+      "per_episode_gains": [
+        {
+          "origin": 888,
+          "gain": 0.11986118246492228,
+          "passed": true
+        },
+        {
+          "origin": 984,
+          "gain": -0.060764531483190165,
+          "passed": true
+        }
+      ],
+      "common_positive": false
+    },
+    "hampel_filter": {
+      "per_episode_gains": [
+        {
+          "origin": 888,
+          "gain": 0.033984644049736445,
+          "passed": true
+        },
+        {
+          "origin": 984,
+          "gain": 0.01504251303971138,
+          "passed": true
+        }
+      ],
+      "common_positive": true
+    }
+  },
+  "group_feedback_event": {
+    "stage": "apply_failed",
+    "edit_id": "add-hampel-outlier-capability",
+    "group_capsule": {
+      "n_episodes": 2,
+      "workflow": "winsorize",
+      "sign": "NEGATIVE"
+    },
+    "frozen_program": [
+      {
+        "op": "hampel_filter",
+        "params": {
+          "window": 3,
+          "n_sigmas": 0.1,
+          "global_z_min": 1.0
+        }
+      }
+    ],
+    "patch_id": "patch-replace-winsorize-with-hampel_filter",
+    "error": "EditShapeError: SkillEntry ID does not match the target surface"
+  },
+  "delayed_event": null,
+  "slow_agent_choice": "patch-replace-winsorize-with-hampel_filter",
+  "no_proposal_reason": null,
+  "llm": {
+    "model": "gpt-5.6-luna",
+    "base_url": "https://api.agicto.cn/v1",
+    "calls": 1,
+    "schema": "slow_edit_v1",
+    "temperature": "default"
+  },
+  "verdict": "PROTOCOL_FAILURE"
+}

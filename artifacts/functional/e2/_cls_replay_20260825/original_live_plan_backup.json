@@ -1,0 +1,87 @@
+{
+  "decisions": [
+    {
+      "capability_id": "historical_policy_episode_workflow_v1",
+      "context_id": "forecast_regular_panel",
+      "decision": "RETRIEVE_AND_PROBE",
+      "reason_codes": [
+        "task_match",
+        "consumer_match",
+        "regular_panel",
+        "known_seasonality",
+        "support_feedback",
+        "scale_valid"
+      ],
+      "workflow_steps": [
+        "phase-aligned historical PolicyEpisode orders W_rowblock/W_curation/W_temporal_origin",
+        "current exact Support probes in order",
+        "stop on first positive",
+        "otherwise IDENTITY"
+      ]
+    },
+    {
+      "capability_id": null,
+      "context_id": "forecast_scale_invalid",
+      "decision": "NO_APPLICABLE_SKILL",
+      "reason_codes": [
+        "scale_invalid"
+      ],
+      "workflow_steps": []
+    },
+    {
+      "capability_id": "controlled_classification_local_event_dynamic_binding_v1",
+      "context_id": "classification_fit_only_artifact",
+      "decision": "RETRIEVE_AND_EXECUTE_BOUND_REPAIR",
+      "reason_codes": [
+        "task_match",
+        "consumer_match",
+        "binary_class_evidence",
+        "current_fit_observation",
+        "fit_only_artifact",
+        "no_stable_task_event"
+      ],
+      "workflow_steps": [
+        "observe cross-cohort class-conditioned impulse topology",
+        "bind current-fit pattern nodes",
+        "center-excluded local median repair"
+      ]
+    },
+    {
+      "capability_id": "controlled_classification_local_event_dynamic_binding_v1",
+      "context_id": "classification_stable_event",
+      "decision": "RETRIEVE_AND_ABSTAIN",
+      "reason_codes": [
+        "task_match",
+        "consumer_match",
+        "stable_task_event",
+        "event_erasure_guard"
+      ],
+      "workflow_steps": [
+        "ABSTAIN_KEEP_INCUMBENT"
+      ]
+    },
+    {
+      "capability_id": null,
+      "context_id": "unsupported_anomaly",
+      "decision": "NO_APPLICABLE_SKILL",
+      "reason_codes": [
+        "task_mismatch",
+        "consumer_mismatch"
+      ],
+      "workflow_steps": []
+    }
+  ],
+  "llm_api_integrated": true,
+  "new_skills_invented": [],
+  "planner_id": "llm_multiskill_fast_path_v1",
+  "planner_runtime": "project live OpenAI-compatible Chat Completions",
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 454,
+    "finish_reason": "stop",
+    "prompt_tokens": 5628,
+    "requested_model": "gpt-5.6-luna",
+    "returned_model": "gpt-5.6-luna"
+  },
+  "unpromoted_skills_selected": []
+}

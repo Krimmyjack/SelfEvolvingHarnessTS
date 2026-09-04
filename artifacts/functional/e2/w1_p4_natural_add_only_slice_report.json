@@ -1,0 +1,805 @@
+{
+  "experiment_id": "v1-p4-natural-add-only-slow-program-edit-slice",
+  "note": "P4 rev4 natural ADD lifecycle on development-exposed KDD T117. Same materialized h0 baseline forked into STATIC/A3/A5. Batch 1 all Slow triggers off; batch end at most one verified group Slow update; batch 2 verifies retrieval/supply/execution and delayed harm veto. P4 does not judge A5 > A3.",
+  "apparatus": {
+    "domain": "kdd_cup_2018",
+    "period": 24,
+    "budget": 2,
+    "pool": [
+      "winsorize",
+      "outlier_mad",
+      "hampel_filter"
+    ],
+    "batch1_origins": [
+      600,
+      792,
+      888,
+      984
+    ],
+    "batch2_origins": [
+      1032,
+      1080
+    ],
+    "delayed_batch1": 1032,
+    "slow_model": "gpt-5.6-luna",
+    "slow_base_url": "https://api.agicto.cn/v1",
+    "baseline_harness_content_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0",
+    "baseline_runtime_bundle_sha": "a8128859a8206c0a820086f2b5ef619504d350c99f72a2cc0f374e7a02ad4621",
+    "source_episode_ids": [
+      "v6_nn5_support_positive",
+      "historical_policy_episode_workflow_target_local_v2",
+      "historical_policy_episode_workflow_v1"
+    ]
+  },
+  "arms": {
+    "STATIC": {
+      "batch1": {
+        "rounds": [
+          {
+            "origin": 600,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.006710386297734683,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 792,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.07326346040901699,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 888,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "outlier_mad",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": -0.14263342673480084,
+                "passed": true
+              },
+              {
+                "candidate_id": "cand_outlier_mad",
+                "kind": "probe",
+                "gain": 0.11986118246470734,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 2,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 984,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": null,
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": -0.0841168753940893,
+                "passed": true
+              },
+              {
+                "candidate_id": "cand_outlier_mad",
+                "kind": "probe",
+                "gain": -0.0607645314829508,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 2,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          }
+        ],
+        "episode_count": 6,
+        "slow_calls_in_batch": 0
+      },
+      "update": null,
+      "batch2": {
+        "rounds": [
+          {
+            "origin": 1032,
+            "candidate_ids": [
+              "identity",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_hampel_filter",
+            "winner_program": null,
+            "probes": [
+              {
+                "candidate_id": "cand_hampel_filter",
+                "kind": "probe",
+                "gain": -0.11660631332368276,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 1080,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.13341210340084975,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          }
+        ],
+        "skill_retrieved": false,
+        "skill_supplied": false,
+        "skill_executed": false,
+        "delayed_utilities": [
+          null,
+          0.19174473076342258
+        ],
+        "final_snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+      },
+      "approved_skill_id": null
+    },
+    "A3": {
+      "batch1": {
+        "rounds": [
+          {
+            "origin": 600,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.006710386297734683,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 792,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.07326346040901699,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 888,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "outlier_mad",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": -0.14263342673480084,
+                "passed": true
+              },
+              {
+                "candidate_id": "cand_outlier_mad",
+                "kind": "probe",
+                "gain": 0.11986118246470734,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 2,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 984,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": null,
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": -0.0841168753940893,
+                "passed": true
+              },
+              {
+                "candidate_id": "cand_outlier_mad",
+                "kind": "probe",
+                "gain": -0.0607645314829508,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 2,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          }
+        ],
+        "episode_count": 6,
+        "slow_calls_in_batch": 0
+      },
+      "update": {
+        "arm": "A3",
+        "stage": "group_replay_rejected",
+        "group": {
+          "workflow": "winsorize",
+          "sign": "NEGATIVE",
+          "n_episodes": 2
+        },
+        "capsule_contrast_counts": {
+          "positive": 2,
+          "negative": 0,
+          "conflict": 0
+        },
+        "source_provenance": {
+          "target_domain_namespace": "kdd_cup_2018",
+          "source_episode_ids": [],
+          "referenced_source_episode_ids": [],
+          "filtered_source_episode_ids": [],
+          "filtered_source_episode_count": 0
+        },
+        "update_event": {
+          "stage": "group_replay_rejected",
+          "route": {
+            "case_id": "kdd2018-slow-update",
+            "cause_code": "SKILL_LIBRARY_GAP",
+            "actionability": "EDITABLE_M0",
+            "surface_templates": [
+              "skill_library.entries/{skill_id}"
+            ]
+          },
+          "verified_patch_ids": [
+            "patch-replace-winsorize-with-hampel_filter",
+            "patch-replace-winsorize-with-outlier_mad"
+          ],
+          "typed_option_count": 2,
+          "choice_offered": true,
+          "verified_choice_offered": true,
+          "patch_id": "patch-replace-winsorize-with-outlier_mad",
+          "frozen_program": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "group_replay": [
+            {
+              "origin": 888,
+              "gain": 0.11986118246470734
+            },
+            {
+              "origin": 984,
+              "gain": -0.0607645314829508
+            }
+          ],
+          "edit_id": "add-outlier-mad-capability"
+        }
+      },
+      "batch2": {
+        "rounds": [
+          {
+            "origin": 1032,
+            "candidate_ids": [
+              "identity",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_hampel_filter",
+            "winner_program": null,
+            "probes": [
+              {
+                "candidate_id": "cand_hampel_filter",
+                "kind": "probe",
+                "gain": -0.11660631332368276,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 1080,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.13341210340084975,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          }
+        ],
+        "skill_retrieved": false,
+        "skill_supplied": false,
+        "skill_executed": false,
+        "delayed_utilities": [
+          null,
+          0.19174473076342258
+        ],
+        "final_snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+      },
+      "approved_skill_id": null
+    },
+    "A5": {
+      "batch1": {
+        "rounds": [
+          {
+            "origin": 600,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.006710386297734683,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 792,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.07326346040901699,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 888,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "outlier_mad",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": -0.14263342673480084,
+                "passed": true
+              },
+              {
+                "candidate_id": "cand_outlier_mad",
+                "kind": "probe",
+                "gain": 0.11986118246470734,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 2,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 984,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": null,
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": -0.0841168753940893,
+                "passed": true
+              },
+              {
+                "candidate_id": "cand_outlier_mad",
+                "kind": "probe",
+                "gain": -0.0607645314829508,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 2,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          }
+        ],
+        "episode_count": 9,
+        "slow_calls_in_batch": 0
+      },
+      "update": {
+        "arm": "A5",
+        "stage": "group_replay_rejected",
+        "group": {
+          "workflow": "winsorize",
+          "sign": "NEGATIVE",
+          "n_episodes": 2
+        },
+        "capsule_contrast_counts": {
+          "positive": 2,
+          "negative": 0,
+          "conflict": 0
+        },
+        "source_provenance": {
+          "target_domain_namespace": "kdd_cup_2018",
+          "source_episode_ids": [
+            "historical_policy_episode_workflow_target_local_v2",
+            "historical_policy_episode_workflow_v1",
+            "v6_nn5_support_positive"
+          ],
+          "referenced_source_episode_ids": [],
+          "filtered_source_episode_ids": [
+            "historical_policy_episode_workflow_target_local_v2",
+            "historical_policy_episode_workflow_v1",
+            "v6_nn5_support_positive"
+          ],
+          "filtered_source_episode_count": 3
+        },
+        "update_event": {
+          "stage": "group_replay_rejected",
+          "route": {
+            "case_id": "kdd2018-slow-update",
+            "cause_code": "SKILL_LIBRARY_GAP",
+            "actionability": "EDITABLE_M0",
+            "surface_templates": [
+              "skill_library.entries/{skill_id}"
+            ]
+          },
+          "verified_patch_ids": [
+            "patch-replace-winsorize-with-hampel_filter",
+            "patch-replace-winsorize-with-outlier_mad"
+          ],
+          "typed_option_count": 2,
+          "choice_offered": true,
+          "verified_choice_offered": true,
+          "patch_id": "patch-replace-winsorize-with-outlier_mad",
+          "frozen_program": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "group_replay": [
+            {
+              "origin": 888,
+              "gain": 0.11986118246470734
+            },
+            {
+              "origin": 984,
+              "gain": -0.0607645314829508
+            }
+          ],
+          "edit_id": "add-outlier-mad-replacement-skill"
+        }
+      },
+      "batch2": {
+        "rounds": [
+          {
+            "origin": 1032,
+            "candidate_ids": [
+              "identity",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_hampel_filter",
+            "winner_program": null,
+            "probes": [
+              {
+                "candidate_id": "cand_hampel_filter",
+                "kind": "probe",
+                "gain": -0.11660631332368276,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          },
+          {
+            "origin": 1080,
+            "candidate_ids": [
+              "identity",
+              "cand_winsorize",
+              "cand_outlier_mad",
+              "cand_hampel_filter"
+            ],
+            "retrieved_skill_ids": [
+              "build_contrastive_candidates",
+              "inspect_and_localize",
+              "select_or_identity_and_verify"
+            ],
+            "chosen_candidate_id": "cand_winsorize",
+            "winner_program": [
+              {
+                "op": "winsorize",
+                "params": {}
+              }
+            ],
+            "probes": [
+              {
+                "candidate_id": "cand_winsorize",
+                "kind": "probe",
+                "gain": 0.13341210340084975,
+                "passed": true
+              }
+            ],
+            "target_support_receipts_used": 1,
+            "slow_replay_receipts_used": 0,
+            "snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+          }
+        ],
+        "skill_retrieved": false,
+        "skill_supplied": false,
+        "skill_executed": false,
+        "delayed_utilities": [
+          null,
+          0.19174473076342258
+        ],
+        "final_snapshot_sha": "3ce10e3da91f7b9880fa9dd0936965da2f1220a49ed5f69999e8d7f07cf212f0"
+      },
+      "approved_skill_id": null
+    }
+  },
+  "llm_calls": 2,
+  "verdict": "NATURAL_ADD_ONLY_SLOW_PROGRAM_EDIT_DEV_NEGATIVE",
+  "route_fired_arms": [
+    "A3",
+    "A5"
+  ],
+  "lifecycle_pass_arms": []
+}

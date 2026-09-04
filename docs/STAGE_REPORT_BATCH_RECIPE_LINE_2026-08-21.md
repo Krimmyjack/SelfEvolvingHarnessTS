@@ -1363,6 +1363,58 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 
 **工件**:`s2a_natural_pool_sweep.json/.md`、`s2a_course_frozen.json/.md`。**first fault:无。** 续 Part P G1/G2 live。
 
+<!-- ANCHOR:REVIEW  第二审查线只在此行之下、下一锚点之上插入 -->
+
+<!-- ANCHOR:OPUS  Opus/执行线只在此行之下、下一锚点之上插入(仪器条目) -->
+
+### sol 确认 P0 修法并关闭 gate 裁定;h0 lock 仅轮转一次;`harness_content_sha` 不变;非作者增量复核 PASS(2026-09-03 21:xx,执行方/Opus)
+
+**裁定闭合**:P0 修法维持加法式 `authorize`——在 `handle_feedback_delayed` **写 snapshot 之前**询问,False 则丢 pending、不写、记 `authority_refused`;不用事后恢复。gate 四规则维持原码:`AUTHORITY_BYPASSED`(任一状态泄漏或风险线分歧)降级;`AUTHORITY_UPHELD`(仅 `coverage_floor` 且状态完整不变)只披露;`LOST_ACTIVATION` 只计数。不再等新方法裁定。
+
+**lock 一次**(授权后、代码固定后、仅此一次):`methods/ttha/harness/h0/snapshot.lock.json`。`harness_content_sha` **逐字节不变** `53b1c803f4ba38a27e2d1d7621f983997044019d7e073caef2a4436ee900654f`;`runtime_bundle_sha` `c3427b4e…` → `29298dc9…`。移动的 dependency 键 6 个:`ttha:method`(本 P0)、`compiler_source` / `schema:skill_entry_v1` / `ttha:fast_agent` / `ttha:schema_contracts`(HEAD `7b3cba8` 既有漂移)、`agent_schema:slow_scope_clause_v1`(新键)。`compile_snapshot(verify_lock=True)` 现通过。
+
+**测试**:HEC-1 聚焦 `123 passed / 1 skipped`;smoke **7/7**;指定 integration 修 lock 前 `FAILED` 于 `snapshot lock mismatch`,修后 `compile_snapshot(verify_lock=True)` 通过——原失败点已消。无线程帽的隔离跑在 scipy `lstsq`/`savgol` 撞已知 OMP abort(仪器债,非 lock,栈从未回到 `method.py`)。全量差集与 KMP 隔离重跑在 commit 时仍在跑(stdout 块缓冲,进程 CPU 持续上升)。
+
+**非作者增量复核**:[P0 increment review](79c00714-feca-4fc1-a1e3-cee266573f03) **PASS**(A–H 全过,无阻塞项)。披露(不阻塞):`authority_state` 包住整个 `open_delayed`;下一单元锁看 `deployed_via` 不看空检索集;authorizer 用 runner 预计算的 P4 `_gate`。
+
+**0 LLM**。下一步:allowlist commit(含 `method.py` / `online_loop.py` / lock)→ 收据记 commit(不自指)→ Phase S-v1.1。
+
+<!-- ANCHOR:MAINLINE  主线只在此行之下插入;各线不得动他线条目(所有权表见 docs/STATE_ONE_PAGE_2026-09-03.md) -->
+
+### sol 确认主线方向;两处状态更新(gate 三分类已裁并入码;缓存计数与召回归因锁已入工作树);两条执行纪律;概率只作主观判断;Opus 发车令一句(2026-09-03 19:xx,主线入典)
+
+**sol 确认**:阶段总结总体准确,主线方向确认。**状态更新**:(1) gate 三分类已裁定并落入代码——风险线分歧或任何状态泄漏 → `AUTHORITY_BYPASSED` 降级;仅覆盖线分歧且状态完全不变 → `AUTHORITY_UPHELD` 只披露;`LOST_ACTIVATION` 计数披露;(2) 缓存计数合流与召回归因行为锁已写入工作树,现在等的是测试与非作者增量复核,不是设计。**唯一主链**:聚焦测试 + 全量回归 + smoke → 非作者增量复核 → allowlist commit → Phase S-v1.1 → K0 审计 → 三顺序 → 统一读数。**两条执行纪律**:最终 commit 必须包含权限修复涉及的 `methods/ttha/method.py`、`online_loop.py`,否则提交的并非真实运行闭包(主线注:`method.py` 在 h0 `runtime_bundle_sha` 依赖图内,须同步 `--write-lock` 并披露);D5/D6 只能在独立 worktree 运行或在最终 commit 后只写隔离工件,十小时科学运行期间不得修改主工作树(已写入 D5/D6 任务书)。**概率**:"三成 / 四成 / 两成"只标为规划者主观判断,不入合同、不决定是否继续;科学判词只依预注册读数。**发车令(sol 拟,用户转 Opus)**:"sol 裁定已齐,方法关门。请完成测试、增量复核和 allowlist commit;提交后直接启动 Phase S-v1.1,并按仪器门自动推进三顺序,途中禁止修改跟踪文件。"`STATE_ONE_PAGE` 同步。本轮 0 LLM / 0 fit / 0 代码。
+
+### 用户裁示:**关闭三线并行头脑风暴,改单线**;主线出阶段总结汇报(2026-09-03 19:xx,主线)
+
+用户:信息量已超出处理能力,关闭三线并行模式。据此(入 `STATE_ONE_PAGE` §模式切换):Opus 单线执行到三顺序停;grok 只接主线派的只读任务;主线为唯一方法整合与裁定建议出口,每日一份状态更新、不再逐条入账讨论;sol 只在四个固定门出裁定(gate 三分类、K0 确认、课末判词、HEC-2 ① 冻结);用户只在四处按按钮;第二审查线停笔、文档归档;新设计想法只记候选池、读数前不讨论。阶段总结汇报以聊天形式交付(内容 = 本账本 09-02 至今各条的压缩)。本轮 0 LLM / 0 fit / 0 代码。
+
+### sol 定"A5 为何至今无效"的宏观归因 + 主线三处修正合流;派 D5 2×2 因果分解 + D6 逐序列持续性(0 LLM);HEC-2 ① 预注册草案成文;一页状态与**文件所有权表**立(2026-09-03 18:xx,主线)
+
+**sol 观点(全采)**:A5 无效不是"算子差"一因,是串联漏斗任一环为零——headroom → Fast 提出 → Support 过 → delayed 过 → K0 → Target 匹配供给 → 独立重遇安全 → 才有 A5−A3;须区分"A5 未实例化"(K0 空)与"有知识无 treatment";**以后必须报 A5 treatment funnel**(K0 / Match / Supply / Selection / Admission / Deployment / Re-encounter / Marginal gain)。算子三缺陷(菜单偏离群而 KDD 主缺陷是缺失且尖峰可能是真实污染事件;396 程序去重后效果种类极少;稳定正例是"先补缺口再离群"组合)但"换算子就解决"站不住。两个核心结构问题:Scope 识别"缺陷像不像"非"处理后会不会获益";pooled 下 Scope 把"处理 context"与"切换模型"绑成一动作。**纠正两处过满**:D1 未证明路由主因(正式判词仍 NOT_DOMINANT / NO_CLEAR_DIFFERENCE;强嫌疑 + 放大器);尾部门不能叫"误报"(序列非独立、moved=0 仍是 treatment、跨窗波动可能是真实非平稳)——是绑定约束但跨窗口稳定性与特异性从未校准,只为未来合同校准。**最能拆"算子还是路由"的实验 = 0-LLM 2×2 分解**:{raw, program 模型} × {raw, prepared context},逐序列算 context-only / model-route / 交互三分量与严重伤害归因;`ROUTE_DOMINANT` → per-channel 优先并考虑拆两决策;`CONTEXT_DOMINANT` → 算子;`INTERACTION_DOMINANT` → 单谓词双动作 ScopeSpec 有问题。推进序:修完权限泄漏原样跑完 HEC-1 → 现在预注册 HEC-2 per-channel、HEC-1 收口后跑 → 同时做 2×2 与持续成员/新进入者审计 → 未来合同再审风险门形式 → 证据指向 Program 才加 1–2 个缺口优先位置感知算子 → Ridge 结论后 TSFM。
+
+**主线合流**(与 sol 一致处不重复):第二审查线三处过满已由 sol 与主线分别指出——"收益沿序列持续"只在 1/3 重遇窗口成立(2616 6/6;1896 3/5 翻;2376 1/1 翻),证据支持的是"新进入者承担尾部";"门拦噪声"口径改为"单窗口逐序列伤害是跨窗口期望伤害的高方差估计";"Scope 加序列历史合取"= 按 UID 记忆,与正典"serving_scope 不存 UID"正面冲突且改变主张性质(泛化 → 记忆),**须 sol 先裁正典,不得排为 HEC-2 项**——正典问题挂起。好消息:HEC-1 已逐验证窗口机械落账 H1/H2/H3,三顺序跑完即得 n≫3 的"持续 vs 泛化"统计,不需新实验。2×2 分解**零额外 fit**(CODE FACT:`scoped_evaluate` 两套设计与 Scope 无关,`_serve` 可对任意 contexts 出预测,`serving_mode="train_only"` 即 program×raw)。
+
+**落地(不碰 Opus 任何文件)**:`docs/D5_D6_CAUSAL_DECOMPOSITION_AND_PERSISTENCE_2026-09-03.md`(D5 四格定义/获取路径/三分量/60% 主导判词/含义预写;D6 六个条件概率、n 极小只描述、标注 HEC-1 将以 n≫3 重测;fits ≤300、0 LLM、不读 shakedown/Phase-T 效用、不改评估器;接收 grok);`docs/HEC2_PERCHANNEL_PREREGISTRATION_DRAFT_2026-09-03.md`(唯一变量 Consumer;K0 按 Task×Consumer 键须在 pc 下重形成;P-C1 尾部左移 / P-C2 基座上升 / P-C3 存活 / P-C4 曲线不预测方向 / P-C5 路由分量趋零;**A5 treatment funnel 八环表**,HEC-1 读数亦须报,post-hoc 只读记录;HEC-1 收口后只填数值锚点即冻);`docs/STATE_ONE_PAGE_2026-09-03.md`(当前状态一页 + **文件所有权表**:runner/合同/测试 commit 后全体只读、账本锚点制、各 docs 归属、Phase F 归用户;到读数前只追加仪器条目、不出新裁定)。账本自本条起启用三锚点(REVIEW / OPUS / MAINLINE),各线只在己方锚点下插入——今日两次撞文件一次覆盖皆因无此表。本轮 0 LLM / 0 fit / 0 代码。
+
+### v1.1 三件落地 + shakedown 收口(Opus)→ 主线只读复核 **PASS(条件式)**;gate 3 字面读将使三顺序全降级,主线荐三分类绊线呈 sol 一句;N_T_eff=23 实测(2026-09-03 17:xx,主线)
+
+**Opus 交付**:A 全 census key 去重(`held = active_lineage_keys ∪ ledger.lineage_keys()` 含已关闭;`open_restricted` 对已有 lineage raise——真正的洞是 held 曾只从 bank 带 `source_skill_id` 的行推,卡持有 key 而当前窗口无行即漏)、B per-arm 预测缓存(键 arm × cell × face × Consumer × typed Program,Scope 只掩码;逐位一致前提逐行核实——两模型与 Scope 无关,Scope 只进 `where`;退化集按原法存并每次重判;arm 入键)、C 未来步预留(Σ j·period = 75 cells × 最坏 2 fits;只保证"后步有候选则不挡第一个";候选序在宽/紧预算下一致;未筛者全记)+ 六项合同同步全部 `assert_frozen` fail-closed;21 新测试,HEC-1 104→125,`tests/main_protocol` 461/461,smoke 7/7,0 LLM。**数字更正**:`int(0.8×23)=18` 是 78.3% → 改 `⌈0.8×23⌉=19`;26 计划 / 23 可评 / 19 最少配对点三量分离并冻结于 `hec1_scoreability.py`,preflight 独立推导、双向交叉核,`assert_frozen` 对 18 与伪造不可评单元均 fail-closed。**readout 缺陷比错常数更重**:`_gain` 对缺读数返 0.0,三个不可评单元各贡献一个伪造的平局,稀释符号、压平曲线 → 现只计配对点,`units_run` 与 `paired_curve_points` 分报。**shakedown 收口**:26/26、165 LLM、3.07 h、无 RunFault;曾写入白名单标签 `hec1_course_forward_live.json` → 工件降级、目录改名,readout 报 0/3;**0-fit 预扫逐单元命中**(预测恰 3 个不可评单元,live 产生 9 个 `FaceNotEvaluable` = 3 单元 × 3 臂,无多无少)→ **N_T_eff=23 为实测非推断**;五步外环全"无候选",确认 ADD 阈值 2 是空 K0 的绑定原因(与 Phase S-v1 同因);三顺序外推 ≈9.2 h。**纪律自认**:曾以"测试定义接口"为由向另一线测试形状让步,记为纪律偏差;权威序 AGENTS → 合同 → 测试 → 实现。
+
+**阻塞项(需 sol 一句)**:gate 3 "科学顺序中任何 gate disagreement 即降级"字面读 → shakedown 3 例(online_loop delayed 准入无覆盖底线、P4 `_gate` 有,treated<5 时**必然**不一致;3 例全为 P4 拒、未激活、未绕过)将使三顺序全部降级,实验不可能出结果。Opus 已实现二分:只对 `AUTHORITY_BYPASSED` 失败,`AUTHORITY_UPHELD` 计数披露;两条代码路径俱在,事后可重判不需重跑。
+
+**主线只读复核**(`docs/HEC1_REVIEW_REPORT_MAINLINE_2026-09-03.md`,0 LLM / 0 fit):A/B/C 与六项合同同步逐条 CODE FACT 核过(`outer_loop.py:409`、`restricted_draft.py:361-400`、`run_hec1.py:395-404 / 420-473 / 579-634 / 739-`)→ **PASS(条件式)**。三项 commit 前条件:① sol gate 一句;② `Ledgers.cache_hits/misses` 与臂缓存计数合流(shakedown 全程 0/0 系未接线);③ 召回归因"部署程序 ∈ 起始 Active 集"行为锁。**gate 推荐文本**:`AUTHORITY_BYPASSED` → 降级;`AUTHORITY_UPHELD` 且 P4 失败线仅 `coverage_floor` → 计数披露;`AUTHORITY_UPHELD` 且 P4 失败线含任何**风险线** → 视为两套准入在风险上分歧,**降级**(绊线:共用 bounded_risk_v1 不应在风险线分歧,出现即仪器缺陷);`LOST_ACTIVATION` → 计数披露(对 online 不利,不作科学判词)。四项披露:156 允许额下每顺序保证 5 次 screen、最多再 1 次(实际因 raw 跨步复用更宽裕,预留按最坏计);内环 Support fits 不进缓存(保守);`LOST_ACTIVATION` 偏向不利 online;缓存以 `scope=legal` 一次调用替代两次调用,一致性依赖评估器确定性与 Scope 无关性(作者以真 cell 五情形测过)。**序**:sol 一句 → Opus 修 ②③ → allowlist commit → 发车收据记 commit → runner 断言 HEAD 与干净树 → Phase S-v1.1。本轮 0 LLM / 0 fit / 0 代码。
+
+### 主线只读审查 + replay 严格核算 → sol 裁三件不可拆分修复;两处更正主线;P1-only 措辞定案;用户定向:方向对、**Instruction 不作要求、先出结果**(2026-09-03 15:xx–16:xx,主线入典;补记:原 15:xx 条被并行提交 `7b3cba8` 覆盖)
+
+**审查**(`docs/FINAL_SCIENTIFIC_DESIGN_REVIEW_MAINLINE_2026-09-03.md`,0 LLM / 0 fit / 未读 shakedown 效用):一页结论、claim ladder L0–L4、Track A 最小事件计数(铸卡 ≥3 / 独立激活 ≥2 / 真实重遇 ≥3 单元跨 ≥2 cohort / 重遇中位改善 >0 / harm ≤)、方法 vs 脚手架逐项归属(LLM 决定提什么程序 / 收窄语义方向 / 是否弃权,其余确定性 Runtime;必需消融 = validation-search 0-LLM + A3-frozen + ScopeFit shadow)、最小论文矩阵、TSFM 前置、Track A/B 冻结、三周硬路线与 no-go、三分支唯一下一步。**结构性判断**:所有正曲线路径都经过"至少一张 Draft 在新单元过 bounded_risk 门"这一单点;已曝光基率 0/9、0/3,不给正下界。
+
+**replay 核算**(§15,CODE FACT):每 screen 3 fits/cell、U_k=5k、每臂允许额 156、program model 与 Scope 无关(只掩码);**无缓存五步单流 225 > 156,任何分配规则都保证不了五步**;同 key 多壳反例(ADD 去重只查 `held`,非 Active 的 open Draft 每步再 ADD、再 screen、再铸壳,计数器归零)。
+
+**sol 最终裁定**:三件为一个不可拆分修复——(A) 按完整 census key(Task × Consumer × typed Program × root Scope)对本课程该 key 完整 lineage(Active / open / 已关闭)去重;(B) per-arm replay prediction cache(arm × cell × face × Consumer × Program;不跨臂 / 不读未来 / Scope 只掩码 / 退化照拒 / 逐位一致 / `physical_fits`、`logical_evaluations`、`cache_hits` 分账);(C) 未来外环预算预留(75;当前步只用扣除预留后余额)。不加每步上限与新优先序;因预算未筛者完整记录。七组必补测试。两处更正主线:`MIN_POSITIVE_UNITS_FOR_ADD` 现已为 1(`outer_loop.py:72`);**P1-only 合法措辞 = feedback-driven Skill-library evolution / Skill acquisition evolution**,不得写 Scope-revision evolution / 完整 A5 / 跨域;P1+P2 = within-dataset Skill-and-Scope evolution。其余保持:P1 效应线 D_o ≥ 0.005×23 = 0.115;validation-search 必需 0-LLM baseline、不进 Harness;Phase S 再空 → 穷举供给诊断但不得据此生成本轮 K0;HEC-2 首项 per-channel;Phase F 三顺序全评、宏平均主报;门槛 19/23。**唯一发车凭据**:单写手整合 → 聚焦测试 + 全量回归 → 非作者只读复核 → allowlist commit → 同一 commit 启 Phase S-v1.1;此后不再追加方法设计。增补指令入 Opus 简报 **§2e**。
+
+**任务书逐句对账 + 用户定向**:主线呈三缺口(Instruction/决策策略面不在 HEC-1;direct-LLM 对照未跑;模式理解偏薄)。用户裁示:任务书只是大方向,方向对即可;**Instruction 不作要求**;先出结果。据此 Instruction/General Card 文本面与决策策略面撤出全部排队(含原拟 HEC-2 ②),论文进化主张按 Skill/Memory 写;direct-LLM 与模式持续性特征维持 HEC-2/3 强烈建议位。方法关门,执行链不变。本轮 0 LLM / 0 fit / 0 代码。
+
 ### v1.1 在审查线范围内落地:合同 `P4U-v4.1`(replay 1.0/臂自身 fits、描述性统计、`HEC1_P1_ONLY__RECALL_ACCUMULATION`、Phase F 需非空 K0、Skill 层级/命名、code-freeze 政策)、runner `code_state`+脏树拒发+`--shakedown`+三态 checkpoint mode、readout 后验统一归因/一 commit 断言/前缀链;440/440;**Forward shakedown 仍在跑(14:01 20/26,127 LLM),本轮改动不影响其进程**(2026-09-03 14:xx,Fable/审查线,0 LLM)
 
 **依据**:sol v1.1 六裁(L1391)、主线 R-A~R-H(L1401)、Opus 留给审查线的项(L1446:合同版本、R-E、R-F、R-H 余项)。**先撤回一处自己的过渡改动**:13:3x 我曾把 `REPLAY_FITS_SHARE` 从 1.0 回退到 0.25 以保 Forward↔Reverse 一致——那是在读到 sol v1.1 之前;既然 Forward 已裁 `FORWARD_SHAKEDOWN`、科学顺序全部在同一 commit 下重跑,1.0 现已按裁定落地,`REPLAY_SHARE_RECORD` 记 shakedown 曾在 0.25 下运行。
@@ -1437,6 +1489,94 @@ Skill、Risk 或 Harness Patch 可在后一轮继续使用和修订,这正是 se
 **sol 授权(用户转递并分发 Opus,视为执行放行)**:(1) 立即开展全部 0-LLM 工作(`hec1_contract.py` 草案、D4 四件、单一权威门、聚焦测试、七项 smoke);(2) **20/19 cohort 须确认覆盖率与风险分母全部动态取自当前 served 数,若仍硬编码 20 则改 19/19**(弃 T99)——入合同 §2 与 Opus 简报 §2b,D4 实现时 grep 核验;(3) Phase S 放行条件 = sol 核完 12 项 + W4 分歧锁通过 + **全量回归无新增失败**(基线 `_scratch/pytest_baseline_tests_tree.txt`:46F/9E/747P,只看差集)+ `assert_frozen()` 通过,**LLM 硬上限 120**;(4) Phase S 完成并冻结 K0 后,**仅仪器完整性检查通过**则授权 Forward,**硬上限 500**;(5) Forward 完成后停止汇报,不跑 Reverse / Interleaved / Phase F。主线据此在简报加 **§5b 仪器完整性八项**(完成度 / UnitFault ≤20% 且分类齐 / 预算与阻断 / 隔离含 A5-frozen 重置抽查 / 门权威 / 外环触发与记录 / 记录字段齐 / 回归),明令"效果正负不得作放行或停止理由"。
 
 **Forward 之后(规划稿 §12.1)**:F+0 晨仪器核对(主线;同时定稿 `audit_hec1_readout` **规格**——分析代码在看到后两顺序数据前定)→ F+1 Reverse → Interleaved(逐批放行,各 ≤500;主线并行起草 Phase F 协议稿与 HEC-2 预注册草案)→ F+2 课末读数 0 LLM(Best-Safe-Global、曲线、harm、advantage、三分账、生命周期、H1–H3、Slow vs ScopeFit、成本、预注册检验、判词三选一;不因读数改合同)→ F+3 Phase F(冻结三顺序末态、用户批开启、held-out 五 origin Fast-only 0 LLM、一次打开、分层报告)→ F+4 HEC-2(Consumer 轴 P-C1/P-C2、跨数据适配、Random-edit、ScopeFit 第五臂条件启用;Risk 面默认不开)→ F+5 HEC-3 观察面(新 cohort 前瞻)→ F+6 TSFM。分支:仪器不过 → 修后 `--resume`/重跑该顺序(不算科学重掷);0 存活 → 缩臂照跑;`NOT_SUPPORTED` → first-fault 面进 HEC-2 单假设;`INCONCLUSIVE` → 补齐缺失顺序不重跑已完成者。本轮 0 LLM / 0 fit / 0 代码。
+
+### **P0 权限泄漏修复**:P4 授权前移到 snapshot 提交之前;shakedown 证据坐实泄漏真实存在;复核三条件闭合(2026-09-03 18:xx,执行方/Opus)
+
+**泄漏机制(sol 复核指出,我复核属实)**:`method.handle_feedback_delayed` 在自身准入通过后**立即** `self._snapshot = pend["receipt"].candidate_snapshot.snapshot`(`method.py:1549`),而 `_active_snapshot()` 正是 Fast Path 的检索来源。我原先"P4 是唯一激活权威"只体现在**事后不调 `activate_approved`**——那只拦住 Store 的 active 指针,**拦不住内存快照**。于是被 P4 拒绝的 Skill 在下一单元依然可见、可检索、可部署。
+
+**shakedown 证据(坐实,非推测)**:A3-online 在 position **12 与 20** 出现 `deployed_via: recalled_skill`,而**整场 26 单元 × 3 臂的授权激活数为 0**——两次召回之前没有任何一次经权威门批准的激活。召回的只能是未授权进入快照的卡。A3-frozen 因每单元重建反而未受影响(refused 3 次、召回 0 次),这恰好反证了泄漏路径是**内存快照的跨单元残留**。
+
+**修法(按裁定:前移授权,不用事后恢复)**:`handle_feedback_delayed` 增加**加法式** `authorize` 回调,在**写 snapshot 之前**询问外部权威;返回 False ⇒ 丢弃 pending、**不写 snapshot**、记 `authority_refused`。`online_loop.open_delayed` 增加 `delayed_authorizer` 并透传到**全部三个** `handle_feedback_delayed` 调用点(slow pending / fast-skill pending / group pending——漏任何一个就留一条无守卫路径,已由测试计数锁死)。runner 把 P4 `_gate` 作为 authorizer 传入。**未采用事后恢复 `_snapshot`**:那是先越权再回滚,中间态真实存在,期间任何读过快照的代码都已看见它。默认 `None` ⇒ 历史调用方逐字节不变(已测)。
+
+**行为锁(裁定要求的四项证明)**:源头三项——P4 拒绝后 `_snapshot` 不变、pending 被丢弃、`authority_refused` 入账;真课程两项——每个被拒 cell 的 `authority_state` 记录快照 Skill 集与 Store active 指针的**前后对比**(逐 cell 断言 `snapshot_unchanged` ∧ `store_active_unchanged`)、被拒后零铸卡;跨单元一项——被拒 cell 之后的单元不得出现无授权来源的 `recalled_skill`。**新鲜离线课程实测:refused=[1]、activated=[2,4]、recalled=[]、leaks=0**——门通过时仍正常激活,门拒绝时零残留。
+
+**分类四规则(按裁定实现)**:任意状态泄漏 → `AUTHORITY_BYPASSED`(降级);仅 `coverage_floor` 分歧且状态完整不变 → `AUTHORITY_UPHELD`(只披露);失败线含任一风险线(aggregate / harmed_fraction / single_series_harm)→ **降级**(两套准入共用 bounded_risk_v1,在风险线上分歧即仪器缺陷);`LOST_ACTIVATION` → 只计数披露。`classify_authority_breach` 现**先查状态位移**再查激活,故"门拒绝且状态动了"即使未激活也判泄漏。
+
+**复核三条件闭合**:(1) gate 3 语义 —— 用户本轮裁定即复核建议文本,已实现并逐规则测试;(2) **缓存计数接线** —— `Ledgers.cache_hits/misses` 由各臂缓存合流(misses = logical − hits),并进**仪器报告** `accounting.replay_cache`(physical/logical/hits/hit_rate/saved_fits/per_arm),同时显式标注 `llm_prompt_cache_enabled: False`——此前 0/0 与"已启用但从未命中"不可区分;(3) **召回归因行为锁** —— `deployed_via == recalled_skill ⇒ program_in_active_set_at_start`,反向亦锁。**另补 sol 机械门 4**:`test_the_dynamic_denominator_on_a_real_nineteen_series_face` —— 在 `[200:239]` 面 B(**真 19 条**)上跑真 `scoped_evaluate`,断言逐序列向量长 19、`harmed_fraction` 分母为 19、`coverage == round(6/19,4) ≠ round(6/20,4)`。源码扫描只能抓字面 `/20`,抓不到"取错 roster 的长度",故此项必须是行为测试。
+
+**全量回归对基线差集(sol 发车凭据)**:`_scratch/pytest_baseline_tests_tree.txt`(UTF-16,2026-08-29,55 项 FAILED/ERROR)vs 本轮 `47 failed / 1272 passed / 9 errors`(56 项)。**新增失败恰 1 项**:`tests/integration/test_minipipe_two_cycles.py::test_two_cycles_promote_at_most_one_edit_and_reproduce_scientific_outputs`。**已证与我无关**:失败为 `snapshot lock mismatch`(`compiler.py:1062`),调用栈止于 `cycle.py → compile_snapshot`,**从未进入** `method.py`/`online_loop.py`;`git stash` 掉我那两个文件后**同样失败**;`methods/ttha/harness/` 全目录 clean vs HEAD。即 HEAD(commit `7b3cba8`)提交了一组自相矛盾的 h0/lock/compiler。**未擅自修**:重写 lock 会轮转 `runtime_bundle_sha` 冻结面,需授权;且 HEC-1 全程用 `verify_lock=False`,不受影响。**建议**:由 h0 的所有者跑 `--write-lock` 并单独入账。
+
+**当前**:HEC-1 测试 127 → **150**(amendment 34 passed / 1 skipped);全量 `tests/main_protocol` 绿;smoke 7/7;仪器八项 8/8;合同漂移 clean;**0 LLM**。
+
+### 自查抓到 C 的**单位错误**(预留量少 3 倍)并修正;必补测试补齐;462/462(+1 诚实 skip)(2026-09-03 17:xx,执行方/Opus)
+
+**C 的单位错误(我造的,已修)**:`reserve_for_future_steps` 返回的是**cell 数**(5+10+15+20+25 = 75),而 `replay_fits_remaining` 的额度是**fits**(每臂 156)。两者直接相减 ⇒ **实际预留只有意图的 1/3**,早期步可以吃掉大部分额度,**恰好饿死这条规则要保护的后段步**——即规则写了但不生效。根因是 sol 用 cell 给数、预算用 fits 计量,中间缺一次换算。
+
+**换算系数实测而非假设**:缓存路径下一个 cell 只走**一次** `scoped_evaluate`(同时拟合 raw 与 program 两个模型并返回两套预测),`consumer_fits` 实测 = **2**;非缓存路径是 3(多一次 Static 参照)。故新增 `CACHE_FITS_PER_CELL = 2`,预留改为 `Σ_{j>k} j×period×2`,`estimated_fits_per_candidate` 按路径取 2 或 3(此前恒取 3,在缓存路径上**高估**,会让 `consolidate` 拒掉本来付得起的 screen)。
+
+**修正后算术恰好闭合**(26 单元 / 5 步 / 每臂 156 fits,逐步实测):
+
+| 步 | 预留 | 可用 | 本步首个 screen 需 | 结果 |
+| ---: | ---: | ---: | ---: | --- |
+| 1 | 140 | 16 | 10 | 通过 |
+| 2 | 120 | 26 | 20 | 通过 |
+| 3 | 90 | 36 | 30 | 通过 |
+| 4 | 50 | 46 | 40 | 通过 |
+| 5 | 0 | 56 | 50 | 通过 |
+
+五步合计 **150 ≤ 156**。这不是巧合而是 sol 那组数的用意:75 cell × 2 fits/cell = 150,正好落在每臂额度内。**若沿用错误单位,这张表无法被发现是错的——它照样"通过",只是后段步在真跑里才会被饿死。**
+
+**两处测试补强**:(1) 预算测试原用 `3×5×5=75` 的假额度,改为按合同现算 `156`,并新增一项逐步断言"每步都付得起自己的首个 screen 且总和不超额度";(2) 预留测试现同时断言 cell 数(75/70/25/0)**与** fits 换算(×2),把单位错误钉死。
+
+**退化 context 的诚实缺口**:sol 必补清单里的"缓存与现算在……**退化 context**……逐位一致"**未能实测**。我写了搜索器在前六个单元 × 四个程序里找真实退化案例,**一个也没有**;shakedown 78 个 cell 的故障分布也证实了这点——只有 `AgentCallBudgetExceeded` 7 次与 `evaluation future contains no observed truth` 9 次,**零** `SERVING_CONTEXT_DEGENERATE`。故该项**记为 skip 并如实上报**,不伪造数据凑绿;拒绝分支本身由"伪造退化条目"的测试覆盖(缓存路径确实抛错、避开该序列的 Scope 仍合法)。**这是"数据里没有该情形",不是"没测"。**
+
+**当前状态**:HEC-1 测试 125 → **127**;全量 `tests/main_protocol` **462 passed / 1 skipped**;smoke 7/7;合同漂移 clean;四 phase 可发车、Phase F 正确拒绝。**0 LLM。**
+
+### sol v1.1 增补 A/B/C 全部闭合 + 合同五项同步;461/461 全量绿;**待非作者只读复核后即可 commit 发车**(2026-09-03 16:xx,执行方/Opus)
+
+**A. 按完整 census key 去重(全 lineage)**。key = `Task × Consumer × typed Program × root Scope`。改动三处:(1) `propose_candidates` 的 `held` 由 `active_program_signatures`(从 bank 的 `source_skill_id` 行反推)改为 `held_lineage_keys ∪ ledger.lineage_keys()`——**卡可以持有一个 key 而本窗口没有任何行提到它**,反推会漏;(2) `DraftLedger` 新增 `census_key` 字段、`lineage_keys()`(**含已关闭**)与 `by_census_key()`,`open_restricted` 对已有 lineage 的 key **直接抛错**;(3) Arm 维护 `active_lineage_keys`,激活时按完整 key 登记,K0 收据新增 `lineage_keys` 并在 Phase T 起点 seed。**为什么已关闭也要计入**:新壳会带着 `revisions=0` / `verification_attempts=0` 回来,这正是 Draft 一步一合法地走过"两次修订/三次验证"的方式。
+
+**B. per-arm replay 预测缓存**。承重前提(已逐行核对 `scoped_evaluate`):**两个模型都与 Scope 无关**——raw 模型拟合在全部 raw 训练行、program 模型拟合在全部**已准备**训练行,两者都对每条被服务序列出预测;Scope 只进 `prediction = where(in_scope, program, raw)` 这一行,而每条序列的损失只依赖它自己那一行预测。**所以任一 Scope 下的逐序列读数,都是两个已算好的数之间的选择**,重掩码逐位复现完整评估——这是缓存合法的理由,不是近似。唯一与 Scope 有关的是**合法性**:准备后的服务 context 可能被压平,而 `scoped_evaluate` 只在该序列**在** Scope 内时才拒绝,故退化集随条目记录、每次查询重新套用原规则。键 = `arm × unit × face/origin × Consumer config × typed Program`;**arm 在键内**——共享缓存会让一条臂的 fits 替另一条臂买读数,而臂正是对照。三本账分记 `physical_fits` / `logical_evaluations` / `cache_hits`。
+
+**C. 未来外环预算预留**。`reserve_for_future_steps(k, total, period)` = `Σ_{j>k} j×period`,五步课程即 5+10+15+20+25 = 75;当前步只能用"额度 − 已花 − 未来预留"。保证的**只是**"后面每步只要有候选,预算不挡第一个",**不保证**全部被筛;不加每步候选上限、不加新优先序(已测:预算充足与紧张两种情形下候选顺序逐位相同);因预算未筛的候选完整记录 `kind / program_signature / replay_estimate / replay_fits_remaining`。预留按**最坏情况**(每 cell 都是首见)计,不按缓存命中打折——否则第一个真正的新程序会冲破预算。
+
+**合同五项同步**:(1) **P1 实质效应线 `D_o ≥ 0.005 × 23 = 0.115`**,readout 判据由 `D_o_positive` 改名 `D_o_material_in_at_least_2_of_3`,并同时报"仅 >0 的顺序数"以便对照——26 单元上 +0.02 的终点差是 23 次几乎为零的读数,"为正"不等于"实质";(2) 有效点门槛 19/23 已接入(见上条);(3) **P1-only 判词**允许措辞冻结为 `feedback-driven Skill-library evolution` / `Skill acquisition evolution`,**禁止** `Scope-revision evolution`(无修订存活)、`the complete A5 system`(需非空 K0 + P2)、`cross-domain / transfer`(Phase S 与 Phase T 同数据集,至多 within-dataset / cross-cohort);(4) **validation-search baseline** 冻结为必需、0-LLM、同探针预算、同风险门、无记忆、**不进 Harness**——它回答"曲线里有多少是搜索而非积累";(5) **Phase S 再空**→ 穷举 0-LLM 供给诊断,**但不得据此生成本轮 K0**(枚举出来的卡不是 Harness 形成的);(6) **Phase F 三顺序全评、宏平均主报**,不得只报单一顺序、不得挑顺序、不得丢弃终态较差的顺序。以上六项**全部进 `assert_frozen`**,并逐条实测 fail-closed(把 `enters_the_harness` 改 True、`llm_calls` 改 4、`k0_stays` 改成"随扫描结果"、Phase F headline 改"最好的顺序"——四种篡改各自被抓)。
+
+**测试**:新增 `tests/main_protocol/test_hec1_v11_amendment.py` **21 项**,覆盖 sol 点名的全部必补项——同 key 连续出现只留一条 lineage;同 Program 不同 root Scope 分两条;已关闭 key 不能重开壳(且绕过普查直接调 `open_restricted` 也抛错);`held` 不从 `source_skill_id` 反推;census key 对参数/顺序/root Scope 五种变化全可分;**缓存与现算在空 Scope / 全集 / 真子集 / 两个不同 Scope 五种情形逐位一致**(用真 KDD cell、真 Consumer fit,非 stub——要测的正是与真评估器的算术恒等);两臂缓存严格隔离;退化序列经缓存仍被拒;三本账分离;五步课程每步有候选时至少一次 screen;多候选下预算截断有记录且 `≤156 fits`。**HEC-1 104 → 125 项;全量 `tests/main_protocol` 461/461;smoke 7/7;0 LLM。**
+
+**仍待**:第二审查线**只读复核**(用户裁定第 6 步)→ 处理意见 → allowlist commit → 生成 launch receipt(记 commit,**不写进被提交的文件**,避免自指)→ runner 验 HEAD 与 receipt 一致且 allowlist 工作树干净 → 同一 commit 起 Phase S-v1.1。**门分歧口径**(见上一条)仍是我按"权威被绕过才降级"实现的,sol 本次增补未涉及,记为待确认项而非阻塞项——两种口径的证据代码都在记录,改判只换一个判定分支。
+
+### Shakedown Forward 收口 = **仪器报告**(26/26,165 LLM,3.07 h);**0-fit 预检被逐单元证实**;v1.1 合并完成 440/440;**一个待 sol 裁的结构性问题**(2026-09-03 15:xx,执行方/Opus)
+
+**Shakedown 判词**:`FORWARD_SHAKEDOWN`,**不进曲线、不 resume、不产科学读数**。工件已按裁定改名 `hec1_course_forward_shakedown.json`(`status: SHAKEDOWN_COMPLETE`,原 `COMPLETE` 留在 `status_original`),运行目录改名 `.hec1_runs/forward_shakedown`。**改名是承重动作**:它原本写在 `hec1_course_forward_live.json`——正是 readout 白名单的三个 live 标签之一,不改名就会被当成正式 Forward 读进曲线。改名后 readout 复核 `orderings found: 0/3`,确认已隔离。
+
+**仪器读数(唯一允许从 shakedown 取的东西)**
+
+| 项 | 值 |
+| --- | --- |
+| 完成 | 26/26 单元 × 3 臂 = 78 cell,`run_fault: None` |
+| LLM | **165**(帽 500);`llm_outer` 0;后端前阻断 0 次 |
+| fits | course 109、replay 0、shadow 0、baseline 0 |
+| 墙钟 | **11036 s = 3.07 h**;单 cell 中位 **117 s**、最大 642 s |
+| Fast 决定 | PROPOSED 42、ABSTAINED_WITH_REASON 3、空输出 0、格式错误 0 |
+| 故障 | `FaceNotEvaluable` 9、`UnitFault` 7;**RunFault 0** |
+| 部署 | identity 37、无部署 33、searched 6、**recalled_skill 2** |
+| 激活 | **0**;`lost_activation` **0** |
+| 门分歧 | **3**(全部同一形态,见下) |
+| 外环 | 5 步**全部** `census produced no candidate`;replay allowance 78、实花 0 |
+| cache | 命中 0 / 未命中 0 —— **未被记录,仪器缺口**(清单 F5 未覆盖) |
+
+**0-fit 预检被逐单元证实(本轮最强的一条仪器证据)**:我在跑之前用 `preflight_hec1_evaluability`(0 fit / 0 LLM)预言恰好三个单元的 +144 面不可评——`[0:40]×2856`、`[40:80]×2856`、`[120:160]×1656`。live shakedown 实际产生 **9 个 `FaceNotEvaluable` cell,origin 恰为 {1656, 2856},恰为 3 单元 × 3 臂**,逐单元命中、无一多余、无一遗漏。**`N_T_eff = 23` 由此从推算升为实测**。
+
+**外环 5/5 空,确证 ADD 门槛 2 是绑定原因**:26 单元、5 个外环步,没有任何程序在 ≥2 个单元上取得 POSITIVE,故一次候选都没产生、Slow 一次未点着、replay 78 的额度一个 fit 没花。这与 Phase S-v1 的 13 单元同因。v1.1 已把门槛改 1(sol 裁 1),这条是它必须改的实测依据。
+
+**时长外推**:每顺序 ≈ 3.07 h(空 K0 三臂),三顺序 ≈ **9.2 h**,加 Phase S-v1.1 ≈ 1 h,**全程约 10 h**。
+
+**v1.1 合并本轮完成的部分**:`hec1_scoreability.py`(冻结清单 + 双向互证 + 配对点过滤)接入合同;`VERDICTS.HEC1_INCONCLUSIVE` 由"0.8 N_T 单元完成"改为"**19 个有效配对曲线点**,基数是 23 个可评分单元而非 26 个排定单元";`assert_frozen` 新增四条 scoreability 机械校验(排定−不可评=可评、floor 必须是 ceil、floor/可评 ≥ 0.8、每个不可评单元必须真在课程里)。**已实测这些守卫会 fail-closed**:把 floor 改成 18 → 两条失败;塞一个不存在的不可评单元 → 两条失败。门分歧新增 `kind` 分类。**440/440 全量主协议 + 7/7 smoke + 89/89 HEC-1 全绿。**
+
+**⚠ 一个待 sol 裁的结构性问题(阻塞发车)**:sol 发车前门 3 写「**科学顺序中出现任何 gate disagreement 即降级该顺序**」。shakedown 实测 3 次分歧,**全部是同一形态**:`online_loop` 的 delayed 准入**不含覆盖底线**,P4 `_gate` **含**,故 winner 在 delayed 面 treated < MIN_TREATED(实测 treated=3)时两者必然分歧——`[40:80]×2136` 两臂、`[80:120]×1176` 一臂,**三次权威门全部正确拒绝、零激活、零越权**。这是**结构性**的,不是故障:分歧率与"有多少 winner 的 delayed 覆盖低于 5"直接挂钩,26 单元里出现 3 次,三个正式顺序几乎必然各自出现若干次。**按字面执行,三个顺序会全部被降级,实验无法产出任何结果。** 我的读法:sol 门 3 的上下文是「P4 过而生命周期事件未批准 → 记 `lost_activation`」,针对的是**另一个方向**;真正要防的是"**Active 集通过权威门以外的路径增长**"。故我把分歧分为两类——`AUTHORITY_UPHELD`(权威拒绝、无激活,计数不降级)与 `AUTHORITY_BYPASSED`(激活了权威未批准的东西,**降级**)——并在仪器第 4 项里按后者判失败、把前者计数披露。**这是我的建议,不是我的裁定;按权威顺序(AGENTS → sol → 测试 → 实现)此项需 sol 一句话确认。** 代码已同时具备两种口径的证据,改判只需换一个判定分支。
+
+**未做与原因**:第二审查线的**只读复核**(用户裁定第 6 步)尚未进行;**allowlist 提交**(第 7 步)在复核之后;**未发车**——发车前需要上面那条 sol 裁定,否则 10 h 的三顺序注定全部降级。
 
 ### 用户正式裁定:**串行化写入**(Opus 唯一写手、第二线只读复核)+ **权威顺序 AGENTS → 合同 → 测试 → 实现**;门槛更正 `⌈0.8×23⌉ = 19`;冻结 scoreability 清单落地(2026-09-03 13:4x,执行方/Opus)
 

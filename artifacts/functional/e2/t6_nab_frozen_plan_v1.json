@@ -1,0 +1,944 @@
+{
+  "protocol_version": "t6_nab_frozen_plan_v1",
+  "entry": "--plan",
+  "exposure": {
+    "source": {
+      "context": "INSTANCE_SEEN",
+      "outcome": "EXPOSED",
+      "note": "the development surface this round mines"
+    },
+    "target": {
+      "context": "INSTANCE_SEEN",
+      "note": "the shape gate reads it and the Agent will see its public values",
+      "outcome": "SEALED"
+    },
+    "aggregate_disclosure": "one of the six realAdExchange series carries no anomaly; which one is not disclosed and is not read here",
+    "evidence_grade": "NATURAL",
+    "evidence_standing": "provisional"
+  },
+  "part_0": {
+    "head_commit": "5dee103",
+    "head_subject": "checkpoint: #41b-lite closeout + minimal V10 freeze surface (V10_READY_FOR_T6)",
+    "action": "verified only -- the #41b-lite closeout was already committed and the tree carries no uncommitted diff",
+    "tracked_modified": [],
+    "expected_files_last_touched_by": {
+      "evaluation/functional/run_e2_operational_pipeline.py": "5dee103",
+      "methods/ttha/method.py": "5dee103",
+      "evaluation/functional/task_episode_harness/e1.py": "5dee103",
+      "evaluation/functional/task_episode_harness/skill_evolution.py": "5dee103",
+      "evaluation/functional/task_episode_harness/e0b.py": "5dee103",
+      "tests/functional/test_g1_proposal_guidance.py": "5dee103"
+    },
+    "untracked_tests_excluded": [
+      "tests/functional/test_e1_v2_protocol_repair.py",
+      "tests/functional/test_skill_evolution_e0.py",
+      "tests/functional/test_skill_revocation.py"
+    ],
+    "mkl_savgol_crash": "tests/functional/test_f1_forecast_pilot.py aborts natively in scipy savgol_filter -> linalg.lstsq; reproduced identically at the pre-#41 checkpoint, so it is carried on the ledger and not repaired here"
+  },
+  "data_reference": {
+    "source_url": "https://github.com/numenta/NAB",
+    "tag": "v1.1",
+    "upstream_commit": "0dcd73007a349ca0f4128c4c9b18133ce00d9296",
+    "raw_base": "https://raw.githubusercontent.com/numenta/NAB/0dcd73007a349ca0f4128c4c9b18133ce00d9296",
+    "local_root": "data/benchmark_nab_v1_1/raw",
+    "tracked_in_git": false,
+    "note": "the raw bytes stay in an untracked directory and are never committed; re-fetching from the pinned commit reproduces them"
+  },
+  "budgets_this_round": {
+    "llm": 0,
+    "forecasting_retrains": 0,
+    "ad_consumer_fits_cap": 200
+  },
+  "ambiguities": [
+    "C3's three-kind gate does not say which lifecycle layer it reads. It is evaluated as 'either the Support or the delayed layer of a cell carries this relation', and both layers are reported separately so the main line can see which one supplied each kind.",
+    "The Query's trailing 19 points are read from the raw series, never from the prepared block. The book says the Query is never processed; taking the trailing window from the prepared block would have let the program reach the query features through the back door. This follows the canon t1b already set for trailing geometry.",
+    "The Episode bank writes one Episode per (cohort, round, program), not one per series: the Consumer's primary reading is a macro average over the cohort, and the per-series vector rides inside the same Episode as the harm evidence. identity is written too, as ABSTAIN, so the bank carries the do-nothing baseline the card channel needs.",
+    "The Episode's final relation is taken from the delayed layer (evidence_level DELAYED), matching online_loop's own semantics; the Support-layer classification is kept alongside it rather than discarded.",
+    "background_alarm_rate is defined here as the share of scored points outside every truth window that were flagged. The book named the metric without fixing the denominator.",
+    "NAB's official window bounds are timestamps that do not always fall on a sample. When a bound does not match a sample exactly, the window is taken as the enclosing sample positions; windows that enclose no sample are dropped. This affects Source only under the wall."
+  ],
+  "consumer_spec": {
+    "consumer_id": "aegists_iforest_v1",
+    "task": "anomaly_detection",
+    "detector": "sliding-window IsolationForest, one model per series",
+    "window": 20,
+    "window_geometry": "[t-19, t], the current point included",
+    "standardization": "scalar mean/std from P(B) only, applied unchanged to the untouched Query; std == 0 is replaced by 1",
+    "forest": {
+      "n_estimators": 100,
+      "contamination": 0.1,
+      "max_features": 1.0,
+      "n_jobs": 1,
+      "random_state": 0
+    },
+    "query_rule": "decision_function(window) < 0, the threshold frozen at fit time by contamination; never refitted on the Query",
+    "event_rule": "consecutive anomalous points merge into one predicted event",
+    "matching": "greedy one-to-one by row overlap against NAB windows; a window is the set of rows whose timestamp falls inside it",
+    "primary_metric": "macro average of per-series event F1",
+    "secondary_metrics": [
+      "pooled_event_f1",
+      "pointwise_auprc",
+      "background_alarm_rate"
+    ],
+    "material_threshold": 0.005,
+    "borrowed_from": "a-evolve/AegisTS/Error_Detection/detectors/models/IForest.py -- window+IsolationForest structure only; not its model-selection stack, and not its train/predict normalization asymmetry"
+  },
+  "shape_gate": [
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_24ae8d.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "fd3a818be40a65cba0cf608591362e933b0126992a2de676691e2606644946d0"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_53ea38.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_53ea38.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "3904eeb7a3a71d17a1d942b4b65e4d6465f2dd68db792f1b0088ddbdf3843df9"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_5f5533.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_5f5533.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "697c40e622a3f1eddd66b0a5a10c9dd9703e5ff5481d7284c0b5d0e4fce19db7"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_77c1ca.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_77c1ca.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "93711151c8b248fc40bc28940746a7d46d963d55eca65333c129ac33be6f087c"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_825cc2.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_825cc2.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "b817db1b75d935a7cfb8bc3d338644119ba7e0acb426093a8590b9bd2b1c04fc"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_ac20cd.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_ac20cd.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "77c7091c7fad5cf3d5a124aa2b7c9be0115bb85c1aedce7090641669cec1c1b9"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_c6585a.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_c6585a.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "20a050af99f45d4e7194b3e4a7c960fa9173e0c10e2db079db1f3cc4b2593a30"
+    },
+    {
+      "role": "source",
+      "cohort": "source_aws_cloudwatch",
+      "file": "ec2_cpu_utilization_fe7f93.csv",
+      "nab_key": "realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv",
+      "ok": true,
+      "failures": [],
+      "length": 4032,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "17647112b4a39b21ae77680dc239c590f9cbb55040bd3871b64e87c1c1a72554"
+    },
+    {
+      "role": "source",
+      "cohort": "source_known_cause",
+      "file": "ambient_temperature_system_failure.csv",
+      "nab_key": "realKnownCause/ambient_temperature_system_failure.csv",
+      "ok": true,
+      "failures": [],
+      "length": 7267,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 7267,
+      "physical_rows_after": 7267,
+      "rows_preserved": true,
+      "values_sha256": "e9c26443b1bae66ae13f83958c3d9c91c4cb38dd73aad5abdde174472925191d"
+    },
+    {
+      "role": "source",
+      "cohort": "source_known_cause",
+      "file": "cpu_utilization_asg_misconfiguration.csv",
+      "nab_key": "realKnownCause/cpu_utilization_asg_misconfiguration.csv",
+      "ok": true,
+      "failures": [],
+      "length": 18050,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 18050,
+      "physical_rows_after": 18050,
+      "rows_preserved": true,
+      "values_sha256": "d7b041eec8ea5d7d19418a8db8a7d716d1292b42f576a83fbf62bce687060b84"
+    },
+    {
+      "role": "source",
+      "cohort": "source_known_cause",
+      "file": "ec2_request_latency_system_failure.csv",
+      "nab_key": "realKnownCause/ec2_request_latency_system_failure.csv",
+      "ok": false,
+      "failures": [
+        "timestamps_not_strictly_increasing"
+      ],
+      "length": 4032,
+      "ordering_violations": [
+        {
+          "row_index": 557,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 558,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 559,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 560,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 561,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 562,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 563,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 564,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 565,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        },
+        {
+          "row_index": 566,
+          "previous_timestamp": "2014-03-09 03:00:00",
+          "timestamp": "2014-03-09 03:00:00",
+          "kind": "duplicate"
+        }
+      ],
+      "ordering_violation_count": 11,
+      "duplicate_timestamp_count": 11,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 4032,
+      "physical_rows_after": 4032,
+      "rows_preserved": true,
+      "values_sha256": "d4cd17748b19aabb5b501527380c46c01701cb942ddf8cc694d72da7b8cc7150"
+    },
+    {
+      "role": "source",
+      "cohort": "source_known_cause",
+      "file": "machine_temperature_system_failure.csv",
+      "nab_key": "realKnownCause/machine_temperature_system_failure.csv",
+      "ok": false,
+      "failures": [
+        "timestamps_not_strictly_increasing"
+      ],
+      "length": 22695,
+      "ordering_violations": [
+        {
+          "row_index": 10149,
+          "previous_timestamp": "2014-01-07 02:55:00",
+          "timestamp": "2014-01-07 02:00:00",
+          "kind": "backwards"
+        }
+      ],
+      "ordering_violation_count": 1,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 1,
+      "max_backward_delta_seconds": 3300.0,
+      "physical_rows_before": 22695,
+      "physical_rows_after": 22695,
+      "rows_preserved": true,
+      "values_sha256": "bc60006746de654bb62895d70e9cbe1236ba4a783797d75f0433cc57e82ff1e4"
+    },
+    {
+      "role": "source",
+      "cohort": "source_known_cause",
+      "file": "nyc_taxi.csv",
+      "nab_key": "realKnownCause/nyc_taxi.csv",
+      "ok": true,
+      "failures": [],
+      "length": 10320,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 10320,
+      "physical_rows_after": 10320,
+      "rows_preserved": true,
+      "values_sha256": "a9923784e8afd67675e62d105253a354d4fe6b587d02120fc27f013a106363e0"
+    },
+    {
+      "role": "source",
+      "cohort": "source_known_cause",
+      "file": "rogue_agent_key_hold.csv",
+      "nab_key": "realKnownCause/rogue_agent_key_hold.csv",
+      "ok": true,
+      "failures": [],
+      "length": 1882,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1882,
+      "physical_rows_after": 1882,
+      "rows_preserved": true,
+      "values_sha256": "f0fd935220994683b9751974ab12269323de674bf480d2af1c9d1b0b3c98358e"
+    },
+    {
+      "role": "target",
+      "cohort": "target_cpc",
+      "file": "exchange-2_cpc_results.csv",
+      "nab_key": "realAdExchange/exchange-2_cpc_results.csv",
+      "ok": false,
+      "failures": [
+        "timestamps_not_strictly_increasing"
+      ],
+      "length": 1624,
+      "ordering_violations": [
+        {
+          "row_index": 1304,
+          "previous_timestamp": "2011-08-24 12:00:01",
+          "timestamp": "2011-08-24 12:00:01",
+          "kind": "duplicate"
+        }
+      ],
+      "ordering_violation_count": 1,
+      "duplicate_timestamp_count": 1,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1624,
+      "physical_rows_after": 1624,
+      "rows_preserved": true,
+      "values_sha256": "9e4644e1b39b7c0a2a72b36671e33d7ac6b3e340e5bf344afa77f449f9f24f74"
+    },
+    {
+      "role": "target",
+      "cohort": "target_cpm",
+      "file": "exchange-2_cpm_results.csv",
+      "nab_key": "realAdExchange/exchange-2_cpm_results.csv",
+      "ok": false,
+      "failures": [
+        "timestamps_not_strictly_increasing"
+      ],
+      "length": 1624,
+      "ordering_violations": [
+        {
+          "row_index": 1304,
+          "previous_timestamp": "2011-08-24 12:00:01",
+          "timestamp": "2011-08-24 12:00:01",
+          "kind": "duplicate"
+        }
+      ],
+      "ordering_violation_count": 1,
+      "duplicate_timestamp_count": 1,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1624,
+      "physical_rows_after": 1624,
+      "rows_preserved": true,
+      "values_sha256": "4089abc6872edd4688ea5d62a0b9e5e50f08bd72818e491a579f4f472566db29"
+    },
+    {
+      "role": "target",
+      "cohort": "target_cpc",
+      "file": "exchange-3_cpc_results.csv",
+      "nab_key": "realAdExchange/exchange-3_cpc_results.csv",
+      "ok": true,
+      "failures": [],
+      "length": 1538,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1538,
+      "physical_rows_after": 1538,
+      "rows_preserved": true,
+      "values_sha256": "067eef4ac415bb809771da4afc3100d24573f508c65abacaccef65157caddf7e"
+    },
+    {
+      "role": "target",
+      "cohort": "target_cpm",
+      "file": "exchange-3_cpm_results.csv",
+      "nab_key": "realAdExchange/exchange-3_cpm_results.csv",
+      "ok": true,
+      "failures": [],
+      "length": 1538,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1538,
+      "physical_rows_after": 1538,
+      "rows_preserved": true,
+      "values_sha256": "275d9b72ecccf3b1f3a3629123fca29e9e2642cf314c656e1e915baaf68b3918"
+    },
+    {
+      "role": "target",
+      "cohort": "target_cpc",
+      "file": "exchange-4_cpc_results.csv",
+      "nab_key": "realAdExchange/exchange-4_cpc_results.csv",
+      "ok": true,
+      "failures": [],
+      "length": 1643,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1643,
+      "physical_rows_after": 1643,
+      "rows_preserved": true,
+      "values_sha256": "8042e5c6af3f221f86b32ff299881d1978ec6489872a1a49bea98f2f2c753ec8"
+    },
+    {
+      "role": "target",
+      "cohort": "target_cpm",
+      "file": "exchange-4_cpm_results.csv",
+      "nab_key": "realAdExchange/exchange-4_cpm_results.csv",
+      "ok": true,
+      "failures": [],
+      "length": 1643,
+      "ordering_violations": [],
+      "ordering_violation_count": 0,
+      "duplicate_timestamp_count": 0,
+      "backward_transition_count": 0,
+      "max_backward_delta_seconds": null,
+      "physical_rows_before": 1643,
+      "physical_rows_after": 1643,
+      "rows_preserved": true,
+      "values_sha256": "c186972a8686a29fa3022bbda9a2c5bbf5f7aa0676d1eb3b8cdcbb0a57bf018d"
+    }
+  ],
+  "shape_gate_summary": {
+    "checks_applied": [
+      "two columns named timestamp/value",
+      "univariate",
+      "timestamps strictly increasing",
+      "value parses to a finite number",
+      "length >= 1000"
+    ],
+    "source_failures": [
+      {
+        "role": "source",
+        "cohort": "source_known_cause",
+        "file": "ec2_request_latency_system_failure.csv",
+        "nab_key": "realKnownCause/ec2_request_latency_system_failure.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 4032,
+        "ordering_violations": [
+          {
+            "row_index": 557,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 558,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 559,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 560,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 561,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 562,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 563,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 564,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 565,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 566,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          }
+        ],
+        "ordering_violation_count": 11,
+        "duplicate_timestamp_count": 11,
+        "backward_transition_count": 0,
+        "max_backward_delta_seconds": null,
+        "physical_rows_before": 4032,
+        "physical_rows_after": 4032,
+        "rows_preserved": true,
+        "values_sha256": "d4cd17748b19aabb5b501527380c46c01701cb942ddf8cc694d72da7b8cc7150"
+      },
+      {
+        "role": "source",
+        "cohort": "source_known_cause",
+        "file": "machine_temperature_system_failure.csv",
+        "nab_key": "realKnownCause/machine_temperature_system_failure.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 22695,
+        "ordering_violations": [
+          {
+            "row_index": 10149,
+            "previous_timestamp": "2014-01-07 02:55:00",
+            "timestamp": "2014-01-07 02:00:00",
+            "kind": "backwards"
+          }
+        ],
+        "ordering_violation_count": 1,
+        "duplicate_timestamp_count": 0,
+        "backward_transition_count": 1,
+        "max_backward_delta_seconds": 3300.0,
+        "physical_rows_before": 22695,
+        "physical_rows_after": 22695,
+        "rows_preserved": true,
+        "values_sha256": "bc60006746de654bb62895d70e9cbe1236ba4a783797d75f0433cc57e82ff1e4"
+      }
+    ],
+    "target_failures": [
+      {
+        "role": "target",
+        "cohort": "target_cpc",
+        "file": "exchange-2_cpc_results.csv",
+        "nab_key": "realAdExchange/exchange-2_cpc_results.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 1624,
+        "ordering_violations": [
+          {
+            "row_index": 1304,
+            "previous_timestamp": "2011-08-24 12:00:01",
+            "timestamp": "2011-08-24 12:00:01",
+            "kind": "duplicate"
+          }
+        ],
+        "ordering_violation_count": 1,
+        "duplicate_timestamp_count": 1,
+        "backward_transition_count": 0,
+        "max_backward_delta_seconds": null,
+        "physical_rows_before": 1624,
+        "physical_rows_after": 1624,
+        "rows_preserved": true,
+        "values_sha256": "9e4644e1b39b7c0a2a72b36671e33d7ac6b3e340e5bf344afa77f449f9f24f74"
+      },
+      {
+        "role": "target",
+        "cohort": "target_cpm",
+        "file": "exchange-2_cpm_results.csv",
+        "nab_key": "realAdExchange/exchange-2_cpm_results.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 1624,
+        "ordering_violations": [
+          {
+            "row_index": 1304,
+            "previous_timestamp": "2011-08-24 12:00:01",
+            "timestamp": "2011-08-24 12:00:01",
+            "kind": "duplicate"
+          }
+        ],
+        "ordering_violation_count": 1,
+        "duplicate_timestamp_count": 1,
+        "backward_transition_count": 0,
+        "max_backward_delta_seconds": null,
+        "physical_rows_before": 1624,
+        "physical_rows_after": 1624,
+        "rows_preserved": true,
+        "values_sha256": "4089abc6872edd4688ea5d62a0b9e5e50f08bd72818e491a579f4f472566db29"
+      }
+    ],
+    "all_ok": false,
+    "row_order_contract": false,
+    "rows_preserved_everywhere": true
+  },
+  "verdict": {
+    "verdict": "NATURAL_DATA_SHAPE_INELIGIBLE",
+    "reason": "2 of the six Target files fail the structural gate: [('exchange-2_cpc_results.csv', ['timestamps_not_strictly_increasing']), ('exchange-2_cpm_results.csv', ['timestamps_not_strictly_increasing'])].  No substitute is drawn -- a replacement chosen after a failure would be one chosen with knowledge the gate is not allowed to have, and the book fixes all six realAdExchange series with no replacement.",
+    "target_failures": [
+      {
+        "role": "target",
+        "cohort": "target_cpc",
+        "file": "exchange-2_cpc_results.csv",
+        "nab_key": "realAdExchange/exchange-2_cpc_results.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 1624,
+        "ordering_violations": [
+          {
+            "row_index": 1304,
+            "previous_timestamp": "2011-08-24 12:00:01",
+            "timestamp": "2011-08-24 12:00:01",
+            "kind": "duplicate"
+          }
+        ],
+        "ordering_violation_count": 1,
+        "duplicate_timestamp_count": 1,
+        "backward_transition_count": 0,
+        "max_backward_delta_seconds": null,
+        "physical_rows_before": 1624,
+        "physical_rows_after": 1624,
+        "rows_preserved": true,
+        "values_sha256": "9e4644e1b39b7c0a2a72b36671e33d7ac6b3e340e5bf344afa77f449f9f24f74"
+      },
+      {
+        "role": "target",
+        "cohort": "target_cpm",
+        "file": "exchange-2_cpm_results.csv",
+        "nab_key": "realAdExchange/exchange-2_cpm_results.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 1624,
+        "ordering_violations": [
+          {
+            "row_index": 1304,
+            "previous_timestamp": "2011-08-24 12:00:01",
+            "timestamp": "2011-08-24 12:00:01",
+            "kind": "duplicate"
+          }
+        ],
+        "ordering_violation_count": 1,
+        "duplicate_timestamp_count": 1,
+        "backward_transition_count": 0,
+        "max_backward_delta_seconds": null,
+        "physical_rows_before": 1624,
+        "physical_rows_after": 1624,
+        "rows_preserved": true,
+        "values_sha256": "4089abc6872edd4688ea5d62a0b9e5e50f08bd72818e491a579f4f472566db29"
+      }
+    ],
+    "source_failures": [
+      {
+        "role": "source",
+        "cohort": "source_known_cause",
+        "file": "ec2_request_latency_system_failure.csv",
+        "nab_key": "realKnownCause/ec2_request_latency_system_failure.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 4032,
+        "ordering_violations": [
+          {
+            "row_index": 557,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 558,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 559,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 560,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 561,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 562,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 563,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 564,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 565,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          },
+          {
+            "row_index": 566,
+            "previous_timestamp": "2014-03-09 03:00:00",
+            "timestamp": "2014-03-09 03:00:00",
+            "kind": "duplicate"
+          }
+        ],
+        "ordering_violation_count": 11,
+        "duplicate_timestamp_count": 11,
+        "backward_transition_count": 0,
+        "max_backward_delta_seconds": null,
+        "physical_rows_before": 4032,
+        "physical_rows_after": 4032,
+        "rows_preserved": true,
+        "values_sha256": "d4cd17748b19aabb5b501527380c46c01701cb942ddf8cc694d72da7b8cc7150"
+      },
+      {
+        "role": "source",
+        "cohort": "source_known_cause",
+        "file": "machine_temperature_system_failure.csv",
+        "nab_key": "realKnownCause/machine_temperature_system_failure.csv",
+        "ok": false,
+        "failures": [
+          "timestamps_not_strictly_increasing"
+        ],
+        "length": 22695,
+        "ordering_violations": [
+          {
+            "row_index": 10149,
+            "previous_timestamp": "2014-01-07 02:55:00",
+            "timestamp": "2014-01-07 02:00:00",
+            "kind": "backwards"
+          }
+        ],
+        "ordering_violation_count": 1,
+        "duplicate_timestamp_count": 0,
+        "backward_transition_count": 1,
+        "max_backward_delta_seconds": 3300.0,
+        "physical_rows_before": 22695,
+        "physical_rows_after": 22695,
+        "rows_preserved": true,
+        "values_sha256": "bc60006746de654bb62895d70e9cbe1236ba4a783797d75f0433cc57e82ff1e4"
+      }
+    ]
+  },
+  "label_wall": {
+    "released": false,
+    "target_values_retained_in_memory": false,
+    "key_presence_discloses_nothing": "all six Target files carry an entry in combined_windows.json, so the presence of a key says nothing about which series is the clean one; only the window list would, and it is dropped",
+    "target_keys_walled": [
+      "realAdExchange/exchange-2_cpc_results.csv",
+      "realAdExchange/exchange-2_cpm_results.csv",
+      "realAdExchange/exchange-3_cpc_results.csv",
+      "realAdExchange/exchange-3_cpm_results.csv",
+      "realAdExchange/exchange-4_cpc_results.csv",
+      "realAdExchange/exchange-4_cpm_results.csv"
+    ],
+    "target_key_requests": [],
+    "breached": false
+  },
+  "cost": {
+    "llm_calls": 0,
+    "forecasting_retrains": 0,
+    "ad_consumer_fits": 0,
+    "ad_consumer_fit_cap": 200,
+    "note": "the round stopped at a Part A first-fault, so Parts B and C were not exercised and no Consumer fit was spent"
+  },
+  "evaluate_released": false,
+  "remedies_not_taken": {
+    "not_self_adjudicated": "the gate is pre-registered and it failed; picking a remedy here would be picking it with knowledge of which files failed",
+    "options": [
+      {
+        "option": "drop exchange-2 and run on two Target series",
+        "blocked_by": "the book fixes all six realAdExchange series and forbids replacement"
+      },
+      {
+        "option": "de-duplicate the repeated timestamp before gating",
+        "blocked_by": "that is a preprocessing step applied to Target bytes, which this round is not authorized to touch, and it would silently change what the 'strictly increasing' check means"
+      },
+      {
+        "option": "relax the gate to non-decreasing timestamps",
+        "blocked_by": "relaxing a pre-registered threshold after seeing the data is the move the pre-registration is for"
+      },
+      {
+        "option": "keep the gate and re-site the Target on another NAB family",
+        "blocked_by": "the Target roster is book-fixed; a new family is a new book"
+      }
+    ],
+    "what_the_defect_is": "exchange-2_cpc_results.csv and exchange-2_cpm_results.csv each repeat the timestamp 2011-08-24 12:00:01 on two consecutive rows carrying different values.  It is one duplicated stamp per file, not a corrupted region, and it is present in the pinned upstream bytes rather than introduced here.",
+    "collateral_source_finding": "the same check also fails two Source files -- ec2_request_latency_system_failure.csv (11 duplicated stamps at 2014-03-09 03:00:00) and machine_temperature_system_failure.csv (one backwards step, 02:55 -> 02:00 on 2014-01-07, the shape of a DST fold).  These do not trigger the book's Target-keyed stop, and they are reported rather than worked around: with them excluded the known-cause Source cohort would be four files, not the six the book fixed.",
+    "reading": "this is a real property of NAB v1.1, not an instrument fault: four of the twenty files carry a non-monotonic timestamp column. Whatever the main line rules, the ruling belongs in the book before the surface is frozen, not after."
+  },
+  "frozen_surface": {
+    "surface": "V10",
+    "members": 40,
+    "after": {
+      "files": 40,
+      "drift": [],
+      "ok": true
+    }
+  },
+  "artifact_sha256": "ce68be3fb1e10727dd0ac0c470e9edbbcbc6510e2b67020d89ad42e5b584a140"
+}

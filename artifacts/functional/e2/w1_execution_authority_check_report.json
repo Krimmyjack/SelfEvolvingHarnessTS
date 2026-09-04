@@ -1,0 +1,56 @@
+{
+  "experiment_id": "v1-execution-authority-check",
+  "note": "P1 验收（零 LLM/零 outcome——prepare 只读 [0,origin)）",
+  "origin": 984,
+  "skill_applicability": {
+    "all": [
+      {
+        "feature": "task_kind",
+        "op": "==",
+        "value": "forecast"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "label": "DRAFT",
+      "pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_skill_winsorize_negative_outlier_mad"
+      ],
+      "chosen": "cand_winsorize",
+      "skill_first": false,
+      "chosen_is_skill": false
+    },
+    {
+      "label": "ACTIVE",
+      "pool": [
+        "identity",
+        "cand_skill_winsorize_negative_outlier_mad",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_skill_winsorize_negative_outlier_mad",
+      "skill_first": true,
+      "chosen_is_skill": true
+    },
+    {
+      "label": "H0",
+      "pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "chosen": "cand_winsorize",
+      "skill_first": false,
+      "chosen_is_skill": false
+    }
+  ],
+  "checks": {
+    "C1_draft_not_auto_priority": true,
+    "C2_active_keeps_priority": true,
+    "C3_h0_unchanged": true
+  },
+  "verdict": "EXECUTION_AUTHORITY_P1_PASS"
+}

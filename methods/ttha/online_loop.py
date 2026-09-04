@@ -1561,6 +1561,8 @@ def open_delayed(result: RoundResult, executor: Any, *,
                  store: Any | None = None,
                  scope_resolver: Callable[
                      [Mapping[str, object], int], frozenset[str]] | None = None,
+                 delayed_authorizer: Callable[
+                     [Mapping[str, object]], bool] | None = None,
                  ) -> RoundResult:
     """delayed 到达后（时间边界）：更新所有 Episode 的 delayed 状态 +
     匹配 episode_id 的 handle_feedback_delayed（批准 → snapshot 更新；
@@ -1571,7 +1573,13 @@ def open_delayed(result: RoundResult, executor: Any, *,
     序列也进了平均，而该 Skill 从不打算处理它们；这正是"程序全局施用"那条
     已被否掉的口径。谓词按定义随 origin 重解析（结构特征本身会变），所以只有
     拿到 ``scope_resolver`` 才限定；拿不到就逐字节走历史路径，绝不拿旧 origin
-    上解析出的序列名单冒充新读数。"""
+    上解析出的序列名单冒充新读数。
+
+    ``delayed_authorizer``（加法式，默认 None = 历史行为逐字节不变）：透传给
+    ``method.handle_feedback_delayed``，在**提交 snapshot 之前**由外部权威门
+    再判一次。HEC-1 用它把 P4 ``_gate``（含 coverage floor）前移到提交点之前
+    ——此前生命周期自己批准即写 ``method._snapshot``，而那正是 Fast Path 的
+    检索来源，于是被 P4 拒绝的 Skill 仍会在下一单元被检索并部署。"""
     d_origin = delayed_origin if delayed_origin is not None \
         else result.origin + horizon
     method = result._method
@@ -1622,6 +1630,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
             and result._slow_event.get("stage") == "pending":
         dev = method.handle_feedback_delayed(
             lambda s, _mode: _at_d(s),
+            authorize=delayed_authorizer,
             episode_id=result._trigger_episode_id)
         result._delayed_event = dev
         if dev.get("stage") == "approved":
@@ -1631,6 +1640,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
             and result._fast_skill_event.get("stage") == "pending":
         dev = method.handle_feedback_delayed(
             lambda s, _mode: _at_d(s),
+            authorize=delayed_authorizer,
             episode_id=result._fast_skill_episode_id)
         result._delayed_event = dev
         if dev.get("stage") == "approved":
@@ -1642,6 +1652,7 @@ def open_delayed(result: RoundResult, executor: Any, *,
         _gid = result._group_slow_event.get("episode_id")
         dev = method.handle_feedback_delayed(
             lambda s, _mode: _at_d(s),
+            authorize=delayed_authorizer,
             episode_id=_gid)
         result._delayed_event = dev
         if dev.get("stage") == "approved":

@@ -1,0 +1,34 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "cand_winsorize",
+      "op": "winsorize",
+      "params": {}
+    },
+    {
+      "candidate_id": "cand_outlier_iqr",
+      "op": "outlier_iqr",
+      "params": {}
+    }
+  ],
+  "choices": [
+    {
+      "call": 1,
+      "chosen": "cand_winsorize",
+      "ok": true,
+      "raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 reports paired positive Support and delayed evidence for winsorize and explicitly directs probing it first; the current Support probe serves as confirmation.\"}"
+    },
+    {
+      "call": 2,
+      "chosen": "cand_winsorize",
+      "ok": true,
+      "raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 reports paired positive Support and delayed evidence for winsorize and explicitly recommends probing it first; the current Support probe serves as confirmation.\"}"
+    }
+  ],
+  "experiment_id": "v1-llm-probe-stability",
+  "llm_call_count": 2,
+  "memory_rendered": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 1: candidate operators ['winsorize'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibrated, fewer than the minimum historical contexts). Probe them first, then confirm again on the current Support.\n\n",
+  "probe_semantics_added": "Choosing a candidate means requesting one budgeted Support probe — it does NOT mean final deployment. The current Support of a Reference 1 operator has not yet been confirmed; that is not a reason to abstain — the Support probe itself IS the confirmation process.",
+  "setting": "metr_la offset=40（已暴露）R1 @792 Context；候选 [winsorize, outlier_iqr]；Source Memory POSITIVE winsorize；luna temp=0；2 次调用同输入（不投票）；plan-only（不评估 gain）",
+  "verdict": "LLM_REFERENCE1_PROBE_STABLE_PASS"
+}

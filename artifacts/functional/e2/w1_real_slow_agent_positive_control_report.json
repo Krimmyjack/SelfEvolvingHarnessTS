@@ -1,0 +1,37 @@
+{
+  "case": "GEFCom impute_ssm->outlier_iqr（P0 正控；反事实表明确支持删 A 留 B；不预标注答案）",
+  "checks": {
+    "delayed_no_flip": true,
+    "llm_calls_le_2": true,
+    "next_round_actual_adoption": true,
+    "next_round_executed": true,
+    "removal_changes_action": true,
+    "replay_support_positive": true
+  },
+  "counterfactuals": {
+    "A_only_impute_ssm": -0.15431641254038198,
+    "A_then_B": -0.10249435069439317,
+    "B_only_outlier_iqr": 0.043862404445872194,
+    "identity": 0.0
+  },
+  "delayed_b_only": 0.027190356020410977,
+  "experiment_id": "v1-real-slow-agent-positive-control",
+  "llm_api_call_count": 1,
+  "manifest": {
+    "edit_id": "add-outlier-iqr-only-forecast-capability",
+    "falsification_condition": [
+      "Reject the edit if deterministic replay on the declared forecast training-window scope does not show the one-step outlier_iqr workflow outperforming identity and the impute_ssm-containing workflow, or if the workflow modifies more than 35% of the candidate region."
+    ],
+    "frozen_program": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "operation": "ADD",
+    "skill_id": "forecast-outlier-iqr-only",
+    "surface_template_instantiated_by_harness": true,
+    "target_surface_id": "skill_library.entries/forecast-outlier-iqr-only"
+  },
+  "verdict": "REAL_SLOW_AGENT_PATCH_PASS"
+}

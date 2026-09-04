@@ -1,0 +1,813 @@
+{
+  "stage": "HEC1_COURSE",
+  "written_at": "2026-09-03T09:39:08.569172+08:00",
+  "contract_version": "P4U-v4",
+  "contract_frozen": true,
+  "phase": "phase_t_forward",
+  "ordering": "forward",
+  "run_label": "e2e_probe",
+  "offline": true,
+  "resume": false,
+  "assert_launchable": {
+    "launchable": true,
+    "phase": "phase_t_forward",
+    "llm_cap": 500,
+    "blockers": [],
+    "verdict_if_launched_anyway": "BLOCKED_ON_CONTRACT"
+  },
+  "run_root": ".hec1_runs/e2e_probe",
+  "status": "COMPLETE",
+  "verdict": null,
+  "run_fault": null,
+  "arms": [
+    "Static",
+    "A3-frozen",
+    "A3-online"
+  ],
+  "k0": {
+    "empty": true,
+    "active_skill_ids": []
+  },
+  "units_planned": 2,
+  "units_completed": 2,
+  "cells": [
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1176,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 0,
+      "arm": "Static",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "Static carries no Harness"
+      },
+      "faults": [],
+      "deployed": null,
+      "identity": true,
+      "evaluation": {
+        "origin": 1320,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.545434012067683,
+        "static_mean_smase": 1.545434012067683
+      },
+      "wall_seconds": 0.05
+    },
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1176,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 0,
+      "arm": "A3-frozen",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "first unit"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.313973019418472,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T102",
+            "T104",
+            "T107",
+            "T108",
+            "T110",
+            "T113",
+            "T114",
+            "T118",
+            "T12"
+          ],
+          "per_series_gain": [
+            0.0,
+            0.0,
+            0.5481800680456609,
+            0.0,
+            0.35869789447045786,
+            0.0,
+            0.3457776129368004,
+            0.24563370137126372,
+            0.0,
+            0.0,
+            1.1769152638595815,
+            0.0,
+            0.7875235601216353,
+            2.6133650202739345,
+            0.0,
+            0.0,
+            0.0,
+            -0.9476023551845087,
+            0.0,
+            1.1509696224746144
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.9476023551845087,
+            "min_per_series_gain": -0.9476023551845087,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.313973019418472,
+            "series_count": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.9476023551845087
+          }
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.349858334467102,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T102",
+            "T104",
+            "T107",
+            "T108",
+            "T110",
+            "T113",
+            "T114",
+            "T118",
+            "T12"
+          ],
+          "per_series_gain": [
+            0.0,
+            0.0,
+            0.5527290398101734,
+            0.0,
+            0.5066128027619817,
+            0.0,
+            0.309879200617023,
+            0.31968833265989605,
+            0.0,
+            0.0,
+            1.2631816504198414,
+            0.0,
+            0.676954590592501,
+            3.1061818231871334,
+            0.0,
+            0.0,
+            0.0,
+            -0.8379917670917769,
+            0.0,
+            1.0999310163852725
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.8379917670917769,
+            "min_per_series_gain": -0.8379917670917769,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.349858334467102,
+            "series_count": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.8379917670917769
+          }
+        }
+      ],
+      "risk_refusals": 2,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "resupplied_candidate_ids": [],
+      "llm_calls_this_cell": 0,
+      "deployed": null,
+      "deployed_serving_scope": null,
+      "deployed_via": "identity",
+      "delayed": null,
+      "gate_disagreement": null,
+      "activated": false,
+      "evaluation": {
+        "origin": 1320,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.545434012067683,
+        "static_mean_smase": 1.545434012067683
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 0,
+      "active_skill_ids": [],
+      "wall_seconds": 1.93
+    },
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1176,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 0,
+      "arm": "A3-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "first unit"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.313973019418472,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T102",
+            "T104",
+            "T107",
+            "T108",
+            "T110",
+            "T113",
+            "T114",
+            "T118",
+            "T12"
+          ],
+          "per_series_gain": [
+            0.0,
+            0.0,
+            0.5481800680456609,
+            0.0,
+            0.35869789447045786,
+            0.0,
+            0.3457776129368004,
+            0.24563370137126372,
+            0.0,
+            0.0,
+            1.1769152638595815,
+            0.0,
+            0.7875235601216353,
+            2.6133650202739345,
+            0.0,
+            0.0,
+            0.0,
+            -0.9476023551845087,
+            0.0,
+            1.1509696224746144
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.9476023551845087,
+            "min_per_series_gain": -0.9476023551845087,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.313973019418472,
+            "series_count": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.9476023551845087
+          }
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.349858334467102,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T102",
+            "T104",
+            "T107",
+            "T108",
+            "T110",
+            "T113",
+            "T114",
+            "T118",
+            "T12"
+          ],
+          "per_series_gain": [
+            0.0,
+            0.0,
+            0.5527290398101734,
+            0.0,
+            0.5066128027619817,
+            0.0,
+            0.309879200617023,
+            0.31968833265989605,
+            0.0,
+            0.0,
+            1.2631816504198414,
+            0.0,
+            0.676954590592501,
+            3.1061818231871334,
+            0.0,
+            0.0,
+            0.0,
+            -0.8379917670917769,
+            0.0,
+            1.0999310163852725
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.8379917670917769,
+            "min_per_series_gain": -0.8379917670917769,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.349858334467102,
+            "series_count": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.8379917670917769
+          }
+        }
+      ],
+      "risk_refusals": 2,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "resupplied_candidate_ids": [],
+      "llm_calls_this_cell": 0,
+      "deployed": null,
+      "deployed_serving_scope": null,
+      "deployed_via": "identity",
+      "delayed": null,
+      "gate_disagreement": null,
+      "activated": false,
+      "evaluation": {
+        "origin": 1320,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.545434012067683,
+        "static_mean_smase": 1.545434012067683
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 2,
+      "active_skill_ids": [],
+      "wall_seconds": 2.12
+    },
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1896,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 1,
+      "arm": "Static",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "Static carries no Harness"
+      },
+      "faults": [],
+      "deployed": null,
+      "identity": true,
+      "evaluation": {
+        "origin": 2040,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.5909710467736873,
+        "static_mean_smase": 1.5909710467736873
+      },
+      "wall_seconds": 0.12
+    },
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1896,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 1,
+      "arm": "A3-frozen",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": true,
+        "reason": "frozen arm rebuilt from its start snapshot",
+        "carried_skills": 0
+      },
+      "faults": [
+        {
+          "kind": "UnitFault",
+          "why": "ValueError: target_pattern_id must be a canonical identifier"
+        }
+      ],
+      "deployed": null,
+      "identity": true,
+      "evaluation": {
+        "origin": 2040,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.5909710467736873,
+        "static_mean_smase": 1.5909710467736873
+      },
+      "wall_seconds": 2.09
+    },
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1896,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 1,
+      "arm": "A3-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "online arm carries its store"
+      },
+      "faults": [
+        {
+          "kind": "UnitFault",
+          "why": "ValueError: target_pattern_id must be a canonical identifier"
+        }
+      ],
+      "deployed": null,
+      "identity": true,
+      "evaluation": {
+        "origin": 2040,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.5909710467736873,
+        "static_mean_smase": 1.5909710467736873
+      },
+      "wall_seconds": 1.96
+    }
+  ],
+  "units": [
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1176,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 0,
+      "arms": {
+        "Static": {
+          "origin": 1320,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.545434012067683,
+          "static_mean_smase": 1.545434012067683
+        },
+        "A3-frozen": {
+          "origin": 1320,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.545434012067683,
+          "static_mean_smase": 1.545434012067683
+        },
+        "A3-online": {
+          "origin": 1320,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.545434012067683,
+          "static_mean_smase": 1.545434012067683
+        }
+      }
+    },
+    {
+      "unit": {
+        "block": "[0:40]",
+        "span": [
+          0,
+          40
+        ],
+        "origin": 1896,
+        "exposure": [
+          "SPENT_DEV"
+        ]
+      },
+      "position": 1,
+      "arms": {
+        "Static": {
+          "origin": 2040,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.5909710467736873,
+          "static_mean_smase": 1.5909710467736873
+        },
+        "A3-frozen": {
+          "origin": 2040,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.5909710467736873,
+          "static_mean_smase": 1.5909710467736873
+        },
+        "A3-online": {
+          "origin": 2040,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.5909710467736873,
+          "static_mean_smase": 1.5909710467736873
+        }
+      }
+    }
+  ],
+  "outer_steps": [],
+  "lifecycle": {
+    "Static": {
+      "drafts": [],
+      "open": [],
+      "by_state": {},
+      "max_revisions": 2,
+      "max_verification_attempts": 3,
+      "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+    },
+    "A3-frozen": {
+      "drafts": [],
+      "open": [],
+      "by_state": {},
+      "max_revisions": 2,
+      "max_verification_attempts": 3,
+      "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+    },
+    "A3-online": {
+      "drafts": [],
+      "open": [],
+      "by_state": {},
+      "max_revisions": 2,
+      "max_verification_attempts": 3,
+      "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+    }
+  },
+  "active_skill_ids": {
+    "Static": [],
+    "A3-frozen": [],
+    "A3-online": []
+  },
+  "h_readings": [],
+  "shadow_records": [],
+  "fast_decisions": [
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    },
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    }
+  ],
+  "ledgers": {
+    "llm_fast": 0,
+    "llm_outer": 0,
+    "llm_total": 0,
+    "replay_fits": 0,
+    "shadow_fits": 0,
+    "course_fits": 6,
+    "baseline_fits": 0,
+    "cache_hits": 0,
+    "cache_misses": 0,
+    "cache_hit_rate": null,
+    "wall_seconds": 11.3,
+    "replay_fits_within_share": true
+  },
+  "budget_guard": {
+    "ordering_cap": 500,
+    "per_unit_arm_cap": 5,
+    "blocked_before_backend": [],
+    "why_before": "a post-hoc budget check pays for the call it refuses; this one refuses first and bills nothing"
+  },
+  "boundary": {
+    "held_out_reads": 0,
+    "thresholds_changed": 0,
+    "evaluation_face_in_bank": 0
+  }
+}

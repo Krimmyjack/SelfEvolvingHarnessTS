@@ -1,0 +1,83 @@
+{
+  "task_episode_id": "e1v2_task_01",
+  "arm": "A3",
+  "horizon": 48,
+  "observation_cutoff": 3072,
+  "scope_series_count": 8,
+  "families": [
+    "structural",
+    "outlier"
+  ],
+  "first_ops": [
+    "repair_level_shift",
+    "hampel_filter"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "cand_level_shift",
+      "addresses_hypothesis_id": "h1",
+      "first_op": "repair_level_shift",
+      "family": "structural",
+      "ops": [
+        "repair_level_shift"
+      ]
+    },
+    {
+      "candidate_id": "cand_hampel_outlier",
+      "addresses_hypothesis_id": "h2",
+      "first_op": "hampel_filter",
+      "family": "outlier",
+      "ops": [
+        "hampel_filter"
+      ]
+    }
+  ],
+  "protocol_error": null,
+  "infrastructure_error": null,
+  "propose_entered": true,
+  "retries_happened": false,
+  "validation_retry_count": 0,
+  "validation_error_codes": [],
+  "llm_calls": 4,
+  "workspace_tool_calls": 1,
+  "raw_candidate_count": 2,
+  "raw_candidate_types": [
+    "mappingproxy",
+    "mappingproxy"
+  ],
+  "propose_payload_keys": [
+    "candidates"
+  ],
+  "propose_stage_payload": {
+    "candidates": [
+      {
+        "candidate_id": "cand_level_shift",
+        "addresses_hypothesis_id": "h1",
+        "steps": [
+          {
+            "op": "repair_level_shift",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_hampel_outlier",
+        "addresses_hypothesis_id": "h2",
+        "steps": [
+          {
+            "op": "hampel_filter",
+            "params": {
+              "window": 7,
+              "n_sigmas": 3.0,
+              "global_z_min": 4.0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "inspect_hypothesis_ids": [
+    "h1",
+    "h2"
+  ]
+}

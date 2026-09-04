@@ -1,0 +1,225 @@
+{
+  "stage": "P4U_MAIN_EXPERIMENT_CONTRACT",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "subject": "the policy the Harness deploys, not a fixed program",
+  "geometry": {
+    "target_slice": "readable[80:120]",
+    "source_slice": "readable[160:200]",
+    "held_in_origins": [
+      1896,
+      2136,
+      2376,
+      2616,
+      2856
+    ],
+    "held_out_origins": [
+      4056,
+      4296,
+      4536,
+      4776,
+      5016
+    ],
+    "anchor_axis_frozen": true,
+    "why_new_cohorts_not_new_origins": "anchors are frozen and all clear the filter past origin 900, so the training corpus is origin-invariant; a new cohort is what makes a new training condition"
+  },
+  "arms": {
+    "Static": {
+      "llm": false,
+      "role": "reference",
+      "scope": "none"
+    },
+    "GlobalBestFixed": {
+      "llm": false,
+      "role": "baseline",
+      "scope": "all_serving_series"
+    },
+    "OpenLoopTargeter": {
+      "llm": false,
+      "role": "baseline",
+      "note": "the diagnostic router, never the method"
+    },
+    "A3": {
+      "llm": true,
+      "role": "ablation",
+      "what": "Target-local Scoped Harness with no prior Skills"
+    },
+    "A5": {
+      "llm": true,
+      "role": "full system",
+      "what": "audited Source Skills, then Target held-in calibration"
+    },
+    "ParallelAtB": {
+      "llm": true,
+      "role": "equal-budget baseline"
+    }
+  },
+  "per_arm_budget": {
+    "support_a_rounds": 7,
+    "independent_support_b_rounds": 1,
+    "probes": 24,
+    "llm_calls": 6,
+    "tokens": 60000,
+    "accepted_updates": 1,
+    "wall_seconds": 2700,
+    "identical_for_a3_and_a5": true
+  },
+  "primary_contrasts": [
+    "A3 - Static",
+    "A5 - A3"
+  ],
+  "endpoints": {
+    "utility_vs_static": "mean per-series gain of the deployed policy",
+    "deployment_coverage": "fraction of served series the policy treats; must be non-zero and is reported, not maximised",
+    "harmed_fraction": "<= 0.20",
+    "max_single_series_harm": "<= 0.30",
+    "skill_formation": "Skills formed, Scopes revised, causal reuse observed",
+    "cost": "LLM calls, tokens, Consumer fits and wall seconds per arm"
+  },
+  "stopping_rules": {
+    "A5_TREATMENT_EMPTY": "if the Source line forms zero Active Skills, stop and record it; do not run A5 as if it had a treatment",
+    "held_out_stays_closed": "until every arm is frozen; then Fast-only, zero feedback, zero write-back, one reading",
+    "no_baseline_feedback": "Static / BestFixed / Targeter results are sealed before A3 and A5 and may not be used to change them"
+  },
+  "run_order": [
+    "freeze this contract",
+    "run the three 0-LLM baselines and seal them",
+    "configure transport explicitly; never let the client default",
+    "live Scope smoke on one cell",
+    "Source line: form and approve Skills naturally",
+    "if Source Active Skills == 0 -> A5_TREATMENT_EMPTY and stop",
+    "Target: Static / A3 / A5 / Parallel@B",
+    "freeze all arms, then open held-out once"
+  ],
+  "boundary": {
+    "llm_calls_before_transport_is_configured": 0,
+    "held_out_reads_before_all_arms_frozen": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0
+  },
+  "disclosed_selection": "cohorts and origins were screened for whether the missing-aware sMASE is defined at all; no gain, error or utility participated, and the exposure ledger reads only which cells were evaluated",
+  "supply_audit": "p4s_main_experiment_supply.json",
+  "exposure_ledger": "p4t_exposure_ledger.json",
+  "frozen_state": {
+    "frozen": true,
+    "failures": [],
+    "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+    "target_slice": "readable[80:120]",
+    "source_slice": "readable[160:200]",
+    "held_in_origins": [
+      1896,
+      2136,
+      2376,
+      2616,
+      2856
+    ],
+    "held_out_origins": [
+      4056,
+      4296,
+      4536,
+      4776,
+      5016
+    ],
+    "arms": [
+      "A3",
+      "A5",
+      "GlobalBestFixed",
+      "OpenLoopTargeter",
+      "ParallelAtB",
+      "Static"
+    ],
+    "primary_contrasts": [
+      "A3 - Static",
+      "A5 - A3"
+    ],
+    "exposure_ledger_clears_held_out": true
+  },
+  "cohorts": {
+    "target": [
+      "T180",
+      "T181",
+      "T182",
+      "T183",
+      "T185",
+      "T186",
+      "T187",
+      "T188",
+      "T189",
+      "T19",
+      "T191",
+      "T192",
+      "T193",
+      "T194",
+      "T195",
+      "T197",
+      "T198",
+      "T199",
+      "T2",
+      "T20",
+      "T200",
+      "T201",
+      "T203",
+      "T204",
+      "T205",
+      "T206",
+      "T207",
+      "T209",
+      "T21",
+      "T210",
+      "T211",
+      "T212",
+      "T213",
+      "T214",
+      "T215",
+      "T216",
+      "T217",
+      "T218",
+      "T219",
+      "T22"
+    ],
+    "source": [
+      "T260",
+      "T261",
+      "T262",
+      "T263",
+      "T264",
+      "T265",
+      "T266",
+      "T267",
+      "T269",
+      "T27",
+      "T270",
+      "T29",
+      "T3",
+      "T30",
+      "T31",
+      "T32",
+      "T33",
+      "T35",
+      "T36",
+      "T37",
+      "T38",
+      "T39",
+      "T41",
+      "T42",
+      "T43",
+      "T44",
+      "T45",
+      "T47",
+      "T48",
+      "T49",
+      "T5",
+      "T50",
+      "T51",
+      "T53",
+      "T54",
+      "T55",
+      "T56",
+      "T57",
+      "T59",
+      "T6"
+    ]
+  },
+  "status": "FROZEN"
+}

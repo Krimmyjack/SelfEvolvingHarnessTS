@@ -1,0 +1,2446 @@
+{
+  "experiment_id": "v1-p4-headroom-2x2",
+  "note": "Zero-LLM headroom check after P4 selected-program replay rejection. No Slow call, no Harness update, no gate change.",
+  "origins": [
+    888,
+    984
+  ],
+  "alternatives": [
+    "outlier_mad",
+    "hampel_filter"
+  ],
+  "material_threshold": 0.005,
+  "grid": {
+    "outlier_mad": {
+      "888": {
+        "gain": 0.11986118246470734,
+        "verification_passed": true,
+        "checked_windows": 108
+      },
+      "984": {
+        "gain": -0.0607645314829508,
+        "verification_passed": true,
+        "checked_windows": 120
+      }
+    },
+    "hampel_filter": {
+      "888": {
+        "gain": -0.22939242386310066,
+        "verification_passed": true,
+        "checked_windows": 108
+      },
+      "984": {
+        "gain": 0.05564936969248979,
+        "verification_passed": true,
+        "checked_windows": 120
+      }
+    }
+  },
+  "common_positive": {
+    "outlier_mad": false,
+    "hampel_filter": false
+  },
+  "verdict": "PER_CONTEXT_HEADROOM_EXISTS_NO_COMMON_PROGRAM",
+  "scope_hypothesis_probe": {
+    "origins": [
+      888,
+      984
+    ],
+    "numeric_features_checked": [
+      "estimated_level_offset",
+      "estimated_region_end_fraction",
+      "estimated_region_start_fraction",
+      "level_excursion_score",
+      "local_robust_z_peak",
+      "longest_missing_run_fraction",
+      "missing_fraction",
+      "period_change_score",
+      "period_reliability"
+    ],
+    "feature_bins": [
+      {
+        "feature": "estimated_level_offset",
+        "bins": {
+          "888": "high",
+          "984": "high"
+        },
+        "separates": false
+      },
+      {
+        "feature": "estimated_region_end_fraction",
+        "bins": {
+          "888": "medium",
+          "984": "medium"
+        },
+        "separates": false
+      },
+      {
+        "feature": "estimated_region_start_fraction",
+        "bins": {
+          "888": "low",
+          "984": "low"
+        },
+        "separates": false
+      },
+      {
+        "feature": "level_excursion_score",
+        "bins": {
+          "888": "medium",
+          "984": "medium"
+        },
+        "separates": false
+      },
+      {
+        "feature": "local_robust_z_peak",
+        "bins": {
+          "888": "medium",
+          "984": "medium"
+        },
+        "separates": false
+      },
+      {
+        "feature": "longest_missing_run_fraction",
+        "bins": {
+          "888": "zero",
+          "984": "zero"
+        },
+        "separates": false
+      },
+      {
+        "feature": "missing_fraction",
+        "bins": {
+          "888": "zero",
+          "984": "zero"
+        },
+        "separates": false
+      },
+      {
+        "feature": "period_change_score",
+        "bins": {
+          "888": "high",
+          "984": "high"
+        },
+        "separates": false
+      },
+      {
+        "feature": "period_reliability",
+        "bins": {
+          "888": "high",
+          "984": "high"
+        },
+        "separates": false
+      }
+    ],
+    "separating_features": [],
+    "verdict": "SCOPE_HYPOTHESIS_NOT_EXPRESSIBLE_IN_BINS"
+  },
+  "deconfound_d0": {
+    "origin": 984,
+    "anchors": [
+      312,
+      372,
+      432,
+      492,
+      552,
+      612,
+      672,
+      732,
+      792
+    ],
+    "gains": {
+      "outlier_mad": {
+        "gain": -0.048858160005538664,
+        "verification_passed": true,
+        "checked_windows": 108
+      },
+      "hampel_filter": {
+        "gain": 0.010657002787493486,
+        "verification_passed": true,
+        "checked_windows": 108
+      }
+    },
+    "verdict": "EVAL_CONTEXT_SUFFICIENT"
+  },
+  "scope_validation_grid_v2": {
+    "origins": [
+      1104,
+      1368,
+      1800,
+      2856,
+      3648,
+      3888
+    ],
+    "assigned_policy": [
+      {
+        "origin": 1104,
+        "program": "outlier_mad",
+        "eval_recent_high_z_count": 0
+      },
+      {
+        "origin": 1368,
+        "program": "hampel_filter",
+        "eval_recent_high_z_count": 4
+      },
+      {
+        "origin": 1800,
+        "program": "outlier_mad",
+        "eval_recent_high_z_count": 0
+      },
+      {
+        "origin": 2856,
+        "program": "hampel_filter",
+        "eval_recent_high_z_count": 4
+      },
+      {
+        "origin": 3648,
+        "program": "outlier_mad",
+        "eval_recent_high_z_count": 1
+      },
+      {
+        "origin": 3888,
+        "program": "hampel_filter",
+        "eval_recent_high_z_count": 4
+      }
+    ],
+    "freeze_rule": "chosen outcome-blind by eval_recent_high_z_count>=4; origin % 24 == 0; [origin-192,origin+48) disjoint; low/high alternating in time"
+  },
+  "s1b_d3_zero_llm_v3": {
+    "rows": [
+      {
+        "origin": 1104,
+        "assigned_program": "outlier_mad",
+        "gains": {
+          "outlier_mad": -0.022298605982418174,
+          "hampel_filter": 0.015859121416944122,
+          "winsorize": -0.19701599823728255
+        },
+        "selected_gain": -0.022298605982418174,
+        "promotion_pass": false
+      },
+      {
+        "origin": 1368,
+        "assigned_program": "hampel_filter",
+        "gains": {
+          "outlier_mad": 0.09832408138370008,
+          "hampel_filter": -0.07737679489510851,
+          "winsorize": 0.07377625730822124
+        },
+        "selected_gain": -0.07737679489510851,
+        "promotion_pass": false
+      },
+      {
+        "origin": 1800,
+        "assigned_program": "outlier_mad",
+        "gains": {
+          "outlier_mad": 0.11520231869423547,
+          "hampel_filter": 0.05084936338466006,
+          "winsorize": 0.062360592598548426
+        },
+        "selected_gain": 0.11520231869423547,
+        "promotion_pass": true
+      },
+      {
+        "origin": 2856,
+        "assigned_program": "hampel_filter",
+        "gains": {
+          "outlier_mad": 0.10390197142911695,
+          "hampel_filter": -0.07191670634034342,
+          "winsorize": 0.122420235301538
+        },
+        "selected_gain": -0.07191670634034342,
+        "promotion_pass": false
+      },
+      {
+        "origin": 3648,
+        "assigned_program": "outlier_mad",
+        "gains": {
+          "outlier_mad": -0.03120785996380815,
+          "hampel_filter": 0.05250724247535077,
+          "winsorize": -0.022244081483223876
+        },
+        "selected_gain": -0.03120785996380815,
+        "promotion_pass": false
+      },
+      {
+        "origin": 3888,
+        "assigned_program": "hampel_filter",
+        "gains": {
+          "outlier_mad": 0.07785256614268499,
+          "hampel_filter": 0.02425971663836579,
+          "winsorize": 0.06673643172605748
+        },
+        "selected_gain": 0.02425971663836579,
+        "promotion_pass": true
+      }
+    ],
+    "fixed_program_metrics": {
+      "outlier_mad": {
+        "macro_gain": 0.05696241195058519,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.05350646594622632
+      },
+      "hampel_filter": {
+        "macro_gain": -0.0009696762200218645,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.14929350123545193
+      },
+      "winsorize": {
+        "macro_gain": 0.01767223953564312,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.21926007972050643
+      }
+    },
+    "best_fixed_program": "outlier_mad",
+    "scope_policy": {
+      "macro_gain": -0.010556321974846164,
+      "harm_origin_count": 4,
+      "harm_magnitude": 0.20279996718167825
+    },
+    "utility_pass": false,
+    "promotion_feasible": false,
+    "verdict": "CONTEXT_SCOPE_HYPOTHESIS_NOT_CONFIRMED"
+  },
+  "d4_support_conditioned_selection_zero_llm": {
+    "rows": [
+      {
+        "origin": 1104,
+        "high_z_program": "outlier_mad",
+        "support_gains": {
+          "outlier_mad": -0.01794933550758815,
+          "hampel_filter": 0.029573082272031925
+        },
+        "support_chosen": "hampel_filter",
+        "support_chosen_gain": 0.029573082272031925,
+        "query_gains": {
+          "outlier_mad": -0.02664787645724842,
+          "hampel_filter": 0.0021451605618563185
+        },
+        "query_selected_gain": 0.0021451605618563185,
+        "query_oracle": "hampel_filter",
+        "query_oracle_gain": 0.0021451605618563185
+      },
+      {
+        "origin": 1368,
+        "high_z_program": "hampel_filter",
+        "support_gains": {
+          "outlier_mad": -0.06060704228158975,
+          "hampel_filter": -0.3371242535868776
+        },
+        "support_chosen": null,
+        "support_chosen_gain": null,
+        "query_gains": {
+          "outlier_mad": 0.2572552050489899,
+          "hampel_filter": 0.18237066379666045
+        },
+        "query_selected_gain": 0.0,
+        "query_oracle": "outlier_mad",
+        "query_oracle_gain": 0.2572552050489899
+      },
+      {
+        "origin": 1800,
+        "high_z_program": "outlier_mad",
+        "support_gains": {
+          "outlier_mad": -0.037587787503585934,
+          "hampel_filter": -0.01723016807513944
+        },
+        "support_chosen": null,
+        "support_chosen_gain": null,
+        "query_gains": {
+          "outlier_mad": 0.26799242489205644,
+          "hampel_filter": 0.11892889484445912
+        },
+        "query_selected_gain": 0.0,
+        "query_oracle": "outlier_mad",
+        "query_oracle_gain": 0.26799242489205644
+      },
+      {
+        "origin": 2856,
+        "high_z_program": "hampel_filter",
+        "support_gains": {
+          "outlier_mad": 0.03069453144131762,
+          "hampel_filter": 0.011153935366919443
+        },
+        "support_chosen": "outlier_mad",
+        "support_chosen_gain": 0.03069453144131762,
+        "query_gains": {
+          "outlier_mad": 0.17710941141691627,
+          "hampel_filter": -0.15498734804760605
+        },
+        "query_selected_gain": 0.17710941141691627,
+        "query_oracle": "outlier_mad",
+        "query_oracle_gain": 0.17710941141691627
+      },
+      {
+        "origin": 3648,
+        "high_z_program": "outlier_mad",
+        "support_gains": {
+          "outlier_mad": 0.13946917834412775,
+          "hampel_filter": 0.06985055950764785
+        },
+        "support_chosen": "outlier_mad",
+        "support_chosen_gain": 0.13946917834412775,
+        "query_gains": {
+          "outlier_mad": -0.20188489827174405,
+          "hampel_filter": 0.03516392544305358
+        },
+        "query_selected_gain": -0.20188489827174405,
+        "query_oracle": "hampel_filter",
+        "query_oracle_gain": 0.03516392544305358
+      },
+      {
+        "origin": 3888,
+        "high_z_program": "hampel_filter",
+        "support_gains": {
+          "outlier_mad": 0.21989502490925839,
+          "hampel_filter": -0.03226769055938039
+        },
+        "support_chosen": "outlier_mad",
+        "support_chosen_gain": 0.21989502490925839,
+        "query_gains": {
+          "outlier_mad": -0.06418989262388819,
+          "hampel_filter": 0.08078712383611197
+        },
+        "query_selected_gain": -0.06418989262388819,
+        "query_oracle": "hampel_filter",
+        "query_oracle_gain": 0.08078712383611197
+      }
+    ],
+    "support_conditioned_policy": {
+      "macro_gain": -0.014470036486143275,
+      "harm_origin_count": 2,
+      "harm_magnitude": 0.26607479089563224
+    },
+    "fixed_query_programs": {
+      "outlier_mad": {
+        "macro_gain": 0.06827239566751366,
+        "harm_origin_count": 3,
+        "harm_magnitude": 0.29272266735288066
+      },
+      "hampel_filter": {
+        "macro_gain": 0.04406807007242256,
+        "harm_origin_count": 1,
+        "harm_magnitude": 0.15498734804760605
+      }
+    },
+    "query_oracle_upper_bound": {
+      "macro_gain": 0.13674220853316407,
+      "harm_origin_count": 0,
+      "harm_magnitude": 0.0
+    },
+    "abstention_count": 2,
+    "support_probe_count": 12,
+    "deployment_query_probe_count": 4,
+    "diagnostic_query_probe_count": 12,
+    "verdict": "SUPPORT_CONDITIONED_SELECTION_NOT_CONFIRMED"
+  },
+  "d5_support_query_sensitivity": {
+    "per_series_gain_matrix": {
+      "T128": {
+        "1104": {
+          "outlier_mad": -0.2414958127019693,
+          "hampel_filter": -0.2170180544823459
+        },
+        "1368": {
+          "outlier_mad": 0.08666695290847987,
+          "hampel_filter": -0.002980157054917665
+        },
+        "1800": {
+          "outlier_mad": -0.034900302089362345,
+          "hampel_filter": -0.05739949962106494
+        },
+        "2856": {
+          "outlier_mad": 0.2662064356301308,
+          "hampel_filter": 0.3142795309333757
+        },
+        "3648": {
+          "outlier_mad": 0.15878095890340171,
+          "hampel_filter": 0.22540139093550837
+        },
+        "3888": {
+          "outlier_mad": 0.34097780737380945,
+          "hampel_filter": -0.35973898322453746
+        }
+      },
+      "T129": {
+        "1104": {
+          "outlier_mad": -0.4197507435516148,
+          "hampel_filter": -0.13168341682415696
+        },
+        "1368": {
+          "outlier_mad": -0.13782739386585374,
+          "hampel_filter": -0.7642653345439824
+        },
+        "1800": {
+          "outlier_mad": -0.101388647691103,
+          "hampel_filter": 0.13644560816287354
+        },
+        "2856": {
+          "outlier_mad": -0.03009120938475185,
+          "hampel_filter": -0.5101551736989975
+        },
+        "3648": {
+          "outlier_mad": 0.016146011155646844,
+          "hampel_filter": -0.05946613297469927
+        },
+        "3888": {
+          "outlier_mad": 0.26750539606638135,
+          "hampel_filter": 0.8116287437447969
+        }
+      },
+      "T13": {
+        "1104": {
+          "outlier_mad": 0.1638857897492716,
+          "hampel_filter": -0.1067435412261406
+        },
+        "1368": {
+          "outlier_mad": -0.2560802289178217,
+          "hampel_filter": -0.638880259228167
+        },
+        "1800": {
+          "outlier_mad": 0.004747314880660269,
+          "hampel_filter": -0.21953397470120417
+        },
+        "2856": {
+          "outlier_mad": -0.23538385780850035,
+          "hampel_filter": 0.19122065502733548
+        },
+        "3648": {
+          "outlier_mad": 0.06892467138433311,
+          "hampel_filter": -0.31304541176544903
+        },
+        "3888": {
+          "outlier_mad": 0.07437126586700926,
+          "hampel_filter": -0.46121211382051785
+        }
+      },
+      "T130": {
+        "1104": {
+          "outlier_mad": 0.4255634244739612,
+          "hampel_filter": 0.5737373416207713
+        },
+        "1368": {
+          "outlier_mad": 0.06481250074883615,
+          "hampel_filter": 0.057628736479557574
+        },
+        "1800": {
+          "outlier_mad": -0.018809515114538655,
+          "hampel_filter": 0.07156719385883781
+        },
+        "2856": {
+          "outlier_mad": 0.12204675732839199,
+          "hampel_filter": 0.04927072920596376
+        },
+        "3648": {
+          "outlier_mad": 0.3140250719331289,
+          "hampel_filter": 0.42651239183523143
+        },
+        "3888": {
+          "outlier_mad": 0.19672563032983326,
+          "hampel_filter": -0.11974840893726257
+        }
+      },
+      "T131": {
+        "1104": {
+          "outlier_mad": -0.2991464088366169,
+          "hampel_filter": -0.31313054936903817
+        },
+        "1368": {
+          "outlier_mad": 0.3759165213831994,
+          "hampel_filter": 0.2633657666962397
+        },
+        "1800": {
+          "outlier_mad": 0.6625224058159167,
+          "hampel_filter": 0.436038882706991
+        },
+        "2856": {
+          "outlier_mad": -0.06350824892650841,
+          "hampel_filter": -1.2112196353791473
+        },
+        "3648": {
+          "outlier_mad": -1.0208332855135476,
+          "hampel_filter": 0.0434495094642493
+        },
+        "3888": {
+          "outlier_mad": -0.520249102022575,
+          "hampel_filter": 0.7628161852344264
+        }
+      },
+      "T132": {
+        "1104": {
+          "outlier_mad": -0.04963052294957215,
+          "hampel_filter": -0.060836569249764105
+        },
+        "1368": {
+          "outlier_mad": 0.20655978392695862,
+          "hampel_filter": 0.05909159581316559
+        },
+        "1800": {
+          "outlier_mad": 0.3867418487574992,
+          "hampel_filter": -0.18023076659252135
+        },
+        "2856": {
+          "outlier_mad": 0.26722754457633213,
+          "hampel_filter": 0.35515773938588147
+        },
+        "3648": {
+          "outlier_mad": 0.19587716653514597,
+          "hampel_filter": 0.08676083008481295
+        },
+        "3888": {
+          "outlier_mad": 0.013759728721321807,
+          "hampel_filter": -0.2965593791765617
+        }
+      },
+      "T133": {
+        "1104": {
+          "outlier_mad": 0.14451494382051733,
+          "hampel_filter": 0.2989934289138665
+        },
+        "1368": {
+          "outlier_mad": 0.06031514425836715,
+          "hampel_filter": -0.013954123234021343
+        },
+        "1800": {
+          "outlier_mad": 0.04811575306783733,
+          "hampel_filter": -0.1380873681597734
+        },
+        "2856": {
+          "outlier_mad": 0.06535985827255653,
+          "hampel_filter": 0.08914249538025798
+        },
+        "3648": {
+          "outlier_mad": 0.08308511040563493,
+          "hampel_filter": 0.023527551620199816
+        },
+        "3888": {
+          "outlier_mad": -0.09317416910322651,
+          "hampel_filter": -0.3210208168975819
+        }
+      },
+      "T134": {
+        "1104": {
+          "outlier_mad": 0.09767048213667784,
+          "hampel_filter": 0.08355433195236017
+        },
+        "1368": {
+          "outlier_mad": 0.38622937062743423,
+          "hampel_filter": 0.42097941591125787
+        },
+        "1800": {
+          "outlier_mad": -0.025410308073028576,
+          "hampel_filter": 0.3579948314231398
+        },
+        "2856": {
+          "outlier_mad": 0.43935849174528374,
+          "hampel_filter": 0.14697000842258312
+        },
+        "3648": {
+          "outlier_mad": -0.0656685845142092,
+          "hampel_filter": -0.013082189397049415
+        },
+        "3888": {
+          "outlier_mad": 0.3429039719089272,
+          "hampel_filter": 0.177912506184165
+        }
+      }
+    },
+    "current_frozen_partition": {
+      "support_series": [
+        "T128",
+        "T129",
+        "T13",
+        "T130"
+      ],
+      "query_series": [
+        "T131",
+        "T132",
+        "T133",
+        "T134"
+      ],
+      "mean_policy": {
+        "macro_gain": -0.014470036486143334,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.26607479089563213,
+        "abstention_count": 2,
+        "chosen_by_origin": [
+          [
+            1104,
+            "hampel_filter"
+          ],
+          [
+            1368,
+            null
+          ],
+          [
+            1800,
+            null
+          ],
+          [
+            2856,
+            "outlier_mad"
+          ],
+          [
+            3648,
+            "outlier_mad"
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ]
+      },
+      "median_policy": {
+        "macro_gain": -0.05035554068312988,
+        "harm_origin_count": 3,
+        "harm_magnitude": 0.4210621389432383,
+        "abstention_count": 2,
+        "chosen_by_origin": [
+          [
+            1104,
+            null
+          ],
+          [
+            1368,
+            null
+          ],
+          [
+            1800,
+            "hampel_filter"
+          ],
+          [
+            2856,
+            "hampel_filter"
+          ],
+          [
+            3648,
+            "outlier_mad"
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ]
+      },
+      "majority_policy": {
+        "macro_gain": 0.026167809870325756,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.21917724067149433,
+        "abstention_count": 2,
+        "chosen_by_origin": [
+          [
+            1104,
+            null
+          ],
+          [
+            1368,
+            "outlier_mad"
+          ],
+          [
+            1800,
+            "hampel_filter"
+          ],
+          [
+            2856,
+            "hampel_filter"
+          ],
+          [
+            3648,
+            null
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ]
+      },
+      "rank_by_macro_gain": 31,
+      "total_partitions": 70
+    },
+    "leave_one_support_out": [
+      {
+        "macro_gain": -0.043988271722296,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.26607479089563213,
+        "abstention_count": 3,
+        "chosen_by_origin": [
+          [
+            1104,
+            "hampel_filter"
+          ],
+          [
+            1368,
+            null
+          ],
+          [
+            1800,
+            null
+          ],
+          [
+            2856,
+            null
+          ],
+          [
+            3648,
+            "outlier_mad"
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ],
+        "removed_support_series": "T128"
+      },
+      {
+        "macro_gain": -0.07461833590008113,
+        "harm_origin_count": 4,
+        "harm_magnitude": 0.44771001540048677,
+        "abstention_count": 2,
+        "chosen_by_origin": [
+          [
+            1104,
+            "outlier_mad"
+          ],
+          [
+            1368,
+            null
+          ],
+          [
+            1800,
+            null
+          ],
+          [
+            2856,
+            "hampel_filter"
+          ],
+          [
+            3648,
+            "outlier_mad"
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ],
+        "removed_support_series": "T129"
+      },
+      {
+        "macro_gain": 0.04485958327373269,
+        "harm_origin_count": 1,
+        "harm_magnitude": 0.06418989262388813,
+        "abstention_count": 1,
+        "chosen_by_origin": [
+          [
+            1104,
+            "hampel_filter"
+          ],
+          [
+            1368,
+            null
+          ],
+          [
+            1800,
+            "hampel_filter"
+          ],
+          [
+            2856,
+            "outlier_mad"
+          ],
+          [
+            3648,
+            "hampel_filter"
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ],
+        "removed_support_series": "T13"
+      },
+      {
+        "macro_gain": -0.04434579848260536,
+        "harm_origin_count": 2,
+        "harm_magnitude": 0.26607479089563213,
+        "abstention_count": 4,
+        "chosen_by_origin": [
+          [
+            1104,
+            null
+          ],
+          [
+            1368,
+            null
+          ],
+          [
+            1800,
+            null
+          ],
+          [
+            2856,
+            null
+          ],
+          [
+            3648,
+            "outlier_mad"
+          ],
+          [
+            3888,
+            "outlier_mad"
+          ]
+        ],
+        "removed_support_series": "T130"
+      }
+    ],
+    "high_leverage_support_series": [
+      "T13"
+    ],
+    "partition_enumeration": {
+      "n_partitions": 70,
+      "beats_best_fixed_count": 3,
+      "beats_best_fixed_proportion": 0.04285714285714286,
+      "rows": [
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T133"
+          ],
+          "query_series": [
+            "T129",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": -0.10049591510096616,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.038538094501139326,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.6289554892743108,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": -0.09166000157351122,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.0024186452049143833,
+          "beats_best_fixed": false,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.7397426123961275,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T13",
+            "T130",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T131",
+            "T133"
+          ],
+          "macro_gain": -0.08092381845754952,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.01609383435938542,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.7241630022707648,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T130",
+            "T131",
+            "T132"
+          ],
+          "macro_gain": -0.07031219008131943,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.03559144641232798,
+          "beats_best_fixed": false,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.5492384935362017,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T132"
+          ],
+          "query_series": [
+            "T129",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": -0.07015774324168912,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.024031438555789975,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.7373111950432039,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T129",
+            "T130",
+            "T131",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": -0.06816131852152382,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.07189388272786729,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.5298469095595367,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T13",
+            "T130",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T131",
+            "T132"
+          ],
+          "macro_gain": -0.060686306602314416,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.013586120175864533,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.6061588194008865,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T130",
+            "T131",
+            "T133"
+          ],
+          "macro_gain": -0.0577530896932494,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.019224733537733418,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.5849327303101617,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T13",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T131"
+          ],
+          "macro_gain": -0.051774294968058,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.01772236103202803,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.6061338332691039,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T133"
+          ],
+          "query_series": [
+            "T130",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": -0.05013669004111224,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.10144519687492716,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.30910519748105025,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.0
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T131",
+            "T134"
+          ],
+          "query_series": [
+            "T13",
+            "T130",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": -0.0477588654277779,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.09389920896433072,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.4162064086066463,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T130",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T131",
+            "T134"
+          ],
+          "macro_gain": -0.046670457491208496,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.011464846932724565,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.5483328864420376,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T13",
+            "T130",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T131",
+            "T134"
+          ],
+          "macro_gain": -0.0461262994196604,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.02252906605008458,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.6874944646035188,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T132"
+          ],
+          "macro_gain": -0.04586666849258437,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.10506668393528086,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.4057139830537081,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": -0.04424509082318808,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.07943987063846371,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.3098186464344993,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.0
+        },
+        {
+          "support_series": [
+            "T130",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T132"
+          ],
+          "macro_gain": -0.04316471848608324,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.04215958156149304,
+          "beats_best_fixed": false,
+          "harm_origin_count": 5,
+          "harm_magnitude": 0.32597803916980217,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T132"
+          ],
+          "query_series": [
+            "T130",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": -0.04260847596875791,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.08971742564734268,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.42225543973659413,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.0
+        },
+        {
+          "support_series": [
+            "T128",
+            "T130",
+            "T131",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": -0.04129098699185558,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.030992106590542887,
+          "beats_best_fixed": false,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.2644564812684938,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T130",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T131",
+            "T133"
+          ],
+          "macro_gain": -0.03856270174349862,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.006682520091625112,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.3115038647172047,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T130",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T133"
+          ],
+          "macro_gain": -0.03644323069751743,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.012479627026243084,
+          "beats_best_fixed": false,
+          "harm_origin_count": 5,
+          "harm_magnitude": 0.2351821908624634,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T130",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T131"
+          ],
+          "macro_gain": -0.035253004031364034,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.03641682125799935,
+          "beats_best_fixed": true,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.4020835216153693,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T129",
+            "T130",
+            "T131",
+            "T134"
+          ],
+          "macro_gain": -0.03285558451146457,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.07071338924079629,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.5703662145971448,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T129",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T133"
+          ],
+          "macro_gain": -0.030259482795390497,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.07538672940003092,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.3265014884705095,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T130",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T131",
+            "T132"
+          ],
+          "macro_gain": -0.029990638861202307,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.01790434169369955,
+          "beats_best_fixed": false,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.27026594119286923,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T13",
+            "T130",
+            "T131",
+            "T133"
+          ],
+          "macro_gain": -0.0255692344448349,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.015322806144838335,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.2521525744633675,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T134"
+          ],
+          "query_series": [
+            "T13",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": -0.022821822418610766,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.011829959472674697,
+          "beats_best_fixed": false,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.24203256370281045,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T130",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T131",
+            "T133"
+          ],
+          "macro_gain": -0.018206156677899207,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.047584296228949496,
+          "beats_best_fixed": true,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.27331715730019585,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.8333333333333334
+        },
+        {
+          "support_series": [
+            "T128",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T133"
+          ],
+          "macro_gain": -0.017791988392550098,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.03448495326270653,
+          "beats_best_fixed": false,
+          "harm_origin_count": 4,
+          "harm_magnitude": 0.12613403003412132,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T130",
+            "T131",
+            "T134"
+          ],
+          "macro_gain": -0.015443109078311206,
+          "best_fixed_query_program": "hampel_filter",
+          "best_fixed_query_macro_gain": 0.08821505314163729,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.32859880150211274,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.0
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T131"
+          ],
+          "query_series": [
+            "T13",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": -0.015124591438238785,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.09684585705314208,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.32414407529958533,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T130"
+          ],
+          "query_series": [
+            "T131",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": -0.014470036486143334,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.06827239566751357,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.26607479089563213,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T131",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T130",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": -0.010917627129183843,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.12538967083389482,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.35030450718761635,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T131"
+          ],
+          "macro_gain": -0.008093671172934478,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": -0.014411495021535914,
+          "beats_best_fixed": true,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.20716852245795184,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T129",
+            "T130",
+            "T131",
+            "T132"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": -0.007385303196061894,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.07833337748884227,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.2603145165913156,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T130",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T131",
+            "T132"
+          ],
+          "macro_gain": -0.004992631296005449,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.02299743444362484,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.2024985931488807,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T131",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T130"
+          ],
+          "macro_gain": -0.004986238232598419,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.04565242823365667,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.13046252034455602,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T131",
+            "T132"
+          ],
+          "query_series": [
+            "T128",
+            "T130",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": -0.002315671105882988,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.1318291655948698,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.1634000187710773,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T130",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T134"
+          ],
+          "macro_gain": -5.692720568744684e-05,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.04859907632246802,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.1722587416887016,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T13",
+            "T130",
+            "T131",
+            "T132"
+          ],
+          "macro_gain": 0.00021083069139455254,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.04500276068008829,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.16934971319133757,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T131",
+            "T132"
+          ],
+          "query_series": [
+            "T13",
+            "T130",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.0022976995765505667,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.10033870372530569,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.18101720836779933,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T13",
+            "T130",
+            "T131",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": 0.0037215066183763404,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.06248256846010697,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.2428311492867523,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": 0.0079707379781596,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.04332042134223877,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.2834418822218292,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T129",
+            "T130",
+            "T131",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.009889827624106095,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.1080133320240922,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.31016045076083565,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T134"
+          ],
+          "macro_gain": 0.01054674717387676,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.07060440255893147,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.03521528899950249,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T132"
+          ],
+          "query_series": [
+            "T13",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.012258990208699602,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.018269454233649684,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.2919916128291515,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T132"
+          ],
+          "macro_gain": 0.01447605901776916,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.06416490779795647,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.04710662407435648,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T129",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T134"
+          ],
+          "macro_gain": 0.015103449736502239,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.11150617869625584,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.20928995254860555,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.16666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T130",
+            "T131",
+            "T133"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.016255858723875947,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.06711155588676783,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.12863552485002155,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T13",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T133"
+          ],
+          "macro_gain": 0.016734452864766883,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.0659754151322706,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.02674567795679167,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T130",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T131",
+            "T134"
+          ],
+          "macro_gain": 0.018009768226577835,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.029436929204599824,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.3530335132162966,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T132"
+          ],
+          "query_series": [
+            "T128",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.018165247912328472,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.049759916103213765,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.24805916092596939,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T133"
+          ],
+          "query_series": [
+            "T13",
+            "T131",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.018251318815626753,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.047949408768899617,
+          "beats_best_fixed": false,
+          "harm_origin_count": 3,
+          "harm_magnitude": 0.17057193125783393,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T130",
+            "T131",
+            "T132"
+          ],
+          "query_series": [
+            "T129",
+            "T13",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.018645190388882227,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.03743160135151787,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.10900051758315797,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T131",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T130",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.018906502772420064,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.16150912013011975,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.1495335662885492,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T134"
+          ],
+          "query_series": [
+            "T130",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": 0.01905141477780764,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.06532574757870223,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.20769596217857106,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T131"
+          ],
+          "macro_gain": 0.021825206276563477,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.026490281115788477,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.1355643466873593,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T13",
+            "T131"
+          ],
+          "query_series": [
+            "T130",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.022880769973838515,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.1503416451591696,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.1398540247068103,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T13",
+            "T130",
+            "T131",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.028345895606070422,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.09860201775633191,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.0814959271509767,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T130",
+            "T131"
+          ],
+          "query_series": [
+            "T128",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.030925512110302398,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.12833631892270617,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.19985166827862902,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T13",
+            "T130",
+            "T131",
+            "T132"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.032498068137231696,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.06892206322108196,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.13316115877051138,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T13",
+            "T131",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T132"
+          ],
+          "macro_gain": 0.0344797113920108,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.09565536966752057,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.07132841368229875,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T131",
+            "T133"
+          ],
+          "query_series": [
+            "T13",
+            "T130",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.03456574698686982,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.13001865826055567,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.1749018489375443,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T129",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T13",
+            "T130",
+            "T131",
+            "T134"
+          ],
+          "macro_gain": 0.03527670179425937,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.05144225544106327,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.1758880316775737,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T13",
+            "T131",
+            "T132",
+            "T133"
+          ],
+          "query_series": [
+            "T128",
+            "T129",
+            "T130",
+            "T134"
+          ],
+          "macro_gain": 0.04237054719874661,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.10209486442849554,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.045127193242008146,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T132",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T130",
+            "T131",
+            "T133"
+          ],
+          "macro_gain": 0.04558676189957358,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.04681326801440242,
+          "beats_best_fixed": false,
+          "harm_origin_count": 2,
+          "harm_magnitude": 0.1351654944233852,
+          "abstention_count": 1,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T131",
+            "T132"
+          ],
+          "query_series": [
+            "T129",
+            "T130",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.052091767625129744,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.09092738945754542,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.024373179452708227,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.5
+        },
+        {
+          "support_series": [
+            "T129",
+            "T13",
+            "T133",
+            "T134"
+          ],
+          "query_series": [
+            "T128",
+            "T130",
+            "T131",
+            "T132"
+          ],
+          "macro_gain": 0.05240500844617518,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.07649322254965235,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.08803752203546775,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T131",
+            "T134"
+          ],
+          "query_series": [
+            "T129",
+            "T130",
+            "T132",
+            "T133"
+          ],
+          "macro_gain": 0.054911625453951736,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.08448789469657042,
+          "beats_best_fixed": false,
+          "harm_origin_count": 0,
+          "harm_magnitude": 0.0,
+          "abstention_count": 2,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T131",
+            "T133"
+          ],
+          "query_series": [
+            "T129",
+            "T130",
+            "T132",
+            "T134"
+          ],
+          "macro_gain": 0.06497705098256085,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.12060734399279537,
+          "beats_best_fixed": false,
+          "harm_origin_count": 0,
+          "harm_magnitude": 0.0,
+          "abstention_count": 3,
+          "query_oracle_agreement_rate": 0.3333333333333333
+        },
+        {
+          "support_series": [
+            "T128",
+            "T13",
+            "T130",
+            "T131"
+          ],
+          "query_series": [
+            "T129",
+            "T132",
+            "T133",
+            "T134"
+          ],
+          "macro_gain": 0.07944705760834199,
+          "best_fixed_query_program": "outlier_mad",
+          "best_fixed_query_macro_gain": 0.08743454278538176,
+          "beats_best_fixed": false,
+          "harm_origin_count": 1,
+          "harm_magnitude": 0.056798960135997945,
+          "abstention_count": 0,
+          "query_oracle_agreement_rate": 0.6666666666666666
+        }
+      ]
+    },
+    "verdict": "SMALL_SUPPORT_SET_TRANSFER_UNSTABLE"
+  },
+  "next_action": "D5 diagnostics: current blocker is support->query feedback transportability, not Program headroom. S4_NOT_AUTHORIZED; next is series/context-matched feedback, not new Workflow."
+}

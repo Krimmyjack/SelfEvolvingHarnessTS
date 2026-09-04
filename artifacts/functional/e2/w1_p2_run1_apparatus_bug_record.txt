@@ -1,0 +1,16 @@
+P2 run-1 装置缺陷记录（2026-08-13）
+
+缺陷（承重）：census/headroom/门链全部用完整 roster（20 series
+cohort）评估——gain_at(roster, values, ...) 返回 cohort 聚合 gain。
+后果：20 个 series 的 gain 逐位相同（impute_ar@600 全 −0.0273…；
+repair_level_shift@632 全 −0.0789）——"family n_series=20" 是同一
+cohort 读数的 20 次重复，不是自然跨 series family。family 形成语义
+不可信。
+
+run-1 结果（SAFE_ABSTAIN——Agent 对压线 headroom 弃权）因 family
+形成不可信而整体无效——如实记录，不采用。
+
+修正：per-series 评估（单 series roster：roster=[{series_uid, role:
+train}] + values={sid: arr}）——census/headroom/门链/入口全部按
+family episode 的 series 解析。roster 本身不变（不换数据——装置
+口径修正，非 outcome 选择）。

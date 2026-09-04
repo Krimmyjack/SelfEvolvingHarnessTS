@@ -1484,11 +1484,25 @@ class TTHAMethod:
                                     int], Any],
         *,
         episode_id: str | None = None,
+        authorize: Callable[[Mapping[str, Any]], bool] | None = None,
     ) -> dict[str, Any]:
         """delayed 阶段（时间点到达后调用）：delayed 验证 → 批准（更新
         active snapshot）/拒绝（丢弃 pending）。episode_id 提供时必须与
         pending 的触发 Episode 匹配（复核 Major：错误轮次的 delayed 不得
-        批准当前 Patch）。"""
+        批准当前 Patch）。
+
+        ``authorize``（加法式，默认 None = 历史行为逐字节不变）：在
+        **提交 snapshot 之前**再问一次外部权威。它存在的理由是一个 P0 权限
+        泄漏：本方法此前一旦自己的准入判定通过就直接写
+        ``self._snapshot``，而 ``_active_snapshot()`` 正是 Fast Path 的检索
+        来源——于是一个被外部权威门（P4 `_gate`，含 coverage floor）拒绝的
+        Skill 仍然对下一单元可见、可检索、可部署。Runner 事后不调
+        ``activate_approved`` 只拦住了 Store 的 active 指针，拦不住这个。
+
+        回调返回 False ⇒ 丢弃 pending、**不写 snapshot**、记
+        ``authority_refused``。事后恢复 ``_snapshot`` 不是等价方案：那是先
+        越权再回滚，中间态仍然存在，且任何在其间读过快照的代码已经看见了它。
+        """
         if self._pending_update is None:
             return {"stage": "no_pending"}
         pend = self._pending_update
@@ -1542,6 +1556,14 @@ class TTHAMethod:
             # CONFLICT/NEGATIVE：丢弃 pending。已部署 Skill 的限制由
             # online_loop 的 delayed 状态更新（RESTRICTED）与 revoke 路径
             # 处理——本方法不越权改别人的 snapshot 条目。
+            self._pending_update = None
+            return ev
+        # 外部权威门（加法式）：在写 snapshot **之前**问。注入者为 None 时
+        # 本分支不存在，历史调用方逐字节不变。
+        if authorize is not None and not authorize(dict(ev)):
+            ev["stage"] = "authority_refused"
+            ev["delayed_reject_reason"] = "external_authority_refused"
+            ev["snapshot_updated"] = False
             self._pending_update = None
             return ev
         # episode_id 匹配检查（复核 Major）：pending 只应由其对应 Episode

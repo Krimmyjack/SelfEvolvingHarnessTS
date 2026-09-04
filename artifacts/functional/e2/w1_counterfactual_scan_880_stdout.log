@@ -1,0 +1,56 @@
+== single-origin scan: 880
+== gefcom: max_len=1024 period=24 roster=20 pool=20
+== pool: impute_linear, impute_fft, impute_ema, period_complete, period_median_complete, impute_ssm, impute_ar, denoise_savgol, denoise_wavelet, denoise_median, smooth_ma, denoise_stl, winsorize, outlier_iqr, outlier_mad, hampel_filter, stl_decompose, fft_decompose, smooth_ema, resample_uniform
+== origin 880: single-op table ...
+   single positive n=5: [('impute_ar', 0.00542), ('denoise_savgol', 0.34907), ('smooth_ma', 0.31109), ('winsorize', 0.51098), ('smooth_ema', 0.33026)]
+   single negative/conflict n=15
+   cand: impute_linear->impute_ar support AB=0.0 A=0.0 B=0.00542 delayed AB=0.0 dA=None dB=-0.35471
+   cand: period_complete->impute_ar support AB=0.0 A=0.0 B=0.00542 delayed AB=0.0 dA=None dB=-0.35471
+   cand: period_median_complete->impute_ar support AB=-0.00343 A=-0.00343 B=0.00542 delayed AB=-0.03583 dA=None dB=-0.35471
+   cand: impute_ar->denoise_stl support AB=-1.18561 A=0.00542 B=-1.14053 delayed AB=-1.56373 dA=-0.35471 dB=None
+   cand: impute_ar->outlier_iqr support AB=-0.05215 A=0.00542 B=-0.0579 delayed AB=-0.29612 dA=-0.35471 dB=None
+   cand: impute_ar->outlier_mad support AB=-0.0831 A=0.00542 B=-0.0887 delayed AB=-0.29306 dA=-0.35471 dB=None
+   cand: impute_ar->hampel_filter support AB=-0.19665 A=0.00542 B=-0.20767 delayed AB=-0.49694 dA=-0.35471 dB=None
+   cand: impute_ar->stl_decompose support AB=-1.18561 A=0.00542 B=-1.14053 delayed AB=-1.56373 dA=-0.35471 dB=None
+   cand: impute_ar->fft_decompose support AB=-0.067 A=0.00542 B=-0.12185 delayed AB=0.5539 dA=-0.35471 dB=None
+   cand: denoise_savgol->denoise_stl support AB=-1.96611 A=0.34907 B=-1.14053 delayed AB=0.61851 dA=0.14763 dB=None
+   cand: denoise_savgol->stl_decompose support AB=-1.96611 A=0.34907 B=-1.14053 delayed AB=0.61851 dA=0.14763 dB=None
+   cand: denoise_savgol->fft_decompose support AB=-0.17019 A=0.34907 B=-0.12185 delayed AB=0.68259 dA=0.14763 dB=None
+   cand: denoise_wavelet->impute_ar support AB=-0.00413 A=-0.00413 B=0.00542 delayed AB=0.10342 dA=None dB=-0.35471
+   cand: denoise_median->impute_ar support AB=0.0 A=0.0 B=0.00542 delayed AB=0.0 dA=None dB=-0.35471
+   cand: smooth_ma->denoise_stl support AB=-1.24899 A=0.31109 B=-1.14053 delayed AB=0.61468 dA=0.09782 dB=None
+   cand: smooth_ma->stl_decompose support AB=-1.24899 A=0.31109 B=-1.14053 delayed AB=0.61468 dA=0.09782 dB=None
+   cand: smooth_ma->fft_decompose support AB=-0.163 A=0.31109 B=-0.12185 delayed AB=0.70564 dA=0.09782 dB=None
+   cand: denoise_stl->impute_ar support AB=-1.14053 A=-1.14053 B=0.00542 delayed AB=-1.77506 dA=None dB=-0.35471
+   cand: denoise_stl->denoise_savgol support AB=-0.25969 A=-1.14053 B=0.34907 delayed AB=-0.14421 dA=None dB=0.14763
+   cand: denoise_stl->smooth_ma support AB=-0.49543 A=-1.14053 B=0.31109 delayed AB=-0.16496 dA=None dB=0.09782
+   cand: denoise_stl->winsorize support AB=-0.04208 A=-1.14053 B=0.51098 delayed AB=-1.63927 dA=None dB=-0.1636
+   cand: denoise_stl->smooth_ema support AB=-0.717 A=-1.14053 B=0.33026 delayed AB=0.61115 dA=None dB=0.44296
+   cand: winsorize->denoise_stl support AB=-0.56425 A=0.51098 B=-1.14053 delayed AB=-2.5443 dA=-0.1636 dB=None
+   cand: winsorize->stl_decompose support AB=-0.56425 A=0.51098 B=-1.14053 delayed AB=-2.5443 dA=-0.1636 dB=None
+   cand: winsorize->fft_decompose support AB=-0.05184 A=0.51098 B=-0.12185 delayed AB=0.70918 dA=-0.1636 dB=None
+   cand: outlier_iqr->impute_ar support AB=-0.0579 A=-0.0579 B=0.00542 delayed AB=0.04386 dA=None dB=-0.35471
+   cand: outlier_mad->impute_ar support AB=-0.0887 A=-0.0887 B=0.00542 delayed AB=0.028 dA=None dB=-0.35471
+   cand: hampel_filter->impute_ar support AB=-0.20767 A=-0.20767 B=0.00542 delayed AB=-0.12775 dA=None dB=-0.35471
+   cand: stl_decompose->impute_ar support AB=-1.14053 A=-1.14053 B=0.00542 delayed AB=-1.77506 dA=None dB=-0.35471
+   cand: stl_decompose->denoise_savgol support AB=-0.25969 A=-1.14053 B=0.34907 delayed AB=-0.14421 dA=None dB=0.14763
+   cand: stl_decompose->smooth_ma support AB=-0.49543 A=-1.14053 B=0.31109 delayed AB=-0.16496 dA=None dB=0.09782
+   cand: stl_decompose->winsorize support AB=-0.04208 A=-1.14053 B=0.51098 delayed AB=-1.63927 dA=None dB=-0.1636
+   cand: stl_decompose->smooth_ema support AB=-0.717 A=-1.14053 B=0.33026 delayed AB=0.61115 dA=None dB=0.44296
+   cand: fft_decompose->impute_ar support AB=-0.12185 A=-0.12185 B=0.00542 delayed AB=0.66552 dA=None dB=-0.35471
+   cand: fft_decompose->denoise_savgol support AB=-0.13187 A=-0.12185 B=0.34907 delayed AB=0.6819 dA=None dB=0.14763
+   cand: fft_decompose->smooth_ma support AB=-0.02926 A=-0.12185 B=0.31109 delayed AB=0.6908 dA=None dB=0.09782
+   cand: fft_decompose->winsorize support AB=-0.03246 A=-0.12185 B=0.51098 delayed AB=-0.31537 dA=None dB=-0.1636
+   cand: fft_decompose->smooth_ema support AB=-0.14965 A=-0.12185 B=0.33026 delayed AB=0.3869 dA=None dB=0.44296
+   cand: smooth_ema->denoise_stl support AB=-3.1429 A=0.33026 B=-1.14053 delayed AB=0.5066 dA=0.44296 dB=None
+   cand: smooth_ema->stl_decompose support AB=-3.1429 A=0.33026 B=-1.14053 delayed AB=0.5066 dA=0.44296 dB=None
+   cand: smooth_ema->fft_decompose support AB=-0.35419 A=0.33026 B=-0.12185 delayed AB=0.57831 dA=0.44296 dB=None
+   verify top: denoise_savgol->denoise_stl all_verified=False
+   verify top: denoise_savgol->stl_decompose all_verified=False
+   verify top: denoise_savgol->fft_decompose all_verified=False
+   verify top: denoise_stl->denoise_savgol all_verified=False
+   verify top: stl_decompose->denoise_savgol all_verified=False
+   verify top: fft_decompose->denoise_savgol all_verified=False
+
+== verdict: COUNTERFACTUAL_HEADROOM_NONE (elapsed 918s)
+== report -> artifacts\functional\e2\w1_counterfactual_scan_report.json

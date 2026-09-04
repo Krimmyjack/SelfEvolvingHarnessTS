@@ -1,0 +1,1427 @@
+{
+  "stage": "P4W2_SOURCE_LINE_V2_SUPERSEDED_INSTRUMENT_INVALID",
+  "written_at": "2026-09-02T10:33:58.399113+08:00",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "contract_v2": {
+    "stage": "P4U_V2_METHOD_REVISION",
+    "version": "P4U-v2",
+    "supersedes_nothing": "v1 is imported and still governs geometry, arms, budgets and endpoints; no v1 artifact is rewritten and no v1 reading is reinterpreted",
+    "v1": {
+      "stage": "P4U_MAIN_EXPERIMENT_CONTRACT",
+      "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+      "subject": "the policy the Harness deploys, not a fixed program",
+      "geometry": {
+        "target_slice": "readable[80:120]",
+        "source_slice": "readable[160:200]",
+        "held_in_origins": [
+          1896,
+          2136,
+          2376,
+          2616,
+          2856
+        ],
+        "held_out_origins": [
+          4056,
+          4296,
+          4536,
+          4776,
+          5016
+        ],
+        "anchor_axis_frozen": true,
+        "why_new_cohorts_not_new_origins": "anchors are frozen and all clear the filter past origin 900, so the training corpus is origin-invariant; a new cohort is what makes a new training condition"
+      },
+      "arms": {
+        "Static": {
+          "llm": false,
+          "role": "reference",
+          "scope": "none"
+        },
+        "GlobalBestFixed": {
+          "llm": false,
+          "role": "baseline",
+          "scope": "all_serving_series"
+        },
+        "OpenLoopTargeter": {
+          "llm": false,
+          "role": "baseline",
+          "note": "the diagnostic router, never the method"
+        },
+        "A3": {
+          "llm": true,
+          "role": "ablation",
+          "what": "Target-local Scoped Harness with no prior Skills"
+        },
+        "A5": {
+          "llm": true,
+          "role": "full system",
+          "what": "audited Source Skills, then Target held-in calibration"
+        },
+        "ParallelAtB": {
+          "llm": true,
+          "role": "equal-budget baseline"
+        }
+      },
+      "scope_origination": {
+        "fast_proposes": "Program only",
+        "runtime_initializes": "evaluation.main_protocol_p4.scope_initializer",
+        "slow_revises": "atomically with the Program, via the PATCH's serving_scope",
+        "fast_propose_schema_changed": false,
+        "rules": "the initialiser reads only deployment-visible features and may not see a UID, a cohort name or any Outcome; its family table and thresholds are frozen before the run and are identical for A3 and A5; the Runner may supply or resolve a Scope but may never hand-pick one after seeing a result; every deployment records scope_source as one of runtime_initializer / source_skill / slow_revision",
+        "a_later_fast_emitted_scope_is_a_separate_version": "it would need the schema, H0, the parsing chain and the snapshot lock changed together, then validation on a new unexposed Target; it is not part of this round and is not an H3"
+      },
+      "per_arm_budget": {
+        "support_a_rounds": 7,
+        "independent_support_b_rounds": 1,
+        "probes": 24,
+        "llm_calls": 6,
+        "tokens": 60000,
+        "accepted_updates": 1,
+        "wall_seconds": 2700,
+        "identical_for_a3_and_a5": true
+      },
+      "primary_contrasts": [
+        "A3 - Static",
+        "A5 - A3"
+      ],
+      "endpoints": {
+        "utility_vs_static": "mean per-series gain of the deployed policy",
+        "deployment_coverage": "treated / served, where treated means the series actually ran through a program pipeline; assigned-but-refused counts as abstention, not coverage",
+        "harmed_fraction": "<= 0.20",
+        "max_single_series_harm": "<= 0.30",
+        "skill_formation": "Skills formed, Scopes revised, causal reuse observed",
+        "cost": "LLM calls, tokens, Consumer fits and wall seconds per arm"
+      },
+      "stopping_rules": {
+        "A5_TREATMENT_EMPTY": "if the Source line forms zero Active Skills, stop and record it; do not run A5 as if it had a treatment",
+        "held_out_stays_closed": "until every arm is frozen; then Fast-only, zero feedback, zero write-back, one reading",
+        "no_baseline_feedback": "Static / BestFixed / Targeter results are sealed before A3 and A5 and may not be used to change them"
+      },
+      "run_order": [
+        "freeze this contract",
+        "run the three 0-LLM baselines and seal them",
+        "configure transport explicitly; never let the client default",
+        "live Scope smoke on one cell",
+        "Source line: form and approve Skills naturally",
+        "if Source Active Skills == 0 -> A5_TREATMENT_EMPTY and stop",
+        "Target: Static / A3 / A5 / Parallel@B",
+        "freeze all arms, then open held-out once"
+      ],
+      "boundary": {
+        "llm_calls_before_transport_is_configured": 0,
+        "held_out_reads_before_all_arms_frozen": 0,
+        "ucr_test_outcome_reads": 0,
+        "natural_final_outcome_reads": 0,
+        "thresholds_changed": 0,
+        "operators_added": 0
+      },
+      "disclosed_selection": "cohorts and origins were screened for whether the missing-aware sMASE is defined at all; no gain, error or utility participated, and the exposure ledger reads only which cells were evaluated",
+      "supply_audit": "p4s_main_experiment_supply.json",
+      "exposure_ledger": "p4t_exposure_ledger.json"
+    },
+    "first_fault": "RISK_REFUSAL_INVISIBLE_TO_FAULT_ROUTER",
+    "risk_refusal_route": {
+      "when": "the admission gate refuses a probe whose aggregate gain clears the material line, for harmed_fraction_over_budget or single_series_harm_over_budget",
+      "attributed_cause": "RISK_GAP",
+      "why_not_skill_library_gap": "the fault is not a missing Skill; a candidate was found and refused for a Scope/Risk conflict, and the cause code is the recorded claim",
+      "surface_catalog_this_round": [
+        "skill_library.entries/{skill_id}"
+      ],
+      "operation": "ADD",
+      "catalog_is_narrower_than_the_route": "RISK_GAP also authorizes its risk-guard and verification surfaces; this round exposes only the Skill ADD, so a single ruling cannot quietly become licence to edit H0's global scope_risk_guards",
+      "route_table_change": {
+        "file": "evaluation/minipipe/feedback/fault_routes.json",
+        "change": "RISK_GAP.target_classes += ['capability']",
+        "additive": true,
+        "newly_authorized": [
+          "RISK_GAP x capability x ADD x capability",
+          "RISK_GAP x capability x PATCH x capability"
+        ],
+        "nothing_previously_authorized_was_withdrawn": true
+      }
+    },
+    "slow_mandate": {
+      "adds": "one inactive Draft capability Skill, in a fork",
+      "program": "frozen to the probed program, operators and parameters alike",
+      "observable_applicability": "fixed by the Runtime; Slow may not write it.  It decides when the Skill is retrieved, which is a different question from which served series it may treat",
+      "serving_scope": "the only writable field: a monotone narrowing of the probe's own Scope, adding at most 1 clause",
+      "may_not_touch": [
+        "operators",
+        "risk thresholds",
+        "Observation features",
+        "the Fast schema",
+        "H0 verification.rules.scope_risk_guards",
+        "cohorts, origins, per-arm budgets"
+      ]
+    },
+    "required_preflight": {
+      "module": "evaluation.main_protocol_p4.scope_narrowing_preflight",
+      "why": "the route table's monotone rule is a target-class gate that never sees the predicate, and RISK_GAP is not in the narrow-direction map at all.  Without this preflight a Draft could be ADDed under an authorized cause carrying a Scope that reaches further than the one it replaced",
+      "structural_check_is_the_transferable_one": "a subset check is cohort-local; requiring the revised clause set to be a superset of the original makes the narrowing hold on every cohort, because a conjunction with more clauses selects fewer series by construction",
+      "checks": [
+        "keeps every original clause",
+        "adds at most one clause",
+        "the added clause names a deployment-visible feature",
+        "resolves to a strict subset at the origin it was derived from"
+      ]
+    },
+    "promotion_gates": [
+      "support_reverify: the frozen program under the revised Scope is re-probed on the same Support face",
+      "delayed_reresolved: at origin+48 the predicate is resolved again from that origin's own features -- never carried over as a UID list -- and the revised Scope must clear every line there",
+      "re_encounter: the Skill is retrieved and deployed safely at a later origin it did not help produce"
+    ],
+    "delayed_admission": {
+      "min_coverage_treated_of_served": "5/20",
+      "min_aggregate_gain": 0.005,
+      "max_harmed_fraction": 0.2,
+      "max_single_series_harm": 0.3,
+      "thresholds_changed": 0,
+      "why_a_coverage_floor": "narrowing to almost nothing clears every risk line and deploys nothing; the floor is declared here, before the run, so a degenerate abstention cannot be read afterwards as a success",
+      "support_is_not_an_endpoint": "the Support reading is the feedback the revision was derived from, so it cannot also be the evidence that the revision generalises"
+    },
+    "oracle_quarantine": {
+      "may_cross_into_the_run": "nothing",
+      "explicitly_withheld_from_slow": [
+        "the feature the oracle selected",
+        "its threshold",
+        "the identity of the excluded series",
+        "the ranking of candidates"
+      ],
+      "must_not_change": [
+        "the Slow prompt or any instruction text",
+        "the candidate ordering or the programs probed",
+        "scope_initializer's family table or thresholds"
+      ],
+      "what_it_was_used_for": "one decision, taken before the run: whether the revision class contains a feasible Scope at all, so that a Slow failure would be attributable to Slow rather than to an impossible task"
+    },
+    "artifacts": {
+      "source_line": "artifacts/main_protocol/p4w2_source_line_v2.json",
+      "does_not_overwrite": [
+        "p4w_source_line.json",
+        "p4x_admission_regime.json",
+        "p4y_oracle_scope_bound.json",
+        "p4z_risk_refusal_routing.json"
+      ],
+      "must_persist": [
+        "every probe's full per-series gain vector",
+        "the resolved serving series at both the support and delayed origins",
+        "the narrowing preflight verdict for every proposed revision",
+        "the attributed cause and the surface actually authorized"
+      ],
+      "why_per_series_is_mandatory": "a dry run destroyed the v1 vectors and they could not be rebuilt from anything; every risk verdict in this protocol is a statement about them, so an artifact without them cannot be re-audited"
+    },
+    "run_order": [
+      "freeze this revision and lock the route change as additive",
+      "Source line v2: risk refusals routed, Drafts ADDed, Scopes narrowed",
+      "if a Draft clears Support, delayed and one re-encounter -> it is a Skill",
+      "if none does -> record which gate stopped it and stop; do not run A5",
+      "freeze the Source Skills, then Target: Static / A3 / A5 / Parallel@B",
+      "freeze all arms, then open held-out once"
+    ],
+    "boundary": {
+      "llm_calls_before_transport_is_configured": 0,
+      "held_out_reads_before_all_arms_frozen": 0,
+      "ucr_test_outcome_reads": 0,
+      "natural_final_outcome_reads": 0,
+      "thresholds_changed": 0,
+      "operators_added": 0,
+      "route_table_causes_added": 0,
+      "route_table_target_classes_added": 1,
+      "surfaces_added": 0,
+      "artifacts_overwritten": 0
+    }
+  },
+  "contract_frozen": {
+    "v1": {
+      "frozen": true,
+      "failures": [],
+      "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+      "target_slice": "readable[80:120]",
+      "source_slice": "readable[160:200]",
+      "held_in_origins": [
+        1896,
+        2136,
+        2376,
+        2616,
+        2856
+      ],
+      "held_out_origins": [
+        4056,
+        4296,
+        4536,
+        4776,
+        5016
+      ],
+      "arms": [
+        "A3",
+        "A5",
+        "GlobalBestFixed",
+        "OpenLoopTargeter",
+        "ParallelAtB",
+        "Static"
+      ],
+      "primary_contrasts": [
+        "A3 - Static",
+        "A5 - A3"
+      ],
+      "exposure_ledger_clears_held_out": true
+    },
+    "v2": {
+      "frozen": true,
+      "failures": [],
+      "version": "P4U-v2",
+      "v1_frozen": true,
+      "risk_gap_may_add_a_capability_skill": true,
+      "max_added_clauses": 1
+    }
+  },
+  "cohort": "source readable[160:200]",
+  "face": "support_a",
+  "origins": [
+    1896,
+    2136,
+    2376,
+    2616,
+    2856
+  ],
+  "source_budget": {
+    "llm_calls": 60,
+    "rounds": 5,
+    "face": "support_a",
+    "is_an_arm": false,
+    "enters_a3_a5_comparison": false,
+    "v1_spent": 28,
+    "why_raised": "v1's ceiling covered Fast only; routing adds a Slow call"
+  },
+  "transport": {
+    "base_url": "https://api.nowaterapi.xyz/v1",
+    "model": "gpt-5.6-sol",
+    "key_source": "CPA_API_KEY",
+    "missing": [],
+    "ready": true,
+    "why_no_default": "an unset base URL would send a key to whatever endpoint the client defaults to; a missing setting is a refusal, not a fallback"
+  },
+  "status": "SUPERSEDED",
+  "rounds": [
+    {
+      "origin": 1896,
+      "served_count": 20,
+      "candidate_ids": [
+        "repair_missingness_linear",
+        "repair_extreme_deviation_mad"
+      ],
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "probes": [
+        {
+          "candidate_id": "repair_extreme_deviation_mad",
+          "kind": "probe",
+          "gain": 0.31990962156114766,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T32",
+            "T33"
+          ],
+          "per_series_gain": [
+            0.1407852086317496,
+            -0.05770568594544356,
+            0.0,
+            0.4221329050634304,
+            0.008040346388975106,
+            0.1351835234601393,
+            0.4340097812525212,
+            -0.006193256419720794,
+            0.999925195188393,
+            -0.4637045098030368,
+            2.0133173523937113,
+            1.3209360439775502,
+            0.0,
+            0.016918626689396143,
+            0.0,
+            0.3794170753492765,
+            1.0551298249960208,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.4637045098030368,
+            "min_per_series_gain": -0.4637045098030368,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.31990962156114766,
+            "series_count": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.4637045098030368
+          }
+        },
+        {
+          "candidate_id": "replay:risk_refusal_scope_revision",
+          "kind": "slow_replay",
+          "gain": 0.26748966785496897,
+          "passed": true
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 1,
+      "risk_refusals": [
+        {
+          "candidate_id": "repair_extreme_deviation_mad",
+          "reason": "single_series_harm_over_budget",
+          "aggregate_gain": 0.31990962156114766,
+          "harmed_fraction": 0.15,
+          "max_single_series_harm": 0.4637045098030368,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "per_series_gain": [
+            0.1407852086317496,
+            -0.05770568594544356,
+            0.0,
+            0.4221329050634304,
+            0.008040346388975106,
+            0.1351835234601393,
+            0.4340097812525212,
+            -0.006193256419720794,
+            0.999925195188393,
+            -0.4637045098030368,
+            2.0133173523937113,
+            1.3209360439775502,
+            0.0,
+            0.016918626689396143,
+            0.0,
+            0.3794170753492765,
+            1.0551298249960208,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "episode_id": "p4w2-source-line-v2_target_outlier_mad_p4w2_source_r1_p1"
+        }
+      ],
+      "slow_trigger": "risk_refusal",
+      "slow_event": {
+        "stage": "pending",
+        "triggered": true,
+        "material_negative": false,
+        "relation": "CONFLICT",
+        "card_workflow": [],
+        "edit_id": "add-risk-refusal-scope-skill",
+        "target_surface_id": "skill_library.entries/{skill_id}",
+        "operation": "ADD",
+        "frozen_program": [
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ],
+        "patch_id": "risk_refusal_scope_revision",
+        "support_gain": 0.26748966785496897,
+        "support_passed": true
+      },
+      "scope_revision_preflight": null,
+      "winner_program": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "winner_serving_scope": null,
+      "winner_resolved_serving_series": null,
+      "winner_scope_revision": 1,
+      "fast_skill_event": null,
+      "llm_calls_so_far": 8,
+      "delayed_gate": {
+        "delayed_origin": 1944,
+        "scope_reresolved": false,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "series_read": 20,
+        "aggregate_gain": 0.77005,
+        "harmed_count": 3,
+        "harmed_fraction": 0.15,
+        "max_single_series_harm": 0.526974,
+        "per_series_gain": [
+          0.356368,
+          0.481047,
+          -0.076618,
+          0.094619,
+          0.781508,
+          -0.526974,
+          0.101343,
+          -0.025889,
+          0.232369,
+          0.096634,
+          0.183453,
+          7.612435,
+          0.458049,
+          0.141955,
+          1.446127,
+          0.297421,
+          1.629147,
+          0.576005,
+          1.317572,
+          0.224428
+        ],
+        "lines": {
+          "coverage_floor": false,
+          "aggregate": true,
+          "harmed_fraction": true,
+          "single_series_harm": false
+        },
+        "passes": false,
+        "thresholds": {
+          "min_treated": 5,
+          "min_aggregate": 0.005,
+          "max_harmed_fraction": 0.2,
+          "max_single_series_harm": 0.3
+        }
+      },
+      "delayed_event": {
+        "stage": "delayed_rejected",
+        "delayed_gain": 0.7700499455762557,
+        "delayed_relation": "CONFLICT",
+        "delayed_evidence": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 3 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "ridge",
+          "aggregate_gain": 0.7700499455762557,
+          "aggregate_direction": "improved",
+          "series_read": 20,
+          "harmed_series_count": 3,
+          "harmed_series": [
+            "view_2",
+            "view_5",
+            "view_7"
+          ],
+          "min_per_series_gain": -0.5269740025175982
+        },
+        "delayed_admission": {
+          "admitted": false,
+          "rule": "bounded_risk_v1",
+          "reason": "single_series_harm_over_budget",
+          "aggregate_gain": 0.7700499455762557,
+          "series_count": 20,
+          "harmed_count": 3,
+          "harmed_fraction": 0.15,
+          "max_single_series_harm": 0.5269740025175982
+        },
+        "delayed_reject_reason": "relation_conflict"
+      },
+      "delayed_serving_series": null,
+      "delayed_scope_reresolved": false,
+      "activated": false,
+      "not_activated_because": [
+        "coverage_floor",
+        "single_series_harm"
+      ],
+      "skills_after": []
+    },
+    {
+      "origin": 2136,
+      "served_count": 20,
+      "candidate_ids": [
+        "outlier_mad_extreme_deviation",
+        "impute_linear_observed_missingness"
+      ],
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "probes": [
+        {
+          "candidate_id": "outlier_mad_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.267207748485375,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T33",
+            "T36"
+          ],
+          "per_series_gain": [
+            0.3546275083616611,
+            0.04443841220872491,
+            -0.5018017431502302,
+            0.20898344283058068,
+            0.32740663296896244,
+            0.03818467694052807,
+            0.21584743378763394,
+            -0.1470407760845447,
+            -0.4208838845320839,
+            0.09462675633650375,
+            -0.3369350242632265,
+            5.2166056782637495,
+            0.0,
+            0.14772022225753245,
+            0.0,
+            0.0,
+            0.06795515413277631,
+            0.0,
+            0.03442047964892714,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5018017431502302,
+            "min_per_series_gain": -0.5018017431502302,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.267207748485375,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5018017431502302
+          }
+        },
+        {
+          "candidate_id": "replay:risk_refusal_scope_revision",
+          "kind": "slow_replay",
+          "gain": 0.14408705423404644,
+          "passed": true
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 1,
+      "risk_refusals": [
+        {
+          "candidate_id": "outlier_mad_extreme_deviation",
+          "reason": "single_series_harm_over_budget",
+          "aggregate_gain": 0.267207748485375,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.5018017431502302,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "per_series_gain": [
+            0.3546275083616611,
+            0.04443841220872491,
+            -0.5018017431502302,
+            0.20898344283058068,
+            0.32740663296896244,
+            0.03818467694052807,
+            0.21584743378763394,
+            -0.1470407760845447,
+            -0.4208838845320839,
+            0.09462675633650375,
+            -0.3369350242632265,
+            5.2166056782637495,
+            0.0,
+            0.14772022225753245,
+            0.0,
+            0.0,
+            0.06795515413277631,
+            0.0,
+            0.03442047964892714,
+            0.0
+          ],
+          "episode_id": "p4w2-source-line-v2_target_outlier_mad_p4w2_source_r2_p1"
+        }
+      ],
+      "slow_trigger": "risk_refusal",
+      "slow_event": {
+        "stage": "pending",
+        "triggered": true,
+        "material_negative": false,
+        "relation": "CONFLICT",
+        "card_workflow": [],
+        "edit_id": "add-risk-refusal-scope-revision",
+        "target_surface_id": "skill_library.entries/{skill_id}",
+        "operation": "ADD",
+        "frozen_program": [
+          {
+            "op": "outlier_mad",
+            "params": {}
+          }
+        ],
+        "patch_id": "risk_refusal_scope_revision",
+        "support_gain": 0.14408705423404644,
+        "support_passed": true
+      },
+      "scope_revision_preflight": null,
+      "winner_program": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "winner_serving_scope": null,
+      "winner_resolved_serving_series": null,
+      "winner_scope_revision": 1,
+      "fast_skill_event": null,
+      "llm_calls_so_far": 15,
+      "delayed_gate": {
+        "delayed_origin": 2184,
+        "scope_reresolved": false,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "series_read": 20,
+        "aggregate_gain": 0.153485,
+        "harmed_count": 9,
+        "harmed_fraction": 0.45,
+        "max_single_series_harm": 0.690579,
+        "per_series_gain": [
+          0.050715,
+          -0.065338,
+          -0.06934,
+          0.017998,
+          -0.081738,
+          -0.476439,
+          0.019477,
+          -0.028167,
+          -0.305409,
+          -0.320948,
+          0.405262,
+          1.505765,
+          0.820876,
+          -0.169363,
+          0.25783,
+          -0.690579,
+          0.68224,
+          1.419857,
+          0.077571,
+          0.019419
+        ],
+        "lines": {
+          "coverage_floor": false,
+          "aggregate": true,
+          "harmed_fraction": false,
+          "single_series_harm": false
+        },
+        "passes": false,
+        "thresholds": {
+          "min_treated": 5,
+          "min_aggregate": 0.005,
+          "max_harmed_fraction": 0.2,
+          "max_single_series_harm": 0.3
+        }
+      },
+      "delayed_event": {
+        "stage": "delayed_rejected",
+        "delayed_gain": 0.15348454608793616,
+        "delayed_relation": "CONFLICT",
+        "delayed_evidence": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 9 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "ridge",
+          "aggregate_gain": 0.15348454608793616,
+          "aggregate_direction": "improved",
+          "series_read": 20,
+          "harmed_series_count": 9,
+          "harmed_series": [
+            "view_1",
+            "view_13",
+            "view_15",
+            "view_2",
+            "view_4",
+            "view_5",
+            "view_7",
+            "view_8",
+            "view_9"
+          ],
+          "min_per_series_gain": -0.6905791429613761
+        },
+        "delayed_admission": {
+          "admitted": false,
+          "rule": "bounded_risk_v1",
+          "reason": "harmed_fraction_over_budget",
+          "aggregate_gain": 0.15348454608793616,
+          "series_count": 20,
+          "harmed_count": 9,
+          "harmed_fraction": 0.45,
+          "max_single_series_harm": 0.6905791429613761
+        },
+        "delayed_reject_reason": "relation_conflict"
+      },
+      "delayed_serving_series": null,
+      "delayed_scope_reresolved": false,
+      "activated": false,
+      "not_activated_because": [
+        "coverage_floor",
+        "harmed_fraction",
+        "single_series_harm"
+      ],
+      "skills_after": []
+    },
+    {
+      "origin": 2376,
+      "served_count": 20,
+      "candidate_ids": [
+        "linear_missingness_repair"
+      ],
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "probes": [
+        {
+          "candidate_id": "linear_missingness_repair",
+          "kind": "probe",
+          "gain": 4.440892098500626e-16,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "impute_linear",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "missing_fraction",
+                "op": ">=",
+                "threshold": 0.05
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T31",
+            "T32",
+            "T33",
+            "T35",
+            "T36"
+          ],
+          "per_series_gain": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "min_per_series_gain": 0.0,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "aggregate_below_material_line",
+            "aggregate_gain": 4.440892098500626e-16,
+            "series_count": null,
+            "harmed_count": null,
+            "harmed_fraction": null,
+            "max_single_series_harm": null
+          }
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 0,
+      "risk_refusals": [],
+      "slow_trigger": null,
+      "slow_event": null,
+      "scope_revision_preflight": null,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_serving_series": null,
+      "winner_scope_revision": 1,
+      "fast_skill_event": null,
+      "llm_calls_so_far": 21,
+      "delayed_gate": null,
+      "activated": false,
+      "skills_after": []
+    },
+    {
+      "origin": 2616,
+      "served_count": 20,
+      "candidate_ids": [
+        "linear_missingness_repair"
+      ],
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "probes": [
+        {
+          "candidate_id": "linear_missingness_repair",
+          "kind": "probe",
+          "gain": 0.0,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "impute_linear",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "missing_fraction",
+                "op": ">=",
+                "threshold": 0.05
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T27",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 0,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0,
+            "min_per_series_gain": 0.0,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "aggregate_below_material_line",
+            "aggregate_gain": 0.0,
+            "series_count": null,
+            "harmed_count": null,
+            "harmed_fraction": null,
+            "max_single_series_harm": null
+          }
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 0,
+      "risk_refusals": [],
+      "slow_trigger": null,
+      "slow_event": null,
+      "scope_revision_preflight": null,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_serving_series": null,
+      "winner_scope_revision": 1,
+      "fast_skill_event": null,
+      "llm_calls_so_far": 25,
+      "delayed_gate": null,
+      "activated": false,
+      "skills_after": []
+    },
+    {
+      "origin": 2856,
+      "served_count": 20,
+      "candidate_ids": [
+        "outlier_mad_extreme_deviation",
+        "hampel_filter_extreme_deviation"
+      ],
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "probes": [
+        {
+          "candidate_id": "hampel_filter_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.09170399319077105,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "hampel_filter",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.7040818451634538,
+            0.6750592377386233,
+            0.0,
+            -0.319171922862148,
+            -0.4065500449497028,
+            -0.12220354134493827,
+            -0.3695515146436802,
+            -0.35223745478987567,
+            -0.32494829591054186,
+            1.3428140385048026,
+            2.473138527708738,
+            0.0040744655079776315,
+            -0.14829231631901196,
+            0.4290025965389138,
+            -0.18177905836284824,
+            -1.0523848578586392,
+            0.15158436534228725,
+            0.0,
+            0.34808556142223945,
+            0.3915219232566798
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 10,
+            "harmed_fraction": 0.5,
+            "max_single_series_harm": 1.0523848578586392,
+            "min_per_series_gain": -1.0523848578586392,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.09170399319077105,
+            "series_count": 20,
+            "harmed_count": 10,
+            "harmed_fraction": 0.5,
+            "max_single_series_harm": 1.0523848578586392
+          }
+        },
+        {
+          "candidate_id": "replay:risk_refusal_scope_revision",
+          "kind": "slow_replay",
+          "gain": 2.220446049250313e-16,
+          "passed": true
+        },
+        {
+          "candidate_id": "outlier_mad_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.20313940300645328,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.8834089538651388,
+            0.16660431551886168,
+            0.0,
+            -0.6446309306442425,
+            0.22316386085980477,
+            0.06631588790912013,
+            -0.6712934161797927,
+            -0.20075729902056105,
+            0.4286164619563162,
+            0.5833984660064881,
+            1.650746068034766,
+            0.5765330103307587,
+            0.4780006972952229,
+            0.029651443916152598,
+            0.06468573861974819,
+            0.8891269825553607,
+            0.17695021603220584,
+            0.0,
+            0.13324218877041716,
+            0.9958433220335798
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.8834089538651388,
+            "min_per_series_gain": -0.8834089538651388,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.20313940300645328,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.8834089538651388
+          }
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 2,
+      "risk_refusals": [
+        {
+          "candidate_id": "hampel_filter_extreme_deviation",
+          "reason": "harmed_fraction_over_budget",
+          "aggregate_gain": 0.09170399319077105,
+          "harmed_fraction": 0.5,
+          "max_single_series_harm": 1.0523848578586392,
+          "program_steps": [
+            {
+              "op": "hampel_filter",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "per_series_gain": [
+            -0.7040818451634538,
+            0.6750592377386233,
+            0.0,
+            -0.319171922862148,
+            -0.4065500449497028,
+            -0.12220354134493827,
+            -0.3695515146436802,
+            -0.35223745478987567,
+            -0.32494829591054186,
+            1.3428140385048026,
+            2.473138527708738,
+            0.0040744655079776315,
+            -0.14829231631901196,
+            0.4290025965389138,
+            -0.18177905836284824,
+            -1.0523848578586392,
+            0.15158436534228725,
+            0.0,
+            0.34808556142223945,
+            0.3915219232566798
+          ],
+          "episode_id": "p4w2-source-line-v2_target_hampel_filter_p4w2_source_r5_p1"
+        },
+        {
+          "candidate_id": "outlier_mad_extreme_deviation",
+          "reason": "single_series_harm_over_budget",
+          "aggregate_gain": 0.20313940300645328,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.8834089538651388,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "per_series_gain": [
+            -0.8834089538651388,
+            0.16660431551886168,
+            0.0,
+            -0.6446309306442425,
+            0.22316386085980477,
+            0.06631588790912013,
+            -0.6712934161797927,
+            -0.20075729902056105,
+            0.4286164619563162,
+            0.5833984660064881,
+            1.650746068034766,
+            0.5765330103307587,
+            0.4780006972952229,
+            0.029651443916152598,
+            0.06468573861974819,
+            0.8891269825553607,
+            0.17695021603220584,
+            0.0,
+            0.13324218877041716,
+            0.9958433220335798
+          ],
+          "episode_id": "p4w2-source-line-v2_target_outlier_mad_p4w2_source_r5_p2"
+        }
+      ],
+      "slow_trigger": "risk_refusal",
+      "slow_event": {
+        "stage": "support_rejected",
+        "triggered": true,
+        "material_negative": false,
+        "relation": "CONFLICT",
+        "card_workflow": [],
+        "edit_id": "add-forecast-outlier-scope-repair",
+        "target_surface_id": "skill_library.entries/{skill_id}",
+        "operation": "ADD",
+        "frozen_program": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ],
+        "patch_id": "risk_refusal_scope_revision",
+        "serving_scope": {
+          "scope_type": "none"
+        },
+        "support_gain": 2.220446049250313e-16,
+        "support_passed": true
+      },
+      "scope_revision_preflight": null,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_serving_series": null,
+      "winner_scope_revision": 1,
+      "fast_skill_event": null,
+      "llm_calls_so_far": 33,
+      "delayed_gate": null,
+      "activated": false,
+      "skills_after": []
+    }
+  ],
+  "activated_skill_ids": [],
+  "re_encounters": [
+    {
+      "origin": 1896,
+      "retrieved": [],
+      "deployed_scope": null
+    },
+    {
+      "origin": 2136,
+      "retrieved": [],
+      "deployed_scope": null
+    },
+    {
+      "origin": 2376,
+      "retrieved": [],
+      "deployed_scope": null
+    },
+    {
+      "origin": 2616,
+      "retrieved": [],
+      "deployed_scope": null
+    },
+    {
+      "origin": 2856,
+      "retrieved": [],
+      "deployed_scope": null
+    }
+  ],
+  "llm_calls": 33,
+  "wall_seconds": 908.6,
+  "verdict": "A5_TREATMENT_EMPTY",
+  "stopping_rule_reading": "if the Source line forms zero Active Skills, stop and record it; do not run A5 as if it had a treatment",
+  "boundary": {
+    "llm_calls_before_transport_is_configured": 0,
+    "held_out_reads_before_all_arms_frozen": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "route_table_causes_added": 0,
+    "route_table_target_classes_added": 1,
+    "surfaces_added": 0,
+    "artifacts_overwritten": 0,
+    "held_out_reads": 0
+  },
+  "verdict_is_not_to_be_used": "the card that reached Slow carried no refusal evidence, so this run does not measure whether Slow can revise a Scope",
+  "defect": {
+    "what": "the Runner passed the refusal facts through a holder it filled after run_online_round had already returned, but the card is built during the round at the Slow call",
+    "consequence": "Slow saw only pattern_id, observable_signature and the frozen program; it was never shown the refusal, the current serving_scope, the per-series gains or the feature rows",
+    "how_it_presented": "Slow returned a schema-valid Draft ADD with no serving_scope, so preflight never ran and the delayed gate refused it -- which reads as 'Slow cannot revise a Scope'",
+    "fix": "the Runtime now injects the refusal facts into the card at the moment the refusal is routed; the Runner supplies only the positional feature rows",
+    "locked_by": "tests/main_protocol/test_risk_gap_draft_lifecycle.py::test_the_card_slow_receives_actually_carries_the_refusal"
+  },
+  "llm_calls_spent_on_this_invalid_run": 33
+}

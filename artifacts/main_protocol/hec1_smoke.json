@@ -1,0 +1,434 @@
+{
+  "stage": "HEC1_SMOKE",
+  "written_at": "2026-09-04T10:35:46.805965+08:00",
+  "contract_version": "P4U-v4.1",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "checks": [
+    {
+      "check": "contract",
+      "passed": true,
+      "mechanical_drift": [],
+      "is_ratified": true,
+      "launchable": {
+        "phase_s": true,
+        "phase_t_forward": true,
+        "phase_f": false
+      },
+      "note": "a clean drift check is not a ratification; every phase is correctly not launchable while sol and the user have not answered"
+    },
+    {
+      "check": "orderings_and_exposure",
+      "passed": true,
+      "phase_t_units": 26,
+      "orderings": {
+        "forward": {
+          "length": 26,
+          "is_permutation": true,
+          "first": {
+            "block": "[0:40]",
+            "span": [
+              0,
+              40
+            ],
+            "origin": 1176,
+            "exposure": [
+              "SPENT_DEV"
+            ]
+          },
+          "last": {
+            "block": "[120:160]",
+            "span": [
+              120,
+              160
+            ],
+            "origin": 1656,
+            "exposure": [
+              "UNREAD"
+            ]
+          }
+        },
+        "reverse": {
+          "length": 26,
+          "is_permutation": true,
+          "first": {
+            "block": "[120:160]",
+            "span": [
+              120,
+              160
+            ],
+            "origin": 1656,
+            "exposure": [
+              "UNREAD"
+            ]
+          },
+          "last": {
+            "block": "[0:40]",
+            "span": [
+              0,
+              40
+            ],
+            "origin": 1176,
+            "exposure": [
+              "SPENT_DEV"
+            ]
+          }
+        },
+        "interleaved": {
+          "length": 26,
+          "is_permutation": true,
+          "first": {
+            "block": "[0:40]",
+            "span": [
+              0,
+              40
+            ],
+            "origin": 1176,
+            "exposure": [
+              "SPENT_DEV"
+            ]
+          },
+          "last": {
+            "block": "[40:80]",
+            "span": [
+              40,
+              80
+            ],
+            "origin": 3816,
+            "exposure": [
+              "UNREAD"
+            ]
+          }
+        }
+      },
+      "held_out_intersection": 0
+    },
+    {
+      "check": "two_units_identity_and_scoring",
+      "passed": true,
+      "units": [
+        {
+          "unit": {
+            "block": "[0:40]",
+            "span": [
+              0,
+              40
+            ],
+            "origin": 1176,
+            "exposure": [
+              "SPENT_DEV"
+            ]
+          },
+          "served": 20,
+          "evaluation_origin": 1320,
+          "static_mean_smase": 1.545434,
+          "arms": {
+            "Static": {
+              "treated": 0,
+              "aggregate_gain": 0.0
+            },
+            "A3-frozen(empty K0)": {
+              "treated": 0,
+              "aggregate_gain": 0.0,
+              "identity": true
+            }
+          },
+          "identity_is_exactly_static": true,
+          "gate": {
+            "lines": {
+              "coverage_floor": false,
+              "aggregate": false,
+              "harmed_fraction": true,
+              "single_series_harm": true
+            },
+            "passes": false,
+            "failed_lines": [
+              "coverage_floor",
+              "aggregate"
+            ],
+            "authority": "p4_gate",
+            "thresholds": {
+              "min_treated": 5,
+              "min_aggregate": 0.005,
+              "max_harmed_fraction": 0.2,
+              "max_single_series_harm": 0.3
+            }
+          },
+          "gate_disagreement": {
+            "p4_gate": {
+              "passes": false,
+              "failed_lines": [
+                "coverage_floor",
+                "aggregate"
+              ]
+            },
+            "online_loop_event": "approved",
+            "resolved_by": "p4_gate",
+            "disagree": true,
+            "kind": "AUTHORITY_BYPASSED",
+            "failed_risk_lines": [
+              "aggregate"
+            ],
+            "state": null,
+            "state_unchanged": null,
+            "may_activate": false,
+            "demotes_the_ordering": true,
+            "note": "an online_loop approval never triggers activate_approved on its own, and the P4 gate is now consulted *before* the snapshot is committed; a coverage-floor-only disagreement with no state movement is the structural calibre difference and is disclosed, while a risk-line disagreement or any state movement demotes"
+          },
+          "wall_seconds": 2.82
+        },
+        {
+          "unit": {
+            "block": "[0:40]",
+            "span": [
+              0,
+              40
+            ],
+            "origin": 1896,
+            "exposure": [
+              "SPENT_DEV"
+            ]
+          },
+          "served": 20,
+          "evaluation_origin": 2040,
+          "static_mean_smase": 1.590971,
+          "arms": {
+            "Static": {
+              "treated": 0,
+              "aggregate_gain": 0.0
+            },
+            "A3-frozen(empty K0)": {
+              "treated": 0,
+              "aggregate_gain": 0.0,
+              "identity": true
+            }
+          },
+          "identity_is_exactly_static": true,
+          "gate": {
+            "lines": {
+              "coverage_floor": false,
+              "aggregate": false,
+              "harmed_fraction": true,
+              "single_series_harm": true
+            },
+            "passes": false,
+            "failed_lines": [
+              "coverage_floor",
+              "aggregate"
+            ],
+            "authority": "p4_gate",
+            "thresholds": {
+              "min_treated": 5,
+              "min_aggregate": 0.005,
+              "max_harmed_fraction": 0.2,
+              "max_single_series_harm": 0.3
+            }
+          },
+          "gate_disagreement": {
+            "p4_gate": {
+              "passes": false,
+              "failed_lines": [
+                "coverage_floor",
+                "aggregate"
+              ]
+            },
+            "online_loop_event": "approved",
+            "resolved_by": "p4_gate",
+            "disagree": true,
+            "kind": "AUTHORITY_BYPASSED",
+            "failed_risk_lines": [
+              "aggregate"
+            ],
+            "state": null,
+            "state_unchanged": null,
+            "may_activate": false,
+            "demotes_the_ordering": true,
+            "note": "an online_loop approval never triggers activate_approved on its own, and the P4 gate is now consulted *before* the snapshot is committed; a coverage-floor-only disagreement with no state movement is the structural calibre difference and is disclosed, while a risk-line disagreement or any state movement demotes"
+          },
+          "wall_seconds": 2.73
+        }
+      ],
+      "consumer_fits": 4,
+      "llm_calls": 0,
+      "gate_authority_holds": true
+    },
+    {
+      "check": "three_state_replay",
+      "passed": true,
+      "cases": [
+        {
+          "restricted_at_origin": 1896,
+          "window": 2136,
+          "failed_lines": [
+            "aggregate",
+            "single_series_harm"
+          ],
+          "turnover": "6 -> 9",
+          "attribution": {
+            "harm_from_new_entrant": 0.501802,
+            "harm_from_continuing": 0.90486,
+            "dominant": "continuing"
+          },
+          "continuing": 5,
+          "new_entrant": 4,
+          "left": 1,
+          "state": "FLAGGED",
+          "expected": "FLAGGED",
+          "matches": true,
+          "verification_attempts": 1,
+          "clause_request_refused_when_flagged": true,
+          "may_add_clause": false
+        },
+        {
+          "restricted_at_origin": 2376,
+          "window": 2616,
+          "failed_lines": [
+            "coverage_floor"
+          ],
+          "turnover": "5 -> 2",
+          "attribution": {
+            "harm_from_new_entrant": 0.0,
+            "harm_from_continuing": 0.090438,
+            "dominant": "continuing"
+          },
+          "continuing": 1,
+          "new_entrant": 1,
+          "left": 4,
+          "state": "WAITING",
+          "expected": "WAITING",
+          "matches": true,
+          "verification_attempts": 1,
+          "clause_request_refused_when_flagged": null,
+          "may_add_clause": true
+        },
+        {
+          "restricted_at_origin": 2616,
+          "window": 2856,
+          "failed_lines": [
+            "single_series_harm"
+          ],
+          "turnover": "7 -> 15",
+          "attribution": {
+            "harm_from_new_entrant": 1.728797,
+            "harm_from_continuing": 0.0,
+            "dominant": "new_entrant"
+          },
+          "continuing": 6,
+          "new_entrant": 9,
+          "left": 1,
+          "state": "REVISABLE",
+          "expected": "REVISABLE",
+          "matches": true,
+          "verification_attempts": 1,
+          "clause_request_refused_when_flagged": null,
+          "may_add_clause": true
+        }
+      ],
+      "waiting_reverification_is_free": true,
+      "llm_calls": 0,
+      "consumer_fits": 0
+    },
+    {
+      "check": "outer_loop",
+      "passed": true,
+      "empty_step": {
+        "slow_calls": 0,
+        "replay_fits": 0,
+        "empty_reason": "the bank is empty"
+      },
+      "unsafe_candidate": {
+        "outcome": [
+          "REPLAY_SCREEN_REJECTED"
+        ],
+        "violated": [
+          [
+            "single_series_harm"
+          ]
+        ],
+        "drafts_opened": []
+      },
+      "safe_candidate": {
+        "drafts_opened": [
+          "resupplied_draft_1"
+        ],
+        "resupplied": [
+          "resupplied_draft_1"
+        ],
+        "aliases_collapsed": [
+          []
+        ]
+      },
+      "wrote_active": false,
+      "llm_calls": 0
+    },
+    {
+      "check": "threshold_tool",
+      "passed": true,
+      "bin_edges": [
+        0.0,
+        1.0,
+        3.0,
+        6.0
+      ],
+      "tied_case": {
+        "threshold": 3.0,
+        "treated": 5,
+        "tie_break": "coarser_box"
+      },
+      "unique_case": {
+        "threshold": 6.0,
+        "treated": 5,
+        "tie_break": "unique_widest"
+      },
+      "no_feasible_threshold": true,
+      "feature_outside_vocabulary_refused": "ScopeError",
+      "llm_threshold_ignored": {
+        "notes": [
+          "LLM_THRESHOLD_IGNORED"
+        ],
+        "slow_returned": 4.25,
+        "tool_used": 3.0
+      },
+      "shadow": {
+        "feature": "missing_fraction",
+        "direction": ">=",
+        "threshold": 0.01,
+        "deployable": false,
+        "agrees_with_slow": false
+      },
+      "feasibility_agrees_between_calibrate_and_stump": true,
+      "llm_calls": 0
+    },
+    {
+      "check": "source_v3_dry_run_regression",
+      "passed": true,
+      "fields_missing": [],
+      "fields_added": [
+        "run_label",
+        "run_ledger"
+      ],
+      "fields_added_unexplained": [],
+      "known_field_delta": [
+        "run_label",
+        "run_ledger"
+      ],
+      "contract_receipt_identical": true,
+      "contract_frozen_identical": true,
+      "llm_calls": 0,
+      "status": "BLOCKED_ON_TRANSPORT",
+      "reference": "p4w3_source_line_v3.dry_run.json",
+      "note": "status and written_at are run-dependent and are not compared; run_label and run_ledger post-date the reference artifact and are declared as a known delta rather than treated as a regression"
+    }
+  ],
+  "passed": true,
+  "checks_passed": 7,
+  "checks_total": 7,
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 4,
+    "held_out_reads": 0,
+    "thresholds_changed": 0,
+    "methods_ttha_files_changed": 0
+  },
+  "wall_seconds": 5.7,
+  "releases": "nothing; the smoke is a delivery gate and the contract still needs sol's ratification and the user's budget release before an arm may spend an LLM call"
+}

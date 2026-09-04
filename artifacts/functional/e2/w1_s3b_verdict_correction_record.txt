@@ -1,0 +1,56 @@
+S3b verdict 修正记录（2026-08-13，判定代码 bug 修正——不重跑）
+
+原 verdict：ADHERENCE_SELECTION_GAP（w1_s3b_normal_entry_adoption_
+report.json）——判定代码 bug：skill_selected 匹配 f"cand_skill_{op}"
+（op 名 impute_ar），而实际候选 ID = cand_skill_single_repair_level_
+shift_replacement（skill_id 全名——SKILL_ID）。
+
+用报告内已有数据修正（数据事实不变——仅字符串匹配修正）：
+  - H1 probes = [["cand_skill_single_repair_level_shift_replacement",
+                  0.04297543355252431]]——候选 ID == f"cand_skill_{SKILL_ID}"
+    → skill_selected = True（且作为 budget 内首候选被探测执行 gain +0.043）
+  - H0 probes = []（无 skill 时候选池空——removal 行为差异存在）
+
+修正后判定链：
+  retrieved=True → selected=True → removal_changed=True（H1 探测 vs
+  H0 空池）→ utility：U_H1 = +0.04298（skill）vs U_H0 = +0.26115
+  （repair_level_shift @728）→ delta = −0.21817 < 0 → utility_ok=False
+
+→ 修正后 verdict = SCOPE_RISK_GAP（选后效用差）
+
+诚实结论（修正后）：
+  - Skill 被真实正常入口检索（进候选池）、选择、执行（+0.043）——
+    S3 的 NORMAL_ENTRY_ADOPTION_UNVERIFIED 的机制层已补测：检索/选择/
+    执行/removal 差异全部成立；
+  - 但效用相对 incumbent（repair_level_shift @728 +0.261）显著负向
+    ——宽 Scope skill（task_kind==forecast）+ requires_target_support
+    门正是为此设计：该 skill 不应被直接自动采用，须 Target Support
+    确认后才激活——本结果验证 requires_target_support 的存在理由；
+  - "Target-local Skill 相对 incumbent 有益"仍不可声称（甚至在该
+    origin 上有害）。
+
+runner 判定代码已修复（skill_selected 用 SKILL_ID 全名）——未来重跑
+可用；本记录为不重跑修正留痕。
+
+---
+
+结论口径修正（2026-08-13，用户裁决——不重跑不扩 Gate）：
+
+原 SCOPE_RISK_GAP 判定基于 "repair_level_shift @728 +0.261 作为 H0
+实际效用"——错误：H0（无 skill）真实入口候选池为空 = abstain/identity
+= gain 0，不是 repair_level_shift 槽（H0 臂从未运行 repair_level_shift）。
+
+按真实正常入口口径：
+  H1：执行 learned Skill impute_ar = +0.043
+  H0：候选池为空，abstain/identity = 0
+  H1 − H0 = +0.043
+
+修正后结论：
+  CONTROLLED_NORMAL_ENTRY_SKILL_MECHANISM_PASS
+  + CONTROLLED_POLICY_GAIN_OVER_ABSTAIN
+  + BETTER_UNSELECTED_WORKFLOW_EXISTS
+
+repair_level_shift +0.261 单独记录为 oracle/headroom regret（系统尚
+未找到已知更优 Workflow）——不是 H0 实际效用，不据此判 SCOPE_RISK_GAP，
+不修 Scope、不人为加 repair_level_shift 对照槽。
+

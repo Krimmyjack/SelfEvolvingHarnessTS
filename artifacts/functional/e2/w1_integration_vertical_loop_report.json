@@ -1,0 +1,123 @@
+{
+  "experiment_id": "v1-integration-vertical-loop",
+  "note": "纵向集成第一步（已暴露 KDD T117；真实 LLM；Runtime-owned 双槽 + Fast winner Skill 生命周期；零新数据）",
+  "arms": {
+    "A5_r1": {
+      "pool": [
+        "identity",
+        "cand_prior_winsorize",
+        "repair_level_shift_local"
+      ],
+      "chosen": "repair_level_shift_local",
+      "memory_resolution": "rendered",
+      "winner": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "estimated_offset": 56.0,
+            "region_end_fraction": 0.1717171717171717,
+            "region_start_fraction": 0.04671717171717172
+          }
+        }
+      ],
+      "probes": [
+        [
+          "repair_level_shift_local",
+          0.04733750739266296
+        ]
+      ],
+      "receipts": 1,
+      "fast_skill_event": {
+        "stage": "pending",
+        "support_gain": 0.04733750739266296,
+        "support_passed": true,
+        "edit_id": "fast_winner_repair_level_shift"
+      },
+      "pending_patch": null,
+      "delayed_utility": 0.09709988099621447,
+      "approved_skill_id": "fast_winner_repair_level_shift",
+      "delayed_event": {
+        "stage": "approved",
+        "delayed_gain": 0.09709988099621447,
+        "snapshot_updated": true
+      }
+    },
+    "A3_r1": {
+      "pool": [
+        "identity",
+        "repair_level_shift_local"
+      ],
+      "chosen": "repair_level_shift_local",
+      "memory_resolution": "no_memory",
+      "winner": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "estimated_offset": 56.0,
+            "region_end_fraction": 0.1717171717171717,
+            "region_start_fraction": 0.04671717171717172
+          }
+        }
+      ],
+      "probes": [
+        [
+          "repair_level_shift_local",
+          0.04733750739266296
+        ]
+      ],
+      "receipts": 1
+    },
+    "R2": {
+      "pool": [
+        "identity",
+        "level_shift_repair"
+      ],
+      "chosen": "level_shift_repair",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "fast_winner_repair_level_shift"
+      ],
+      "skill_retrieved": true,
+      "skill_verified_into_pool": false,
+      "skill_not_priority": false,
+      "skill_probed": false,
+      "winner": [
+        {
+          "op": "repair_level_shift",
+          "params": {
+            "estimated_offset": 56.0,
+            "region_end_fraction": 0.15315315315315314,
+            "region_start_fraction": 0.041666666666666664
+          }
+        }
+      ],
+      "probes": [
+        [
+          "level_shift_repair",
+          0.12742568650230512
+        ]
+      ],
+      "receipts": 1,
+      "removal_pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "removal_no_skill": true
+    }
+  },
+  "checks": {
+    "C1_A5_two_slot_filled": true,
+    "C2_A3_no_prior": true,
+    "C3_fast_winner_skill_approved": true,
+    "C4_skill_draft_guard": true,
+    "C5_next_round_retrieval": false,
+    "C6_removal_flips": true,
+    "C7_budget_le_2": true
+  },
+  "llm_api_call_count": 15,
+  "verdict": "INTEGRATION_FAILED_C5_next_round_retrieval"
+}

@@ -1,0 +1,172 @@
+{
+  "checks": {
+    "r1_a5_memory_guided": true,
+    "r1_delayed_only_new": true,
+    "r1_immediate_writeback": true,
+    "r2_a5_memory_influence": true,
+    "r2_online_next_round": true,
+    "seed_reconfirmed_double_positive": true
+  },
+  "domain": "nn5",
+  "experiment_id": "v1-nn5-vertical-slice",
+  "llm_api_call_count": 0,
+  "r1": {
+    "delayed": {
+      "A3": {
+        "impute_fft": {
+          "delayed_gain": -0.022500105967530937,
+          "episode_id": "nn5_target_impute_fft_origin632",
+          "local_status": "RESTRICTED",
+          "relation": "CONFLICT"
+        },
+        "impute_linear": {
+          "delayed_gain": 0.0,
+          "episode_id": "nn5_target_impute_linear_origin632",
+          "local_status": "EPISODE_ONLY",
+          "relation": "ABSTAIN"
+        }
+      },
+      "A5": {
+        "impute_ssm": {
+          "delayed_gain": 0.05633314476086326,
+          "episode_id": "nn5_target_impute_ssm_origin632",
+          "local_status": "LOCAL_ACTIVE",
+          "relation": "POSITIVE"
+        }
+      }
+    },
+    "retrieval": {
+      "A3": [
+        {
+          "chosen": "cand_impute_linear",
+          "compilation": "ok",
+          "probe_index": 0,
+          "reference1": false,
+          "retrieved_memory_ids": []
+        },
+        {
+          "chosen": "cand_impute_fft",
+          "compilation": "ok",
+          "probe_index": 1,
+          "reference1": false,
+          "retrieved_memory_ids": []
+        }
+      ],
+      "A5": [
+        {
+          "chosen": "cand_impute_ssm",
+          "compilation": "ok",
+          "probe_index": 0,
+          "reference1": true,
+          "retrieved_memory_ids": []
+        }
+      ]
+    },
+    "summary": {
+      "A3": {
+        "first_positive_probe": 2,
+        "harm": 0,
+        "harm_magnitude": 0,
+        "probe_order": [
+          "cand_impute_linear",
+          "cand_impute_fft"
+        ],
+        "support_gains": [
+          0.0,
+          0.047461
+        ]
+      },
+      "A5": {
+        "first_positive_probe": 1,
+        "harm": 0,
+        "harm_magnitude": 0,
+        "probe_order": [
+          "cand_impute_ssm"
+        ],
+        "support_gains": [
+          0.069669
+        ]
+      }
+    }
+  },
+  "r2": {
+    "retrieval": {
+      "A3": [
+        {
+          "chosen": "cand_impute_linear",
+          "compilation": "ok",
+          "probe_index": 0,
+          "reference1": false,
+          "retrieved_memory_ids": []
+        },
+        {
+          "chosen": "cand_impute_ema",
+          "compilation": "ok",
+          "probe_index": 1,
+          "reference1": false,
+          "retrieved_memory_ids": []
+        }
+      ],
+      "A5": [
+        {
+          "chosen": "cand_impute_ssm",
+          "compilation": "ok",
+          "probe_index": 0,
+          "reference1": true,
+          "retrieved_memory_ids": []
+        }
+      ]
+    },
+    "summary": {
+      "A3": {
+        "first_positive_probe": 2,
+        "harm": 0,
+        "harm_magnitude": 0,
+        "probe_order": [
+          "cand_impute_linear",
+          "cand_impute_ema"
+        ],
+        "support_gains": [
+          0.0,
+          0.020759
+        ]
+      },
+      "A5": {
+        "first_positive_probe": 1,
+        "harm": 0,
+        "harm_magnitude": 0,
+        "probe_order": [
+          "cand_impute_ssm"
+        ],
+        "support_gains": [
+          0.013599
+        ]
+      }
+    }
+  },
+  "seed_reconfirmation": {
+    "delayed_gain": 0.027339681091930856,
+    "delayed_origin": 584,
+    "double_positive": true,
+    "operator": "impute_ssm",
+    "scope_executor_verified": true,
+    "support_gain": 0.01864539955077338,
+    "support_origin": 536
+  },
+  "slice_layout": {
+    "r1": {
+      "delayed": 680,
+      "support": 632
+    },
+    "r2": {
+      "note": "online next round; evaluates [728,776); no delayed (data ends at 791)",
+      "support": 728
+    },
+    "seed": {
+      "delayed": 584,
+      "operator": "impute_ssm",
+      "support": 536
+    }
+  },
+  "verdict": "NN5_VERTICAL_SLICE_MECHANISM_PASS_R1_A5_SAME_R2_A5_SAME_LOCAL_SEEDED"
+}

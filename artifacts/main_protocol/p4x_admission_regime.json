@@ -1,0 +1,179 @@
+{
+  "stage": "P4X_ADMISSION_REGIME",
+  "written_at": "2026-09-02T00:14:22.696637+08:00",
+  "evidence_grade": "DERIVED_FROM_SEALED_ARTIFACTS_NO_NEW_EVALUATION",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "question": "is the empty treatment an Agent failure, or does nothing in this action space clear the adjudicated risk budget on this data version",
+  "budget": {
+    "rule": "bounded_risk_v1",
+    "max_harmed_fraction": 0.2,
+    "max_single_series_harm": 0.3,
+    "material_threshold": 0.005,
+    "thresholds_changed": 0
+  },
+  "baselines_on_target": [
+    {
+      "policy": "GlobalBestFixed",
+      "where": "Target held-in, 0 LLM",
+      "aggregate_gain": 0.241993,
+      "harmed_fraction": 0.35,
+      "max_single_series_harm": 5.194889,
+      "over_harmed_line": true,
+      "over_harm_line": true,
+      "clears_bounded_budget": false
+    },
+    {
+      "policy": "OpenLoopTargeter",
+      "where": "Target held-in, 0 LLM",
+      "aggregate_gain": 0.14024,
+      "harmed_fraction": 0.38,
+      "max_single_series_harm": 2.288773,
+      "over_harmed_line": true,
+      "over_harm_line": true,
+      "clears_bounded_budget": false
+    }
+  ],
+  "live_scoped_probes_on_source": [
+    {
+      "policy": "hampel_local_extreme_deviation",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 1896,
+      "aggregate_gain": 0.029175336605961055,
+      "harmed_fraction": 0.3,
+      "max_single_series_harm": 1.3230996057462128,
+      "series_treated": 14,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "harmed_fraction_over_budget"
+    },
+    {
+      "policy": "mad_local_extreme_deviation",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 1896,
+      "aggregate_gain": 0.31990962156114766,
+      "harmed_fraction": 0.15,
+      "max_single_series_harm": 0.4637045098030368,
+      "series_treated": 14,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "single_series_harm_over_budget"
+    },
+    {
+      "policy": "hampel_filter_extreme_deviation",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2136,
+      "aggregate_gain": 0.04566408187116067,
+      "harmed_fraction": 0.35,
+      "max_single_series_harm": 2.134043533665814,
+      "series_treated": 15,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "harmed_fraction_over_budget"
+    },
+    {
+      "policy": "outlier_mad_extreme_deviation",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2136,
+      "aggregate_gain": 0.267207748485375,
+      "harmed_fraction": 0.2,
+      "max_single_series_harm": 0.5018017431502302,
+      "series_treated": 15,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "single_series_harm_over_budget"
+    },
+    {
+      "policy": "robust_outlier_repair",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2376,
+      "aggregate_gain": 0.6542467922567412,
+      "harmed_fraction": 0.1,
+      "max_single_series_harm": 0.33964036837296063,
+      "series_treated": 15,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "single_series_harm_over_budget"
+    },
+    {
+      "policy": "repair_extreme_deviation",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2616,
+      "aggregate_gain": 0.28626981469266033,
+      "harmed_fraction": 0.3,
+      "max_single_series_harm": 0.16112755992291727,
+      "series_treated": 13,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "harmed_fraction_over_budget"
+    },
+    {
+      "policy": "repair_missingness_linear",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2616,
+      "aggregate_gain": 0.0,
+      "harmed_fraction": 0.0,
+      "max_single_series_harm": 0.0,
+      "series_treated": 12,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "aggregate_below_material_line"
+    },
+    {
+      "policy": "repair_extreme_deviation",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2856,
+      "aggregate_gain": 0.20313940300645328,
+      "harmed_fraction": 0.2,
+      "max_single_series_harm": 0.8834089538651388,
+      "series_treated": 18,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "single_series_harm_over_budget"
+    },
+    {
+      "policy": "repair_missingness",
+      "where": "Source held-in, live Fast, scoped",
+      "origin": 2856,
+      "aggregate_gain": 2.220446049250313e-16,
+      "harmed_fraction": 0.0,
+      "max_single_series_harm": 0.0,
+      "series_treated": 10,
+      "series_served": 20,
+      "admitted": false,
+      "refusal_reason": "aggregate_below_material_line"
+    }
+  ],
+  "counts": {
+    "probes": 9,
+    "probes_clearing_the_material_line": 7,
+    "probes_admitted": 0,
+    "refusal_reasons": {
+      "harmed_fraction_over_budget": 3,
+      "single_series_harm_over_budget": 4,
+      "aggregate_below_material_line": 2
+    },
+    "baselines_clearing_the_budget": 0
+  },
+  "reading": "every policy measured on this data version clears the aggregate line and then fails the tail: the global best-fixed program and the frozen open-loop tree both exceed both lines on the Target, and every materially positive live proposal on the Source exceeds one of them.  The proposer is not what decides this",
+  "consequence_for_the_run_order": "A3 is gated by the same rule as the Source line, so on this evidence it would deploy nothing on the Target and the primary contrast A3 - Static would be zero minus zero.  Running it would produce a number that says nothing about the Harness",
+  "what_this_audit_does_not_decide": [
+    "whether the budget is the right budget: it is adjudicated and was not changed here",
+    "whether a finer Scope could bound the tail: the frozen initialiser selects on defect presence, and the harm lives inside the selected set, but that is a claim about this initialiser, not about Scopes",
+    "anything about held-out, which stays closed"
+  ],
+  "boundary": {
+    "llm_calls_before_transport_is_configured": 0,
+    "held_out_reads_before_all_arms_frozen": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "llm_calls": 0,
+    "new_evaluations": 0,
+    "held_out_reads": 0
+  },
+  "sources": [
+    "p4v_main_baselines.json",
+    "p4w_source_line.json"
+  ]
+}

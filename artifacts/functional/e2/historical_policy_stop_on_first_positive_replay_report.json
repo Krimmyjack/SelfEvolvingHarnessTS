@@ -1,0 +1,180 @@
+{
+  "episodes": [
+    {
+      "A3_stop_rule_auc": 1.1001682086485207,
+      "A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY",
+          "terminal": false
+        },
+        {
+          "abstained": false,
+          "budget": 1,
+          "fixed_query_gain": 1.9698712830800846,
+          "selected_workflow": "W_rowblock",
+          "terminal": true
+        },
+        {
+          "abstained": false,
+          "budget": 2,
+          "fixed_query_gain": 1.9698712830800846,
+          "selected_workflow": "W_rowblock",
+          "terminal": true
+        }
+      ],
+      "A5_harmful": false,
+      "A5_minus_A3": 0.37723525366154265,
+      "A5_stop_rule_auc": 1.4774034623100634,
+      "dataset_id": "m4_daily",
+      "historical_order": [
+        "W_rowblock",
+        "W_curation"
+      ]
+    },
+    {
+      "A3_stop_rule_auc": 0.0,
+      "A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY",
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 1,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY",
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 2,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY",
+          "terminal": false
+        }
+      ],
+      "A5_harmful": false,
+      "A5_minus_A3": 0.0,
+      "A5_stop_rule_auc": 0.0,
+      "dataset_id": "solar_10_minutes",
+      "historical_order": [
+        "W_rowblock",
+        "W_curation"
+      ]
+    },
+    {
+      "A3_stop_rule_auc": 0.19855944838168083,
+      "A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY",
+          "terminal": false
+        },
+        {
+          "abstained": false,
+          "budget": 1,
+          "fixed_query_gain": 0.39711889676336165,
+          "selected_workflow": "W_temporal_origin",
+          "terminal": true
+        },
+        {
+          "abstained": false,
+          "budget": 2,
+          "fixed_query_gain": 0.39711889676336165,
+          "selected_workflow": "W_temporal_origin",
+          "terminal": true
+        },
+        {
+          "abstained": false,
+          "budget": 3,
+          "fixed_query_gain": 0.39711889676336165,
+          "selected_workflow": "W_temporal_origin",
+          "terminal": true
+        }
+      ],
+      "A5_harmful": false,
+      "A5_minus_A3": 0.13237296558778722,
+      "A5_stop_rule_auc": 0.33093241396946804,
+      "dataset_id": "electricity_hourly",
+      "historical_order": [
+        "W_temporal_origin",
+        "W_curation",
+        "W_rowblock"
+      ]
+    },
+    {
+      "A3_stop_rule_auc": -0.09384630990371857,
+      "A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY",
+          "terminal": false
+        },
+        {
+          "abstained": false,
+          "budget": 1,
+          "fixed_query_gain": 0.054604661710493246,
+          "selected_workflow": "W_curation",
+          "terminal": true
+        },
+        {
+          "abstained": false,
+          "budget": 2,
+          "fixed_query_gain": 0.054604661710493246,
+          "selected_workflow": "W_curation",
+          "terminal": true
+        },
+        {
+          "abstained": false,
+          "budget": 3,
+          "fixed_query_gain": 0.054604661710493246,
+          "selected_workflow": "W_curation",
+          "terminal": true
+        }
+      ],
+      "A5_harmful": false,
+      "A5_minus_A3": 0.13935019466246296,
+      "A5_stop_rule_auc": 0.045503884758744374,
+      "dataset_id": "m4_hourly",
+      "historical_order": [
+        "W_curation",
+        "W_rowblock",
+        "W_temporal_origin"
+      ]
+    }
+  ],
+  "evidence_boundary": {
+    "development_only": true,
+    "new_consumer_fits": 0,
+    "new_query_reads": 0,
+    "original_uci_opened": false,
+    "persistent_memory_built": false
+  },
+  "experiment_id": "E2.50-stop-on-first-positive-confirmation-replay",
+  "first_fault": "later Support-ranked workflows overwrite an already positive historical-context-guided workflow",
+  "gate_passed": true,
+  "macro": {
+    "A3": 0.30122033678162075,
+    "A5": 0.46345994025956894,
+    "A5_minus_A3": 0.1622396034779482,
+    "harmful_target_count": 0,
+    "nonnegative_target_count": 4
+  },
+  "stage": "development_failure_derived_harness_update",
+  "typed_patch": {
+    "behavior": "probe in historical PolicyEpisode order; after first positive exact Support confirmation execute and stop; continue only after non-positive confirmation",
+    "operation": "STOP_ON_FIRST_POSITIVE_EXACT_CONFIRMATION",
+    "target_surface": "HARNESS_UPDATE_POLICY"
+  },
+  "verdict": "STOP_RULE_PATCH_REPLAY_PASS"
+}

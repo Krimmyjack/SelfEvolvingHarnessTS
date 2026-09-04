@@ -458,7 +458,15 @@ def build(prefix: str | None = None) -> dict[str, Any]:
     # units: three of those can never carry a curve point, so requiring
     # ceil(0.8 x 26) = 21 would demand two points that do not exist.
     complete = [row for row in orderings if row["meets_completion_floor"]]
+    # sol v1.1: the terminal difference has to clear the **material** line,
+    # 0.005 x 23 = 0.115, not merely be above zero.  A course that ends +0.02
+    # over 23 units is 23 readings of nearly nothing.
+    material_line = contract.P1_MATERIAL_TERMINAL_DIFFERENCE
     terminal_positive = sum(
+        1 for row in orderings
+        if row["terminal_difference"] is not None
+        and row["terminal_difference"] >= material_line)
+    terminal_above_zero = sum(
         1 for row in orderings
         if row["terminal_difference"] is not None
         and row["terminal_difference"] > 0)
@@ -477,10 +485,20 @@ def build(prefix: str | None = None) -> dict[str, Any]:
     harm_ok = all(row["harm_online_not_worse"] for row in orderings)
     p2_any = any(row["p2_survival_chain"]["holds"] for row in orderings)
     criteria = {
-        "D_o_positive_in_at_least_2_of_3": terminal_positive >= 2,
+        "D_o_material_in_at_least_2_of_3": terminal_positive >= 2,
         "d_c_positive_in_at_least_3_of_4": cohorts_positive >= 3,
         "harm_online_not_worse_in_every_ordering": harm_ok,
         "P2_survival_chain_in_any_ordering": p2_any,
+    }
+    material = {
+        "line": material_line,
+        "derivation": "material 0.005 x %d scoreable units"
+                      % scoreability.SCOREABLE_UNITS,
+        "orderings_at_or_above_the_line": terminal_positive,
+        "orderings_merely_above_zero": terminal_above_zero,
+        "why_not_just_positive": (
+            "a terminal difference of a few hundredths over 23 units is 23 "
+            "readings of nearly nothing; positive is not material"),
     }
 
     if len(orderings) < len(contract.ORDERINGS) or len(complete) < len(orderings):
@@ -497,7 +515,7 @@ def build(prefix: str | None = None) -> dict[str, Any]:
         why = ("the three orderings do not share one clean commit: %s"
                % json.dumps(code["code_commit_by_ordering"], default=str))
     else:
-        p1 = (criteria["D_o_positive_in_at_least_2_of_3"]
+        p1 = (criteria["D_o_material_in_at_least_2_of_3"]
               and criteria["d_c_positive_in_at_least_3_of_4"]
               and criteria["harm_online_not_worse_in_every_ordering"])
         if p1 and p2_any:
@@ -541,7 +559,9 @@ def build(prefix: str | None = None) -> dict[str, Any]:
             "not enter the curve, and the reason it did not is worth reading"
         ),
         "orderings": orderings,
-        "terminal_differences_above_zero": terminal_positive,
+        "material_terminal_difference": material,
+        "terminal_differences_above_zero": terminal_above_zero,
+        "terminal_differences_at_or_above_material": terminal_positive,
         "statistics": contract.STATISTICS,
         "preregistered": contract.PREREGISTERED,
         "verdict": verdict,

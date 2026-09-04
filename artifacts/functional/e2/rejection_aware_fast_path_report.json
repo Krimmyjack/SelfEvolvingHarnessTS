@@ -1,0 +1,76 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "Behavior replay using a previously saved live LLM plan; it proves state propagation and fail-closed execution, not a new Skill or LLM advantage.",
+  "compute": {
+    "consumer_fit_count": 0,
+    "llm_api_call_count": 0
+  },
+  "experiment_id": "E2.75-rejection-aware-Fast-Path-active-set",
+  "gate": {
+    "passed": true
+  },
+  "historical_live_plan_source": "artifacts/functional/e2/forecasting_two_skill_live_llm_plan.json",
+  "memory_read": {
+    "planner_visible_active_skill_ids": [
+      "historical_policy_episode_workflow_v1"
+    ],
+    "rejected_skill_preserved_as_slow_path_evidence": true,
+    "stored_skill_ids": [
+      "historical_policy_episode_workflow_v1",
+      "missing_window_weighting_workflow_v1"
+    ],
+    "stored_statuses": {
+      "historical_policy_episode_workflow_v1": "CROSS_DATASET_SUPPORTED",
+      "missing_window_weighting_workflow_v1": "REJECTED_AFTER_INDEPENDENT_DATASET_CONFIRMATION"
+    }
+  },
+  "runtime_replay": [
+    {
+      "context_id": "forecast_general_regular_panel",
+      "historical_llm_capability_id": "historical_policy_episode_workflow_v1",
+      "runtime_action": "COMPILE_ACTIVE_SKILL_WORKFLOW",
+      "runtime_capability_id": "historical_policy_episode_workflow_v1",
+      "runtime_workflow_steps": [
+        "retrieve phase-aligned historical PolicyEpisodes for W_rowblock/W_curation/W_temporal_origin",
+        "probe current Support in retrieved order",
+        "stop on first positive; otherwise IDENTITY"
+      ]
+    },
+    {
+      "context_id": "forecast_missing_mixed_reliable_history",
+      "historical_llm_capability_id": "missing_window_weighting_workflow_v1",
+      "runtime_action": "REJECT_INACTIVE_SKILL_AND_NO_OP",
+      "runtime_capability_id": null,
+      "runtime_workflow_steps": []
+    },
+    {
+      "context_id": "forecast_missing_insufficient_history",
+      "historical_llm_capability_id": "missing_window_weighting_workflow_v1",
+      "runtime_action": "REJECT_INACTIVE_SKILL_AND_NO_OP",
+      "runtime_capability_id": null,
+      "runtime_workflow_steps": []
+    },
+    {
+      "context_id": "forecast_missing_no_actionable_geometry",
+      "historical_llm_capability_id": "missing_window_weighting_workflow_v1",
+      "runtime_action": "REJECT_INACTIVE_SKILL_AND_NO_OP",
+      "runtime_capability_id": null,
+      "runtime_workflow_steps": []
+    },
+    {
+      "context_id": "classification_not_supported_by_forecast_skills",
+      "historical_llm_capability_id": null,
+      "runtime_action": "REJECT_INACTIVE_SKILL_AND_NO_OP",
+      "runtime_capability_id": null,
+      "runtime_workflow_steps": []
+    }
+  ],
+  "scientific_role": "mechanism test that an independent Target rejection removes a Skill from future planning/execution without deleting its negative evidence",
+  "validation": {
+    "active_general_skill_still_executes": true,
+    "all_missing_contexts_safe_no_op": true,
+    "inactive_missing_skill_plan_count_blocked": 3,
+    "rejected_evidence_deleted": false
+  },
+  "verdict": "REJECTION_UPDATES_FAST_PATH_ACTIVE_SET_PASS"
+}

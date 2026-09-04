@@ -1,0 +1,261 @@
+{
+  "stage": "HEC1_INSTRUMENT",
+  "written_at": "2026-09-03T14:44:54.856996+08:00",
+  "contract_version": "P4U-v4.1",
+  "course_artifact": "forward_shakedown",
+  "ordering": "forward",
+  "phase": "phase_t_forward",
+  "checks": [
+    {
+      "check": "completeness",
+      "passed": true,
+      "planned_cells": 78,
+      "seen_cells": 78,
+      "missing_cells": [],
+      "units_completed": 26,
+      "units_floor_at_0.8_N": 20
+    },
+    {
+      "check": "no_run_fault",
+      "passed": false,
+      "status": "SHAKEDOWN_COMPLETE",
+      "run_fault": null,
+      "verdict_field": null,
+      "note": "a blocked course carries RUN_BLOCKED_NO_VERDICT, which is an instrument reading and never a scientific verdict"
+    },
+    {
+      "check": "budget",
+      "passed": true,
+      "llm_total": 165,
+      "ordering_cap": 500,
+      "per_unit_arm_cap": 5,
+      "cells_over_cell_cap": [],
+      "blocked_before_backend": 0,
+      "scripted_calls_not_billed": 0,
+      "note": "a blocked call is refused before the backend and is not billed, so a non-zero blocked count is health rather than overspend"
+    },
+    {
+      "check": "gate_authority",
+      "passed": true,
+      "violations": [],
+      "frozen_arm_activations": [],
+      "recorded_disagreements": [
+        {
+          "position": 10,
+          "arm": "A3-frozen",
+          "online_loop_event": "approved",
+          "p4_gate": {
+            "passes": false,
+            "failed_lines": [
+              "coverage_floor"
+            ]
+          }
+        },
+        {
+          "position": 10,
+          "arm": "A3-online",
+          "online_loop_event": "approved",
+          "p4_gate": {
+            "passes": false,
+            "failed_lines": [
+              "coverage_floor"
+            ]
+          }
+        },
+        {
+          "position": 16,
+          "arm": "A3-frozen",
+          "online_loop_event": "approved",
+          "p4_gate": {
+            "passes": false,
+            "failed_lines": [
+              "coverage_floor"
+            ]
+          }
+        }
+      ],
+      "disagreement_count": 3,
+      "lost_activations": [],
+      "lost_activation_count": 0,
+      "lost_activation_note": "a P4 pass with no approved lifecycle event; recorded and never activated (sol final ruling 2026-09-03 §4).  A count, not a fault"
+    },
+    {
+      "check": "exposure",
+      "passed": true,
+      "held_out_origins": [
+        4056,
+        4296,
+        4536,
+        4776,
+        5016
+      ],
+      "windows_touching_held_out": [],
+      "illegal_windows": [],
+      "declared_offsets": [
+        0,
+        48,
+        144
+      ],
+      "held_out_reads_recorded": 0
+    },
+    {
+      "check": "frozen_reset",
+      "passed": true,
+      "frozen_arms": [
+        "A3-frozen"
+      ],
+      "problems": [],
+      "evidence": {
+        "A3-frozen": {
+          "resets": [
+            false,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "bank_rows": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "carried_skills": [],
+          "resupplied_drafts": [],
+          "dropped_drafts_at_rebuild": [
+            null,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "snapshot_skill_ids_at_start": [],
+          "expected_start_library": []
+        }
+      }
+    },
+    {
+      "check": "replay",
+      "passed": true,
+      "allowance": {
+        "share": 0.25,
+        "projected_course_fits": 312,
+        "allowance": 78,
+        "spent": 0,
+        "within": true
+      },
+      "problems": [],
+      "candidates_starved_by_the_cap": []
+    },
+    {
+      "check": "accounting",
+      "passed": true,
+      "problems": [],
+      "units_without_an_evaluation_face": [
+        1656,
+        2856
+      ],
+      "why_that_is_not_a_failure": "the +144 window can run past a series' observed data, which is a property of the data and drops the unit for every arm equally; the count is reported so the curve's usable N is not overstated",
+      "ledgers": {
+        "llm_fast": 165,
+        "llm_outer": 0,
+        "llm_total": 165,
+        "replay_fits": 0,
+        "shadow_fits": 0,
+        "course_fits": 109,
+        "baseline_fits": 0,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "cache_hit_rate": null,
+        "wall_seconds": 11036.3
+      }
+    }
+  ],
+  "checks_passed": 7,
+  "checks_total": 8,
+  "passed": false,
+  "may_continue": false,
+  "reads": [
+    "counts",
+    "ledgers",
+    "set intersections"
+  ],
+  "does_not_read": [
+    "any gain",
+    "any utility",
+    "any verdict",
+    "the curve"
+  ],
+  "why_this_may_be_self_run": "every check is a mechanical assertion, so it cannot be influenced by whether the result looked good; interpreting the curve is a different script and a different hand",
+  "on_failure": "stop.  Repair the instrument and resume from the checkpoint; never re-throw the science",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0
+  },
+  "wall_seconds": 0.01
+}

@@ -1,0 +1,124 @@
+{
+  "stage": "HEC1_K0_FREEZE",
+  "written_at": "2026-09-03T19:51:20.828235+08:00",
+  "contract_version": "P4U-v4.1",
+  "k0_empty": false,
+  "checks": [
+    {
+      "check": "receipt_matches_course",
+      "passed": true,
+      "claimed": [
+        "fast_winner_forecast_ridge_smase_outlier_mad"
+      ],
+      "activated_in_course": [
+        "fast_winner_forecast_ridge_smase_outlier_mad"
+      ],
+      "claimed_but_not_activated": [],
+      "activated_but_not_claimed": [],
+      "empty_flag_agrees": true,
+      "why": "a receipt is the handover; if it names a card the course never activated, Phase T would start from something that was never gated"
+    },
+    {
+      "check": "snapshot_resolves",
+      "passed": true,
+      "k0_empty": false,
+      "snapshot_resolved": true,
+      "store_root": ".hec1_runs/phase_s_v11_live/A5-online/store_online",
+      "runtime_bundle_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+      "why": "a non-empty K0 that does not resolve to a materialised snapshot is a list of names; the A5 arms would silently start from h0 and the accumulation contrast would compare two identical arms"
+    },
+    {
+      "check": "arm_set_for_phase_t",
+      "passed": true,
+      "k0_empty": false,
+      "arms": [
+        "Static",
+        "A5-frozen",
+        "A5-online",
+        "A3-online"
+      ],
+      "criterion_3_scored": true,
+      "why": "with an empty K0 the A5 arms would be bit-identical to A3, so they are not run and the accumulation criterion is not scored; paying for an equivalent arm would buy no contrast"
+    },
+    {
+      "check": "card_provenance",
+      "passed": true,
+      "assertions": [
+        "support_reading_exists",
+        "delayed_passed_the_authoritative_gate",
+        "threshold_came_from_the_tool",
+        "no_replay_granted_activation",
+        "within_the_clause_budget"
+      ],
+      "cards": [
+        {
+          "skill_id": "fast_winner_forecast_ridge_smase_outlier_mad",
+          "activations": 1,
+          "support_reading_exists": true,
+          "delayed_passed_the_authoritative_gate": true,
+          "threshold_came_from_the_tool": true,
+          "threshold_detail": {
+            "passed": true,
+            "clauses": 1,
+            "offenders": []
+          },
+          "no_replay_granted_activation": true,
+          "within_the_clause_budget": true,
+          "clause_budget_detail": {
+            "passed": true,
+            "clauses": 1,
+            "added": null,
+            "why": "no root recorded; judged on the absolute clause count, which is the weaker check"
+          },
+          "units": [
+            {
+              "block": "[200:239]",
+              "span": [
+                200,
+                239
+              ],
+              "origin": 2616,
+              "exposure": [
+                "UNREAD"
+              ]
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "cards_total": 1,
+      "cards_passed": 1
+    },
+    {
+      "check": "a5_a3_isolation",
+      "passed": true,
+      "k0_card_count": 1,
+      "arms_declared_to_start_at_k0": [],
+      "unexpected_k0_arms": [],
+      "leaks_into_non_k0_arms": [],
+      "checked_against_target_course": false,
+      "why": "K0 is what makes A5 A5; a card reachable from A3 would make every A5 minus A3 number an artefact of a leak"
+    }
+  ],
+  "checks_total": 5,
+  "checks_passed": 5,
+  "check_names": [
+    "receipt_matches_course",
+    "snapshot_resolves",
+    "arm_set_for_phase_t",
+    "card_provenance",
+    "a5_a3_isolation"
+  ],
+  "passed": true,
+  "may_continue": true,
+  "verdict": "K0_FREEZE_CLEAN",
+  "reading": "every card proved its route and K0 is unreachable from A3",
+  "on_failure": "stop; a card that cannot prove its route, or a K0 that leaks into A3, may not become an arm's starting state",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0,
+    "evaluation_gains_read": 0
+  },
+  "wall_seconds": 0.0
+}

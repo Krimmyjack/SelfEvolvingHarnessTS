@@ -1,0 +1,47 @@
+{
+  "capability_id": "historical_policy_episode_workflow_target_local_v2",
+  "status": "REJECTED",
+  "task_context": {
+    "task": "forecasting",
+    "consumer": "shared frozen Ridge",
+    "metric": "per-series sMASE",
+    "requires_regular_panel": true,
+    "requires_known_seasonal_period": true,
+    "requires_target_local_delayed_feedback": true,
+    "requires_scale_valid_training_and_evaluation_contexts": true
+  },
+  "workflow_supply": [
+    "W_rowblock",
+    "W_curation",
+    "W_temporal_origin"
+  ],
+  "observation": {
+    "type": "phase_aligned_historical_policy_episode",
+    "visibility": "two completed rolling origins of the same Target cohort",
+    "use": "order and confirm Workflow probes before the current Query origin",
+    "utility_claim": "historical and Support response only; not a Query utility certificate"
+  },
+  "workflow_composition": {
+    "type": "target_local_phase_aligned_probe",
+    "binding": "replay the Support-bound action without labels on the next Query origin"
+  },
+  "control": {
+    "type": "stop_on_first_positive",
+    "confirmation": "same-Target Support exact grouped gain > 0",
+    "continue_when": "same-Target Support exact grouped gain <= 0",
+    "fallback": "IDENTITY"
+  },
+  "risk": {
+    "abstain_if_no_positive_confirmation": true,
+    "do_not_use_query_future_for_ordering_or_confirmation": true,
+    "do_not_allow_later_probe_to_overwrite_confirmed_workflow": true
+  },
+  "resolution": {
+    "development_report": "tourism_quarterly_target_local_probe_development_report.json",
+    "fresh_confirmation_report": "m3_quarterly_target_local_probe_confirmation_report.json",
+    "reason": "ALL_SUPPORT_POSITIVE_BUT_ALL_DELAYED_QUERY_WORKFLOWS_HARMFUL",
+    "first_fault": "PROGRAM_FAMILY_HAS_NO_QUERY_HEADROOM_UNDER_OBSERVED_TEMPORAL_REGIME",
+    "fast_path_executable": false,
+    "family_action": "STOP_CURRENT_VERSION"
+  }
+}

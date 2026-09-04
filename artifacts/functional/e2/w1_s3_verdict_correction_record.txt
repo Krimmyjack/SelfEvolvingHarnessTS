@@ -1,0 +1,39 @@
+S3 verdict 修正记录（2026-08-13，审查者审计 → 裁决）
+
+原 verdict：CONTROLLED_EVOLUTION_CHAIN_PASS（w1_s3_simplified_slow_path
+_report.json）——命名过强，修正为：
+
+  CONTROLLED_EDIT_TO_PERSISTED_SKILL_MECHANISM_PASS
+  + NORMAL_ENTRY_ADOPTION_UNVERIFIED
+  + REMOVAL_UNVERIFIED
+
+四个承重问题（审查者审计）：
+1. "Runtime 正常入口采用"未测——runtime_adopted 只检查 skill_ids 存在
+   + chosen_op ∈ 白名单（必然真）；未测检索/入池/选择/执行。
+2. "LLM 下一入口采用"是提示式选择——prompt 直接告知 skill 存在 +
+   候选列表 → 模型从列表选它；未跑 resolve_harness_view → FastAgent →
+   检索 → 候选生成 → selection → Support 授权 → 执行。
+3. removal 对照不成立——只重算 repair_level_shift @728；且
+   impute_ar @728 +0.043 < repair_level_shift @728 +0.261——skill 只
+   相对 raw 正向，未证明相对 incumbent 更优。
+4. 时间顺序反了——held-in @728 先于 delayed @680（逆时间）；正确：
+   D_patch @632 → held-in @680 → delayed @728。
+
+Scope 风险：skill applicability 宽（task_kind==forecast）+
+requires_target_support=true——不能直接自动执行；adoption prompt 称
+"LOCAL_ACTIVE and applicable" 未执行 Support 权限门。
+
+修正后允许的 Claim（审查者口径）：
+  在已暴露 NN5 development positive control 上，受限 Fault Diagnosis
+  Card 能指导 LLM 从两个有公开 D_patch 反馈的候选中选择更优候选；
+  Runtime 能将该选择编译成 Typed Skill，并经过 Support/delayed 写入
+  Harness Snapshot。
+不可说：完整正常入口采用、removal 对照、Target-local Skill 相对
+incumbent 有益、Batch Evolution、Case Memory 价值。
+
+后续（审查者顺序）：
+  P0 = 真实正常入口对照（H1 含 learned Skill vs H0 移除——同真实入口
+    TTHAFastAgent → retrieval → pool → LLM select → Support 授权 →
+    执行；时间角色 632/680/728；U(H1)−U(H0) 相对 incumbent）
+  P1 = 可视化修正（adoption/removal 画虚线/未验证）
+  P2 = 自然 Batch Missingness（P0 核清后）

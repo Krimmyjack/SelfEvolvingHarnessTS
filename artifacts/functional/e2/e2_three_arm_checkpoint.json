@@ -1,0 +1,1129 @@
+{
+ "declared_before_target_stream": {
+  "protocol": "E2_THREE_ARM_ONLINE_ORDERING_CARD",
+  "frozen_before_target_stream": true,
+  "arms": [
+   "STATIC",
+   "A3",
+   "A5"
+  ],
+  "only_variable": "whether Source Episodes initialise the ordering",
+  "identical_across_arms": [
+   "candidate supply (asserted per cell)",
+   "lambda",
+   "Target Support budget",
+   "empty episodic Memory (card is the sole learning channel)"
+  ],
+  "operator_set": [
+   "outlier_mad",
+   "winsorize",
+   "outlier_iqr"
+  ],
+  "operator_set_rule": "first three of the frozen multiop declared order; the 4th (hampel_filter) is excluded MECHANICALLY by fast_propose_v1.json candidates.maxItems=3 (a 4th candidate fails payload schema validation). denoise family excluded mechanically as before.",
+  "budget_per_round": 3,
+  "source_pseudo_count": 10,
+  "lambda_fit": "Source bank dress rehearsal only; harm-constrained; frozen before the Target stream; identical in all arms",
+  "counts": "Source and Target evidence stored SEPARATELY in risk_guards.evidence_blocks; never pooled",
+  "prequential": "origin batches; card frozen for the whole batch; episodes folded in only after the batch completes",
+  "pools": {
+   "source": "GRID0_dev",
+   "target": "PATTERN_conf",
+   "series_overlap": 0,
+   "virgin_series_consumed": 0
+  },
+  "scope_note": "Source and Target are different series of the SAME dataset -> within-domain source prior, not cross-domain transfer",
+  "N_first_effective": "cumulative Target Support receipts consumed up to and including the first round where (a) the arm's order differs from its revision-1 order and (b) replaying the same cell under the revision-1 order costs strictly more probes to first positive (or finds none). Counterfactual replay uses the frozen multiop table for MEASUREMENT ONLY -- it never enters any arm's policy.",
+  "llm_calls": 0,
+  "lambda": {
+   "A": 0.0,
+   "B": 0.0
+  }
+ },
+ "lambda_fit": {
+  "A": {
+   "lambda": 0.0,
+   "criterion": "harm(learning) <= harm(frozen)",
+   "sweep": [
+    {
+     "lambda": 0.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 0.5,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 1.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 1.5,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 2.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 3.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 4.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 5.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 7.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    },
+    {
+     "lambda": 10.0,
+     "gain_per_probe": 0.03270344969984891,
+     "harm_learning": 0.6153846153846154,
+     "harm_frozen": 0.6153846153846154,
+     "feasible": true
+    }
+   ]
+  },
+  "B": {
+   "lambda": 0.0,
+   "criterion": "harm(learning) <= harm(frozen)",
+   "sweep": [
+    {
+     "lambda": 0.0,
+     "gain_per_probe": 0.1858489291877292,
+     "harm_learning": 0.6,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 0.5,
+     "gain_per_probe": 0.1858489291877292,
+     "harm_learning": 0.6,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 1.0,
+     "gain_per_probe": 0.1858489291877292,
+     "harm_learning": 0.6,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 1.5,
+     "gain_per_probe": 0.1858489291877292,
+     "harm_learning": 0.6,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 2.0,
+     "gain_per_probe": 0.1858489291877292,
+     "harm_learning": 0.6,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 3.0,
+     "gain_per_probe": 0.16776874635875388,
+     "harm_learning": 0.4,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 4.0,
+     "gain_per_probe": 0.16776874635875388,
+     "harm_learning": 0.4,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 5.0,
+     "gain_per_probe": 0.16776874635875388,
+     "harm_learning": 0.4,
+     "harm_frozen": 0.6666666666666666,
+     "feasible": true
+    },
+    {
+     "lambda": 7.0,
+     "gain_per_probe": 0.16207068554114729,
+     "harm_learning": 0.3,
+     "harm_frozen": 0.4666666666666667,
+     "feasible": true
+    },
+    {
+     "lambda": 10.0,
+     "gain_per_probe": 0.11785345485689554,
+     "harm_learning": 0.3,
+     "harm_frozen": 0.3,
+     "feasible": true
+    }
+   ]
+  }
+ },
+ "cohorts": {
+  "A": {
+   "dataset": "kdd2018",
+   "lambda": 0.0,
+   "cells": 150,
+   "supply_identity_checks": 300,
+   "instrument_mismatch": [],
+   "reference": {
+    "random": {
+     "gain": 11.141546540155696,
+     "probes": 270.90499999986685,
+     "harm": 81.17499999999902
+    },
+    "oracle": {
+     "gain": 14.63941539746903,
+     "probes": 215,
+     "harm": 64
+    }
+   },
+   "arms": {
+    "STATIC": {
+     "cum": {
+      "gain": 11.998439565292792,
+      "probes": 208,
+      "harm_count": 56,
+      "harm_magnitude": 3.272131186051448,
+      "positive_rounds": 108
+     },
+     "history": [
+      {
+       "origin": 600,
+       "cells": 25,
+       "gain": 1.3710953818006069,
+       "probes": 36,
+       "harm_count": 12,
+       "harm_magnitude": 0.7731288411789998,
+       "positive_rounds": 18,
+       "cum_gain": 1.3710953818006069,
+       "cum_probes": 36,
+       "cum_harm_count": 12,
+       "cum_harm_magnitude": 0.7731288411789998,
+       "cum_positive_rounds": 18
+      },
+      {
+       "origin": 672,
+       "cells": 25,
+       "gain": 1.7548850870505688,
+       "probes": 33,
+       "harm_count": 9,
+       "harm_magnitude": 0.8332004597181468,
+       "positive_rounds": 18,
+       "cum_gain": 3.125980468851176,
+       "cum_probes": 69,
+       "cum_harm_count": 21,
+       "cum_harm_magnitude": 1.6063293008971467,
+       "cum_positive_rounds": 36
+      },
+      {
+       "origin": 744,
+       "cells": 25,
+       "gain": 1.8988449898031055,
+       "probes": 37,
+       "harm_count": 11,
+       "harm_magnitude": 0.7489819189797244,
+       "positive_rounds": 15,
+       "cum_gain": 5.0248254586542815,
+       "cum_probes": 106,
+       "cum_harm_count": 32,
+       "cum_harm_magnitude": 2.355311219876871,
+       "cum_positive_rounds": 51
+      },
+      {
+       "origin": 816,
+       "cells": 25,
+       "gain": 2.457762697811104,
+       "probes": 36,
+       "harm_count": 12,
+       "harm_magnitude": 0.4612931998430747,
+       "positive_rounds": 18,
+       "cum_gain": 7.482588156465385,
+       "cum_probes": 142,
+       "cum_harm_count": 44,
+       "cum_harm_magnitude": 2.816604419719946,
+       "cum_positive_rounds": 69
+      },
+      {
+       "origin": 888,
+       "cells": 25,
+       "gain": 2.887011092647688,
+       "probes": 34,
+       "harm_count": 5,
+       "harm_magnitude": 0.34351947368315183,
+       "positive_rounds": 20,
+       "cum_gain": 10.369599249113072,
+       "cum_probes": 176,
+       "cum_harm_count": 49,
+       "cum_harm_magnitude": 3.1601238934030977,
+       "cum_positive_rounds": 89
+      },
+      {
+       "origin": 960,
+       "cells": 25,
+       "gain": 1.6288403161797198,
+       "probes": 32,
+       "harm_count": 7,
+       "harm_magnitude": 0.1120072926483503,
+       "positive_rounds": 19,
+       "cum_gain": 11.998439565292792,
+       "cum_probes": 208,
+       "cum_harm_count": 56,
+       "cum_harm_magnitude": 3.272131186051448,
+       "cum_positive_rounds": 108
+      }
+     ],
+     "revisions": [
+      {
+       "revision": 1,
+       "order": [
+        "winsorize",
+        "outlier_iqr",
+        "outlier_mad"
+       ]
+      }
+     ],
+     "order_0": [
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad"
+     ],
+     "n_first_effective": null,
+     "first_effective_round": null
+    },
+    "A3": {
+     "cum": {
+      "gain": 11.710366377633626,
+      "probes": 213,
+      "harm_count": 54,
+      "harm_magnitude": 3.183377590307215,
+      "positive_rounds": 108
+     },
+     "history": [
+      {
+       "origin": 600,
+       "cells": 25,
+       "gain": 1.0830221941414415,
+       "probes": 41,
+       "harm_count": 10,
+       "harm_magnitude": 0.6843752454347662,
+       "positive_rounds": 18,
+       "cum_gain": 1.0830221941414415,
+       "cum_probes": 41,
+       "cum_harm_count": 10,
+       "cum_harm_magnitude": 0.6843752454347662,
+       "cum_positive_rounds": 18
+      },
+      {
+       "origin": 672,
+       "cells": 25,
+       "gain": 1.7548850870505688,
+       "probes": 33,
+       "harm_count": 9,
+       "harm_magnitude": 0.8332004597181468,
+       "positive_rounds": 18,
+       "cum_gain": 2.8379072811920105,
+       "cum_probes": 74,
+       "cum_harm_count": 19,
+       "cum_harm_magnitude": 1.517575705152913,
+       "cum_positive_rounds": 36
+      },
+      {
+       "origin": 744,
+       "cells": 25,
+       "gain": 1.8988449898031055,
+       "probes": 37,
+       "harm_count": 11,
+       "harm_magnitude": 0.7489819189797244,
+       "positive_rounds": 15,
+       "cum_gain": 4.736752270995116,
+       "cum_probes": 111,
+       "cum_harm_count": 30,
+       "cum_harm_magnitude": 2.2665576241326377,
+       "cum_positive_rounds": 51
+      },
+      {
+       "origin": 816,
+       "cells": 25,
+       "gain": 2.457762697811104,
+       "probes": 36,
+       "harm_count": 12,
+       "harm_magnitude": 0.4612931998430747,
+       "positive_rounds": 18,
+       "cum_gain": 7.19451496880622,
+       "cum_probes": 147,
+       "cum_harm_count": 42,
+       "cum_harm_magnitude": 2.7278508239757127,
+       "cum_positive_rounds": 69
+      },
+      {
+       "origin": 888,
+       "cells": 25,
+       "gain": 2.887011092647688,
+       "probes": 34,
+       "harm_count": 5,
+       "harm_magnitude": 0.34351947368315183,
+       "positive_rounds": 20,
+       "cum_gain": 10.081526061453907,
+       "cum_probes": 181,
+       "cum_harm_count": 47,
+       "cum_harm_magnitude": 3.0713702976588646,
+       "cum_positive_rounds": 89
+      },
+      {
+       "origin": 960,
+       "cells": 25,
+       "gain": 1.6288403161797198,
+       "probes": 32,
+       "harm_count": 7,
+       "harm_magnitude": 0.1120072926483503,
+       "positive_rounds": 19,
+       "cum_gain": 11.710366377633626,
+       "cum_probes": 213,
+       "cum_harm_count": 54,
+       "cum_harm_magnitude": 3.183377590307215,
+       "cum_positive_rounds": 108
+      }
+     ],
+     "revisions": [
+      {
+       "revision": 1,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ]
+      },
+      {
+       "revision": 2,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 600
+      },
+      {
+       "revision": 3,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 672
+      },
+      {
+       "revision": 4,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 744
+      },
+      {
+       "revision": 5,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 816
+      },
+      {
+       "revision": 6,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 888
+      },
+      {
+       "revision": 7,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 960
+      }
+     ],
+     "order_0": [
+      "outlier_mad",
+      "winsorize",
+      "outlier_iqr"
+     ],
+     "n_first_effective": 42,
+     "first_effective_round": "T46@672"
+    },
+    "A5": {
+     "cum": {
+      "gain": 11.998439565292792,
+      "probes": 208,
+      "harm_count": 56,
+      "harm_magnitude": 3.272131186051448,
+      "positive_rounds": 108
+     },
+     "history": [
+      {
+       "origin": 600,
+       "cells": 25,
+       "gain": 1.3710953818006069,
+       "probes": 36,
+       "harm_count": 12,
+       "harm_magnitude": 0.7731288411789998,
+       "positive_rounds": 18,
+       "cum_gain": 1.3710953818006069,
+       "cum_probes": 36,
+       "cum_harm_count": 12,
+       "cum_harm_magnitude": 0.7731288411789998,
+       "cum_positive_rounds": 18
+      },
+      {
+       "origin": 672,
+       "cells": 25,
+       "gain": 1.7548850870505688,
+       "probes": 33,
+       "harm_count": 9,
+       "harm_magnitude": 0.8332004597181468,
+       "positive_rounds": 18,
+       "cum_gain": 3.125980468851176,
+       "cum_probes": 69,
+       "cum_harm_count": 21,
+       "cum_harm_magnitude": 1.6063293008971467,
+       "cum_positive_rounds": 36
+      },
+      {
+       "origin": 744,
+       "cells": 25,
+       "gain": 1.8988449898031055,
+       "probes": 37,
+       "harm_count": 11,
+       "harm_magnitude": 0.7489819189797244,
+       "positive_rounds": 15,
+       "cum_gain": 5.0248254586542815,
+       "cum_probes": 106,
+       "cum_harm_count": 32,
+       "cum_harm_magnitude": 2.355311219876871,
+       "cum_positive_rounds": 51
+      },
+      {
+       "origin": 816,
+       "cells": 25,
+       "gain": 2.457762697811104,
+       "probes": 36,
+       "harm_count": 12,
+       "harm_magnitude": 0.4612931998430747,
+       "positive_rounds": 18,
+       "cum_gain": 7.482588156465385,
+       "cum_probes": 142,
+       "cum_harm_count": 44,
+       "cum_harm_magnitude": 2.816604419719946,
+       "cum_positive_rounds": 69
+      },
+      {
+       "origin": 888,
+       "cells": 25,
+       "gain": 2.887011092647688,
+       "probes": 34,
+       "harm_count": 5,
+       "harm_magnitude": 0.34351947368315183,
+       "positive_rounds": 20,
+       "cum_gain": 10.369599249113072,
+       "cum_probes": 176,
+       "cum_harm_count": 49,
+       "cum_harm_magnitude": 3.1601238934030977,
+       "cum_positive_rounds": 89
+      },
+      {
+       "origin": 960,
+       "cells": 25,
+       "gain": 1.6288403161797198,
+       "probes": 32,
+       "harm_count": 7,
+       "harm_magnitude": 0.1120072926483503,
+       "positive_rounds": 19,
+       "cum_gain": 11.998439565292792,
+       "cum_probes": 208,
+       "cum_harm_count": 56,
+       "cum_harm_magnitude": 3.272131186051448,
+       "cum_positive_rounds": 108
+      }
+     ],
+     "revisions": [
+      {
+       "revision": 1,
+       "order": [
+        "winsorize",
+        "outlier_iqr",
+        "outlier_mad"
+       ]
+      },
+      {
+       "revision": 2,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 600
+      },
+      {
+       "revision": 3,
+       "order": [
+        "winsorize",
+        "outlier_iqr",
+        "outlier_mad"
+       ],
+       "after_origin": 672
+      },
+      {
+       "revision": 4,
+       "order": [
+        "winsorize",
+        "outlier_iqr",
+        "outlier_mad"
+       ],
+       "after_origin": 744
+      },
+      {
+       "revision": 5,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 816
+      },
+      {
+       "revision": 6,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 888
+      },
+      {
+       "revision": 7,
+       "order": [
+        "winsorize",
+        "outlier_mad",
+        "outlier_iqr"
+       ],
+       "after_origin": 960
+      }
+     ],
+     "order_0": [
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad"
+     ],
+     "n_first_effective": null,
+     "first_effective_round": null
+    }
+   }
+  },
+  "B": {
+   "dataset": "metr_la",
+   "lambda": 0.0,
+   "cells": 60,
+   "supply_identity_checks": 120,
+   "instrument_mismatch": [],
+   "reference": {
+    "random": {
+     "gain": 25.86121897933953,
+     "probes": 85.09499999999476,
+     "harm": 28.470000000000287
+    },
+    "oracle": {
+     "gain": 39.6029093102768,
+     "probes": 78,
+     "harm": 22
+    }
+   },
+   "arms": {
+    "STATIC": {
+     "cum": {
+      "gain": 35.06025561095139,
+      "probes": 76,
+      "harm_count": 22,
+      "harm_magnitude": 5.380653618481314,
+      "positive_rounds": 51
+     },
+     "history": [
+      {
+       "origin": 600,
+       "cells": 10,
+       "gain": 6.476365661462397,
+       "probes": 10,
+       "harm_count": 0,
+       "harm_magnitude": 0.0,
+       "positive_rounds": 10,
+       "cum_gain": 6.476365661462397,
+       "cum_probes": 10,
+       "cum_harm_count": 0,
+       "cum_harm_magnitude": 0.0,
+       "cum_positive_rounds": 10
+      },
+      {
+       "origin": 672,
+       "cells": 10,
+       "gain": 4.908288532405091,
+       "probes": 14,
+       "harm_count": 4,
+       "harm_magnitude": 0.36894568294292013,
+       "positive_rounds": 9,
+       "cum_gain": 11.384654193867489,
+       "cum_probes": 24,
+       "cum_harm_count": 4,
+       "cum_harm_magnitude": 0.36894568294292013,
+       "cum_positive_rounds": 19
+      },
+      {
+       "origin": 744,
+       "cells": 10,
+       "gain": 3.124629996032136,
+       "probes": 19,
+       "harm_count": 13,
+       "harm_magnitude": 3.8675078740747635,
+       "positive_rounds": 4,
+       "cum_gain": 14.509284189899624,
+       "cum_probes": 43,
+       "cum_harm_count": 17,
+       "cum_harm_magnitude": 4.236453557017684,
+       "cum_positive_rounds": 23
+      },
+      {
+       "origin": 816,
+       "cells": 10,
+       "gain": 10.170332758442033,
+       "probes": 11,
+       "harm_count": 1,
+       "harm_magnitude": 0.30591078369269953,
+       "positive_rounds": 10,
+       "cum_gain": 24.679616948341657,
+       "cum_probes": 54,
+       "cum_harm_count": 18,
+       "cum_harm_magnitude": 4.5423643407103835,
+       "cum_positive_rounds": 33
+      },
+      {
+       "origin": 888,
+       "cells": 10,
+       "gain": 7.3217018843698,
+       "probes": 11,
+       "harm_count": 2,
+       "harm_magnitude": 0.7158591383958589,
+       "positive_rounds": 9,
+       "cum_gain": 32.001318832711455,
+       "cum_probes": 65,
+       "cum_harm_count": 20,
+       "cum_harm_magnitude": 5.258223479106243,
+       "cum_positive_rounds": 42
+      },
+      {
+       "origin": 960,
+       "cells": 10,
+       "gain": 3.0589367782399286,
+       "probes": 11,
+       "harm_count": 2,
+       "harm_magnitude": 0.12243013937507091,
+       "positive_rounds": 9,
+       "cum_gain": 35.06025561095139,
+       "cum_probes": 76,
+       "cum_harm_count": 22,
+       "cum_harm_magnitude": 5.380653618481314,
+       "cum_positive_rounds": 51
+      }
+     ],
+     "revisions": [
+      {
+       "revision": 1,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ]
+      }
+     ],
+     "order_0": [
+      "outlier_mad",
+      "outlier_iqr",
+      "winsorize"
+     ],
+     "n_first_effective": null,
+     "first_effective_round": null
+    },
+    "A3": {
+     "cum": {
+      "gain": 35.06025561095139,
+      "probes": 76,
+      "harm_count": 22,
+      "harm_magnitude": 5.380653618481314,
+      "positive_rounds": 51
+     },
+     "history": [
+      {
+       "origin": 600,
+       "cells": 10,
+       "gain": 6.476365661462397,
+       "probes": 10,
+       "harm_count": 0,
+       "harm_magnitude": 0.0,
+       "positive_rounds": 10,
+       "cum_gain": 6.476365661462397,
+       "cum_probes": 10,
+       "cum_harm_count": 0,
+       "cum_harm_magnitude": 0.0,
+       "cum_positive_rounds": 10
+      },
+      {
+       "origin": 672,
+       "cells": 10,
+       "gain": 4.908288532405091,
+       "probes": 14,
+       "harm_count": 4,
+       "harm_magnitude": 0.36894568294292013,
+       "positive_rounds": 9,
+       "cum_gain": 11.384654193867489,
+       "cum_probes": 24,
+       "cum_harm_count": 4,
+       "cum_harm_magnitude": 0.36894568294292013,
+       "cum_positive_rounds": 19
+      },
+      {
+       "origin": 744,
+       "cells": 10,
+       "gain": 3.124629996032136,
+       "probes": 19,
+       "harm_count": 13,
+       "harm_magnitude": 3.8675078740747635,
+       "positive_rounds": 4,
+       "cum_gain": 14.509284189899624,
+       "cum_probes": 43,
+       "cum_harm_count": 17,
+       "cum_harm_magnitude": 4.236453557017684,
+       "cum_positive_rounds": 23
+      },
+      {
+       "origin": 816,
+       "cells": 10,
+       "gain": 10.170332758442033,
+       "probes": 11,
+       "harm_count": 1,
+       "harm_magnitude": 0.30591078369269953,
+       "positive_rounds": 10,
+       "cum_gain": 24.679616948341657,
+       "cum_probes": 54,
+       "cum_harm_count": 18,
+       "cum_harm_magnitude": 4.5423643407103835,
+       "cum_positive_rounds": 33
+      },
+      {
+       "origin": 888,
+       "cells": 10,
+       "gain": 7.3217018843698,
+       "probes": 11,
+       "harm_count": 2,
+       "harm_magnitude": 0.7158591383958589,
+       "positive_rounds": 9,
+       "cum_gain": 32.001318832711455,
+       "cum_probes": 65,
+       "cum_harm_count": 20,
+       "cum_harm_magnitude": 5.258223479106243,
+       "cum_positive_rounds": 42
+      },
+      {
+       "origin": 960,
+       "cells": 10,
+       "gain": 3.0589367782399286,
+       "probes": 11,
+       "harm_count": 2,
+       "harm_magnitude": 0.12243013937507091,
+       "positive_rounds": 9,
+       "cum_gain": 35.06025561095139,
+       "cum_probes": 76,
+       "cum_harm_count": 22,
+       "cum_harm_magnitude": 5.380653618481314,
+       "cum_positive_rounds": 51
+      }
+     ],
+     "revisions": [
+      {
+       "revision": 1,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ]
+      },
+      {
+       "revision": 2,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ],
+       "after_origin": 600
+      },
+      {
+       "revision": 3,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ],
+       "after_origin": 672
+      },
+      {
+       "revision": 4,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ],
+       "after_origin": 744
+      },
+      {
+       "revision": 5,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ],
+       "after_origin": 816
+      },
+      {
+       "revision": 6,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ],
+       "after_origin": 888
+      },
+      {
+       "revision": 7,
+       "order": [
+        "outlier_mad",
+        "winsorize",
+        "outlier_iqr"
+       ],
+       "after_origin": 960
+      }
+     ],
+     "order_0": [
+      "outlier_mad",
+      "winsorize",
+      "outlier_iqr"
+     ],
+     "n_first_effective": null,
+     "first_effective_round": null
+    },
+    "A5": {
+     "cum": {
+      "gain": 35.06025561095139,
+      "probes": 76,
+      "harm_count": 22,
+      "harm_magnitude": 5.380653618481314,
+      "positive_rounds": 51
+     },
+     "history": [
+      {
+       "origin": 600,
+       "cells": 10,
+       "gain": 6.476365661462397,
+       "probes": 10,
+       "harm_count": 0,
+       "harm_magnitude": 0.0,
+       "positive_rounds": 10,
+       "cum_gain": 6.476365661462397,
+       "cum_probes": 10,
+       "cum_harm_count": 0,
+       "cum_harm_magnitude": 0.0,
+       "cum_positive_rounds": 10
+      },
+      {
+       "origin": 672,
+       "cells": 10,
+       "gain": 4.908288532405091,
+       "probes": 14,
+       "harm_count": 4,
+       "harm_magnitude": 0.36894568294292013,
+       "positive_rounds": 9,
+       "cum_gain": 11.384654193867489,
+       "cum_probes": 24,
+       "cum_harm_count": 4,
+       "cum_harm_magnitude": 0.36894568294292013,
+       "cum_positive_rounds": 19
+      },
+      {
+       "origin": 744,
+       "cells": 10,
+       "gain": 3.124629996032136,
+       "probes": 19,
+       "harm_count": 13,
+       "harm_magnitude": 3.8675078740747635,
+       "positive_rounds": 4,
+       "cum_gain": 14.509284189899624,
+       "cum_probes": 43,
+       "cum_harm_count": 17,
+       "cum_harm_magnitude": 4.236453557017684,
+       "cum_positive_rounds": 23
+      },
+      {
+       "origin": 816,
+       "cells": 10,
+       "gain": 10.170332758442033,
+       "probes": 11,
+       "harm_count": 1,
+       "harm_magnitude": 0.30591078369269953,
+       "positive_rounds": 10,
+       "cum_gain": 24.679616948341657,
+       "cum_probes": 54,
+       "cum_harm_count": 18,
+       "cum_harm_magnitude": 4.5423643407103835,
+       "cum_positive_rounds": 33
+      },
+      {
+       "origin": 888,
+       "cells": 10,
+       "gain": 7.3217018843698,
+       "probes": 11,
+       "harm_count": 2,
+       "harm_magnitude": 0.7158591383958589,
+       "positive_rounds": 9,
+       "cum_gain": 32.001318832711455,
+       "cum_probes": 65,
+       "cum_harm_count": 20,
+       "cum_harm_magnitude": 5.258223479106243,
+       "cum_positive_rounds": 42
+      },
+      {
+       "origin": 960,
+       "cells": 10,
+       "gain": 3.0589367782399286,
+       "probes": 11,
+       "harm_count": 2,
+       "harm_magnitude": 0.12243013937507091,
+       "positive_rounds": 9,
+       "cum_gain": 35.06025561095139,
+       "cum_probes": 76,
+       "cum_harm_count": 22,
+       "cum_harm_magnitude": 5.380653618481314,
+       "cum_positive_rounds": 51
+      }
+     ],
+     "revisions": [
+      {
+       "revision": 1,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ]
+      },
+      {
+       "revision": 2,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ],
+       "after_origin": 600
+      },
+      {
+       "revision": 3,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ],
+       "after_origin": 672
+      },
+      {
+       "revision": 4,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ],
+       "after_origin": 744
+      },
+      {
+       "revision": 5,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ],
+       "after_origin": 816
+      },
+      {
+       "revision": 6,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ],
+       "after_origin": 888
+      },
+      {
+       "revision": 7,
+       "order": [
+        "outlier_mad",
+        "outlier_iqr",
+        "winsorize"
+       ],
+       "after_origin": 960
+      }
+     ],
+     "order_0": [
+      "outlier_mad",
+      "outlier_iqr",
+      "winsorize"
+     ],
+     "n_first_effective": null,
+     "first_effective_round": null
+    }
+   }
+  }
+ },
+ "elapsed_seconds": 1212.2777971000178
+}

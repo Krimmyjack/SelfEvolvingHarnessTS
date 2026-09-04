@@ -1,0 +1,176 @@
+{
+  "case": {
+    "a": "denoise_median",
+    "b": "outlier_iqr",
+    "c1": "winsorize",
+    "c2": "outlier_mad",
+    "delayed": 952,
+    "delayed_AB": -0.06125772464287427,
+    "delayed_AC1": 0.2572125429345453,
+    "domain": "gefcom2012_load",
+    "gain_AB": -0.1302066421576531,
+    "gain_A_only": 0.0,
+    "gain_B_only": -0.1302066421576531,
+    "origin": 904,
+    "support_AC1": 0.4000053662007894
+  },
+  "checks": {
+    "1_same_instance_across_rounds": true,
+    "2_runner_only_submits_episode": true,
+    "3_runner_no_relation_read_for_trigger": true,
+    "4_runner_no_slow_chain_call": true,
+    "5_method_owned_trigger": true,
+    "6_next_round_auto_snapshot": true,
+    "7_zero_live_llm": true,
+    "8_removal_restores": true
+  },
+  "details": {
+    "r1": {
+      "feedback_event": {
+        "candidate_snapshot_sha": "2786843810ce46c36db05811db1fb9e0c5ddb97c365e848eb8417648815a4273",
+        "card_workflow": [
+          "outlier_iqr"
+        ],
+        "delayed_gain": 0.2572125429345453,
+        "delayed_ok": true,
+        "edit_id": "replace-outlier-iqr-with-winsorize",
+        "frozen_program": [
+          {
+            "op": "denoise_median",
+            "params": {
+              "strength": 1.0,
+              "window": 1
+            }
+          },
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ],
+        "material_negative": true,
+        "operation": "ADD",
+        "patch_id": "patch-replace-b-with-winsorize",
+        "relation": "NEGATIVE",
+        "snapshot_updated": true,
+        "stage": "applied",
+        "support_gain": 0.4000053662007894,
+        "support_passed": true,
+        "target_surface_id": "skill_library.entries/forecast-denoise-median-winsorize",
+        "triggered": true
+      },
+      "origin": 904,
+      "pool": [
+        "identity",
+        "cand_denoise_median",
+        "cand_outlier_iqr"
+      ],
+      "probes": [
+        {
+          "delayed_gain": 0.0,
+          "episode_id": "gefcom2012_load_target_denoise_median_owned_r1_p1",
+          "gain": 0.0,
+          "op": "denoise_median",
+          "passed": true,
+          "probe": 1,
+          "relation_after_delayed": "ABSTAIN"
+        },
+        {
+          "delayed_gain": -0.06125772464287427,
+          "episode_id": "gefcom2012_load_target_outlier_iqr_owned_r1_p2",
+          "gain": -0.1302066421576531,
+          "op": "outlier_iqr",
+          "passed": true,
+          "probe": 2,
+          "relation_after_delayed": "NEGATIVE"
+        }
+      ]
+    },
+    "r2": {
+      "origin": 952,
+      "pool": [
+        "identity",
+        "cand_skill_forecast-denoise-median-winsorize",
+        "cand_denoise_median"
+      ],
+      "probes": [
+        {
+          "delayed_gain": null,
+          "episode_id": "gefcom2012_load_target_skill_forecast-denoise-median-winsorize_owned_r2_p1",
+          "gain": 0.2572125429345453,
+          "op": "skill_forecast-denoise-median-winsorize",
+          "passed": true,
+          "probe": 1,
+          "relation_after_delayed": "CONFLICT"
+        }
+      ]
+    },
+    "r3_removal": {
+      "origin": 952,
+      "pool": [
+        "identity",
+        "cand_denoise_median",
+        "cand_outlier_iqr"
+      ],
+      "probes": [
+        {
+          "delayed_gain": null,
+          "episode_id": "gefcom2012_load_target_denoise_median_owned_r3_removal_p1",
+          "gain": 0.0,
+          "op": "denoise_median",
+          "passed": true,
+          "probe": 1,
+          "relation_after_delayed": "ABSTAIN"
+        },
+        {
+          "delayed_gain": null,
+          "episode_id": "gefcom2012_load_target_outlier_iqr_owned_r3_removal_p2",
+          "gain": -0.06125772464287427,
+          "op": "outlier_iqr",
+          "passed": true,
+          "probe": 2,
+          "relation_after_delayed": "NEGATIVE"
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "stage": "no_trigger"
+    },
+    {
+      "candidate_snapshot_sha": "2786843810ce46c36db05811db1fb9e0c5ddb97c365e848eb8417648815a4273",
+      "card_workflow": [
+        "outlier_iqr"
+      ],
+      "delayed_gain": 0.2572125429345453,
+      "delayed_ok": true,
+      "edit_id": "replace-outlier-iqr-with-winsorize",
+      "frozen_program": [
+        {
+          "op": "denoise_median",
+          "params": {
+            "strength": 1.0,
+            "window": 1
+          }
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "material_negative": true,
+      "operation": "ADD",
+      "patch_id": "patch-replace-b-with-winsorize",
+      "relation": "NEGATIVE",
+      "snapshot_updated": true,
+      "stage": "applied",
+      "support_gain": 0.4000053662007894,
+      "support_passed": true,
+      "target_surface_id": "skill_library.entries/forecast-denoise-median-winsorize",
+      "triggered": true
+    }
+  ],
+  "experiment_id": "v1-method-owned-slow-update",
+  "note": "P3.1-A2+B2 replay：方法层所有权 + Typed Patch Binding（零 live LLM；development case；不称自然自进化）",
+  "verdict": "METHOD_OWNED_SLOW_UPDATE_WIRING_PASS"
+}

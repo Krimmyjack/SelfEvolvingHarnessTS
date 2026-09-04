@@ -1,0 +1,197 @@
+{
+  "experiment_id": "v1-p2-a5-vs-a3",
+  "note": "Wave 4：Source Experience 价值实验（P2-v3 Context-bound 经验 → 等预算 Target 适应——同域机制检查 held-out origins——不称 fresh——development exposure——零新 Claim）",
+  "apparatus": {
+    "domain": "noaa",
+    "target_series": "06402bd5",
+    "target_origin": 600,
+    "delayed_origin": 648,
+    "candidate_dsl": [
+      "repair_level_shift",
+      "impute_ar",
+      "impute_ssm",
+      "impute_fft",
+      "impute_ema",
+      "impute_linear"
+    ],
+    "source": {
+      "n_episodes": 24,
+      "note": "deterministic census probe——非 Fast 自然轨迹"
+    }
+  },
+  "a5_retrieval": {
+    "pack_found": true,
+    "pack": {
+      "positive": {
+        "episode_id": "nn5_p2src_1025b235_impute_fft_632",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "forecast|ridge|sMASE",
+        "domain_namespace": "nn5",
+        "context_summary": {
+          "local_pattern": {
+            "missing_fraction": 0.03639240506329114,
+            "longest_missing_run_fraction": 0.007911392405063292,
+            "estimated_region_start_fraction": 0.10443037974683544,
+            "estimated_region_end_fraction": 0.9636075949367089,
+            "period_reliability": 0.3616071428571428,
+            "period_change_score": 0.0
+          },
+          "delayed_pattern": {},
+          "program_geometry": {
+            "scope": "training_rows",
+            "program_steps": [
+              {
+                "op": "impute_fft",
+                "params": {}
+              }
+            ]
+          },
+          "per_view_gain": [],
+          "support_origin": 632
+        },
+        "workflow_signature": "impute_fft",
+        "support_response": {
+          "gain": 0.020542575090948922,
+          "accepted": false
+        },
+        "delayed_response": {
+          "evaluated": false,
+          "gain": null
+        },
+        "relation": "POSITIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "p2v3_deterministic_census"
+        ]
+      },
+      "negative": {
+        "episode_id": "nn5_p2src_1025b235_impute_fft_600",
+        "schema_version": "experience-episode/1",
+        "task_consumer_key": "forecast|ridge|sMASE",
+        "domain_namespace": "nn5",
+        "context_summary": {
+          "local_pattern": {
+            "missing_fraction": 0.03666666666666667,
+            "longest_missing_run_fraction": 0.008333333333333333,
+            "estimated_region_start_fraction": 0.11,
+            "estimated_region_end_fraction": 0.9383333333333334,
+            "period_reliability": 0.3133928571428571,
+            "period_change_score": 0.0
+          },
+          "delayed_pattern": {},
+          "program_geometry": {
+            "scope": "training_rows",
+            "program_steps": [
+              {
+                "op": "impute_fft",
+                "params": {}
+              }
+            ]
+          },
+          "per_view_gain": [],
+          "support_origin": 600
+        },
+        "workflow_signature": "impute_fft",
+        "support_response": {
+          "gain": -0.013543673978684057,
+          "accepted": false
+        },
+        "delayed_response": {
+          "evaluated": false,
+          "gain": null
+        },
+        "relation": "NEGATIVE",
+        "evidence_level": "SUPPORT",
+        "response_validity": "VALID",
+        "local_status": "EPISODE_ONLY",
+        "pattern_view": "default",
+        "evidence_refs": [
+          "p2v3_deterministic_census"
+        ]
+      },
+      "conflict": null,
+      "evidence_sufficient": true,
+      "retrieval_note": "24 valid episodes; same-domain-first; signed pack (pos/neg/conflict)"
+    },
+    "ambiguous_memory": true,
+    "prequential_filter": {
+      "injected": 24,
+      "excluded_later_than_target": 12
+    }
+  },
+  "arm_A3": {
+    "probes": [
+      [
+        "linear_missing_value_imputation",
+        0.2668149728462872,
+        "probe",
+        true
+      ]
+    ],
+    "memory_resolution_status": "no_memory",
+    "legal_actions": [
+      "linear_missing_value_imputation"
+    ],
+    "invalid_proposals": [],
+    "first_pos_probes": 1,
+    "neg_probes": 0,
+    "harm": 0,
+    "abstained": false,
+    "chosen_op": "linear_missing_value_imputation",
+    "max_gain": 0.2668149728462872,
+    "winner_program": [
+      {
+        "op": "impute_linear",
+        "params": {
+          "strength": 0.5
+        }
+      }
+    ],
+    "chosen_op_clean": "impute_linear",
+    "delayed_gain": 0.0
+  },
+  "arm_A5": {
+    "probes": [
+      [
+        "linear_missing_value_imputation",
+        0.2668149728462872,
+        "probe",
+        true
+      ]
+    ],
+    "memory_resolution_status": "contrast_pack",
+    "legal_actions": [
+      "linear_missing_value_imputation"
+    ],
+    "invalid_proposals": [],
+    "first_pos_probes": 1,
+    "neg_probes": 0,
+    "harm": 0,
+    "abstained": false,
+    "chosen_op": "linear_missing_value_imputation",
+    "max_gain": 0.2668149728462872,
+    "winner_program": [
+      {
+        "op": "impute_linear",
+        "params": {
+          "strength": 0.5
+        }
+      }
+    ],
+    "chosen_op_clean": "impute_linear",
+    "delayed_gain": 0.0
+  },
+  "utility": {
+    "A3_delayed": 0.0,
+    "A5_delayed": 0.0,
+    "A5_not_worse": true,
+    "improved": false,
+    "delayed_gain_note": "delayed_gain 0.0 系 _default_params（strength=1.0）错误参数绑定所测（impute_linear(1.0)=baseline 等价）；不表征 winner_program impute_linear(strength=0.5) 的 delayed utility——由 w1_noaa_impute_linear_census_report 补测"
+  },
+  "verdict": "NO_INCREMENTAL_MEMORY_SIGNAL",
+  "verdict_original": "ADHERENCE_GAP",
+  "verdict_correction": "用户裁决 2026-08-13：A5 收到的是冲突 Memory（pack 正负同 workflow impute_fft、渲染为 AMBIGUOUS 块——无明确单向指令可遵循）；行为与 A3 相同 = Memory 未产生增量信号——不构成 ADHERENCE_GAP（后者要求 Memory 给出明确单向可行动建议而 Agent 忽略）。"
+}

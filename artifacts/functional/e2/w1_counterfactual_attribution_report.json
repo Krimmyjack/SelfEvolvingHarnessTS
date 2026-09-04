@@ -1,0 +1,128 @@
+{
+  "case": {
+    "delayed_origin": 976,
+    "origin": 928,
+    "step_a": "impute_ssm",
+    "step_b": "outlier_iqr",
+    "support": {
+      "A_only": -0.15432,
+      "A_to_B": -0.10249,
+      "B_only": 0.04386,
+      "identity": null
+    }
+  },
+  "delayed_runner_side_not_in_feedback": {
+    "A_only": null,
+    "A_to_B": -0.01342,
+    "B_only": 0.02719
+  },
+  "e1": {
+    "arm": "E1",
+    "choice": {
+      "attempts": [
+        "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"support outcomes: A only -0.15432, B only +0.04386, A then B -0.10249\",\"experience memory: gefcom outlier_iqr @928 support +0.04386 POSITIVE\"],\"rationale\":\"Remove impute_ssm and retain outlier_iqr. Step A is harmful alone, and adding it to B makes the combined workflow negative, while B alone has positive support.\"}"
+      ],
+      "evidence_refs": [
+        "support outcomes: A only -0.15432, B only +0.04386, A then B -0.10249",
+        "experience memory: gefcom outlier_iqr @928 support +0.04386 POSITIVE"
+      ],
+      "patch_id": "REMOVE_STEP_A",
+      "rationale": "Remove impute_ssm and retain outlier_iqr. Step A is harmful alone, and adding it to B makes the combined workflow negative, while B alone has positive support."
+    },
+    "compiler": {
+      "checked_windows": 120,
+      "passed": true,
+      "rejected_windows": []
+    },
+    "frozen_steps": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "include_memory": true,
+    "llm_calls": 1,
+    "prompt": "You are the slow attribution path of a time-series preprocessing harness.\n\nA two-step Workflow was applied at support decision point 928. You must decide the update direction for this Workflow by choosing exactly one legal patch ID.\n\n== Source Workflow (A then B) ==\n  A: impute_ssm params={}\n  B: outlier_iqr params={}\n\n== Public context at the decision point (deployment-visible) ==\n{\n  \"change.coverage_delta\": -0.09375,\n  \"change.maximum_missing_run_length_delta\": 18.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.006749,\n  \"change.median_normalized_seasonal_residual_delta\": 0.060396,\n  \"change.median_robust_center_delta\": 10261.25,\n  \"change.median_robust_scale_delta\": 7116.85065,\n  \"change.missing_run_count_delta\": 20.0,\n  \"recent.coverage\": 0.90625,\n  \"recent.maximum_missing_run_length\": 18.0,\n  \"recent.median_acf_at_calendar_period\": 0.935338,\n  \"recent.median_normalized_seasonal_residual\": 0.20182,\n  \"recent.median_robust_center\": 81433.75,\n  \"recent.median_robust_scale\": 24846.8934,\n  \"recent.missing_run_count\": 20.0\n}\n\n== Support outcomes (training-window cohort, sMASE gain; positive = better than no preprocessing) ==\n  identity (no preprocessing): baseline (gain 0 by definition)\n  A only: -0.15432\n  B only: +0.04386\n  A then B: -0.10249\n\n== Experience memory (signed, from earlier decision points) ==\n  - gefcom winsorize @832: support +0.14403 delayed +0.51098 → POSITIVE (LOCAL_ACTIVE)\n  - gefcom winsorize @928: support -0.16360 delayed +0.61000 → CONFLICT (support negative, delayed positive)\n  - gefcom impute_fft @928: support +0.01849 delayed -0.03496 → CONFLICT (RESTRICTED; support positive, delayed negative)\n  - gefcom outlier_iqr @928: support +0.04386 → POSITIVE\n\n== Legal patch IDs ==\n  KEEP         keep the two-step Workflow A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN      no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. If the stepwise evidence is insufficient or contradictory, ABSTAIN is valid — abstaining is not a failure.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+    "replay": {
+      "delayed": {
+        "error": null,
+        "gain": 0.027190356020410977,
+        "origin": 976,
+        "verification_passed": true
+      },
+      "delayed_opened_after_patch_freeze": true,
+      "support": {
+        "error": null,
+        "gain": 0.043862404445872194,
+        "origin": 928,
+        "verification_passed": true
+      }
+    }
+  },
+  "e2": {
+    "arm": "E2",
+    "choice": {
+      "attempts": [
+        "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"A only sMASE gain -0.15432\",\"A then B sMASE gain -0.10249\",\"B only sMASE gain +0.04386\",\"change.coverage_delta -0.09375\",\"change.maximum_missing_run_length_delta 18.0\"],\"rationale\":\"Remove A and retain B: A is harmful both alone and before B, while B alone improves sMASE. The deployment-visible coverage and missing-run degradations further support eliminating A.\"}"
+      ],
+      "evidence_refs": [
+        "A only sMASE gain -0.15432",
+        "A then B sMASE gain -0.10249",
+        "B only sMASE gain +0.04386",
+        "change.coverage_delta -0.09375",
+        "change.maximum_missing_run_length_delta 18.0"
+      ],
+      "patch_id": "REMOVE_STEP_A",
+      "rationale": "Remove A and retain B: A is harmful both alone and before B, while B alone improves sMASE. The deployment-visible coverage and missing-run degradations further support eliminating A."
+    },
+    "compiler": {
+      "checked_windows": 120,
+      "passed": true,
+      "rejected_windows": []
+    },
+    "frozen_steps": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "include_memory": false,
+    "llm_calls": 1,
+    "prompt": "You are the slow attribution path of a time-series preprocessing harness.\n\nA two-step Workflow was applied at support decision point 928. You must decide the update direction for this Workflow by choosing exactly one legal patch ID.\n\n== Source Workflow (A then B) ==\n  A: impute_ssm params={}\n  B: outlier_iqr params={}\n\n== Public context at the decision point (deployment-visible) ==\n{\n  \"change.coverage_delta\": -0.09375,\n  \"change.maximum_missing_run_length_delta\": 18.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.006749,\n  \"change.median_normalized_seasonal_residual_delta\": 0.060396,\n  \"change.median_robust_center_delta\": 10261.25,\n  \"change.median_robust_scale_delta\": 7116.85065,\n  \"change.missing_run_count_delta\": 20.0,\n  \"recent.coverage\": 0.90625,\n  \"recent.maximum_missing_run_length\": 18.0,\n  \"recent.median_acf_at_calendar_period\": 0.935338,\n  \"recent.median_normalized_seasonal_residual\": 0.20182,\n  \"recent.median_robust_center\": 81433.75,\n  \"recent.median_robust_scale\": 24846.8934,\n  \"recent.missing_run_count\": 20.0\n}\n\n== Support outcomes (training-window cohort, sMASE gain; positive = better than no preprocessing) ==\n  identity (no preprocessing): baseline (gain 0 by definition)\n  A only: -0.15432\n  B only: +0.04386\n  A then B: -0.10249\n\n== Legal patch IDs ==\n  KEEP         keep the two-step Workflow A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN      no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. If the stepwise evidence is insufficient or contradictory, ABSTAIN is valid — abstaining is not a failure.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+    "replay": {
+      "delayed": {
+        "error": null,
+        "gain": 0.027190356020410977,
+        "origin": 976,
+        "verification_passed": true
+      },
+      "delayed_opened_after_patch_freeze": true,
+      "support": {
+        "error": null,
+        "gain": 0.043862404445872194,
+        "origin": 928,
+        "verification_passed": true
+      }
+    }
+  },
+  "experiment_id": "v1-counterfactual-attribution",
+  "judgement": {
+    "checks": {
+      "delayed_no_negative_transfer": true,
+      "next_round_skill_influence": true,
+      "patch_compiles": true,
+      "support_better_than_original": true
+    },
+    "next_round_evidence": {
+      "base_chosen": "cand_impute_linear",
+      "behavior_changed_vs_base": true,
+      "compiler_passed": true,
+      "new_skill_retrieved": true,
+      "patched_chosen": "cand_outlier_iqr",
+      "skill_id": "outlie-target-v1"
+    },
+    "note": "next_round_skill_influence 由 P0-5 下一轮验证补填并合并",
+    "verdict": "LLM_ATTRIBUTION_TO_HARNESS_UPDATE_PASS"
+  },
+  "llm_api_call_count": 2
+}

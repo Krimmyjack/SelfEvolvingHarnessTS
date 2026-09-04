@@ -1,0 +1,53 @@
+{
+  "experiment_id": "v1-persistence-check",
+  "note": "P5 最小运行持久化（复用 HarnessStore——active.json + materialized 树；不新增数据库/Ledger）",
+  "active_sha": "d6e262e4cf8e2e59c7c6967b50db214ce4863ccc1833b744d7ab61ea5e2de7af",
+  "store": ".p4_store_a5",
+  "skills": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "winsorize_negative_outlier_mad"
+  ],
+  "guards": {
+    "winsorize_negative_outlier_mad": {
+      "explicit_choice_required": true,
+      "observable_applicability_only": true,
+      "preserve_outside_candidate_region": true,
+      "requires_target_support": true,
+      "single_surface_only": true
+    }
+  },
+  "pool": [
+    "identity",
+    "cand_winsorize",
+    "cand_skill_winsorize_negative_outlier_mad"
+  ],
+  "chosen": "cand_winsorize",
+  "current_status": {
+    "active_snapshot": {
+      "runtime_bundle_sha": "d6e262e4cf8e2e59c7c6967b50db214ce4863ccc1833b744d7ab61ea5e2de7af",
+      "harness_content_sha": "a410bd5e7ec6ba7465e10bff5a67c340777132f898ccf9af66fd2727871fa96d"
+    },
+    "episodes_count": 0,
+    "pending_patch": false,
+    "last_round": null,
+    "last_delayed": null,
+    "draft_skills": [
+      "winsorize_negative_outlier_mad"
+    ],
+    "active_skills": [],
+    "restricted_skills": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ]
+  },
+  "checks": {
+    "P1_snapshot_reloaded": true,
+    "P2_draft_guard_persisted": true,
+    "P3_status_fields": true,
+    "P4_next_round_behavior_consistent": true
+  },
+  "verdict": "PERSISTENCE_CHECK_PASS"
+}

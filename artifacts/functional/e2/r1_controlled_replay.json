@@ -1,0 +1,109 @@
+{
+  "protocol_version": "r1_controlled_replay_v1",
+  "verdict": "R1_CONTROLLED_REPLAY_MECHANISM_PASS",
+  "not_a_claim_of": "natural live capability; the Agent's two-candidate proposal is replayed from attempt 1, not produced again, and the alternative's own outcome is recorded but not required to be positive",
+  "code_under_test": "e40ecf9",
+  "llm_calls": 0,
+  "cohort": "electricity",
+  "exposure": "G3_DEVELOPMENT_SOURCE_FAMILY_OVERLAP",
+  "development_replay": true,
+  "captured_trace_source": "r1_micro_replay_electricity_attempt1_delivery_only.json",
+  "captured_proposals": [
+    {
+      "addresses_hypothesis_id": "h1",
+      "candidate_id": "c1",
+      "steps": [
+        {
+          "op": "repair_level_shift",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "addresses_hypothesis_id": "h1",
+      "candidate_id": "c2",
+      "steps": [
+        {
+          "op": "hampel_filter",
+          "params": {
+            "global_z_min": 3.0,
+            "n_sigmas": 3.0,
+            "window": 7
+          }
+        }
+      ]
+    }
+  ],
+  "minted_from_episodes": [
+    {
+      "task_episode_id": "e1v2_task_01",
+      "program": [
+        "repair_level_shift"
+      ],
+      "support_gain": -0.014879253926529742
+    },
+    {
+      "task_episode_id": "e1v2_task_02",
+      "program": [
+        "repair_level_shift"
+      ],
+      "support_gain": -0.0547773434780423
+    }
+  ],
+  "risk_skill_id": "target_risk_repair_level_shift",
+  "retrieved_in_task_03_context": [
+    "target_risk_repair_level_shift"
+  ],
+  "proposed_order": [
+    "c1",
+    "c2"
+  ],
+  "probe_order": [
+    "c2",
+    "c1"
+  ],
+  "deprioritization_receipt": [
+    {
+      "retrieved_risk_skill_ids": [
+        "target_risk_repair_level_shift"
+      ],
+      "proposed_order": [
+        "c1",
+        "c2"
+      ],
+      "probe_order": [
+        "c2",
+        "c1"
+      ],
+      "moved_behind": [
+        "c1"
+      ],
+      "note": "order only: every candidate stays selectable and is probed unchanged if the budget reaches it"
+    }
+  ],
+  "first_support_probe": {
+    "candidate_id": "c2",
+    "program": [
+      "hampel_filter"
+    ],
+    "macro_gain": 0.012403592248518462,
+    "meets_material_threshold": true,
+    "note": "recorded, not required to be positive: this replay tests the order of action, not the value of the alternative"
+  },
+  "counterfactual_without_the_reorder": {
+    "candidate_id": "c1",
+    "program": [
+      "repair_level_shift"
+    ],
+    "macro_gain_measured_in_attempt_1": -0.197,
+    "note": "the same frozen Outcome cell attempt 1 probed"
+  },
+  "checks": {
+    "matched_risk_skill_retrieved": true,
+    "alternative_moved_ahead_of_refuted_family": true,
+    "no_candidate_removed": true,
+    "no_candidate_blocked": true,
+    "first_support_spent_on_the_alternative": true,
+    "reorder_is_on_the_record": true
+  }
+}

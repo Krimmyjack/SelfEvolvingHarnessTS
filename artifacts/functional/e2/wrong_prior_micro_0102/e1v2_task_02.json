@@ -1,0 +1,132 @@
+{
+  "task_episode_id": "e1v2_task_02",
+  "arm": "A5",
+  "horizon": 48,
+  "observation_cutoff": 3360,
+  "scope_series_count": 8,
+  "wrong_prior_label": "open-loop RLS / level-shift / structural",
+  "wrong_prior_family": "structural",
+  "wrong_prior_operator": "repair_level_shift",
+  "wrong_prior_try": "Lead with repair_level_shift on prior expectation.",
+  "source_skill_id": "source_investigation_v1",
+  "source_skill_served": true,
+  "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_v1"
+  ],
+  "observation_families": [
+    "outlier",
+    "structural"
+  ],
+  "gate_receipt": {
+    "gate": "m1a_source_probe_gate",
+    "fired": false,
+    "match": true,
+    "has_source_prior": true,
+    "prior_family": "structural",
+    "observation_families": [
+      "outlier",
+      "structural"
+    ],
+    "is_authorization": false,
+    "is_confirmation": false,
+    "may_rank_first": true,
+    "may_monopolize_k": false,
+    "requires_target_support": true,
+    "execution_authorized": false,
+    "error_code": null,
+    "reason": "",
+    "try_operators": [
+      "repair_level_shift"
+    ]
+  },
+  "gate_fired": false,
+  "gate_match": true,
+  "gate_error_code": null,
+  "is_authorization": false,
+  "is_confirmation": false,
+  "execution_authorized": false,
+  "may_monopolize_k": false,
+  "source_prior_grants_execution": false,
+  "wrong_family_monopolized_k": false,
+  "wrong_prior_treated_as_confirmation": false,
+  "source_probe_receipts": [],
+  "families": [
+    "structural",
+    "outlier"
+  ],
+  "first_ops": [
+    "repair_level_shift",
+    "hampel_filter"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "repair_level_shift",
+      "addresses_hypothesis_id": "level_excursion",
+      "first_op": "repair_level_shift",
+      "family": "structural",
+      "ops": [
+        "repair_level_shift"
+      ]
+    },
+    {
+      "candidate_id": "hampel_extreme_deviation",
+      "addresses_hypothesis_id": "extreme_deviation",
+      "first_op": "hampel_filter",
+      "family": "outlier",
+      "ops": [
+        "hampel_filter"
+      ]
+    }
+  ],
+  "protocol_error": null,
+  "infrastructure_error": null,
+  "propose_entered": true,
+  "retries_happened": false,
+  "validation_retry_count": 0,
+  "validation_error_codes": [],
+  "llm_calls": 8,
+  "workspace_tool_calls": 6,
+  "raw_candidate_count": 2,
+  "propose_payload_keys": [
+    "candidates"
+  ],
+  "propose_stage_payload": {
+    "candidates": [
+      {
+        "candidate_id": "repair_level_shift",
+        "addresses_hypothesis_id": "level_excursion",
+        "steps": [
+          {
+            "op": "repair_level_shift",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "candidate_id": "hampel_extreme_deviation",
+        "addresses_hypothesis_id": "extreme_deviation",
+        "steps": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ]
+      }
+    ]
+  },
+  "inspect_hypothesis_ids": [
+    "level_excursion",
+    "extreme_deviation"
+  ],
+  "inject": {
+    "skill_id": "source_investigation_v1",
+    "try": "Lead with repair_level_shift on prior expectation.",
+    "try_family": "structural",
+    "inject": "edit_controller_add",
+    "frozen_runtime_bundle_sha": "43abc3892d2825da63bb0fb5ec725a3903f8546562cf1f8337d1dc331303c765",
+    "frozen_harness_content_sha": "de68b6d84570affbd5791a4f6db3aa5dbbc8af56c8cb36fa3fb17724b4a6f9fb"
+  }
+}

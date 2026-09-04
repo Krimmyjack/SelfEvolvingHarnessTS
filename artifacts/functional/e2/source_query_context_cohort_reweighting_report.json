@@ -1,0 +1,2385 @@
+{
+  "capability_claim": false,
+  "causal_hypothesis": "A fixed query-context-aligned rank reweighting Program improves complete evaluation-cohort Ridge utility relative to uniform training.",
+  "claim_limit": "Development-only exposed Source Program-headroom test. A pass is not Capability Promotion, Memory benefit, Target adaptation, or Transfer.",
+  "configuration": {
+    "anchors": [
+      240,
+      300,
+      360,
+      420,
+      480,
+      540
+    ],
+    "baseline": "uniform training weights",
+    "consumer": "Ridge(alpha=1.0, fit_intercept=True, solver=svd)",
+    "context_length": 192,
+    "datasets": [
+      "monash:traffic_hourly",
+      "legacy_monash:fred_md",
+      "legacy_monash:nn5_daily",
+      "metr_la"
+    ],
+    "fingerprint_fields": [
+      "linear_trend_slope",
+      "first_difference_std",
+      "recent_period_mean_minus_global_mean",
+      "lag_1_correlation",
+      "known_period_correlation",
+      "mean_absolute_seasonal_residual"
+    ],
+    "fingerprint_standardization": "72 train fingerprints mean/std per dataset",
+    "metric": "per-series sMASE",
+    "program": "zero-based ascending L2 rank weight = 2*(N-rank)/(N+1)",
+    "query_binding": "centroid of 8 visible evaluation-context fingerprints",
+    "roster": "same exposed E2.2 12 train + 8 eval series per dataset"
+  },
+  "consumer_fit_count": 8,
+  "dataset_evidence": [
+    {
+      "dataset_id": "monash:traffic_hourly",
+      "per_uid": [
+        {
+          "baseline_smase": 1.6876281315797883,
+          "gain": 0.020528826296981162,
+          "series_uid": "46207986409372e54e056a02a02ca773d54ae8d2583596ea8b57216e42e087f5",
+          "weighted_smase": 1.6670993052828071
+        },
+        {
+          "baseline_smase": 1.7315313073941807,
+          "gain": -0.11186289489869128,
+          "series_uid": "464e26099c4a2ea3898cf0a3c60dea54afc2e02318280486bf927ab45e3dbe8a",
+          "weighted_smase": 1.843394202292872
+        },
+        {
+          "baseline_smase": 2.427301752890204,
+          "gain": 0.2908237723501612,
+          "series_uid": "4b40390ecc8b85cda60d07eecf8e69c1ae08178117cd64a8403b1445c8e02247",
+          "weighted_smase": 2.1364779805400427
+        },
+        {
+          "baseline_smase": 1.4939178297878595,
+          "gain": 0.0998429863774859,
+          "series_uid": "4c97d6377cbfe273ebab9f8f3df5c3d9ce336c498bf75975475336955bed8121",
+          "weighted_smase": 1.3940748434103736
+        },
+        {
+          "baseline_smase": 1.3871835425823307,
+          "gain": -0.09476944339384286,
+          "series_uid": "514352533a895aac0c89f4d5d5f823e05f0eb6635aff681d37cfc0882dc62d80",
+          "weighted_smase": 1.4819529859761735
+        },
+        {
+          "baseline_smase": 2.4053864622320624,
+          "gain": 0.06917503162517091,
+          "series_uid": "54b5a1fe33b4e45c6e5b44699ca5a3f7116b2f7a02b306376bd784afe7fa1c8b",
+          "weighted_smase": 2.3362114306068915
+        },
+        {
+          "baseline_smase": 1.5229008375897641,
+          "gain": -0.0675152294508401,
+          "series_uid": "554594a7c21dea008fb03eef8153593b8f31bfc90a773cb2c0b8b955e5bd5efe",
+          "weighted_smase": 1.5904160670406042
+        },
+        {
+          "baseline_smase": 1.1486775539079939,
+          "gain": 0.05675279098450581,
+          "series_uid": "57faa43db3d9f2d889cfa681aee6bb5648df784c27536915a5b6f5504b5a4b44",
+          "weighted_smase": 1.091924762923488
+        }
+      ],
+      "program_binding": {
+        "query_centroid": [
+          -1.2317644314834721,
+          0.5570443133774016,
+          -0.367690830944958,
+          -1.5290048924266735,
+          -0.5510153421583927,
+          0.4007772103718281
+        ],
+        "train_window_weights": [
+          {
+            "anchor": 240,
+            "distance": 2.320331563022967,
+            "rank_zero_based": 13,
+            "series_uid": "022cdfaa6000a3f082c053cc58f7b2541c301a050326ea624d914817a1ef4275",
+            "weight": 1.6164383561643836
+          },
+          {
+            "anchor": 240,
+            "distance": 3.8761828908392264,
+            "rank_zero_based": 56,
+            "series_uid": "0d1cda8a5e02e5c4274c46b65b4cbd24b2792b723730ab2632daa971f332ea9a",
+            "weight": 0.4383561643835616
+          },
+          {
+            "anchor": 240,
+            "distance": 1.440338786185465,
+            "rank_zero_based": 0,
+            "series_uid": "0e1201ef1855d9a4b83d89ab7f6f55cd3d77604a880d3b09548d552169f2c008",
+            "weight": 1.9726027397260273
+          },
+          {
+            "anchor": 240,
+            "distance": 3.101330406927388,
+            "rank_zero_based": 38,
+            "series_uid": "11f5a7604f39c56d6c0b2b4fe73e8796a37e6d17ec72f3484ef45ca9b637f519",
+            "weight": 0.9315068493150684
+          },
+          {
+            "anchor": 240,
+            "distance": 2.5819198789948388,
+            "rank_zero_based": 23,
+            "series_uid": "1530195f6fc598f3545b9b619431b4722b2cad7aef32ac0c400e49c26aeeeb0e",
+            "weight": 1.3424657534246576
+          },
+          {
+            "anchor": 240,
+            "distance": 2.8581998307886787,
+            "rank_zero_based": 33,
+            "series_uid": "17675ca1e498fff0ae9b6e39375d4e858263ab80338e4ae0c2c3f3d2d3396b8b",
+            "weight": 1.0684931506849316
+          },
+          {
+            "anchor": 240,
+            "distance": 3.623671158686486,
+            "rank_zero_based": 49,
+            "series_uid": "188c6694fd0a32a7f43e21702457baae8dde755ee20fc806ca2d31e00f2910c6",
+            "weight": 0.6301369863013698
+          },
+          {
+            "anchor": 240,
+            "distance": 2.649434810074181,
+            "rank_zero_based": 26,
+            "series_uid": "28bc6ea7412a86c9207566fe0025fa0086f26374e25958e25f79f7e992b32a9d",
+            "weight": 1.2602739726027397
+          },
+          {
+            "anchor": 240,
+            "distance": 2.7583482046456584,
+            "rank_zero_based": 29,
+            "series_uid": "2e2f389b80475366f50c56c784a39012be2c7c759587f85b0c5e2629efbaa017",
+            "weight": 1.178082191780822
+          },
+          {
+            "anchor": 240,
+            "distance": 2.04142845465364,
+            "rank_zero_based": 7,
+            "series_uid": "2fe4807fb36f842d59404e1a08cf55b1813aef68d1abcc0aa4d4e47a76018c84",
+            "weight": 1.7808219178082192
+          },
+          {
+            "anchor": 240,
+            "distance": 2.6261621604268104,
+            "rank_zero_based": 25,
+            "series_uid": "32697ec8f01a0dcacf41c69ebd119ebd9203f0f900eb7d36452f363d83ce35f6",
+            "weight": 1.2876712328767124
+          },
+          {
+            "anchor": 240,
+            "distance": 3.744619372154959,
+            "rank_zero_based": 52,
+            "series_uid": "37017b971e926e102bc10772336f529ebbebd9cbde3ce267af5578cc90cc685c",
+            "weight": 0.547945205479452
+          },
+          {
+            "anchor": 300,
+            "distance": 4.100797200766144,
+            "rank_zero_based": 64,
+            "series_uid": "022cdfaa6000a3f082c053cc58f7b2541c301a050326ea624d914817a1ef4275",
+            "weight": 0.2191780821917808
+          },
+          {
+            "anchor": 300,
+            "distance": 8.241298562930012,
+            "rank_zero_based": 71,
+            "series_uid": "0d1cda8a5e02e5c4274c46b65b4cbd24b2792b723730ab2632daa971f332ea9a",
+            "weight": 0.0273972602739726
+          },
+          {
+            "anchor": 300,
+            "distance": 3.96352695180576,
+            "rank_zero_based": 59,
+            "series_uid": "0e1201ef1855d9a4b83d89ab7f6f55cd3d77604a880d3b09548d552169f2c008",
+            "weight": 0.3561643835616438
+          },
+          {
+            "anchor": 300,
+            "distance": 3.538932274442855,
+            "rank_zero_based": 48,
+            "series_uid": "11f5a7604f39c56d6c0b2b4fe73e8796a37e6d17ec72f3484ef45ca9b637f519",
+            "weight": 0.6575342465753424
+          },
+          {
+            "anchor": 300,
+            "distance": 3.718370975783115,
+            "rank_zero_based": 51,
+            "series_uid": "1530195f6fc598f3545b9b619431b4722b2cad7aef32ac0c400e49c26aeeeb0e",
+            "weight": 0.5753424657534246
+          },
+          {
+            "anchor": 300,
+            "distance": 3.34599325200311,
+            "rank_zero_based": 45,
+            "series_uid": "17675ca1e498fff0ae9b6e39375d4e858263ab80338e4ae0c2c3f3d2d3396b8b",
+            "weight": 0.7397260273972602
+          },
+          {
+            "anchor": 300,
+            "distance": 4.473676457739698,
+            "rank_zero_based": 69,
+            "series_uid": "188c6694fd0a32a7f43e21702457baae8dde755ee20fc806ca2d31e00f2910c6",
+            "weight": 0.0821917808219178
+          },
+          {
+            "anchor": 300,
+            "distance": 2.651435295457787,
+            "rank_zero_based": 27,
+            "series_uid": "28bc6ea7412a86c9207566fe0025fa0086f26374e25958e25f79f7e992b32a9d",
+            "weight": 1.2328767123287672
+          },
+          {
+            "anchor": 300,
+            "distance": 3.2239769805236556,
+            "rank_zero_based": 42,
+            "series_uid": "2e2f389b80475366f50c56c784a39012be2c7c759587f85b0c5e2629efbaa017",
+            "weight": 0.821917808219178
+          },
+          {
+            "anchor": 300,
+            "distance": 3.838187211770213,
+            "rank_zero_based": 54,
+            "series_uid": "2fe4807fb36f842d59404e1a08cf55b1813aef68d1abcc0aa4d4e47a76018c84",
+            "weight": 0.4931506849315068
+          },
+          {
+            "anchor": 300,
+            "distance": 3.7144498117983393,
+            "rank_zero_based": 50,
+            "series_uid": "32697ec8f01a0dcacf41c69ebd119ebd9203f0f900eb7d36452f363d83ce35f6",
+            "weight": 0.6027397260273972
+          },
+          {
+            "anchor": 300,
+            "distance": 4.0267431535307265,
+            "rank_zero_based": 61,
+            "series_uid": "37017b971e926e102bc10772336f529ebbebd9cbde3ce267af5578cc90cc685c",
+            "weight": 0.3013698630136986
+          },
+          {
+            "anchor": 360,
+            "distance": 2.987015467248124,
+            "rank_zero_based": 36,
+            "series_uid": "022cdfaa6000a3f082c053cc58f7b2541c301a050326ea624d914817a1ef4275",
+            "weight": 0.9863013698630136
+          },
+          {
+            "anchor": 360,
+            "distance": 5.277885378388314,
+            "rank_zero_based": 70,
+            "series_uid": "0d1cda8a5e02e5c4274c46b65b4cbd24b2792b723730ab2632daa971f332ea9a",
+            "weight": 0.0547945205479452
+          },
+          {
+            "anchor": 360,
+            "distance": 2.0345810014999106,
+            "rank_zero_based": 6,
+            "series_uid": "0e1201ef1855d9a4b83d89ab7f6f55cd3d77604a880d3b09548d552169f2c008",
+            "weight": 1.8082191780821917
+          },
+          {
+            "anchor": 360,
+            "distance": 3.2106569107953584,
+            "rank_zero_based": 40,
+            "series_uid": "11f5a7604f39c56d6c0b2b4fe73e8796a37e6d17ec72f3484ef45ca9b637f519",
+            "weight": 0.8767123287671232
+          },
+          {
+            "anchor": 360,
+            "distance": 3.3427418103998847,
+            "rank_zero_based": 44,
+            "series_uid": "1530195f6fc598f3545b9b619431b4722b2cad7aef32ac0c400e49c26aeeeb0e",
+            "weight": 0.7671232876712328
+          },
+          {
+            "anchor": 360,
+            "distance": 3.3991753648886016,
+            "rank_zero_based": 46,
+            "series_uid": "17675ca1e498fff0ae9b6e39375d4e858263ab80338e4ae0c2c3f3d2d3396b8b",
+            "weight": 0.7123287671232876
+          },
+          {
+            "anchor": 360,
+            "distance": 4.0510011831226365,
+            "rank_zero_based": 62,
+            "series_uid": "188c6694fd0a32a7f43e21702457baae8dde755ee20fc806ca2d31e00f2910c6",
+            "weight": 0.273972602739726
+          },
+          {
+            "anchor": 360,
+            "distance": 2.4690644167616167,
+            "rank_zero_based": 19,
+            "series_uid": "28bc6ea7412a86c9207566fe0025fa0086f26374e25958e25f79f7e992b32a9d",
+            "weight": 1.452054794520548
+          },
+          {
+            "anchor": 360,
+            "distance": 2.8388527527353604,
+            "rank_zero_based": 32,
+            "series_uid": "2e2f389b80475366f50c56c784a39012be2c7c759587f85b0c5e2629efbaa017",
+            "weight": 1.095890410958904
+          },
+          {
+            "anchor": 360,
+            "distance": 2.1393270408722227,
+            "rank_zero_based": 9,
+            "series_uid": "2fe4807fb36f842d59404e1a08cf55b1813aef68d1abcc0aa4d4e47a76018c84",
+            "weight": 1.726027397260274
+          },
+          {
+            "anchor": 360,
+            "distance": 1.4712192436292704,
+            "rank_zero_based": 1,
+            "series_uid": "32697ec8f01a0dcacf41c69ebd119ebd9203f0f900eb7d36452f363d83ce35f6",
+            "weight": 1.9452054794520548
+          },
+          {
+            "anchor": 360,
+            "distance": 3.9303405817855324,
+            "rank_zero_based": 57,
+            "series_uid": "37017b971e926e102bc10772336f529ebbebd9cbde3ce267af5578cc90cc685c",
+            "weight": 0.410958904109589
+          },
+          {
+            "anchor": 420,
+            "distance": 2.7642251470657473,
+            "rank_zero_based": 30,
+            "series_uid": "022cdfaa6000a3f082c053cc58f7b2541c301a050326ea624d914817a1ef4275",
+            "weight": 1.1506849315068493
+          },
+          {
+            "anchor": 420,
+            "distance": 4.076980825171918,
+            "rank_zero_based": 63,
+            "series_uid": "0d1cda8a5e02e5c4274c46b65b4cbd24b2792b723730ab2632daa971f332ea9a",
+            "weight": 0.2465753424657534
+          },
+          {
+            "anchor": 420,
+            "distance": 2.0511812380664614,
+            "rank_zero_based": 8,
+            "series_uid": "0e1201ef1855d9a4b83d89ab7f6f55cd3d77604a880d3b09548d552169f2c008",
+            "weight": 1.7534246575342465
+          },
+          {
+            "anchor": 420,
+            "distance": 3.2341945094015476,
+            "rank_zero_based": 43,
+            "series_uid": "11f5a7604f39c56d6c0b2b4fe73e8796a37e6d17ec72f3484ef45ca9b637f519",
+            "weight": 0.7945205479452054
+          },
+          {
+            "anchor": 420,
+            "distance": 2.6077524161005847,
+            "rank_zero_based": 24,
+            "series_uid": "1530195f6fc598f3545b9b619431b4722b2cad7aef32ac0c400e49c26aeeeb0e",
+            "weight": 1.3150684931506849
+          },
+          {
+            "anchor": 420,
+            "distance": 2.889292711701453,
+            "rank_zero_based": 35,
+            "series_uid": "17675ca1e498fff0ae9b6e39375d4e858263ab80338e4ae0c2c3f3d2d3396b8b",
+            "weight": 1.0136986301369864
+          },
+          {
+            "anchor": 420,
+            "distance": 4.114566275855683,
+            "rank_zero_based": 65,
+            "series_uid": "188c6694fd0a32a7f43e21702457baae8dde755ee20fc806ca2d31e00f2910c6",
+            "weight": 0.1917808219178082
+          },
+          {
+            "anchor": 420,
+            "distance": 2.347358764398434,
+            "rank_zero_based": 16,
+            "series_uid": "28bc6ea7412a86c9207566fe0025fa0086f26374e25958e25f79f7e992b32a9d",
+            "weight": 1.5342465753424657
+          },
+          {
+            "anchor": 420,
+            "distance": 2.563767513842286,
+            "rank_zero_based": 21,
+            "series_uid": "2e2f389b80475366f50c56c784a39012be2c7c759587f85b0c5e2629efbaa017",
+            "weight": 1.3972602739726028
+          },
+          {
+            "anchor": 420,
+            "distance": 1.7186307280546436,
+            "rank_zero_based": 2,
+            "series_uid": "2fe4807fb36f842d59404e1a08cf55b1813aef68d1abcc0aa4d4e47a76018c84",
+            "weight": 1.917808219178082
+          },
+          {
+            "anchor": 420,
+            "distance": 2.02067463628603,
+            "rank_zero_based": 4,
+            "series_uid": "32697ec8f01a0dcacf41c69ebd119ebd9203f0f900eb7d36452f363d83ce35f6",
+            "weight": 1.8630136986301369
+          },
+          {
+            "anchor": 420,
+            "distance": 3.9555387800627857,
+            "rank_zero_based": 58,
+            "series_uid": "37017b971e926e102bc10772336f529ebbebd9cbde3ce267af5578cc90cc685c",
+            "weight": 0.3835616438356164
+          },
+          {
+            "anchor": 480,
+            "distance": 2.700612887442161,
+            "rank_zero_based": 28,
+            "series_uid": "022cdfaa6000a3f082c053cc58f7b2541c301a050326ea624d914817a1ef4275",
+            "weight": 1.2054794520547945
+          },
+          {
+            "anchor": 480,
+            "distance": 3.098987880611073,
+            "rank_zero_based": 37,
+            "series_uid": "0d1cda8a5e02e5c4274c46b65b4cbd24b2792b723730ab2632daa971f332ea9a",
+            "weight": 0.958904109589041
+          },
+          {
+            "anchor": 480,
+            "distance": 2.0334582743796634,
+            "rank_zero_based": 5,
+            "series_uid": "0e1201ef1855d9a4b83d89ab7f6f55cd3d77604a880d3b09548d552169f2c008",
+            "weight": 1.8356164383561644
+          },
+          {
+            "anchor": 480,
+            "distance": 3.145051621656881,
+            "rank_zero_based": 39,
+            "series_uid": "11f5a7604f39c56d6c0b2b4fe73e8796a37e6d17ec72f3484ef45ca9b637f519",
+            "weight": 0.9041095890410958
+          },
+          {
+            "anchor": 480,
+            "distance": 2.5804512350390096,
+            "rank_zero_based": 22,
+            "series_uid": "1530195f6fc598f3545b9b619431b4722b2cad7aef32ac0c400e49c26aeeeb0e",
+            "weight": 1.36986301369863
+          },
+          {
+            "anchor": 480,
+            "distance": 1.7738251460787813,
+            "rank_zero_based": 3,
+            "series_uid": "17675ca1e498fff0ae9b6e39375d4e858263ab80338e4ae0c2c3f3d2d3396b8b",
+            "weight": 1.8904109589041096
+          },
+          {
+            "anchor": 480,
+            "distance": 4.2048544138809705,
+            "rank_zero_based": 66,
+            "series_uid": "188c6694fd0a32a7f43e21702457baae8dde755ee20fc806ca2d31e00f2910c6",
+            "weight": 0.1643835616438356
+          },
+          {
+            "anchor": 480,
+            "distance": 2.1699330718646843,
+            "rank_zero_based": 10,
+            "series_uid": "28bc6ea7412a86c9207566fe0025fa0086f26374e25958e25f79f7e992b32a9d",
+            "weight": 1.6986301369863013
+          },
+          {
+            "anchor": 480,
+            "distance": 3.4801810660571904,
+            "rank_zero_based": 47,
+            "series_uid": "2e2f389b80475366f50c56c784a39012be2c7c759587f85b0c5e2629efbaa017",
+            "weight": 0.684931506849315
+          },
+          {
+            "anchor": 480,
+            "distance": 2.3410008309415775,
+            "rank_zero_based": 15,
+            "series_uid": "2fe4807fb36f842d59404e1a08cf55b1813aef68d1abcc0aa4d4e47a76018c84",
+            "weight": 1.5616438356164384
+          },
+          {
+            "anchor": 480,
+            "distance": 2.2013577126633868,
+            "rank_zero_based": 11,
+            "series_uid": "32697ec8f01a0dcacf41c69ebd119ebd9203f0f900eb7d36452f363d83ce35f6",
+            "weight": 1.6712328767123288
+          },
+          {
+            "anchor": 480,
+            "distance": 3.8702628184470202,
+            "rank_zero_based": 55,
+            "series_uid": "37017b971e926e102bc10772336f529ebbebd9cbde3ce267af5578cc90cc685c",
+            "weight": 0.4657534246575342
+          },
+          {
+            "anchor": 540,
+            "distance": 2.808547279865609,
+            "rank_zero_based": 31,
+            "series_uid": "022cdfaa6000a3f082c053cc58f7b2541c301a050326ea624d914817a1ef4275",
+            "weight": 1.1232876712328768
+          },
+          {
+            "anchor": 540,
+            "distance": 3.810966523620598,
+            "rank_zero_based": 53,
+            "series_uid": "0d1cda8a5e02e5c4274c46b65b4cbd24b2792b723730ab2632daa971f332ea9a",
+            "weight": 0.5205479452054794
+          },
+          {
+            "anchor": 540,
+            "distance": 2.872927705565687,
+            "rank_zero_based": 34,
+            "series_uid": "0e1201ef1855d9a4b83d89ab7f6f55cd3d77604a880d3b09548d552169f2c008",
+            "weight": 1.0410958904109588
+          },
+          {
+            "anchor": 540,
+            "distance": 3.216477306041866,
+            "rank_zero_based": 41,
+            "series_uid": "11f5a7604f39c56d6c0b2b4fe73e8796a37e6d17ec72f3484ef45ca9b637f519",
+            "weight": 0.8493150684931506
+          },
+          {
+            "anchor": 540,
+            "distance": 2.3252238772093374,
+            "rank_zero_based": 14,
+            "series_uid": "1530195f6fc598f3545b9b619431b4722b2cad7aef32ac0c400e49c26aeeeb0e",
+            "weight": 1.5890410958904109
+          },
+          {
+            "anchor": 540,
+            "distance": 2.5143752478836103,
+            "rank_zero_based": 20,
+            "series_uid": "17675ca1e498fff0ae9b6e39375d4e858263ab80338e4ae0c2c3f3d2d3396b8b",
+            "weight": 1.4246575342465753
+          },
+          {
+            "anchor": 540,
+            "distance": 4.328539525309469,
+            "rank_zero_based": 68,
+            "series_uid": "188c6694fd0a32a7f43e21702457baae8dde755ee20fc806ca2d31e00f2910c6",
+            "weight": 0.1095890410958904
+          },
+          {
+            "anchor": 540,
+            "distance": 2.3531772266939557,
+            "rank_zero_based": 17,
+            "series_uid": "28bc6ea7412a86c9207566fe0025fa0086f26374e25958e25f79f7e992b32a9d",
+            "weight": 1.5068493150684932
+          },
+          {
+            "anchor": 540,
+            "distance": 4.220903428064264,
+            "rank_zero_based": 67,
+            "series_uid": "2e2f389b80475366f50c56c784a39012be2c7c759587f85b0c5e2629efbaa017",
+            "weight": 0.136986301369863
+          },
+          {
+            "anchor": 540,
+            "distance": 2.4418258842173737,
+            "rank_zero_based": 18,
+            "series_uid": "2fe4807fb36f842d59404e1a08cf55b1813aef68d1abcc0aa4d4e47a76018c84",
+            "weight": 1.4794520547945205
+          },
+          {
+            "anchor": 540,
+            "distance": 2.2983877971753435,
+            "rank_zero_based": 12,
+            "series_uid": "32697ec8f01a0dcacf41c69ebd119ebd9203f0f900eb7d36452f363d83ce35f6",
+            "weight": 1.643835616438356
+          },
+          {
+            "anchor": 540,
+            "distance": 4.0025581515389215,
+            "rank_zero_based": 60,
+            "series_uid": "37017b971e926e102bc10772336f529ebbebd9cbde3ce267af5578cc90cc685c",
+            "weight": 0.3287671232876712
+          }
+        ]
+      },
+      "summary": {
+        "headroom_pass": false,
+        "mean_gain": 0.032871979986366345,
+        "median_gain": 0.038640808640743485,
+        "positive_uid_count": 5,
+        "train_query_rms_shift": 0.8911448413517441,
+        "weight_effective_sample_size": 54.372413793103455,
+        "weight_max": 1.9726027397260273,
+        "weight_mean": 1.0,
+        "weight_min": 0.0273972602739726
+      }
+    },
+    {
+      "dataset_id": "legacy_monash:fred_md",
+      "per_uid": [
+        {
+          "baseline_smase": 1.70114019594096,
+          "gain": 0.49404372673555597,
+          "series_uid": "9318befb252d1ded230f7e4ce9d443737663da91012a1013f616ecd9d4d088b7",
+          "weighted_smase": 1.207096469205404
+        },
+        {
+          "baseline_smase": 1.8557313913547597,
+          "gain": 0.1485123941355313,
+          "series_uid": "a66110a8b0633a832911b2425e9dd0f2b7ad76c4e85676f6b530b37e8b4d0ba3",
+          "weighted_smase": 1.7072189972192284
+        },
+        {
+          "baseline_smase": 0.6136416969150763,
+          "gain": 0.2304833006452925,
+          "series_uid": "aa4ad4dd61282f8ddc1ef5dd1076b6fac3973d882112b386cc8f08b8ac7a8882",
+          "weighted_smase": 0.3831583962697838
+        },
+        {
+          "baseline_smase": 2.0540508052711215,
+          "gain": 0.5292126130800698,
+          "series_uid": "b6addd6fdebd414aec6394c9f2529a49b98acb50cbe71ccf0fc53c978e337ccb",
+          "weighted_smase": 1.5248381921910517
+        },
+        {
+          "baseline_smase": 0.786131699599607,
+          "gain": -0.147025937851471,
+          "series_uid": "e2f7668887a1c26c58128a597b8724073390c7c3eaa4e04836e740a9a30b6993",
+          "weighted_smase": 0.933157637451078
+        },
+        {
+          "baseline_smase": 1.5471107106880158,
+          "gain": -0.021807605512209838,
+          "series_uid": "e41ce762e3a609d3edb03eca9fdcabb7e1e5867643ceca15ac97973d5e04d47d",
+          "weighted_smase": 1.5689183162002256
+        },
+        {
+          "baseline_smase": 2.040715801058841,
+          "gain": -1.096750834606914,
+          "series_uid": "f0cd80ff19cf9a172f4315ebb7509fa7eba10d03bb61fe88cf099656ffdb44f1",
+          "weighted_smase": 3.137466635665755
+        },
+        {
+          "baseline_smase": 1.352895987942664,
+          "gain": -0.24502335178308976,
+          "series_uid": "f8e8c797319ee8f04bd89e90c4733f326051cd06708043320160f422a04f3fd5",
+          "weighted_smase": 1.5979193397257538
+        }
+      ],
+      "program_binding": {
+        "query_centroid": [
+          -1.0237263197863968,
+          2.8942740046552187,
+          -1.7044355957926915,
+          -6.164990425873552,
+          -0.7924715972525196,
+          1.012007691016066
+        ],
+        "train_window_weights": [
+          {
+            "anchor": 240,
+            "distance": 7.81247768048537,
+            "rank_zero_based": 37,
+            "series_uid": "0766d99beb66ac1a4cb27593f15b6f46a6fd08f227953b5e36f81e8f6b15f3e3",
+            "weight": 0.958904109589041
+          },
+          {
+            "anchor": 240,
+            "distance": 7.561578391016607,
+            "rank_zero_based": 30,
+            "series_uid": "0e970916a03cf7463167ae957bde41117327da61027298892196c1080218c8ad",
+            "weight": 1.1506849315068493
+          },
+          {
+            "anchor": 240,
+            "distance": 6.971650171360052,
+            "rank_zero_based": 21,
+            "series_uid": "261870fa63eb9697169f0303171a286c914c77f6df07eaf7e84a2b4ea3fafbb7",
+            "weight": 1.3972602739726028
+          },
+          {
+            "anchor": 240,
+            "distance": 7.389889547799486,
+            "rank_zero_based": 27,
+            "series_uid": "28a673fe1f3ecea9b4a5ba13700ef0c178acc44c74ab03ced44c7b77b5ba753c",
+            "weight": 1.2328767123287672
+          },
+          {
+            "anchor": 240,
+            "distance": 7.940658383879198,
+            "rank_zero_based": 40,
+            "series_uid": "3c0c8cee8346d91b6325d310c3696464c3b58daf24f3bb96b2a939ba30d9fab9",
+            "weight": 0.8767123287671232
+          },
+          {
+            "anchor": 240,
+            "distance": 8.64176401074486,
+            "rank_zero_based": 65,
+            "series_uid": "3f08d5ccff724e2100dbe2eba6661d969cf5e6f9ca63f7c3503a08ec2c02c48d",
+            "weight": 0.1917808219178082
+          },
+          {
+            "anchor": 240,
+            "distance": 7.848287147616886,
+            "rank_zero_based": 39,
+            "series_uid": "5174bd53cf96e503da5a88262c6a14232ebf378fc363d355e68360ca4e3b6493",
+            "weight": 0.9041095890410958
+          },
+          {
+            "anchor": 240,
+            "distance": 5.553652169564791,
+            "rank_zero_based": 5,
+            "series_uid": "530e08118920907a0c0a500ba77525f246a776ea5bf570cd00d8ac04bc575432",
+            "weight": 1.8356164383561644
+          },
+          {
+            "anchor": 240,
+            "distance": 7.792030925892399,
+            "rank_zero_based": 36,
+            "series_uid": "5519a6238cff32527c161ef519f785194e831a703de65c82d38d920bd15d9bde",
+            "weight": 0.9863013698630136
+          },
+          {
+            "anchor": 240,
+            "distance": 8.823439822983625,
+            "rank_zero_based": 67,
+            "series_uid": "55604dc7470cdaa6c840a6188bee39faf1b1287e724e3c9c0febc4b101b6e90f",
+            "weight": 0.136986301369863
+          },
+          {
+            "anchor": 240,
+            "distance": 8.29934015538218,
+            "rank_zero_based": 48,
+            "series_uid": "6f980349692271cf76c5054aa027f033554ac3ce4a39a5b2c1bcfdba1da47ca8",
+            "weight": 0.6575342465753424
+          },
+          {
+            "anchor": 240,
+            "distance": 8.619127155275589,
+            "rank_zero_based": 64,
+            "series_uid": "8667e759d1f3c9c81a90ca9c8d945e5f3abd114bfc754541f8c8165b54cf9c6b",
+            "weight": 0.2191780821917808
+          },
+          {
+            "anchor": 300,
+            "distance": 6.150473984209052,
+            "rank_zero_based": 8,
+            "series_uid": "0766d99beb66ac1a4cb27593f15b6f46a6fd08f227953b5e36f81e8f6b15f3e3",
+            "weight": 1.7534246575342465
+          },
+          {
+            "anchor": 300,
+            "distance": 5.905895930918875,
+            "rank_zero_based": 7,
+            "series_uid": "0e970916a03cf7463167ae957bde41117327da61027298892196c1080218c8ad",
+            "weight": 1.7808219178082192
+          },
+          {
+            "anchor": 300,
+            "distance": 4.772869852082349,
+            "rank_zero_based": 2,
+            "series_uid": "261870fa63eb9697169f0303171a286c914c77f6df07eaf7e84a2b4ea3fafbb7",
+            "weight": 1.917808219178082
+          },
+          {
+            "anchor": 300,
+            "distance": 5.604739348039229,
+            "rank_zero_based": 6,
+            "series_uid": "28a673fe1f3ecea9b4a5ba13700ef0c178acc44c74ab03ced44c7b77b5ba753c",
+            "weight": 1.8082191780821917
+          },
+          {
+            "anchor": 300,
+            "distance": 7.314318961700825,
+            "rank_zero_based": 24,
+            "series_uid": "3c0c8cee8346d91b6325d310c3696464c3b58daf24f3bb96b2a939ba30d9fab9",
+            "weight": 1.3150684931506849
+          },
+          {
+            "anchor": 300,
+            "distance": 8.558812519504059,
+            "rank_zero_based": 60,
+            "series_uid": "3f08d5ccff724e2100dbe2eba6661d969cf5e6f9ca63f7c3503a08ec2c02c48d",
+            "weight": 0.3287671232876712
+          },
+          {
+            "anchor": 300,
+            "distance": 6.68658214386867,
+            "rank_zero_based": 18,
+            "series_uid": "5174bd53cf96e503da5a88262c6a14232ebf378fc363d355e68360ca4e3b6493",
+            "weight": 1.4794520547945205
+          },
+          {
+            "anchor": 300,
+            "distance": 3.674145454046322,
+            "rank_zero_based": 0,
+            "series_uid": "530e08118920907a0c0a500ba77525f246a776ea5bf570cd00d8ac04bc575432",
+            "weight": 1.9726027397260273
+          },
+          {
+            "anchor": 300,
+            "distance": 6.476615314793585,
+            "rank_zero_based": 13,
+            "series_uid": "5519a6238cff32527c161ef519f785194e831a703de65c82d38d920bd15d9bde",
+            "weight": 1.6164383561643836
+          },
+          {
+            "anchor": 300,
+            "distance": 8.508530979833314,
+            "rank_zero_based": 58,
+            "series_uid": "55604dc7470cdaa6c840a6188bee39faf1b1287e724e3c9c0febc4b101b6e90f",
+            "weight": 0.3835616438356164
+          },
+          {
+            "anchor": 300,
+            "distance": 7.56379228221781,
+            "rank_zero_based": 32,
+            "series_uid": "6f980349692271cf76c5054aa027f033554ac3ce4a39a5b2c1bcfdba1da47ca8",
+            "weight": 1.095890410958904
+          },
+          {
+            "anchor": 300,
+            "distance": 8.391381321092075,
+            "rank_zero_based": 53,
+            "series_uid": "8667e759d1f3c9c81a90ca9c8d945e5f3abd114bfc754541f8c8165b54cf9c6b",
+            "weight": 0.5205479452054794
+          },
+          {
+            "anchor": 360,
+            "distance": 6.468735498621766,
+            "rank_zero_based": 12,
+            "series_uid": "0766d99beb66ac1a4cb27593f15b6f46a6fd08f227953b5e36f81e8f6b15f3e3",
+            "weight": 1.643835616438356
+          },
+          {
+            "anchor": 360,
+            "distance": 6.557838361749446,
+            "rank_zero_based": 14,
+            "series_uid": "0e970916a03cf7463167ae957bde41117327da61027298892196c1080218c8ad",
+            "weight": 1.5890410958904109
+          },
+          {
+            "anchor": 360,
+            "distance": 6.345541206375504,
+            "rank_zero_based": 9,
+            "series_uid": "261870fa63eb9697169f0303171a286c914c77f6df07eaf7e84a2b4ea3fafbb7",
+            "weight": 1.726027397260274
+          },
+          {
+            "anchor": 360,
+            "distance": 6.616787006069807,
+            "rank_zero_based": 16,
+            "series_uid": "28a673fe1f3ecea9b4a5ba13700ef0c178acc44c74ab03ced44c7b77b5ba753c",
+            "weight": 1.5342465753424657
+          },
+          {
+            "anchor": 360,
+            "distance": 7.711777279735141,
+            "rank_zero_based": 34,
+            "series_uid": "3c0c8cee8346d91b6325d310c3696464c3b58daf24f3bb96b2a939ba30d9fab9",
+            "weight": 1.0410958904109588
+          },
+          {
+            "anchor": 360,
+            "distance": 8.564131811128926,
+            "rank_zero_based": 61,
+            "series_uid": "3f08d5ccff724e2100dbe2eba6661d969cf5e6f9ca63f7c3503a08ec2c02c48d",
+            "weight": 0.3013698630136986
+          },
+          {
+            "anchor": 360,
+            "distance": 7.153086379754997,
+            "rank_zero_based": 22,
+            "series_uid": "5174bd53cf96e503da5a88262c6a14232ebf378fc363d355e68360ca4e3b6493",
+            "weight": 1.36986301369863
+          },
+          {
+            "anchor": 360,
+            "distance": 4.8612524001800566,
+            "rank_zero_based": 3,
+            "series_uid": "530e08118920907a0c0a500ba77525f246a776ea5bf570cd00d8ac04bc575432",
+            "weight": 1.8904109589041096
+          },
+          {
+            "anchor": 360,
+            "distance": 7.184334612021702,
+            "rank_zero_based": 23,
+            "series_uid": "5519a6238cff32527c161ef519f785194e831a703de65c82d38d920bd15d9bde",
+            "weight": 1.3424657534246576
+          },
+          {
+            "anchor": 360,
+            "distance": 8.169786378970192,
+            "rank_zero_based": 42,
+            "series_uid": "55604dc7470cdaa6c840a6188bee39faf1b1287e724e3c9c0febc4b101b6e90f",
+            "weight": 0.821917808219178
+          },
+          {
+            "anchor": 360,
+            "distance": 7.837518993802318,
+            "rank_zero_based": 38,
+            "series_uid": "6f980349692271cf76c5054aa027f033554ac3ce4a39a5b2c1bcfdba1da47ca8",
+            "weight": 0.9315068493150684
+          },
+          {
+            "anchor": 360,
+            "distance": 8.615213127844678,
+            "rank_zero_based": 63,
+            "series_uid": "8667e759d1f3c9c81a90ca9c8d945e5f3abd114bfc754541f8c8165b54cf9c6b",
+            "weight": 0.2465753424657534
+          },
+          {
+            "anchor": 420,
+            "distance": 6.357804144936228,
+            "rank_zero_based": 10,
+            "series_uid": "0766d99beb66ac1a4cb27593f15b6f46a6fd08f227953b5e36f81e8f6b15f3e3",
+            "weight": 1.6986301369863013
+          },
+          {
+            "anchor": 420,
+            "distance": 6.949348232071572,
+            "rank_zero_based": 20,
+            "series_uid": "0e970916a03cf7463167ae957bde41117327da61027298892196c1080218c8ad",
+            "weight": 1.4246575342465753
+          },
+          {
+            "anchor": 420,
+            "distance": 6.601803020953339,
+            "rank_zero_based": 15,
+            "series_uid": "261870fa63eb9697169f0303171a286c914c77f6df07eaf7e84a2b4ea3fafbb7",
+            "weight": 1.5616438356164384
+          },
+          {
+            "anchor": 420,
+            "distance": 6.443265075934578,
+            "rank_zero_based": 11,
+            "series_uid": "28a673fe1f3ecea9b4a5ba13700ef0c178acc44c74ab03ced44c7b77b5ba753c",
+            "weight": 1.6712328767123288
+          },
+          {
+            "anchor": 420,
+            "distance": 7.733972430104088,
+            "rank_zero_based": 35,
+            "series_uid": "3c0c8cee8346d91b6325d310c3696464c3b58daf24f3bb96b2a939ba30d9fab9",
+            "weight": 1.0136986301369864
+          },
+          {
+            "anchor": 420,
+            "distance": 8.40909295556145,
+            "rank_zero_based": 54,
+            "series_uid": "3f08d5ccff724e2100dbe2eba6661d969cf5e6f9ca63f7c3503a08ec2c02c48d",
+            "weight": 0.4931506849315068
+          },
+          {
+            "anchor": 420,
+            "distance": 7.387870038094867,
+            "rank_zero_based": 26,
+            "series_uid": "5174bd53cf96e503da5a88262c6a14232ebf378fc363d355e68360ca4e3b6493",
+            "weight": 1.2602739726027397
+          },
+          {
+            "anchor": 420,
+            "distance": 4.976084948327867,
+            "rank_zero_based": 4,
+            "series_uid": "530e08118920907a0c0a500ba77525f246a776ea5bf570cd00d8ac04bc575432",
+            "weight": 1.8630136986301369
+          },
+          {
+            "anchor": 420,
+            "distance": 7.48065657973767,
+            "rank_zero_based": 28,
+            "series_uid": "5519a6238cff32527c161ef519f785194e831a703de65c82d38d920bd15d9bde",
+            "weight": 1.2054794520547945
+          },
+          {
+            "anchor": 420,
+            "distance": 8.121721993693164,
+            "rank_zero_based": 41,
+            "series_uid": "55604dc7470cdaa6c840a6188bee39faf1b1287e724e3c9c0febc4b101b6e90f",
+            "weight": 0.8493150684931506
+          },
+          {
+            "anchor": 420,
+            "distance": 7.563519615077404,
+            "rank_zero_based": 31,
+            "series_uid": "6f980349692271cf76c5054aa027f033554ac3ce4a39a5b2c1bcfdba1da47ca8",
+            "weight": 1.1232876712328768
+          },
+          {
+            "anchor": 420,
+            "distance": 8.201111663458901,
+            "rank_zero_based": 46,
+            "series_uid": "8667e759d1f3c9c81a90ca9c8d945e5f3abd114bfc754541f8c8165b54cf9c6b",
+            "weight": 0.7123287671232876
+          },
+          {
+            "anchor": 480,
+            "distance": 7.325845384541389,
+            "rank_zero_based": 25,
+            "series_uid": "0766d99beb66ac1a4cb27593f15b6f46a6fd08f227953b5e36f81e8f6b15f3e3",
+            "weight": 1.2876712328767124
+          },
+          {
+            "anchor": 480,
+            "distance": 7.661773632922438,
+            "rank_zero_based": 33,
+            "series_uid": "0e970916a03cf7463167ae957bde41117327da61027298892196c1080218c8ad",
+            "weight": 1.0684931506849316
+          },
+          {
+            "anchor": 480,
+            "distance": 10.687154246444793,
+            "rank_zero_based": 71,
+            "series_uid": "261870fa63eb9697169f0303171a286c914c77f6df07eaf7e84a2b4ea3fafbb7",
+            "weight": 0.0273972602739726
+          },
+          {
+            "anchor": 480,
+            "distance": 9.021987594077453,
+            "rank_zero_based": 69,
+            "series_uid": "28a673fe1f3ecea9b4a5ba13700ef0c178acc44c74ab03ced44c7b77b5ba753c",
+            "weight": 0.0821917808219178
+          },
+          {
+            "anchor": 480,
+            "distance": 8.54696407049634,
+            "rank_zero_based": 59,
+            "series_uid": "3c0c8cee8346d91b6325d310c3696464c3b58daf24f3bb96b2a939ba30d9fab9",
+            "weight": 0.3561643835616438
+          },
+          {
+            "anchor": 480,
+            "distance": 8.476348171986132,
+            "rank_zero_based": 55,
+            "series_uid": "3f08d5ccff724e2100dbe2eba6661d969cf5e6f9ca63f7c3503a08ec2c02c48d",
+            "weight": 0.4657534246575342
+          },
+          {
+            "anchor": 480,
+            "distance": 8.739074527611235,
+            "rank_zero_based": 66,
+            "series_uid": "5174bd53cf96e503da5a88262c6a14232ebf378fc363d355e68360ca4e3b6493",
+            "weight": 0.1643835616438356
+          },
+          {
+            "anchor": 480,
+            "distance": 6.631195078258598,
+            "rank_zero_based": 17,
+            "series_uid": "530e08118920907a0c0a500ba77525f246a776ea5bf570cd00d8ac04bc575432",
+            "weight": 1.5068493150684932
+          },
+          {
+            "anchor": 480,
+            "distance": 8.866307605536319,
+            "rank_zero_based": 68,
+            "series_uid": "5519a6238cff32527c161ef519f785194e831a703de65c82d38d920bd15d9bde",
+            "weight": 0.1095890410958904
+          },
+          {
+            "anchor": 480,
+            "distance": 8.27669892904886,
+            "rank_zero_based": 47,
+            "series_uid": "55604dc7470cdaa6c840a6188bee39faf1b1287e724e3c9c0febc4b101b6e90f",
+            "weight": 0.684931506849315
+          },
+          {
+            "anchor": 480,
+            "distance": 9.206180887867545,
+            "rank_zero_based": 70,
+            "series_uid": "6f980349692271cf76c5054aa027f033554ac3ce4a39a5b2c1bcfdba1da47ca8",
+            "weight": 0.0547945205479452
+          },
+          {
+            "anchor": 480,
+            "distance": 8.583347024238725,
+            "rank_zero_based": 62,
+            "series_uid": "8667e759d1f3c9c81a90ca9c8d945e5f3abd114bfc754541f8c8165b54cf9c6b",
+            "weight": 0.273972602739726
+          },
+          {
+            "anchor": 540,
+            "distance": 4.591486703211496,
+            "rank_zero_based": 1,
+            "series_uid": "0766d99beb66ac1a4cb27593f15b6f46a6fd08f227953b5e36f81e8f6b15f3e3",
+            "weight": 1.9452054794520548
+          },
+          {
+            "anchor": 540,
+            "distance": 7.533126501360844,
+            "rank_zero_based": 29,
+            "series_uid": "0e970916a03cf7463167ae957bde41117327da61027298892196c1080218c8ad",
+            "weight": 1.178082191780822
+          },
+          {
+            "anchor": 540,
+            "distance": 8.506872700096453,
+            "rank_zero_based": 57,
+            "series_uid": "261870fa63eb9697169f0303171a286c914c77f6df07eaf7e84a2b4ea3fafbb7",
+            "weight": 0.410958904109589
+          },
+          {
+            "anchor": 540,
+            "distance": 8.381788921642258,
+            "rank_zero_based": 52,
+            "series_uid": "28a673fe1f3ecea9b4a5ba13700ef0c178acc44c74ab03ced44c7b77b5ba753c",
+            "weight": 0.547945205479452
+          },
+          {
+            "anchor": 540,
+            "distance": 8.170150911095163,
+            "rank_zero_based": 43,
+            "series_uid": "3c0c8cee8346d91b6325d310c3696464c3b58daf24f3bb96b2a939ba30d9fab9",
+            "weight": 0.7945205479452054
+          },
+          {
+            "anchor": 540,
+            "distance": 8.313492602243706,
+            "rank_zero_based": 50,
+            "series_uid": "3f08d5ccff724e2100dbe2eba6661d969cf5e6f9ca63f7c3503a08ec2c02c48d",
+            "weight": 0.6027397260273972
+          },
+          {
+            "anchor": 540,
+            "distance": 8.34010477093382,
+            "rank_zero_based": 51,
+            "series_uid": "5174bd53cf96e503da5a88262c6a14232ebf378fc363d355e68360ca4e3b6493",
+            "weight": 0.5753424657534246
+          },
+          {
+            "anchor": 540,
+            "distance": 6.886423902248356,
+            "rank_zero_based": 19,
+            "series_uid": "530e08118920907a0c0a500ba77525f246a776ea5bf570cd00d8ac04bc575432",
+            "weight": 1.452054794520548
+          },
+          {
+            "anchor": 540,
+            "distance": 8.309024050889033,
+            "rank_zero_based": 49,
+            "series_uid": "5519a6238cff32527c161ef519f785194e831a703de65c82d38d920bd15d9bde",
+            "weight": 0.6301369863013698
+          },
+          {
+            "anchor": 540,
+            "distance": 8.200741998199394,
+            "rank_zero_based": 45,
+            "series_uid": "55604dc7470cdaa6c840a6188bee39faf1b1287e724e3c9c0febc4b101b6e90f",
+            "weight": 0.7397260273972602
+          },
+          {
+            "anchor": 540,
+            "distance": 8.17257393398234,
+            "rank_zero_based": 44,
+            "series_uid": "6f980349692271cf76c5054aa027f033554ac3ce4a39a5b2c1bcfdba1da47ca8",
+            "weight": 0.7671232876712328
+          },
+          {
+            "anchor": 540,
+            "distance": 8.503845171325535,
+            "rank_zero_based": 56,
+            "series_uid": "8667e759d1f3c9c81a90ca9c8d945e5f3abd114bfc754541f8c8165b54cf9c6b",
+            "weight": 0.4383561643835616
+          }
+        ]
+      },
+      "summary": {
+        "headroom_pass": false,
+        "mean_gain": -0.013544461894654365,
+        "median_gain": 0.06335239431166073,
+        "positive_uid_count": 4,
+        "train_query_rms_shift": 2.9436150122565423,
+        "weight_effective_sample_size": 54.372413793103455,
+        "weight_max": 1.9726027397260273,
+        "weight_mean": 1.0,
+        "weight_min": 0.0273972602739726
+      }
+    },
+    {
+      "dataset_id": "legacy_monash:nn5_daily",
+      "per_uid": [
+        {
+          "baseline_smase": 2.5534894555146117,
+          "gain": 0.020362276593887785,
+          "series_uid": "84aa5e757418d4d8b810769ef0008263936994918b64e922a5a62d812b3a9292",
+          "weighted_smase": 2.533127178920724
+        },
+        {
+          "baseline_smase": 2.428273360309516,
+          "gain": 0.032237620322888905,
+          "series_uid": "8c391ed04dbf196f861bd785ac0f51572c7b61084c655294dd6694f67497c6e2",
+          "weighted_smase": 2.396035739986627
+        },
+        {
+          "baseline_smase": 2.978894485670852,
+          "gain": 0.05308858419472351,
+          "series_uid": "ce57eee3266dadf47de858064a94562cebb1cb677c243b6a9a0b299ab78feb44",
+          "weighted_smase": 2.9258059014761284
+        },
+        {
+          "baseline_smase": 2.6429663452153815,
+          "gain": -0.009893027748692607,
+          "series_uid": "dc0c270463fb52a7c56865787248a32f13693014037c4c6ec70cd7ab75d719cc",
+          "weighted_smase": 2.652859372964074
+        },
+        {
+          "baseline_smase": 2.2102571306955685,
+          "gain": -0.02044029700324046,
+          "series_uid": "ea9f4bd141d12b5a31075d86963cbadaf8bae21ab92430e85032984a9fa680c0",
+          "weighted_smase": 2.230697427698809
+        },
+        {
+          "baseline_smase": 2.980104223093281,
+          "gain": -0.008146914517177084,
+          "series_uid": "f447cb7cea327699498177a80c14be4ebdd2f21d88278bf1e06e39ec89b65682",
+          "weighted_smase": 2.988251137610458
+        },
+        {
+          "baseline_smase": 2.442043718670563,
+          "gain": 0.01291579293985512,
+          "series_uid": "f4a87a6d1a2da173919d2a165596d3398369145da23ce1db61a9f3b0e81a6be3",
+          "weighted_smase": 2.429127925730708
+        },
+        {
+          "baseline_smase": 2.7508495794698793,
+          "gain": 0.010484442166421637,
+          "series_uid": "f9d365020044333cafb367bedbfb1fb23d2cc4d65875a4e77fe274bac97c47d2",
+          "weighted_smase": 2.7403651373034577
+        }
+      ],
+      "program_binding": {
+        "query_centroid": [
+          0.03783622279485316,
+          0.5819519075978239,
+          1.0323544278592354,
+          -0.9023589204999181,
+          -0.38136299978396915,
+          0.331655620831452
+        ],
+        "train_window_weights": [
+          {
+            "anchor": 240,
+            "distance": 1.702439364630518,
+            "rank_zero_based": 6,
+            "series_uid": "0389a590397ca931d2789c71a4f37072fb8407a73b887dad841db79c42a50397",
+            "weight": 1.8082191780821917
+          },
+          {
+            "anchor": 240,
+            "distance": 1.6993149123315445,
+            "rank_zero_based": 5,
+            "series_uid": "07557fca54337190e44d4187c40227d6e67ea5da29c05a985cc22679eede6913",
+            "weight": 1.8356164383561644
+          },
+          {
+            "anchor": 240,
+            "distance": 2.123461552432696,
+            "rank_zero_based": 18,
+            "series_uid": "0c13d1b59e30db9dc434d5f0bb0443643ee5a42ceedf2d5e24888e78539572cb",
+            "weight": 1.4794520547945205
+          },
+          {
+            "anchor": 240,
+            "distance": 3.759658439246586,
+            "rank_zero_based": 62,
+            "series_uid": "28a6af142956d2c2ba3315116f6beab1ee8176248f38bf8d3b3821a268fae8c6",
+            "weight": 0.273972602739726
+          },
+          {
+            "anchor": 240,
+            "distance": 3.090495672250992,
+            "rank_zero_based": 47,
+            "series_uid": "2bf840447b9b8453f1447a097f3f5364241fa53630943fe7c55d90088e111863",
+            "weight": 0.684931506849315
+          },
+          {
+            "anchor": 240,
+            "distance": 3.714326810327088,
+            "rank_zero_based": 60,
+            "series_uid": "3292518df9383cbacd4db7e13237400b4d7640a149f3465fe29166a8084129aa",
+            "weight": 0.3287671232876712
+          },
+          {
+            "anchor": 240,
+            "distance": 2.3342205618121405,
+            "rank_zero_based": 23,
+            "series_uid": "36f895092b1a7668a6fd3dd1bb24c269a65e17c22ff5ced8e087b1ce1bbbbeb7",
+            "weight": 1.3424657534246576
+          },
+          {
+            "anchor": 240,
+            "distance": 2.1395959149681567,
+            "rank_zero_based": 19,
+            "series_uid": "382f8d8a412d83d02a10fc14d87d2dcce64292510dc125476fb85122fc81e697",
+            "weight": 1.452054794520548
+          },
+          {
+            "anchor": 240,
+            "distance": 2.457895548194277,
+            "rank_zero_based": 28,
+            "series_uid": "3bb79755159cb65bbc37a2aa526ef63951cc8a92e21f1530faecdba8f6830047",
+            "weight": 1.2054794520547945
+          },
+          {
+            "anchor": 240,
+            "distance": 3.233703505054765,
+            "rank_zero_based": 50,
+            "series_uid": "402b599aabb9cb877388687fa7bacf67d9aca2e21d8069b486965f96664f93c1",
+            "weight": 0.6027397260273972
+          },
+          {
+            "anchor": 240,
+            "distance": 2.5987561685183302,
+            "rank_zero_based": 34,
+            "series_uid": "72ac6a504ca22eb24d6de4be38dc4bbb6a9ba4db54d099f088316481dc085d7a",
+            "weight": 1.0410958904109588
+          },
+          {
+            "anchor": 240,
+            "distance": 2.3938251775389134,
+            "rank_zero_based": 25,
+            "series_uid": "7a51a1d172eee28530c7cde77ed19b1252279195728a43fe9f7e91c6d35ce5ff",
+            "weight": 1.2876712328767124
+          },
+          {
+            "anchor": 300,
+            "distance": 3.075766869218641,
+            "rank_zero_based": 45,
+            "series_uid": "0389a590397ca931d2789c71a4f37072fb8407a73b887dad841db79c42a50397",
+            "weight": 0.7397260273972602
+          },
+          {
+            "anchor": 300,
+            "distance": 3.438191810291571,
+            "rank_zero_based": 55,
+            "series_uid": "07557fca54337190e44d4187c40227d6e67ea5da29c05a985cc22679eede6913",
+            "weight": 0.4657534246575342
+          },
+          {
+            "anchor": 300,
+            "distance": 2.805649622017414,
+            "rank_zero_based": 37,
+            "series_uid": "0c13d1b59e30db9dc434d5f0bb0443643ee5a42ceedf2d5e24888e78539572cb",
+            "weight": 0.958904109589041
+          },
+          {
+            "anchor": 300,
+            "distance": 4.229850878248162,
+            "rank_zero_based": 68,
+            "series_uid": "28a6af142956d2c2ba3315116f6beab1ee8176248f38bf8d3b3821a268fae8c6",
+            "weight": 0.1095890410958904
+          },
+          {
+            "anchor": 300,
+            "distance": 3.067266140760879,
+            "rank_zero_based": 43,
+            "series_uid": "2bf840447b9b8453f1447a097f3f5364241fa53630943fe7c55d90088e111863",
+            "weight": 0.7945205479452054
+          },
+          {
+            "anchor": 300,
+            "distance": 3.9982713255406113,
+            "rank_zero_based": 65,
+            "series_uid": "3292518df9383cbacd4db7e13237400b4d7640a149f3465fe29166a8084129aa",
+            "weight": 0.1917808219178082
+          },
+          {
+            "anchor": 300,
+            "distance": 3.7246584909008043,
+            "rank_zero_based": 61,
+            "series_uid": "36f895092b1a7668a6fd3dd1bb24c269a65e17c22ff5ced8e087b1ce1bbbbeb7",
+            "weight": 0.3013698630136986
+          },
+          {
+            "anchor": 300,
+            "distance": 3.073868435291338,
+            "rank_zero_based": 44,
+            "series_uid": "382f8d8a412d83d02a10fc14d87d2dcce64292510dc125476fb85122fc81e697",
+            "weight": 0.7671232876712328
+          },
+          {
+            "anchor": 300,
+            "distance": 3.0859329310069294,
+            "rank_zero_based": 46,
+            "series_uid": "3bb79755159cb65bbc37a2aa526ef63951cc8a92e21f1530faecdba8f6830047",
+            "weight": 0.7123287671232876
+          },
+          {
+            "anchor": 300,
+            "distance": 2.7663964337283637,
+            "rank_zero_based": 36,
+            "series_uid": "402b599aabb9cb877388687fa7bacf67d9aca2e21d8069b486965f96664f93c1",
+            "weight": 0.9863013698630136
+          },
+          {
+            "anchor": 300,
+            "distance": 3.9640948580689135,
+            "rank_zero_based": 64,
+            "series_uid": "72ac6a504ca22eb24d6de4be38dc4bbb6a9ba4db54d099f088316481dc085d7a",
+            "weight": 0.2191780821917808
+          },
+          {
+            "anchor": 300,
+            "distance": 3.154336777316882,
+            "rank_zero_based": 49,
+            "series_uid": "7a51a1d172eee28530c7cde77ed19b1252279195728a43fe9f7e91c6d35ce5ff",
+            "weight": 0.6301369863013698
+          },
+          {
+            "anchor": 360,
+            "distance": 1.763264001946715,
+            "rank_zero_based": 8,
+            "series_uid": "0389a590397ca931d2789c71a4f37072fb8407a73b887dad841db79c42a50397",
+            "weight": 1.7534246575342465
+          },
+          {
+            "anchor": 360,
+            "distance": 0.9220668472684314,
+            "rank_zero_based": 0,
+            "series_uid": "07557fca54337190e44d4187c40227d6e67ea5da29c05a985cc22679eede6913",
+            "weight": 1.9726027397260273
+          },
+          {
+            "anchor": 360,
+            "distance": 2.629682704932603,
+            "rank_zero_based": 35,
+            "series_uid": "0c13d1b59e30db9dc434d5f0bb0443643ee5a42ceedf2d5e24888e78539572cb",
+            "weight": 1.0136986301369864
+          },
+          {
+            "anchor": 360,
+            "distance": 3.4415019933954243,
+            "rank_zero_based": 56,
+            "series_uid": "28a6af142956d2c2ba3315116f6beab1ee8176248f38bf8d3b3821a268fae8c6",
+            "weight": 0.4383561643835616
+          },
+          {
+            "anchor": 360,
+            "distance": 2.0827949477209855,
+            "rank_zero_based": 16,
+            "series_uid": "2bf840447b9b8453f1447a097f3f5364241fa53630943fe7c55d90088e111863",
+            "weight": 1.5342465753424657
+          },
+          {
+            "anchor": 360,
+            "distance": 1.7440262924020564,
+            "rank_zero_based": 7,
+            "series_uid": "3292518df9383cbacd4db7e13237400b4d7640a149f3465fe29166a8084129aa",
+            "weight": 1.7808219178082192
+          },
+          {
+            "anchor": 360,
+            "distance": 3.401124997067842,
+            "rank_zero_based": 54,
+            "series_uid": "36f895092b1a7668a6fd3dd1bb24c269a65e17c22ff5ced8e087b1ce1bbbbeb7",
+            "weight": 0.4931506849315068
+          },
+          {
+            "anchor": 360,
+            "distance": 4.014316872199615,
+            "rank_zero_based": 67,
+            "series_uid": "382f8d8a412d83d02a10fc14d87d2dcce64292510dc125476fb85122fc81e697",
+            "weight": 0.136986301369863
+          },
+          {
+            "anchor": 360,
+            "distance": 2.3094276759444123,
+            "rank_zero_based": 22,
+            "series_uid": "3bb79755159cb65bbc37a2aa526ef63951cc8a92e21f1530faecdba8f6830047",
+            "weight": 1.36986301369863
+          },
+          {
+            "anchor": 360,
+            "distance": 2.5915650016401446,
+            "rank_zero_based": 33,
+            "series_uid": "402b599aabb9cb877388687fa7bacf67d9aca2e21d8069b486965f96664f93c1",
+            "weight": 1.0684931506849316
+          },
+          {
+            "anchor": 360,
+            "distance": 2.513117743128551,
+            "rank_zero_based": 30,
+            "series_uid": "72ac6a504ca22eb24d6de4be38dc4bbb6a9ba4db54d099f088316481dc085d7a",
+            "weight": 1.1506849315068493
+          },
+          {
+            "anchor": 360,
+            "distance": 1.8028472556887776,
+            "rank_zero_based": 9,
+            "series_uid": "7a51a1d172eee28530c7cde77ed19b1252279195728a43fe9f7e91c6d35ce5ff",
+            "weight": 1.726027397260274
+          },
+          {
+            "anchor": 420,
+            "distance": 1.3003067469521448,
+            "rank_zero_based": 1,
+            "series_uid": "0389a590397ca931d2789c71a4f37072fb8407a73b887dad841db79c42a50397",
+            "weight": 1.9452054794520548
+          },
+          {
+            "anchor": 420,
+            "distance": 1.9560485446943001,
+            "rank_zero_based": 12,
+            "series_uid": "07557fca54337190e44d4187c40227d6e67ea5da29c05a985cc22679eede6913",
+            "weight": 1.643835616438356
+          },
+          {
+            "anchor": 420,
+            "distance": 2.8464160623396118,
+            "rank_zero_based": 39,
+            "series_uid": "0c13d1b59e30db9dc434d5f0bb0443643ee5a42ceedf2d5e24888e78539572cb",
+            "weight": 0.9041095890410958
+          },
+          {
+            "anchor": 420,
+            "distance": 2.914992967161284,
+            "rank_zero_based": 40,
+            "series_uid": "28a6af142956d2c2ba3315116f6beab1ee8176248f38bf8d3b3821a268fae8c6",
+            "weight": 0.8767123287671232
+          },
+          {
+            "anchor": 420,
+            "distance": 2.0810805725304893,
+            "rank_zero_based": 15,
+            "series_uid": "2bf840447b9b8453f1447a097f3f5364241fa53630943fe7c55d90088e111863",
+            "weight": 1.5616438356164384
+          },
+          {
+            "anchor": 420,
+            "distance": 2.348409919395572,
+            "rank_zero_based": 24,
+            "series_uid": "3292518df9383cbacd4db7e13237400b4d7640a149f3465fe29166a8084129aa",
+            "weight": 1.3150684931506849
+          },
+          {
+            "anchor": 420,
+            "distance": 4.013639927847031,
+            "rank_zero_based": 66,
+            "series_uid": "36f895092b1a7668a6fd3dd1bb24c269a65e17c22ff5ced8e087b1ce1bbbbeb7",
+            "weight": 0.1643835616438356
+          },
+          {
+            "anchor": 420,
+            "distance": 1.8575594541743972,
+            "rank_zero_based": 11,
+            "series_uid": "382f8d8a412d83d02a10fc14d87d2dcce64292510dc125476fb85122fc81e697",
+            "weight": 1.6712328767123288
+          },
+          {
+            "anchor": 420,
+            "distance": 2.099070346795989,
+            "rank_zero_based": 17,
+            "series_uid": "3bb79755159cb65bbc37a2aa526ef63951cc8a92e21f1530faecdba8f6830047",
+            "weight": 1.5068493150684932
+          },
+          {
+            "anchor": 420,
+            "distance": 3.5666325974494573,
+            "rank_zero_based": 58,
+            "series_uid": "402b599aabb9cb877388687fa7bacf67d9aca2e21d8069b486965f96664f93c1",
+            "weight": 0.3835616438356164
+          },
+          {
+            "anchor": 420,
+            "distance": 1.5314507408998381,
+            "rank_zero_based": 3,
+            "series_uid": "72ac6a504ca22eb24d6de4be38dc4bbb6a9ba4db54d099f088316481dc085d7a",
+            "weight": 1.8904109589041096
+          },
+          {
+            "anchor": 420,
+            "distance": 1.691916660484833,
+            "rank_zero_based": 4,
+            "series_uid": "7a51a1d172eee28530c7cde77ed19b1252279195728a43fe9f7e91c6d35ce5ff",
+            "weight": 1.8630136986301369
+          },
+          {
+            "anchor": 480,
+            "distance": 3.3342005889598623,
+            "rank_zero_based": 53,
+            "series_uid": "0389a590397ca931d2789c71a4f37072fb8407a73b887dad841db79c42a50397",
+            "weight": 0.5205479452054794
+          },
+          {
+            "anchor": 480,
+            "distance": 4.289501804391432,
+            "rank_zero_based": 69,
+            "series_uid": "07557fca54337190e44d4187c40227d6e67ea5da29c05a985cc22679eede6913",
+            "weight": 0.0821917808219178
+          },
+          {
+            "anchor": 480,
+            "distance": 1.8521896907303546,
+            "rank_zero_based": 10,
+            "series_uid": "0c13d1b59e30db9dc434d5f0bb0443643ee5a42ceedf2d5e24888e78539572cb",
+            "weight": 1.6986301369863013
+          },
+          {
+            "anchor": 480,
+            "distance": 3.5158171094854866,
+            "rank_zero_based": 57,
+            "series_uid": "28a6af142956d2c2ba3315116f6beab1ee8176248f38bf8d3b3821a268fae8c6",
+            "weight": 0.410958904109589
+          },
+          {
+            "anchor": 480,
+            "distance": 2.5768009171514574,
+            "rank_zero_based": 32,
+            "series_uid": "2bf840447b9b8453f1447a097f3f5364241fa53630943fe7c55d90088e111863",
+            "weight": 1.095890410958904
+          },
+          {
+            "anchor": 480,
+            "distance": 3.2865730727163918,
+            "rank_zero_based": 51,
+            "series_uid": "3292518df9383cbacd4db7e13237400b4d7640a149f3465fe29166a8084129aa",
+            "weight": 0.5753424657534246
+          },
+          {
+            "anchor": 480,
+            "distance": 4.799171718719993,
+            "rank_zero_based": 70,
+            "series_uid": "36f895092b1a7668a6fd3dd1bb24c269a65e17c22ff5ced8e087b1ce1bbbbeb7",
+            "weight": 0.0547945205479452
+          },
+          {
+            "anchor": 480,
+            "distance": 2.553947814682621,
+            "rank_zero_based": 31,
+            "series_uid": "382f8d8a412d83d02a10fc14d87d2dcce64292510dc125476fb85122fc81e697",
+            "weight": 1.1232876712328768
+          },
+          {
+            "anchor": 480,
+            "distance": 2.2560066126394056,
+            "rank_zero_based": 21,
+            "series_uid": "3bb79755159cb65bbc37a2aa526ef63951cc8a92e21f1530faecdba8f6830047",
+            "weight": 1.3972602739726028
+          },
+          {
+            "anchor": 480,
+            "distance": 1.3947614893649276,
+            "rank_zero_based": 2,
+            "series_uid": "402b599aabb9cb877388687fa7bacf67d9aca2e21d8069b486965f96664f93c1",
+            "weight": 1.917808219178082
+          },
+          {
+            "anchor": 480,
+            "distance": 2.8274300251474753,
+            "rank_zero_based": 38,
+            "series_uid": "72ac6a504ca22eb24d6de4be38dc4bbb6a9ba4db54d099f088316481dc085d7a",
+            "weight": 0.9315068493150684
+          },
+          {
+            "anchor": 480,
+            "distance": 3.3184914108212635,
+            "rank_zero_based": 52,
+            "series_uid": "7a51a1d172eee28530c7cde77ed19b1252279195728a43fe9f7e91c6d35ce5ff",
+            "weight": 0.547945205479452
+          },
+          {
+            "anchor": 540,
+            "distance": 3.709716569171531,
+            "rank_zero_based": 59,
+            "series_uid": "0389a590397ca931d2789c71a4f37072fb8407a73b887dad841db79c42a50397",
+            "weight": 0.3561643835616438
+          },
+          {
+            "anchor": 540,
+            "distance": 3.773404386331304,
+            "rank_zero_based": 63,
+            "series_uid": "07557fca54337190e44d4187c40227d6e67ea5da29c05a985cc22679eede6913",
+            "weight": 0.2465753424657534
+          },
+          {
+            "anchor": 540,
+            "distance": 2.4005340375443955,
+            "rank_zero_based": 26,
+            "series_uid": "0c13d1b59e30db9dc434d5f0bb0443643ee5a42ceedf2d5e24888e78539572cb",
+            "weight": 1.2602739726027397
+          },
+          {
+            "anchor": 540,
+            "distance": 3.090754358846636,
+            "rank_zero_based": 48,
+            "series_uid": "28a6af142956d2c2ba3315116f6beab1ee8176248f38bf8d3b3821a268fae8c6",
+            "weight": 0.6575342465753424
+          },
+          {
+            "anchor": 540,
+            "distance": 2.202396060473164,
+            "rank_zero_based": 20,
+            "series_uid": "2bf840447b9b8453f1447a097f3f5364241fa53630943fe7c55d90088e111863",
+            "weight": 1.4246575342465753
+          },
+          {
+            "anchor": 540,
+            "distance": 2.9970458677247787,
+            "rank_zero_based": 41,
+            "series_uid": "3292518df9383cbacd4db7e13237400b4d7640a149f3465fe29166a8084129aa",
+            "weight": 0.8493150684931506
+          },
+          {
+            "anchor": 540,
+            "distance": 5.174240676688238,
+            "rank_zero_based": 71,
+            "series_uid": "36f895092b1a7668a6fd3dd1bb24c269a65e17c22ff5ced8e087b1ce1bbbbeb7",
+            "weight": 0.0273972602739726
+          },
+          {
+            "anchor": 540,
+            "distance": 1.9720145187652076,
+            "rank_zero_based": 13,
+            "series_uid": "382f8d8a412d83d02a10fc14d87d2dcce64292510dc125476fb85122fc81e697",
+            "weight": 1.6164383561643836
+          },
+          {
+            "anchor": 540,
+            "distance": 3.022927698008106,
+            "rank_zero_based": 42,
+            "series_uid": "3bb79755159cb65bbc37a2aa526ef63951cc8a92e21f1530faecdba8f6830047",
+            "weight": 0.821917808219178
+          },
+          {
+            "anchor": 540,
+            "distance": 2.0591610925483894,
+            "rank_zero_based": 14,
+            "series_uid": "402b599aabb9cb877388687fa7bacf67d9aca2e21d8069b486965f96664f93c1",
+            "weight": 1.5890410958904109
+          },
+          {
+            "anchor": 540,
+            "distance": 2.4134251637358313,
+            "rank_zero_based": 27,
+            "series_uid": "72ac6a504ca22eb24d6de4be38dc4bbb6a9ba4db54d099f088316481dc085d7a",
+            "weight": 1.2328767123287672
+          },
+          {
+            "anchor": 540,
+            "distance": 2.49797322674882,
+            "rank_zero_based": 29,
+            "series_uid": "7a51a1d172eee28530c7cde77ed19b1252279195728a43fe9f7e91c6d35ce5ff",
+            "weight": 1.178082191780822
+          }
+        ]
+      },
+      "summary": {
+        "headroom_pass": false,
+        "mean_gain": 0.01132605961858335,
+        "median_gain": 0.011700117553138378,
+        "positive_uid_count": 5,
+        "train_query_rms_shift": 0.642331700015887,
+        "weight_effective_sample_size": 54.37241379310345,
+        "weight_max": 1.9726027397260273,
+        "weight_mean": 1.0,
+        "weight_min": 0.0273972602739726
+      }
+    },
+    {
+      "dataset_id": "metr_la",
+      "per_uid": [
+        {
+          "baseline_smase": 3.590371896180309,
+          "gain": 0.02474124993108129,
+          "series_uid": "0d39011724603e0b4958ca474eba159ce417a7a226c1930f6bdc4d88f737b28c",
+          "weighted_smase": 3.5656306462492275
+        },
+        {
+          "baseline_smase": 2.726274217805631,
+          "gain": 0.011709674936857262,
+          "series_uid": "0d75013fdd1c175acf8e1b05469823b7f9e8cdc716c60ae8645b3f764f94ac5e",
+          "weighted_smase": 2.7145645428687737
+        },
+        {
+          "baseline_smase": 2.432602476307941,
+          "gain": 0.009440480563510878,
+          "series_uid": "0e37d47672b0a17e824b85f0fd9dd58d2a95047ab9312156deeaa40994162936",
+          "weighted_smase": 2.42316199574443
+        },
+        {
+          "baseline_smase": 5.639972668024008,
+          "gain": 0.0833164114888243,
+          "series_uid": "10f0fd5dc1c56df67b08a8398abb63a4cd19a944740d9349789559aba796fcdd",
+          "weighted_smase": 5.556656256535184
+        },
+        {
+          "baseline_smase": 4.956836423846519,
+          "gain": 0.1341108822672492,
+          "series_uid": "1197bb02dd1ad39b288f3b1877cd9c3de5c67a10c435d5c6c5398c5cade92f45",
+          "weighted_smase": 4.82272554157927
+        },
+        {
+          "baseline_smase": 5.718972859043982,
+          "gain": 0.0719409620165452,
+          "series_uid": "12fa8a2e51935d0a75f12eb839e52076bc16487ddbd1f016c7cc6c3f5f1cf43b",
+          "weighted_smase": 5.6470318970274365
+        },
+        {
+          "baseline_smase": 2.909280276456844,
+          "gain": 0.012790138896541237,
+          "series_uid": "14fa2cde9c6e30ea13e3e809c9058a4e65f504486913a0b6a1ba5bb25f0adb91",
+          "weighted_smase": 2.8964901375603027
+        },
+        {
+          "baseline_smase": 6.091617864482274,
+          "gain": 0.09926690066391419,
+          "series_uid": "1510bc7381f1eb144509dabb65c85f6cc56247e49810137a335dfcd12d43322b",
+          "weighted_smase": 5.992350963818359
+        }
+      ],
+      "program_binding": {
+        "query_centroid": [
+          3.5771976242934533,
+          0.5547056435087037,
+          2.4498229748734315,
+          1.4391599195550047,
+          0.746735010157548,
+          0.5266752203143891
+        ],
+        "train_window_weights": [
+          {
+            "anchor": 240,
+            "distance": 5.318960267904161,
+            "rank_zero_based": 42,
+            "series_uid": "0339e13af599f46b9fcdcd7f8810eb0365609c4112580dd31dbb05e1f727702a",
+            "weight": 0.821917808219178
+          },
+          {
+            "anchor": 240,
+            "distance": 5.621374627108964,
+            "rank_zero_based": 52,
+            "series_uid": "038725ee90a4e3ecc34c4985f34526d7182362d625d6a83c936c6678b11ae911",
+            "weight": 0.547945205479452
+          },
+          {
+            "anchor": 240,
+            "distance": 7.897766453593043,
+            "rank_zero_based": 71,
+            "series_uid": "03932d4aab4c9e78487492ce7a70a213b980063d4134c433e71c2921b9aa33f5",
+            "weight": 0.0273972602739726
+          },
+          {
+            "anchor": 240,
+            "distance": 5.2947466928649,
+            "rank_zero_based": 40,
+            "series_uid": "043956878c9cecfdf8e82cc16e9141302db46af7cb8fece1a430466c9ecd35dc",
+            "weight": 0.8767123287671232
+          },
+          {
+            "anchor": 240,
+            "distance": 6.419652950721565,
+            "rank_zero_based": 64,
+            "series_uid": "04cd8295055ee979f6f56221d98d3e6de0448d4d7f7066b3968e8eb897512a57",
+            "weight": 0.2191780821917808
+          },
+          {
+            "anchor": 240,
+            "distance": 5.580436905080134,
+            "rank_zero_based": 50,
+            "series_uid": "0885e72f3c90e8704837be66257ed998a45520afbf9f13a64760d52542a6f649",
+            "weight": 0.6027397260273972
+          },
+          {
+            "anchor": 240,
+            "distance": 6.008207445209033,
+            "rank_zero_based": 59,
+            "series_uid": "09398ae99b85eb9473cfdd255c3fa43843f82b643f9ef67be7e22285a653df7a",
+            "weight": 0.3561643835616438
+          },
+          {
+            "anchor": 240,
+            "distance": 5.937535892448816,
+            "rank_zero_based": 58,
+            "series_uid": "09583a39966c932abe8a987eb0447449ee273b727ce5824389523fe1fff28631",
+            "weight": 0.3835616438356164
+          },
+          {
+            "anchor": 240,
+            "distance": 5.283275728087661,
+            "rank_zero_based": 38,
+            "series_uid": "0966c2521ab7b8488c4e514d8de50808d8af7c1cf519d375560e28e854852e99",
+            "weight": 0.9315068493150684
+          },
+          {
+            "anchor": 240,
+            "distance": 5.457139036081418,
+            "rank_zero_based": 45,
+            "series_uid": "0b46998d67165bc656a5654b45d1948c7af092c2ffc188ab01690d62e8ee1fe9",
+            "weight": 0.7397260273972602
+          },
+          {
+            "anchor": 240,
+            "distance": 5.376008559467846,
+            "rank_zero_based": 43,
+            "series_uid": "0ba276fa9990dbf71cc577145bc4eaf954b15c7c021ace56a0c99d4cb8cef8aa",
+            "weight": 0.7945205479452054
+          },
+          {
+            "anchor": 240,
+            "distance": 4.051495094764829,
+            "rank_zero_based": 9,
+            "series_uid": "0cac87593c79562e1dab0229dced97f40d0a4452e4eb2eaa392a8b72599bc180",
+            "weight": 1.726027397260274
+          },
+          {
+            "anchor": 300,
+            "distance": 3.5350785712788277,
+            "rank_zero_based": 1,
+            "series_uid": "0339e13af599f46b9fcdcd7f8810eb0365609c4112580dd31dbb05e1f727702a",
+            "weight": 1.9452054794520548
+          },
+          {
+            "anchor": 300,
+            "distance": 3.7672705093001935,
+            "rank_zero_based": 2,
+            "series_uid": "038725ee90a4e3ecc34c4985f34526d7182362d625d6a83c936c6678b11ae911",
+            "weight": 1.917808219178082
+          },
+          {
+            "anchor": 300,
+            "distance": 6.021369946612589,
+            "rank_zero_based": 60,
+            "series_uid": "03932d4aab4c9e78487492ce7a70a213b980063d4134c433e71c2921b9aa33f5",
+            "weight": 0.3287671232876712
+          },
+          {
+            "anchor": 300,
+            "distance": 3.4468173831561524,
+            "rank_zero_based": 0,
+            "series_uid": "043956878c9cecfdf8e82cc16e9141302db46af7cb8fece1a430466c9ecd35dc",
+            "weight": 1.9726027397260273
+          },
+          {
+            "anchor": 300,
+            "distance": 3.985170168162258,
+            "rank_zero_based": 8,
+            "series_uid": "04cd8295055ee979f6f56221d98d3e6de0448d4d7f7066b3968e8eb897512a57",
+            "weight": 1.7534246575342465
+          },
+          {
+            "anchor": 300,
+            "distance": 3.773548326135143,
+            "rank_zero_based": 3,
+            "series_uid": "0885e72f3c90e8704837be66257ed998a45520afbf9f13a64760d52542a6f649",
+            "weight": 1.8904109589041096
+          },
+          {
+            "anchor": 300,
+            "distance": 3.8955570319746062,
+            "rank_zero_based": 5,
+            "series_uid": "09398ae99b85eb9473cfdd255c3fa43843f82b643f9ef67be7e22285a653df7a",
+            "weight": 1.8356164383561644
+          },
+          {
+            "anchor": 300,
+            "distance": 4.7087922149651025,
+            "rank_zero_based": 17,
+            "series_uid": "09583a39966c932abe8a987eb0447449ee273b727ce5824389523fe1fff28631",
+            "weight": 1.5068493150684932
+          },
+          {
+            "anchor": 300,
+            "distance": 4.152289791024805,
+            "rank_zero_based": 10,
+            "series_uid": "0966c2521ab7b8488c4e514d8de50808d8af7c1cf519d375560e28e854852e99",
+            "weight": 1.6986301369863013
+          },
+          {
+            "anchor": 300,
+            "distance": 5.5279194656917205,
+            "rank_zero_based": 49,
+            "series_uid": "0b46998d67165bc656a5654b45d1948c7af092c2ffc188ab01690d62e8ee1fe9",
+            "weight": 0.6301369863013698
+          },
+          {
+            "anchor": 300,
+            "distance": 3.81620857722194,
+            "rank_zero_based": 4,
+            "series_uid": "0ba276fa9990dbf71cc577145bc4eaf954b15c7c021ace56a0c99d4cb8cef8aa",
+            "weight": 1.8630136986301369
+          },
+          {
+            "anchor": 300,
+            "distance": 3.9614764720833224,
+            "rank_zero_based": 7,
+            "series_uid": "0cac87593c79562e1dab0229dced97f40d0a4452e4eb2eaa392a8b72599bc180",
+            "weight": 1.7808219178082192
+          },
+          {
+            "anchor": 360,
+            "distance": 5.013709125227367,
+            "rank_zero_based": 31,
+            "series_uid": "0339e13af599f46b9fcdcd7f8810eb0365609c4112580dd31dbb05e1f727702a",
+            "weight": 1.1232876712328768
+          },
+          {
+            "anchor": 360,
+            "distance": 3.9262968619715988,
+            "rank_zero_based": 6,
+            "series_uid": "038725ee90a4e3ecc34c4985f34526d7182362d625d6a83c936c6678b11ae911",
+            "weight": 1.8082191780821917
+          },
+          {
+            "anchor": 360,
+            "distance": 6.800262098857222,
+            "rank_zero_based": 68,
+            "series_uid": "03932d4aab4c9e78487492ce7a70a213b980063d4134c433e71c2921b9aa33f5",
+            "weight": 0.1095890410958904
+          },
+          {
+            "anchor": 360,
+            "distance": 5.4243492221609495,
+            "rank_zero_based": 44,
+            "series_uid": "043956878c9cecfdf8e82cc16e9141302db46af7cb8fece1a430466c9ecd35dc",
+            "weight": 0.7671232876712328
+          },
+          {
+            "anchor": 360,
+            "distance": 4.166763744945922,
+            "rank_zero_based": 11,
+            "series_uid": "04cd8295055ee979f6f56221d98d3e6de0448d4d7f7066b3968e8eb897512a57",
+            "weight": 1.6712328767123288
+          },
+          {
+            "anchor": 360,
+            "distance": 5.04832669314776,
+            "rank_zero_based": 34,
+            "series_uid": "0885e72f3c90e8704837be66257ed998a45520afbf9f13a64760d52542a6f649",
+            "weight": 1.0410958904109588
+          },
+          {
+            "anchor": 360,
+            "distance": 5.102422087928171,
+            "rank_zero_based": 36,
+            "series_uid": "09398ae99b85eb9473cfdd255c3fa43843f82b643f9ef67be7e22285a653df7a",
+            "weight": 0.9863013698630136
+          },
+          {
+            "anchor": 360,
+            "distance": 6.212828768785062,
+            "rank_zero_based": 62,
+            "series_uid": "09583a39966c932abe8a987eb0447449ee273b727ce5824389523fe1fff28631",
+            "weight": 0.273972602739726
+          },
+          {
+            "anchor": 360,
+            "distance": 5.0254478119505634,
+            "rank_zero_based": 32,
+            "series_uid": "0966c2521ab7b8488c4e514d8de50808d8af7c1cf519d375560e28e854852e99",
+            "weight": 1.095890410958904
+          },
+          {
+            "anchor": 360,
+            "distance": 6.460227027757601,
+            "rank_zero_based": 65,
+            "series_uid": "0b46998d67165bc656a5654b45d1948c7af092c2ffc188ab01690d62e8ee1fe9",
+            "weight": 0.1917808219178082
+          },
+          {
+            "anchor": 360,
+            "distance": 4.9320242973965005,
+            "rank_zero_based": 23,
+            "series_uid": "0ba276fa9990dbf71cc577145bc4eaf954b15c7c021ace56a0c99d4cb8cef8aa",
+            "weight": 1.3424657534246576
+          },
+          {
+            "anchor": 360,
+            "distance": 4.56550030398229,
+            "rank_zero_based": 15,
+            "series_uid": "0cac87593c79562e1dab0229dced97f40d0a4452e4eb2eaa392a8b72599bc180",
+            "weight": 1.5616438356164384
+          },
+          {
+            "anchor": 420,
+            "distance": 7.604375660470421,
+            "rank_zero_based": 70,
+            "series_uid": "0339e13af599f46b9fcdcd7f8810eb0365609c4112580dd31dbb05e1f727702a",
+            "weight": 0.0547945205479452
+          },
+          {
+            "anchor": 420,
+            "distance": 6.9354557834162724,
+            "rank_zero_based": 69,
+            "series_uid": "038725ee90a4e3ecc34c4985f34526d7182362d625d6a83c936c6678b11ae911",
+            "weight": 0.0821917808219178
+          },
+          {
+            "anchor": 420,
+            "distance": 5.621890186401684,
+            "rank_zero_based": 53,
+            "series_uid": "03932d4aab4c9e78487492ce7a70a213b980063d4134c433e71c2921b9aa33f5",
+            "weight": 0.5205479452054794
+          },
+          {
+            "anchor": 420,
+            "distance": 6.410705175472233,
+            "rank_zero_based": 63,
+            "series_uid": "043956878c9cecfdf8e82cc16e9141302db46af7cb8fece1a430466c9ecd35dc",
+            "weight": 0.2465753424657534
+          },
+          {
+            "anchor": 420,
+            "distance": 5.588950750688646,
+            "rank_zero_based": 51,
+            "series_uid": "04cd8295055ee979f6f56221d98d3e6de0448d4d7f7066b3968e8eb897512a57",
+            "weight": 0.5753424657534246
+          },
+          {
+            "anchor": 420,
+            "distance": 5.511154476970241,
+            "rank_zero_based": 47,
+            "series_uid": "0885e72f3c90e8704837be66257ed998a45520afbf9f13a64760d52542a6f649",
+            "weight": 0.684931506849315
+          },
+          {
+            "anchor": 420,
+            "distance": 5.5180875812644965,
+            "rank_zero_based": 48,
+            "series_uid": "09398ae99b85eb9473cfdd255c3fa43843f82b643f9ef67be7e22285a653df7a",
+            "weight": 0.6575342465753424
+          },
+          {
+            "anchor": 420,
+            "distance": 6.7780981192950485,
+            "rank_zero_based": 67,
+            "series_uid": "09583a39966c932abe8a987eb0447449ee273b727ce5824389523fe1fff28631",
+            "weight": 0.136986301369863
+          },
+          {
+            "anchor": 420,
+            "distance": 6.085366081359965,
+            "rank_zero_based": 61,
+            "series_uid": "0966c2521ab7b8488c4e514d8de50808d8af7c1cf519d375560e28e854852e99",
+            "weight": 0.3013698630136986
+          },
+          {
+            "anchor": 420,
+            "distance": 5.471257451303797,
+            "rank_zero_based": 46,
+            "series_uid": "0b46998d67165bc656a5654b45d1948c7af092c2ffc188ab01690d62e8ee1fe9",
+            "weight": 0.7123287671232876
+          },
+          {
+            "anchor": 420,
+            "distance": 5.0862312583075875,
+            "rank_zero_based": 35,
+            "series_uid": "0ba276fa9990dbf71cc577145bc4eaf954b15c7c021ace56a0c99d4cb8cef8aa",
+            "weight": 1.0136986301369864
+          },
+          {
+            "anchor": 420,
+            "distance": 6.669413780896248,
+            "rank_zero_based": 66,
+            "series_uid": "0cac87593c79562e1dab0229dced97f40d0a4452e4eb2eaa392a8b72599bc180",
+            "weight": 0.1643835616438356
+          },
+          {
+            "anchor": 480,
+            "distance": 5.657499435777032,
+            "rank_zero_based": 55,
+            "series_uid": "0339e13af599f46b9fcdcd7f8810eb0365609c4112580dd31dbb05e1f727702a",
+            "weight": 0.4657534246575342
+          },
+          {
+            "anchor": 480,
+            "distance": 5.289982578717273,
+            "rank_zero_based": 39,
+            "series_uid": "038725ee90a4e3ecc34c4985f34526d7182362d625d6a83c936c6678b11ae911",
+            "weight": 0.9041095890410958
+          },
+          {
+            "anchor": 480,
+            "distance": 5.005726588459959,
+            "rank_zero_based": 30,
+            "series_uid": "03932d4aab4c9e78487492ce7a70a213b980063d4134c433e71c2921b9aa33f5",
+            "weight": 1.1506849315068493
+          },
+          {
+            "anchor": 480,
+            "distance": 4.987691278374933,
+            "rank_zero_based": 25,
+            "series_uid": "043956878c9cecfdf8e82cc16e9141302db46af7cb8fece1a430466c9ecd35dc",
+            "weight": 1.2876712328767124
+          },
+          {
+            "anchor": 480,
+            "distance": 4.730357483358499,
+            "rank_zero_based": 18,
+            "series_uid": "04cd8295055ee979f6f56221d98d3e6de0448d4d7f7066b3968e8eb897512a57",
+            "weight": 1.4794520547945205
+          },
+          {
+            "anchor": 480,
+            "distance": 5.042079210435636,
+            "rank_zero_based": 33,
+            "series_uid": "0885e72f3c90e8704837be66257ed998a45520afbf9f13a64760d52542a6f649",
+            "weight": 1.0684931506849316
+          },
+          {
+            "anchor": 480,
+            "distance": 4.988620069936782,
+            "rank_zero_based": 26,
+            "series_uid": "09398ae99b85eb9473cfdd255c3fa43843f82b643f9ef67be7e22285a653df7a",
+            "weight": 1.2602739726027397
+          },
+          {
+            "anchor": 480,
+            "distance": 5.634176610478739,
+            "rank_zero_based": 54,
+            "series_uid": "09583a39966c932abe8a987eb0447449ee273b727ce5824389523fe1fff28631",
+            "weight": 0.4931506849315068
+          },
+          {
+            "anchor": 480,
+            "distance": 4.991787660497581,
+            "rank_zero_based": 27,
+            "series_uid": "0966c2521ab7b8488c4e514d8de50808d8af7c1cf519d375560e28e854852e99",
+            "weight": 1.2328767123287672
+          },
+          {
+            "anchor": 480,
+            "distance": 4.812552933525527,
+            "rank_zero_based": 20,
+            "series_uid": "0b46998d67165bc656a5654b45d1948c7af092c2ffc188ab01690d62e8ee1fe9",
+            "weight": 1.4246575342465753
+          },
+          {
+            "anchor": 480,
+            "distance": 4.539311843143804,
+            "rank_zero_based": 14,
+            "series_uid": "0ba276fa9990dbf71cc577145bc4eaf954b15c7c021ace56a0c99d4cb8cef8aa",
+            "weight": 1.5890410958904109
+          },
+          {
+            "anchor": 480,
+            "distance": 4.693805030047261,
+            "rank_zero_based": 16,
+            "series_uid": "0cac87593c79562e1dab0229dced97f40d0a4452e4eb2eaa392a8b72599bc180",
+            "weight": 1.5342465753424657
+          },
+          {
+            "anchor": 540,
+            "distance": 4.936808800663254,
+            "rank_zero_based": 24,
+            "series_uid": "0339e13af599f46b9fcdcd7f8810eb0365609c4112580dd31dbb05e1f727702a",
+            "weight": 1.3150684931506849
+          },
+          {
+            "anchor": 540,
+            "distance": 5.728250723027304,
+            "rank_zero_based": 57,
+            "series_uid": "038725ee90a4e3ecc34c4985f34526d7182362d625d6a83c936c6678b11ae911",
+            "weight": 0.410958904109589
+          },
+          {
+            "anchor": 540,
+            "distance": 4.998919046651173,
+            "rank_zero_based": 29,
+            "series_uid": "03932d4aab4c9e78487492ce7a70a213b980063d4134c433e71c2921b9aa33f5",
+            "weight": 1.178082191780822
+          },
+          {
+            "anchor": 540,
+            "distance": 4.892946259900464,
+            "rank_zero_based": 22,
+            "series_uid": "043956878c9cecfdf8e82cc16e9141302db46af7cb8fece1a430466c9ecd35dc",
+            "weight": 1.36986301369863
+          },
+          {
+            "anchor": 540,
+            "distance": 5.665972801289025,
+            "rank_zero_based": 56,
+            "series_uid": "04cd8295055ee979f6f56221d98d3e6de0448d4d7f7066b3968e8eb897512a57",
+            "weight": 0.4383561643835616
+          },
+          {
+            "anchor": 540,
+            "distance": 4.494367585275567,
+            "rank_zero_based": 13,
+            "series_uid": "0885e72f3c90e8704837be66257ed998a45520afbf9f13a64760d52542a6f649",
+            "weight": 1.6164383561643836
+          },
+          {
+            "anchor": 540,
+            "distance": 5.313165551849159,
+            "rank_zero_based": 41,
+            "series_uid": "09398ae99b85eb9473cfdd255c3fa43843f82b643f9ef67be7e22285a653df7a",
+            "weight": 0.8493150684931506
+          },
+          {
+            "anchor": 540,
+            "distance": 4.992012255205,
+            "rank_zero_based": 28,
+            "series_uid": "09583a39966c932abe8a987eb0447449ee273b727ce5824389523fe1fff28631",
+            "weight": 1.2054794520547945
+          },
+          {
+            "anchor": 540,
+            "distance": 4.858587210332283,
+            "rank_zero_based": 21,
+            "series_uid": "0966c2521ab7b8488c4e514d8de50808d8af7c1cf519d375560e28e854852e99",
+            "weight": 1.3972602739726028
+          },
+          {
+            "anchor": 540,
+            "distance": 4.324016923488484,
+            "rank_zero_based": 12,
+            "series_uid": "0b46998d67165bc656a5654b45d1948c7af092c2ffc188ab01690d62e8ee1fe9",
+            "weight": 1.643835616438356
+          },
+          {
+            "anchor": 540,
+            "distance": 5.260434354059965,
+            "rank_zero_based": 37,
+            "series_uid": "0ba276fa9990dbf71cc577145bc4eaf954b15c7c021ace56a0c99d4cb8cef8aa",
+            "weight": 0.958904109589041
+          },
+          {
+            "anchor": 540,
+            "distance": 4.802540575747921,
+            "rank_zero_based": 19,
+            "series_uid": "0cac87593c79562e1dab0229dced97f40d0a4452e4eb2eaa392a8b72599bc180",
+            "weight": 1.452054794520548
+          }
+        ]
+      },
+      "summary": {
+        "headroom_pass": true,
+        "mean_gain": 0.055914587595565446,
+        "median_gain": 0.04834110597381325,
+        "positive_uid_count": 8,
+        "train_query_rms_shift": 1.9153700704020014,
+        "weight_effective_sample_size": 54.372413793103455,
+        "weight_max": 1.9726027397260273,
+        "weight_mean": 1.0,
+        "weight_min": 0.0273972602739726
+      }
+    }
+  ],
+  "formal_transfer": false,
+  "information_wall": {
+    "fingerprint_uses_visible_context_only": true,
+    "known_period_semantics_enters_fingerprint": true,
+    "opaque_dataset_identity_enters_fingerprint_or_weights": false,
+    "outcome_enters_fingerprint_or_weights": false,
+    "source_eval_future_read_for_judge_and_frozen_finite_admission": true,
+    "source_eval_future_values_or_outcomes_enter_weights": false,
+    "target_query_opened": false,
+    "target_values_read": false,
+    "uci_target_query_context_read": false,
+    "uci_target_query_outcome_read": false,
+    "uci_values_read": false
+  },
+  "memory_claim": false,
+  "overall": {
+    "headroom_dataset_count": 1,
+    "headroom_pass": false,
+    "required_headroom_dataset_count": 2
+  },
+  "promotion_eligible": false,
+  "schema_version": "e2-query-context-cohort-reweighting/1",
+  "scientific_role": "exposed_source_cohort_program_headroom",
+  "target_query_opened": false,
+  "verdict": "QUERY_CONTEXT_COHORT_REWEIGHTING_HEADROOM_FAIL"
+}

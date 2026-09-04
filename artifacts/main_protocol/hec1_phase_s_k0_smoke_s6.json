@@ -1,0 +1,2672 @@
+{
+  "stage": "HEC1_COURSE",
+  "written_at": "2026-09-03T11:25:29.838076+08:00",
+  "contract_version": "P4U-v4",
+  "contract_frozen": true,
+  "phase": "phase_s",
+  "ordering": "phase_s",
+  "run_label": "k0_smoke_s6",
+  "offline": true,
+  "resume": false,
+  "assert_launchable": {
+    "launchable": true,
+    "phase": "phase_s",
+    "llm_cap": 120,
+    "blockers": [],
+    "verdict_if_launched_anyway": "BLOCKED_ON_CONTRACT"
+  },
+  "run_root": ".hec1_runs/k0_smoke_s6",
+  "status": "COMPLETE",
+  "verdict": null,
+  "run_fault": null,
+  "arms": [
+    "A5-online"
+  ],
+  "k0": {
+    "empty": true,
+    "active_skill_ids": []
+  },
+  "units_planned": 6,
+  "units_completed": 6,
+  "cells": [
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 1896,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 0,
+      "arm": "A5-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "first unit"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.31990962156114766,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T32",
+            "T33"
+          ],
+          "per_series_gain": [
+            0.1407852086317496,
+            -0.05770568594544356,
+            0.0,
+            0.4221329050634304,
+            0.008040346388975106,
+            0.1351835234601393,
+            0.4340097812525212,
+            -0.006193256419720794,
+            0.999925195188393,
+            -0.4637045098030368,
+            2.0133173523937113,
+            1.3209360439775502,
+            0.0,
+            0.016918626689396143,
+            0.0,
+            0.3794170753492765,
+            1.0551298249960208,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.4637045098030368,
+            "min_per_series_gain": -0.4637045098030368,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.31990962156114766,
+            "series_count": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.4637045098030368
+          }
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.21902106036653857,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T32",
+            "T33"
+          ],
+          "per_series_gain": [
+            -0.1853465101338485,
+            0.008347608557489727,
+            0.0,
+            -0.17032032163072208,
+            0.43505118905111595,
+            0.5233402658498751,
+            -0.1780213987650252,
+            0.04272093564860441,
+            0.983191945715312,
+            0.38445955419418343,
+            0.9556744925519118,
+            0.851543671933344,
+            0.0,
+            0.24350875719221388,
+            0.0,
+            -0.5393796114504255,
+            1.025650628616745,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5393796114504255,
+            "min_per_series_gain": -0.5393796114504255,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.21902106036653857,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5393796114504255
+          }
+        }
+      ],
+      "risk_refusals": 2,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "resupplied_candidate_ids": [],
+      "llm_calls_this_cell": 0,
+      "scripted_stage_calls": 3,
+      "deployed": null,
+      "deployed_serving_scope": null,
+      "deployed_via": "identity",
+      "delayed": null,
+      "gate_disagreement": null,
+      "activated": false,
+      "evaluation": {
+        "origin": 2040,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.5967149842157382,
+        "static_mean_smase": 1.5967149842157382
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 2,
+      "active_skill_ids": [],
+      "wall_seconds": 3.76
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2136,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 1,
+      "arm": "A5-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "online arm carries its store"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.267207748485375,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T33",
+            "T36"
+          ],
+          "per_series_gain": [
+            0.3546275083616611,
+            0.04443841220872491,
+            -0.5018017431502302,
+            0.20898344283058068,
+            0.32740663296896244,
+            0.03818467694052807,
+            0.21584743378763394,
+            -0.1470407760845447,
+            -0.4208838845320839,
+            0.09462675633650375,
+            -0.3369350242632265,
+            5.2166056782637495,
+            0.0,
+            0.14772022225753245,
+            0.0,
+            0.0,
+            0.06795515413277631,
+            0.0,
+            0.03442047964892714,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5018017431502302,
+            "min_per_series_gain": -0.5018017431502302,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.267207748485375,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5018017431502302
+          }
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.2868480256199377,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T33",
+            "T36"
+          ],
+          "per_series_gain": [
+            0.43859612497986367,
+            0.6258533639567598,
+            -0.09425709709624641,
+            0.0833289902204265,
+            0.2448016458205775,
+            -0.3483519919306588,
+            0.08599549288193653,
+            0.04771367769953638,
+            -0.21159323751029313,
+            -0.21017028536091575,
+            -0.12429309604775485,
+            5.3073152064718325,
+            0.0,
+            0.046715694536995755,
+            0.0,
+            0.0,
+            0.026488140973778274,
+            0.0,
+            -0.18118211719708366,
+            0.0
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.3483519919306588,
+            "min_per_series_gain": -0.3483519919306588,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.2868480256199377,
+            "series_count": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.3483519919306588
+          }
+        }
+      ],
+      "risk_refusals": 2,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "resupplied_candidate_ids": [],
+      "llm_calls_this_cell": 0,
+      "scripted_stage_calls": 3,
+      "deployed": null,
+      "deployed_serving_scope": null,
+      "deployed_via": "identity",
+      "delayed": null,
+      "gate_disagreement": null,
+      "activated": false,
+      "evaluation": {
+        "origin": 2280,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 1.2539286007647759,
+        "static_mean_smase": 1.2539286007647759
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 4,
+      "active_skill_ids": [],
+      "wall_seconds": 3.52
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2376,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 2,
+      "arm": "A5-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "online arm carries its store"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.6542467922567412,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            1.6162413633180193,
+            0.5373309861379477,
+            0.0,
+            1.2323694604350979,
+            -0.08039796979208491,
+            0.0,
+            1.1765498901623834,
+            0.673573608147874,
+            1.0085505500657863,
+            1.0690975040896877,
+            1.9162282251892275,
+            2.3776858386036768,
+            0.0,
+            0.8883829338457278,
+            0.0,
+            0.0,
+            0.4813872144436103,
+            0.19842166118360627,
+            -0.33964036837296063,
+            0.32915494767721776
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 2,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.33964036837296063,
+            "min_per_series_gain": -0.33964036837296063,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.6542467922567412,
+            "series_count": 20,
+            "harmed_count": 2,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.33964036837296063
+          }
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.5791667021450289,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            1.3845033567644562,
+            0.6673249840481823,
+            0.0,
+            0.8431118742689496,
+            0.2579860421791301,
+            0.0,
+            0.7871649521196797,
+            0.377621749387008,
+            0.9384513720394727,
+            0.5936018007671071,
+            1.6199897353395287,
+            2.209861345898944,
+            0.0,
+            0.9250655377106871,
+            0.0,
+            0.0,
+            0.3745390179247462,
+            0.5416321268147775,
+            -0.24225314917707186,
+            0.3047332968149815
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.24225314917707186,
+            "min_per_series_gain": -0.24225314917707186,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": true,
+            "rule": "bounded_risk_v1",
+            "reason": "within_risk_budget",
+            "aggregate_gain": 0.5791667021450289,
+            "series_count": 20,
+            "harmed_count": 1,
+            "harmed_fraction": 0.05,
+            "max_single_series_harm": 0.24225314917707186
+          }
+        }
+      ],
+      "risk_refusals": 1,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "resupplied_candidate_ids": [],
+      "llm_calls_this_cell": 0,
+      "scripted_stage_calls": 3,
+      "deployed": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "deployed_serving_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "deployed_via": "searched_this_unit",
+      "delayed": {
+        "origin": 2424,
+        "treated": 12,
+        "served": 20,
+        "coverage": 0.6,
+        "aggregate_gain": 0.203712,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.376656,
+        "identity": false,
+        "mean_smase": 1.2951959315291022,
+        "static_mean_smase": 1.4989083429871177,
+        "gate": {
+          "lines": {
+            "coverage_floor": true,
+            "aggregate": true,
+            "harmed_fraction": true,
+            "single_series_harm": false
+          },
+          "passes": false,
+          "failed_lines": [
+            "single_series_harm"
+          ],
+          "authority": "p4_gate",
+          "thresholds": {
+            "min_treated": 5,
+            "min_aggregate": 0.005,
+            "max_harmed_fraction": 0.2,
+            "max_single_series_harm": 0.3
+          }
+        }
+      },
+      "gate_disagreement": {
+        "p4_gate": {
+          "passes": false,
+          "failed_lines": [
+            "single_series_harm"
+          ]
+        },
+        "online_loop_event": "delayed_rejected",
+        "resolved_by": "p4_gate",
+        "disagree": false,
+        "may_activate": false,
+        "note": "an online_loop approval never triggers activate_approved on its own; the coverage floor is part of the authority and not of the online_loop event"
+      },
+      "activated": false,
+      "h_readings": {
+        "window": 2424,
+        "attribution": {
+          "new_entrant": [
+            "T265",
+            "T32"
+          ],
+          "continuing": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T266",
+            "T267",
+            "T269",
+            "T270",
+            "T33",
+            "T37"
+          ],
+          "left": [
+            "T27",
+            "T29",
+            "T30",
+            "T35",
+            "T36"
+          ],
+          "harmed": [
+            "T263",
+            "T265",
+            "T266",
+            "T269"
+          ],
+          "harm_from_new_entrant": 0.376656,
+          "harm_from_continuing": 0.666978,
+          "dominant": "continuing",
+          "sign_flipped_continuing": [
+            "T263",
+            "T266",
+            "T269"
+          ],
+          "treated_prev": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "treated_now": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T270",
+            "T32",
+            "T33",
+            "T37"
+          ]
+        },
+        "H1_new_entrant_share_of_harm": 0.25,
+        "H1_continuing_harm_rate": 0.3,
+        "H2_continuing_sign_flip_rate": 0.3,
+        "H3_treated": 12,
+        "H3_left": 5,
+        "H3_left_because_a_feature_exited_predicate": 0,
+        "H3_left_share_explained": 0.0
+      },
+      "restricted_state": "FLAGGED",
+      "evaluation": {
+        "origin": 2520,
+        "treated": 16,
+        "served": 20,
+        "coverage": 0.8,
+        "aggregate_gain": 0.059896,
+        "harmed_fraction": 0.35,
+        "max_single_series_harm": 0.54219,
+        "identity": false,
+        "mean_smase": 1.6838282745853834,
+        "static_mean_smase": 1.7437245854359282
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 6,
+      "active_skill_ids": [],
+      "wall_seconds": 7.82
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2616,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 3,
+      "arm": "A5-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "online arm carries its store"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.28626981469266033,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T262",
+            "T264",
+            "T265",
+            "T269",
+            "T270",
+            "T29",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            0.21537600417664893,
+            0.0,
+            0.6737145915778205,
+            0.0,
+            0.18134072404142088,
+            0.13277964513889273,
+            0.0,
+            0.0,
+            -0.07253278589152612,
+            0.0,
+            0.9754030241664338,
+            3.1714578511270464,
+            0.0,
+            0.8600436408987915,
+            -0.03171327790721978,
+            -0.10055692445228914,
+            -0.0904377596507796,
+            0.0,
+            -0.16112755992291727,
+            -0.02835087944911907
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.16112755992291727,
+            "min_per_series_gain": -0.16112755992291727,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.28626981469266033,
+            "series_count": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.16112755992291727
+          }
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.2754549415770069,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T262",
+            "T264",
+            "T265",
+            "T269",
+            "T270",
+            "T29",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            0.23313317160868818,
+            0.0,
+            0.4752715592329364,
+            0.0,
+            0.008475742429057354,
+            0.294189625758285,
+            0.0,
+            0.0,
+            -0.2744815610911835,
+            0.0,
+            0.9142410047729113,
+            3.8785305523019282,
+            0.0,
+            0.02312753636578646,
+            0.18578100016184074,
+            -0.002519824906113466,
+            -0.07471152583612028,
+            0.0,
+            -0.05168491703960587,
+            -0.1002535322182666
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.2744815610911835,
+            "min_per_series_gain": -0.2744815610911835,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": true,
+            "rule": "bounded_risk_v1",
+            "reason": "within_risk_budget",
+            "aggregate_gain": 0.2754549415770069,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.2744815610911835
+          }
+        }
+      ],
+      "risk_refusals": 1,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "resupplied_candidate_ids": [
+        "resupplied_draft_1"
+      ],
+      "llm_calls_this_cell": 0,
+      "scripted_stage_calls": 3,
+      "deployed": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "deployed_serving_scope": {
+        "scope_type": "serving_series_predicate",
+        "predicate": [
+          {
+            "feature": "local_robust_z_peak",
+            "op": ">=",
+            "threshold": 3.0
+          }
+        ]
+      },
+      "deployed_via": "searched_this_unit",
+      "delayed": {
+        "origin": 2664,
+        "treated": 18,
+        "served": 20,
+        "coverage": 0.9,
+        "aggregate_gain": 0.373146,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.294674,
+        "identity": false,
+        "mean_smase": 1.3290351295228577,
+        "static_mean_smase": 1.7021810096438483,
+        "gate": {
+          "lines": {
+            "coverage_floor": true,
+            "aggregate": true,
+            "harmed_fraction": true,
+            "single_series_harm": true
+          },
+          "passes": true,
+          "failed_lines": [],
+          "authority": "p4_gate",
+          "thresholds": {
+            "min_treated": 5,
+            "min_aggregate": 0.005,
+            "max_harmed_fraction": 0.2,
+            "max_single_series_harm": 0.3
+          }
+        }
+      },
+      "gate_disagreement": {
+        "p4_gate": {
+          "passes": true,
+          "failed_lines": []
+        },
+        "online_loop_event": "approved",
+        "resolved_by": "p4_gate",
+        "disagree": false,
+        "may_activate": true,
+        "note": "an online_loop approval never triggers activate_approved on its own; the coverage floor is part of the authority and not of the online_loop event"
+      },
+      "activated": true,
+      "h_readings": {
+        "window": 2664,
+        "attribution": {
+          "new_entrant": [
+            "T261",
+            "T263",
+            "T266",
+            "T267",
+            "T27"
+          ],
+          "continuing": [
+            "T260",
+            "T262",
+            "T264",
+            "T265",
+            "T269",
+            "T270",
+            "T29",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "left": [],
+          "harmed": [
+            "T261",
+            "T264",
+            "T27",
+            "T37"
+          ],
+          "harm_from_new_entrant": 0.303896,
+          "harm_from_continuing": 0.238543,
+          "dominant": "new_entrant",
+          "sign_flipped_continuing": [
+            "T264",
+            "T37"
+          ],
+          "treated_prev": [
+            "T260",
+            "T262",
+            "T264",
+            "T265",
+            "T269",
+            "T270",
+            "T29",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "treated_now": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ]
+        },
+        "H1_new_entrant_share_of_harm": 0.5,
+        "H1_continuing_harm_rate": 0.1538,
+        "H2_continuing_sign_flip_rate": 0.1538,
+        "H3_treated": 18,
+        "H3_left": 0,
+        "H3_left_because_a_feature_exited_predicate": 0,
+        "H3_left_share_explained": null
+      },
+      "evaluation": {
+        "origin": 2760,
+        "treated": 16,
+        "served": 20,
+        "coverage": 0.8,
+        "aggregate_gain": 0.407189,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.358492,
+        "identity": false,
+        "mean_smase": 1.05114476699954,
+        "static_mean_smase": 1.4583335431867346
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 8,
+      "active_skill_ids": [
+        "fast_winner_forecast_ridge_smase_winsorize"
+      ],
+      "wall_seconds": 7.75
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2856,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 4,
+      "arm": "A5-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "online arm carries its store"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_skill_fast_winner_forecast_ridge_smase_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 0.20313940300645328,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.8834089538651388,
+            0.16660431551886168,
+            0.0,
+            -0.6446309306442425,
+            0.22316386085980477,
+            0.06631588790912013,
+            -0.6712934161797927,
+            -0.20075729902056105,
+            0.4286164619563162,
+            0.5833984660064881,
+            1.650746068034766,
+            0.5765330103307587,
+            0.4780006972952229,
+            0.029651443916152598,
+            0.06468573861974819,
+            0.8891269825553607,
+            0.17695021603220584,
+            0.0,
+            0.13324218877041716,
+            0.9958433220335798
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.8834089538651388,
+            "min_per_series_gain": -0.8834089538651388,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.20313940300645328,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.8834089538651388
+          }
+        },
+        {
+          "candidate_id": "cand_skill_fast_winner_forecast_ridge_smase_winsorize",
+          "kind": "probe",
+          "gain": 0.06171963831378169,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.8302196152112031,
+            -0.4248231933942552,
+            0.0,
+            -1.0760215244221407,
+            -0.26008210322407654,
+            -0.4671288696446092,
+            -1.0685730259091955,
+            -0.692223274175153,
+            0.24059095889506477,
+            0.673577463711498,
+            1.8210745362450598,
+            0.3533920652878817,
+            0.49836461657852515,
+            0.3125810416546724,
+            0.06456527608932516,
+            0.5440877397205812,
+            0.24472025570598477,
+            0.0,
+            0.2469905998108568,
+            1.053519818556817
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 7,
+            "harmed_fraction": 0.35,
+            "max_single_series_harm": 1.0760215244221407,
+            "min_per_series_gain": -1.0760215244221407,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": "fast_winner_forecast_ridge_smase_winsorize",
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.06171963831378169,
+            "series_count": 20,
+            "harmed_count": 7,
+            "harmed_fraction": 0.35,
+            "max_single_series_harm": 1.0760215244221407
+          }
+        },
+        {
+          "candidate_id": "resupplied_draft_1",
+          "kind": "probe",
+          "gain": 0.06171963831378169,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.8302196152112031,
+            -0.4248231933942552,
+            0.0,
+            -1.0760215244221407,
+            -0.26008210322407654,
+            -0.4671288696446092,
+            -1.0685730259091955,
+            -0.692223274175153,
+            0.24059095889506477,
+            0.673577463711498,
+            1.8210745362450598,
+            0.3533920652878817,
+            0.49836461657852515,
+            0.3125810416546724,
+            0.06456527608932516,
+            0.5440877397205812,
+            0.24472025570598477,
+            0.0,
+            0.2469905998108568,
+            1.053519818556817
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 7,
+            "harmed_fraction": 0.35,
+            "max_single_series_harm": 1.0760215244221407,
+            "min_per_series_gain": -1.0760215244221407,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.06171963831378169,
+            "series_count": 20,
+            "harmed_count": 7,
+            "harmed_fraction": 0.35,
+            "max_single_series_harm": 1.0760215244221407
+          }
+        }
+      ],
+      "risk_refusals": 3,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "fast_winner_forecast_ridge_smase_winsorize"
+      ],
+      "resupplied_candidate_ids": [
+        "resupplied_draft_1"
+      ],
+      "llm_calls_this_cell": 0,
+      "scripted_stage_calls": 3,
+      "deployed": null,
+      "deployed_serving_scope": null,
+      "deployed_via": "identity",
+      "delayed": null,
+      "gate_disagreement": null,
+      "activated": false,
+      "evaluation": {
+        "origin": 3000,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 2.287343033090939,
+        "static_mean_smase": 2.287343033090939
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 11,
+      "active_skill_ids": [
+        "fast_winner_forecast_ridge_smase_winsorize"
+      ],
+      "wall_seconds": 4.62
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 3096,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 5,
+      "arm": "A5-online",
+      "served": 20,
+      "served_denominator_source": "roster eval rows",
+      "reset": {
+        "reset": false,
+        "reason": "online arm carries its store"
+      },
+      "faults": [],
+      "fast_decision": {
+        "decision": "PROPOSED",
+        "candidate_count": 2,
+        "no_proposal_reason": null,
+        "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_skill_fast_winner_forecast_ridge_smase_winsorize\"]}",
+        "vocabulary": [
+          "PROPOSED",
+          "ABSTAINED_WITH_REASON",
+          "EMPTY_OUTPUT",
+          "MALFORMED"
+        ]
+      },
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_mad",
+          "kind": "probe",
+          "gain": 1.0504585386533472,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.3572537294380256,
+            0.11361456414537319,
+            0.47715408730919284,
+            2.9021712217504403,
+            1.8220673122196307,
+            -0.14243351863451004,
+            2.900781105367908,
+            0.5160082987923521,
+            0.1967269667436936,
+            0.12937961968319467,
+            0.43333453251232945,
+            4.866241212110889,
+            0.6415348323660481,
+            0.07684144080881028,
+            1.024226077834712,
+            2.847544577601318,
+            1.1229759083646893,
+            1.1662330791401403,
+            -0.35222539442233813,
+            0.6242485788110986
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.3572537294380256,
+            "min_per_series_gain": -0.3572537294380256,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 1.0504585386533472,
+            "series_count": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.3572537294380256
+          }
+        },
+        {
+          "candidate_id": "cand_skill_fast_winner_forecast_ridge_smase_winsorize",
+          "kind": "probe",
+          "gain": 0.7004038379837647,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.7730471028908406,
+            -0.9619226512168328,
+            0.5780208788349068,
+            2.0809955081655755,
+            2.48877143015705,
+            -0.8709609065744259,
+            2.0793994883259534,
+            0.28755616240552784,
+            0.17520670607020394,
+            -0.06462837072235006,
+            0.20833141490797225,
+            3.802428433612727,
+            0.992621894015634,
+            0.04999955156471225,
+            0.7719508474442156,
+            2.209389784475863,
+            0.8513687398247283,
+            1.0676824871850736,
+            -0.4560266130266346,
+            -0.5090609228837497
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.9619226512168328,
+            "min_per_series_gain": -0.9619226512168328,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": "fast_winner_forecast_ridge_smase_winsorize",
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.7004038379837647,
+            "series_count": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.9619226512168328
+          }
+        },
+        {
+          "candidate_id": "resupplied_draft_1",
+          "kind": "probe",
+          "gain": 0.7004038379837647,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": [
+            "T260",
+            "T261",
+            "T262",
+            "T263",
+            "T264",
+            "T265",
+            "T266",
+            "T267",
+            "T269",
+            "T27",
+            "T270",
+            "T29",
+            "T3",
+            "T30",
+            "T31",
+            "T32",
+            "T33",
+            "T35",
+            "T36",
+            "T37"
+          ],
+          "per_series_gain": [
+            -0.7730471028908406,
+            -0.9619226512168328,
+            0.5780208788349068,
+            2.0809955081655755,
+            2.48877143015705,
+            -0.8709609065744259,
+            2.0793994883259534,
+            0.28755616240552784,
+            0.17520670607020394,
+            -0.06462837072235006,
+            0.20833141490797225,
+            3.802428433612727,
+            0.992621894015634,
+            0.04999955156471225,
+            0.7719508474442156,
+            2.209389784475863,
+            0.8513687398247283,
+            1.0676824871850736,
+            -0.4560266130266346,
+            -0.5090609228837497
+          ],
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.9619226512168328,
+            "min_per_series_gain": -0.9619226512168328,
+            "material_threshold": 0.005
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.7004038379837647,
+            "series_count": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.9619226512168328
+          }
+        }
+      ],
+      "risk_refusals": 3,
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "fast_winner_forecast_ridge_smase_winsorize"
+      ],
+      "resupplied_candidate_ids": [
+        "resupplied_draft_1"
+      ],
+      "llm_calls_this_cell": 0,
+      "scripted_stage_calls": 3,
+      "deployed": null,
+      "deployed_serving_scope": null,
+      "deployed_via": "identity",
+      "delayed": null,
+      "gate_disagreement": null,
+      "activated": false,
+      "evaluation": {
+        "origin": 3240,
+        "treated": 0,
+        "served": 20,
+        "coverage": 0.0,
+        "aggregate_gain": 0.0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "identity": true,
+        "mean_smase": 2.083796588886411,
+        "static_mean_smase": 2.083796588886411
+      },
+      "evaluation_face_enters_bank": false,
+      "bank_rows_after": 14,
+      "active_skill_ids": [
+        "fast_winner_forecast_ridge_smase_winsorize"
+      ],
+      "wall_seconds": 4.58
+    }
+  ],
+  "units": [
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 1896,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 0,
+      "arms": {
+        "A5-online": {
+          "origin": 2040,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.5967149842157382,
+          "static_mean_smase": 1.5967149842157382
+        }
+      }
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2136,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 1,
+      "arms": {
+        "A5-online": {
+          "origin": 2280,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 1.2539286007647759,
+          "static_mean_smase": 1.2539286007647759
+        }
+      }
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2376,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 2,
+      "arms": {
+        "A5-online": {
+          "origin": 2520,
+          "treated": 16,
+          "served": 20,
+          "coverage": 0.8,
+          "aggregate_gain": 0.059896,
+          "harmed_fraction": 0.35,
+          "max_single_series_harm": 0.54219,
+          "identity": false,
+          "mean_smase": 1.6838282745853834,
+          "static_mean_smase": 1.7437245854359282
+        }
+      }
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2616,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 3,
+      "arms": {
+        "A5-online": {
+          "origin": 2760,
+          "treated": 16,
+          "served": 20,
+          "coverage": 0.8,
+          "aggregate_gain": 0.407189,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.358492,
+          "identity": false,
+          "mean_smase": 1.05114476699954,
+          "static_mean_smase": 1.4583335431867346
+        }
+      }
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 2856,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 4,
+      "arms": {
+        "A5-online": {
+          "origin": 3000,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 2.287343033090939,
+          "static_mean_smase": 2.287343033090939
+        }
+      }
+    },
+    {
+      "unit": {
+        "block": "[160:200]",
+        "span": [
+          160,
+          200
+        ],
+        "origin": 3096,
+        "exposure": [
+          "SOURCE_V1–V3_READ"
+        ]
+      },
+      "position": 5,
+      "arms": {
+        "A5-online": {
+          "origin": 3240,
+          "treated": 0,
+          "served": 20,
+          "coverage": 0.0,
+          "aggregate_gain": 0.0,
+          "harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0,
+          "identity": true,
+          "mean_smase": 2.083796588886411,
+          "static_mean_smase": 2.083796588886411
+        }
+      }
+    }
+  ],
+  "outer_steps": [
+    {
+      "k_index": 1,
+      "units_in_bank": 5,
+      "groups": [
+        {
+          "task_consumer_key": "forecast|pooled-ridge-a1|sMASE",
+          "program_signature": "outlier_mad({})",
+          "aliases": [],
+          "unit_count": 5,
+          "relation_counts": {
+            "HARMED_FRACTION_OVER_BUDGET": 1,
+            "SINGLE_SERIES_HARM_OVER_BUDGET": 4
+          },
+          "positive_units": 0,
+          "adverse_units": 0
+        },
+        {
+          "task_consumer_key": "forecast|pooled-ridge-a1|sMASE",
+          "program_signature": "winsorize({})",
+          "aliases": [],
+          "unit_count": 6,
+          "relation_counts": {
+            "HARMED_FRACTION_OVER_BUDGET": 3,
+            "SINGLE_SERIES_HARM_OVER_BUDGET": 1,
+            "WITHIN_RISK_BUDGET": 2
+          },
+          "positive_units": 0,
+          "adverse_units": 0
+        }
+      ],
+      "candidate_count": 0,
+      "candidates": [],
+      "drift_signals": [
+        {
+          "signal": "EFFECT_NONSTATIONARY_CANDIDATE",
+          "draft_id": "resupplied_draft_1",
+          "program_signature": "winsorize({})",
+          "state": "FLAGGED",
+          "verification_attempts": 1,
+          "why_not_a_revision_candidate": "the damage was dominated by series the Skill had already treated; narrowing would repair the wrong surface",
+          "for": "Observation / Program drift, reported not repaired"
+        }
+      ],
+      "revocation_recommendations": [],
+      "drafts_opened": [],
+      "drafts_revised": [],
+      "rejected": [],
+      "rejected_count": 0,
+      "slow_calls": 0,
+      "replay_fits": 0,
+      "shadow_records": [],
+      "wall_seconds": 0.004,
+      "empty_reason": "the census produced no candidate",
+      "bank_boundary": {
+        "arm": "A5-online",
+        "units": [
+          {
+            "block": "[160:200]",
+            "span": [
+              160,
+              200
+            ],
+            "origin": 1896,
+            "exposure": [
+              "SOURCE_V1–V3_READ"
+            ]
+          },
+          {
+            "block": "[160:200]",
+            "span": [
+              160,
+              200
+            ],
+            "origin": 2136,
+            "exposure": [
+              "SOURCE_V1–V3_READ"
+            ]
+          },
+          {
+            "block": "[160:200]",
+            "span": [
+              160,
+              200
+            ],
+            "origin": 2376,
+            "exposure": [
+              "SOURCE_V1–V3_READ"
+            ]
+          },
+          {
+            "block": "[160:200]",
+            "span": [
+              160,
+              200
+            ],
+            "origin": 2616,
+            "exposure": [
+              "SOURCE_V1–V3_READ"
+            ]
+          },
+          {
+            "block": "[160:200]",
+            "span": [
+              160,
+              200
+            ],
+            "origin": 2856,
+            "exposure": [
+              "SOURCE_V1–V3_READ"
+            ]
+          }
+        ],
+        "excludes": [
+          "the evaluation face (+144)",
+          "future units",
+          "other arms",
+          "held-out"
+        ]
+      },
+      "wrote_active": false,
+      "why_no_active_write": "the replay screen selects and the Draft carries no deployment rights; only a new unit's Support and delayed reading can produce an Active Skill",
+      "arm": "A5-online"
+    }
+  ],
+  "lifecycle": {
+    "A5-online": {
+      "drafts": [
+        {
+          "draft_id": "resupplied_draft_1",
+          "program_steps": [
+            {
+              "op": "winsorize",
+              "params": {}
+            }
+          ],
+          "root_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "current_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "revisions": 0,
+          "clauses_added_since_root": 0,
+          "max_revisions": 2,
+          "max_total_added_clauses": 2,
+          "created_at_origin": 2376,
+          "delayed_failures": [
+            {
+              "origin": 2376,
+              "delayed_origin": 2424,
+              "failed_lines": [
+                "single_series_harm"
+              ],
+              "reading": {
+                "delayed_origin": 2424,
+                "lines": {
+                  "coverage_floor": true,
+                  "aggregate": true,
+                  "harmed_fraction": true,
+                  "single_series_harm": false
+                }
+              }
+            }
+          ],
+          "support_readings": [],
+          "revision_history": [],
+          "state": "FLAGGED",
+          "verification_attempts": 1,
+          "max_verification_attempts": 3,
+          "may_add_clause": false,
+          "history": [
+            {
+              "event": "verification",
+              "window": 2424,
+              "treated_prev": [
+                "T260",
+                "T261",
+                "T263",
+                "T264",
+                "T266",
+                "T267",
+                "T269",
+                "T27",
+                "T270",
+                "T29",
+                "T30",
+                "T33",
+                "T35",
+                "T36",
+                "T37"
+              ],
+              "treated_now": [
+                "T260",
+                "T261",
+                "T263",
+                "T264",
+                "T265",
+                "T266",
+                "T267",
+                "T269",
+                "T270",
+                "T32",
+                "T33",
+                "T37"
+              ],
+              "attribution": {
+                "new_entrant": [
+                  "T265",
+                  "T32"
+                ],
+                "continuing": [
+                  "T260",
+                  "T261",
+                  "T263",
+                  "T264",
+                  "T266",
+                  "T267",
+                  "T269",
+                  "T270",
+                  "T33",
+                  "T37"
+                ],
+                "left": [
+                  "T27",
+                  "T29",
+                  "T30",
+                  "T35",
+                  "T36"
+                ],
+                "harmed": [
+                  "T263",
+                  "T265",
+                  "T266",
+                  "T269"
+                ],
+                "harm_from_new_entrant": 0.376656,
+                "harm_from_continuing": 0.666978,
+                "dominant": "continuing",
+                "sign_flipped_continuing": [
+                  "T263",
+                  "T266",
+                  "T269"
+                ],
+                "treated_prev": [
+                  "T260",
+                  "T261",
+                  "T263",
+                  "T264",
+                  "T266",
+                  "T267",
+                  "T269",
+                  "T27",
+                  "T270",
+                  "T29",
+                  "T30",
+                  "T33",
+                  "T35",
+                  "T36",
+                  "T37"
+                ],
+                "treated_now": [
+                  "T260",
+                  "T261",
+                  "T263",
+                  "T264",
+                  "T265",
+                  "T266",
+                  "T267",
+                  "T269",
+                  "T270",
+                  "T32",
+                  "T33",
+                  "T37"
+                ]
+              },
+              "per_series_gain": {
+                "T260": 2.244089,
+                "T261": 0.284835,
+                "T262": 0.0,
+                "T263": -0.283381,
+                "T264": 0.674313,
+                "T265": -0.376656,
+                "T266": -0.314371,
+                "T267": 0.04455,
+                "T269": -0.069226,
+                "T27": 0.0,
+                "T270": 0.504449,
+                "T29": 0.0,
+                "T3": 0.0,
+                "T30": 0.0,
+                "T31": 0.0,
+                "T32": 0.348804,
+                "T33": 0.889772,
+                "T35": 0.0,
+                "T36": 0.0,
+                "T37": 0.12707
+              },
+              "failed_lines": [
+                "single_series_harm"
+              ],
+              "classified_state": "FLAGGED",
+              "classification_reason": "the damage is dominated by series the Skill had already treated, so the conditional effect moved rather than the Scope reaching too far; narrowing would repair the wrong surface",
+              "consumed_attempt": true,
+              "verification_attempts": 1,
+              "state_after": "FLAGGED",
+              "reading": {
+                "lines": {
+                  "coverage_floor": true,
+                  "aggregate": true,
+                  "harmed_fraction": true,
+                  "single_series_harm": false
+                },
+                "passes": false,
+                "failed_lines": [
+                  "single_series_harm"
+                ],
+                "authority": "p4_gate",
+                "thresholds": {
+                  "min_treated": 5,
+                  "min_aggregate": 0.005,
+                  "max_harmed_fraction": 0.2,
+                  "max_single_series_harm": 0.3
+                }
+              }
+            }
+          ],
+          "closed": "EFFECT_NONSTATIONARY",
+          "deployable": false,
+          "why_not_deployable": "a Draft that failed the delayed gate is kept only so one more bounded Scope revision can be attempted; it is never written to the active snapshot and never serves a prediction"
+        }
+      ],
+      "open": [],
+      "by_state": {
+        "FLAGGED": [
+          "resupplied_draft_1"
+        ]
+      },
+      "max_revisions": 2,
+      "max_verification_attempts": 3,
+      "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+    }
+  },
+  "course_end_closures": {
+    "A5-online": [
+      {
+        "draft_id": "resupplied_draft_1",
+        "state": "FLAGGED",
+        "closed": "EFFECT_NONSTATIONARY"
+      }
+    ]
+  },
+  "active_skill_ids": {
+    "A5-online": [
+      "fast_winner_forecast_ridge_smase_winsorize"
+    ]
+  },
+  "h_readings": [
+    {
+      "window": 2424,
+      "attribution": {
+        "new_entrant": [
+          "T265",
+          "T32"
+        ],
+        "continuing": [
+          "T260",
+          "T261",
+          "T263",
+          "T264",
+          "T266",
+          "T267",
+          "T269",
+          "T270",
+          "T33",
+          "T37"
+        ],
+        "left": [
+          "T27",
+          "T29",
+          "T30",
+          "T35",
+          "T36"
+        ],
+        "harmed": [
+          "T263",
+          "T265",
+          "T266",
+          "T269"
+        ],
+        "harm_from_new_entrant": 0.376656,
+        "harm_from_continuing": 0.666978,
+        "dominant": "continuing",
+        "sign_flipped_continuing": [
+          "T263",
+          "T266",
+          "T269"
+        ],
+        "treated_prev": [
+          "T260",
+          "T261",
+          "T263",
+          "T264",
+          "T266",
+          "T267",
+          "T269",
+          "T27",
+          "T270",
+          "T29",
+          "T30",
+          "T33",
+          "T35",
+          "T36",
+          "T37"
+        ],
+        "treated_now": [
+          "T260",
+          "T261",
+          "T263",
+          "T264",
+          "T265",
+          "T266",
+          "T267",
+          "T269",
+          "T270",
+          "T32",
+          "T33",
+          "T37"
+        ]
+      },
+      "H1_new_entrant_share_of_harm": 0.25,
+      "H1_continuing_harm_rate": 0.3,
+      "H2_continuing_sign_flip_rate": 0.3,
+      "H3_treated": 12,
+      "H3_left": 5,
+      "H3_left_because_a_feature_exited_predicate": 0,
+      "H3_left_share_explained": 0.0
+    },
+    {
+      "window": 2664,
+      "attribution": {
+        "new_entrant": [
+          "T261",
+          "T263",
+          "T266",
+          "T267",
+          "T27"
+        ],
+        "continuing": [
+          "T260",
+          "T262",
+          "T264",
+          "T265",
+          "T269",
+          "T270",
+          "T29",
+          "T30",
+          "T31",
+          "T32",
+          "T33",
+          "T36",
+          "T37"
+        ],
+        "left": [],
+        "harmed": [
+          "T261",
+          "T264",
+          "T27",
+          "T37"
+        ],
+        "harm_from_new_entrant": 0.303896,
+        "harm_from_continuing": 0.238543,
+        "dominant": "new_entrant",
+        "sign_flipped_continuing": [
+          "T264",
+          "T37"
+        ],
+        "treated_prev": [
+          "T260",
+          "T262",
+          "T264",
+          "T265",
+          "T269",
+          "T270",
+          "T29",
+          "T30",
+          "T31",
+          "T32",
+          "T33",
+          "T36",
+          "T37"
+        ],
+        "treated_now": [
+          "T260",
+          "T261",
+          "T262",
+          "T263",
+          "T264",
+          "T265",
+          "T266",
+          "T267",
+          "T269",
+          "T27",
+          "T270",
+          "T29",
+          "T30",
+          "T31",
+          "T32",
+          "T33",
+          "T36",
+          "T37"
+        ]
+      },
+      "H1_new_entrant_share_of_harm": 0.5,
+      "H1_continuing_harm_rate": 0.1538,
+      "H2_continuing_sign_flip_rate": 0.1538,
+      "H3_treated": 18,
+      "H3_left": 0,
+      "H3_left_because_a_feature_exited_predicate": 0,
+      "H3_left_share_explained": null
+    }
+  ],
+  "shadow_records": [],
+  "fast_decisions": [
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    },
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    },
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    },
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    },
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_skill_fast_winner_forecast_ridge_smase_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    },
+    {
+      "decision": "PROPOSED",
+      "candidate_count": 2,
+      "no_proposal_reason": null,
+      "payload_summary": "{\"candidates\": [\"cand_outlier_mad\", \"cand_skill_fast_winner_forecast_ridge_smase_winsorize\"]}",
+      "vocabulary": [
+        "PROPOSED",
+        "ABSTAINED_WITH_REASON",
+        "EMPTY_OUTPUT",
+        "MALFORMED"
+      ]
+    }
+  ],
+  "ledgers": {
+    "llm_fast": 0,
+    "llm_outer": 0,
+    "llm_total": 0,
+    "replay_fits": 0,
+    "shadow_fits": 0,
+    "course_fits": 16,
+    "baseline_fits": 0,
+    "cache_hits": 0,
+    "cache_misses": 0,
+    "cache_hit_rate": null,
+    "wall_seconds": 51.4
+  },
+  "replay_fit_allowance": {
+    "share": 0.25,
+    "projected_course_fits": 36,
+    "allowance": 9,
+    "spent": 0,
+    "within": true
+  },
+  "budget_guard": {
+    "ordering_cap": 120,
+    "per_unit_arm_cap": 5,
+    "scripted_calls_not_billed": 0,
+    "blocked_before_backend": [],
+    "why_before": "a post-hoc budget check pays for the call it refuses; this one refuses first and bills nothing"
+  },
+  "boundary": {
+    "held_out_reads": 0,
+    "thresholds_changed": 0,
+    "evaluation_face_in_bank": 0
+  }
+}
