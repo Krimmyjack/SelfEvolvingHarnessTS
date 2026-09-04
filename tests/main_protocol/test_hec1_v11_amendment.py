@@ -280,6 +280,7 @@ def test_the_runner_hands_the_arm_snapshot_to_the_outer_slow_factory():
 
     source = inspect.getsource(runner.Arm.outer_step)
     assert "self.active_snapshot()" in source
+    assert "outer_slow_factory(self._core" not in source
     assert "harness_view={}" not in inspect.getsource(runner.OuterSlowAgent)
     params = inspect.signature(runner.OuterSlowAgent.__init__).parameters
     assert "snapshot" in params
@@ -307,6 +308,188 @@ def test_a_resumed_arm_still_has_a_snapshot_to_ask_with():
     assert arm._method is None
     assert arm.active_snapshot() is arm.start_snapshot
     assert arm.active_snapshot().runtime_bundle_sha
+
+
+def _clause_candidate():
+    return {"kind": "NARROW", "rows": [], "base_scope": WIDE,
+            "program_steps": [{"op": "outlier_mad", "params": {}}]}
+
+
+def test_outer_slow_still_runs_after_the_inner_cell_backend_is_spent():
+    """v11live_: inner BudgetedAgentBackend at 5 must not be the Slow core."""
+    from SelfEvolvingHarnessTS.runtime.agent_backend import (
+        BudgetedAgentBackend,
+    )
+
+    inner = BudgetedAgentBackend(_OneClauseBackend(), maximum_calls=5)
+    inner.calls = 5
+    outer_raw = _OneClauseBackend()
+    outer = BudgetedAgentBackend(outer_raw, maximum_calls=2)
+    guard = runner.BudgetGuard(ordering_cap=8, per_unit_arm_cap=5,
+                               ledgers=runner.Ledgers())
+    metered = runner._MeteredOuterBackend(outer, guard=guard, billable=True)
+    slow = runner.OuterSlowAgent(
+        _real_core(metered), vocabulary=contract.SCOPE_CLASS["vocabulary"],
+        guard=guard, snapshot=_h0_snapshot())
+    payload = slow(candidate=_clause_candidate(), rejected=())
+    assert payload["scope_clause"]["feature"] == Z
+    assert inner.calls == 5
+    assert outer.calls == 1
+    assert inner is not outer
+    assert metered.inner is outer
+    assert guard.ledgers.llm_outer == 1
+    assert guard.ledgers.llm_fast == 0
+
+
+def test_outer_physical_cap_is_two_and_retries_are_billed():
+    from SelfEvolvingHarnessTS.runtime.agent_backend import (
+        AgentCallBudgetExceeded, AgentResponse, BudgetedAgentBackend,
+    )
+
+    class _Counting:
+        def __init__(self) -> None:
+            self.calls = 0
+            self.maximum_calls = 2
+            self.requests: list[Any] = []
+
+        def complete(self, request: Any) -> Any:
+            if self.calls >= 2:
+                raise AgentCallBudgetExceeded("exhausted at 2")
+            self.calls += 1
+            self.requests.append(request)
+            return AgentResponse.valid(
+                {"schema_version": "agent-envelope/1", "kind": "stage_result",
+                 "stage": "edit",
+                 "payload": {"scope_clause": {"feature": Z, "op": ">=",
+                                              "threshold": 4.0},
+                             "rationale": "count"}},
+                raw_response={"id": "count-%d" % self.calls})
+
+    raw = _Counting()
+    ledgers = runner.Ledgers()
+    guard = runner.BudgetGuard(ordering_cap=20, per_unit_arm_cap=5,
+                               ledgers=ledgers)
+    metered = runner._MeteredOuterBackend(raw, guard=guard, billable=True)
+    slow = runner.OuterSlowAgent(
+        _real_core(metered), vocabulary=contract.SCOPE_CLASS["vocabulary"],
+        guard=guard, snapshot=_h0_snapshot())
+    assert slow(candidate=_clause_candidate(), rejected=())["scope_clause"]
+    assert slow(candidate=_clause_candidate(), rejected=())["scope_clause"]
+    third = slow(candidate=_clause_candidate(), rejected=())
+    assert third["outcome"] == "OUTER_LLM_BUDGET_SPENT"
+    assert raw.calls == 2
+    assert len(raw.requests) == 2
+    assert ledgers.llm_outer == 2
+    assert ledgers.llm_fast == 0
+    assert ledgers.llm_total() == 2
+
+
+def test_llm_fast_and_llm_outer_ledgers_match_the_physical_counts():
+    ledgers = runner.Ledgers()
+    guard = runner.BudgetGuard(ordering_cap=20, per_unit_arm_cap=5,
+                               ledgers=ledgers)
+    guard.reserve(kind="fast", where={"cell": 0})
+    guard.spend(kind="fast", calls=5)
+    outer_raw = _OneClauseBackend()
+    from SelfEvolvingHarnessTS.runtime.agent_backend import BudgetedAgentBackend
+    outer = BudgetedAgentBackend(outer_raw, maximum_calls=2)
+    metered = runner._MeteredOuterBackend(outer, guard=guard, billable=True)
+    slow = runner.OuterSlowAgent(
+        _real_core(metered), vocabulary=contract.SCOPE_CLASS["vocabulary"],
+        guard=guard, snapshot=_h0_snapshot())
+    slow(candidate=_clause_candidate(), rejected=())
+    assert ledgers.llm_fast == 5
+    assert ledgers.llm_outer == 1
+    assert ledgers.llm_total() == 6
+
+
+def test_scientific_403_is_a_run_fault_cell_budget_is_not():
+    from SelfEvolvingHarnessTS.runtime.agent_backend import (
+        AgentCallBudgetExceeded,
+    )
+
+    class PermissionDeniedError(Exception):
+        pass
+
+    quota = PermissionDeniedError(
+        "Error code: 403 - {'error': {'code': 'insufficient_quota'}}")
+    assert runner._is_transport_failure(quota)
+    assert runner._is_run_fault(quota, scientific=True)
+    assert not runner._is_run_fault(quota, scientific=False)
+    cell = AgentCallBudgetExceeded("exhausted at 5")
+    assert not runner._is_transport_failure(cell)
+    assert not runner._is_run_fault(cell, scientific=True)
+
+
+def test_instrument_audit_rejects_a_complete_identity_quota_course():
+    from evaluation.main_protocol_p4 import audit_hec1_instrument as instrument
+
+    why = ("PermissionDeniedError: Error code: 403 - "
+           "{'error': {'code': 'insufficient_quota'}}")
+    course = {
+        "status": "COMPLETE", "run_fault": None, "verdict": None,
+        "phase": "phase_t_forward", "units_planned": 1, "units_completed": 1,
+        "arms": ["Static", "A3-frozen", "A3-online"],
+        "cells": [
+            {"position": 0, "arm": "Static", "unit": {"origin": 1176},
+             "evaluation_face_enters_bank": False, "faults": [],
+             "activated": False},
+            {"position": 0, "arm": "A3-frozen", "unit": {"origin": 1176},
+             "evaluation_face_enters_bank": False, "faults": [],
+             "activated": False, "reset": {"reset": False},
+             "snapshot_skill_ids_at_start": []},
+            {"position": 0, "arm": "A3-online", "unit": {"origin": 1176},
+             "evaluation_face_enters_bank": False, "activated": False,
+             "faults": [{"kind": "UnitFault", "why": why}]},
+        ],
+        "ledgers": {"llm_total": 0, "cache_hits": 0, "cache_misses": 0},
+        "budget_guard": {"ordering_cap": 500, "per_unit_arm_cap": 5},
+        "boundary": {"held_out_reads": 0},
+    }
+    verdict = instrument.audit(course)
+    transport = next(row for row in verdict["checks"]
+                     if row["check"] == "transport")
+    assert transport["passed"] is False
+    assert verdict["passed"] is False
+    assert verdict["may_continue"] is False
+
+
+def test_a_quota_blocked_forward_does_not_start_reverse(monkeypatch):
+    seen: list[str] = []
+
+    def fake_course(**kwargs):
+        seen.append(str(kwargs.get("ordering_name")))
+        return {
+            "status": "BLOCKED",
+            "verdict": "RUN_BLOCKED_NO_VERDICT",
+            "run_fault": "TRANSPORT_FAILED: PermissionDeniedError: "
+                         "Error code: 403 - insufficient_quota",
+            "transport_failed": True,
+            "units_completed": 0, "units_planned": 1,
+            "arms": ["Static"], "cells": [],
+            "ledgers": {"llm_total": 0},
+            "ordering": kwargs.get("ordering_name"),
+            "phase": kwargs.get("phase"),
+            "run_label": "pytest_t403_%s" % kwargs.get("ordering_name"),
+        }
+
+    monkeypatch.setattr(runner, "run_course", fake_course)
+    report = runner.run_chain(run_label_prefix="pytest_t403_", resume=False,
+                              offline=False)
+    assert seen == ["forward"]
+    assert report["status"] == "STOPPED_ON_INSTRUMENT"
+    assert report["stopped_after"] == "forward"
+
+
+def test_archived_v11_labels_cannot_be_resumed_or_reused():
+    for label in ("v11fix_forward_live", "v11live_forward_live"):
+        report = runner.run_course(
+            phase="phase_t_forward", ordering_name="forward",
+            units=[{"origin": 1176, "block": "[0:40]", "span": [0, 40],
+                    "exposure": ["SPENT_DEV"]}],
+            run_label=label, offline=True, resume=True, limit=1)
+        assert report["status"] == "BLOCKED"
+        assert "ARCHIVED_INSTRUMENT_RUN" in str(report.get("run_fault"))
 
 
 # ---------------------------------------------------------------------------

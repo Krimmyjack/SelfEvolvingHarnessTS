@@ -92,6 +92,7 @@ CODE_FREEZE = {
         "evaluation/main_protocol_p4/scoped_serving_evaluator.py",
         "evaluation/main_protocol_p4/scope_narrowing_preflight.py",
         "evaluation/main_protocol_p4/scope_initializer.py",
+        "evaluation/main_protocol_p4/audit_hec1_instrument.py",
     ),
     "recorded_as": "artifact.code_state = {code_commit, runner_files_dirty}",
     "asserted_by": "audit_hec1_readout: one code_commit across the three "
@@ -113,27 +114,42 @@ CODE_PROVENANCE_ERRATUM = {
     "phase_s_commit": "e33f036457e481bd2e5a1eb04fd240e51d3cba00",
     "phase_t_commit": "the fix commit; recorded per artifact in code_state",
     "diff_between_them": (
-        "OuterSlowAgent's harness_view construction only: the view is now "
-        "resolved with resolve_harness_view(snapshot, {}, role='slow') as the "
-        "Source line's scope_clause_agent already did, and the arm's own "
-        "active snapshot is threaded in"),
+        "Outer Slow harness_view/source provenance; then a per-arm-per-outer-"
+        "step independent backend/core capped at 2 physical requests billed to "
+        "llm_outer; then scientific STOP_TRANSPORT/403 as RunFault so an "
+        "identity-only quota failure cannot pass the instrument gate"),
     "why_phase_s_is_not_re_run": (
         "Phase S never reached the changed path: ledgers.llm_outer == 0 and "
         "both outer steps recorded slow_calls == 0"),
     "why_forward_did_not_resume": (
-        "one ordering runs on one commit; resuming 5 units from the previous "
-        "commit onto the fixed one would put two code versions in one curve, "
-        "which is the same reason the v1 Forward was demoted to shakedown"),
-    "blocked_attempt": {
-        "run_root": ".hec1_runs/forward_v11_attempt1_blocked",
-        "verdict": "RUN_BLOCKED_NO_VERDICT",
-        "units_completed_before_the_fault": 4,
-        "llm_spent": 35,
-        "counted_as": "instrument overhead, listed separately like the "
-                      "shakedown; enters no curve and no readout whitelist",
-        "no_course_artifact": "the course JSON was never written, so there is "
-                              "nothing for the readout to reject",
-    },
+        "one ordering runs on one commit; resuming a blocked attempt onto the "
+        "fixed one would put two code versions in one curve"),
+    "blocked_attempts": (
+        {
+            "run_root": ".hec1_runs/forward_v11_attempt1_blocked",
+            "verdict": "RUN_BLOCKED_NO_VERDICT",
+            "units_completed_before_the_fault": 4,
+            "llm_spent": 35,
+            "counted_as": "instrument overhead; enters no curve",
+        },
+        {
+            "run_label_prefix": "v11fix_",
+            "verdict": "RUN_BLOCKED_NO_VERDICT__TRANSPORT_QUOTA",
+            "llm_spent": 0,
+            "why": "HTTP 403 insufficient_quota became identity UnitFault and "
+                   "the eight instrument checks still passed",
+            "counted_as": "instrument overhead; enters no curve; do not resume",
+        },
+        {
+            "run_label_prefix": "v11live_",
+            "verdict": "RUN_BLOCKED_NO_VERDICT__OUTER_BACKEND_BUDGET_LEAK",
+            "units_completed_before_the_fault": 5,
+            "llm_spent": 39,
+            "why": "outer Slow reused the inner cell backend already spent at 5",
+            "counted_as": "instrument overhead; new Forward envelope restarts "
+                          "at 500; do not resume",
+        },
+    ),
 }
 STAGE = "HEC1_CONTRACT"
 DATA_VERSION = v1.DATA_VERSION
@@ -342,7 +358,8 @@ AUTO_CONTINUE_CONDITIONS = (
     "the contract is frozen and the live loop passed its 0-LLM end-to-end test",
     "Phase S completed all 13 units",
     "the K0 mechanical audit passed; an empty K0 is a legal freeze too",
-    "the eight mechanical instrument checks passed for the finished ordering",
+    "the mechanical instrument checks passed for the finished ordering, "
+    "including the transport-failure backstop",
     "whether to continue reads instrument health only, never the effect's sign",
     "a fault may only be repaired as an instrument and resumed from a "
     "checkpoint; no scientific re-throw",
@@ -848,7 +865,7 @@ def budget_arithmetic() -> dict[str, Any]:
         "best_safe_global_fit_cap": BEST_SAFE_GLOBAL_FIT_CAP,
         "sum_of_released_envelopes": sum(LLM_CAPS.values()),
         "reverse_and_interleaved": (
-            "each released at 500, entered automatically when the eight "
+            "each released at 500, entered automatically when the "
             "mechanical instrument checks pass and never on the effect's sign"
         ),
     }

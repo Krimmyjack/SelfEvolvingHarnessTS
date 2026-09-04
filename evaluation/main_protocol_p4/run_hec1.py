@@ -11,9 +11,11 @@ faults are split in two, and the split is the whole difference:
   context degenerates, an LLM cell runs out.  The unit abstains to identity, the
   reason is recorded, and the course continues.
 * ``RunFault`` -- the backend is gone past the retry policy, a wall leaked, a
-  global cap blew, the data is wrong, or something read held-out.  The whole run
-  stops and records ``RUN_BLOCKED_NO_VERDICT``, which is *not* a scientific
-  verdict and must never be written as one.
+  global cap blew, the data is wrong, something read held-out, or (in a
+  scientific run) the relay returned a transport failure such as HTTP 403.
+  The whole run stops and records ``RUN_BLOCKED_NO_VERDICT``, which is *not* a
+  scientific verdict and must never be written as one.  A scientific course
+  must not convert that into identity and keep scoring.
 
 The verdict is read at the end of the course, by the pre-registered tests in the
 contract, and nowhere else.
@@ -87,6 +89,17 @@ TASK_CONSUMER_KEY = "forecast|pooled-ridge-a1|sMASE"
 #: escaped the scripted backend it would fail to connect rather than reach a real
 #: relay.
 OFFLINE_BASE_URL = "https://offline.invalid/v1"
+
+#: Instrument failures that already produced a scientific-looking label.
+#: A new course must not reuse these run-labels or their checkpoints.
+ARCHIVED_SCIENTIFIC_LABELS = {
+    "v11fix_forward_live": "RUN_BLOCKED_NO_VERDICT__TRANSPORT_QUOTA",
+    "v11fix_reverse_live": "RUN_BLOCKED_NO_VERDICT__TRANSPORT_QUOTA",
+    "v11fix_interleaved_live": "RUN_BLOCKED_NO_VERDICT__TRANSPORT_QUOTA",
+    "v11live_forward_live": "RUN_BLOCKED_NO_VERDICT__OUTER_BACKEND_BUDGET_LEAK",
+    "v11live_reverse_live": "RUN_BLOCKED_NO_VERDICT__OUTER_BACKEND_BUDGET_LEAK",
+    "v11live_interleaved_live": "RUN_BLOCKED_NO_VERDICT__OUTER_BACKEND_BUDGET_LEAK",
+}
 
 #: Consumer fits one scored face costs when a policy is deployed: the Static
 #: reference, plus the scoped evaluator's own raw and program models.  Measured
@@ -233,6 +246,56 @@ class BudgetGuard:
                 "one refuses first and bills nothing"
             ),
         }
+
+
+class _OuterLlmBudgetSpent(RuntimeError):
+    """This outer step's two physical requests are used.  Not a crash."""
+
+
+class _MeteredOuterBackend:
+    """Physical-request meter for one arm × one outer step.
+
+    Isolated from the inner cell's ``BudgetedAgentBackend(maximum_calls=5)``.
+    Schema-correction retries go through ``complete`` and are billed here.
+    """
+
+    def __init__(self, inner: Any, *, guard: "BudgetGuard",
+                 billable: bool) -> None:
+        self.inner = inner
+        self.guard = guard
+        self.billable = bool(billable)
+        self.requests: list[Any] = []
+
+    @property
+    def calls(self) -> int:
+        return int(getattr(self.inner, "calls", 0) or 0)
+
+    @property
+    def maximum_calls(self) -> int:
+        return int(getattr(self.inner, "maximum_calls",
+                           contract.OUTER_LLM_PER_STEP) or
+                   contract.OUTER_LLM_PER_STEP)
+
+    def complete(self, request: Any) -> Any:
+        if self.calls >= self.maximum_calls:
+            raise _OuterLlmBudgetSpent(
+                "OUTER_LLM_BUDGET_SPENT at %d physical requests"
+                % self.maximum_calls)
+        self.guard.reserve(kind="outer",
+                           where={"physical_index": self.calls + 1})
+        before = self.calls
+        try:
+            response = self.inner.complete(request)
+        except Exception:
+            made = self.calls - before
+            if made:
+                self.guard.spend(kind="outer", calls=made,
+                                 billable=self.billable)
+            raise
+        made = max(1, self.calls - before)
+        self.guard.spend(kind="outer", calls=made, billable=self.billable)
+        self.requests.append(request)
+        return response
 
 
 # ---------------------------------------------------------------------------
@@ -1497,8 +1560,17 @@ class OuterSlowAgent:
         )
 
         view = resolve_harness_view(self.snapshot, {}, role="slow")
-        self.guard.reserve(kind="outer",
-                           where={"candidate": candidate.get("kind")})
+        backend = getattr(self.core, "backend", None)
+        metered = hasattr(backend, "calls") and hasattr(backend, "maximum_calls")
+        if metered and int(backend.calls) >= int(backend.maximum_calls):
+            self.calls.append({"candidate": candidate.get("kind"),
+                               "outcome": "OUTER_LLM_BUDGET_SPENT"})
+            return {"outcome": "OUTER_LLM_BUDGET_SPENT"}
+        # Unmetered test doubles have no per-complete hook: one reserve/spend
+        # pair still exercises the ordering cap the way the original tests do.
+        if not metered:
+            self.guard.reserve(kind="outer",
+                               where={"candidate": candidate.get("kind")})
         try:
             stage = self.core.run_stage(
                 role=AgentRole.SLOW,
@@ -1513,8 +1585,19 @@ class OuterSlowAgent:
                 task_context_sha="",
                 validation_retries=1,
             )
+        except Exception as exc:  # noqa: BLE001 - outer Slow must not crash the course
+            if _is_transport_failure(exc):
+                raise RunFault("TRANSPORT_FAILED: %s: %s"
+                               % (type(exc).__name__, str(exc)[:240]))
+            if type(exc).__name__ == "AgentCallBudgetExceeded" or isinstance(
+                    exc, _OuterLlmBudgetSpent):
+                self.calls.append({"candidate": candidate.get("kind"),
+                                   "outcome": "OUTER_LLM_BUDGET_SPENT"})
+                return {"outcome": "OUTER_LLM_BUDGET_SPENT"}
+            raise
         finally:
-            self.guard.spend(kind="outer")
+            if not metered:
+                self.guard.spend(kind="outer")
         payload = dict(stage.payload or {}) if stage is not None else {}
         self.calls.append({
             "candidate": candidate.get("kind"),
@@ -1690,10 +1773,11 @@ class Arm:
                    total_steps: int = 0) -> dict[str, Any] | None:
         if not self.spec.outer:
             return None
-        # The arm's own active snapshot goes in: the Slow view is resolved from
-        # it, so an online arm that has learned something asks with what it has.
-        slow = (self.outer_slow_factory(self._core, self.guard,
-                                        self.active_snapshot())
+        # A fresh Slow core per arm × outer step: the inner cell backend is
+        # capped at 5 and may already be spent, and Slow's two physical
+        # requests are a different budget.  Passing self._core here is the
+        # leak that killed v11live_ after unit 5.
+        slow = (self.outer_slow_factory(self.guard, self.active_snapshot())
                 if self.outer_slow_factory is not None else None)
         screen = replay_screen_for(self.processed, self.ledgers,
                                    self.replay_cache)
@@ -1792,7 +1876,8 @@ class _VerifiableLedgerView:
 
 def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
                  ledgers: Ledgers, guard: BudgetGuard,
-                 machinery: Mapping[str, Any]) -> dict[str, Any]:
+                 machinery: Mapping[str, Any],
+                 scientific: bool = False) -> dict[str, Any]:
     """One (unit, arm) cell: probe, gate, score, and only then write back."""
     started = time.time()
     reset = arm.begin_unit(position)
@@ -1867,7 +1952,10 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
                        "wall_seconds": round(time.time() - started, 2)})
         return record
     except Exception as exc:  # noqa: BLE001 - classified below, never swallowed
-        if _is_run_fault(exc):
+        if _is_run_fault(exc, scientific=scientific):
+            if _is_transport_failure(exc):
+                raise RunFault("TRANSPORT_FAILED: %s: %s"
+                               % (type(exc).__name__, str(exc)[:240]))
             raise RunFault("%s: %s" % (type(exc).__name__, str(exc)[:240]))
         record["faults"].append({"kind": "UnitFault",
                                  "why": "%s: %s" % (type(exc).__name__,
@@ -2124,13 +2212,38 @@ _RUN_FAULT_NAMES = (
     "ReplayTapeMiss", "OSError", "MemoryError",
 )
 
+#: Relay/auth/quota failures.  In a scientific run these are RunFault -- the
+#: v11fix_ course converted HTTP 403 into identity and the instrument gate
+#: still passed.  The expected per-cell 5-call cap is *not* in this set.
+_TRANSPORT_FAULT_NAMES = (
+    "AgentTransportError", "InfrastructureError", "BACKEND_UNAVAILABLE",
+    "PermissionDeniedError", "AuthenticationError", "APIConnectionError",
+    "APITimeoutError", "RateLimitError",
+)
 
-def _is_run_fault(exc: BaseException) -> bool:
+
+def _is_transport_failure(exc: BaseException) -> bool:
+    if type(exc).__name__ == "AgentCallBudgetExceeded":
+        return False
+    name = type(exc).__name__
+    if name in _TRANSPORT_FAULT_NAMES or name == "STOP_TRANSPORT":
+        return True
+    text = str(exc)
+    if "STOP_TRANSPORT" in text:
+        return True
+    if "insufficient_quota" in text or "Error code: 403" in text:
+        return True
+    return False
+
+
+def _is_run_fault(exc: BaseException, *, scientific: bool = False) -> bool:
     if isinstance(exc, RunFault):
         return True
     name = type(exc).__name__
     if name == "AgentCallBudgetExceeded":
         return False  # a cell budget: the unit abstains, the course continues
+    if scientific and _is_transport_failure(exc):
+        return True
     return name in _RUN_FAULT_NAMES
 
 
@@ -2139,7 +2252,7 @@ def _is_run_fault(exc: BaseException) -> bool:
 # ---------------------------------------------------------------------------
 
 def _run_root(run_label: str) -> Path:
-    return PROJECT_ROOT / ".hec1_runs" / run_label
+    return PROJECT_ROOT / ".hec1_runs" / str(run_label)
 
 
 def _checkpoint_key(ordering_name: str, position: int, arm: str) -> str:
@@ -2240,6 +2353,7 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
         phase, verdict=verdict, seal_released=seal_released)
     root = _run_root(run_label)
     state = code_state()
+    scientific = not bool(offline) and not bool(shakedown)
     report: dict[str, Any] = {
         "stage": "HEC1_COURSE",
         "written_at": datetime.now().astimezone().isoformat(),
@@ -2256,6 +2370,17 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
         "assert_launchable": launchable,
         "run_root": root.relative_to(PROJECT_ROOT).as_posix(),
     }
+    archived = ARCHIVED_SCIENTIFIC_LABELS.get(str(run_label))
+    if archived:
+        report.update({
+            "status": "BLOCKED",
+            "verdict": "RUN_BLOCKED_NO_VERDICT",
+            "run_fault": "ARCHIVED_INSTRUMENT_RUN: %s is %s; start a new "
+                         "prefix from unit 0, never resume it"
+                         % (run_label, archived),
+            "llm_calls": 0, "consumer_fits": 0,
+        })
+        return report
     if not launchable["launchable"]:
         report.update({"status": "BLOCKED_ON_CONTRACT",
                        "verdict": "BLOCKED_ON_CONTRACT",
@@ -2344,7 +2469,23 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
         return machinery["agentic"]._default_backend_factory(
             int(contract.PER_UNIT_ARM_BUDGET["llm_calls"]))
 
-    def outer_slow_factory(core, guard_, snapshot):
+    def outer_backend_factory():
+        if offline:
+            return backend_factory()
+        return machinery["agentic"]._default_backend_factory(
+            int(contract.OUTER_LLM_PER_STEP))
+
+    def _core_for(backend):
+        target = (machinery["agentic"].live_transport() if not offline
+                  else {"model": "offline-scripted",
+                        "base_url": OFFLINE_BASE_URL})
+        return machinery["TTHAAgentCore"](
+            backend,
+            machinery["LocalPublicToolGateway"](
+                np.zeros(8, dtype=np.float64), task_kind="forecast"),
+            model=target["model"], base_url=target["base_url"])
+
+    def outer_slow_factory(guard_, snapshot):
         if offline:
             def scripted(*, candidate, rejected):
                 guard_.reserve(kind="outer", where={"offline": True})
@@ -2355,8 +2496,12 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
                                          "op": ">=", "threshold": 4.25},
                         "rationale": "scripted: spiky series only"}
             return scripted
-        return OuterSlowAgent(core, vocabulary=contract.SCOPE_CLASS["vocabulary"],
-                              guard=guard_, snapshot=snapshot)
+        inner = outer_backend_factory()
+        metered = _MeteredOuterBackend(inner, guard=guard_, billable=True)
+        return OuterSlowAgent(
+            _core_for(metered),
+            vocabulary=contract.SCOPE_CLASS["vocabulary"],
+            guard=guard_, snapshot=snapshot)
 
     arms = [Arm(spec, root=root, machinery=machinery,
                 start_snapshot=(k0_snapshot if spec.start == "k0" else h0),
@@ -2418,7 +2563,8 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
                 ctx = UnitContext(unit)
             try:
                 row = run_unit_arm(arm, ctx, position=position, ledgers=ledgers,
-                                   guard=guard, machinery=machinery)
+                                   guard=guard, machinery=machinery,
+                                   scientific=scientific)
             except RunFault as exc:
                 run_fault = str(exc)[:400]
                 break
@@ -2438,11 +2584,15 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
             break
         if (position + 1) % int(contract.OUTER_LOOP["period_k_units"]) == 0:
             for arm in arms:
-                step = arm.outer_step(
-                    k_index=(position + 1)
-                    // int(contract.OUTER_LOOP["period_k_units"]),
-                    replay_fit_allowance=replay_fit_allowance,
-                    total_steps=total_outer_steps)
+                try:
+                    step = arm.outer_step(
+                        k_index=(position + 1)
+                        // int(contract.OUTER_LOOP["period_k_units"]),
+                        replay_fit_allowance=replay_fit_allowance,
+                        total_steps=total_outer_steps)
+                except RunFault as exc:
+                    run_fault = str(exc)[:400]
+                    break
                 if step is not None:
                     _heartbeat(root, {
                         "phase": phase, "ordering": ordering_name,
@@ -2450,6 +2600,8 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
                         "drafts_opened": step["drafts_opened"],
                         "llm_total": ledgers.llm_total(),
                     })
+            if run_fault:
+                break
 
     # End of course: a Draft still open in an online arm never met its pattern
     # again (WAITING), or ran out of units before its last clause was read.
@@ -2537,6 +2689,8 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
             "record": dict(contract.REPLAY_SHARE_RECORD),
         },
         "budget_guard": guard.to_dict(),
+        "transport_failed": bool(
+            run_fault and str(run_fault).startswith("TRANSPORT_FAILED")),
         "boundary": {"held_out_reads": 0, "thresholds_changed": 0,
                      "evaluation_face_in_bank": 0},
     })
@@ -2561,7 +2715,7 @@ def run_chain(*, run_label_prefix: str = "", k0: Mapping[str, Any] | None = None
               ) -> dict[str, Any]:
     """Forward, then Reverse, then Interleaved -- gated on instruments only.
 
-    The gate between orderings is ``audit_hec1_instrument``: eight mechanical
+    The gate between orderings is ``audit_hec1_instrument``: mechanical
     assertions over counts, ledgers and set intersections.  It is imported here
     rather than reimplemented, and it is handed the finished course artifact, so
     the thing that decides whether to continue **cannot see the curve**.  That is
@@ -2719,7 +2873,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--k0", default=None,
                        help="path to the Phase S K0 receipt")
     parser.add_argument("--chain", action="store_true",
-                       help="Forward, Reverse, Interleaved, gated on the eight "
+                       help="Forward, Reverse, Interleaved, gated on the "
                             "mechanical instrument checks between them")
     parser.add_argument("--run-label-prefix", default="",
                        help="prefix for the chain's labels (e.g. v11_), so a "

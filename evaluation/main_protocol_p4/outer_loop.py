@@ -640,6 +640,9 @@ def _clause_for(candidate: Mapping[str, Any], *, slow: Callable[..., Any],
         payload = slow(candidate=candidate, rejected=rejected_directions)
         record.slow_calls += 1
         attempts += 1
+        if isinstance(payload, Mapping) and payload.get("outcome") == (
+                "OUTER_LLM_BUDGET_SPENT"):
+            return {"outcome": "OUTER_LLM_BUDGET_SPENT"}
         if payload is None:
             return {"outcome": "SLOW_ABSTAINED"}
         result = tool.clause_from_slow(

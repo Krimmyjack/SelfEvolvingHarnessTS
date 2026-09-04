@@ -7,16 +7,18 @@ Reverse and Interleaved is *instrument completeness only, never the effect's
 sign*, and every check below is a count, a ledger comparison or a set
 intersection.  None of them reads a gain, a utility or a verdict, and
 ``audit()`` never sees the curve -- so the thing that decides whether to
-continue cannot be influenced by whether the result looked good.
+continue cannot be influenced by whether the result looked good.  A ninth
+check fails the course if any TRANSPORT_FAILED mark is present, so an
+identity-only 403 run cannot auto-continue.
 
 It is **not** the readout.  Interpreting the curve and writing the verdict is a
 separate script and a separate hand, for the reason sol gave: the failure mode
 worth guarding is not a runner behaving badly, it is a runner certifying its own
-instruments and then marking its own work.  These eight are mechanical enough to
-be self-run; the readout is not.
+instruments and then marking its own work.  These checks are mechanical enough
+to be self-run; the readout is not.
 
-The eight
----------
+The checks
+----------
 1. completeness -- every planned (unit, arm) cell has a checkpoint
 2. no RunFault -- the course was not blocked
 3. budget -- the LLM ledger is inside the released envelope, per cell and total
@@ -50,7 +52,7 @@ OUT_MD = ARTIFACTS / "hec1_instrument.md"
 
 CHECK_NAMES = (
     "completeness", "no_run_fault", "budget", "gate_authority", "exposure",
-    "frozen_reset", "replay", "accounting",
+    "frozen_reset", "replay", "accounting", "transport",
 )
 
 #: Windows a course is allowed to read, as offsets from a unit's origin.
@@ -442,15 +444,67 @@ def _check_accounting(course: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _looks_like_transport_failure(text: str) -> bool:
+    blob = str(text or "")
+    if "AgentCallBudgetExceeded" in blob:
+        return False
+    if blob.startswith("TRANSPORT_FAILED"):
+        return True
+    if "insufficient_quota" in blob or "Error code: 403" in blob:
+        return True
+    if "STOP_TRANSPORT" in blob:
+        return True
+    if "PermissionDeniedError" in blob or "AuthenticationError" in blob:
+        return True
+    if "AgentTransportError" in blob or "BACKEND_UNAVAILABLE" in blob:
+        return True
+    return False
+
+
+def _check_transport(course: Mapping[str, Any]) -> dict[str, Any]:
+    """A complete-looking course that identity-abstained on 403 must not PASS.
+
+    v11fix_ billed 0 LLM, wrote identity on every LLM arm after HTTP 403, and
+    the older checks still passed, so the chain ran Reverse and
+    Interleaved.  Any TRANSPORT_FAILED mark -- on the run_fault or on a cell
+    -- fails this check and blocks auto-continue.
+    """
+    marks: list[dict[str, Any]] = []
+    run_fault = course.get("run_fault")
+    if _looks_like_transport_failure(str(run_fault or "")):
+        marks.append({"where": "run_fault", "why": str(run_fault)[:240]})
+    if course.get("transport_failed"):
+        marks.append({"where": "transport_failed_flag", "why": True})
+    for row in _cells(course):
+        for fault in row.get("faults") or ():
+            why = "%s: %s" % (fault.get("kind"), fault.get("why"))
+            if fault.get("class") == "TRANSPORT_FAILED" or (
+                    _looks_like_transport_failure(why)):
+                marks.append({"where": "cell",
+                              "position": row.get("position"),
+                              "arm": row.get("arm"),
+                              "why": str(fault.get("why") or "")[:240]})
+    return {
+        "check": "transport",
+        "passed": not marks,
+        "marks": marks[:40],
+        "mark_count": len(marks),
+        "note": (
+            "scientific transport/quota failures are RunFault; this check is "
+            "the backstop if a course still records them as identity UnitFault"
+        ),
+    }
+
+
 CHECKS = (
     _check_completeness, _check_no_run_fault, _check_budget,
     _check_gate_authority, _check_exposure, _check_frozen_reset,
-    _check_replay, _check_accounting,
+    _check_replay, _check_accounting, _check_transport,
 )
 
 
 def audit(course: Mapping[str, Any]) -> dict[str, Any]:
-    """Run all eight.  Reads no gain, no utility and no verdict."""
+    """Run every mechanical check.  Reads no gain, no utility and no verdict."""
     results = []
     for check in CHECKS:
         try:
@@ -490,7 +544,7 @@ def audit(course: Mapping[str, Any]) -> dict[str, Any]:
 
 def _md(payload: Mapping[str, Any]) -> str:
     lines = [
-        "# HEC-1 instrument check (eight mechanical assertions)",
+        "# HEC-1 instrument check (nine mechanical assertions)",
         "",
         "Reads counts, ledgers and set intersections. Reads **no** gain, "
         "utility or verdict, which is what makes it safe to self-run.",
