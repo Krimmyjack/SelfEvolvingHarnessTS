@@ -1,0 +1,247 @@
+{
+  "algorithm": {
+    "candidate_starts_in_context": [
+      "4*period",
+      "5*period",
+      "6*period"
+    ],
+    "error": "pseudo-gap MAE divided by observed-window robust scale",
+    "minimum_probe_count": 12,
+    "natural_missing_values_outside_pseudo_gap_preserved": true,
+    "operator_input_scope": "context_only_first_192_steps",
+    "probe_length": "min(max(1, round(median real missing-run length)), period)"
+  },
+  "candidate_after_patch": {
+    "applicability_unchanged": true,
+    "observation": {
+      "type": "pseudo_gap_program_response_order"
+    },
+    "status": "CANDIDATE",
+    "workflow_supply_unchanged": true
+  },
+  "capability_or_memory_written": false,
+  "case_observations": [
+    {
+      "case_id": "monash:nn5_daily",
+      "cohort_topology": "multi_series_cross_sectional",
+      "observation": {
+        "error_margin": 0.002198902828394411,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 144,
+        "reliability": "RELIABLE"
+      }
+    },
+    {
+      "case_id": "gefcom2012_load",
+      "cohort_topology": "multi_series_cross_sectional",
+      "observation": {
+        "error_margin": 0.1420380297382121,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 360,
+        "reliability": "RELIABLE"
+      }
+    },
+    {
+      "case_id": "noaa_global_hourly",
+      "cohort_topology": "multi_series_cross_sectional",
+      "observation": {
+        "error_margin": 0.6300719967670807,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 260,
+        "reliability": "RELIABLE"
+      }
+    },
+    {
+      "case_id": "prsa:CO",
+      "cohort_topology": "multi_series_cross_sectional",
+      "observation": {
+        "error_margin": 0.910776649344031,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 189,
+        "reliability": "RELIABLE"
+      }
+    },
+    {
+      "case_id": "prsa:NO2",
+      "cohort_topology": "multi_series_cross_sectional",
+      "observation": {
+        "error_margin": 0.891559340120549,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 189,
+        "reliability": "RELIABLE"
+      }
+    }
+  ],
+  "claim_limit": "Exposed cached Target diagnostic and Candidate patch only; this is not fresh confirmation, Promotion or Active Memory.",
+  "compute": {
+    "consumer_fit_count": 0,
+    "llm_api_call_count": 0
+  },
+  "context_exposure": "INSTANCE_SEEN_IN_OTHER_PROGRAM_FAMILIES",
+  "diagnostic_gate": {
+    "behavior_nontrivial": true,
+    "both_target_roles_reliable": true,
+    "new_A5_above_A3": true,
+    "new_A5_above_old_A5": true,
+    "new_A5_harm_zero": true,
+    "passed": true
+  },
+  "experiment_id": "E2.83-natural-imputation-pseudo-gap-Observation",
+  "failure_dossier_sent_to_llm": {
+    "allowed_patch_values": {
+      "ADD_OBSERVATION": [
+        "pseudo_gap_program_response_order"
+      ]
+    },
+    "categorical_first_faults": [
+      {
+        "code": "POOLED_SOURCE_PRIOR_IGNORES_PROGRAM_RESPONSE",
+        "observed_behavior": "a pooled Source probe order delays the locally preferred imputation Workflow",
+        "surface": "observation"
+      }
+    ],
+    "dossier_id": "imputation_program_response_observation_v1",
+    "forbidden_changes": [
+      "workflow_supply",
+      "consumer",
+      "metric",
+      "memory",
+      "applicability"
+    ],
+    "privacy": {
+      "dataset_identity_included": false,
+      "effect_magnitudes_included": false,
+      "raw_time_series_included": false
+    }
+  },
+  "information_boundary": {
+    "cached_query_effect_used_by_replay_evaluator": true,
+    "llm_received_dataset_identity": false,
+    "llm_received_effect_magnitude": false,
+    "llm_received_raw_time_series": false,
+    "natural_gap_truth_used": false,
+    "post_context_horizon_values_received_by_observation": false,
+    "pseudo_gap_truth_source": "originally_observed_historical_context_points",
+    "repair_truth_used": false
+  },
+  "llm": {
+    "original_report": "artifacts/functional/e2/natural_imputation_pseudo_gap_observation_report.json",
+    "proposal": {
+      "operations": [
+        {
+          "operation": "ADD_OBSERVATION",
+          "target_surface": "observation",
+          "value": "pseudo_gap_program_response_order"
+        }
+      ],
+      "patch_id": "patch_pooled_source_prior_program_response_observation",
+      "type": "HarnessPatch"
+    },
+    "reused_existing_typed_patch": true
+  },
+  "outcome_exposure": "EXPOSED_CACHED_E2_82",
+  "resolved_candidate_status": "CANDIDATE",
+  "scientific_role": "outcome-free Program-response Observation diagnostic followed by a conditional bounded typed patch",
+  "summary": {
+    "adapt_auc": {
+      "A3": 0.05578736898058262,
+      "new_A5": 0.08368105347087393,
+      "old_A5": 0.02789368449029131
+    },
+    "all_target_roles_reliable": true,
+    "behavior_nontrivial": true,
+    "new_A5_harm_count": 0,
+    "new_A5_minus_A3": 0.02789368449029131,
+    "new_A5_minus_old_A5": 0.05578736898058262
+  },
+  "target_diagnostic": [
+    {
+      "A3_adaptation_auc": 0.0,
+      "behavior_changed": false,
+      "channel": "CO",
+      "new_A5_adaptation_auc": 0.0,
+      "new_A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY"
+        },
+        {
+          "abstained": true,
+          "budget": 1,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY"
+        },
+        {
+          "abstained": true,
+          "budget": 2,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY"
+        }
+      ],
+      "new_A5_harm_count": 0,
+      "observation": {
+        "error_margin": 0.910776649344031,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 189,
+        "reliability": "RELIABLE"
+      },
+      "old_A5_adaptation_auc": 0.0,
+      "pseudo_gap_probe_order": [
+        "W_ar_imputation",
+        "W_period_median_imputation"
+      ]
+    },
+    {
+      "A3_adaptation_auc": 0.11157473796116524,
+      "behavior_changed": true,
+      "channel": "NO2",
+      "new_A5_adaptation_auc": 0.16736210694174786,
+      "new_A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "selected_workflow": "IDENTITY"
+        },
+        {
+          "abstained": false,
+          "budget": 1,
+          "fixed_query_gain": 0.22314947592233048,
+          "selected_workflow": "W_ar_imputation"
+        },
+        {
+          "abstained": false,
+          "budget": 2,
+          "fixed_query_gain": 0.22314947592233048,
+          "selected_workflow": "W_ar_imputation"
+        }
+      ],
+      "new_A5_harm_count": 0,
+      "observation": {
+        "error_margin": 0.891559340120549,
+        "preferred_workflow": "W_ar_imputation",
+        "probe_count": 189,
+        "reliability": "RELIABLE"
+      },
+      "old_A5_adaptation_auc": 0.05578736898058262,
+      "pseudo_gap_probe_order": [
+        "W_ar_imputation",
+        "W_period_median_imputation"
+      ]
+    }
+  ],
+  "typed_patch": {
+    "operations": [
+      {
+        "operation": "ADD_OBSERVATION",
+        "target_surface": "observation",
+        "value": "pseudo_gap_program_response_order"
+      }
+    ],
+    "patch_id": "patch_pooled_source_prior_program_response_observation",
+    "type": "HarnessPatch"
+  },
+  "verdict": "PSEUDO_GAP_OBSERVATION_PATCH_PASS"
+}

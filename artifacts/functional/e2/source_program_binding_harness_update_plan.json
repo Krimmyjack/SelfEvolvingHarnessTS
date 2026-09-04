@@ -1,0 +1,1196 @@
+{
+  "blind_llm_patch_proposal": {
+    "diagnosed_failure": "The Source program instance hard-codes absolute positions, so compilation ignores the current series' observer-localized nodes and edits unrelated locations when series length changes.",
+    "falsification_condition": "On a fresh series of a different length, the frozen compiler receives valid H0 node indices but executes any different position, omits an in-range localized node, or changes any position outside the localized node set.",
+    "non_target_invariant": "Observation logic, local-median repair semantics, scope policy, guards, Consumer, Metric, and outcome-access policy remain unchanged; neither Dataset ID nor Query outcome is used.",
+    "operation": "PATCH_BINDING",
+    "predicted_behavior_change": "For every compiled instance, executed_positions equals the in-range H0 localized node set; node_overlap becomes complete and no position outside that observed scope is modified, including for lengths 286 and 96.",
+    "proposed_change": "Compile each program instance by binding its replacement positions directly to the H0 observer's localized node set for the current visible-fit series, preserving the existing center-excluded local-median operation and all other surfaces.",
+    "required_observables": [
+      "current visible-fit series identity within the evaluation boundary",
+      "current series length",
+      "H0 localized node indices for that series"
+    ],
+    "target_surface": "Program Binding"
+  },
+  "causal_hypothesis": "After Observation and Scope are fixed, binding the unchanged Program schema to current observer-localized nodes reduces adaptation regret relative to reusing a Source instance with absolute positions.",
+  "claim_limit": "The backgrounds and labels are real UCR data, but the artifact is controlled. This tests Program-Binding Harness evolution, not natural defects, persistent Memory, autonomous promotion, or general safety.",
+  "context_exposure": "INSTANCE_SEEN_TRAIN_ONLY",
+  "controlled_binding_failure_card": {
+    "H0_program_instance_positions": [
+      12,
+      36,
+      156,
+      180
+    ],
+    "controlled_first_actionable_fault": "program_binding",
+    "evidence_role": "development_controlled_binding_failure",
+    "example_lengths_in_blind_proposal": [
+      286,
+      96
+    ],
+    "not_attributed_to_W52": true
+  },
+  "frozen_policies": {
+    "A3_target_only": "incumbent then exact mean over both candidate-confirmation orders",
+    "A4_source_only": "incumbent because binding correctness is not Utility evidence",
+    "A5_source_plus_target": "confirm H1 dynamic binding, then H0 fixed binding",
+    "H0_direct": "execute unchanged Program with in-range Source absolute positions",
+    "budget_unit": "one complete Target Support Consumer refit outcome",
+    "candidate_selection": "highest Support accuracy among incumbent and confirmed candidates; ties prefer incumbent, then H0_fixed_binding",
+    "feedback_budgets": [
+      0,
+      1,
+      2
+    ]
+  },
+  "frozen_success_gate": {
+    "H0_binding_mismatch_all_targets": true,
+    "H1_binding_exact_all_targets": true,
+    "H1_positive_query_gain_count_min": 4,
+    "H1_query_accuracy_strictly_greater_than_H0_count_min": 5,
+    "event_scope_unchanged_all_targets": true,
+    "macro_A5_adapt_auc_strictly_greater_than_A3": true,
+    "negative_A5_vs_A3_target_count": 0
+  },
+  "frozen_surfaces": {
+    "changed": "Program Binding only",
+    "consumer": "ridge-raw-plus-difference-v1",
+    "metric": "classification accuracy",
+    "observation": "class-conditioned-impulse-topology/1",
+    "program": "center-excluded local median, unchanged",
+    "proxy": "none",
+    "risk": "stable task event abstains, unchanged",
+    "scope": "W52 cross-cohort evidence scope, unchanged",
+    "task": "shared classification-local-event-quality-v1"
+  },
+  "original_uci_target_query_opened": false,
+  "outcome_exposure": "SEALED",
+  "persistent_memory_built": false,
+  "prior_harness_evidence": {
+    "W52_used_dynamic_observer_binding": true,
+    "W52_verdict": "CONTROLLED_INTEGRATED_HARNESS_EVOLUTION_FAIL",
+    "established_surfaces": [
+      "Observation",
+      "Scope"
+    ]
+  },
+  "schema_version": "e2-program-binding-harness-update/1",
+  "scientific_role": "controlled Program-Binding Harness update",
+  "selection_used_target_program_or_consumer_outcome": false,
+  "target_test_values_or_labels_read": false,
+  "target_train_plans": [
+    {
+      "archive": "data/ucr_task_context/FordB.zip",
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 4,
+          "executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "missed_observer_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "class_counts": {
+        "0": 1860,
+        "1": 1776
+      },
+      "controlled_artifact": {
+        "decision_input_text": "TASK_CONTEXT\ntask_type=classification\nmetric=accuracy\nquality_objective=preserve_class_evidence\npreserve=temporal_order,series_length,class_relevant_structure\ngeneric_harms=event_erasure,unnecessary_modification,global_over_smoothing,future_information_use,out_of_scope_change\nCANDIDATE_PROGRAM\nprogram=bound_local_median_repair\neffect=replace_each_candidate_node_with_center_excluded_local_median\nAPPLICABILITY_WITNESS\nnode_count=4\nnormalized_node_positions=0.080160,0.200401,0.799599,0.919840\nsupport_to_fit_strength_ratio=0.000000\ndirection_alignment=0.000000\navailable_decisions=EXECUTE|ABSTAIN|REQUEST_MORE_OBSERVATION",
+        "observation": {
+          "absolute_threshold": 7.999482884810387,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 31.99793153924155,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            31.992033948542918,
+            31.99793153924155,
+            31.9875664053997,
+            31.97095856577759
+          ],
+          "nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.008,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "private_evaluator_true_positions": [
+          40,
+          100,
+          399,
+          459
+        ],
+        "scope": "ELIGIBLE_REQUEST_CONFIRMATION",
+        "scope_reasons": [
+          "localized_fit_signal_not_reproduced_in_support"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 0.0,
+          "fit_node_median_strength": 31.989800176971308,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08016032064128256,
+            0.20040080160320642,
+            0.7995991983967936,
+            0.9198396793587175
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 0.0,
+          "support_to_fit_strength_ratio": 0.0,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "dataset": "FordB",
+      "fit_count": 2545,
+      "official_train_count": 3636,
+      "series_length": 500,
+      "stable_task_event": {
+        "compiled_policy": "ABSTAIN_KEEP_INCUMBENT",
+        "observation": {
+          "absolute_threshold": 7.999482884810387,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 31.99793153924155,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            31.992033948542918,
+            31.99793153924155,
+            31.9875664053997,
+            31.97095856577759
+          ],
+          "nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.008,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "scope_reasons": [
+          "local_label_evidence_repeats_across_cohorts"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 1.0,
+          "fit_node_median_strength": 31.989800176971308,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08016032064128256,
+            0.20040080160320642,
+            0.7995991983967936,
+            0.9198396793587175
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 31.97702982138189,
+          "support_to_fit_strength_ratio": 0.9996007988322909,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "support_count": 1091
+    },
+    {
+      "archive": "data/ucr_task_context/Lightning2.zip",
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 4,
+          "executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "missed_observer_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "class_counts": {
+        "0": 20,
+        "1": 40
+      },
+      "controlled_artifact": {
+        "decision_input_text": "TASK_CONTEXT\ntask_type=classification\nmetric=accuracy\nquality_objective=preserve_class_evidence\npreserve=temporal_order,series_length,class_relevant_structure\ngeneric_harms=event_erasure,unnecessary_modification,global_over_smoothing,future_information_use,out_of_scope_change\nCANDIDATE_PROGRAM\nprogram=bound_local_median_repair\neffect=replace_each_candidate_node_with_center_excluded_local_median\nAPPLICABILITY_WITNESS\nnode_count=4\nnormalized_node_positions=0.080189,0.199686,0.800314,0.919811\nsupport_to_fit_strength_ratio=0.000000\ndirection_alignment=0.250000\navailable_decisions=EXECUTE|ABSTAIN|REQUEST_MORE_OBSERVATION",
+        "observation": {
+          "absolute_threshold": 8.0,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.0,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            32.0,
+            31.933250755068276,
+            31.829167983380565,
+            31.915713392588835
+          ],
+          "nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.006279434850863423,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "private_evaluator_true_positions": [
+          51,
+          127,
+          509,
+          585
+        ],
+        "scope": "ELIGIBLE_REQUEST_CONFIRMATION",
+        "scope_reasons": [
+          "localized_fit_signal_not_reproduced_in_support"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 0.25,
+          "fit_node_median_strength": 31.924482073828557,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08018867924528301,
+            0.19968553459119498,
+            0.800314465408805,
+            0.9198113207547169
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 0.0,
+          "support_to_fit_strength_ratio": 0.0,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "dataset": "Lightning2",
+      "fit_count": 42,
+      "official_train_count": 60,
+      "series_length": 637,
+      "stable_task_event": {
+        "compiled_policy": "ABSTAIN_KEEP_INCUMBENT",
+        "observation": {
+          "absolute_threshold": 8.0,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.0,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            32.0,
+            31.933250755068276,
+            31.829167983380565,
+            31.915713392588835
+          ],
+          "nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.006279434850863423,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "scope_reasons": [
+          "local_label_evidence_repeats_across_cohorts"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 1.0,
+          "fit_node_median_strength": 31.924482073828557,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08018867924528301,
+            0.19968553459119498,
+            0.800314465408805,
+            0.9198113207547169
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 31.985254601379438,
+          "support_to_fit_strength_ratio": 1.0019036336248557,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "support_count": 18
+    },
+    {
+      "archive": "data/ucr_task_context/MoteStrain.zip",
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "class_counts": {
+        "0": 10,
+        "1": 10
+      },
+      "controlled_artifact": {
+        "decision_input_text": "TASK_CONTEXT\ntask_type=classification\nmetric=accuracy\nquality_objective=preserve_class_evidence\npreserve=temporal_order,series_length,class_relevant_structure\ngeneric_harms=event_erasure,unnecessary_modification,global_over_smoothing,future_information_use,out_of_scope_change\nCANDIDATE_PROGRAM\nprogram=bound_local_median_repair\neffect=replace_each_candidate_node_with_center_excluded_local_median\nAPPLICABILITY_WITNESS\nnode_count=4\nnormalized_node_positions=0.084337,0.204819,0.795181,0.915663\nsupport_to_fit_strength_ratio=0.002615\ndirection_alignment=0.500000\navailable_decisions=EXECUTE|ABSTAIN|REQUEST_MORE_OBSERVATION",
+        "observation": {
+          "absolute_threshold": 8.016461972145105,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.06584788858042,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            32.06584788858042,
+            31.77839650992233,
+            31.963810437917278,
+            31.747766002750232
+          ],
+          "nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.047619047619047616,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "private_evaluator_true_positions": [
+          7,
+          17,
+          66,
+          76
+        ],
+        "scope": "ELIGIBLE_REQUEST_CONFIRMATION",
+        "scope_reasons": [
+          "localized_fit_signal_not_reproduced_in_support"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 0.5,
+          "fit_node_median_strength": 31.871103473919803,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08433734939759036,
+            0.20481927710843373,
+            0.7951807228915663,
+            0.9156626506024096
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 0.08333987867101722,
+          "support_to_fit_strength_ratio": 0.002614904084292701,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "dataset": "MoteStrain",
+      "fit_count": 14,
+      "official_train_count": 20,
+      "series_length": 84,
+      "stable_task_event": {
+        "compiled_policy": "ABSTAIN_KEEP_INCUMBENT",
+        "observation": {
+          "absolute_threshold": 8.016461972145105,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.06584788858042,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            32.06584788858042,
+            31.77839650992233,
+            31.963810437917278,
+            31.747766002750232
+          ],
+          "nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.047619047619047616,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "scope_reasons": [
+          "local_label_evidence_repeats_across_cohorts"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 1.0,
+          "fit_node_median_strength": 31.871103473919803,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08433734939759036,
+            0.20481927710843373,
+            0.7951807228915663,
+            0.9156626506024096
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 31.992274105276298,
+          "support_to_fit_strength_ratio": 1.0038018960158575,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "support_count": 6
+    },
+    {
+      "archive": "data/ucr_task_context/SonyAIBORobotSurface1.zip",
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "class_counts": {
+        "0": 6,
+        "1": 14
+      },
+      "controlled_artifact": {
+        "decision_input_text": "TASK_CONTEXT\ntask_type=classification\nmetric=accuracy\nquality_objective=preserve_class_evidence\npreserve=temporal_order,series_length,class_relevant_structure\ngeneric_harms=event_erasure,unnecessary_modification,global_over_smoothing,future_information_use,out_of_scope_change\nCANDIDATE_PROGRAM\nprogram=bound_local_median_repair\neffect=replace_each_candidate_node_with_center_excluded_local_median\nAPPLICABILITY_WITNESS\nnode_count=4\nnormalized_node_positions=0.086957,0.202899,0.797101,0.913043\nsupport_to_fit_strength_ratio=0.000347\ndirection_alignment=0.250000\navailable_decisions=EXECUTE|ABSTAIN|REQUEST_MORE_OBSERVATION",
+        "observation": {
+          "absolute_threshold": 8.14154151718169,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.56616606872676,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            32.500272506323405,
+            31.933481877754012,
+            32.56616606872676,
+            32.057114610643154
+          ],
+          "nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.05714285714285714,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "private_evaluator_true_positions": [
+          6,
+          14,
+          55,
+          63
+        ],
+        "scope": "ELIGIBLE_REQUEST_CONFIRMATION",
+        "scope_reasons": [
+          "localized_fit_signal_not_reproduced_in_support"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 0.25,
+          "fit_node_median_strength": 32.27869355848328,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08695652173913043,
+            0.2028985507246377,
+            0.7971014492753623,
+            0.9130434782608695
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 0.011207556881646985,
+          "support_to_fit_strength_ratio": 0.0003472122208994844,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "dataset": "SonyAIBORobotSurface1",
+      "fit_count": 13,
+      "official_train_count": 20,
+      "series_length": 70,
+      "stable_task_event": {
+        "compiled_policy": "ABSTAIN_KEEP_INCUMBENT",
+        "observation": {
+          "absolute_threshold": 8.14154151718169,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.56616606872676,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            32.500272506323405,
+            31.933481877754012,
+            32.56616606872676,
+            32.057114610643154
+          ],
+          "nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.05714285714285714,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "scope_reasons": [
+          "local_label_evidence_repeats_across_cohorts"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 1.0,
+          "fit_node_median_strength": 32.27869355848328,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.08695652173913043,
+            0.2028985507246377,
+            0.7971014492753623,
+            0.9130434782608695
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 31.896514685635708,
+          "support_to_fit_strength_ratio": 0.988160026302281,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "support_count": 7
+    },
+    {
+      "archive": "data/ucr_task_context/ProximalPhalanxOutlineCorrect.zip",
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "class_counts": {
+        "0": 194,
+        "1": 406
+      },
+      "controlled_artifact": {
+        "decision_input_text": "TASK_CONTEXT\ntask_type=classification\nmetric=accuracy\nquality_objective=preserve_class_evidence\npreserve=temporal_order,series_length,class_relevant_structure\ngeneric_harms=event_erasure,unnecessary_modification,global_over_smoothing,future_information_use,out_of_scope_change\nCANDIDATE_PROGRAM\nprogram=bound_local_median_repair\neffect=replace_each_candidate_node_with_center_excluded_local_median\nAPPLICABILITY_WITNESS\nnode_count=4\nnormalized_node_positions=0.075949,0.202532,0.797468,0.924051\nsupport_to_fit_strength_ratio=0.000000\ndirection_alignment=0.250000\navailable_decisions=EXECUTE|ABSTAIN|REQUEST_MORE_OBSERVATION",
+        "observation": {
+          "absolute_threshold": 8.014016904376419,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.056067617505676,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            31.986294195569315,
+            31.976145063887174,
+            32.01118268949098,
+            32.056067617505676
+          ],
+          "nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.05,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "private_evaluator_true_positions": [
+          6,
+          16,
+          63,
+          73
+        ],
+        "scope": "ELIGIBLE_REQUEST_CONFIRMATION",
+        "scope_reasons": [
+          "localized_fit_signal_not_reproduced_in_support"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 0.25,
+          "fit_node_median_strength": 31.998738442530147,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.0759493670886076,
+            0.20253164556962025,
+            0.7974683544303798,
+            0.9240506329113924
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 0.0,
+          "support_to_fit_strength_ratio": 0.0,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "dataset": "ProximalPhalanxOutlineCorrect",
+      "fit_count": 420,
+      "official_train_count": 600,
+      "series_length": 80,
+      "stable_task_event": {
+        "compiled_policy": "ABSTAIN_KEEP_INCUMBENT",
+        "observation": {
+          "absolute_threshold": 8.014016904376419,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.056067617505676,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            31.986294195569315,
+            31.976145063887174,
+            32.01118268949098,
+            32.056067617505676
+          ],
+          "nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.05,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "scope_reasons": [
+          "local_label_evidence_repeats_across_cohorts"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 1.0,
+          "fit_node_median_strength": 31.998738442530147,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.0759493670886076,
+            0.20253164556962025,
+            0.7974683544303798,
+            0.9240506329113924
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 31.995592549382934,
+          "support_to_fit_strength_ratio": 0.9999016866508071,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "support_count": 180
+    },
+    {
+      "archive": "data/ucr_task_context/MiddlePhalanxOutlineCorrect.zip",
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "class_counts": {
+        "0": 212,
+        "1": 388
+      },
+      "controlled_artifact": {
+        "decision_input_text": "TASK_CONTEXT\ntask_type=classification\nmetric=accuracy\nquality_objective=preserve_class_evidence\npreserve=temporal_order,series_length,class_relevant_structure\ngeneric_harms=event_erasure,unnecessary_modification,global_over_smoothing,future_information_use,out_of_scope_change\nCANDIDATE_PROGRAM\nprogram=bound_local_median_repair\neffect=replace_each_candidate_node_with_center_excluded_local_median\nAPPLICABILITY_WITNESS\nnode_count=4\nnormalized_node_positions=0.075949,0.202532,0.797468,0.924051\nsupport_to_fit_strength_ratio=0.000166\ndirection_alignment=0.250000\navailable_decisions=EXECUTE|ABSTAIN|REQUEST_MORE_OBSERVATION",
+        "observation": {
+          "absolute_threshold": 8.00178548217736,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.00714192870944,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            31.997720566122062,
+            31.99409887043182,
+            32.00714192870944,
+            31.99028267150635
+          ],
+          "nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.05,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "private_evaluator_true_positions": [
+          6,
+          16,
+          63,
+          73
+        ],
+        "scope": "ELIGIBLE_REQUEST_CONFIRMATION",
+        "scope_reasons": [
+          "localized_fit_signal_not_reproduced_in_support"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 0.25,
+          "fit_node_median_strength": 31.99590971827694,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.0759493670886076,
+            0.20253164556962025,
+            0.7974683544303798,
+            0.9240506329113924
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 0.0053156962991110016,
+          "support_to_fit_strength_ratio": 0.00016613674511067777,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "dataset": "MiddlePhalanxOutlineCorrect",
+      "fit_count": 420,
+      "official_train_count": 600,
+      "series_length": 80,
+      "stable_task_event": {
+        "compiled_policy": "ABSTAIN_KEEP_INCUMBENT",
+        "observation": {
+          "absolute_threshold": 8.00178548217736,
+          "dataset_id_used": false,
+          "global_max_residual_strength": 32.00714192870944,
+          "inputs_used": [
+            "complete_training_inputs",
+            "training_labels"
+          ],
+          "minimum_node_distance": 6,
+          "node_count": 4,
+          "node_residual_strength": [
+            31.997720566122062,
+            31.99409887043182,
+            32.00714192870944,
+            31.99028267150635
+          ],
+          "nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_id": "class-conditioned-impulse-topology/1",
+          "private_true_positions_used": false,
+          "rolling_median_width": 9,
+          "temporal_coverage_fraction": 0.05,
+          "threshold_fraction_of_global_max": 0.25
+        },
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "scope_reasons": [
+          "local_label_evidence_repeats_across_cohorts"
+        ],
+        "witness": {
+          "dataset_id_used": false,
+          "direction_alignment": 1.0,
+          "fit_node_median_strength": 31.99590971827694,
+          "inputs_used": [
+            "fit_inputs",
+            "fit_labels",
+            "support_inputs",
+            "support_labels",
+            "candidate_program_nodes"
+          ],
+          "node_count": 4,
+          "normalized_node_positions": [
+            0.0759493670886076,
+            0.20253164556962025,
+            0.7974683544303798,
+            0.9240506329113924
+          ],
+          "program_outcome_used": false,
+          "query_values_or_labels_used": false,
+          "support_node_median_strength": 31.994867840601053,
+          "support_to_fit_strength_ratio": 0.999967436847874,
+          "witness_id": "cross-cohort-local-label-evidence/1"
+        }
+      },
+      "support_count": 180
+    }
+  ]
+}

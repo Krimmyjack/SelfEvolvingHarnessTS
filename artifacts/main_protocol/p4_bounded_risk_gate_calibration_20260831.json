@@ -1,0 +1,1462 @@
+{
+  "stage": "P4_BOUNDED_RISK_GATE_CALIBRATION",
+  "status": "COMPLETE",
+  "evidence_grade": "DEVELOPMENT_ONLY_CALIBRATION",
+  "experiment_label": "PROSPECTIVE_RISK_UTILITY_POLICY_EXPERIMENT",
+  "does_not_supersede": "artifacts/main_protocol/p4_forecast_performance_b8_llm8_run2_20260830.json -- the strict-gate H1/H2/H3 results stand as collected",
+  "source_run": "artifacts/main_protocol/p4_forecast_performance_b8_llm8_run2_20260830.json",
+  "dataset": "KDD Cup 2018 with missing values",
+  "data_role": "EXPOSED_DEVELOPMENT",
+  "llm_calls": 0,
+  "rule_shape": {
+    "admit": [
+      "support_a.aggregate_gain >= +0.005",
+      "support_a.harmed_count <= k",
+      "support_a.max_single_series_harm <= m",
+      "support_b.aggregate_gain >= +0.005",
+      "support_b.harmed_count <= k",
+      "support_b.max_single_series_harm <= m"
+    ],
+    "reject_or_revoke": [
+      "support_b sign reversal",
+      "harm outside the frozen budget on either face"
+    ],
+    "shared_scope": "a positive carrying local conflict does not widen Shared Skill Scope; it stays Target-local",
+    "safety_baseline_retained": "k=0 reproduces the current strict gate"
+  },
+  "boundary": {
+    "natural_final_outcome_reads": 0,
+    "query_evaluations": 0,
+    "ucr_test_outcome_reads": 0,
+    "sealed_ad_outcome_reads": 0,
+    "new_sha_added": false,
+    "new_manifest_added": false,
+    "live_provider_calls": 0
+  },
+  "calibration_origins": [
+    600,
+    648,
+    696,
+    744,
+    792,
+    840,
+    888,
+    936
+  ],
+  "candidates": [
+    {
+      "origin": 600,
+      "operator": "hampel_filter",
+      "recorded_relation": "NEGATIVE",
+      "recorded_support_gain": -0.07310804629193424,
+      "run_record_count": 2,
+      "support_a": {
+        "aggregate_gain": -0.07310804629193424,
+        "harmed_count": 15,
+        "harmed_fraction": 0.75,
+        "max_single_series_harm": 0.47846981886635476,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": -0.10088260244069769,
+        "harmed_count": 17,
+        "harmed_fraction": 0.85,
+        "max_single_series_harm": 0.4852485844937131,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 600,
+      "operator": "outlier_mad",
+      "recorded_relation": "NEGATIVE",
+      "recorded_support_gain": -0.02522988376273183,
+      "run_record_count": 4,
+      "support_a": {
+        "aggregate_gain": -0.02522988376273183,
+        "harmed_count": 11,
+        "harmed_fraction": 0.55,
+        "max_single_series_harm": 0.18711176902323867,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": -0.05390857144111827,
+        "harmed_count": 12,
+        "harmed_fraction": 0.6,
+        "max_single_series_harm": 0.46628650246764236,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 600,
+      "operator": "winsorize",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.06258491803124233,
+      "run_record_count": 1,
+      "support_a": {
+        "aggregate_gain": 0.06258491803124233,
+        "harmed_count": 5,
+        "harmed_fraction": 0.25,
+        "max_single_series_harm": 0.18026901872550116,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.09782308659142736,
+        "harmed_count": 6,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 0.09966305990350621,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 648,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.2615461534852974,
+      "run_record_count": 6,
+      "support_a": {
+        "aggregate_gain": 0.2615461534852974,
+        "harmed_count": 4,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.20032299703812484,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.4199500403481835,
+        "harmed_count": 1,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.13427884638922682,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 696,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.5427837625248004,
+      "run_record_count": 8,
+      "support_a": {
+        "aggregate_gain": 0.5427837625248004,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.2096978311137323,
+        "harmed_count": 7,
+        "harmed_fraction": 0.35,
+        "max_single_series_harm": 0.3284869408373394,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 696,
+      "operator": "winsorize",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.5404387952154079,
+      "run_record_count": 1,
+      "support_a": {
+        "aggregate_gain": 0.5404387952154079,
+        "harmed_count": 0,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.5377523326063418,
+        "harmed_count": 1,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.07116937532596856,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 744,
+      "operator": "hampel_filter",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.5134626305969889,
+      "run_record_count": 1,
+      "support_a": {
+        "aggregate_gain": 0.5134626305969889,
+        "harmed_count": 2,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.496849211108896,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": -0.1902361146839464,
+        "harmed_count": 13,
+        "harmed_fraction": 0.65,
+        "max_single_series_harm": 1.6430466311062368,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 744,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.2962872472982401,
+      "run_record_count": 4,
+      "support_a": {
+        "aggregate_gain": 0.2962872472982401,
+        "harmed_count": 2,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.6706544845579638,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.5330629352643652,
+        "harmed_count": 4,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.7858705419488785,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 744,
+      "operator": "winsorize",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.3039569636027921,
+      "run_record_count": 1,
+      "support_a": {
+        "aggregate_gain": 0.3039569636027921,
+        "harmed_count": 3,
+        "harmed_fraction": 0.15,
+        "max_single_series_harm": 0.603762131920758,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.4050896767019623,
+        "harmed_count": 4,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.7508684540891257,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 792,
+      "operator": "hampel_filter",
+      "recorded_relation": "NEGATIVE",
+      "recorded_support_gain": -0.14860111513769025,
+      "run_record_count": 1,
+      "support_a": {
+        "aggregate_gain": -0.14860111513769025,
+        "harmed_count": 14,
+        "harmed_fraction": 0.7,
+        "max_single_series_harm": 0.8383383894666829,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.31226172081814463,
+        "harmed_count": 3,
+        "harmed_fraction": 0.15,
+        "max_single_series_harm": 0.4275823857520784,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 792,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.2648384614589354,
+      "run_record_count": 7,
+      "support_a": {
+        "aggregate_gain": 0.2648384614589354,
+        "harmed_count": 6,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 0.7726223523728593,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.32712583204421986,
+        "harmed_count": 2,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.22123781138189047,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 840,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.318698183840763,
+      "run_record_count": 7,
+      "support_a": {
+        "aggregate_gain": 0.318698183840763,
+        "harmed_count": 2,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.5145157094000405,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.29709929258251444,
+        "harmed_count": 5,
+        "harmed_fraction": 0.25,
+        "max_single_series_harm": 0.24681952352345715,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 888,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.31939782593661126,
+      "run_record_count": 6,
+      "support_a": {
+        "aggregate_gain": 0.31939782593661126,
+        "harmed_count": 5,
+        "harmed_fraction": 0.25,
+        "max_single_series_harm": 0.7204507748644788,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.1566709030526683,
+        "harmed_count": 7,
+        "harmed_fraction": 0.35,
+        "max_single_series_harm": 0.33455105062412305,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 888,
+      "operator": "winsorize",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.3115177696003202,
+      "run_record_count": 1,
+      "support_a": {
+        "aggregate_gain": 0.3115177696003202,
+        "harmed_count": 4,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.3920500050476219,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.1946274414040341,
+        "harmed_count": 6,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 0.40465024024458773,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 936,
+      "operator": "outlier_mad",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.31795065414202117,
+      "run_record_count": 6,
+      "support_a": {
+        "aggregate_gain": 0.31795065414202117,
+        "harmed_count": 6,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 0.32935352455878486,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.18226293526765414,
+        "harmed_count": 3,
+        "harmed_fraction": 0.15,
+        "max_single_series_harm": 0.619466841602508,
+        "series_count": 20
+      }
+    },
+    {
+      "origin": 936,
+      "operator": "winsorize",
+      "recorded_relation": "CONFLICT",
+      "recorded_support_gain": 0.21301157181131547,
+      "run_record_count": 2,
+      "support_a": {
+        "aggregate_gain": 0.21301157181131547,
+        "harmed_count": 7,
+        "harmed_fraction": 0.35,
+        "max_single_series_harm": 0.6186880546423548,
+        "series_count": 20
+      },
+      "support_b": {
+        "aggregate_gain": 0.3317935653197106,
+        "harmed_count": 2,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.15503144373208722,
+        "series_count": 20
+      }
+    }
+  ],
+  "strict_gate_baseline": {
+    "k_max_harmed_series": 0,
+    "m_max_single_series_harm": 0.05,
+    "admitted": 0,
+    "admitted_of": 16,
+    "realised_mean_aggregate_gain": null,
+    "realised_min_aggregate_gain": null,
+    "realised_mean_harmed_fraction": null,
+    "realised_worst_single_series_harm": null,
+    "admitted_units": []
+  },
+  "sweep": [
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 0,
+      "m_max_single_series_harm": null,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 1,
+      "m_max_single_series_harm": null,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 2,
+      "m_max_single_series_harm": null,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 3,
+      "m_max_single_series_harm": null,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.47885118647726266,
+      "realised_min_aggregate_gain": 0.4199500403481835,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.47885118647726266,
+      "realised_min_aggregate_gain": 0.4199500403481835,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.47885118647726266,
+      "realised_min_aggregate_gain": 0.4199500403481835,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 4,
+      "m_max_single_series_harm": null,
+      "admitted": 4,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.4739637462302132,
+      "realised_min_aggregate_gain": 0.4050896767019623,
+      "realised_mean_harmed_fraction": 0.125,
+      "realised_worst_single_series_harm": 0.7858705419488785,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 744,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 744,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.47885118647726266,
+      "realised_min_aggregate_gain": 0.4199500403481835,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.47885118647726266,
+      "realised_min_aggregate_gain": 0.4199500403481835,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 3,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.41826722184567994,
+      "realised_min_aggregate_gain": 0.29709929258251444,
+      "realised_mean_harmed_fraction": 0.11666666666666665,
+      "realised_worst_single_series_harm": 0.24681952352345715,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 840,
+          "operator": "outlier_mad"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 5,
+      "m_max_single_series_harm": null,
+      "admitted": 5,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.43859085550067345,
+      "realised_min_aggregate_gain": 0.29709929258251444,
+      "realised_mean_harmed_fraction": 0.15,
+      "realised_worst_single_series_harm": 0.7858705419488785,
+      "admitted_units": [
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 744,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 744,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 840,
+          "operator": "outlier_mad"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.3177877095988846,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.175,
+      "realised_worst_single_series_harm": 0.09966305990350621,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 3,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.35184181984865087,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.13333333333333333,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 4,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.3125382252374967,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.175,
+      "realised_worst_single_series_harm": 0.40465024024458773,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 888,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 6,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.28825252146669256,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.18333333333333332,
+      "realised_worst_single_series_harm": 0.619466841602508,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 840,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 888,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 936,
+          "operator": "outlier_mad"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 6,
+      "m_max_single_series_harm": null,
+      "admitted": 9,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.3327548414234114,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.17777777777777778,
+      "realised_worst_single_series_harm": 0.7858705419488785,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 744,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 744,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 792,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 840,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 888,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 936,
+          "operator": "outlier_mad"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": 0.05,
+      "admitted": 0,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": null,
+      "realised_min_aggregate_gain": null,
+      "realised_mean_harmed_fraction": null,
+      "realised_worst_single_series_harm": null,
+      "admitted_units": []
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": 0.1,
+      "admitted": 1,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.5377523326063418,
+      "realised_min_aggregate_gain": 0.5377523326063418,
+      "realised_mean_harmed_fraction": 0.05,
+      "realised_worst_single_series_harm": 0.07116937532596856,
+      "admitted_units": [
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": 0.2,
+      "admitted": 2,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.3177877095988846,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.175,
+      "realised_worst_single_series_harm": 0.09966305990350621,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": 0.3,
+      "admitted": 3,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.35184181984865087,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.13333333333333333,
+      "realised_worst_single_series_harm": 0.13427884638922682,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": 0.5,
+      "admitted": 5,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.2919701464127438,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.21000000000000002,
+      "realised_worst_single_series_harm": 0.40465024024458773,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 888,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": 0.75,
+      "admitted": 9,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.2697419364762518,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.2111111111111111,
+      "realised_worst_single_series_harm": 0.619466841602508,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 840,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 888,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 888,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 936,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 936,
+          "operator": "winsorize"
+        }
+      ]
+    },
+    {
+      "k_max_harmed_series": 7,
+      "m_max_single_series_harm": null,
+      "admitted": 12,
+      "admitted_of": 16,
+      "realised_mean_aggregate_gain": 0.3077463226914012,
+      "realised_min_aggregate_gain": 0.09782308659142736,
+      "realised_mean_harmed_fraction": 0.19999999999999998,
+      "realised_worst_single_series_harm": 0.7858705419488785,
+      "admitted_units": [
+        {
+          "origin": 600,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 648,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 696,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 744,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 744,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 792,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 840,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 888,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 888,
+          "operator": "winsorize"
+        },
+        {
+          "origin": 936,
+          "operator": "outlier_mad"
+        },
+        {
+          "origin": 936,
+          "operator": "winsorize"
+        }
+      ]
+    }
+  ],
+  "frozen_rule": null,
+  "note": "the frozen (k, m) has to be scored on origins that took no part in this calibration; this script performs no such scoring and freezes nothing",
+  "releases": "NONE"
+}

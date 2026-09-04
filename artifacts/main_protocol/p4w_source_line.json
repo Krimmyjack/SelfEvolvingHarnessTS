@@ -1,0 +1,451 @@
+{
+  "stage": "P4W_SOURCE_LINE",
+  "status": "COMPLETE",
+  "provenance": "RECONSTRUCTED_FROM_P4X_AND_P4Y_AFTER_A_DRY_RUN_OVERWROTE_IT",
+  "written_at": "2026-09-02T01:51:03.502349+08:00",
+  "how_it_was_lost": "run_source_line --dry-run wrote its stub to this path and destroyed the completed run; the store was empty and the file was never committed.  The runner now writes dry runs to a separate path and refuses to overwrite an existing live artifact",
+  "fields_that_no_longer_exist": [
+    "probes[].per_series_gain",
+    "probes[].resolved_serving_series",
+    "probes[].program_steps[].params",
+    "probes[].episode_id",
+    "rounds[].snapshot_sha",
+    "rounds[].delayed_event",
+    "rounds[].delayed_utility",
+    "rounds[].retrieved_skill_ids",
+    "runtime_status",
+    "wall_seconds"
+  ],
+  "not_reconstructed_by_inference": "every value below was read out of p4x or p4y, both of which were derived from the live run before the overwrite.  Nothing here was recomputed, estimated or filled in",
+  "consequence": "audit_oracle_scope_bound cannot be re-run against this file: its input was the per-series gain vectors.  Its verdict (FEASIBLE_SCOPE_EXISTS) stands as a recorded result, but is no longer reproducible from this artifact",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "cohort": "source readable[160:200]",
+  "face": "support_a",
+  "origins": [
+    1896,
+    2136,
+    2376,
+    2616,
+    2856
+  ],
+  "admission_policy_in_force": "bounded_risk_v1",
+  "admission_policy": {
+    "rule": "bounded_risk_v1",
+    "max_harmed_fraction": 0.2,
+    "max_single_series_harm": 0.3,
+    "thresholds_changed": 0
+  },
+  "rounds": [
+    {
+      "origin": 1896,
+      "served_count": 20,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_count": null,
+      "probes": [
+        {
+          "candidate_id": "hampel_local_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.029175336605961055,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "hampel_filter"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 1.3230996057462128
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.029175336605961055,
+            "series_count": 20,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 1.3230996057462128
+          },
+          "resolved_serving_series_count": 14
+        },
+        {
+          "candidate_id": "mad_local_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.31990962156114766,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 3,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.4637045098030368
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.31990962156114766,
+            "series_count": 20,
+            "harmed_fraction": 0.15,
+            "max_single_series_harm": 0.4637045098030368
+          },
+          "resolved_serving_series_count": 14
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 2,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2136,
+      "served_count": 20,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_count": null,
+      "probes": [
+        {
+          "candidate_id": "hampel_filter_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.04566408187116067,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "hampel_filter"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 7,
+            "harmed_fraction": 0.35,
+            "max_single_series_harm": 2.134043533665814
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.04566408187116067,
+            "series_count": 20,
+            "harmed_fraction": 0.35,
+            "max_single_series_harm": 2.134043533665814
+          },
+          "resolved_serving_series_count": 15
+        },
+        {
+          "candidate_id": "outlier_mad_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.267207748485375,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5018017431502302
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.267207748485375,
+            "series_count": 20,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.5018017431502302
+          },
+          "resolved_serving_series_count": 15
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 2,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2376,
+      "served_count": 20,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_count": null,
+      "probes": [
+        {
+          "candidate_id": "robust_outlier_repair",
+          "kind": "probe",
+          "gain": 0.6542467922567412,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 2,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.33964036837296063
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.6542467922567412,
+            "series_count": 20,
+            "harmed_fraction": 0.1,
+            "max_single_series_harm": 0.33964036837296063
+          },
+          "resolved_serving_series_count": 15
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 1,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2616,
+      "served_count": 20,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_count": null,
+      "probes": [
+        {
+          "candidate_id": "repair_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.28626981469266033,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 6,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.16112755992291727
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "harmed_fraction_over_budget",
+            "aggregate_gain": 0.28626981469266033,
+            "series_count": 20,
+            "harmed_fraction": 0.3,
+            "max_single_series_harm": 0.16112755992291727
+          },
+          "resolved_serving_series_count": 13
+        },
+        {
+          "candidate_id": "repair_missingness_linear",
+          "kind": "probe",
+          "gain": 0.0,
+          "passed": true,
+          "program_steps": null,
+          "serving_scope": null,
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": null,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "aggregate_below_material_line",
+            "aggregate_gain": 0.0,
+            "series_count": 20,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0
+          },
+          "resolved_serving_series_count": 12
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 1,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2856,
+      "served_count": 20,
+      "winner_program": null,
+      "winner_serving_scope": null,
+      "winner_resolved_count": null,
+      "probes": [
+        {
+          "candidate_id": "repair_extreme_deviation",
+          "kind": "probe",
+          "gain": 0.20313940300645328,
+          "passed": true,
+          "program_steps": [
+            {
+              "op": "outlier_mad"
+            }
+          ],
+          "serving_scope": {
+            "scope_type": "serving_series_predicate",
+            "predicate": [
+              {
+                "feature": "local_robust_z_peak",
+                "op": ">=",
+                "threshold": 3.0
+              }
+            ]
+          },
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.8834089538651388
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "single_series_harm_over_budget",
+            "aggregate_gain": 0.20313940300645328,
+            "series_count": 20,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.8834089538651388
+          },
+          "resolved_serving_series_count": 18
+        },
+        {
+          "candidate_id": "repair_missingness",
+          "kind": "probe",
+          "gain": 2.220446049250313e-16,
+          "passed": true,
+          "program_steps": null,
+          "serving_scope": null,
+          "resolved_serving_series": null,
+          "per_series_gain": null,
+          "risk_profile": {
+            "series_read": 20,
+            "harmed_count": null,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0
+          },
+          "source_skill_id": null,
+          "admission": {
+            "admitted": false,
+            "rule": "bounded_risk_v1",
+            "reason": "aggregate_below_material_line",
+            "aggregate_gain": 2.220446049250313e-16,
+            "series_count": 20,
+            "harmed_fraction": 0.0,
+            "max_single_series_harm": 0.0
+          },
+          "resolved_serving_series_count": 10
+        }
+      ],
+      "harm_count": 0,
+      "risk_refusal_count": 1,
+      "approved_skill_id": null
+    }
+  ],
+  "approved_skill_ids": [],
+  "source_skills_for_a5": [],
+  "verdict": "A5_TREATMENT_EMPTY",
+  "stopping_rule_reading": "if the Source line forms zero Active Skills, stop and record it; do not run A5 as if it had a treatment",
+  "boundary": {
+    "llm_calls_before_transport_is_configured": 0,
+    "held_out_reads_before_all_arms_frozen": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "held_out_reads": 0
+  },
+  "sources": [
+    "p4x_admission_regime.json",
+    "p4y_oracle_scope_bound.json"
+  ]
+}

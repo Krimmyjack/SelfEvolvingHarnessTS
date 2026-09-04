@@ -1,0 +1,55 @@
+{
+  "planner_id": "llm_aux_channel_probe_v1",
+  "planner_runtime": "gpt-5.6-sol-high isolated subagent invocation",
+  "context_exposure": "AGGREGATE_SEEN",
+  "outcome_exposure_at_plan_time": "SEALED",
+  "program": "BIND_AUXILIARY_CONTEXT_CHANNEL",
+  "fallback": "IDENTITY",
+  "confirmation": "support_gain>0",
+  "targets": [
+    {
+      "dataset": "kdd_cup_2018",
+      "target": "CO",
+      "probe_order": ["NO2", "PM2.5"],
+      "fallback": "IDENTITY",
+      "confirmation": "support_gain>0",
+      "reason_codes": ["combustion_copollutant", "particulate_coupling"]
+    },
+    {
+      "dataset": "kdd_cup_2018",
+      "target": "SO2",
+      "probe_order": ["NO2", "PM10"],
+      "fallback": "IDENTITY",
+      "confirmation": "support_gain>0",
+      "reason_codes": ["combustion_copollutant", "aerosol_coupling"]
+    },
+    {
+      "dataset": "rideshare",
+      "target": "api_calls",
+      "probe_order": ["surge_mean", "price_mean"],
+      "fallback": "IDENTITY",
+      "confirmation": "support_gain>0",
+      "reason_codes": ["demand_pressure", "market_activity"]
+    },
+    {
+      "dataset": "rideshare",
+      "target": "temp",
+      "probe_order": ["humidity", "clouds"],
+      "fallback": "IDENTITY",
+      "confirmation": "support_gain>0",
+      "reason_codes": ["weather_coupling", "radiative_context"]
+    }
+  ],
+  "global_risk_notes": [
+    "directional_relatedness_only",
+    "high_harm_prior",
+    "exact_support_confirmation",
+    "no_zero_shot_claim"
+  ],
+  "forbidden_at_plan_time": [
+    "target_support_outcome",
+    "target_query_outcome",
+    "consumer_loss",
+    "program_result"
+  ]
+}

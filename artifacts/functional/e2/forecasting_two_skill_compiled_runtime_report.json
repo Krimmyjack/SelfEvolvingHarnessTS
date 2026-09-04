@@ -1,0 +1,175 @@
+{
+  "claim_limit": "Behavior-only live LLM test. The raw planner remains separately scored; a compiled PASS proves only that deterministic applicability and Risk contracts prevent an invalid plan from becoming executable behavior.",
+  "compute": {
+    "consumer_fit_count": 0,
+    "llm_api_call_count": 0
+  },
+  "decisions": [
+    {
+      "compiled_runtime_behavior_match": true,
+      "context_id": "forecast_general_regular_panel",
+      "deterministic_capability_id": "historical_policy_episode_workflow_v1",
+      "deterministic_decision": "RETRIEVE_AND_PROBE",
+      "input_summary": {
+        "consumer": "shared frozen Ridge",
+        "context_id": "forecast_general_regular_panel",
+        "current_support_feedback_available": true,
+        "known_seasonal_period": true,
+        "observable_natural_missing_mask": false,
+        "regular_panel": true,
+        "scale_valid": true,
+        "task": "forecasting"
+      },
+      "llm_capability_id": "historical_policy_episode_workflow_v1",
+      "llm_decision": "RETRIEVE_AND_PROBE",
+      "llm_workflow_steps": [
+        "retrieve phase-aligned historical PolicyEpisodes for W_rowblock/W_curation/W_temporal_origin",
+        "probe current Support in retrieved order",
+        "stop on first positive; otherwise IDENTITY"
+      ],
+      "raw_planner_behavior_match": true,
+      "runtime_action": "COMPILE_ALLOWED_WORKFLOW",
+      "runtime_capability_id": "historical_policy_episode_workflow_v1",
+      "runtime_decision": "RETRIEVE_AND_PROBE",
+      "runtime_workflow_steps": [
+        "retrieve phase-aligned historical PolicyEpisodes for W_rowblock/W_curation/W_temporal_origin",
+        "probe current Support in retrieved order",
+        "stop on first positive; otherwise IDENTITY"
+      ]
+    },
+    {
+      "compiled_runtime_behavior_match": true,
+      "context_id": "forecast_missing_mixed_reliable_history",
+      "deterministic_capability_id": "missing_window_weighting_workflow_v1",
+      "deterministic_decision": "RETRIEVE_AND_PROBE",
+      "input_summary": {
+        "consumer": "shared frozen Ridge",
+        "context_id": "forecast_missing_mixed_reliable_history",
+        "distinct_phase_aligned_historical_origins": 3,
+        "known_seasonal_period": true,
+        "mixed_reliable_and_unreliable_training_windows": true,
+        "observable_natural_missing_mask": true,
+        "regular_panel": true,
+        "scale_valid": true,
+        "task": "forecasting"
+      },
+      "llm_capability_id": "missing_window_weighting_workflow_v1",
+      "llm_decision": "RETRIEVE_AND_PROBE",
+      "llm_workflow_steps": [
+        "observe natural-missing training-window composition",
+        "retrieve Source PolicyEpisode to order ATTENUATE/EXCLUDE probes",
+        "confirm on at least two phase-aligned historical Target origins",
+        "stop on first positive; otherwise KEEP_ALL"
+      ],
+      "raw_planner_behavior_match": true,
+      "runtime_action": "COMPILE_ALLOWED_WORKFLOW",
+      "runtime_capability_id": "missing_window_weighting_workflow_v1",
+      "runtime_decision": "RETRIEVE_AND_PROBE",
+      "runtime_workflow_steps": [
+        "observe natural-missing training-window composition",
+        "retrieve Source PolicyEpisode to order ATTENUATE/EXCLUDE probes",
+        "confirm on at least two phase-aligned historical Target origins",
+        "stop on first positive; otherwise KEEP_ALL"
+      ]
+    },
+    {
+      "compiled_runtime_behavior_match": true,
+      "context_id": "forecast_missing_insufficient_history",
+      "deterministic_capability_id": "missing_window_weighting_workflow_v1",
+      "deterministic_decision": "RETRIEVE_AND_ABSTAIN",
+      "input_summary": {
+        "consumer": "shared frozen Ridge",
+        "context_id": "forecast_missing_insufficient_history",
+        "distinct_phase_aligned_historical_origins": 1,
+        "known_seasonal_period": true,
+        "mixed_reliable_and_unreliable_training_windows": true,
+        "observable_natural_missing_mask": true,
+        "regular_panel": true,
+        "scale_valid": true,
+        "task": "forecasting"
+      },
+      "llm_capability_id": "missing_window_weighting_workflow_v1",
+      "llm_decision": "RETRIEVE_AND_ABSTAIN",
+      "llm_workflow_steps": [
+        "ABSTAIN_KEEP_ALL"
+      ],
+      "raw_planner_behavior_match": true,
+      "runtime_action": "COMPILE_RISK_ABSTENTION",
+      "runtime_capability_id": "missing_window_weighting_workflow_v1",
+      "runtime_decision": "RETRIEVE_AND_ABSTAIN",
+      "runtime_workflow_steps": [
+        "ABSTAIN_KEEP_ALL"
+      ]
+    },
+    {
+      "compiled_runtime_behavior_match": true,
+      "context_id": "forecast_missing_no_actionable_geometry",
+      "deterministic_capability_id": null,
+      "deterministic_decision": "NO_APPLICABLE_SKILL",
+      "input_summary": {
+        "all_training_windows_unreliable": true,
+        "consumer": "shared frozen Ridge",
+        "context_id": "forecast_missing_no_actionable_geometry",
+        "current_support_feedback_available": false,
+        "known_seasonal_period": true,
+        "mixed_reliable_and_unreliable_training_windows": false,
+        "observable_natural_missing_mask": true,
+        "regular_panel": true,
+        "scale_valid": true,
+        "task": "forecasting"
+      },
+      "llm_capability_id": "missing_window_weighting_workflow_v1",
+      "llm_decision": "RETRIEVE_AND_ABSTAIN",
+      "llm_workflow_steps": [],
+      "raw_planner_behavior_match": false,
+      "runtime_action": "REJECT_INAPPLICABLE_SKILL_AND_NO_OP",
+      "runtime_capability_id": null,
+      "runtime_decision": "NO_APPLICABLE_SKILL",
+      "runtime_workflow_steps": []
+    },
+    {
+      "compiled_runtime_behavior_match": true,
+      "context_id": "classification_not_supported_by_forecast_skills",
+      "deterministic_capability_id": null,
+      "deterministic_decision": "NO_APPLICABLE_SKILL",
+      "input_summary": {
+        "consumer": "ridge-raw-plus-difference-v1",
+        "context_id": "classification_not_supported_by_forecast_skills",
+        "task": "classification"
+      },
+      "llm_capability_id": null,
+      "llm_decision": "NO_APPLICABLE_SKILL",
+      "llm_workflow_steps": [],
+      "raw_planner_behavior_match": true,
+      "runtime_action": "REJECT_INAPPLICABLE_SKILL_AND_NO_OP",
+      "runtime_capability_id": null,
+      "runtime_decision": "NO_APPLICABLE_SKILL",
+      "runtime_workflow_steps": []
+    }
+  ],
+  "experiment_id": "E2-LLM-same-task-applicability-runtime-compile",
+  "gate": {
+    "compiled_runtime_five_of_five": true,
+    "hard_contracts_satisfied": true,
+    "no_forbidden_fields": true,
+    "passed": true,
+    "raw_planner_five_of_five": false
+  },
+  "inputs": {
+    "capabilities": [
+      "artifacts/functional/e2/historical_policy_episode_workflow_capability.json",
+      "artifacts/functional/e2/missing_window_weighting_workflow_capability.json"
+    ],
+    "raw_time_series_or_experiment_outcomes_sent": false,
+    "synthetic_context_count": 5
+  },
+  "scientific_role": "same-task typed Skill retrieval and Risk compilation",
+  "source_live_plan": "artifacts/functional/e2/forecasting_two_skill_live_llm_plan.json",
+  "validation": {
+    "compiled_runtime_behavior_match_count": 5,
+    "contract_violations": [],
+    "forbidden_plan_fields": [],
+    "raw_planner_behavior_match_count": 4
+  },
+  "verdict": "LIVE_LLM_SAME_TASK_TWO_SKILL_RUNTIME_COMPILE_PASS"
+}

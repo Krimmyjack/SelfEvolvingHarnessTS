@@ -1,0 +1,118 @@
+{
+  "stage": "P4Z_RISK_REFUSAL_ROUTING",
+  "written_at": "2026-09-02T01:51:06.381679+08:00",
+  "evidence_grade": "DERIVED_BY_ENUMERATION_AND_FROM_SEALED_ARTIFACTS",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "fixed": {
+    "fault": "RISK_REFUSAL_INVISIBLE_TO_FAULT_ROUTER",
+    "what_was_wrong": "the admission gate computed the refusal reason and wrote it to the probe row; the fault router beneath it read only the aggregate gain.  A materially positive candidate refused on the tail budget matched neither branch: no winner, no Slow, and no harm_count -- a round of such candidates reported zero faults",
+    "change": "online_loop now recognises RISK_REFUSAL_REASONS, counts them in their own counter, records program/scope/per-series gains/reason, and admits them to the same Slow entry",
+    "harm_count_semantics_preserved": true,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "behaviour_locks": "tests/main_protocol/test_risk_refusal_routing.py",
+    "inert_under_the_default_policy": "strict refuses with relation_not_positive, which is not a budget reason, so a runner that installs no policy cannot observe the new path at all"
+  },
+  "next_fault": {
+    "fault": "NO_SCOPE_ATTRIBUTION_REACHABLE_FROM_THE_ONLINE_LOOP",
+    "holds": true,
+    "statement": "the refusal now reaches the router and the router has no cause it can emit for it: no input to route_program_supply_fault returns SCOPE_OVERREACH or RISK_GAP, and the online entry point additionally pins expressibility_status so it abstains unconditionally",
+    "declared_but_unreachable": {
+      "SCOPE_OVERREACH": {
+        "declared": true,
+        "actionability": "EDITABLE_M0",
+        "target_classes": [
+          "applicability"
+        ],
+        "allowed_skill_kinds": [
+          "capability"
+        ],
+        "allowed_operations": [
+          "PATCH"
+        ]
+      },
+      "RISK_GAP": {
+        "declared": true,
+        "actionability": "EDITABLE_M0",
+        "target_classes": [
+          "safety",
+          "deterministic_verification",
+          "capability_risk_guard"
+        ],
+        "allowed_skill_kinds": [
+          "safety",
+          "capability"
+        ],
+        "allowed_operations": [
+          "ADD",
+          "PATCH"
+        ]
+      }
+    },
+    "attribution_reachability": {
+      "input_combinations_enumerated": 384,
+      "route_fields": [
+        "expressibility_status",
+        "expressibility_cause",
+        "capability_skill_exists",
+        "skill_retrieved",
+        "constrained_proposal_succeeds"
+      ],
+      "reachable_causes": {
+        "CANDIDATE_SUPPLY_UNKNOWN": [
+          "EVIDENCE_BACKLOG"
+        ],
+        "EXPRESSIBILITY_UNKNOWN": [
+          "EVIDENCE_BACKLOG"
+        ],
+        "OBSERVABLE_DERIVATION_PROCEDURE_GAP": [
+          "EDITABLE_M0"
+        ],
+        "OBSERVABLE_FEATURE_SCHEMA_GAP": [
+          "OBSERVATION_CAPABILITY_BACKLOG"
+        ],
+        "OPERATOR_GAP": [
+          "CAPABILITY_BACKLOG"
+        ],
+        "PROPOSAL_CONTROL_GAP": [
+          "EDITABLE_M0"
+        ],
+        "SKILL_CONTENT_GAP": [
+          "EDITABLE_M0"
+        ],
+        "SKILL_LIBRARY_GAP": [
+          "EDITABLE_M0"
+        ]
+      },
+      "reachable_from_the_online_entry_point": [
+        "EXPRESSIBILITY_UNKNOWN"
+      ],
+      "online_expressibility_status_is_pinned_to": "EXPRESSIBILITY_UNKNOWN",
+      "scope_causes_reachable": []
+    },
+    "source_line_probe_facts": {
+      "probes": 9,
+      "probes_carrying_a_source_skill_id": 0,
+      "probes_a_risk_refusal_would_now_route": 7,
+      "why_it_matters": "both Scope/Risk causes PATCH a capability Skill's applicability or risk guards; a refused fresh proposal has no Skill, so even a correct attribution would have nothing to target"
+    },
+    "why_this_stops_here": "emitting a Scope cause for a Skill-less proposal means deciding what the PATCH targets when there is no Skill.  That is a design decision about what a Draft Skill means, not a wire, so it is reported rather than taken"
+  },
+  "boundary": {
+    "llm_calls_before_transport_is_configured": 0,
+    "held_out_reads_before_all_arms_frozen": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "llm_calls": 0,
+    "new_evaluations": 0,
+    "held_out_reads": 0,
+    "artifacts_overwritten": 0
+  },
+  "sources": [
+    "p4w_source_line.json",
+    "fault_routes.json",
+    "contracts/program_supply.py"
+  ]
+}

@@ -1,0 +1,1265 @@
+{
+  "protocol_version": "v1.2.1-Core",
+  "stage": "P2_FORECAST_SINGLE_FLOW_TREATMENT_WIRING",
+  "task": "forecast",
+  "evidence_grade": "MECHANISM",
+  "verdict": "P2_FORECAST_TREATMENT_WIRING_PASS__P3_INTEGRATION_RELEASED",
+  "p2_complete": true,
+  "release_p3": true,
+  "p3_complete": false,
+  "release_p4": false,
+  "live_outcome_release": false,
+  "release_scope": "P3 Classification/AD complete roster and vertical-slice integration only",
+  "upstream_p1": {
+    "source": "artifacts/main_protocol/p1_core_baseline_smoke_20260830.json",
+    "verdict": "P1_CORE_BASELINE_SMOKE_PASS__P2_FORECAST_PILOT_RELEASED",
+    "checks": {
+      "overall_p1_complete": true,
+      "release_p2": true,
+      "p2_not_precompleted": true,
+      "live_outcome_closed": true,
+      "query_closed": true,
+      "natural_final_closed": true,
+      "no_blocking_failures": true
+    },
+    "released_scope": "Forecast P2 single-flow pilot only"
+  },
+  "scope": {
+    "dataset": "KDD Cup 2018 with missing values",
+    "data_role": "EXPOSED_DEVELOPMENT_CONTROLLED_WITNESS",
+    "consumer_id": "pooled_ridge_a1",
+    "metric": "sMASE",
+    "support_a_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T106",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T112",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118"
+    ],
+    "support_b_series": [
+      "T119",
+      "T12",
+      "T120",
+      "T121",
+      "T122",
+      "T123",
+      "T125",
+      "T126",
+      "T127",
+      "T128",
+      "T129",
+      "T13",
+      "T131",
+      "T132",
+      "T133",
+      "T134",
+      "T135",
+      "T137",
+      "T138",
+      "T139"
+    ],
+    "support_a_count": 20,
+    "support_b_count": 20,
+    "support_faces_disjoint": true,
+    "real_consumer_origin": 936,
+    "horizon": 48,
+    "period": 24
+  },
+  "controlled_witness": {
+    "family": "corpus_level_one_shot_impulsive_outlier",
+    "faulty_face": "support_b_series",
+    "clean_face": "support_a_series",
+    "amplitude": 8.0,
+    "count_per_faulty_series": 40,
+    "seeds": [
+      7,
+      8
+    ],
+    "program": "hampel_filter",
+    "observation_block_equal_across_units": true,
+    "controlled_realizations_distinct": true,
+    "card_role": "SUPPLY_ONLY_MECHANISM_CONTROL",
+    "card_learned_from_source_evidence": false,
+    "requires_target_support": true,
+    "grants_execution": false,
+    "scientific_capability_evidence": false
+  },
+  "course": [
+    {
+      "decision_index": 1,
+      "unit_id": "forecast_p2_conflict",
+      "seed": 7,
+      "purpose": "positive_support_then_negative_delayed_revocation",
+      "support_face": "train_b_eval_a",
+      "delayed_face": "train_a_eval_b",
+      "real_consumer_origin": 936,
+      "query_evaluations": 0
+    },
+    {
+      "decision_index": 2,
+      "unit_id": "forecast_p2_reencounter",
+      "seed": 8,
+      "purpose": "same_visible_observation_after_carried_revocation",
+      "support_face": "train_b_eval_a",
+      "delayed_face": "train_a_eval_b",
+      "real_consumer_origin": 936,
+      "query_evaluations": 0
+    }
+  ],
+  "arm_contracts": {
+    "profile_choice": "four-arm diagnostic profile for this pilot",
+    "protocol_minimum_claim": false,
+    "Static": "identity only; no Harness lifecycle",
+    "A3-reset": "H0 each unit; unit state discarded",
+    "K0-fixed": "controlled initial state each unit; unit state discarded",
+    "A5-online": "same initial state as K0; accepted update carried",
+    "k0_a5_same_initial_semantic_state": true
+  },
+  "runs": [
+    {
+      "decision_index": 1,
+      "unit_id": "forecast_p2_conflict",
+      "seed": 7,
+      "arm": "Static",
+      "store_isolation_label": null,
+      "state_before": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": false,
+      "episodes_at_start": 0,
+      "episodes_written": [],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": false,
+        "controlled_card_scope_match": false,
+        "controlled_supply_count": 0,
+        "controlled_probe_count": 0,
+        "controlled_probe_gains": [],
+        "controlled_card_chosen": false,
+        "controlled_card_deployed": false,
+        "controlled_card_revoked": false,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 1,
+        "abstained": true,
+        "selected_steps": []
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "update": {
+        "kind": "NONE",
+        "accepted": false,
+        "production_revocation": false,
+        "activation_checked": false,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "NO_LIFECYCLE_STATIC",
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 0,
+        "agent_stage_calls": 0,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.0,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "Static_identity_only",
+        "online_round": false,
+        "delayed_gate": false,
+        "activation_gate_checked": false
+      }
+    },
+    {
+      "decision_index": 1,
+      "unit_id": "forecast_p2_conflict",
+      "seed": 7,
+      "arm": "A3-reset",
+      "store_isolation_label": "forecast_p2_conflict/A3-reset",
+      "state_before": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": false,
+      "episodes_at_start": 0,
+      "episodes_written": [],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": false,
+        "controlled_card_scope_match": false,
+        "controlled_supply_count": 0,
+        "controlled_probe_count": 0,
+        "controlled_probe_gains": [],
+        "controlled_card_chosen": false,
+        "controlled_card_deployed": false,
+        "controlled_card_revoked": false,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 1,
+        "abstained": true,
+        "selected_steps": []
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "update": {
+        "kind": "NONE",
+        "accepted": false,
+        "production_revocation": false,
+        "activation_checked": true,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "DISCARD_UNIT_STATE",
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 1,
+        "agent_stage_calls": 2,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.945,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "TTHAMethod",
+        "online_round": true,
+        "delayed_gate": true,
+        "activation_gate_checked": true
+      }
+    },
+    {
+      "decision_index": 1,
+      "unit_id": "forecast_p2_conflict",
+      "seed": 7,
+      "arm": "K0-fixed",
+      "store_isolation_label": "forecast_p2_conflict/K0-fixed",
+      "state_before": {
+        "skill_count": 4,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "p2_forecast_hampel_control_v1",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": true,
+          "revision": 1,
+          "task_scope": "forecast",
+          "requires_target_support": true,
+          "supplies_candidates": true,
+          "grants_execution": false
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": true,
+      "episodes_at_start": 0,
+      "episodes_written": [
+        {
+          "episode_id": "forecast_p2_conflict_target_p2_forecast_hampel_control_v1_forecast_p2_conflict_k0_fixed_p1",
+          "source_skill_id": "p2_forecast_hampel_control_v1",
+          "relation": "NEGATIVE",
+          "local_status": "EPISODE_ONLY",
+          "support_gain": 1.7547956437077405,
+          "delayed_gain": -0.15189708424945625
+        }
+      ],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": true,
+        "controlled_card_scope_match": true,
+        "controlled_supply_count": 1,
+        "controlled_probe_count": 1,
+        "controlled_probe_gains": [
+          1.7547956437077405
+        ],
+        "controlled_card_chosen": true,
+        "controlled_card_deployed": true,
+        "controlled_card_revoked": true,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 2,
+        "abstained": false,
+        "selected_steps": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ]
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "POSITIVE",
+        "gain": 1.7547956437077405
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NEGATIVE",
+        "gain": -0.15189708424945625
+      },
+      "update": {
+        "kind": "REVOKE_CONTROLLED_SUPPLY_CARD",
+        "accepted": true,
+        "production_revocation": true,
+        "activation_checked": true,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "DISCARD_UNIT_STATE",
+      "usage": {
+        "support_a_full_evaluations": 1,
+        "support_b_full_evaluations": 1,
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 4,
+        "raw_consumer_fits_by_face": {
+          "support_a": 2,
+          "support_b": 2
+        },
+        "cheap_probes": 4,
+        "agent_stage_calls": 3,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 1,
+        "wall_seconds": 1.488,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "TTHAMethod",
+        "online_round": true,
+        "delayed_gate": true,
+        "activation_gate_checked": true
+      }
+    },
+    {
+      "decision_index": 1,
+      "unit_id": "forecast_p2_conflict",
+      "seed": 7,
+      "arm": "A5-online",
+      "store_isolation_label": "forecast_p2_conflict/A5-online",
+      "state_before": {
+        "skill_count": 4,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "p2_forecast_hampel_control_v1",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": true,
+          "revision": 1,
+          "task_scope": "forecast",
+          "requires_target_support": true,
+          "supplies_candidates": true,
+          "grants_execution": false
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": true,
+      "episodes_at_start": 0,
+      "episodes_written": [
+        {
+          "episode_id": "forecast_p2_conflict_target_p2_forecast_hampel_control_v1_forecast_p2_conflict_a5_online_p1",
+          "source_skill_id": "p2_forecast_hampel_control_v1",
+          "relation": "NEGATIVE",
+          "local_status": "EPISODE_ONLY",
+          "support_gain": 1.7547956437077405,
+          "delayed_gain": -0.15189708424945625
+        }
+      ],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": true,
+        "controlled_card_scope_match": true,
+        "controlled_supply_count": 1,
+        "controlled_probe_count": 1,
+        "controlled_probe_gains": [
+          1.7547956437077405
+        ],
+        "controlled_card_chosen": true,
+        "controlled_card_deployed": true,
+        "controlled_card_revoked": true,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 2,
+        "abstained": false,
+        "selected_steps": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ]
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "POSITIVE",
+        "gain": 1.7547956437077405
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NEGATIVE",
+        "gain": -0.15189708424945625
+      },
+      "update": {
+        "kind": "REVOKE_CONTROLLED_SUPPLY_CARD",
+        "accepted": true,
+        "production_revocation": true,
+        "activation_checked": true,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": true
+      },
+      "boundary_action": "CARRY_EVOLVED_STATE",
+      "usage": {
+        "support_a_full_evaluations": 1,
+        "support_b_full_evaluations": 1,
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 4,
+        "raw_consumer_fits_by_face": {
+          "support_a": 2,
+          "support_b": 2
+        },
+        "cheap_probes": 4,
+        "agent_stage_calls": 3,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 1,
+        "wall_seconds": 1.477,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "TTHAMethod",
+        "online_round": true,
+        "delayed_gate": true,
+        "activation_gate_checked": true
+      }
+    },
+    {
+      "decision_index": 2,
+      "unit_id": "forecast_p2_reencounter",
+      "seed": 8,
+      "arm": "Static",
+      "store_isolation_label": null,
+      "state_before": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": false,
+      "episodes_at_start": 0,
+      "episodes_written": [],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": false,
+        "controlled_card_scope_match": false,
+        "controlled_supply_count": 0,
+        "controlled_probe_count": 0,
+        "controlled_probe_gains": [],
+        "controlled_card_chosen": false,
+        "controlled_card_deployed": false,
+        "controlled_card_revoked": false,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 1,
+        "abstained": true,
+        "selected_steps": []
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "update": {
+        "kind": "NONE",
+        "accepted": false,
+        "production_revocation": false,
+        "activation_checked": false,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "NO_LIFECYCLE_STATIC",
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 0,
+        "agent_stage_calls": 0,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.0,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "Static_identity_only",
+        "online_round": false,
+        "delayed_gate": false,
+        "activation_gate_checked": false
+      }
+    },
+    {
+      "decision_index": 2,
+      "unit_id": "forecast_p2_reencounter",
+      "seed": 8,
+      "arm": "A3-reset",
+      "store_isolation_label": "forecast_p2_reencounter/A3-reset",
+      "state_before": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": false,
+      "episodes_at_start": 0,
+      "episodes_written": [],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": false,
+        "controlled_card_scope_match": false,
+        "controlled_supply_count": 0,
+        "controlled_probe_count": 0,
+        "controlled_probe_gains": [],
+        "controlled_card_chosen": false,
+        "controlled_card_deployed": false,
+        "controlled_card_revoked": false,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 1,
+        "abstained": true,
+        "selected_steps": []
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "update": {
+        "kind": "NONE",
+        "accepted": false,
+        "production_revocation": false,
+        "activation_checked": true,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "DISCARD_UNIT_STATE",
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 1,
+        "agent_stage_calls": 2,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.952,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "TTHAMethod",
+        "online_round": true,
+        "delayed_gate": true,
+        "activation_gate_checked": true
+      }
+    },
+    {
+      "decision_index": 2,
+      "unit_id": "forecast_p2_reencounter",
+      "seed": 8,
+      "arm": "K0-fixed",
+      "store_isolation_label": "forecast_p2_reencounter/K0-fixed",
+      "state_before": {
+        "skill_count": 4,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "p2_forecast_hampel_control_v1",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": true,
+          "revision": 1,
+          "task_scope": "forecast",
+          "requires_target_support": true,
+          "supplies_candidates": true,
+          "grants_execution": false
+        }
+      },
+      "state_after": {
+        "skill_count": 4,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "p2_forecast_hampel_control_v1",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": true,
+          "revision": 1,
+          "task_scope": "forecast",
+          "requires_target_support": true,
+          "supplies_candidates": true,
+          "grants_execution": false
+        }
+      },
+      "semantic_state_changed": false,
+      "episodes_at_start": 0,
+      "episodes_written": [
+        {
+          "episode_id": "forecast_p2_reencounter_target_p2_forecast_hampel_control_v1_forecast_p2_reencounter_k0_fixed_p1",
+          "source_skill_id": "p2_forecast_hampel_control_v1",
+          "relation": "CONFLICT",
+          "local_status": "RESTRICTED",
+          "support_gain": 1.7078289000880904,
+          "delayed_gain": 0.24649069674888135
+        }
+      ],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": true,
+        "controlled_card_scope_match": true,
+        "controlled_supply_count": 1,
+        "controlled_probe_count": 1,
+        "controlled_probe_gains": [
+          1.7078289000880904
+        ],
+        "controlled_card_chosen": true,
+        "controlled_card_deployed": true,
+        "controlled_card_revoked": false,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 2,
+        "abstained": false,
+        "selected_steps": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ]
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "POSITIVE",
+        "gain": 1.7078289000880904
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "CONFLICT",
+        "gain": 0.24649069674888135
+      },
+      "update": {
+        "kind": "NONE",
+        "accepted": false,
+        "production_revocation": false,
+        "activation_checked": true,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "DISCARD_UNIT_STATE",
+      "usage": {
+        "support_a_full_evaluations": 1,
+        "support_b_full_evaluations": 1,
+        "full_support_evaluations": 2,
+        "raw_consumer_fits": 4,
+        "raw_consumer_fits_by_face": {
+          "support_a": 2,
+          "support_b": 2
+        },
+        "cheap_probes": 4,
+        "agent_stage_calls": 3,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 1.343,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "TTHAMethod",
+        "online_round": true,
+        "delayed_gate": true,
+        "activation_gate_checked": true
+      }
+    },
+    {
+      "decision_index": 2,
+      "unit_id": "forecast_p2_reencounter",
+      "seed": 8,
+      "arm": "A5-online",
+      "store_isolation_label": "forecast_p2_reencounter/A5-online",
+      "state_before": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "state_after": {
+        "skill_count": 3,
+        "skill_ids": [
+          "build_contrastive_candidates",
+          "inspect_and_localize",
+          "select_or_identity_and_verify"
+        ],
+        "controlled_card": {
+          "present": false,
+          "revision": null,
+          "task_scope": null,
+          "requires_target_support": null,
+          "supplies_candidates": null,
+          "grants_execution": null
+        }
+      },
+      "semantic_state_changed": false,
+      "episodes_at_start": 1,
+      "episodes_written": [],
+      "context": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE",
+        "observation_points": 936,
+        "pattern": {
+          "estimated_level_offset": "high",
+          "estimated_region_end_fraction": "high",
+          "estimated_region_start_fraction": "zero",
+          "level_excursion_score": "high",
+          "level_region_end_fraction": "very_low",
+          "level_region_fraction": "very_low",
+          "local_robust_z_peak": "high",
+          "longest_missing_run_fraction": "zero",
+          "missing_fraction": "zero",
+          "outlier_region_end_fraction": "very_low",
+          "period_change_score": "zero",
+          "period_evidence_status": "OK",
+          "period_reliability": "high",
+          "task_kind": "forecast"
+        }
+      },
+      "trace": {
+        "retrieved_controlled_card": false,
+        "controlled_card_scope_match": false,
+        "controlled_supply_count": 0,
+        "controlled_probe_count": 0,
+        "controlled_probe_gains": [],
+        "controlled_card_chosen": false,
+        "controlled_card_deployed": false,
+        "controlled_card_revoked": false,
+        "autonomous_nonidentity_candidate_count": 0,
+        "candidate_count": 1,
+        "abstained": true,
+        "selected_steps": []
+      },
+      "support_a": {
+        "face_id": "support_a_train_b_eval_a",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "support_b": {
+        "face_id": "support_b_train_a_eval_b",
+        "relation": "NOT_EVALUATED",
+        "gain": null
+      },
+      "update": {
+        "kind": "NONE",
+        "accepted": false,
+        "production_revocation": false,
+        "activation_checked": true,
+        "activation_succeeded": false,
+        "retained_at_unit_boundary": false
+      },
+      "boundary_action": "CARRY_EVOLVED_STATE",
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "full_support_evaluations": 0,
+        "raw_consumer_fits": 0,
+        "raw_consumer_fits_by_face": {
+          "support_a": 0,
+          "support_b": 0
+        },
+        "cheap_probes": 1,
+        "agent_stage_calls": 2,
+        "external_llm_calls": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.932,
+        "within_caps": true
+      },
+      "boundary_counts": {
+        "development_query_evaluations": 0,
+        "natural_final_outcome_reads": 0,
+        "traffic_loader_invocations": 0,
+        "solar_loader_invocations": 0,
+        "query_feedback_events": 0
+      },
+      "lifecycle": {
+        "method_entry": "TTHAMethod",
+        "online_round": true,
+        "delayed_gate": true,
+        "activation_gate_checked": true
+      }
+    }
+  ],
+  "treatment_gate": {
+    "status": "TREATMENT_WIRING_NONEMPTY",
+    "treatment_nonempty": true,
+    "producer_decision_index": 1,
+    "reencounter_decision_index": 2,
+    "update_semantics": "production_delayed_harm_revocation",
+    "influence_axis": "carried_revocation_withholds_supply_probe_and_changes_abstain",
+    "failures": []
+  },
+  "rq3_event_gate": {
+    "status": "CONTROLLED_POSITIVE_NEGATIVE_REENCOUNTER_EXERCISED",
+    "online_evolution_positive_claim": false,
+    "reason": "controlled mechanism event only; no utility or repetition claim"
+  },
+  "budget_caps": {
+    "full_support_evaluations": 4,
+    "support_a_full_evaluations": 3,
+    "support_b_full_evaluations": 1,
+    "cheap_probes": 12,
+    "agent_stage_calls": 4,
+    "external_llm_calls": 4,
+    "tokens": 40000,
+    "accepted_updates": 1,
+    "raw_consumer_fits": "REPORTED_SEPARATELY_NOT_A_B4_GATE"
+  },
+  "budget_gate": {
+    "status": "PASS",
+    "failures": [],
+    "external_llm_calls": 0,
+    "tokens": 0
+  },
+  "boundaries": {
+    "development_query_evaluations": 0,
+    "natural_final_outcome_reads": 0,
+    "traffic_loader_invocations": 0,
+    "solar_loader_invocations": 0,
+    "query_feedback_events": 0,
+    "heldout_fast_only_claim": false,
+    "freeze_api_claim": false
+  },
+  "protocol_errors": {
+    "development_query_evaluations": 0,
+    "natural_final_outcome_reads": 0,
+    "traffic_loader_invocations": 0,
+    "solar_loader_invocations": 0,
+    "query_feedback_events": 0,
+    "task_mismatch_execution": 0,
+    "direct_controlled_card_deployment": 0,
+    "uncontrolled_agent_candidates": 0
+  },
+  "blocking_failures": [],
+  "claim_boundaries": {
+    "unified_runner_wiring": true,
+    "treatment_wiring_nonempty": true,
+    "performance_claim": false,
+    "headroom_claim": false,
+    "natural_data_capability_claim": false,
+    "source_transfer_capability_claim": false,
+    "p4_evolution_release": false,
+    "natural_final_release": false
+  },
+  "wall_seconds": 26.941
+}

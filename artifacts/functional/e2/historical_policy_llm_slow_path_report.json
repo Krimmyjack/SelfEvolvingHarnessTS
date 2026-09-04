@@ -1,0 +1,97 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "Development mechanism result on exposed categorical first faults. A PASS shows that the project-side LLM can propose the already validated typed Observation/Control update from empty Capability Memory; it does not make the old Target evidence fresh or prove autonomous invention on a new family.",
+  "compiled_capability_behavior_checks": {
+    "control_equivalent": true,
+    "observation_equivalent": true,
+    "risk_equivalent": true,
+    "workflow_supply_equivalent": true
+  },
+  "compiled_typed_patch": {
+    "operations": [
+      {
+        "operation": "ADD_OBSERVATION",
+        "value": "phase_aligned_historical_policy_episode"
+      },
+      {
+        "operation": "PATCH_CONTROL",
+        "value": "stop_on_first_positive"
+      }
+    ],
+    "patch_id": "slow_path_phase_stop_v1",
+    "unchanged": [
+      "program_supply",
+      "consumer",
+      "metric",
+      "memory_schema"
+    ]
+  },
+  "compute": {
+    "consumer_fit_count": 0,
+    "llm_api_call_count": 1
+  },
+  "downstream_evidence_reused_without_refit": {
+    "development_patch_replay": "historical_policy_stop_on_first_positive_replay_report.json",
+    "memory_read_replay": "historical_policy_episode_capability_memory_replay_report.json",
+    "new_target_memory_execution": "kdd_historical_policy_skill_memory_target_report.json"
+  },
+  "experiment_id": "E2-live-LLM-historical-policy-Slow-Path",
+  "gate": {
+    "passed": true
+  },
+  "inputs": {
+    "dataset_identities_sent": false,
+    "effect_magnitudes_sent": false,
+    "failure_count": 2,
+    "initial_capability_memory_empty": true,
+    "internal_report_sent": false,
+    "raw_time_series_sent": false
+  },
+  "llm_plan": {
+    "consumer_changes": [],
+    "diagnosis": {
+      "first_fault_codes": [
+        "GLOBAL_WORKFLOW_ORDER_NOT_TARGET_CONTEXTUALIZED",
+        "CONFIRMED_POSITIVE_WORKFLOW_OVERWRITTEN"
+      ],
+      "why_one_patch_needs_both_operations": "The observation must expose target-contextual phase-aligned historical PolicyEpisodes, and the update policy must preserve the first confirmed positive Workflow instead of allowing later probes to overwrite it."
+    },
+    "expected_behavior_change": "The Harness can select a useful phase-aligned Workflow before global Source order delays it, then retain the first confirmed positive Workflow once found.",
+    "falsification_condition": "If phase-aligned historical PolicyEpisodes are available and a positive Workflow is confirmed, but selection still follows global Source order or a later probe overwrites the confirmed positive Workflow, the patch is falsified.",
+    "memory_schema_changes": [],
+    "metric_changes": [],
+    "new_programs": [],
+    "operations": [
+      {
+        "operation": "ADD_OBSERVATION",
+        "target_surface": "observation",
+        "value": "phase_aligned_historical_policy_episode"
+      },
+      {
+        "operation": "PATCH_CONTROL",
+        "target_surface": "harness_update_policy",
+        "value": "stop_on_first_positive"
+      }
+    ],
+    "patch_id": "slow_path_phase_stop_v1",
+    "provider": {
+      "base_url": "https://api.agicto.cn/v1",
+      "completion_tokens": 242,
+      "prompt_tokens": 4855,
+      "requested_model": "gpt-5.5",
+      "returned_model": "gpt-5.5"
+    }
+  },
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 242,
+    "prompt_tokens": 4855,
+    "requested_model": "gpt-5.5",
+    "returned_model": "gpt-5.5"
+  },
+  "scientific_role": "natural FailurePatternCard to typed Harness patch",
+  "validation": {
+    "contract_violations": []
+  },
+  "verdict": "LIVE_LLM_FAILURE_TO_TYPED_CAPABILITY_UPDATE_PASS"
+}

@@ -1,0 +1,137 @@
+{
+  "stage": "P4O_SCOPED_SERVING_PREFLIGHT",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T18:20:54.110344+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_CONTRACT_CHECK",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "origin_probed": 1176,
+  "boundary": {
+    "llm_calls": 0,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "frozen_evaluator_modified": false,
+    "harness_runs": 0
+  },
+  "surfaces": {
+    "train_context_and_target": "prepared, as the frozen path did",
+    "serve_context": "prepared causally from raw[origin-192:origin]",
+    "evaluation_truth": "always raw, missing-aware sMASE on 48 steps"
+  },
+  "gates": {
+    "gate_1_static_equivalence": {
+      "rows": [
+        {
+          "face": "support_a",
+          "max_difference": 0.0,
+          "consumer_fits": 1
+        },
+        {
+          "face": "support_b",
+          "max_difference": 0.0,
+          "consumer_fits": 1
+        }
+      ],
+      "max_difference": 0.0,
+      "passed": true,
+      "reading": "no Program: the new evaluator is the frozen path"
+    },
+    "gate_2_train_only_equivalence": {
+      "rows": [
+        {
+          "face": "support_a",
+          "max_difference": 0.0,
+          "behavior_matches": true
+        },
+        {
+          "face": "support_b",
+          "max_difference": 0.0,
+          "behavior_matches": true
+        }
+      ],
+      "max_difference": 0.0,
+      "passed": true,
+      "reading": "train_only reproduces P4D/P4M exactly"
+    },
+    "gate_3_empty_scope_is_static": {
+      "rows": [
+        {
+          "face": "support_a",
+          "max_difference_vs_static": 0.0,
+          "program_pipeline_used": false,
+          "consumer_fits": 1
+        },
+        {
+          "face": "support_b",
+          "max_difference_vs_static": 0.0,
+          "program_pipeline_used": false,
+          "consumer_fits": 1
+        }
+      ],
+      "passed": true,
+      "reading": "declining to treat anything gives literally Static"
+    },
+    "gate_4_unscoped_series_are_untouched": {
+      "rows": [
+        {
+          "face": "support_a",
+          "scope_size": 10,
+          "unscoped_max_difference_vs_static": 0.0,
+          "scoped_series_that_moved": 10,
+          "scoped_series": 10
+        },
+        {
+          "face": "support_b",
+          "scope_size": 10,
+          "unscoped_max_difference_vs_static": 0.0,
+          "scoped_series_that_moved": 10,
+          "scoped_series": 10
+        }
+      ],
+      "passed": true,
+      "reading": "under a partial scope the declined series are bit-identical to Static and the treated series move -- the property a training-row scope could not provide"
+    },
+    "gate_5_causality": {
+      "rows": [
+        {
+          "face": "support_a",
+          "max_difference_after_future_perturbation": 0.0
+        },
+        {
+          "face": "support_b",
+          "max_difference_after_future_perturbation": 0.0
+        }
+      ],
+      "passed": true,
+      "reading": "nothing beyond the scored horizon reaches a reading"
+    },
+    "gate_6_billing": {
+      "rows": [
+        {
+          "face": "support_a",
+          "no_program": 1,
+          "empty_scope": 1,
+          "partial_scope": 2
+        },
+        {
+          "face": "support_b",
+          "no_program": 1,
+          "empty_scope": 1,
+          "partial_scope": 2
+        }
+      ],
+      "passed": true,
+      "reading": "two pipelines cost two Consumer fits and are reported"
+    },
+    "gate_7_classification_parity": {
+      "passed": false,
+      "status": "NOT_YET_IMPLEMENTED",
+      "required_change": "MacroF1ConsumerAdapter must prepare cell.surface(face) with the same steps it applies in _prepared_fit, keep labels raw, and fit a second raw model so unscoped instances are bit-identical to Static",
+      "reading": "the Forecast side is ready; Classification still serves unprepared features and has no raw fallback pipeline"
+    }
+  },
+  "failed_gates": [
+    "gate_7_classification_parity"
+  ],
+  "verdict": "FORECAST_SCOPED_SERVING_READY",
+  "releases": "the Forecast serving contract only; ScopeSpec and the lifecycle preflight are still required before any Harness run"
+}

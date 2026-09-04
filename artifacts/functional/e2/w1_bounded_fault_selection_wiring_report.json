@@ -1,0 +1,83 @@
+{
+  "experiment_id": "v1-bounded-fault-selection-wiring",
+  "note": "S1：受限五类选择题接口接线 witness（修订版用户裁决：taxonomy/allowed 分离、proposed_case_action 无写入权、两调用 T117+T105）。verdict 仅限 WIRING_PASS——不证明五类归因可靠、不证明 Case Memory 有收益——development exposure——零新 Claim",
+  "model": "gpt-5.6-luna",
+  "base_url": "https://api.agicto.cn/v1",
+  "temperature": 0,
+  "records": [
+    {
+      "call_id": "t117",
+      "allowed_fault_types": [
+        "SCOPE_MEMORY_RISK_ERROR"
+      ],
+      "expected": {
+        "fault_type": "SCOPE_MEMORY_RISK_ERROR",
+        "matched_case_id": "case-0002"
+      },
+      "llm_calls": 1,
+      "checks": {
+        "structure_valid": true,
+        "no_masked_selection": true,
+        "evidence_refs_resolvable": true,
+        "matched_case_in_retrieval": true,
+        "runtime_reconciliation": "MATCH_ADD_EVIDENCE",
+        "proposed_action": "MATCH_ADD_EVIDENCE",
+        "agent_answer": {
+          "fault_type": "SCOPE_MEMORY_RISK_ERROR",
+          "proposed_case_action": "MATCH_ADD_EVIDENCE",
+          "matched_case_id": "case-0002",
+          "evidence_refs": [
+            "ep:T117@888",
+            "ep:T117@984",
+            "alt:hampel@888",
+            "alt:hampel@984",
+            "delayed:T117@1032"
+          ],
+          "reason": "The hampel replacement passed Support replay at origins 888 and 984 but failed delayed validation at origin 1032, matching the documented temporal/scope-risk pattern in case-0002."
+        }
+      }
+    },
+    {
+      "call_id": "t105",
+      "allowed_fault_types": [],
+      "expected": {
+        "fault_type": "NO_ACTIONABLE_FAULT",
+        "matched_case_id": "case-0003"
+      },
+      "llm_calls": 1,
+      "checks": {
+        "structure_valid": true,
+        "no_masked_selection": true,
+        "evidence_refs_resolvable": true,
+        "matched_case_in_retrieval": false,
+        "runtime_reconciliation": null,
+        "proposed_action": "CONFLICT_WITH_EXISTING",
+        "agent_answer": {
+          "fault_type": "INSUFFICIENT_EVIDENCE",
+          "proposed_case_action": "CONFLICT_WITH_EXISTING",
+          "matched_case_id": "case-0003",
+          "evidence_refs": [
+            "ep:T105@792",
+            "ep:T105@984",
+            "ep:T105@600",
+            "alt:outlier_mad@792",
+            "alt:outlier_mad@984",
+            "alt:outlier_mad@600",
+            "alt:hampel_filter@792",
+            "alt:hampel_filter@984",
+            "alt:hampel_filter@600"
+          ],
+          "reason": "The evidence conflicts with case-0003's claim that both alternatives failed on every window: hampel_filter has a positive replay gain at T105@600, although no candidate passes all three windows. Thus the measured facts do not establish a fully empty action space or another selectable fault class."
+        }
+      }
+    }
+  ],
+  "pass_conditions": {
+    "structure_2of2": true,
+    "no_masked_selection_2of2": true,
+    "evidence_refs_2of2": true,
+    "runtime_reconciliation_normal": false,
+    "no_write_permission": true
+  },
+  "verdict": "PROTOCOL_FAILURE"
+}

@@ -1,0 +1,44 @@
+{
+  "bound_params": {
+    "estimated_offset": 24.242059672762338,
+    "region_end_fraction": 0.7298387096774194,
+    "region_start_fraction": 0.5282258064516129
+  },
+  "cohort_offset": 40,
+  "dataset": "uci_electricity_load_diagrams",
+  "experiment_id": "v1-level-shift-candidate-availability-test",
+  "llm_api_call_count": 3,
+  "origin": 744,
+  "runs": [
+    {
+      "chosen": "identity",
+      "label": "control",
+      "pool": [
+        "identity",
+        "cand_denoise_median"
+      ],
+      "rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"change.median_normalized_seasonal_residual_delta\",\"change.median_acf_at_calendar_period_delta\"],\"rationale\":\"Choose the identity reference for the budgeted Support probe: coverage is complete, there are no missing runs, and the observed preprocessing changes provide no signed experience or cle"
+    },
+    {
+      "chosen": "cand_repair_level_shift",
+      "label": "treatment_1",
+      "pool": [
+        "identity",
+        "cand_denoise_median",
+        "cand_repair_level_shift"
+      ],
+      "rationale": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"change.median_normalized_seasonal_residual_delta\",\"change.median_robust_scale_delta\",\"change.median_robust_center_delta\",\"change.median_acf_at_calendar_period_delta\"],\"rationale\":\"The level-shift repair shows meaningful improvement in normalized seasonal residual (-0.031112) and robust scale (-6.700456), with a plausible center adj"
+    },
+    {
+      "chosen": "cand_repair_level_shift",
+      "label": "treatment_2",
+      "pool": [
+        "identity",
+        "cand_denoise_median",
+        "cand_repair_level_shift"
+      ],
+      "rationale": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"change.median_normalized_seasonal_residual_delta\",\"change.median_robust_center_delta\",\"change.median_robust_scale_delta\",\"recent.median_normalized_seasonal_residual\"],\"rationale\":\"The level-shift repair shows the strongest useful signal: seasonal residual decreased by 0.031112 and robust scale decreased by 6.700456, while coverage "
+    }
+  ],
+  "verdict": "SELECTOR_SUPPLY_FIRST_FAULT"
+}

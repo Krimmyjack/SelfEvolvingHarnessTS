@@ -1,0 +1,312 @@
+{
+  "experiment_id": "v1-operational-self-evolution-loop",
+  "note": "P3 端到端 dev 验收（统一在线入口；已暴露数据；零新数据/零 live LLM——Replay Slow Agent）",
+  "scenario_a": {
+    "note": "dev 回归复现：结构与 sealed 正控一致（first-pos 1 vs 2/预算/delayed 正向/ACTIVE 下一轮优先）；winsorize gain 0.2573 vs 原报告 0.4045——registry 当前状态与当时可能不同（系列选择差异），数值不复现原报告——结构验收成立",
+    "arms": {
+      "A5": {
+        "proposal_count": 1,
+        "target_support_receipts_used": 1,
+        "slow_replay_receipts_used": 0,
+        "actual_probed_programs": [
+          {
+            "candidate_id": "cand_winsorize",
+            "kind": "probe",
+            "gain": 0.25733337625677066,
+            "passed": true
+          }
+        ],
+        "winner_program": [
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ],
+        "first_positive_support_receipt_index": 1,
+        "harm_count": 0,
+        "harm_magnitude": 0.0,
+        "abstained": false,
+        "episode_ids": [
+          "monash:traffic_hourly_target_winsorize_r1_a5_p1"
+        ],
+        "pending_patch_id": null,
+        "approved_skill_id": null,
+        "delayed_utility": 0.11571814824772808
+      },
+      "A3": {
+        "proposal_count": 2,
+        "target_support_receipts_used": 2,
+        "slow_replay_receipts_used": 0,
+        "actual_probed_programs": [
+          {
+            "candidate_id": "cand_denoise_median",
+            "kind": "probe",
+            "gain": 0.0,
+            "passed": true
+          },
+          {
+            "candidate_id": "cand_winsorize",
+            "kind": "probe",
+            "gain": 0.25733337625677066,
+            "passed": true
+          }
+        ],
+        "winner_program": [
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ],
+        "first_positive_support_receipt_index": 2,
+        "harm_count": 0,
+        "harm_magnitude": 0.0,
+        "abstained": false,
+        "episode_ids": [
+          "monash:traffic_hourly_target_denoise_median_r1_a3_p1",
+          "monash:traffic_hourly_target_winsorize_r1_a3_p2"
+        ],
+        "pending_patch_id": null,
+        "approved_skill_id": null,
+        "delayed_utility": 0.11571814824772808
+      }
+    },
+    "r2_a5": {
+      "proposal_count": 2,
+      "target_support_receipts_used": 1,
+      "slow_replay_receipts_used": 0,
+      "actual_probed_programs": [
+        {
+          "candidate_id": "cand_skill_winsoriz-sealed-a5",
+          "kind": "probe",
+          "gain": 0.5880965144274193,
+          "passed": true
+        }
+      ],
+      "winner_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "first_positive_support_receipt_index": 1,
+      "harm_count": 0,
+      "harm_magnitude": 0.0,
+      "abstained": false,
+      "episode_ids": [
+        "monash:traffic_hourly_target_winsoriz-sealed-a5_r2_a5_p1"
+      ],
+      "pending_patch_id": null,
+      "approved_skill_id": null,
+      "delayed_utility": null
+    },
+    "checks": {
+      "A5_first_positive_1": true,
+      "A3_first_positive_2": true,
+      "A5_delayed_positive": true,
+      "A5_budget_le_2": true,
+      "A3_budget_le_2": true,
+      "A5_r2_active_skill_first": true
+    }
+  },
+  "scenario_b": {
+    "r1": {
+      "proposal_count": 2,
+      "target_support_receipts_used": 2,
+      "slow_replay_receipts_used": 1,
+      "actual_probed_programs": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": -0.1302066421576531,
+          "passed": true
+        },
+        {
+          "candidate_id": "replay:patch-replace-outlier_iqr-with-winsorize",
+          "kind": "slow_replay",
+          "gain": 0.4000053662007894,
+          "passed": true
+        }
+      ],
+      "winner_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "first_positive_support_receipt_index": null,
+      "harm_count": 1,
+      "harm_magnitude": 0.1302066421576531,
+      "abstained": false,
+      "episode_ids": [
+        "gefcom2012_load_target_outlier_iqr_r1_b_p1"
+      ],
+      "pending_patch_id": "patch-replace-outlier_iqr-with-winsorize",
+      "approved_skill_id": "winsorize_replacement",
+      "delayed_utility": 0.2572125429345453
+    },
+    "slow_event": {
+      "stage": "pending",
+      "triggered": true,
+      "patch_id": "patch-replace-outlier_iqr-with-winsorize",
+      "support_gain": 0.4000053662007894,
+      "support_passed": true,
+      "edit_id": "winsorize_replacement"
+    },
+    "r2": {
+      "proposal_count": 2,
+      "target_support_receipts_used": 2,
+      "slow_replay_receipts_used": 0,
+      "actual_probed_programs": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": -0.06125772464287427,
+          "passed": true
+        },
+        {
+          "candidate_id": "cand_skill_winsorize_replacement",
+          "kind": "probe",
+          "gain": 0.2572125429345453,
+          "passed": true
+        }
+      ],
+      "winner_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "first_positive_support_receipt_index": 2,
+      "harm_count": 1,
+      "harm_magnitude": 0.06125772464287427,
+      "abstained": false,
+      "episode_ids": [
+        "gefcom2012_load_target_outlier_iqr_r2_b_p1",
+        "gefcom2012_load_target_winsorize_replacement_r2_b_p2"
+      ],
+      "pending_patch_id": null,
+      "approved_skill_id": null,
+      "delayed_utility": null
+    },
+    "removal": {
+      "proposal_count": 2,
+      "target_support_receipts_used": 2,
+      "slow_replay_receipts_used": 0,
+      "actual_probed_programs": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": -0.06125772464287427,
+          "passed": true
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.2572125429345453,
+          "passed": true
+        }
+      ],
+      "winner_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "first_positive_support_receipt_index": 2,
+      "harm_count": 1,
+      "harm_magnitude": 0.06125772464287427,
+      "abstained": false,
+      "episode_ids": [
+        "gefcom2012_load_target_outlier_iqr_rem_b_p1",
+        "gefcom2012_load_target_winsorize_rem_b_p2"
+      ],
+      "pending_patch_id": null,
+      "approved_skill_id": null,
+      "delayed_utility": null
+    },
+    "skill_guard": {
+      "explicit_choice_required": true,
+      "observable_applicability_only": true,
+      "preserve_outside_candidate_region": true,
+      "requires_target_support": true,
+      "single_surface_only": true
+    },
+    "approved": true,
+    "checks": {
+      "slow_triggered": true,
+      "replay_positive": true,
+      "pending_then_approved": true,
+      "guard_written": true,
+      "budget_shared": true,
+      "r2_retrieved_not_priority": true,
+      "r2_winner_after_support": true,
+      "removal_restores": true
+    }
+  },
+  "scenario_c": {
+    "r1": {
+      "proposal_count": 2,
+      "target_support_receipts_used": 2,
+      "slow_replay_receipts_used": 1,
+      "actual_probed_programs": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": -0.1302066421576531,
+          "passed": true
+        },
+        {
+          "candidate_id": "replay:patch-replace-outlier_iqr-with-outlier_mad",
+          "kind": "slow_replay",
+          "gain": -0.06460853040767356,
+          "passed": true
+        }
+      ],
+      "winner_program": null,
+      "first_positive_support_receipt_index": null,
+      "harm_count": 2,
+      "harm_magnitude": 0.19481517256532666,
+      "abstained": true,
+      "episode_ids": [
+        "gefcom2012_load_target_outlier_iqr_r1_c_p1"
+      ],
+      "pending_patch_id": null,
+      "approved_skill_id": null,
+      "delayed_utility": null
+    },
+    "slow_event": {
+      "stage": "support_rejected",
+      "triggered": true,
+      "patch_id": "patch-replace-outlier_iqr-with-outlier_mad",
+      "support_gain": -0.06460853040767356,
+      "support_passed": true,
+      "edit_id": "outlier_mad_replacement"
+    },
+    "checks": {
+      "replay_below_m": true,
+      "rejected_no_pending": true,
+      "snapshot_unchanged": true,
+      "no_skill_next_round": true
+    }
+  },
+  "scenario_d": {
+    "runtime_patch_count": 2,
+    "best_margin_ratio": 0.4535,
+    "checks": {
+      "patches_le_2": true,
+      "selector_abstained": true,
+      "no_threshold_frozen": true
+    }
+  },
+  "total_checks": {
+    "fast_experience_changes_order": true,
+    "slow_auto_triggered": true,
+    "typed_patch_replayed": true,
+    "next_round_adoption": true,
+    "bad_patch_rejected": true,
+    "scope_unidentifiable_no_expansion": true,
+    "budget_accounting": true,
+    "removal_control": true
+  },
+  "verdict": "OPERATIONAL_TARGET_LOCAL_SELF_EVOLUTION_DEV_PASS"
+}

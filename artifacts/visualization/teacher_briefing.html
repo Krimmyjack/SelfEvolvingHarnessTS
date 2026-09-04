@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SelfEvolvingHarnessTS 阶段性结果 · 老师汇报可视化</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+       max-width: 1100px; margin: 0 auto; padding: 24px; color: #222; font-size: 14px; background: #f8fafc; }
+h1 { font-size: 1.25em; margin: 0 0 6px; }
+h2 { font-size: 0.95em; font-weight: 700; color: #1a1a1a;
+      border-left: 3px solid #4a90d9; padding-left: 10px; margin-top: 28px; }
+h3.arm-h { font-size: 0.9em; margin: 8px 0; color: #1d6fa5; }
+.meta { color: #64748b; font-size: 0.85em; margin-bottom: 16px; }
+.hero { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; }
+.sum { font-size: 1.02em; font-weight: 650; color: #0f172a; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0 6px; }
+.kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+.kpi .n { font-size: 1.35em; font-weight: 700; color: #1d6fa5; }
+.kpi .l { font-size: 0.75em; color: #64748b; margin-top: 2px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 840px) { .kpis, .grid { grid-template-columns: 1fr; } }
+.chip { display: inline-block; margin: 2px 3px; padding: 2px 9px; border-radius: 10px;
+         font-size: 0.79em; font-weight: 600; }
+.chip-target { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+.chip-tool { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+.chip-reason { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+.chip-ok { background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; }
+.chip-warn { background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; }
+.badge { display: inline-block; padding: 1px 9px; border-radius: 10px; font-weight: 700; font-size: 0.85em; }
+.b-ok { background: #dcfce7; color: #166534; }
+.b-warn { background: #ffedd5; color: #9a3412; }
+.b-mut { background: #e2e8f0; color: #475569; }
+details { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; background: #fff; }
+details[open] { border-color: #94b4d1; }
+summary { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer;
+           list-style: none; background: #f8fafc; user-select: none; }
+summary::-webkit-details-marker { display: none; }
+.toggle-icon { font-size: 0.75em; color: #94a3b8; }
+details[open] .toggle-icon { transform: rotate(90deg); }
+.summary-id { font-weight: 600; color: #334155; }
+.sample-body { padding: 14px 16px 16px; }
+.dim-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; background: #fafafa; }
+.dim-header { margin-bottom: 4px; }
+.conclusion { margin: 4px 0 0; color: #333; font-size: 0.9em; }
+.muted, .page-meta { color: #64748b; font-size: 0.86em; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84em; margin: 8px 0; }
+th { background: #f4f6f8; text-align: left; padding: 6px 10px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+td { padding: 5px 10px; border-bottom: 1px solid #f1f5f9; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #64748b; margin: 6px 0 12px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+.plotbox { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px 4px; }
+blockquote { border-left: 3px solid #cbd5e1; margin: 8px 0; padding: 6px 14px; color: #334155; }
+footer { color: #94a3b8; font-size: 11px; text-align: center; padding: 18px 0 8px; }
+code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+.warnbox { background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 10px 14px; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <h1>SelfEvolvingHarnessTS · 阶段性结果可视化</h1>
+  <p class="meta">给老师汇报用的只读简报 · 可视化语法对照 TSQualityAgent 自包含 HTML 推理链
+     与 TimeClaw 框架图 / 可审计轨迹 · 数字全部来自已暴露工件 · 零新评估</p>
+  <p class="sum">完整系统主张：累积知识进入新域后，用 held-in 反馈校准，而不是从零搜索。
+     目前最硬的 fresh 读数是 NOAA 上<strong>首个正采纳成本 69 vs 123 重训（−43.9%）</strong>，
+     终态效用与 harm 打平。</p>
+  <div class="kpis">
+    <div class="kpi"><div class="n">69 vs 123</div><div class="l">A5 / A3 首正成本（pooled）</div></div>
+    <div class="kpi"><div class="n">+0.000</div><div class="l">终态 delayed 差（打平）</div></div>
+    <div class="kpi"><div class="n">+0.686</div><div class="l">分类：承重 Scope 卡 vs 无卡</div></div>
+    <div class="kpi"><div class="n">harm 0</div><div class="l">密封 Epilepsy2 守卫成立</div></div>
+  </div>
+</header>
+
+<h2>方法骨架（TimeClaw 式框架图）</h2>
+<div class="plotbox">
+<svg viewBox="0 0 926 170" xmlns="http://www.w3.org/2000/svg">
+  <text x="24" y="22" fill="#64748b" font-size="12">对照 TimeClaw 的三子系统：数值不靠 token 手算 · 经验外置 · 轨迹可审计</text>
+  <rect x="24" y="40" width="200" height="108" rx="10" fill="#fff" stroke="#1d6fa5" stroke-width="1.6"/><text x="124" y="72" text-anchor="middle" font-weight="700" font-size="14" fill="#1d6fa5">① Runtime</text><text x="124" y="98" text-anchor="middle" font-size="12" fill="#334155">序列留在执行器</text><text x="124" y="120" text-anchor="middle" font-size="12" fill="#64748b">Operator 精确计算</text><line x1="224" y1="94" x2="250" y2="94" stroke="#94a3b8" stroke-width="2"/><polygon points="250,94 242,89 242,99" fill="#94a3b8"/><rect x="250" y="40" width="200" height="108" rx="10" fill="#fff" stroke="#7c3aed" stroke-width="1.6"/><text x="350" y="72" text-anchor="middle" font-weight="700" font-size="14" fill="#7c3aed">② Memory</text><text x="350" y="98" text-anchor="middle" font-size="12" fill="#334155">Episode / Skill 卡</text><text x="350" y="120" text-anchor="middle" font-size="12" fill="#64748b">正负冲突对照检索</text><line x1="450" y1="94" x2="476" y2="94" stroke="#94a3b8" stroke-width="2"/><polygon points="476,94 468,89 468,99" fill="#94a3b8"/><rect x="476" y="40" width="200" height="108" rx="10" fill="#fff" stroke="#b45309" stroke-width="1.6"/><text x="576" y="72" text-anchor="middle" font-weight="700" font-size="14" fill="#b45309">③ Evolution</text><text x="576" y="98" text-anchor="middle" font-size="12" fill="#334155">Support → delayed</text><text x="576" y="120" text-anchor="middle" font-size="12" fill="#64748b">Scope/Risk PATCH</text><line x1="676" y1="94" x2="702" y2="94" stroke="#94a3b8" stroke-width="2"/><polygon points="702,94 694,89 694,99" fill="#94a3b8"/><rect x="702" y="40" width="200" height="108" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6"/><text x="802" y="72" text-anchor="middle" font-weight="700" font-size="14" fill="#0f766e">④ Freeze</text><text x="802" y="98" text-anchor="middle" font-size="12" fill="#334155">held-out Fast-only</text><text x="802" y="120" text-anchor="middle" font-size="12" fill="#64748b">结果不回流本次</text>
+</svg></div>
+<p class="muted">TimeClaw 把通用 LLM 包在「原生数值 runtime + episodic memory + 能力演化」里。
+本项目同一语法，但演化对象是 <b>数据准备 Workflow / Scope / Risk</b>，评价是下游 Consumer 效用，不是预测点数本身。</p>
+
+<h2>老师一眼能看的数据对象（TSQ 式序列图）</h2>
+<div class="plotbox">
+<svg viewBox="0 0 980 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NOAA 72203812897 · origin=6552 · 192-step context">
+  <text x="44" y="16" fill="#334155" font-size="12" font-weight="600">NOAA 72203812897 · origin=6552 · 192-step context</text>
+  <text x="964" y="16" text-anchor="end" fill="#94a3b8" font-size="11">missing 10/192 = 5.2%  （红竖线）</text>
+  <line x1="44" y1="28.0" x2="964" y2="28.0" stroke="#e2e8f0" stroke-dasharray="3,3"/><line x1="44" y1="82.7" x2="964" y2="82.7" stroke="#e2e8f0" stroke-dasharray="3,3"/><line x1="44" y1="137.3" x2="964" y2="137.3" stroke="#e2e8f0" stroke-dasharray="3,3"/><line x1="44" y1="192.0" x2="964" y2="192.0" stroke="#e2e8f0" stroke-dasharray="3,3"/>
+  <line x1="44" y1="192" x2="964" y2="192" stroke="#cbd5e1"/>
+  <polyline fill="none" stroke="#3a80b8" stroke-width="1.6" points="44.00,98.74 48.82,105.78 53.63,114.22 58.45,121.26 63.27,114.22 68.08,121.26 72.90,129.70 77.72,129.70 82.53,136.73 87.35,136.73 92.17,145.18 96.98,136.73 101.80,114.22 106.62,98.74"/><polyline fill="none" stroke="#3a80b8" stroke-width="1.6" points="116.25,59.35 121.07,59.35 125.88,114.22 130.70,114.22 135.52,66.38 140.34,66.38 145.15,66.38 149.97,81.86 154.79,90.30 159.60,105.78 164.42,114.22 169.24,121.26 174.05,121.26 178.87,129.70 183.69,129.70 188.50,136.73 193.32,145.18 198.14,145.18 202.95,145.18 207.77,145.18 212.59,136.73 217.40,136.73 222.22,98.74 227.04,81.86 231.85,66.38 236.67,43.87 241.49,59.35 246.30,59.35 251.12,59.35 255.94,59.35 260.75,66.38 265.57,90.30 270.39,90.30 275.20,129.70 280.02,129.70 284.84,136.73 289.65,145.18 294.47,145.18 299.29,145.18 304.10,152.21 308.92,145.18 313.74,152.21 318.55,152.21 323.37,152.21 328.19,145.18 333.01,129.70 337.82,98.74 342.64,90.30 347.46,81.86 352.27,81.86 357.09,76.23 361.91,66.38 366.72,66.38 371.54,66.38 376.36,81.86 381.17,81.86 385.99,98.74 390.81,114.22 395.62,114.22 400.44,121.26 405.26,129.70 410.07,136.73 414.89,136.73 419.71,132.51 424.52,136.73 429.34,145.18 434.16,152.21 438.97,152.21 443.79,145.18 448.61,121.26 453.42,90.30 458.24,74.82 463.06,74.82 467.87,50.91 472.69,59.35 477.51,66.38 482.32,66.38 487.14,90.30 491.96,90.30 496.77,105.78 501.59,105.78 506.41,136.73 511.23,145.18 516.04,145.18 520.86,145.18 525.68,136.73 530.49,152.21 535.31,160.65 540.13,160.65 544.94,160.65 549.76,152.21 554.58,152.21 559.39,152.21 564.21,121.26 569.03,98.74 573.84,81.86 578.66,74.82 583.48,50.91 588.29,59.35 593.11,114.22 597.93,160.65 602.74,105.78 607.56,114.22 612.38,114.22 617.19,121.26 622.01,145.18 626.83,152.21 631.64,145.18 636.46,145.18 641.28,160.65 646.09,152.21 650.91,152.21 655.73,152.21 660.54,152.21 665.36,152.21 670.18,160.65 674.99,160.65 679.81,129.70 684.63,114.22 689.45,90.30 694.26,90.30 699.08,66.38 703.90,81.86 708.71,129.70 713.53,121.26 718.35,160.65 723.16,160.65 727.98,160.65 732.80,160.65 737.61,160.65 742.43,160.65 747.25,160.65 752.06,160.65 756.88,160.65 761.70,160.65 766.51,169.09 771.33,169.09 776.15,169.09 780.96,169.09 785.78,160.65 790.60,160.65 795.41,160.65 800.23,152.21 805.05,152.21 809.86,152.21 814.68,146.58 819.50,145.18 824.31,136.73 829.13,136.73 833.95,145.18 838.76,160.65 843.58,160.65 848.40,176.13 853.21,176.13 858.03,169.09 862.85,169.09 867.66,169.09"/><polyline fill="none" stroke="#3a80b8" stroke-width="1.6" points="915.83,160.65 920.65,160.65 925.47,160.65 930.28,160.65 935.10,160.65 939.92,160.65 944.73,160.65 949.55,152.21 954.37,145.18 959.18,152.21 964.00,152.21"/>
+  <line x1="111.4" y1="194.0" x2="111.4" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="872.5" y1="194.0" x2="872.5" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="877.3" y1="194.0" x2="877.3" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="882.1" y1="194.0" x2="882.1" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="886.9" y1="194.0" x2="886.9" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="891.7" y1="194.0" x2="891.7" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="896.6" y1="194.0" x2="896.6" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="901.4" y1="194.0" x2="901.4" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="906.2" y1="194.0" x2="906.2" y2="202.0" stroke="#b83c28" stroke-width="1.4"/><line x1="911.0" y1="194.0" x2="911.0" y2="202.0" stroke="#b83c28" stroke-width="1.4"/>
+  <text x="44" y="214" fill="#94a3b8" font-size="10">time step (hourly)</text>
+  <text x="38" y="32" text-anchor="end" fill="#94a3b8" font-size="10">34.4</text>
+  <text x="38" y="192" text-anchor="end" fill="#94a3b8" font-size="10">22.8</text>
+</svg></div>
+<p class="muted">真实 NOAA 小时温度，不是示意曲线。缺失用红竖线标出，对应 TSQ 把 missing 画在 B 上的做法。
+Harness 的工作不是「把线画得更平滑」，而是决定：这段 Context 该 identity、该修复，还是该弃权。</p>
+
+<h2>A5 vs A3：适应成本（主读数）</h2>
+<div class="plotbox"><svg viewBox="0 0 208 230" xmlns="http://www.w3.org/2000/svg"><line x1="36" y1="170.7" x2="202" y2="170.7" stroke="#cbd5e1"/><rect x="36" y="124.9" width="18" height="45.8" fill="#1d6fa5" rx="3"/><text x="45" y="119.9" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">69</text><rect x="58" y="89.1" width="18" height="81.6" fill="#b83c28" rx="3"/><text x="67" y="84.1" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">123</text><text x="63" y="220" text-anchor="middle" fill="#64748b" font-size="11">首个正采纳成本（重训）</text><rect x="118" y="105.0" width="18" height="65.7" fill="#1d6fa5" rx="3"/><text x="127" y="100.0" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">99</text><rect x="140" y="41.3" width="18" height="129.4" fill="#b83c28" rx="3"/><text x="149" y="36.3" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">195</text><text x="145" y="220" text-anchor="middle" fill="#64748b" font-size="11">总重训</text></svg></div>
+<div class="legend"><span><i style="background:#1d6fa5"></i>A5 累积知识</span>
+<span><i style="background:#b83c28"></i>A3 空店</span></div>
+<p>判词 <span class="badge b-ok">FRESH_A5_DELIVERS</span> · 主键是 pooled Consumer。
+task_C delayed 两条臂同为 +0.029688，harm 1 vs 1，所以终态质量打平。
+<strong>不能说 A5 预测得更准，只能说适应更便宜（69 vs 123 重训，−43.9%）。</strong></p>
+
+<details open>
+  <summary><span class="toggle-icon">▶</span><span class="summary-id">① 系统在看什么（对照 TSQ Perceiver）</span></summary>
+  <div class="sample-body">
+<p><b>Task / Consumer：</b> forecasting · Ridge · sMASE。质量不是绝对干净，而是相对下游效用。</p>
+<p><b>部署可见 Context：</b> 缺失几何、周期、Program 作用范围。Dataset 名称不得作为跨域理由。</p>
+<p><b>对比对象：</b> <span class="chip chip-target">A5 = 累积知识 + held-in 校准</span>
+<span class="chip chip-tool">A3 = 去掉跨域积累</span>
+<span class="chip chip-reason">Static = 去掉适应</span></p>
+<p class="muted">TSQ 把质量做成 A vs B 成对裁决；本项目把质量做成 Identity vs Program 的下游增益，并要求 delayed 层独立确认。</p>
+</div>
+</details>
+<details open>
+  <summary><span class="toggle-icon">▶</span><span class="summary-id">② 一次可审计轨迹（对照 TSQ Inspector / TimeClaw trajectory）</span></summary>
+  <div class="sample-body">
+<p class="muted">工件 <code>fresh_confirmation_v1.json</code> · 判词 FRESH_A5_DELIVERS。
+NOAA 2024 适应、2025 确认区一次性打开；不是 Fast-only held-out。</p>
+<div class="grid"><div><h3 class="arm-h">A5 · 累积知识 + Target 校准（pooled）</h3>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 1 · task_A</b>
+    <span class="chip chip-tool">FULL_PRICE_SEARCH</span>
+    <span class="chip chip-target">outlier_mad</span>
+    <span class="badge b-ok">retrain 69</span>
+  </div>
+  <p class="conclusion">Support 0.072486
+     · delayed 0.30638
+     · harm series 0
+     · LLM 2</p>
+</div>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 2 · probe</b>
+    <span class="chip chip-reason">OUT_OF_SELECTION_PROBE</span>
+    <span class="chip chip-target">—</span>
+    <span class="badge b-mut">retrain 6</span>
+  </div>
+  <p class="conclusion">Support —
+     · delayed —
+     · harm series 1
+     · LLM 0</p>
+</div>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 3 · task_B</b>
+    <span class="chip chip-reason">DIRECT_RECALL</span>
+    <span class="chip chip-target">identity</span>
+    <span class="badge b-mut">retrain 9</span>
+  </div>
+  <p class="conclusion">Support 0
+     · delayed 0
+     · harm series 0
+     · LLM 0</p>
+</div>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 4 · task_C</b>
+    <span class="chip chip-reason">DIRECT_RECALL</span>
+    <span class="chip chip-target">outlier_mad</span>
+    <span class="badge b-ok">retrain 15</span>
+  </div>
+  <p class="conclusion">Support 0.191203
+     · delayed 0.029688
+     · harm series 1
+     · LLM 0</p>
+</div></div><div><h3 class="arm-h">A3 · 空店冷启动（pooled）</h3>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 1 · task_A</b>
+    <span class="chip chip-tool">FULL_PRICE_SEARCH</span>
+    <span class="chip chip-target">identity</span>
+    <span class="badge b-warn">retrain 57</span>
+  </div>
+  <p class="conclusion">Support 0
+     · delayed 0
+     · harm series 0
+     · LLM 2</p>
+</div>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 2 · probe</b>
+    <span class="chip chip-reason">OUT_OF_SELECTION_PROBE</span>
+    <span class="chip chip-target">—</span>
+    <span class="badge b-mut">retrain 0</span>
+  </div>
+  <p class="conclusion">Support —
+     · delayed —
+     · harm series —
+     · LLM 0</p>
+</div>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 3 · task_B</b>
+    <span class="chip chip-tool">FULL_PRICE_SEARCH</span>
+    <span class="chip chip-target">repair_level_shift</span>
+    <span class="badge b-ok">retrain 66</span>
+  </div>
+  <p class="conclusion">Support 0.110951
+     · delayed 0.162837
+     · harm series 1
+     · LLM 2</p>
+</div>
+<div class="dim-card">
+  <div class="dim-header"><b>Step 4 · task_C</b>
+    <span class="chip chip-tool">FULL_PRICE_SEARCH</span>
+    <span class="chip chip-target">outlier_mad</span>
+    <span class="badge b-ok">retrain 72</span>
+  </div>
+  <p class="conclusion">Support 0.191203
+     · delayed 0.029688
+     · harm series 1
+     · LLM 2</p>
+</div></div></div>
+<p><b>读法：</b> A5 在 task_A 一次 FULL_PRICE_SEARCH 就采纳 <code>outlier_mad</code>
+（delayed +0.306），此后 DIRECT_RECALL；A3 在 task_A 走 identity，到 task_B 才首次正采纳。
+终态 delayed 打平 +0.029688，harm 1 vs 1。主张上限是<strong>降低适应成本，不是提高终态质量</strong>。</p>
+</div>
+</details>
+
+<h2>分类开发线：同一套生命周期，换 Task</h2>
+<div class="plotbox"><svg viewBox="0 0 224 220" xmlns="http://www.w3.org/2000/svg"><line x1="36" y1="162.0" x2="218" y2="162.0" stroke="#cbd5e1"/><rect x="36" y="40.0" width="18" height="122.1" fill="#1d6fa5" rx="3"/><text x="45" y="35.0" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">0.771</text><text x="52" y="210" text-anchor="middle" fill="#64748b" font-size="11">无卡 A3 regret</text><rect x="96" y="73.6" width="18" height="88.4" fill="#1d6fa5" rx="3"/><text x="105" y="68.6" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">0.558</text><text x="112" y="210" text-anchor="middle" fill="#64748b" font-size="11">叶 Scope L1</text><rect x="156" y="148.6" width="18" height="13.5" fill="#1d6fa5" rx="3"/><text x="165" y="143.6" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">0.085</text><text x="172" y="210" text-anchor="middle" fill="#64748b" font-size="11">承重五轴 SA1 卡</text></svg></div>
+<p class="muted">纵轴是 cumulative regret（越低越好）。叶 Scope 回收 +0.2127；换成承重五轴（task×consumer×metric×Pattern×Program）回收 +0.6860。</p>
+<details>
+  <summary><span class="toggle-icon">▶</span><span class="summary-id">③ 分类线：Scope 卡与修订环（development）</span></summary>
+  <div class="sample-body">
+<p><b>L1 权限阶梯 v2：</b> YES, +0.2127 cumulative regret against the v4 A5 tail (0.7710 -&gt; 0.5583), gate 0.088462</p>
+<p>v4 尾段无卡 regret 0.7710 → L1 0.5583，改善 0.2127，harm 0。
+只转换 1/5 单元（GunPointOldVersusYoung）。</p>
+<p><b>SA-1 修订环：</b> 带承重五轴卡相对无卡 regret 差
+<span class="chip chip-ok">+0.6860</span>；修订臂 vs 冻结卡臂 regret 差
+<span class="chip chip-warn">+0.0000</span>。修订买到的是避拒/省探，不是质量。</p>
+<table>
+<tr><th>臂</th><th>regret</th><th>probes</th><th>supplied</th><th>refused</th><th>harm</th></tr>
+<tr><td>A3-reset</td><td>0.771</td>
+<td>7</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>K0-fixed</td><td>0.085</td>
+<td>12</td><td>5</td><td>3</td><td>0</td></tr>
+<tr><td>A5-adaptive</td><td>0.085</td>
+<td>10</td><td>3</td><td>1</td><td>0</td></tr>
+</table>
+<p class="muted">再遇位：修订后的卡不再供给 PowerCons，冻结卡再供给再挨拒。归因到 narrowing 的省探 = 0，避拒 = 1。</p>
+</div>
+</details>
+<details>
+  <summary><span class="toggle-icon">▶</span><span class="summary-id">④ 密封处女域守卫（Epilepsy2 capstone）</span></summary>
+  <div class="sample-body">
+<p>判词 <span class="badge b-mut">CAPSTONE_NEUTRAL</span> ·
+A5−A3 accuracy = 0 · harm = False</p>
+<p>三臂全部部署 identity，accuracy 均为 0.533613。
+族外卡供给 0；A3/A5 各自提出的有害提案（−0.2750 / −0.0500）被 Support 拦住。
+这是<strong>条件化与安全</strong>，不是正迁移。</p>
+<p class="muted">族内密封正迁移当前 unavailable（公开 UCR 池耗尽），不是方法负结果。见
+<code>docs/CLS_LINE_FINAL_REPORT_2026-08-28.md</code>。</p>
+</div>
+</details>
+
+<h2>主张边界（汇报时必须一起说）</h2>
+<div class="warnbox">
+<ul>
+<li>NOAA 2025 是反馈消耗式确认，<b>不是</b>冻结后的 Fast-only held-out。</li>
+<li>分类正效应在 GunPoint 族 development 上；Epilepsy2 密封场是守卫，不是正迁移。</li>
+<li>修订环复证的是「避免重复错误」，不是「越改越准」。</li>
+<li>n 小、多为单轨迹；Dataset 名不得当成跨域证据。</li>
+</ul>
+</div>
+
+<blockquote>
+向老师可说的一句：我们已经把「经验如何合法进入、如何被当前数据检验、如何在不匹配时保持沉默」做成可审计闭环；
+fresh 上证明的是适应成本下降，分类密封场证明的是安全弃权。下一步才是论文级、跨任务的密封正迁移主实验。
+</blockquote>
+
+<footer>
+工件：<code>artifacts/functional/e2/fresh_confirmation_v1.md</code> ·
+<code>l1_ladder_v2_replay_r1.md</code> ·
+<code>sa1_minimal_r1.md</code> ·
+<code>capstone_epilepsy2_final.md</code> ·
+<code>docs/CLS_LINE_FINAL_REPORT_2026-08-28.md</code><br>
+生成器：<code>evaluation/functional/run_teacher_briefing_viz.py</code> · 内联 CSS/SVG，离线可打开
+</footer>
+</body>
+</html>

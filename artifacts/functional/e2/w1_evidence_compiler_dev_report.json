@@ -1,0 +1,47 @@
+{
+  "experiment_id": "v1-evidence-compiler-dev",
+  "note": "P0 降级设计验证：确定性 Evidence Compiler（Runtime 决策——LLM 只编译）——development exposure——零新 Claim。背景：P0 v1/v2 FAIL（LLM_BATCH_EVIDENCE_INTEGRATION_NOT_ESTABLISHED——语义先验主导弃权 no_authorized_minimal_edit）",
+  "t117": {
+    "runtime_choice": "hampel_filter",
+    "chain": {
+      "stage": "pending",
+      "edit_id": "group_winsorize_replacement",
+      "group_capsule": {
+        "n_episodes": 2,
+        "workflow": "winsorize",
+        "sign": "NEGATIVE"
+      },
+      "frozen_program": [
+        {
+          "op": "hampel_filter",
+          "params": {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        }
+      ],
+      "patch_id": "patch-replace-winsorize-with-hampel_filter",
+      "group_replay": [
+        {
+          "origin": 888,
+          "gain": 0.033984644049736445
+        },
+        {
+          "origin": 984,
+          "gain": 0.01504251303971138
+        }
+      ],
+      "holdout_gain": 0.0013144587058273594
+    }
+  },
+  "dev": {
+    "event": {
+      "stage": "evidence_abstain",
+      "reason": "no_unique_common_positive"
+    },
+    "slow_called": false,
+    "zero_llm": true
+  },
+  "verdict": "EVIDENCE_COMPILER_DEGRADED_CHAIN_PASS"
+}

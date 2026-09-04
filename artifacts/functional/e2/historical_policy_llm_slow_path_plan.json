@@ -1,0 +1,35 @@
+{
+  "consumer_changes": [],
+  "diagnosis": {
+    "first_fault_codes": [
+      "GLOBAL_WORKFLOW_ORDER_NOT_TARGET_CONTEXTUALIZED",
+      "CONFIRMED_POSITIVE_WORKFLOW_OVERWRITTEN"
+    ],
+    "why_one_patch_needs_both_operations": "The observation must expose target-contextual phase-aligned historical PolicyEpisodes, and the update policy must preserve the first confirmed positive Workflow instead of allowing later probes to overwrite it."
+  },
+  "expected_behavior_change": "The Harness can select a useful phase-aligned Workflow before global Source order delays it, then retain the first confirmed positive Workflow once found.",
+  "falsification_condition": "If phase-aligned historical PolicyEpisodes are available and a positive Workflow is confirmed, but selection still follows global Source order or a later probe overwrites the confirmed positive Workflow, the patch is falsified.",
+  "memory_schema_changes": [],
+  "metric_changes": [],
+  "new_programs": [],
+  "operations": [
+    {
+      "operation": "ADD_OBSERVATION",
+      "target_surface": "observation",
+      "value": "phase_aligned_historical_policy_episode"
+    },
+    {
+      "operation": "PATCH_CONTROL",
+      "target_surface": "harness_update_policy",
+      "value": "stop_on_first_positive"
+    }
+  ],
+  "patch_id": "slow_path_phase_stop_v1",
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 242,
+    "prompt_tokens": 4855,
+    "requested_model": "gpt-5.5",
+    "returned_model": "gpt-5.5"
+  }
+}

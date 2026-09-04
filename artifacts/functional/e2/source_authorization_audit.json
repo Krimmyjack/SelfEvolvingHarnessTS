@@ -1,0 +1,224 @@
+{
+  "protocol_version": "source_authorization_audit_v1",
+  "verdict": "SOURCE_ACTIVE_TRY_NOT_AUTHORIZED",
+  "llm_calls": 0,
+  "support_probes": 0,
+  "thresholds_unchanged": {
+    "material_threshold": 0.005,
+    "general_evidence_min_distinct_tasks": 2
+  },
+  "source": "g3d1_t233_source_extension.json",
+  "rule": {
+    "order": "provenance first, then leave-one-out on the UNGUIDED subset",
+    "authorization": "an active TRY may be authorized only by UNGUIDED distinct Tasks; conditioned evidence may confirm, refute or withdraw, never authorize",
+    "stability": "after removing any one Source Task the UNGUIDED positive distinct count must still reach general_evidence_min_distinct_tasks",
+    "opposing_evidence": "blocks from either provenance, because conditioned evidence is allowed to refute",
+    "conditioning_read": "primary: every Skill in the arm's snapshot when the Task began; narrow: only Skills the resolved view served"
+  },
+  "cells_primary": [
+    {
+      "program": "hampel_filter",
+      "context_condition": false,
+      "pooled_positive": 4,
+      "pooled_negative": 1,
+      "pooled_immaterial": 0,
+      "unguided_positive": 1,
+      "unguided_negative": 1,
+      "conditioned_positive": 3,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [
+        "e1v2_task_01"
+      ],
+      "active_try_authorized": false,
+      "withheld_because": "opposing_evidence_in_this_context"
+    },
+    {
+      "program": "outlier_iqr",
+      "context_condition": false,
+      "pooled_positive": 6,
+      "pooled_negative": 0,
+      "pooled_immaterial": 0,
+      "unguided_positive": 1,
+      "unguided_negative": 0,
+      "conditioned_positive": 5,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [],
+      "active_try_authorized": false,
+      "withheld_because": "does_not_survive_leave_one_out"
+    },
+    {
+      "program": "period_complete",
+      "context_condition": false,
+      "pooled_positive": 0,
+      "pooled_negative": 0,
+      "pooled_immaterial": 2,
+      "unguided_positive": 0,
+      "unguided_negative": 0,
+      "conditioned_positive": 0,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [],
+      "active_try_authorized": false,
+      "withheld_because": "no_unguided_positive"
+    },
+    {
+      "program": "repair_level_shift",
+      "context_condition": false,
+      "pooled_positive": 5,
+      "pooled_negative": 6,
+      "pooled_immaterial": 1,
+      "unguided_positive": 2,
+      "unguided_negative": 2,
+      "conditioned_positive": 3,
+      "conditioned_negative": 4,
+      "leave_one_out_minimum_positive": 1,
+      "opposing_evidence_any_provenance": [
+        "e1v2_task_01",
+        "e1v2_task_05",
+        "e1v2_task_12",
+        "e1v2_task_13",
+        "e1v2_task_14",
+        "e1v2_task_17"
+      ],
+      "active_try_authorized": false,
+      "withheld_because": "opposing_evidence_in_this_context"
+    },
+    {
+      "program": "repair_level_shift",
+      "context_condition": true,
+      "pooled_positive": 2,
+      "pooled_negative": 0,
+      "pooled_immaterial": 1,
+      "unguided_positive": 1,
+      "unguided_negative": 0,
+      "conditioned_positive": 1,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [],
+      "active_try_authorized": false,
+      "withheld_because": "does_not_survive_leave_one_out"
+    },
+    {
+      "program": "repair_level_shift+smooth_ema",
+      "context_condition": true,
+      "pooled_positive": 0,
+      "pooled_negative": 1,
+      "pooled_immaterial": 0,
+      "unguided_positive": 0,
+      "unguided_negative": 1,
+      "conditioned_positive": 0,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [
+        "e1v2_task_03"
+      ],
+      "active_try_authorized": false,
+      "withheld_because": "no_unguided_positive"
+    }
+  ],
+  "cells_narrow": [
+    {
+      "program": "hampel_filter",
+      "context_condition": false,
+      "pooled_positive": 4,
+      "pooled_negative": 1,
+      "pooled_immaterial": 0,
+      "unguided_positive": 1,
+      "unguided_negative": 1,
+      "conditioned_positive": 3,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [
+        "e1v2_task_01"
+      ],
+      "active_try_authorized": false,
+      "withheld_because": "opposing_evidence_in_this_context"
+    },
+    {
+      "program": "outlier_iqr",
+      "context_condition": false,
+      "pooled_positive": 6,
+      "pooled_negative": 0,
+      "pooled_immaterial": 0,
+      "unguided_positive": 1,
+      "unguided_negative": 0,
+      "conditioned_positive": 5,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [],
+      "active_try_authorized": false,
+      "withheld_because": "does_not_survive_leave_one_out"
+    },
+    {
+      "program": "period_complete",
+      "context_condition": false,
+      "pooled_positive": 0,
+      "pooled_negative": 0,
+      "pooled_immaterial": 2,
+      "unguided_positive": 0,
+      "unguided_negative": 0,
+      "conditioned_positive": 0,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [],
+      "active_try_authorized": false,
+      "withheld_because": "no_unguided_positive"
+    },
+    {
+      "program": "repair_level_shift",
+      "context_condition": false,
+      "pooled_positive": 5,
+      "pooled_negative": 6,
+      "pooled_immaterial": 1,
+      "unguided_positive": 5,
+      "unguided_negative": 6,
+      "conditioned_positive": 0,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 4,
+      "opposing_evidence_any_provenance": [
+        "e1v2_task_01",
+        "e1v2_task_05",
+        "e1v2_task_12",
+        "e1v2_task_13",
+        "e1v2_task_14",
+        "e1v2_task_17"
+      ],
+      "active_try_authorized": false,
+      "withheld_because": "opposing_evidence_in_this_context"
+    },
+    {
+      "program": "repair_level_shift",
+      "context_condition": true,
+      "pooled_positive": 2,
+      "pooled_negative": 0,
+      "pooled_immaterial": 1,
+      "unguided_positive": 1,
+      "unguided_negative": 0,
+      "conditioned_positive": 1,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [],
+      "active_try_authorized": false,
+      "withheld_because": "does_not_survive_leave_one_out"
+    },
+    {
+      "program": "repair_level_shift+smooth_ema",
+      "context_condition": true,
+      "pooled_positive": 0,
+      "pooled_negative": 1,
+      "pooled_immaterial": 0,
+      "unguided_positive": 0,
+      "unguided_negative": 1,
+      "conditioned_positive": 0,
+      "conditioned_negative": 0,
+      "leave_one_out_minimum_positive": 0,
+      "opposing_evidence_any_provenance": [
+        "e1v2_task_03"
+      ],
+      "active_try_authorized": false,
+      "withheld_because": "no_unguided_positive"
+    }
+  ]
+}

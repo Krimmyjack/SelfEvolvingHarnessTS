@@ -1,0 +1,110 @@
+{
+  "stage": "P4K_PHASE2_DEVELOPMENT",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T17:46:53.401252+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_MENU_CONSTRUCTION",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "cohort": "cohort_1",
+  "cohort_role": "DEVELOPMENT",
+  "frozen_contract": {
+    "frozen": true,
+    "failures": [],
+    "origins": [
+      1176,
+      2136,
+      2376,
+      2616,
+      2856
+    ],
+    "views": [
+      "identity",
+      "reversible_detrend",
+      "reversible_seasonal_adjust",
+      "reversible_difference"
+    ],
+    "arms": [
+      "raw",
+      "best_fixed_O0",
+      "best_fixed_O1",
+      "targeter_X0_O0",
+      "targeter_X1_O0",
+      "targeter_X0_O1",
+      "targeter_X1_O1"
+    ],
+    "statistical_unit": "training cohort x face",
+    "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING"
+  },
+  "gain_reference": "empty program, identity view, same origin and face",
+  "boundary": {
+    "llm_calls": 0,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "consumer_fits": 2760
+  },
+  "space": {
+    "programs_including_raw": 69,
+    "deduplication": {
+      "rule": "distinct by the exact per-series gain signature over the frozen five origins x two faces; a program unreadable at any of those ten cells is excluded rather than imputed",
+      "applied_to": "cohort 1 only",
+      "distinct_programs": 68,
+      "plus_the_empty_program": true
+    },
+    "views": [
+      "identity",
+      "reversible_detrend",
+      "reversible_seasonal_adjust",
+      "reversible_difference"
+    ]
+  },
+  "refusals": {
+    "count": 0,
+    "rows": []
+  },
+  "headroom_upper_bound": {
+    "per_view": [
+      {
+        "view": "identity",
+        "best_single_program_mean_gain": 0.370629,
+        "best_per_cell_mean_gain": 0.483798
+      },
+      {
+        "view": "reversible_detrend",
+        "best_single_program_mean_gain": 0.204198,
+        "best_per_cell_mean_gain": 0.360539
+      },
+      {
+        "view": "reversible_seasonal_adjust",
+        "best_single_program_mean_gain": 0.34241,
+        "best_per_cell_mean_gain": 0.440897
+      },
+      {
+        "view": "reversible_difference",
+        "best_single_program_mean_gain": -0.54456,
+        "best_per_cell_mean_gain": -0.416914
+      }
+    ],
+    "note": "per-series oracle bounds what a perfect selector could reach; it is never reported as an outcome"
+  },
+  "tensor": {
+    "path": "artifacts/main_protocol/p4k_phase2_development_gain.npz",
+    "shape": [
+      69,
+      4,
+      5,
+      2,
+      20
+    ],
+    "axes": [
+      "program",
+      "view",
+      "origin",
+      "face",
+      "series"
+    ]
+  },
+  "wall_seconds": 1121.3,
+  "releases": "the cohort-1 tensor only; the menu, Best-Fixed and Targeter are frozen by the confirmation runner before cohort 2 is read"
+}

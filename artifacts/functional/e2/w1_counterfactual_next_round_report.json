@@ -1,0 +1,75 @@
+{
+  "base_next_round": {
+    "chosen": "cand_impute_linear",
+    "compilation": "ok",
+    "instruction": "You are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n\nRuntime rule: return exactly one agent-envelope/1 JSON value. Never concatenate multiple JSON values in one response. The outer envelope is mandatory; never return the stage payload by itself and never use schema_name/content as substitute wrapper keys. Do not emit PASS/FAIL judgments or hidden reasoning.\nResolved Harness: {\"controls\":{\"candidate_policy\":{\"agent_program_slots\":2,\"identity_slots\":1,\"proposal_guidance\":\"Supply only minimal effect-distinct candidates justified by public evidence.\",\"schema_version\":\"candidate-policy/1\",\"selection_guidance\":\"Choose one candidate explicitly and prefer identity when public evidence is insufficient.\",\"total_k\":3},\"role\":\"fast\",\"verification\":{\"identity_unfilterable\":true,\"max_modified_fraction\":0.35,\"preserve_outside_candidate_region\":true,\"require_explicit_choice\":true,\"schema_version\":\"verification/1\"}},\"instruction\":\"You are the TTHA preparation Agent. Use only public observations, declared tools,\\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\\nNever request or infer clean references, injection metadata, candidate utility, or\\nprivate rankings. Inspect before proposing. Supply at most the configured number of\\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\\nKeep modifications local and abstain when public evidence does not justify a repair.\\n\",\"memories\":[],\"skills\":[{\"allowed_tools\":[],\"body\":\"Construct at most two minimal, behavior-distinct typed PROGRAM candidates from currently allowed tools; retain runtime identity as the control.\",\"risk_guards\":{},\"skill_id\":\"build_contrastive_candidates\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence. Preserve disjoint narrow hypotheses when a high robust-z signal spans a broad low-density region instead of merging the whole span. Procedure marker: sparse_localization_subregions/v1.\",\"risk_guards\":{},\"skill_id\":\"inspect_and_localize\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.\",\"risk_guards\":{},\"skill_id\":\"select_or_identity_and_verify\",\"skill_kind\":\"bootstrap_procedure\"}]}",
+    "retrieved_memory_ids": [],
+    "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify"
+    ]
+  },
+  "case": {
+    "delayed_origin": 976,
+    "origin": 928,
+    "step_a": "impute_ssm",
+    "step_b": "outlier_iqr",
+    "support": {
+      "A_only": -0.15432,
+      "A_to_B": -0.10249,
+      "B_only": 0.04386,
+      "identity": null
+    }
+  },
+  "checks": {
+    "behavior_changed_vs_base": true,
+    "compiler_passed": true,
+    "new_skill_retrieved_next_round": true
+  },
+  "compiler": {
+    "fork_root": "C:\\Users\\辉\\Desktop\\Agent\\.harness_forks\\outlie-target-v1-blvm5z8p",
+    "passed": true,
+    "skill_id": "outlie-target-v1"
+  },
+  "e1_choice": {
+    "evidence_refs": [
+      "support outcomes: A only -0.15432, B only +0.04386, A then B -0.10249",
+      "experience memory: gefcom outlier_iqr @928 support +0.04386 POSITIVE"
+    ],
+    "patch_id": "REMOVE_STEP_A",
+    "rationale": "Remove impute_ssm and retain outlier_iqr. Step A is harmful alone, and adding it to B makes the combined workflow negative, while B alone has positive support."
+  },
+  "experiment_id": "v1-counterfactual-next-round",
+  "frozen_steps": [
+    {
+      "op": "outlier_iqr",
+      "params": {}
+    }
+  ],
+  "next_round_support_receipt": {
+    "note": "行为验证以 Patch replay 的成对 Episode 为 Memory（support @928 / delayed @976——P0-4 产物）；@976 决策点的下一轮 support 实测在报告 patch_replay_episode 中由 case delayed 承载（+0.02719）。@1024 数据边界无法评估（future 无 truth）。",
+    "origin": 976
+  },
+  "patch_replay_episode": {
+    "delayed_gain": 0.027190356020410977,
+    "delayed_origin": 976,
+    "local_status": "LOCAL_ACTIVE",
+    "relation": "POSITIVE",
+    "support_gain": 0.043862404445872194,
+    "support_origin": 928
+  },
+  "patched_next_round": {
+    "chosen": "cand_outlier_iqr",
+    "compilation": "ok",
+    "instruction": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 1: candidate operators ['outlier_iqr'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibrated, fewer than the minimum historical contexts). Probe them first, then confirm again on the current Support.\n\nYou are the TTHA preparation Agent. Use only public observations, declared tools,\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\nNever request or infer clean references, injection metadata, candidate utility, or\nprivate rankings. Inspect before proposing. Supply at most the configured number of\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\nKeep modifications local and abstain when public evidence does not justify a repair.\n\nRuntime rule: return exactly one agent-envelope/1 JSON value. Never concatenate multiple JSON values in one response. The outer envelope is mandatory; never return the stage payload by itself and never use schema_name/content as substitute wrapper keys. Do not emit PASS/FAIL judgments or hidden reasoning.\nResolved Harness: {\"controls\":{\"candidate_policy\":{\"agent_program_slots\":2,\"identity_slots\":1,\"proposal_guidance\":\"Supply only minimal effect-distinct candidates justified by public evidence.\",\"schema_version\":\"candidate-policy/1\",\"selection_guidance\":\"Choose one candidate explicitly and prefer identity when public evidence is insufficient.\",\"total_k\":3},\"role\":\"fast\",\"verification\":{\"identity_unfilterable\":true,\"max_modified_fraction\":0.35,\"preserve_outside_candidate_region\":true,\"require_explicit_choice\":true,\"schema_version\":\"verification/1\"}},\"instruction\":\"The following references come from verified historical experience.\\nUse them as a guide.\\n\\nReference 1: candidate operators ['outlier_iqr'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibrated, fewer than the minimum historical contexts). Probe them first, then confirm again on the current Support.\\n\\nYou are the TTHA preparation Agent. Use only public observations, declared tools,\\ncanonical operator contracts, retrieved Harness content, and the typed output schema.\\nNever request or infer clean references, injection metadata, candidate utility, or\\nprivate rankings. Inspect before proposing. Supply at most the configured number of\\neffect-distinct PROGRAM candidates. Select exactly one candidate, including identity.\\nKeep modifications local and abstain when public evidence does not justify a repair.\\n\",\"memories\":[],\"skills\":[{\"allowed_tools\":[],\"body\":\"Construct at most two minimal, behavior-distinct typed PROGRAM candidates from currently allowed tools; retain runtime identity as the control.\",\"risk_guards\":{},\"skill_id\":\"build_contrastive_candidates\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence. Preserve disjoint narrow hypotheses when a high robust-z signal spans a broad low-density region instead of merging the whole span. Procedure marker: sparse_localization_subregions/v1.\",\"risk_guards\":{},\"skill_id\":\"inspect_and_localize\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.\",\"risk_guards\":{},\"skill_id\":\"select_or_identity_and_verify\",\"skill_kind\":\"bootstrap_procedure\"},{\"allowed_tools\":[],\"body\":\"Target-local Workflow from counterfactual attribution at GEFCom decision point 928.\\nAttribution rationale: Remove impute_ssm and retain outlier_iqr. Step A is harmful alone, and adding it to B makes the combined workflow negative, while B alone has positive support.\\nFrozen program steps:\\n[{\\\"op\\\": \\\"outlier_iqr\\\", \\\"params\\\": {}}]\\nPrefer these steps when the deployment context matches the attribution evidence; verify each decision point with the window verifier (max_modified_fraction 0.35).\",\"risk_guards\":{\"max_modified_fraction\":0.35,\"preserve_outside_candidate_region\":true},\"skill_id\":\"outlie-target-v1\",\"skill_kind\":\"capability\"}]}",
+    "retrieved_memory_ids": [],
+    "retrieved_skill_ids": [
+      "build_contrastive_candidates",
+      "inspect_and_localize",
+      "select_or_identity_and_verify",
+      "outlie-target-v1"
+    ]
+  },
+  "verdict_component": "SKILL_INFLUENCE_PASS"
+}

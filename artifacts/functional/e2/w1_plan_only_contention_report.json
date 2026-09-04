@@ -1,0 +1,821 @@
+{
+  "contexts": [
+    80,
+    120,
+    200
+  ],
+  "dataset": "uci_electricity_load_diagrams",
+  "decision_origin": 792,
+  "experiment_id": "v1-plan-only-contention-p0",
+  "fixed_pool": [
+    "repair_level_shift",
+    "winsorize"
+  ],
+  "llm_api_call_count": 24,
+  "memory_levels": [
+    "M_positive",
+    "M_remove",
+    "M_negative",
+    "M_conflict"
+  ],
+  "pool_consistent_across_memory": true,
+  "repeats": 2,
+  "results": {
+    "120": {
+      "M_conflict": {
+        "abstain_any": false,
+        "chosen_set": [
+          "cand_repair_level_shift"
+        ],
+        "decisions": [
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset120_M_conflict_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 provides positive matched-context evidence for repair_level_shift and explicitly directs probing it first; the current Support probe is the confirmation process.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset120_M_conflict_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 provides positive matched-context evidence for repair_level_shift and explicitly recommends probing it first; the current Support probe serves as confirmation.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair1",
+            "relation": "NEGATIVE"
+          },
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair2",
+            "relation": "POSITIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 4,
+          "order": [
+            "repair_level_shift",
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm"
+          ],
+          "radius_mode": "radius",
+          "rendered": true,
+          "repair_verdict": "POSITIVE_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 1,
+            "RISK_PRIOR": 0,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_negative": {
+        "abstain_any": false,
+        "chosen_set": [
+          "cand_winsorize"
+        ],
+        "decisions": [
+          {
+            "abstain": false,
+            "chosen": "cand_winsorize",
+            "label": "offset120_M_negative_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"recent.median_robust_scale\",\"recent.median_normalized_seasonal_residual\",\"Reference 3\"],\"rationale\":\"Winsorize is an uncalibrated candidate and is preferred for the bounded Support probe over repair_level_shift, which has weak historical negative evidence. The recent robust scale remains elevated and seasonal residual is nontrivial, providing some support for testing outlier limiting; no strong context-matched risk is present.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": false,
+            "chosen": "cand_winsorize",
+            "label": "offset120_M_negative_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"Reference 3\",\"recent.median_robust_scale\",\"change.median_robust_scale_delta\"],\"rationale\":\"winsorize is an UNKNOWN candidate and should receive the Support probe before the weak-risk repair_level_shift candidate. Recent robust scale is elevated at 26.012139, while the repair operator has only negative historical evidence.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair1",
+            "relation": "NEGATIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 2,
+          "order": [
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm",
+            "repair_level_shift"
+          ],
+          "radius_mode": "weak_reference",
+          "rendered": true,
+          "repair_verdict": "RISK_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 0,
+            "RISK_PRIOR": 1,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_positive": {
+        "abstain_any": false,
+        "chosen_set": [
+          "cand_repair_level_shift"
+        ],
+        "decisions": [
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset120_M_positive_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 reports paired positive Support and delayed evidence for repair_level_shift from the same historical episode. Its current Support is unconfirmed, but the requested probe is the confirmation process.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset120_M_positive_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 provides paired positive Support and delayed evidence for repair_level_shift. Although context matching is weak, it explicitly directs a first Support probe, which serves as confirmation.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair2",
+            "relation": "POSITIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 2,
+          "order": [
+            "repair_level_shift",
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm"
+          ],
+          "radius_mode": "weak_reference",
+          "rendered": true,
+          "repair_verdict": "POSITIVE_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 1,
+            "RISK_PRIOR": 0,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_remove": {
+        "abstain_any": true,
+        "chosen_set": [
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset120_M_remove_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.missing_run_count\",\"recent.median_acf_at_calendar_period\",\"recent.median_normalized_seasonal_residual\",\"change.coverage_delta\",\"change.missing_run_count_delta\"],\"rationale\":\"Choose the identity candidate for the Support probe: coverage is complete, there are no missing runs, and seasonal autocorrelation remains strong at 0.931038 with a low normalized residual of 0.204957. No signed experience or strong context-matched risk supports applying repair or winsorization; the probe will c",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset120_M_remove_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"change.coverage_delta\",\"change.median_acf_at_calendar_period_delta\",\"change.median_normalized_seasonal_residual_delta\",\"change.median_robust_center_delta\",\"change.median_robust_scale_delta\",\"recent.coverage\",\"recent.median_acf_at_calendar_period\"],\"rationale\":\"No signed experience or strong risk evidence supports either transformation. Coverage is complete, and the observed changes are mixed: seasonal residual worsened and calendar-period ACF declined, while robust scale improved. Request the identity Support probe to confirm the uncalibrated",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [],
+        "signed_diagnostic": {
+          "rendered": false
+        }
+      }
+    },
+    "200": {
+      "M_conflict": {
+        "abstain_any": true,
+        "chosen_set": [
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset200_M_conflict_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"change.coverage_delta\",\"change.missing_run_count_delta\"],\"rationale\":\"No signed experience or strong risk evidence is available. The identity operator preserves complete coverage and the absence of missing runs; its budgeted Support probe will confirm the current Reference 1 support.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset200_M_conflict_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.median_normalized_seasonal_residual\",\"change.coverage_delta\",\"change.missing_run_count_delta\"],\"rationale\":\"Choose the identity operator for the budgeted Support probe: coverage is complete, there are no missing runs, and no signed experience favors winsorization. The probe will confirm whether the Reference 1 operator is supported.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair1",
+            "relation": "NEGATIVE"
+          },
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair2",
+            "relation": "POSITIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 4,
+          "order": [
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "repair_level_shift",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm"
+          ],
+          "radius_mode": "radius",
+          "rendered": true,
+          "repair_verdict": "UNKNOWN",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 0,
+            "RISK_PRIOR": 0,
+            "UNKNOWN": 23
+          }
+        }
+      },
+      "M_negative": {
+        "abstain_any": false,
+        "chosen_set": [
+          "cand_winsorize"
+        ],
+        "decisions": [
+          {
+            "abstain": false,
+            "chosen": "cand_winsorize",
+            "label": "offset200_M_negative_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[],\"rationale\":\"The observed changes are modestly favorable for winsorization: normalized seasonal residual and robust scale decrease while coverage and missingness remain unchanged. No context-matched negative evidence applies; request the budgeted Support probe to confirm.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": false,
+            "chosen": "cand_winsorize",
+            "label": "offset200_M_negative_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[],\"rationale\":\"Current evidence shows a lower normalized seasonal residual and robust scale with unchanged coverage and missingness, supporting a bounded winsorization probe. No strong negative evidence applies to this candidate.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair1",
+            "relation": "NEGATIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 2,
+          "order": [
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm",
+            "repair_level_shift"
+          ],
+          "radius_mode": "weak_reference",
+          "rendered": true,
+          "repair_verdict": "RISK_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 0,
+            "RISK_PRIOR": 1,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_positive": {
+        "abstain_any": true,
+        "chosen_set": [
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset200_M_positive_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.maximum_missing_run_length\",\"recent.median_normalized_seasonal_residual\"],\"rationale\":\"The series has complete coverage with no missing runs, and the normalized seasonal residual is already low. With no signed experience or strong negative evidence, request the identity Support probe as the reference confirmation.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset200_M_positive_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.median_acf_at_calendar_period\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"Choose the baseline identity operator for the budgeted Support probe: coverage is complete, there are no missing runs, and seasonal structure is strong. No signed experience supports winsorization, while the probe will confirm identity support.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair2",
+            "relation": "POSITIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 2,
+          "order": [
+            "repair_level_shift",
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm"
+          ],
+          "radius_mode": "weak_reference",
+          "rendered": true,
+          "repair_verdict": "POSITIVE_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 1,
+            "RISK_PRIOR": 0,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_remove": {
+        "abstain_any": true,
+        "chosen_set": [
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset200_M_remove_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.maximum_missing_run_length\",\"change.coverage_delta\",\"change.missing_run_count_delta\",\"change.maximum_missing_run_length_delta\"],\"rationale\":\"No signed experience or strong negative evidence is available. Data quality is stable with complete coverage and no missing runs, so request the budgeted Support probe for the identity reference operator to confirm its Support.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset200_M_remove_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.median_normalized_seasonal_residual\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"Choose identity for the budgeted Support probe: the recent series has complete coverage with no missing runs, and winsorization shows only a negligible residual improvement while potentially altering robust scale. The probe will confirm Support for the reference operator.\"}",
+            "pool": [
+              "identity",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [],
+        "signed_diagnostic": {
+          "rendered": false
+        }
+      }
+    },
+    "80": {
+      "M_conflict": {
+        "abstain_any": true,
+        "chosen_set": [
+          "cand_repair_level_shift",
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset80_M_conflict_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"recent.median_acf_at_calendar_period\",\"recent.median_normalized_seasonal_residual\",\"change.median_robust_scale_delta\",\"change.median_acf_at_calendar_period_delta\"],\"rationale\":\"The strong calendar-period autocorrelation (0.891431) and low normalized seasonal residual (0.173812) indicate a stable seasonal structure, while the estimated level-shift correction is the only candidate targeted to a localized discontinuity. Its robust-scale reduction (-3.145226) supports improved stabilization; winsorization has no specific supporting",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset80_M_conflict_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.missing_run_count\",\"recent.median_acf_at_calendar_period\",\"recent.median_normalized_seasonal_residual\",\"change.median_acf_at_calendar_period_delta\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"The series has complete coverage, no missing runs, and strong calendar-period autocorrelation (0.891431) with low normalized seasonal residual (0.173812). The repair candidate is not supported by the observed changes: autocorrelation declines and seasonal residual increases",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair1",
+            "relation": "NEGATIVE"
+          },
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair2",
+            "relation": "POSITIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 4,
+          "order": [
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "repair_level_shift",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm"
+          ],
+          "radius_mode": "radius",
+          "rendered": true,
+          "repair_verdict": "UNKNOWN",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 0,
+            "RISK_PRIOR": 0,
+            "UNKNOWN": 23
+          }
+        }
+      },
+      "M_negative": {
+        "abstain_any": true,
+        "chosen_set": [
+          "cand_winsorize",
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset80_M_negative_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"Reference 3\"],\"rationale\":\"No deployment-visible evidence indicates that winsorization would improve the clean series, while repair_level_shift has weak negative historical evidence. Retain the identity path.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": false,
+            "chosen": "cand_winsorize",
+            "label": "offset80_M_negative_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"Reference 3\",\"public context\"],\"rationale\":\"Winsorization is the remaining unknown operator and merits the budgeted Support probe. Repair-level-shift has weak historical negative evidence, while current context shows complete coverage and no missing-run issue, so there is no strong basis to probe it first.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair1",
+            "relation": "NEGATIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 2,
+          "order": [
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm",
+            "repair_level_shift"
+          ],
+          "radius_mode": "weak_reference",
+          "rendered": true,
+          "repair_verdict": "RISK_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 0,
+            "RISK_PRIOR": 1,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_positive": {
+        "abstain_any": false,
+        "chosen_set": [
+          "cand_repair_level_shift"
+        ],
+        "decisions": [
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset80_M_positive_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 provides paired positive Support and delayed evidence for repair_level_shift from the same historical episode, and explicitly directs probing it first. The current Support probe is the required confirmation process.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": false,
+            "chosen": "cand_repair_level_shift",
+            "label": "offset80_M_positive_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"cand_repair_level_shift\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 provides paired positive Support and delayed evidence for repair_level_shift. Although the reference is weak and context matching is uncalibrated, the prescribed action is to probe this operator first; the current Support probe serves as confirmation.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [
+          {
+            "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_p0_pair2",
+            "relation": "POSITIVE"
+          }
+        ],
+        "signed_diagnostic": {
+          "n_historical_contexts": 2,
+          "order": [
+            "repair_level_shift",
+            "denoise_median",
+            "denoise_savgol",
+            "denoise_stl",
+            "denoise_wavelet",
+            "fft_decompose",
+            "hampel_filter",
+            "impute_ar",
+            "impute_ema",
+            "impute_fft",
+            "impute_linear",
+            "impute_ssm",
+            "minmax_norm",
+            "outlier_iqr",
+            "outlier_mad",
+            "period_complete",
+            "period_median_complete",
+            "resample_uniform",
+            "smooth_ema",
+            "smooth_ma",
+            "stl_decompose",
+            "winsorize",
+            "znorm"
+          ],
+          "radius_mode": "weak_reference",
+          "rendered": true,
+          "repair_verdict": "POSITIVE_PRIOR",
+          "verdict_counts": {
+            "CONFLICT": 0,
+            "POSITIVE_PRIOR": 1,
+            "RISK_PRIOR": 0,
+            "UNKNOWN": 22
+          }
+        }
+      },
+      "M_remove": {
+        "abstain_any": true,
+        "chosen_set": [
+          "identity"
+        ],
+        "decisions": [
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset80_M_remove_rep1",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.median_acf_at_calendar_period\",\"change.median_robust_scale_delta\",\"change.median_robust_center_delta\",\"Experience memory\"],\"rationale\":\"No signed experience or strong context-matched evidence supports repair or winsorization. Coverage is complete, seasonal autocorrelation remains strong, and the modest robust-statistic changes do not establish a level shift or outlier problem. Request the identity Support probe to confirm the reference operator.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          },
+          {
+            "abstain": true,
+            "chosen": "identity",
+            "label": "offset80_M_remove_rep2",
+            "llm_raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"change.coverage_delta\",\"change.maximum_missing_run_length_delta\",\"recent.median_acf_at_calendar_period\",\"recent.median_normalized_seasonal_residual\"],\"rationale\":\"The series has complete coverage with no missing runs, and the available change signals do not establish a clear benefit for either repair or winsorization. With no signed experience or strong negative evidence, request the identity Support probe to confirm the reference operator.\"}",
+            "pool": [
+              "identity",
+              "cand_repair_level_shift",
+              "cand_winsorize"
+            ],
+            "reference_section": ""
+          }
+        ],
+        "memory_episodes": [],
+        "signed_diagnostic": {
+          "rendered": false
+        }
+      }
+    }
+  },
+  "verdict": "LLM_VARIANCE"
+}

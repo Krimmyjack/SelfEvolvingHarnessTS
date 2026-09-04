@@ -1,0 +1,107 @@
+{
+  "experiment_id": "PATTERN",
+  "revision": 1,
+  "date_drafted": "2026-08-16",
+  "state": "FROZEN_BEFORE_ANY_FIT",
+  "_freeze_rule": "本文件在任何特征-gain 关系被计算之前写入。之后不得修改特征集、模型规格或判据。",
+  "question": "GRID0 收窄为 CURRENT_F1_F2_F3_INTERACTION_UNRESOLVED。本实验测：描述『这条 series 在当前 origin 的局部状态』的多尺度 Pattern，能否在 held-out 新 series 上预测 outlier_mad 的 signed gain。",
+  "constraints_from_local_review": [
+    "所有特征只能使用 series[:origin]",
+    "重点是 recent pattern、recent-vs-history drift、局部 regime、异常作用区域",
+    "IT'S TIME / TimeClaw 的全局结构特征只作背景分层，不单独决定 Workflow",
+    "允许少量预注册交互（全局季节性 × 最近周期漂移 等）",
+    "210 格只用于探索与冻结特征；最终必须在新 development series 上一次确认",
+    "不用 within-series 方差 >= 30.7% 作硬门（交互项的 within 可以很高即使某因子是 series 常量）"
+  ],
+  "no_selection_performed": "为避免在 210 格上做特征挑选（forking paths），本实验不做任何特征选择：全部预注册特征一次性进入，靠 ridge 正则化。dev 只用于拟合，不用于挑特征。",
+  "feature_families": {
+    "G_global_background": {
+      "window": "raw[:origin]",
+      "fields": [
+        "g_trend_strength",
+        "g_seasonality_strength",
+        "g_spectral_entropy",
+        "g_acf1",
+        "g_var_ratio_halves",
+        "g_outlier_rate",
+        "g_iqr_over_std",
+        "g_kurtosis"
+      ]
+    },
+    "R_recent": {
+      "window": "raw[origin-192:origin]（即 Consumer 的实际预测输入窗）",
+      "fields": [
+        "r_trend_strength",
+        "r_seasonality_strength",
+        "r_spectral_entropy",
+        "r_acf1",
+        "r_outlier_rate",
+        "r_outlier_max_z",
+        "r_outlier_recency_weight",
+        "r_period_shape_corr",
+        "r_level_z",
+        "r_scale_ratio"
+      ]
+    },
+    "D_drift": {
+      "definition": "R（recent）对照 H（raw[:origin-192]）的差",
+      "fields": [
+        "d_trend_strength",
+        "d_seasonality_strength",
+        "d_spectral_entropy",
+        "d_acf1",
+        "d_level_shift",
+        "d_scale_shift",
+        "d_seasonal_shape_drift",
+        "d_outlier_rate"
+      ]
+    },
+    "X_preregistered_interactions": {
+      "fields": [
+        "x_gseas_by_dshape  = g_seasonality_strength * d_seasonal_shape_drift",
+        "x_gtrend_by_dlevel = g_trend_strength * d_level_shift",
+        "x_routl_by_goutl   = r_outlier_rate / (g_outlier_rate + eps)"
+      ]
+    }
+  },
+  "mechanism_note": "R_outlier_* 的动机是机制性的：模型在被清洗过的训练数据上拟合，若当前预测输入本身含未清洗的异常，baseline 与 candidate 模型对它的响应会不同。这是唯一一个既随 origin 变、又与 Program 语义直接相关的候选。",
+  "design": {
+    "dev": "GRID0 已暴露的 35 series × 6 origins = 210 格（gain 已算，复用，不重跑）",
+    "confirmation": "新 development series：cohort_A 25 条（合格未选 145 中取）+ cohort_B 10 条（合格未选 73 中取），× 6 origins = 210 格",
+    "selection_rule": "沿用 GRID0 census 全部资格判据（窗口完整 / 5 窗 modified_fraction<=0.35 / 算子确实行动），按 natural_key 顺序取前 N，排除 GRID0 已用与协议排除名单",
+    "information_wall": "确认集先算完全部特征，再打开 gain",
+    "exposure": "一次性，只确认一次。入选 series 永久标记 development_exposed"
+  },
+  "model_spec": {
+    "model": "Ridge alpha=1，不惩罚截距",
+    "standardize": "训练集内标准化，零方差列丢弃",
+    "fit": "同 cohort：dev 拟合 → confirmation 预测（同分布，避开 GRID0 A6 的跨 cohort 外推病理）",
+    "metric": "series 宏平均 MSE",
+    "skill": "1 - MSE_model/MSE_baseline，baseline = dev 训练集 gain 均值",
+    "target": "signed gain",
+    "comparators": [
+      "F1（GRID0 原观测面）",
+      "F1+G+R+D+X（本实验全集）"
+    ]
+  },
+  "frozen_criterion": {
+    "primary": "EXIT 1 判据：两个 cohort 上 held-out skill(全集) >= 0.15 且相对 skill(F1) 增量 >= 0.05——与 GRID0 P1B 同口径，可直接对比",
+    "secondary_reported_not_decisive": [
+      "sign accuracy（材料格符号不平衡，只报不判）",
+      "跨 cohort 方向（只报）"
+    ]
+  },
+  "exit_branches": {
+    "PATTERN_DIRECTION_PREDICTIVE": "达 primary → 做成 Observation + Scope Rule Card，进自然 Batch Evolution",
+    "PATTERN_MATERIALITY_ONLY": "未达 primary，但对 |gain|>=M 的二分类在 held-out 上优于 F1+B_t 基线 → 与 F4 合并成 Risk/Probe Gate，不授权直接执行",
+    "PATTERN_FAMILY_CLOSED": "两者皆不成立 → 可信关闭该 Pattern family，转 MEMO，不继续堆特征"
+  },
+  "discipline": [
+    "零 LLM",
+    "确认集特征先于 gain 计算",
+    "不做特征选择",
+    "不后验调阈值",
+    "只追加不改写已冻结工件",
+    "任何机械层断裂即停并回报"
+  ]
+}

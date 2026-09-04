@@ -1,0 +1,80 @@
+{
+  "experiment_id": "v1-bounded-fault-selection-wiring-v2",
+  "note": "S1-v2：v1（w1_bounded_fault_selection_wiring_report.json，PROTOCOL_FAILURE 保留）暴露接口契约缺口——prompt 未教material threshold（gain < 0.005 才算 failed——符号正的 +0.004 仍失败）与 guard 确定性规则 → t105 误选 INSUFFICIENT_EVIDENCE 且指向跨 guard 类型的 case。协议修复（只改 prompt 契约文本——不动模型/不动 Case/不动验证规则）后重跑一次。verdict 仅限 WIRING_PASS——不证明五类归因可靠、不证明 Case Memory 有收益——development exposure——零新 Claim",
+  "model": "gpt-5.6-luna",
+  "base_url": "https://api.agicto.cn/v1",
+  "temperature": 0,
+  "records": [
+    {
+      "call_id": "t117",
+      "allowed_fault_types": [
+        "SCOPE_MEMORY_RISK_ERROR"
+      ],
+      "expected": {
+        "fault_type": "SCOPE_MEMORY_RISK_ERROR",
+        "matched_case_id": "case-0002"
+      },
+      "llm_calls": 1,
+      "checks": {
+        "structure_valid": true,
+        "no_masked_selection": true,
+        "evidence_refs_resolvable": true,
+        "matched_case_in_retrieval": true,
+        "runtime_reconciliation": "MATCH_ADD_EVIDENCE",
+        "proposed_action": "MATCH_ADD_EVIDENCE",
+        "agent_answer": {
+          "fault_type": "SCOPE_MEMORY_RISK_ERROR",
+          "proposed_case_action": "MATCH_ADD_EVIDENCE",
+          "matched_case_id": "case-0002",
+          "evidence_refs": [
+            "ep:T117@888",
+            "ep:T117@984",
+            "alt:hampel@888",
+            "alt:hampel@984",
+            "delayed:T117@1032"
+          ],
+          "reason": "Hampel passed both in-group Support replays but failed delayed validation, confirming temporal/scope risk for the proposed patch and matching case-0002."
+        }
+      }
+    },
+    {
+      "call_id": "t105",
+      "allowed_fault_types": [],
+      "expected": {
+        "fault_type": "NO_ACTIONABLE_FAULT",
+        "matched_case_id": "case-0003"
+      },
+      "llm_calls": 1,
+      "checks": {
+        "structure_valid": true,
+        "no_masked_selection": true,
+        "evidence_refs_resolvable": true,
+        "matched_case_in_retrieval": true,
+        "runtime_reconciliation": "MATCH_ADD_EVIDENCE",
+        "proposed_action": "MATCH_ADD_EVIDENCE",
+        "agent_answer": {
+          "fault_type": "NO_ACTIONABLE_FAULT",
+          "proposed_case_action": "MATCH_ADD_EVIDENCE",
+          "matched_case_id": "case-0003",
+          "evidence_refs": [
+            "alt:outlier_mad@792",
+            "alt:outlier_mad@984",
+            "alt:outlier_mad@600",
+            "alt:hampel_filter@792",
+            "alt:hampel_filter@984",
+            "alt:hampel_filter@600"
+          ],
+          "reason": "All replacement candidates fail the material threshold of +0.005 on at least one in-group window; outlier_mad fails all three and hampel_filter fails two, matching case-0003."
+        }
+      }
+    }
+  ],
+  "pass_conditions": {
+    "structure_2of2": true,
+    "no_masked_selection_2of2": true,
+    "evidence_refs_2of2": true,
+    "runtime_reconciliation_normal": true,
+    "no_write_permission": true
+  },
+  "verdict": "BOUNDED_FAULT_SELECTION_WIRING_PASS"
+}

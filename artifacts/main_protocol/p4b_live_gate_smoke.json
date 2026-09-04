@@ -1,0 +1,1333 @@
+{
+  "stage": "P4B_BOUNDED_RISK_FORECAST",
+  "status": "COMPLETE",
+  "started_at": "2026-08-31T16:06:27.904880+08:00",
+  "backend_mode": "live",
+  "transport": {
+    "base_url": "https://api.nowaterapi.xyz/v1",
+    "model": "gpt-5.6-sol",
+    "source": "M0_AGENT_*",
+    "note": "differs from the old P4 transport (gpt-5.6-luna on api.agicto.cn); recorded because a receipt saying only 'live' would hide a change of Fast agent between studies"
+  },
+  "smoke": true,
+  "evidence_grade": "SMOKE_NOT_EVIDENCE",
+  "smoke_kind": "LIVE_GATE_REHEARSAL_ON_EXPOSED_OLD_ORIGINS",
+  "smoke_checks": [
+    "a real agent proposes a candidate",
+    "the bounded rule admits or refuses it",
+    "an admitted winner opens the delayed face",
+    "Support-B approval persists a Skill",
+    "the persisted Skill is retrievable on the next origin"
+  ],
+  "frozen_contract": {
+    "task": "forecast",
+    "consumer": "pooled_ridge_a1",
+    "primary_metric": "sMASE",
+    "preregistration": "docs/P4B_BOUNDED_RISK_GATE_PREREGISTRATION_2026-08-31.md",
+    "does_not_supersede": "artifacts/main_protocol/p4_forecast_performance_b8_llm8_run2_20260830.json",
+    "experiment_label": "PROSPECTIVE_RISK_UTILITY_POLICY_EXPERIMENT",
+    "question": "does the bounded-risk admission gate change Target-local adaptation, Skill formation, and held-out utility, relative to the strict 20/20 gate?",
+    "not_tested_here": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it",
+    "source_treatment": {
+      "active": false,
+      "reading": "the audited Source card is installed in both arms and is applicable at no origin in this study; it is correctly silent, and the accumulation treatment is therefore empty",
+      "arm_names_are_historical": "the arms are coded A5-strict / A5-bounded for continuity with P2-P4; read them as Online-strict / Online-bounded, since neither arm's Source knowledge activates here",
+      "scope_match_gate_for_a_real_a5_study": {
+        "requirement": "at least 1 pre-audited Source Skill must match the deployment-visible context of at least one held-in origin",
+        "inadmissible_way_to_pass": "widening an existing card's observable_applicability so it matches; that manufactures the treatment instead of finding it"
+      }
+    },
+    "geometry": {
+      "grid_step": 48,
+      "minimum_spacing": 240,
+      "minimum_spacing_rule": "CONTEXT_LENGTH + HORIZON",
+      "old_p4_origins": [
+        600,
+        648,
+        696,
+        744,
+        792,
+        840,
+        888,
+        936
+      ],
+      "old_p4_eval_end": 984,
+      "rule": "greedy on the 48-step grid, minimum spacing 240, skipping origins whose context window is not evaluable",
+      "viability_screen": "structural: the Consumer's robust scale on [origin-192, origin) must not collapse to its floor for any evaluation series; reads observed history only, no Outcome",
+      "held_in_origins": [
+        1176,
+        1416,
+        1656,
+        1896,
+        2136,
+        2376,
+        2616,
+        2856
+      ],
+      "held_in_eval_end": 2904,
+      "held_out_origins": [
+        3096,
+        3576,
+        3816,
+        4056,
+        4296,
+        4584,
+        4824,
+        6600
+      ],
+      "held_out_eval_end": 6648,
+      "held_in_spacings": [
+        240,
+        240,
+        240,
+        240,
+        240,
+        240,
+        240
+      ],
+      "held_out_spacings": [
+        480,
+        240,
+        240,
+        240,
+        288,
+        240,
+        1776
+      ],
+      "outcome_read_during_selection": false,
+      "held_in_context_opens_at": 984,
+      "held_out_context_opens_at": 2904,
+      "slack_beyond_isolation_old_to_held_in": 0,
+      "slack_beyond_isolation_held_in_to_held_out": 0
+    },
+    "arms": [
+      {
+        "name": "A5-strict",
+        "snapshot_source": "shared_initial",
+        "carries_state_across_origins": true,
+        "admission_rule": {
+          "rule": "strict_positive_only",
+          "max_harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0
+        },
+        "held_out_role": "primary"
+      },
+      {
+        "name": "A5-bounded",
+        "snapshot_source": "shared_initial",
+        "carries_state_across_origins": true,
+        "admission_rule": {
+          "rule": "bounded_risk_v1",
+          "max_harmed_fraction": 0.2,
+          "max_single_series_harm": 0.3
+        },
+        "held_out_role": "primary"
+      }
+    ],
+    "deterministic_references": [
+      "Static",
+      "Parallel Best-of-N@8"
+    ],
+    "bounded_budget": {
+      "max_harmed_fraction": 0.2,
+      "max_single_series_harm": 0.3,
+      "scope": "pooled_ridge_a1 + sMASE only; does not transfer"
+    },
+    "offline_sensitivity_point": {
+      "max_harmed_fraction": 0.05,
+      "max_single_series_harm": 0.1,
+      "method": "offline re-read of the collected per-series log; no new run"
+    },
+    "per_cell_budget": {
+      "full_support_evaluations": 8,
+      "support_a_max": 7,
+      "support_b_max": 1,
+      "cheap_probe_max": 24,
+      "llm_call_max": 8,
+      "token_max": 60000,
+      "accepted_update_max": 1,
+      "wall_seconds_max": 2700
+    },
+    "cells": {
+      "held_in": 48,
+      "held_out": 48,
+      "held_out_spends_llm": false,
+      "global_llm_call_cap": 384
+    },
+    "allow_slow": false,
+    "statistics": {
+      "unit": "origin",
+      "aggregation": "mean over the 3 replicas within an origin, then paired",
+      "n": 8,
+      "test": "paired Wilcoxon signed-rank, two-sided, alpha=0.05",
+      "interval": "BCa bootstrap 95% CI, 10000 resamples, clustered on origin",
+      "power_note": "n=8: the smallest attainable two-sided p is 0.0078 and p<0.05 needs W<=3, so only a near-unanimous sign split can reach significance; a neutral verdict means undetectable here, not zero"
+    }
+  },
+  "preflight": {
+    "stage": "P4B_PREFLIGHT",
+    "status": "PASS",
+    "dataset": "KDD Cup 2018 with missing values",
+    "data_role": "EXPOSED_DEVELOPMENT",
+    "shortest_series_length": 10898,
+    "origin_plan": {
+      "rule": "greedy on the 48-step grid, minimum spacing 240, skipping origins whose context window is not evaluable",
+      "viability_screen": "structural: the Consumer's robust scale on [origin-192, origin) must not collapse to its floor for any evaluation series; reads observed history only, no Outcome",
+      "held_in_origins": [
+        1176,
+        1416,
+        1656,
+        1896,
+        2136,
+        2376,
+        2616,
+        2856
+      ],
+      "held_in_eval_end": 2904,
+      "held_out_origins": [
+        3096,
+        3576,
+        3816,
+        4056,
+        4296,
+        4584,
+        4824,
+        6600
+      ],
+      "held_out_eval_end": 6648,
+      "held_in_spacings": [
+        240,
+        240,
+        240,
+        240,
+        240,
+        240,
+        240
+      ],
+      "held_out_spacings": [
+        480,
+        240,
+        240,
+        240,
+        288,
+        240,
+        1776
+      ],
+      "replica_orders": {
+        "Forward": [
+          1176,
+          1416,
+          1656,
+          1896,
+          2136,
+          2376,
+          2616,
+          2856
+        ],
+        "Reverse": [
+          2856,
+          2616,
+          2376,
+          2136,
+          1896,
+          1656,
+          1416,
+          1176
+        ],
+        "Interleaved": [
+          1176,
+          2136,
+          1416,
+          2376,
+          1656,
+          2616,
+          1896,
+          2856
+        ]
+      },
+      "outcome_read_during_selection": false
+    },
+    "viability_census": {
+      "screened": 114,
+      "viable": [
+        1176,
+        1224,
+        1272,
+        1320,
+        1368,
+        1416,
+        1464,
+        1512,
+        1560,
+        1608,
+        1656,
+        1704,
+        1752,
+        1800,
+        1848,
+        1896,
+        1944,
+        1992,
+        2040,
+        2088,
+        2136,
+        2184,
+        2232,
+        2280,
+        2328,
+        2376,
+        2424,
+        2472,
+        2520,
+        2568,
+        2616,
+        2664,
+        2712,
+        2760,
+        2808,
+        2856,
+        2904,
+        2952,
+        3000,
+        3048,
+        3096,
+        3576,
+        3624,
+        3672,
+        3720,
+        3768,
+        3816,
+        3864,
+        3912,
+        3960,
+        4008,
+        4056,
+        4104,
+        4152,
+        4200,
+        4248,
+        4296,
+        4344,
+        4392,
+        4440,
+        4488,
+        4584,
+        4632,
+        4680,
+        4728,
+        4776,
+        4824,
+        6600
+      ],
+      "rejected": [
+        3144,
+        3192,
+        3240,
+        3288,
+        3336,
+        3384,
+        3432,
+        3480,
+        3528,
+        4536,
+        4872,
+        4920,
+        4968,
+        5016,
+        5064,
+        5112,
+        5160,
+        5208,
+        5256,
+        5304,
+        5352,
+        5400,
+        5448,
+        5496,
+        5544,
+        5592,
+        5640,
+        5688,
+        5736,
+        5784,
+        5832,
+        5880,
+        5928,
+        5976,
+        6024,
+        6072,
+        6120,
+        6168,
+        6216,
+        6264,
+        6312,
+        6360,
+        6408,
+        6456,
+        6504,
+        6552
+      ],
+      "rejection_reason": "context window robust scale collapsed to its floor",
+      "outcome_reads": 0,
+      "consumer_fits": 0,
+      "llm_calls": 0
+    },
+    "source_scope_census": {
+      "skill_id": "s2a_forecast_supply_v0",
+      "origins_checked": [
+        1176,
+        1416,
+        1656,
+        1896,
+        2136,
+        2376,
+        2616,
+        2856,
+        3096,
+        3576,
+        3816,
+        4056,
+        4296,
+        4584,
+        4824,
+        6600,
+        600,
+        648,
+        696,
+        744,
+        792,
+        840,
+        888,
+        936
+      ],
+      "matched_origins": [],
+      "match_count": 0,
+      "minimum_for_an_accumulation_study": 1,
+      "accumulation_treatment_active": false,
+      "consequence_if_zero": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it",
+      "consumer_fits": 0,
+      "outcome_reads": 0,
+      "llm_calls": 0
+    },
+    "geometry_failures": [],
+    "strict_equivalence_receipt": "artifacts/main_protocol/p4b_preflight_strict_equivalence.json",
+    "llm_calls": 0
+  },
+  "replicas": [
+    "Forward"
+  ],
+  "held_in_origins": [
+    600,
+    648
+  ],
+  "held_out_origins": [],
+  "held_in_rows": [
+    {
+      "phase": "held_in",
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "sequence_index": 1,
+      "origin": 600,
+      "admission_rule": {
+        "rule": "strict_positive_only",
+        "max_harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity",
+        "repair_level_excursion",
+        "repair_localized_deviation"
+      ],
+      "chosen_candidate_id": "repair_localized_deviation",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 1,
+      "probes": [
+        {
+          "candidate_id": "repair_localized_deviation",
+          "kind": "probe",
+          "aggregate_gain": -0.02522988376273183,
+          "probe_executed_legally": true,
+          "admission": {
+            "admitted": false,
+            "rule": "strict_positive_only",
+            "reason": "relation_not_positive",
+            "aggregate_gain": -0.02522988376273183,
+            "series_count": null,
+            "harmed_count": null,
+            "harmed_fraction": null,
+            "max_single_series_harm": null
+          }
+        },
+        {
+          "candidate_id": "repair_level_excursion",
+          "kind": "verifier_rejected",
+          "aggregate_gain": null,
+          "probe_executed_legally": false,
+          "admission": null
+        }
+      ],
+      "episodes_written": [
+        {
+          "episode_id": "forecast_p4b_H1_target_outlier_mad_forward_h1_a5_strict_p1",
+          "relation": "NEGATIVE",
+          "local_status": "EPISODE_ONLY",
+          "source_skill_id": null,
+          "support_gain": -0.02522988376273183,
+          "support_accepted": false,
+          "support_per_view_gain": [
+            0.02006538247635481,
+            -0.024677322748805963,
+            -0.18601833171793558,
+            -0.0232085515939624,
+            -0.009392326225886816,
+            -0.1787589626183701,
+            -0.07586224940069197,
+            -0.17700210196671295,
+            -0.18711176902323867,
+            0.004537131785447457,
+            0.004555928216561478,
+            0.0005985642597567953,
+            -0.02311824312786115,
+            0.09883104109813812,
+            -0.08208294728113619,
+            -0.11789168555695895,
+            0.19552332409180817,
+            0.15432422195374373,
+            0.08338492797626629,
+            0.018706294148847613
+          ],
+          "delayed_gain": null,
+          "delayed_per_view_gain": [],
+          "series_uids": [
+            "T1",
+            "T101",
+            "T102",
+            "T103",
+            "T104",
+            "T105",
+            "T106",
+            "T107",
+            "T108",
+            "T109",
+            "T11",
+            "T110",
+            "T111",
+            "T112",
+            "T113",
+            "T114",
+            "T115",
+            "T116",
+            "T117",
+            "T118",
+            "T119",
+            "T12",
+            "T120",
+            "T121",
+            "T122",
+            "T123",
+            "T125",
+            "T126",
+            "T127",
+            "T128",
+            "T129",
+            "T13",
+            "T131",
+            "T132",
+            "T133",
+            "T134",
+            "T135",
+            "T137",
+            "T138",
+            "T139"
+          ]
+        }
+      ],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 1,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 103.044
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    {
+      "phase": "held_in",
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "sequence_index": 2,
+      "origin": 648,
+      "admission_rule": {
+        "rule": "strict_positive_only",
+        "max_harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity",
+        "repair_level_shift_local",
+        "outlier_mad_intrinsic"
+      ],
+      "chosen_candidate_id": "outlier_mad_intrinsic",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 1,
+      "probes": [
+        {
+          "candidate_id": "outlier_mad_intrinsic",
+          "kind": "probe",
+          "aggregate_gain": 0.2615461534852974,
+          "probe_executed_legally": true,
+          "admission": {
+            "admitted": false,
+            "rule": "strict_positive_only",
+            "reason": "relation_not_positive",
+            "aggregate_gain": 0.2615461534852974,
+            "series_count": null,
+            "harmed_count": null,
+            "harmed_fraction": null,
+            "max_single_series_harm": null
+          }
+        },
+        {
+          "candidate_id": "repair_level_shift_local",
+          "kind": "verifier_rejected",
+          "aggregate_gain": null,
+          "probe_executed_legally": false,
+          "admission": null
+        }
+      ],
+      "episodes_written": [
+        {
+          "episode_id": "forecast_p4b_H2_target_outlier_mad_forward_h2_a5_strict_p1",
+          "relation": "CONFLICT",
+          "local_status": "EPISODE_ONLY",
+          "source_skill_id": null,
+          "support_gain": 0.2615461534852974,
+          "support_accepted": false,
+          "support_per_view_gain": [
+            0.4099862730670112,
+            0.03707973791379171,
+            0.6682544503049446,
+            0.2914759549772854,
+            0.37437461495115265,
+            -0.06275282245424396,
+            -0.20032299703812484,
+            0.24498186035280467,
+            0.6131835306790445,
+            0.26691595635598286,
+            0.047649581489167314,
+            0.3410366123867652,
+            0.09044910449953858,
+            -0.024091322993462283,
+            0.425404262012236,
+            0.5388146691430746,
+            0.5667862049049788,
+            0.5940691834583696,
+            0.045426613357930634,
+            -0.0377983976622942
+          ],
+          "delayed_gain": null,
+          "delayed_per_view_gain": [],
+          "series_uids": [
+            "T1",
+            "T101",
+            "T102",
+            "T103",
+            "T104",
+            "T105",
+            "T106",
+            "T107",
+            "T108",
+            "T109",
+            "T11",
+            "T110",
+            "T111",
+            "T112",
+            "T113",
+            "T114",
+            "T115",
+            "T116",
+            "T117",
+            "T118",
+            "T119",
+            "T12",
+            "T120",
+            "T121",
+            "T122",
+            "T123",
+            "T125",
+            "T126",
+            "T127",
+            "T128",
+            "T129",
+            "T13",
+            "T131",
+            "T132",
+            "T133",
+            "T134",
+            "T135",
+            "T137",
+            "T138",
+            "T139"
+          ]
+        }
+      ],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 1,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 82.354
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    {
+      "phase": "held_in",
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "sequence_index": 1,
+      "origin": 600,
+      "admission_rule": {
+        "rule": "bounded_risk_v1",
+        "max_harmed_fraction": 0.2,
+        "max_single_series_harm": 0.3
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity",
+        "repair_level_shift_level_excursion"
+      ],
+      "chosen_candidate_id": "repair_level_shift_level_excursion",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 0,
+      "probes": [
+        {
+          "candidate_id": "repair_level_shift_level_excursion",
+          "kind": "verifier_rejected",
+          "aggregate_gain": null,
+          "probe_executed_legally": false,
+          "admission": null
+        }
+      ],
+      "episodes_written": [],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 48.923
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    {
+      "phase": "held_in",
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "sequence_index": 2,
+      "origin": 648,
+      "admission_rule": {
+        "rule": "bounded_risk_v1",
+        "max_harmed_fraction": 0.2,
+        "max_single_series_harm": 0.3
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity",
+        "repair_level_excursion",
+        "filter_extreme_deviation"
+      ],
+      "chosen_candidate_id": "filter_extreme_deviation",
+      "abstain_reason": null,
+      "winner_candidate_id": "filter_extreme_deviation",
+      "winner_program": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "abstained": false,
+      "support_receipts_used": 1,
+      "probes": [
+        {
+          "candidate_id": "filter_extreme_deviation",
+          "kind": "probe",
+          "aggregate_gain": 0.2615461534852974,
+          "probe_executed_legally": true,
+          "admission": {
+            "admitted": true,
+            "rule": "bounded_risk_v1",
+            "reason": "within_risk_budget",
+            "aggregate_gain": 0.2615461534852974,
+            "series_count": 20,
+            "harmed_count": 4,
+            "harmed_fraction": 0.2,
+            "max_single_series_harm": 0.20032299703812484
+          }
+        }
+      ],
+      "episodes_written": [
+        {
+          "episode_id": "forecast_p4b_H2_target_outlier_mad_forward_h2_a5_bounded_p1",
+          "relation": "CONFLICT",
+          "local_status": "LOCAL_ACTIVE",
+          "source_skill_id": null,
+          "support_gain": 0.2615461534852974,
+          "support_accepted": true,
+          "support_per_view_gain": [
+            0.4099862730670112,
+            0.03707973791379171,
+            0.6682544503049446,
+            0.2914759549772854,
+            0.37437461495115265,
+            -0.06275282245424396,
+            -0.20032299703812484,
+            0.24498186035280467,
+            0.6131835306790445,
+            0.26691595635598286,
+            0.047649581489167314,
+            0.3410366123867652,
+            0.09044910449953858,
+            -0.024091322993462283,
+            0.425404262012236,
+            0.5388146691430746,
+            0.5667862049049788,
+            0.5940691834583696,
+            0.045426613357930634,
+            -0.0377983976622942
+          ],
+          "delayed_gain": 0.4199500403481835,
+          "delayed_per_view_gain": [
+            0.1485764343300522,
+            -0.13427884638922682,
+            0.8693326825383032,
+            0.3579548650809019,
+            0.5077421628934453,
+            0.18009086855451106,
+            0.19223909175930753,
+            0.5553185510772423,
+            0.5671045850964735,
+            0.7271522836631479,
+            0.16909163693321672,
+            0.2822289230162234,
+            0.2803133108548863,
+            0.9897974702769972,
+            0.3737499169487357,
+            0.5435590003886523,
+            0.21668164786507682,
+            0.28304744191479925,
+            0.6429863355230769,
+            0.646312444637851
+          ],
+          "series_uids": [
+            "T1",
+            "T101",
+            "T102",
+            "T103",
+            "T104",
+            "T105",
+            "T106",
+            "T107",
+            "T108",
+            "T109",
+            "T11",
+            "T110",
+            "T111",
+            "T112",
+            "T113",
+            "T114",
+            "T115",
+            "T116",
+            "T117",
+            "T118",
+            "T119",
+            "T12",
+            "T120",
+            "T121",
+            "T122",
+            "T123",
+            "T125",
+            "T126",
+            "T127",
+            "T128",
+            "T129",
+            "T13",
+            "T131",
+            "T132",
+            "T133",
+            "T134",
+            "T135",
+            "T137",
+            "T138",
+            "T139"
+          ]
+        }
+      ],
+      "approved_skill_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_mad",
+      "activated": true,
+      "incumbent_after": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "incumbent_changed": true,
+      "store_semantics_changed": true,
+      "fast_skill_event": {
+        "stage": "pending",
+        "support_gain": 0.2615461534852974,
+        "support_passed": true,
+        "support_reused": true,
+        "support_relation": "CONFLICT",
+        "support_evidence": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 4 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.2615461534852974,
+          "aggregate_direction": "improved",
+          "series_read": 20,
+          "harmed_series_count": 4,
+          "harmed_series": [
+            "view_13",
+            "view_19",
+            "view_5",
+            "view_6"
+          ],
+          "min_per_series_gain": -0.20032299703812484
+        },
+        "support_admission": {
+          "admitted": true,
+          "rule": "bounded_risk_v1",
+          "reason": "within_risk_budget",
+          "aggregate_gain": 0.2615461534852974,
+          "series_count": 20,
+          "harmed_count": 4,
+          "harmed_fraction": 0.2,
+          "max_single_series_harm": 0.20032299703812484
+        },
+        "edit_id": "fast_winner_forecast_pooled_ridge_a1_smase_outlier_mad"
+      },
+      "delayed_event": {
+        "stage": "approved",
+        "delayed_gain": 0.4199500403481835,
+        "delayed_relation": "CONFLICT",
+        "delayed_evidence": {
+          "relation": "CONFLICT",
+          "classification_basis": "aggregate >= +0.005 but 1 per-series reading(s) < -0.005",
+          "material_threshold": 0.005,
+          "consumer_id": "pooled_ridge_a1",
+          "aggregate_gain": 0.4199500403481835,
+          "aggregate_direction": "improved",
+          "series_read": 20,
+          "harmed_series_count": 1,
+          "harmed_series": [
+            "view_1"
+          ],
+          "min_per_series_gain": -0.13427884638922682
+        },
+        "delayed_admission": {
+          "admitted": true,
+          "rule": "bounded_risk_v1",
+          "reason": "within_risk_budget",
+          "aggregate_gain": 0.4199500403481835,
+          "series_count": 20,
+          "harmed_count": 1,
+          "harmed_fraction": 0.05,
+          "max_single_series_harm": 0.13427884638922682
+        },
+        "snapshot_updated": true
+      },
+      "usage": {
+        "support_a_full_evaluations": 1,
+        "support_b_full_evaluations": 1,
+        "cheap_probes": 0,
+        "accepted_updates": 1,
+        "wall_seconds": 32.461
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    }
+  ],
+  "held_out_rows": [],
+  "frozen_arms": [
+    {
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "approved_skill_ids": [],
+      "incumbent": null
+    },
+    {
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "approved_skill_ids": [
+        "fast_winner_forecast_pooled_ridge_a1_smase_outlier_mad"
+      ],
+      "incumbent": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ]
+    }
+  ],
+  "releases": "NONE",
+  "natural_final_outcome_reads": 0,
+  "frozen_blocks_touched": false,
+  "initial_knowledge": {
+    "source": {
+      "status": "PASS",
+      "source": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+      "producer_selection_rule": "unique role=producer and arm=A5-online",
+      "skill_id": "s2a_forecast_supply_v0",
+      "task_consumer_metric": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE"
+      },
+      "requires_target_support": true,
+      "supplies_candidates": true,
+      "grants_execution": false,
+      "evidence_semantics": "legacy source supply-only soft prior",
+      "kdd_capability_claim": false,
+      "beneficiary_conversion_claim": false
+    },
+    "historical_task_skill_ids": [
+      "s2a_forecast_supply_v0"
+    ],
+    "both_arms_share_initial_knowledge": true,
+    "source_scope_match_count": 0,
+    "accumulation_treatment_active": false
+  },
+  "parallel_selection": {
+    "selection_face": "held_in",
+    "skipped": true
+  },
+  "analysis": {
+    "primary_utility": {
+      "left": "A5-bounded",
+      "right": "A5-strict",
+      "field": "delta_utility_vs_identity",
+      "unit": "origin",
+      "origins": [],
+      "left_origin_means": [],
+      "right_origin_means": [],
+      "paired_differences": [],
+      "mean_difference": null,
+      "median_difference": null,
+      "positive_origins": 0,
+      "negative_origins": 0,
+      "wilcoxon": {
+        "statistic": null,
+        "p_two_sided": null,
+        "n_pairs": 0,
+        "n_nonzero": 0,
+        "note": "every paired difference was exactly zero; no test is defined"
+      },
+      "bca_95": {
+        "point_estimate": null,
+        "low": null,
+        "high": null,
+        "resamples": 0,
+        "alpha": 0.05,
+        "note": "degenerate sample; interval collapses to the point estimate"
+      }
+    },
+    "secondary_cross_arm": {
+      "Static": {
+        "left": "A5-bounded",
+        "right": "Static",
+        "field": "delta_utility_vs_identity",
+        "unit": "origin",
+        "origins": [],
+        "left_origin_means": [],
+        "right_origin_means": [],
+        "paired_differences": [],
+        "mean_difference": null,
+        "median_difference": null,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 0,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": null,
+          "low": null,
+          "high": null,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      },
+      "Parallel Best-of-N@8": {
+        "left": "A5-bounded",
+        "right": "Parallel Best-of-N@8",
+        "field": "delta_utility_vs_identity",
+        "unit": "origin",
+        "origins": [],
+        "left_origin_means": [],
+        "right_origin_means": [],
+        "paired_differences": [],
+        "mean_difference": null,
+        "median_difference": null,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 0,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": null,
+          "low": null,
+          "high": null,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      }
+    },
+    "accumulation_contrast": {
+      "reported": false,
+      "reason": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it"
+    },
+    "risk_contrasts": {
+      "harmed_fraction": {
+        "left": "A5-bounded",
+        "right": "A5-strict",
+        "field": "harmed_fraction",
+        "unit": "origin",
+        "origins": [],
+        "left_origin_means": [],
+        "right_origin_means": [],
+        "paired_differences": [],
+        "mean_difference": null,
+        "median_difference": null,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 0,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": null,
+          "low": null,
+          "high": null,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      },
+      "worst_single_series_harm": {
+        "left": "A5-bounded",
+        "right": "A5-strict",
+        "field": "worst_single_series_harm",
+        "unit": "origin",
+        "origins": [],
+        "left_origin_means": [],
+        "right_origin_means": [],
+        "paired_differences": [],
+        "mean_difference": null,
+        "median_difference": null,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 0,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": null,
+          "low": null,
+          "high": null,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      }
+    },
+    "bounded_held_out_worst_single_series_harm": null,
+    "bounded_held_out_material_harm_rate": null,
+    "any_admission_held_in": true,
+    "causal_reuse_observed": false,
+    "gated_writeback": {
+      "identical": true,
+      "cells_checked": 4,
+      "ungated_writes": [],
+      "verdict": "WRITEBACK_GATED",
+      "per_arm_store_delta": [
+        {
+          "arm": "A5-strict",
+          "replica": "Forward",
+          "identical": true,
+          "entries_before": 2,
+          "entries_after": 2,
+          "changed_entries": []
+        },
+        {
+          "arm": "A5-bounded",
+          "replica": "Forward",
+          "identical": false,
+          "entries_before": 2,
+          "entries_after": 2,
+          "changed_entries": [
+            {
+              "before": [
+                [
+                  "build_contrastive_candidates",
+                  7,
+                  "TS Workflow Construction Procedure. This procedure is read at every Fast stage; apply only the section that matches your current stage.\n[FIXED_CONTRACT]\n1. Goal. From the current TaskContext, the public Pattern evidence, and any retrieved Experience, construct minimal, effect-distinct typed PROGRAM candidates whose expected effects can be verified on the current Context. The runtime always retains identity as the control; never propose an identity candidate yourself.\n2. Inputs by stage. At the inspect stage only the deployment-visible feature summary and the public tools are available. At the propose stage the inspection payload (inspected region fractions, uncertainty, and structured pattern hypotheses), the allowed operator contracts, the fixed probe panel, and any retrieved positive, negative, or conflict Experience are additionally available. At the select stage the verified candidate pool with verification receipts is available. Never invent datasets, fields, outcomes, or utility estimates outside these inputs.\n4a. Candidate budget. The pool reserves one identity slot and up to three non-identity program slots (one of which may be occupied by the runtime prior). Propose at most two minimal, effect-distinct PROGRAM candidates yourself: one current-context exploration candidate and at most one additional effect-distinct alternative. Two candidates are effect-distinct only when they use different operator mechanisms or a different step order; a parameter-only variant of the same operator sequence is not effect-distinct.\n4b. Runtime-owned prior slot. The Source prior, when admissible, is injected by the runtime into a pool slot; do not propose a copy of it. Your capacity belongs to current-context exploration plus at most one effect-distinct alternative, and the exploration candidate must differ from any injected prior.\n4e. Program binding. Bind dynamic parameters only through the public parameter bindings declared in the operator contract, using current feature values; never replay numerical parameters from a previous Context or Episode. Targeting semantics determine how an operator locates its effects, but do not by themselves establish semantic relevance to a hypothesis. An intrinsic operator locates its own hit points during execution and requires no external region parameter. Hypothesis span alone, including a whole-series span, must not be used to declare an intrinsic binding illegal. An external_region operator must bind its region from the current inspection, and the bound region must remain within the addressed hypothesis region. A global operator acts on the whole series by definition and is admissible only when the hypothesis mechanism, TaskContext, and risk constraints justify a whole-series effect.\n4f. Risk floor. Never fabricate hypotheses, references, parameters, or expected effects. The runtime verifier and downstream Support decide program validity; the agent never approves its own program. Retrieved Experience may inform the prior slot but must never remove the exploration slot.\n6. Output. The response schema carries only the candidate id, the optional addresses_hypothesis_id, and ordered typed steps; the expected effect geometry and any verification request must therefore determine the choice of operators, order, and bindings rather than appear as free text.\n[inspect_pattern_guidance]\n3. Comparing hypotheses. Classify the dominant observable mechanisms from the public features: missingness (missing_fraction, longest_missing_run_fraction), extreme local deviation (local_robust_z_peak), level excursion or offset (level_excursion_score, estimated_level_offset), period inconsistency (period_change_score, period_evidence_status), regime ambiguity (conflicting level and deviation signals), or no actionable signal. Emit at most two structured pattern hypotheses with disjoint regions, evidence features, and confidence. When several mechanisms compete, keep at most two Pattern hypotheses and let the candidates represent them; preserve disjoint narrow hypotheses instead of merging a broad span when a strong robust-z signal sits inside a low-density region. Never infer the mechanism from a dataset or series identity.\n[propose_construction_guidance]\npropose.rule.hypothesis_binding: Every proposed candidate must set addresses_hypothesis_id to one hypothesis_id emitted by the inspect stage. Its operator mechanism, step order, and targeting semantics must address that hypothesis. An intrinsic operator requires no region parameter; its relevance is determined from the hypothesis pattern and evidence, while its realized modification is checked by execution verification and downstream Support. An external_region operator must bind a region contained within the hypothesis region. A global operator requires evidence that a whole-series effect is appropriate.\npropose.rule.effect_distinct: One hypothesis maps to one mechanism family, and two distinct hypotheses map to two effect-distinct candidates; do not propose operators merely because they are allowed.\npropose.rule.inert_and_order: Skip operators that are deterministically inert on the current Context (for example, missingness-only operators when no missingness is observed). Every step must satisfy its contract preconditions, and each later step must preserve or build on the effect of earlier steps; prefer a single minimal step over stacking same-family steps.\npropose.rule.no_legal_binding: When no legal binding exists for a hypothesis, abstain by returning an empty candidate set rather than an unverifiable program.\npropose.rule.exploration_supply: Supply the current-context exploration candidate whenever at least one hypothesis has a legal, verifiable binding; supply at most one additional candidate only when it is effect-distinct.\n[select_guidance]\n5. At the select stage. Compare the verified candidates against their hypotheses, the deployment-visible evidence, and the risk guards only; choose one id explicitly, record verification actions and scope, and prefer identity when no candidate is justified.",
+                  "{\"const\": true}",
+                  "{}"
+                ],
+                [
+                  "inspect_and_localize",
+                  2,
+                  "Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence, and localize regions. Output at most two structured pattern_hypotheses, each with a canonical hypothesis_id, a pattern_type from missingness, extreme_deviation, level_excursion, period_inconsistency, regime_ambiguity, or no_actionable_signal, the region_fractions it covers, the evidence_features supporting it, and a confidence level. Preserve disjoint narrow hypotheses when a high robust-z signal spans a broad low-density region instead of merging the whole span. Keep competing mechanisms as separate hypotheses. Procedure marker: sparse_localization_subregions/v1.",
+                  "{\"const\": true}",
+                  "{}"
+                ],
+                [
+                  "s2a_forecast_supply_v0",
+                  1,
+                  "WHEN: task_kind == forecast, consumer pooled_ridge_a1, metric sMASE, and the deployment-visible pattern reads estimated_level_offset=zero, estimated_region_end_fraction=high, estimated_region_start_fraction=high, level_excursion_score=zero, level_region_end_fraction=zero, level_region_fraction=zero, local_robust_z_peak=high, longest_missing_run_fraction=zero, missing_fraction=zero, outlier_region_end_fraction=very_low, period_change_score=high, period_evidence_status=OK, period_reliability=high, task_kind=forecast.\nOBSERVE: before deciding, read those same pattern features in the current Workspace and check whether what they describe is present here too.\nSUPPLY: one candidate is placed in this round's candidate pool for verification -- hampel_filter. It occupies a slot inside the existing candidate cap, it is not a recommendation, and it carries no right to deploy.\nEVIDENCE: 1 independent prior domains improved under this program in the same direction -- electricity_impulsive_outlier_03 (Support +1.1915, delayed +1.2429). n = 1. Independent agreeing domains at this count establish a candidate worth one Target probe, not a fact.\nVERIFY: this holds here only if this Target's own held-in Support reads materially positive and the delayed feedback approves the Draft. Neither is assumed from the prior domains.\nFALLBACK: if Support or delayed refuses, drop the candidate and return to identity rather than retrying the program.\nFrozen program steps: [{\"op\":\"hampel_filter\",\"params\":{}}]",
+                  "{\"all\": [{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}, {\"feature\": \"estimated_level_offset\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"estimated_region_end_fraction\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"estimated_region_start_fraction\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"level_excursion_score\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"local_robust_z_peak\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"longest_missing_run_fraction\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"missing_fraction\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"period_change_score\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"period_evidence_status\", \"op\": \"==\", \"value\": \"OK\"}, {\"feature\": \"period_reliability\", \"op\": \"==\", \"value\": \"high\"}]}",
+                  "{\"authority\": {\"grants_execution\": false, \"reorders_supplied_candidates\": false, \"supplies_candidates\": true, \"suppresses_operators\": false}, \"card_kind\": \"source_supply_tier/1\", \"counting_rule\": \"a positive earned under this card is a Target-local Skill only and counts zero toward any cross-domain authorization for this Source Skill\", \"evidence\": {\"min_distinct_tasks\": 1, \"source_count\": 1, \"sources\": [{\"delayed_gain\": 1.2429320053679196, \"direction\": \"improved\", \"pattern_view\": {\"estimated_level_offset\": \"zero\", \"estimated_region_end_fraction\": \"high\", \"estimated_region_start_fraction\": \"high\", \"level_excursion_score\": \"zero\", \"level_region_end_fraction\": \"zero\", \"level_region_fraction\": \"zero\", \"local_robust_z_peak\": \"high\", \"longest_missing_run_fraction\": \"zero\", \"missing_fraction\": \"zero\", \"outlier_region_end_fraction\": \"very_low\", \"period_change_score\": \"high\", \"period_evidence_status\": \"OK\", \"period_reliability\": \"high\", \"task_kind\": \"forecast\"}, \"run_id\": \"electricity_impulsive_outlier_03@r1\", \"support_gain\": 1.1914771164621962, \"task_episode_id\": \"electricity_impulsive_outlier_03\", \"unit_id\": \"electricity_impulsive_outlier_03\"}], \"tier\": \"supply\", \"uncertainty\": \"n=1 agreeing unguided domains; a candidate worth one probe, not a fact\"}, \"execution_right\": \"withheld_supplies_candidate_only\", \"pattern_leaves_dropped_as_uncontracted_for_edit_schema\": [\"level_region_end_fraction\", \"level_region_fraction\", \"outlier_region_end_fraction\"], \"requires_target_support\": true, \"scope_unreachable_axes\": [\"level_region_end_fraction\", \"level_region_fraction\", \"outlier_region_end_fraction\"], \"scope_v1\": {\"consumer_id\": \"pooled_ridge_a1\", \"metric\": \"sMASE\", \"pattern_axis_kind\": \"source_intersection/1\", \"pattern_axis_provenance\": \"n=1 source intersection of the producer Pattern view; forecast extractor + observable_numeric_bin + s1a.PATTERN_KEYS. No S1a forecast cluster exists; inventing one is forbidden.\", \"pattern_intersection\": {\"estimated_level_offset\": \"zero\", \"estimated_region_end_fraction\": \"high\", \"estimated_region_start_fraction\": \"high\", \"level_excursion_score\": \"zero\", \"level_region_end_fraction\": \"zero\", \"level_region_fraction\": \"zero\", \"local_robust_z_peak\": \"high\", \"longest_missing_run_fraction\": \"zero\", \"missing_fraction\": \"zero\", \"outlier_region_end_fraction\": \"very_low\", \"period_change_score\": \"high\", \"period_evidence_status\": \"OK\", \"period_reliability\": \"high\", \"task_kind\": \"forecast\"}, \"program_geometry\": [\"hampel_filter\"], \"task_kind\": \"forecast\"}}"
+                ],
+                [
+                  "select_or_identity_and_verify",
+                  1,
+                  "Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.",
+                  "{\"const\": true}",
+                  "{}"
+                ]
+              ],
+              "after": [
+                [
+                  "build_contrastive_candidates",
+                  7,
+                  "TS Workflow Construction Procedure. This procedure is read at every Fast stage; apply only the section that matches your current stage.\n[FIXED_CONTRACT]\n1. Goal. From the current TaskContext, the public Pattern evidence, and any retrieved Experience, construct minimal, effect-distinct typed PROGRAM candidates whose expected effects can be verified on the current Context. The runtime always retains identity as the control; never propose an identity candidate yourself.\n2. Inputs by stage. At the inspect stage only the deployment-visible feature summary and the public tools are available. At the propose stage the inspection payload (inspected region fractions, uncertainty, and structured pattern hypotheses), the allowed operator contracts, the fixed probe panel, and any retrieved positive, negative, or conflict Experience are additionally available. At the select stage the verified candidate pool with verification receipts is available. Never invent datasets, fields, outcomes, or utility estimates outside these inputs.\n4a. Candidate budget. The pool reserves one identity slot and up to three non-identity program slots (one of which may be occupied by the runtime prior). Propose at most two minimal, effect-distinct PROGRAM candidates yourself: one current-context exploration candidate and at most one additional effect-distinct alternative. Two candidates are effect-distinct only when they use different operator mechanisms or a different step order; a parameter-only variant of the same operator sequence is not effect-distinct.\n4b. Runtime-owned prior slot. The Source prior, when admissible, is injected by the runtime into a pool slot; do not propose a copy of it. Your capacity belongs to current-context exploration plus at most one effect-distinct alternative, and the exploration candidate must differ from any injected prior.\n4e. Program binding. Bind dynamic parameters only through the public parameter bindings declared in the operator contract, using current feature values; never replay numerical parameters from a previous Context or Episode. Targeting semantics determine how an operator locates its effects, but do not by themselves establish semantic relevance to a hypothesis. An intrinsic operator locates its own hit points during execution and requires no external region parameter. Hypothesis span alone, including a whole-series span, must not be used to declare an intrinsic binding illegal. An external_region operator must bind its region from the current inspection, and the bound region must remain within the addressed hypothesis region. A global operator acts on the whole series by definition and is admissible only when the hypothesis mechanism, TaskContext, and risk constraints justify a whole-series effect.\n4f. Risk floor. Never fabricate hypotheses, references, parameters, or expected effects. The runtime verifier and downstream Support decide program validity; the agent never approves its own program. Retrieved Experience may inform the prior slot but must never remove the exploration slot.\n6. Output. The response schema carries only the candidate id, the optional addresses_hypothesis_id, and ordered typed steps; the expected effect geometry and any verification request must therefore determine the choice of operators, order, and bindings rather than appear as free text.\n[inspect_pattern_guidance]\n3. Comparing hypotheses. Classify the dominant observable mechanisms from the public features: missingness (missing_fraction, longest_missing_run_fraction), extreme local deviation (local_robust_z_peak), level excursion or offset (level_excursion_score, estimated_level_offset), period inconsistency (period_change_score, period_evidence_status), regime ambiguity (conflicting level and deviation signals), or no actionable signal. Emit at most two structured pattern hypotheses with disjoint regions, evidence features, and confidence. When several mechanisms compete, keep at most two Pattern hypotheses and let the candidates represent them; preserve disjoint narrow hypotheses instead of merging a broad span when a strong robust-z signal sits inside a low-density region. Never infer the mechanism from a dataset or series identity.\n[propose_construction_guidance]\npropose.rule.hypothesis_binding: Every proposed candidate must set addresses_hypothesis_id to one hypothesis_id emitted by the inspect stage. Its operator mechanism, step order, and targeting semantics must address that hypothesis. An intrinsic operator requires no region parameter; its relevance is determined from the hypothesis pattern and evidence, while its realized modification is checked by execution verification and downstream Support. An external_region operator must bind a region contained within the hypothesis region. A global operator requires evidence that a whole-series effect is appropriate.\npropose.rule.effect_distinct: One hypothesis maps to one mechanism family, and two distinct hypotheses map to two effect-distinct candidates; do not propose operators merely because they are allowed.\npropose.rule.inert_and_order: Skip operators that are deterministically inert on the current Context (for example, missingness-only operators when no missingness is observed). Every step must satisfy its contract preconditions, and each later step must preserve or build on the effect of earlier steps; prefer a single minimal step over stacking same-family steps.\npropose.rule.no_legal_binding: When no legal binding exists for a hypothesis, abstain by returning an empty candidate set rather than an unverifiable program.\npropose.rule.exploration_supply: Supply the current-context exploration candidate whenever at least one hypothesis has a legal, verifiable binding; supply at most one additional candidate only when it is effect-distinct.\n[select_guidance]\n5. At the select stage. Compare the verified candidates against their hypotheses, the deployment-visible evidence, and the risk guards only; choose one id explicitly, record verification actions and scope, and prefer identity when no candidate is justified.",
+                  "{\"const\": true}",
+                  "{}"
+                ],
+                [
+                  "fast_winner_forecast_pooled_ridge_a1_smase_outlier_mad",
+                  1,
+                  "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]",
+                  "{\"all\": [{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}]}",
+                  "{\"explicit_choice_required\": true, \"observable_applicability_only\": true, \"preserve_outside_candidate_region\": true, \"requires_target_support\": true, \"single_surface_only\": true}"
+                ],
+                [
+                  "inspect_and_localize",
+                  2,
+                  "Inspect public missingness, robust local deviation, level continuity, and period-consistency evidence, and localize regions. Output at most two structured pattern_hypotheses, each with a canonical hypothesis_id, a pattern_type from missingness, extreme_deviation, level_excursion, period_inconsistency, regime_ambiguity, or no_actionable_signal, the region_fractions it covers, the evidence_features supporting it, and a confidence level. Preserve disjoint narrow hypotheses when a high robust-z signal spans a broad low-density region instead of merging the whole span. Keep competing mechanisms as separate hypotheses. Procedure marker: sparse_localization_subregions/v1.",
+                  "{\"const\": true}",
+                  "{}"
+                ],
+                [
+                  "s2a_forecast_supply_v0",
+                  1,
+                  "WHEN: task_kind == forecast, consumer pooled_ridge_a1, metric sMASE, and the deployment-visible pattern reads estimated_level_offset=zero, estimated_region_end_fraction=high, estimated_region_start_fraction=high, level_excursion_score=zero, level_region_end_fraction=zero, level_region_fraction=zero, local_robust_z_peak=high, longest_missing_run_fraction=zero, missing_fraction=zero, outlier_region_end_fraction=very_low, period_change_score=high, period_evidence_status=OK, period_reliability=high, task_kind=forecast.\nOBSERVE: before deciding, read those same pattern features in the current Workspace and check whether what they describe is present here too.\nSUPPLY: one candidate is placed in this round's candidate pool for verification -- hampel_filter. It occupies a slot inside the existing candidate cap, it is not a recommendation, and it carries no right to deploy.\nEVIDENCE: 1 independent prior domains improved under this program in the same direction -- electricity_impulsive_outlier_03 (Support +1.1915, delayed +1.2429). n = 1. Independent agreeing domains at this count establish a candidate worth one Target probe, not a fact.\nVERIFY: this holds here only if this Target's own held-in Support reads materially positive and the delayed feedback approves the Draft. Neither is assumed from the prior domains.\nFALLBACK: if Support or delayed refuses, drop the candidate and return to identity rather than retrying the program.\nFrozen program steps: [{\"op\":\"hampel_filter\",\"params\":{}}]",
+                  "{\"all\": [{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}, {\"feature\": \"estimated_level_offset\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"estimated_region_end_fraction\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"estimated_region_start_fraction\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"level_excursion_score\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"local_robust_z_peak\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"longest_missing_run_fraction\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"missing_fraction\", \"op\": \"==\", \"value\": \"zero\"}, {\"feature\": \"period_change_score\", \"op\": \"==\", \"value\": \"high\"}, {\"feature\": \"period_evidence_status\", \"op\": \"==\", \"value\": \"OK\"}, {\"feature\": \"period_reliability\", \"op\": \"==\", \"value\": \"high\"}]}",
+                  "{\"authority\": {\"grants_execution\": false, \"reorders_supplied_candidates\": false, \"supplies_candidates\": true, \"suppresses_operators\": false}, \"card_kind\": \"source_supply_tier/1\", \"counting_rule\": \"a positive earned under this card is a Target-local Skill only and counts zero toward any cross-domain authorization for this Source Skill\", \"evidence\": {\"min_distinct_tasks\": 1, \"source_count\": 1, \"sources\": [{\"delayed_gain\": 1.2429320053679196, \"direction\": \"improved\", \"pattern_view\": {\"estimated_level_offset\": \"zero\", \"estimated_region_end_fraction\": \"high\", \"estimated_region_start_fraction\": \"high\", \"level_excursion_score\": \"zero\", \"level_region_end_fraction\": \"zero\", \"level_region_fraction\": \"zero\", \"local_robust_z_peak\": \"high\", \"longest_missing_run_fraction\": \"zero\", \"missing_fraction\": \"zero\", \"outlier_region_end_fraction\": \"very_low\", \"period_change_score\": \"high\", \"period_evidence_status\": \"OK\", \"period_reliability\": \"high\", \"task_kind\": \"forecast\"}, \"run_id\": \"electricity_impulsive_outlier_03@r1\", \"support_gain\": 1.1914771164621962, \"task_episode_id\": \"electricity_impulsive_outlier_03\", \"unit_id\": \"electricity_impulsive_outlier_03\"}], \"tier\": \"supply\", \"uncertainty\": \"n=1 agreeing unguided domains; a candidate worth one probe, not a fact\"}, \"execution_right\": \"withheld_supplies_candidate_only\", \"pattern_leaves_dropped_as_uncontracted_for_edit_schema\": [\"level_region_end_fraction\", \"level_region_fraction\", \"outlier_region_end_fraction\"], \"requires_target_support\": true, \"scope_unreachable_axes\": [\"level_region_end_fraction\", \"level_region_fraction\", \"outlier_region_end_fraction\"], \"scope_v1\": {\"consumer_id\": \"pooled_ridge_a1\", \"metric\": \"sMASE\", \"pattern_axis_kind\": \"source_intersection/1\", \"pattern_axis_provenance\": \"n=1 source intersection of the producer Pattern view; forecast extractor + observable_numeric_bin + s1a.PATTERN_KEYS. No S1a forecast cluster exists; inventing one is forbidden.\", \"pattern_intersection\": {\"estimated_level_offset\": \"zero\", \"estimated_region_end_fraction\": \"high\", \"estimated_region_start_fraction\": \"high\", \"level_excursion_score\": \"zero\", \"level_region_end_fraction\": \"zero\", \"level_region_fraction\": \"zero\", \"local_robust_z_peak\": \"high\", \"longest_missing_run_fraction\": \"zero\", \"missing_fraction\": \"zero\", \"outlier_region_end_fraction\": \"very_low\", \"period_change_score\": \"high\", \"period_evidence_status\": \"OK\", \"period_reliability\": \"high\", \"task_kind\": \"forecast\"}, \"program_geometry\": [\"hampel_filter\"], \"task_kind\": \"forecast\"}}"
+                ],
+                [
+                  "select_or_identity_and_verify",
+                  1,
+                  "Compare candidates using deployment-visible evidence and risk guards only; choose one ID explicitly and record verification actions and scope.",
+                  "{\"const\": true}",
+                  "{}"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "power": {
+      "n": 0,
+      "smallest_attainable_two_sided_p": null,
+      "reaches_alpha_05": false,
+      "reading": "only a near-unanimous sign split can reach significance at this n; a neutral verdict means undetectable by this design, not zero"
+    },
+    "verdict": {
+      "verdict": "NO_ENDPOINT_DATA",
+      "blocking": true,
+      "reading": "the primary contrast has no paired origin; nothing was measured on the endpoint face"
+    }
+  },
+  "completed_at": "2026-08-31T16:10:57.628557+08:00",
+  "wall_seconds": 312.523,
+  "analysis_recomputed_offline": {
+    "reason": "the verdict ladder now refuses to emit a substantive verdict on an empty contrast; recomputed from the stored rows, no re-run",
+    "previous_verdict": "BOUNDED_GATE_NEUTRAL"
+  }
+}

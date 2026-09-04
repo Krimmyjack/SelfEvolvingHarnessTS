@@ -1,0 +1,80 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "cand_skill_winsorize",
+      "op": "winsorize",
+      "params": {}
+    },
+    {
+      "candidate_id": "cand_outlier_iqr",
+      "op": "outlier_iqr",
+      "params": {}
+    }
+  ],
+  "choices": {
+    "M_conflict": "ABSTAIN",
+    "M_positive": "cand_skill_winsorize",
+    "M_remove": "cand_skill_winsorize"
+  },
+  "experiment_id": "v1-llm-signed-selection",
+  "llm_call_count": 3,
+  "memory_rendering": {
+    "M_conflict": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 2: candidate operators ['winsorize'] showed mixed evidence in historical experience (both positive and negative Support/delayed windows within the same episode, or conflicting results across episodes; weak reference: no context matching). Treat as risk; confirm on the delayed segment before relying on them.\n\n",
+    "M_positive": "The following references come from verified historical experience.\nUse them as a guide.\n\nReference 1: candidate operators ['winsorize'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibrated, fewer than the minimum historical contexts). Probe them first, then confirm again on the current Support.\n\n",
+    "M_remove": ""
+  },
+  "requests_identical": {
+    "candidate_ids_same_order": true,
+    "candidate_order": [
+      "cand_skill_winsorize",
+      "cand_outlier_iqr"
+    ],
+    "context_identical": true,
+    "context_json": {
+      "bound_period": 24.0,
+      "change.coverage_delta": 0.0,
+      "change.maximum_missing_run_length_delta": 0.0,
+      "change.median_acf_at_calendar_period_delta": -0.347165,
+      "change.median_normalized_seasonal_residual_delta": 0.075524,
+      "change.median_robust_center_delta": -40.016655,
+      "change.median_robust_scale_delta": -7.619085,
+      "change.missing_run_count_delta": 0.0,
+      "recent.coverage": 1.0,
+      "recent.maximum_missing_run_length": 0.0,
+      "recent.median_acf_at_calendar_period": 0.593986,
+      "recent.median_normalized_seasonal_residual": 0.250055,
+      "recent.median_robust_center": 240.202178,
+      "recent.median_robust_scale": 77.012665,
+      "recent.missing_run_count": 0.0
+    },
+    "only_difference_is_memory_rendering": true
+  },
+  "results": {
+    "M_conflict": {
+      "attempts": [
+        "{\"chosen_candidate_id\":\"ABSTAIN\",\"evidence_refs\":[\"Reference 2\"],\"rationale\":\"Winsorize has mixed historical evidence and should be confirmed on a delayed segment before reliance; no supporting evidence is provided for outlier_iqr. Evidence is insufficient to select either candidate.\"}"
+      ],
+      "chosen": "ABSTAIN",
+      "ok": true,
+      "raw": "{\"chosen_candidate_id\":\"ABSTAIN\",\"evidence_refs\":[\"Reference 2\"],\"rationale\":\"Winsorize has mixed historical evidence and should be confirmed on a delayed segment before reliance; no supporting evidence is provided for outlier_iqr. Evidence is insufficient to select either candidate.\"}"
+    },
+    "M_positive": {
+      "attempts": [
+        "{\"chosen_candidate_id\":\"cand_skill_winsorize\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Winsorize has paired positive Support and delayed evidence from the same historical episode, and the memory explicitly recommends probing it first.\"}"
+      ],
+      "chosen": "cand_skill_winsorize",
+      "ok": true,
+      "raw": "{\"chosen_candidate_id\":\"cand_skill_winsorize\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Winsorize has paired positive Support and delayed evidence from the same historical episode, and the memory explicitly recommends probing it first.\"}"
+    },
+    "M_remove": {
+      "attempts": [
+        "{\"chosen_candidate_id\":\"cand_skill_winsorize\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"change.median_robust_scale_delta\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"Full coverage and no missing-run changes support a non-removing outlier treatment. Winsorization is the lower-disruption candidate for controlling robust scale while avoiding the potentially more aggressive effects of IQR-based outlier handling; evidence is otherwise limited because no signed experience is available.\"}"
+      ],
+      "chosen": "cand_skill_winsorize",
+      "ok": true,
+      "raw": "{\"chosen_candidate_id\":\"cand_skill_winsorize\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"change.median_robust_scale_delta\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"Full coverage and no missing-run changes support a non-removing outlier treatment. Winsorization is the lower-disruption candidate for controlling robust scale while avoiding the potentially more aggressive effects of IQR-based outlier handling; evidence is otherwise limited because no signed experience is available.\"}"
+    }
+  },
+  "setting": "UCI @984（已暴露，不消费新 sealed 数据）；候选冻结 [winsorize skill, outlier_iqr] + ABSTAIN；luna temp=0；plan-only（不评估 gain）",
+  "verdict": "SIGN_SENSITIVE_PASS"
+}

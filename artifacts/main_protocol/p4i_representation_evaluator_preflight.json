@@ -1,0 +1,292 @@
+{
+  "stage": "P4I_REPRESENTATION_EVALUATOR_PREFLIGHT",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T16:51:41.988247+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_CONTRACT_CHECK",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "boundary": {
+    "llm_calls": 0,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "frozen_o0_evaluator_modified": false,
+    "o1_outcome_experiments_run": 0
+  },
+  "why_a_second_evaluator_exists": "the frozen path applies a Program to training windows only and never inverts a prediction, which is coherent for repair operators and incoherent for representation transforms; measuring detrend or difference there would report a train/serve skew, not the transform",
+  "gates": {
+    "gate_1_identity_equivalence": {
+      "comparisons": 12,
+      "identical": 12,
+      "rows": [
+        {
+          "origin": 1176,
+          "face": "support_a",
+          "program": "no_program",
+          "frozen_mean_smase": 1.956973388731,
+          "view_mean_smase": 1.956973388731,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1176,
+          "face": "support_a",
+          "program": "repair_program",
+          "frozen_mean_smase": 1.575201646491,
+          "view_mean_smase": 1.575201646491,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1176,
+          "face": "support_b",
+          "program": "no_program",
+          "frozen_mean_smase": 1.558296034485,
+          "view_mean_smase": 1.558296034485,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1176,
+          "face": "support_b",
+          "program": "repair_program",
+          "frozen_mean_smase": 1.33052900126,
+          "view_mean_smase": 1.33052900126,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1896,
+          "face": "support_a",
+          "program": "no_program",
+          "frozen_mean_smase": 1.726215902556,
+          "view_mean_smase": 1.726215902556,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1896,
+          "face": "support_a",
+          "program": "repair_program",
+          "frozen_mean_smase": 1.149650089902,
+          "view_mean_smase": 1.149650089902,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1896,
+          "face": "support_b",
+          "program": "no_program",
+          "frozen_mean_smase": 1.214800483612,
+          "view_mean_smase": 1.214800483612,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 1896,
+          "face": "support_b",
+          "program": "repair_program",
+          "frozen_mean_smase": 1.414936430087,
+          "view_mean_smase": 1.414936430087,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 2136,
+          "face": "support_a",
+          "program": "no_program",
+          "frozen_mean_smase": 1.344206596527,
+          "view_mean_smase": 1.344206596527,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 2136,
+          "face": "support_a",
+          "program": "repair_program",
+          "frozen_mean_smase": 0.852681472877,
+          "view_mean_smase": 0.852681472877,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 2136,
+          "face": "support_b",
+          "program": "no_program",
+          "frozen_mean_smase": 1.316766422663,
+          "view_mean_smase": 1.316766422663,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        },
+        {
+          "origin": 2136,
+          "face": "support_b",
+          "program": "repair_program",
+          "frozen_mean_smase": 1.12685396137,
+          "view_mean_smase": 1.12685396137,
+          "max_per_series_difference": 0.0,
+          "behavior_point_count_matches": true,
+          "identical": true
+        }
+      ],
+      "passed": true,
+      "reading": "the new evaluator is bit-identical to the frozen path under the identity view, with and without a repair Program"
+    },
+    "gate_2_affine_screen": {
+      "screened": [
+        {
+          "view": "identity",
+          "windows_checked": 48,
+          "max_standardised_difference": 0.0,
+          "tolerance": 1e-09,
+          "cancelled_by_consumer_normalisation": true,
+          "reading": "REJECT: the Consumer's median/MAD standardisation erases this view exactly, so it is a provable no-op and must not reach a Consumer fit"
+        },
+        {
+          "view": "reversible_detrend",
+          "windows_checked": 48,
+          "max_standardised_difference": 389.622519412947,
+          "tolerance": 1e-09,
+          "cancelled_by_consumer_normalisation": false,
+          "reading": "admissible: the view survives per-window standardisation"
+        },
+        {
+          "view": "reversible_seasonal_adjust",
+          "windows_checked": 48,
+          "max_standardised_difference": 5.174402149906234,
+          "tolerance": 1e-09,
+          "cancelled_by_consumer_normalisation": false,
+          "reading": "admissible: the view survives per-window standardisation"
+        },
+        {
+          "view": "reversible_difference",
+          "windows_checked": 48,
+          "max_standardised_difference": 19.091154360276175,
+          "tolerance": 1e-09,
+          "cancelled_by_consumer_normalisation": false,
+          "reading": "admissible: the view survives per-window standardisation"
+        },
+        {
+          "view": "reversible_scale",
+          "windows_checked": 48,
+          "max_standardised_difference": 8.881784197001252e-16,
+          "tolerance": 1e-09,
+          "cancelled_by_consumer_normalisation": true,
+          "reading": "REJECT: the Consumer's median/MAD standardisation erases this view exactly, so it is a provable no-op and must not reach a Consumer fit"
+        }
+      ],
+      "rejected_as_provable_no_op": [
+        "identity",
+        "reversible_scale"
+      ],
+      "admissible_views": [
+        "reversible_detrend",
+        "reversible_seasonal_adjust",
+        "reversible_difference"
+      ],
+      "screen_demonstrably_bites": true,
+      "passed": true,
+      "reading": "the screen rejects reversible_scale as a provable no-op and admits 3 views"
+    },
+    "gate_3_forward_inverse_closure": {
+      "views": [
+        {
+          "view": "reversible_detrend",
+          "windows_checked": 48,
+          "max_reconstruction_error": 2.842170943040401e-14,
+          "tolerance": 1e-08,
+          "closed": true
+        },
+        {
+          "view": "reversible_seasonal_adjust",
+          "windows_checked": 48,
+          "max_reconstruction_error": 2.842170943040401e-14,
+          "tolerance": 1e-08,
+          "closed": true
+        },
+        {
+          "view": "reversible_difference",
+          "windows_checked": 48,
+          "max_reconstruction_error": 4.440892098500626e-16,
+          "tolerance": 1e-08,
+          "closed": true
+        }
+      ],
+      "passed": true,
+      "reading": "forward-inverse closes on the horizon block for every admissible view"
+    },
+    "gate_4_no_future_leakage": {
+      "views": [
+        {
+          "view": "reversible_detrend",
+          "windows_checked": 48,
+          "windows_whose_parameters_moved": 0,
+          "no_future_leakage": true,
+          "reading": "parameters are a function of the context alone"
+        },
+        {
+          "view": "reversible_seasonal_adjust",
+          "windows_checked": 48,
+          "windows_whose_parameters_moved": 0,
+          "no_future_leakage": true,
+          "reading": "parameters are a function of the context alone"
+        },
+        {
+          "view": "reversible_difference",
+          "windows_checked": 48,
+          "windows_whose_parameters_moved": 0,
+          "no_future_leakage": true,
+          "reading": "parameters are a function of the context alone"
+        }
+      ],
+      "passed": true,
+      "reading": "no view's parameters respond to a horizon perturbation"
+    },
+    "gate_5_native_grid_scoring": {
+      "origin": 1176,
+      "views": [
+        {
+          "view": "reversible_detrend",
+          "truth_is_raw_slice": true,
+          "observed_truth_points": 34,
+          "view_would_have_changed_truth_by": 89.150633,
+          "scoring_grid_steps": 48
+        },
+        {
+          "view": "reversible_seasonal_adjust",
+          "truth_is_raw_slice": true,
+          "observed_truth_points": 34,
+          "view_would_have_changed_truth_by": 62.25,
+          "scoring_grid_steps": 48
+        },
+        {
+          "view": "reversible_difference",
+          "truth_is_raw_slice": true,
+          "observed_truth_points": 23,
+          "view_would_have_changed_truth_by": 74.0,
+          "scoring_grid_steps": 48
+        }
+      ],
+      "passed": true,
+      "reading": "truth is sliced from raw before any view runs, so sMASE is always computed on the native 48-step grid in original units"
+    }
+  },
+  "admissible_views": [
+    "reversible_detrend",
+    "reversible_seasonal_adjust",
+    "reversible_difference"
+  ],
+  "windows_used_for_view_checks": 48,
+  "failed_gates": [],
+  "verdict": "REPRESENTATION_CONTRACT_READY",
+  "releases": "the contract only; O1 arms remain unauthorised until the new training cohort and the O1/X1 sets are frozen separately"
+}

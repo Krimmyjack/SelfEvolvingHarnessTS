@@ -1,0 +1,66 @@
+{
+  "planner_id": "llm_semantic_probe_v1",
+  "planner_runtime": "gpt-5.6-sol-high isolated subagent invocation",
+  "context_exposure": "AGGREGATE_SEEN",
+  "outcome_exposure_at_plan_time": "SEALED",
+  "task": "panel time-series forecasting",
+  "consumer": "Ridge(alpha=1.0)",
+  "program": "ADD_AUXILIARY_SEMANTIC_GROUP",
+  "fixed_weight": 0.25,
+  "fallback": "IDENTITY",
+  "confirmation": "support_gain>0",
+  "targets": [
+    {
+      "target": "mintemp",
+      "probe_order": [
+        {
+          "auxiliary_group": "maxtemp",
+          "weight": 0.25
+        },
+        {
+          "auxiliary_group": "solar",
+          "weight": 0.25
+        }
+      ],
+      "fallback": "IDENTITY",
+      "confirmation": "support_gain>0",
+      "reason_codes": [
+        "paired_temperature_role",
+        "shared_daily_seasonality",
+        "support_confirmation_required"
+      ]
+    },
+    {
+      "target": "solar",
+      "probe_order": [
+        {
+          "auxiliary_group": "maxtemp",
+          "weight": 0.25
+        },
+        {
+          "auxiliary_group": "mintemp",
+          "weight": 0.25
+        }
+      ],
+      "fallback": "IDENTITY",
+      "confirmation": "support_gain>0",
+      "reason_codes": [
+        "radiation_temperature_coupling",
+        "shared_daily_seasonality",
+        "support_confirmation_required"
+      ]
+    }
+  ],
+  "global_risk_notes": [
+    "semantic_relatedness_not_utility_certificate",
+    "source_memory_shows_help_and_harm",
+    "no_zero_shot_utility_claim",
+    "abstain_if_no_positive_support_gain"
+  ],
+  "forbidden_at_plan_time": [
+    "target_support_outcome",
+    "target_query_outcome",
+    "consumer_loss",
+    "program_result"
+  ]
+}

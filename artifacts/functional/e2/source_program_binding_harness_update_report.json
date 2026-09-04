@@ -1,0 +1,2234 @@
+{
+  "blind_llm_patch_proposal": {
+    "diagnosed_failure": "The Source program instance hard-codes absolute positions, so compilation ignores the current series' observer-localized nodes and edits unrelated locations when series length changes.",
+    "falsification_condition": "On a fresh series of a different length, the frozen compiler receives valid H0 node indices but executes any different position, omits an in-range localized node, or changes any position outside the localized node set.",
+    "non_target_invariant": "Observation logic, local-median repair semantics, scope policy, guards, Consumer, Metric, and outcome-access policy remain unchanged; neither Dataset ID nor Query outcome is used.",
+    "operation": "PATCH_BINDING",
+    "predicted_behavior_change": "For every compiled instance, executed_positions equals the in-range H0 localized node set; node_overlap becomes complete and no position outside that observed scope is modified, including for lengths 286 and 96.",
+    "proposed_change": "Compile each program instance by binding its replacement positions directly to the H0 observer's localized node set for the current visible-fit series, preserving the existing center-excluded local-median operation and all other surfaces.",
+    "required_observables": [
+      "current visible-fit series identity within the evaluation boundary",
+      "current series length",
+      "H0 localized node indices for that series"
+    ],
+    "target_surface": "Program Binding"
+  },
+  "causal_hypothesis": "After Observation and Scope are fixed, binding the unchanged Program schema to current observer-localized nodes reduces adaptation regret relative to reusing a Source instance with absolute positions.",
+  "claim_limit": "The backgrounds and labels are real UCR data, but the artifact is controlled. This tests Program-Binding Harness evolution, not natural defects, persistent Memory, autonomous promotion, or general safety.",
+  "consumer_fit_count": 18,
+  "controlled_binding_failure_card": {
+    "H0_program_instance_positions": [
+      12,
+      36,
+      156,
+      180
+    ],
+    "controlled_first_actionable_fault": "program_binding",
+    "evidence_role": "development_controlled_binding_failure",
+    "example_lengths_in_blind_proposal": [
+      286,
+      96
+    ],
+    "not_attributed_to_W52": true
+  },
+  "dataset_evidence": [
+    {
+      "A3_target_only": {
+        "adapt_auc": 0.4915637860082305,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "utility": 0.4777777777777778
+          },
+          {
+            "budget": 1,
+            "utility": 0.4882716049382716
+          },
+          {
+            "budget": 2,
+            "utility": 0.508641975308642
+          }
+        ],
+        "per_order": [
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.49495875343721357,
+                "support_gain": 0.0027497708524289455
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.4777777777777778
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H0_fixed_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.5151237396883593,
+                "support_gain": 0.022914757103574712
+              },
+              "selected_candidate": "H0_fixed_binding",
+              "utility": 0.4679012345679012
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H0_fixed_binding",
+                "H1_dynamic_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.508641975308642
+            }
+          ],
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.5151237396883593,
+                "support_gain": 0.022914757103574712
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.4777777777777778
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H1_dynamic_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.49495875343721357,
+                "support_gain": 0.0027497708524289455
+              },
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.508641975308642
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H1_dynamic_binding",
+                "H0_fixed_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.508641975308642
+            }
+          ]
+        ]
+      },
+      "A4_source_only": {
+        "adapt_auc": 0.4777777777777778,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "selected_candidate": "incumbent",
+            "utility": 0.4777777777777778
+          },
+          {
+            "budget": 1,
+            "selected_candidate": "incumbent",
+            "utility": 0.4777777777777778
+          },
+          {
+            "budget": 2,
+            "selected_candidate": "incumbent",
+            "utility": 0.4777777777777778
+          }
+        ]
+      },
+      "A5_minus_A3_adapt_auc": 0.0067901234567901425,
+      "A5_source_plus_target": {
+        "adapt_auc": 0.4983539094650206,
+        "confirmation_order": [
+          "H1_dynamic_binding",
+          "H0_fixed_binding"
+        ],
+        "curve": [
+          {
+            "budget": 0,
+            "confirmed_candidates": [],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H1_dynamic_binding",
+              "support_accuracy": 0.5151237396883593,
+              "support_gain": 0.022914757103574712
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.4777777777777778
+          },
+          {
+            "budget": 1,
+            "confirmed_candidates": [
+              "H1_dynamic_binding"
+            ],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H0_fixed_binding",
+              "support_accuracy": 0.49495875343721357,
+              "support_gain": 0.0027497708524289455
+            },
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.508641975308642
+          },
+          {
+            "budget": 2,
+            "confirmed_candidates": [
+              "H1_dynamic_binding",
+              "H0_fixed_binding"
+            ],
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.508641975308642
+          }
+        ]
+      },
+      "H0_direct_query_accuracy": 0.4679012345679012,
+      "actual_execution_binding": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 4,
+          "executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "missed_observer_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 4,
+          "executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "missed_observer_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "context_or_decision_used_dataset_id": false,
+      "controlled_artifact_true_positions": [
+        40,
+        100,
+        399,
+        459
+      ],
+      "dataset": "FordB",
+      "observer_localized_nodes": [
+        40,
+        100,
+        399,
+        459
+      ],
+      "program_modification": {
+        "H0_fixed_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "materially_modified_positions_on_every_row": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "modified_point_count": 10180,
+          "modified_point_fraction": 0.008,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 1272500
+        },
+        "H1_dynamic_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "materially_modified_positions_on_every_row": [
+            40,
+            100,
+            399,
+            459
+          ],
+          "modified_point_count": 10180,
+          "modified_point_fraction": 0.008,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 1272500
+        }
+      },
+      "readouts": {
+        "H0_fixed_binding": {
+          "query_accuracy": 0.4679012345679012,
+          "query_gain": -0.009876543209876576,
+          "support_accuracy": 0.49495875343721357,
+          "support_gain": 0.0027497708524289455
+        },
+        "H1_dynamic_binding": {
+          "query_accuracy": 0.508641975308642,
+          "query_gain": 0.030864197530864168,
+          "support_accuracy": 0.5151237396883593,
+          "support_gain": 0.022914757103574712
+        },
+        "incumbent": {
+          "query_accuracy": 0.4777777777777778,
+          "support_accuracy": 0.4922089825847846
+        }
+      },
+      "series_length": 500,
+      "stable_event_policy": {
+        "forced_action_harm_not_claimed": true,
+        "policy_event_harm": 0.0,
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "selected_action": "ABSTAIN_KEEP_INCUMBENT"
+      }
+    },
+    {
+      "A3_target_only": {
+        "adapt_auc": 0.48360655737704916,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "utility": 0.39344262295081966
+          },
+          {
+            "budget": 1,
+            "utility": 0.48360655737704916
+          },
+          {
+            "budget": 2,
+            "utility": 0.5737704918032787
+          }
+        ],
+        "per_order": [
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.4444444444444444,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.39344262295081966
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H0_fixed_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.7222222222222222,
+                "support_gain": 0.2777777777777778
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.39344262295081966
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H0_fixed_binding",
+                "H1_dynamic_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.5737704918032787
+            }
+          ],
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.7222222222222222,
+                "support_gain": 0.2777777777777778
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.39344262295081966
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H1_dynamic_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.4444444444444444,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.5737704918032787
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H1_dynamic_binding",
+                "H0_fixed_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.5737704918032787
+            }
+          ]
+        ]
+      },
+      "A4_source_only": {
+        "adapt_auc": 0.39344262295081966,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "selected_candidate": "incumbent",
+            "utility": 0.39344262295081966
+          },
+          {
+            "budget": 1,
+            "selected_candidate": "incumbent",
+            "utility": 0.39344262295081966
+          },
+          {
+            "budget": 2,
+            "selected_candidate": "incumbent",
+            "utility": 0.39344262295081966
+          }
+        ]
+      },
+      "A5_minus_A3_adapt_auc": 0.030054644808743203,
+      "A5_source_plus_target": {
+        "adapt_auc": 0.5136612021857924,
+        "confirmation_order": [
+          "H1_dynamic_binding",
+          "H0_fixed_binding"
+        ],
+        "curve": [
+          {
+            "budget": 0,
+            "confirmed_candidates": [],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H1_dynamic_binding",
+              "support_accuracy": 0.7222222222222222,
+              "support_gain": 0.2777777777777778
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.39344262295081966
+          },
+          {
+            "budget": 1,
+            "confirmed_candidates": [
+              "H1_dynamic_binding"
+            ],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H0_fixed_binding",
+              "support_accuracy": 0.4444444444444444,
+              "support_gain": 0.0
+            },
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.5737704918032787
+          },
+          {
+            "budget": 2,
+            "confirmed_candidates": [
+              "H1_dynamic_binding",
+              "H0_fixed_binding"
+            ],
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.5737704918032787
+          }
+        ]
+      },
+      "H0_direct_query_accuracy": 0.39344262295081966,
+      "actual_execution_binding": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 4,
+          "executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "missed_observer_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 4,
+          "executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "missed_observer_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36,
+            156,
+            180
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "context_or_decision_used_dataset_id": false,
+      "controlled_artifact_true_positions": [
+        51,
+        127,
+        509,
+        585
+      ],
+      "dataset": "Lightning2",
+      "observer_localized_nodes": [
+        51,
+        127,
+        509,
+        585
+      ],
+      "program_modification": {
+        "H0_fixed_binding": {
+          "all_attempted_positions_modified_on_every_row": false,
+          "attempted_bound_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            12,
+            36,
+            156,
+            180
+          ],
+          "materially_modified_positions_on_every_row": [
+            156,
+            180
+          ],
+          "modified_point_count": 86,
+          "modified_point_fraction": 0.0032144726022277042,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 26754
+        },
+        "H1_dynamic_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "materially_modified_positions_on_every_row": [
+            51,
+            127,
+            509,
+            585
+          ],
+          "modified_point_count": 168,
+          "modified_point_fraction": 0.006279434850863423,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 26754
+        }
+      },
+      "readouts": {
+        "H0_fixed_binding": {
+          "query_accuracy": 0.39344262295081966,
+          "query_gain": 0.0,
+          "support_accuracy": 0.4444444444444444,
+          "support_gain": 0.0
+        },
+        "H1_dynamic_binding": {
+          "query_accuracy": 0.5737704918032787,
+          "query_gain": 0.180327868852459,
+          "support_accuracy": 0.7222222222222222,
+          "support_gain": 0.2777777777777778
+        },
+        "incumbent": {
+          "query_accuracy": 0.39344262295081966,
+          "support_accuracy": 0.4444444444444444
+        }
+      },
+      "series_length": 637,
+      "stable_event_policy": {
+        "forced_action_harm_not_claimed": true,
+        "policy_event_harm": 0.0,
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "selected_action": "ABSTAIN_KEEP_INCUMBENT"
+      }
+    },
+    {
+      "A3_target_only": {
+        "adapt_auc": 0.7675718849840255,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "utility": 0.7675718849840255
+          },
+          {
+            "budget": 1,
+            "utility": 0.7675718849840255
+          },
+          {
+            "budget": 2,
+            "utility": 0.7675718849840255
+          }
+        ],
+        "per_order": [
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.6666666666666666,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.7675718849840255
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H0_fixed_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.6666666666666666,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.7675718849840255
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H0_fixed_binding",
+                "H1_dynamic_binding"
+              ],
+              "selected_candidate": "incumbent",
+              "utility": 0.7675718849840255
+            }
+          ],
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.6666666666666666,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.7675718849840255
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H1_dynamic_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.6666666666666666,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.7675718849840255
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H1_dynamic_binding",
+                "H0_fixed_binding"
+              ],
+              "selected_candidate": "incumbent",
+              "utility": 0.7675718849840255
+            }
+          ]
+        ]
+      },
+      "A4_source_only": {
+        "adapt_auc": 0.7675718849840255,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "selected_candidate": "incumbent",
+            "utility": 0.7675718849840255
+          },
+          {
+            "budget": 1,
+            "selected_candidate": "incumbent",
+            "utility": 0.7675718849840255
+          },
+          {
+            "budget": 2,
+            "selected_candidate": "incumbent",
+            "utility": 0.7675718849840255
+          }
+        ]
+      },
+      "A5_minus_A3_adapt_auc": 0.0,
+      "A5_source_plus_target": {
+        "adapt_auc": 0.7675718849840255,
+        "confirmation_order": [
+          "H1_dynamic_binding",
+          "H0_fixed_binding"
+        ],
+        "curve": [
+          {
+            "budget": 0,
+            "confirmed_candidates": [],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H1_dynamic_binding",
+              "support_accuracy": 0.6666666666666666,
+              "support_gain": 0.0
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.7675718849840255
+          },
+          {
+            "budget": 1,
+            "confirmed_candidates": [
+              "H1_dynamic_binding"
+            ],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H0_fixed_binding",
+              "support_accuracy": 0.6666666666666666,
+              "support_gain": 0.0
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.7675718849840255
+          },
+          {
+            "budget": 2,
+            "confirmed_candidates": [
+              "H1_dynamic_binding",
+              "H0_fixed_binding"
+            ],
+            "selected_candidate": "incumbent",
+            "utility": 0.7675718849840255
+          }
+        ]
+      },
+      "H0_direct_query_accuracy": 0.7675718849840255,
+      "actual_execution_binding": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "context_or_decision_used_dataset_id": false,
+      "controlled_artifact_true_positions": [
+        7,
+        17,
+        66,
+        76
+      ],
+      "dataset": "MoteStrain",
+      "observer_localized_nodes": [
+        7,
+        17,
+        66,
+        76
+      ],
+      "program_modification": {
+        "H0_fixed_binding": {
+          "all_attempted_positions_modified_on_every_row": false,
+          "attempted_bound_positions": [
+            12,
+            36
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            12,
+            36
+          ],
+          "materially_modified_positions_on_every_row": [
+            36
+          ],
+          "modified_point_count": 27,
+          "modified_point_fraction": 0.02295918367346939,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 1176
+        },
+        "H1_dynamic_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "materially_modified_positions_on_every_row": [
+            7,
+            17,
+            66,
+            76
+          ],
+          "modified_point_count": 56,
+          "modified_point_fraction": 0.047619047619047616,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 1176
+        }
+      },
+      "readouts": {
+        "H0_fixed_binding": {
+          "query_accuracy": 0.7675718849840255,
+          "query_gain": 0.0,
+          "support_accuracy": 0.6666666666666666,
+          "support_gain": 0.0
+        },
+        "H1_dynamic_binding": {
+          "query_accuracy": 0.8666134185303515,
+          "query_gain": 0.09904153354632594,
+          "support_accuracy": 0.6666666666666666,
+          "support_gain": 0.0
+        },
+        "incumbent": {
+          "query_accuracy": 0.7675718849840255,
+          "support_accuracy": 0.6666666666666666
+        }
+      },
+      "series_length": 84,
+      "stable_event_policy": {
+        "forced_action_harm_not_claimed": true,
+        "policy_event_harm": 0.0,
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "selected_action": "ABSTAIN_KEEP_INCUMBENT"
+      }
+    },
+    {
+      "A3_target_only": {
+        "adapt_auc": 0.5474209650582362,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "utility": 0.5474209650582362
+          },
+          {
+            "budget": 1,
+            "utility": 0.5474209650582362
+          },
+          {
+            "budget": 2,
+            "utility": 0.5474209650582362
+          }
+        ],
+        "per_order": [
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.7142857142857143,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.5474209650582362
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H0_fixed_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.7142857142857143,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.5474209650582362
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H0_fixed_binding",
+                "H1_dynamic_binding"
+              ],
+              "selected_candidate": "incumbent",
+              "utility": 0.5474209650582362
+            }
+          ],
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.7142857142857143,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.5474209650582362
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H1_dynamic_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.7142857142857143,
+                "support_gain": 0.0
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.5474209650582362
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H1_dynamic_binding",
+                "H0_fixed_binding"
+              ],
+              "selected_candidate": "incumbent",
+              "utility": 0.5474209650582362
+            }
+          ]
+        ]
+      },
+      "A4_source_only": {
+        "adapt_auc": 0.5474209650582362,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "selected_candidate": "incumbent",
+            "utility": 0.5474209650582362
+          },
+          {
+            "budget": 1,
+            "selected_candidate": "incumbent",
+            "utility": 0.5474209650582362
+          },
+          {
+            "budget": 2,
+            "selected_candidate": "incumbent",
+            "utility": 0.5474209650582362
+          }
+        ]
+      },
+      "A5_minus_A3_adapt_auc": 0.0,
+      "A5_source_plus_target": {
+        "adapt_auc": 0.5474209650582362,
+        "confirmation_order": [
+          "H1_dynamic_binding",
+          "H0_fixed_binding"
+        ],
+        "curve": [
+          {
+            "budget": 0,
+            "confirmed_candidates": [],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H1_dynamic_binding",
+              "support_accuracy": 0.7142857142857143,
+              "support_gain": 0.0
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.5474209650582362
+          },
+          {
+            "budget": 1,
+            "confirmed_candidates": [
+              "H1_dynamic_binding"
+            ],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H0_fixed_binding",
+              "support_accuracy": 0.7142857142857143,
+              "support_gain": 0.0
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.5474209650582362
+          },
+          {
+            "budget": 2,
+            "confirmed_candidates": [
+              "H1_dynamic_binding",
+              "H0_fixed_binding"
+            ],
+            "selected_candidate": "incumbent",
+            "utility": 0.5474209650582362
+          }
+        ]
+      },
+      "H0_direct_query_accuracy": 0.5507487520798668,
+      "actual_execution_binding": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "context_or_decision_used_dataset_id": false,
+      "controlled_artifact_true_positions": [
+        6,
+        14,
+        55,
+        63
+      ],
+      "dataset": "SonyAIBORobotSurface1",
+      "observer_localized_nodes": [
+        6,
+        14,
+        55,
+        63
+      ],
+      "program_modification": {
+        "H0_fixed_binding": {
+          "all_attempted_positions_modified_on_every_row": false,
+          "attempted_bound_positions": [
+            12,
+            36
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            12,
+            36
+          ],
+          "materially_modified_positions_on_every_row": [],
+          "modified_point_count": 21,
+          "modified_point_fraction": 0.023076923076923078,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 910
+        },
+        "H1_dynamic_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "materially_modified_positions_on_every_row": [
+            6,
+            14,
+            55,
+            63
+          ],
+          "modified_point_count": 52,
+          "modified_point_fraction": 0.05714285714285714,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 910
+        }
+      },
+      "readouts": {
+        "H0_fixed_binding": {
+          "query_accuracy": 0.5507487520798668,
+          "query_gain": 0.0033277870216306127,
+          "support_accuracy": 0.7142857142857143,
+          "support_gain": 0.0
+        },
+        "H1_dynamic_binding": {
+          "query_accuracy": 0.5640599001663894,
+          "query_gain": 0.016638935108153174,
+          "support_accuracy": 0.7142857142857143,
+          "support_gain": 0.0
+        },
+        "incumbent": {
+          "query_accuracy": 0.5474209650582362,
+          "support_accuracy": 0.7142857142857143
+        }
+      },
+      "series_length": 70,
+      "stable_event_policy": {
+        "forced_action_harm_not_claimed": true,
+        "policy_event_harm": 0.0,
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "selected_action": "ABSTAIN_KEEP_INCUMBENT"
+      }
+    },
+    {
+      "A3_target_only": {
+        "adapt_auc": 0.6563573883161512,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "utility": 0.4742268041237113
+          },
+          {
+            "budget": 1,
+            "utility": 0.6563573883161512
+          },
+          {
+            "budget": 2,
+            "utility": 0.8384879725085911
+          }
+        ],
+        "per_order": [
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.45,
+                "support_gain": -0.011111111111111127
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.4742268041237113
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H0_fixed_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.8,
+                "support_gain": 0.3388888888888889
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.4742268041237113
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H0_fixed_binding",
+                "H1_dynamic_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.8384879725085911
+            }
+          ],
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.8,
+                "support_gain": 0.3388888888888889
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.4742268041237113
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H1_dynamic_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.45,
+                "support_gain": -0.011111111111111127
+              },
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.8384879725085911
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H1_dynamic_binding",
+                "H0_fixed_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.8384879725085911
+            }
+          ]
+        ]
+      },
+      "A4_source_only": {
+        "adapt_auc": 0.47422680412371127,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "selected_candidate": "incumbent",
+            "utility": 0.4742268041237113
+          },
+          {
+            "budget": 1,
+            "selected_candidate": "incumbent",
+            "utility": 0.4742268041237113
+          },
+          {
+            "budget": 2,
+            "selected_candidate": "incumbent",
+            "utility": 0.4742268041237113
+          }
+        ]
+      },
+      "A5_minus_A3_adapt_auc": 0.060710194730813294,
+      "A5_source_plus_target": {
+        "adapt_auc": 0.7170675830469645,
+        "confirmation_order": [
+          "H1_dynamic_binding",
+          "H0_fixed_binding"
+        ],
+        "curve": [
+          {
+            "budget": 0,
+            "confirmed_candidates": [],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H1_dynamic_binding",
+              "support_accuracy": 0.8,
+              "support_gain": 0.3388888888888889
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.4742268041237113
+          },
+          {
+            "budget": 1,
+            "confirmed_candidates": [
+              "H1_dynamic_binding"
+            ],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H0_fixed_binding",
+              "support_accuracy": 0.45,
+              "support_gain": -0.011111111111111127
+            },
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.8384879725085911
+          },
+          {
+            "budget": 2,
+            "confirmed_candidates": [
+              "H1_dynamic_binding",
+              "H0_fixed_binding"
+            ],
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.8384879725085911
+          }
+        ]
+      },
+      "H0_direct_query_accuracy": 0.47079037800687284,
+      "actual_execution_binding": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "context_or_decision_used_dataset_id": false,
+      "controlled_artifact_true_positions": [
+        6,
+        16,
+        63,
+        73
+      ],
+      "dataset": "ProximalPhalanxOutlineCorrect",
+      "observer_localized_nodes": [
+        6,
+        16,
+        63,
+        73
+      ],
+      "program_modification": {
+        "H0_fixed_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            12,
+            36
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            12,
+            36
+          ],
+          "materially_modified_positions_on_every_row": [
+            12,
+            36
+          ],
+          "modified_point_count": 840,
+          "modified_point_fraction": 0.025,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 33600
+        },
+        "H1_dynamic_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "materially_modified_positions_on_every_row": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "modified_point_count": 1680,
+          "modified_point_fraction": 0.05,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 33600
+        }
+      },
+      "readouts": {
+        "H0_fixed_binding": {
+          "query_accuracy": 0.47079037800687284,
+          "query_gain": -0.0034364261168384758,
+          "support_accuracy": 0.45,
+          "support_gain": -0.011111111111111127
+        },
+        "H1_dynamic_binding": {
+          "query_accuracy": 0.8384879725085911,
+          "query_gain": 0.36426116838487976,
+          "support_accuracy": 0.8,
+          "support_gain": 0.3388888888888889
+        },
+        "incumbent": {
+          "query_accuracy": 0.4742268041237113,
+          "support_accuracy": 0.46111111111111114
+        }
+      },
+      "series_length": 80,
+      "stable_event_policy": {
+        "forced_action_harm_not_claimed": true,
+        "policy_event_harm": 0.0,
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "selected_action": "ABSTAIN_KEEP_INCUMBENT"
+      }
+    },
+    {
+      "A3_target_only": {
+        "adapt_auc": 0.5286368843069874,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "utility": 0.42955326460481097
+          },
+          {
+            "budget": 1,
+            "utility": 0.5309278350515464
+          },
+          {
+            "budget": 2,
+            "utility": 0.6254295532646048
+          }
+        ],
+        "per_order": [
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.5111111111111111,
+                "support_gain": 0.005555555555555536
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.42955326460481097
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H0_fixed_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.7555555555555555,
+                "support_gain": 0.25
+              },
+              "selected_candidate": "H0_fixed_binding",
+              "utility": 0.436426116838488
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H0_fixed_binding",
+                "H1_dynamic_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.6254295532646048
+            }
+          ],
+          [
+            {
+              "budget": 0,
+              "confirmed_candidates": [],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H1_dynamic_binding",
+                "support_accuracy": 0.7555555555555555,
+                "support_gain": 0.25
+              },
+              "selected_candidate": "incumbent",
+              "utility": 0.42955326460481097
+            },
+            {
+              "budget": 1,
+              "confirmed_candidates": [
+                "H1_dynamic_binding"
+              ],
+              "next_feedback": {
+                "budget_cost": 1,
+                "candidate": "H0_fixed_binding",
+                "support_accuracy": 0.5111111111111111,
+                "support_gain": 0.005555555555555536
+              },
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.6254295532646048
+            },
+            {
+              "budget": 2,
+              "confirmed_candidates": [
+                "H1_dynamic_binding",
+                "H0_fixed_binding"
+              ],
+              "selected_candidate": "H1_dynamic_binding",
+              "utility": 0.6254295532646048
+            }
+          ]
+        ]
+      },
+      "A4_source_only": {
+        "adapt_auc": 0.42955326460481097,
+        "mean_curve": [
+          {
+            "budget": 0,
+            "selected_candidate": "incumbent",
+            "utility": 0.42955326460481097
+          },
+          {
+            "budget": 1,
+            "selected_candidate": "incumbent",
+            "utility": 0.42955326460481097
+          },
+          {
+            "budget": 2,
+            "selected_candidate": "incumbent",
+            "utility": 0.42955326460481097
+          }
+        ]
+      },
+      "A5_minus_A3_adapt_auc": 0.03150057273768614,
+      "A5_source_plus_target": {
+        "adapt_auc": 0.5601374570446735,
+        "confirmation_order": [
+          "H1_dynamic_binding",
+          "H0_fixed_binding"
+        ],
+        "curve": [
+          {
+            "budget": 0,
+            "confirmed_candidates": [],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H1_dynamic_binding",
+              "support_accuracy": 0.7555555555555555,
+              "support_gain": 0.25
+            },
+            "selected_candidate": "incumbent",
+            "utility": 0.42955326460481097
+          },
+          {
+            "budget": 1,
+            "confirmed_candidates": [
+              "H1_dynamic_binding"
+            ],
+            "next_feedback": {
+              "budget_cost": 1,
+              "candidate": "H0_fixed_binding",
+              "support_accuracy": 0.5111111111111111,
+              "support_gain": 0.005555555555555536
+            },
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.6254295532646048
+          },
+          {
+            "budget": 2,
+            "confirmed_candidates": [
+              "H1_dynamic_binding",
+              "H0_fixed_binding"
+            ],
+            "selected_candidate": "H1_dynamic_binding",
+            "utility": 0.6254295532646048
+          }
+        ]
+      },
+      "H0_direct_query_accuracy": 0.436426116838488,
+      "actual_execution_binding": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "bindings": {
+        "H0_fixed_binding": {
+          "exact_binding": false,
+          "executed_position_count": 2,
+          "executed_positions": [
+            12,
+            36
+          ],
+          "missed_observer_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "node_overlap_count": 0,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": [
+            12,
+            36
+          ]
+        },
+        "H1_dynamic_binding": {
+          "exact_binding": true,
+          "executed_position_count": 4,
+          "executed_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "missed_observer_nodes": [],
+          "node_overlap_count": 4,
+          "observer_localized_nodes": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "observer_node_count": 4,
+          "out_of_scope_executed_positions": []
+        }
+      },
+      "context_or_decision_used_dataset_id": false,
+      "controlled_artifact_true_positions": [
+        6,
+        16,
+        63,
+        73
+      ],
+      "dataset": "MiddlePhalanxOutlineCorrect",
+      "observer_localized_nodes": [
+        6,
+        16,
+        63,
+        73
+      ],
+      "program_modification": {
+        "H0_fixed_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            12,
+            36
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            12,
+            36
+          ],
+          "materially_modified_positions_on_every_row": [
+            12,
+            36
+          ],
+          "modified_point_count": 840,
+          "modified_point_fraction": 0.025,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 33600
+        },
+        "H1_dynamic_binding": {
+          "all_attempted_positions_modified_on_every_row": true,
+          "attempted_bound_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "comparison_tolerance": 1e-12,
+          "materially_modified_positions": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "materially_modified_positions_on_every_row": [
+            6,
+            16,
+            63,
+            73
+          ],
+          "modified_point_count": 1680,
+          "modified_point_fraction": 0.05,
+          "numeric_noop_possible": true,
+          "only_bound_positions_changed": true,
+          "replacement": "median(indices i-3:i concatenated with i+1:i+4); center excluded",
+          "total_point_count": 33600
+        }
+      },
+      "readouts": {
+        "H0_fixed_binding": {
+          "query_accuracy": 0.436426116838488,
+          "query_gain": 0.006872852233677007,
+          "support_accuracy": 0.5111111111111111,
+          "support_gain": 0.005555555555555536
+        },
+        "H1_dynamic_binding": {
+          "query_accuracy": 0.6254295532646048,
+          "query_gain": 0.19587628865979384,
+          "support_accuracy": 0.7555555555555555,
+          "support_gain": 0.25
+        },
+        "incumbent": {
+          "query_accuracy": 0.42955326460481097,
+          "support_accuracy": 0.5055555555555555
+        }
+      },
+      "series_length": 80,
+      "stable_event_policy": {
+        "forced_action_harm_not_claimed": true,
+        "policy_event_harm": 0.0,
+        "scope": "CONTRAINDICATED_ABSTAIN",
+        "selected_action": "ABSTAIN_KEEP_INCUMBENT"
+      }
+    }
+  ],
+  "execution_history": {
+    "evaluate_attempt_count": 2,
+    "first_evaluate_attempt": {
+      "consumer_fit_count": 0,
+      "failed_dataset": "FordB",
+      "failure": "not every bound node was materially replaced",
+      "failure_stage": "after_first_TEST_load_before_any_consumer_fit",
+      "status": "FAILED_BEFORE_UTILITY",
+      "test_split_load_count": 1,
+      "utility_output_count": 0
+    },
+    "retry": {
+      "outcome_computed_once": true,
+      "status": "OUTCOME_COMPUTED",
+      "test_split_load_count": 6
+    },
+    "total_test_split_load_count_across_attempts": 7
+  },
+  "formal_natural_capability_promotion": false,
+  "frozen_policies": {
+    "A3_target_only": "incumbent then exact mean over both candidate-confirmation orders",
+    "A4_source_only": "incumbent because binding correctness is not Utility evidence",
+    "A5_source_plus_target": "confirm H1 dynamic binding, then H0 fixed binding",
+    "H0_direct": "execute unchanged Program with in-range Source absolute positions",
+    "budget_unit": "one complete Target Support Consumer refit outcome",
+    "candidate_selection": "highest Support accuracy among incumbent and confirmed candidates; ties prefer incumbent, then H0_fixed_binding",
+    "feedback_budgets": [
+      0,
+      1,
+      2
+    ]
+  },
+  "frozen_success_gate": {
+    "H0_binding_mismatch_all_targets": true,
+    "H1_binding_exact_all_targets": true,
+    "H1_positive_query_gain_count_min": 4,
+    "H1_query_accuracy_strictly_greater_than_H0_count_min": 5,
+    "event_scope_unchanged_all_targets": true,
+    "macro_A5_adapt_auc_strictly_greater_than_A3": true,
+    "negative_A5_vs_A3_target_count": 0
+  },
+  "frozen_surfaces": {
+    "changed": "Program Binding only",
+    "consumer": "ridge-raw-plus-difference-v1",
+    "metric": "classification accuracy",
+    "observation": "class-conditioned-impulse-topology/1",
+    "program": "center-excluded local median, unchanged",
+    "proxy": "none",
+    "risk": "stable task event abstains, unchanged",
+    "scope": "W52 cross-cohort evidence scope, unchanged",
+    "task": "shared classification-local-event-quality-v1"
+  },
+  "general_safety_claim": false,
+  "next_step": "Treat Program Binding as a validated evolvable Harness surface and move to a natural Workflow family without adding another controlled binding variant.",
+  "official_target_test_outcome_opened_once": false,
+  "original_uci_target_query_opened": false,
+  "outcome_computed_once": true,
+  "overall": {
+    "A3_macro_adapt_auc": 0.5791929110084466,
+    "A5_macro_adapt_auc": 0.6007021669641187,
+    "A5_minus_A3_macro_adapt_auc": 0.021509255955672102,
+    "A5_policy_event_harm_max": 0.0,
+    "H0_binding_mismatch_all_targets": true,
+    "H1_binding_exact_all_targets": true,
+    "H1_positive_query_gain_count": 6,
+    "H1_query_accuracy_greater_than_H0_count": 6,
+    "event_scope_unchanged_all_targets": true,
+    "frozen_gate_pass": true,
+    "negative_A5_vs_A3_target_count": 0,
+    "target_dataset_count": 6
+  },
+  "persistent_memory_built": false,
+  "plan_exposure": {
+    "context_exposure": "INSTANCE_SEEN_TRAIN_ONLY",
+    "outcome_exposure_after_evaluate": "EXPOSED",
+    "outcome_exposure_before_evaluate": "SEALED"
+  },
+  "prior_harness_evidence": {
+    "W52_used_dynamic_observer_binding": true,
+    "W52_verdict": "CONTROLLED_INTEGRATED_HARNESS_EVOLUTION_FAIL",
+    "established_surfaces": [
+      "Observation",
+      "Scope"
+    ]
+  },
+  "schema_version": "e2-program-binding-harness-update/1",
+  "scientific_role": "controlled Program-Binding Harness update",
+  "verdict": "CONTROLLED_PROGRAM_BINDING_HARNESS_UPDATE_PASS"
+}

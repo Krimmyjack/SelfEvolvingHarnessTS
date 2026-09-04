@@ -1,0 +1,269 @@
+{
+  "arms": {
+    "A3": {
+      "arm": "A3",
+      "first_positive_probe_index": 2,
+      "frozen_steps": [
+        {
+          "op": "impute_ar",
+          "params": {}
+        }
+      ],
+      "llm_calls": 2,
+      "patch_call": {
+        "attempts": [
+          "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"probe_remove_step_a (B only): +0.09659\",\"incumbent full-workflow support gain: +0.00000\"],\"rationale\":\"Removing step A and retaining step B improves support over no preprocessing, while the incumbent workflow provides no gain.\"}"
+        ],
+        "payload": {
+          "evidence_refs": [
+            "probe_remove_step_a (B only): +0.09659",
+            "incumbent full-workflow support gain: +0.00000"
+          ],
+          "patch_id": "REMOVE_STEP_A",
+          "rationale": "Removing step A and retaining step B improves support over no preprocessing, while the incumbent workflow provides no gain."
+        }
+      },
+      "patch_id": "REMOVE_STEP_A",
+      "patch_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nYou ran counterfactual probes on the failing two-step Workflow. Choose the update direction based on the probe results below.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_linear  B: impute_ar\n  incumbent full-workflow support gain: +0.00000\n\n== Opened probe results (support decision point 632; gain > 0 = better than no preprocessing) ==\n  probe probe_remove_step_b (A only): +0.00000\n  probe probe_remove_step_a (B only): +0.09659\n\n== Legal patch IDs ==\n  KEEP           keep A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN        no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. ABSTAIN is valid if the opened probe results are insufficient.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+      "probe_call": {
+        "attempts": [
+          "{\"probe_order\":[\"probe_remove_step_b\",\"probe_remove_step_a\"],\"rationale\":\"Probe A only first by removing the AR step. The decision point has increased and longer missing runs, negative calendar-period autocorrelation, and elevated seasonal residuals, indicating that AR extrapolation is the more likely source of failure. Linear interpolation is expected to be the more stable ablation; if it remains non-positive, evaluate B only to isolate the effect of linear imputation.\"}"
+        ],
+        "payload": {
+          "probe_order": [
+            "probe_remove_step_b",
+            "probe_remove_step_a"
+          ],
+          "rationale": "Probe A only first by removing the AR step. The decision point has increased and longer missing runs, negative calendar-period autocorrelation, and elevated seasonal residuals, indicating that AR extrapolation is the more likely source of failure. Linear interpolation is expected to be the more stable ablation; if it remains non-positive, evaluate B only to isolate the effect of linear imputation."
+        }
+      },
+      "probe_evals": [
+        {
+          "error": null,
+          "gain": 0.0,
+          "label": "A only",
+          "probe": "probe_remove_step_b",
+          "verification_passed": true
+        },
+        {
+          "error": null,
+          "gain": 0.09658885562326547,
+          "label": "B only",
+          "probe": "probe_remove_step_a",
+          "verification_passed": true
+        }
+      ],
+      "probe_order": [
+        "probe_remove_step_b",
+        "probe_remove_step_a"
+      ],
+      "probe_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nA two-step Workflow failed at support decision point 632. Before proposing a fix, you may run at most two counterfactual probes: each probe evaluates one leave-one-step-out version of the Workflow on the SAME support decision point.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_linear\n  B: impute_ar\n  incumbent full-workflow support gain: +0.00000 (negative or non-positive = failure trigger)\n\n== Public context at the decision point ==\n{\n  \"change.coverage_delta\": -0.020312,\n  \"change.maximum_missing_run_length_delta\": 1.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.17017,\n  \"change.median_normalized_seasonal_residual_delta\": 0.224675,\n  \"change.median_robust_center_delta\": 0.418461,\n  \"change.median_robust_scale_delta\": -0.475592,\n  \"change.missing_run_count_delta\": 31.0,\n  \"recent.coverage\": 0.964844,\n  \"recent.maximum_missing_run_length\": 7.0,\n  \"recent.median_acf_at_calendar_period\": -0.371996,\n  \"recent.median_normalized_seasonal_residual\": 1.494384,\n  \"recent.median_robust_center\": 15.561225,\n  \"recent.median_robust_scale\": 6.169423,\n  \"recent.missing_run_count\": 78.0\n}\n\n== Legal probes (budget: at most 2, each evaluates one ablated version; the results are NOT known until you run them) ==\n  probe_remove_step_a   evaluate B only (drop step A)\n  probe_remove_step_b   evaluate A only (drop step B)\n\n== Your task ==\nChoose the probe order that most efficiently localizes the failure (the first probe you expect to reveal a positive or informative ablation). You may order both probes or a single one.\nOutput JSON only: {\"probe_order\": [\"<probe>\", ...], \"rationale\": \"...\"}",
+      "replay": {
+        "compiler": {
+          "checked_windows": 72,
+          "passed": true,
+          "rejected_windows": []
+        },
+        "delayed": {
+          "gain": 0.02763605538277747,
+          "opened_after_patch_freeze": true,
+          "origin": 680
+        },
+        "support": {
+          "gain": 0.09658885562326547,
+          "origin": 632
+        }
+      }
+    },
+    "A5": {
+      "arm": "A5",
+      "first_positive_probe_index": 2,
+      "frozen_steps": [
+        {
+          "op": "impute_ar",
+          "params": {}
+        }
+      ],
+      "llm_calls": 2,
+      "patch_call": {
+        "attempts": [
+          "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"probe_remove_step_a\",\"probe_remove_step_b\",\"support_decision_point_632\"],\"rationale\":\"Removing step A and retaining step B improves support by +0.09659, while retaining only A provides no gain.\"}"
+        ],
+        "payload": {
+          "evidence_refs": [
+            "probe_remove_step_a",
+            "probe_remove_step_b",
+            "support_decision_point_632"
+          ],
+          "patch_id": "REMOVE_STEP_A",
+          "rationale": "Removing step A and retaining step B improves support by +0.09659, while retaining only A provides no gain."
+        }
+      },
+      "patch_id": "REMOVE_STEP_A",
+      "patch_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nYou ran counterfactual probes on the failing two-step Workflow. Choose the update direction based on the probe results below.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_linear  B: impute_ar\n  incumbent full-workflow support gain: +0.00000\n\n== Opened probe results (support decision point 632; gain > 0 = better than no preprocessing) ==\n  probe probe_remove_step_b (A only): +0.00000\n  probe probe_remove_step_a (B only): +0.09659\n\n== Experience memory (signed) ==\n  - nn5 impute_ssm @536: support +0.01865 delayed +0.02734 → POSITIVE\n\n== Legal patch IDs ==\n  KEEP           keep A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN        no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. ABSTAIN is valid if the opened probe results are insufficient.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+      "probe_call": {
+        "attempts": [
+          "{\"probe_order\":[\"probe_remove_step_b\",\"probe_remove_step_a\"],\"rationale\":\"Test A-only first because the final AR step is the most likely source of the observed seasonal-residual increase and scale collapse; a positive A-only result would directly identify B as harmful. If it is not positive, B-only then distinguishes whether the linear pre-step is responsible.\"}"
+        ],
+        "payload": {
+          "probe_order": [
+            "probe_remove_step_b",
+            "probe_remove_step_a"
+          ],
+          "rationale": "Test A-only first because the final AR step is the most likely source of the observed seasonal-residual increase and scale collapse; a positive A-only result would directly identify B as harmful. If it is not positive, B-only then distinguishes whether the linear pre-step is responsible."
+        }
+      },
+      "probe_evals": [
+        {
+          "error": null,
+          "gain": 0.0,
+          "label": "A only",
+          "probe": "probe_remove_step_b",
+          "verification_passed": true
+        },
+        {
+          "error": null,
+          "gain": 0.09658885562326547,
+          "label": "B only",
+          "probe": "probe_remove_step_a",
+          "verification_passed": true
+        }
+      ],
+      "probe_order": [
+        "probe_remove_step_b",
+        "probe_remove_step_a"
+      ],
+      "probe_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nA two-step Workflow failed at support decision point 632. Before proposing a fix, you may run at most two counterfactual probes: each probe evaluates one leave-one-step-out version of the Workflow on the SAME support decision point.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_linear\n  B: impute_ar\n  incumbent full-workflow support gain: +0.00000 (negative or non-positive = failure trigger)\n\n== Public context at the decision point ==\n{\n  \"change.coverage_delta\": -0.020312,\n  \"change.maximum_missing_run_length_delta\": 1.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.17017,\n  \"change.median_normalized_seasonal_residual_delta\": 0.224675,\n  \"change.median_robust_center_delta\": 0.418461,\n  \"change.median_robust_scale_delta\": -0.475592,\n  \"change.missing_run_count_delta\": 31.0,\n  \"recent.coverage\": 0.964844,\n  \"recent.maximum_missing_run_length\": 7.0,\n  \"recent.median_acf_at_calendar_period\": -0.371996,\n  \"recent.median_normalized_seasonal_residual\": 1.494384,\n  \"recent.median_robust_center\": 15.561225,\n  \"recent.median_robust_scale\": 6.169423,\n  \"recent.missing_run_count\": 78.0\n}\n\n== Experience memory (signed) ==\n  - nn5 impute_ssm @536: support +0.01865 delayed +0.02734 → POSITIVE\n\n== Legal probes (budget: at most 2, each evaluates one ablated version; the results are NOT known until you run them) ==\n  probe_remove_step_a   evaluate B only (drop step A)\n  probe_remove_step_b   evaluate A only (drop step B)\n\n== Your task ==\nChoose the probe order that most efficiently localizes the failure (the first probe you expect to reveal a positive or informative ablation). You may order both probes or a single one.\nOutput JSON only: {\"probe_order\": [\"<probe>\", ...], \"rationale\": \"...\"}",
+      "replay": {
+        "compiler": {
+          "checked_windows": 72,
+          "passed": true,
+          "rejected_windows": []
+        },
+        "delayed": {
+          "gain": 0.02763605538277747,
+          "opened_after_patch_freeze": true,
+          "origin": 680
+        },
+        "support": {
+          "gain": 0.09658885562326547,
+          "origin": 632
+        }
+      }
+    },
+    "M_swap": {
+      "arm": "M_swap",
+      "first_positive_probe_index": 2,
+      "frozen_steps": [
+        {
+          "op": "impute_ar",
+          "params": {}
+        }
+      ],
+      "llm_calls": 2,
+      "patch_call": {
+        "attempts": [
+          "{\"patch_id\":\"REMOVE_STEP_A\",\"evidence_refs\":[\"probe_remove_step_a\",\"probe_remove_step_b\"],\"rationale\":\"Dropping step A and keeping step B yields a +0.09659 support gain, while keeping only A yields no gain. The evidence supports removing step A.\"}"
+        ],
+        "payload": {
+          "evidence_refs": [
+            "probe_remove_step_a",
+            "probe_remove_step_b"
+          ],
+          "patch_id": "REMOVE_STEP_A",
+          "rationale": "Dropping step A and keeping step B yields a +0.09659 support gain, while keeping only A yields no gain. The evidence supports removing step A."
+        }
+      },
+      "patch_id": "REMOVE_STEP_A",
+      "patch_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nYou ran counterfactual probes on the failing two-step Workflow. Choose the update direction based on the probe results below.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_linear  B: impute_ar\n  incumbent full-workflow support gain: +0.00000\n\n== Opened probe results (support decision point 632; gain > 0 = better than no preprocessing) ==\n  probe probe_remove_step_b (A only): +0.00000\n  probe probe_remove_step_a (B only): +0.09659\n\n== Experience memory (signed) ==\n  - nn5 impute_ssm @536: support -0.01865 delayed -0.02734 → NEGATIVE (signed relation inverted for causal diagnosis)\n\n== Legal patch IDs ==\n  KEEP           keep A -> B\n  REMOVE_STEP_A  drop step A, keep only step B\n  REMOVE_STEP_B  drop step B, keep only step A\n  ABSTAIN        no change proposed (evidence insufficient)\n\n== Your task ==\nChoose exactly one legal patch ID. ABSTAIN is valid if the opened probe results are insufficient.\nOutput JSON only: {\"patch_id\": \"<one legal ID>\", \"evidence_refs\": [\"...\"], \"rationale\": \"...\"}",
+      "probe_call": {
+        "attempts": [
+          "{\"probe_order\":[\"probe_remove_step_b\",\"probe_remove_step_a\"],\"rationale\":\"Probe the final step first: evaluating A only directly tests whether impute_ar is responsible for the non-positive full-workflow gain. If A only is positive, the failure is localized to B; if it remains non-positive, the second probe (B only) distinguishes whether A is harmful or whether the interaction is required.\"}"
+        ],
+        "payload": {
+          "probe_order": [
+            "probe_remove_step_b",
+            "probe_remove_step_a"
+          ],
+          "rationale": "Probe the final step first: evaluating A only directly tests whether impute_ar is responsible for the non-positive full-workflow gain. If A only is positive, the failure is localized to B; if it remains non-positive, the second probe (B only) distinguishes whether A is harmful or whether the interaction is required."
+        }
+      },
+      "probe_evals": [
+        {
+          "error": null,
+          "gain": 0.0,
+          "label": "A only",
+          "probe": "probe_remove_step_b",
+          "verification_passed": true
+        },
+        {
+          "error": null,
+          "gain": 0.09658885562326547,
+          "label": "B only",
+          "probe": "probe_remove_step_a",
+          "verification_passed": true
+        }
+      ],
+      "probe_order": [
+        "probe_remove_step_b",
+        "probe_remove_step_a"
+      ],
+      "probe_plan_regenerated": true,
+      "probe_prompt": "You are the counterfactual attribution path of a time-series preprocessing harness.\n\nA two-step Workflow failed at support decision point 632. Before proposing a fix, you may run at most two counterfactual probes: each probe evaluates one leave-one-step-out version of the Workflow on the SAME support decision point.\n\n== Incumbent Workflow (A then B) ==\n  A: impute_linear\n  B: impute_ar\n  incumbent full-workflow support gain: +0.00000 (negative or non-positive = failure trigger)\n\n== Public context at the decision point ==\n{\n  \"change.coverage_delta\": -0.020312,\n  \"change.maximum_missing_run_length_delta\": 1.0,\n  \"change.median_acf_at_calendar_period_delta\": -0.17017,\n  \"change.median_normalized_seasonal_residual_delta\": 0.224675,\n  \"change.median_robust_center_delta\": 0.418461,\n  \"change.median_robust_scale_delta\": -0.475592,\n  \"change.missing_run_count_delta\": 31.0,\n  \"recent.coverage\": 0.964844,\n  \"recent.maximum_missing_run_length\": 7.0,\n  \"recent.median_acf_at_calendar_period\": -0.371996,\n  \"recent.median_normalized_seasonal_residual\": 1.494384,\n  \"recent.median_robust_center\": 15.561225,\n  \"recent.median_robust_scale\": 6.169423,\n  \"recent.missing_run_count\": 78.0\n}\n\n== Experience memory (signed) ==\n  - nn5 impute_ssm @536: support -0.01865 delayed -0.02734 → NEGATIVE (signed relation inverted for causal diagnosis)\n\n== Legal probes (budget: at most 2, each evaluates one ablated version; the results are NOT known until you run them) ==\n  probe_remove_step_a   evaluate B only (drop step A)\n  probe_remove_step_b   evaluate A only (drop step B)\n\n== Your task ==\nChoose the probe order that most efficiently localizes the failure (the first probe you expect to reveal a positive or informative ablation). You may order both probes or a single one.\nOutput JSON only: {\"probe_order\": [\"<probe>\", ...], \"rationale\": \"...\"}",
+      "replay": {
+        "compiler": {
+          "checked_windows": 72,
+          "passed": true,
+          "rejected_windows": []
+        },
+        "delayed": {
+          "gain": 0.02763605538277747,
+          "opened_after_patch_freeze": true,
+          "origin": 680
+        },
+        "support": {
+          "gain": 0.09658885562326547,
+          "origin": 632
+        }
+      }
+    }
+  },
+  "case": {
+    "all_verified": true,
+    "delayed": {
+      "A_only": null,
+      "A_to_B": 0.0,
+      "B_only": 0.02763605538277747
+    },
+    "delayed_origin": 680,
+    "origin": 632,
+    "step_a": "impute_linear",
+    "step_b": "impute_ar",
+    "support": {
+      "A_only": 0.0,
+      "A_to_B": 0.0,
+      "B_only": 0.09658885562326547,
+      "identity": null
+    }
+  },
+  "checks": {
+    "a5_first_positive_earlier_or_equal": true,
+    "a5_no_worse_harm": true,
+    "a5_patch_differs_from_a3": false,
+    "a5_probe_plan_differs_from_a3": false,
+    "swap_changes_decision": false,
+    "swap_changes_probe_plan": false
+  },
+  "experiment_id": "v1-memory-guided-probing-cross-origin-nn5",
+  "information_wall": {
+    "delayed_not_in_any_prompt": false,
+    "delayed_opened_after_patch_freeze": true,
+    "note": "程序断言自 prompt 文本计算；语义面泄漏（memory 行含当前案例数值）会如实暴露为 False",
+    "patch_prompt_only_opened_probes": true,
+    "probe_choice_prompt_has_no_ablation_gains": false
+  },
+  "llm_api_call_count": 6,
+  "memory_source": "winsorize @832 (cross-origin, time-legal)",
+  "verdict": "CROSS_ORIGIN_PROBING_INCONCLUSIVE_NO_ACTIONABLE_MEMORY_OVERLAP",
+  "verdict_note": "审查裁决（2026-08-09）：Memory（impute_ssm @536）与当前 Workflow 算子（impute_linear/impute_ar）无重叠、无已注册 Program-delta 映射——三臂相同是合理安全行为，不是模型遵循性的决定性否证；跨 origin 线诚实关闭为数据不足（相关算子案例不可构造）。"
+}

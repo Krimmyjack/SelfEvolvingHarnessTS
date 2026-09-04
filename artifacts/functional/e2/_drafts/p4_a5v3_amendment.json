@@ -1,0 +1,117 @@
+{
+  "_target": "artifacts/functional/e2/w1_guidance_evolution_report.json",
+  "_apply_rule": "只追加，不改写任何已有键。a5v3.verdict 保持逐字不动。本块写入 a5v3.amendment_2026_08_15 与顶层 a5_next_protocol_requirements。",
+  "a5v3.amendment_2026_08_15": {
+    "amendment_id": "A5V3_SCIENTIFIC_REINTERPRETATION",
+    "date": "2026-08-15",
+    "user_ruling": "2026-08-15：P4 立即执行——修正数字、拆分 harm、降低科学 Claim；不加入 null-arm safety guard。冻结 protocol verdict 不动。",
+    "frozen_protocol_verdict": "NEGATIVE_TRANSFER",
+    "scientific_status": "MIXED_TRANSFER_SIGNAL_UNDERPOWERED",
+    "correction_1_harm_accounting": {
+      "defect": "原 aggregates 只记 harm_events / incremental_harm 合计（A5 5 / A3 2），未区分 Support harm 与 delayed harm；读者无法判断 A5 多出的 harm 来自探测质量还是来自行动量。",
+      "recomputed_from": "a5v3.rows[].harm_probes 与 a5v3.rows[].delayed_utility，逐行重算",
+      "A5": {
+        "support_probes": 8,
+        "support_harm": 3,
+        "support_harm_rate": 0.375,
+        "delayed_evaluations": 3,
+        "delayed_harm": 2,
+        "total_harm": 5,
+        "winners": 3,
+        "abstentions": 3,
+        "total_support_gain": 0.07846186027947022,
+        "n_final_reliable": 0,
+        "n_removed": 1,
+        "skills_created": 2,
+        "approved": 1,
+        "confirmed": 0,
+        "removed": 1,
+        "_terminology": "winner = 单 context 通过 Support 的最优候选；不等于 adoption/skill。生命周期计数单列。"
+      },
+      "A3": {
+        "support_probes": 5,
+        "support_harm": 2,
+        "support_harm_rate": 0.4,
+        "delayed_evaluations": 0,
+        "delayed_harm": 0,
+        "total_harm": 2,
+        "winners": 0,
+        "abstentions": 6,
+        "total_support_gain": 0.0,
+        "n_final_reliable": 0,
+        "n_removed": 0,
+        "skills_created": 0,
+        "approved": 0,
+        "confirmed": 0,
+        "removed": 0
+      },
+      "per_row_derivation": [
+        "A5 MT_005@600 probes=2 harm=0 winner=+0.0326 delayed=+0.0182 -> 0 harm",
+        "A5 MT_005@792 probes=2 harm=0 winner=+0.0327 delayed=-0.0102 -> 1 delayed harm",
+        "A5 MT_005@888 abstained probes=0 -> 0",
+        "A5 MT_009@600 probes=2 harm_probes=2 -> 2 support harm",
+        "A5 MT_009@792 probes=1 harm=0 winner=+0.0131 delayed=-0.0089 -> 1 delayed harm",
+        "A5 MT_009@888 probes=1 harm_probes=1 -> 1 support harm",
+        "A3 MT_005@600 probes=1 harm=0",
+        "A3 MT_005@792 probes=1 harm=0 (gain -0.000998, 未达 material 门 M=0.005)",
+        "A3 MT_005@888 probes=0",
+        "A3 MT_009@600 probes=0",
+        "A3 MT_009@792 probes=1 harm=0",
+        "A3 MT_009@888 probes=2 harm_probes=2 -> 2 support harm"
+      ]
+    },
+    "correction_2_statistics": {
+      "support_harm_rate": "A5 3/8=0.375 vs A3 2/5=0.400 — Fisher exact 双侧 p = 1.000",
+      "winner_rate": "A5 3/8 vs A3 0/5 — Fisher exact 双侧 p = 0.231",
+      "power_note": "按观测 winner rate（0.375 vs 0.0）做二项功效模拟，α=0.05：6-8 probes/臂 power≈0.13；12 probes power≈0.51；16 probes power≈0.78；20 probes power≈0.92。a5v3 实际 6 context/臂 → 该实验对主假设的功效约 0.13。",
+      "instrument_note": "fresh target（uci_electricity_load_diagrams）上同类清洗算子的 gain 尺度 sd=0.051 / |max|=0.123；development cohort（kdd2018）同类算子 sd=0.311 / |max|=1.055 —— 靶子动态范围约为 dev 的 1/6。n4_v2 的 eligibility 按合规性（virgin / clean base / 窗口完整）选靶，未含 headroom 检查。"
+    },
+    "dimensional_restatement": {
+      "q1_actionability": "A5 positive — 3 winners / 2 skills created vs A3 0 / 0",
+      "q2_probe_quality": "no evidence A5 worse — support harm 0.375 vs 0.400，Fisher p=1.000",
+      "q3_delayed_safety": "A5 negative signal —— 2 delayed harm vs 0；记录事实：A3 无 winner，因此未产生 delayed 评估",
+      "q4_durability": "neither arm established a durable skill — n_final_reliable 0/0",
+      "speed_comparison": "UNAVAILABLE — feedback_to_first_confirmed 在两臂均无定义（无 confirmed skill）",
+      "general_transfer_claim": "证据不足 — n=6 context、1 rep、单 Target 数据集、功效≈0.13"
+    },
+    "rejected_amendment_on_record": {
+      "proposal": "为 NEGATIVE_TRANSFER 增加前提『对照臂至少有一个 winner』；对照臂零 winner 时判 NULL_ARM_DEGENERATE 且 safety 维度不裁定",
+      "ruling": "REJECTED（用户 2026-08-15）",
+      "reason": "不行动本身是合法的安全策略。若 A3 utility=0 而 A5 utility=-100，仍应判 A5 有害——不能因对照臂无 adoption 就豁免处理臂的 harm。真正因缺事件而不可比的是 speed 与 durability estimand，不是 safety estimand。",
+      "retained_instead": "见 a5_next_protocol_requirements.estimand_availability"
+    },
+    "claim_boundary": "本 amendment 只修正账目与科学解释层。不改写冻结 verdict、不重跑、不追溯改变任何 Outcome。不得据此宣称 Source Memory 有益或无害。"
+  },
+  "a5_next_protocol_requirements": {
+    "_note": "下一版 A5/A3 协议的强制要求。本块只是要求清单，不是已冻结协议。",
+    "estimand_availability": {
+      "safety_estimand_available": "始终可评价——与两臂 adoption 数无关",
+      "speed_estimand_available": "要求 A5 或 A3 至少有一个 confirmed / final-reliable Skill；否则 speed 维度输出 SPEED_ESTIMAND_UNAVAILABLE，不参与总裁定",
+      "durability_estimand_available": "同 speed"
+    },
+    "verdict_space": [
+      "TRANSFER_PASS",
+      "BENEFIT_WITH_SAFETY_TRADEOFF",
+      "NEGATIVE_UTILITY_TRANSFER",
+      "NO_SIGNAL",
+      "SPEED_ESTIMAND_UNAVAILABLE"
+    ],
+    "verdict_rule_change": "总裁定不得再由 harm 单指标一票否决。总 harm 保留为承重指标（『Memory 让 Agent 多行动并因此多受伤』是真实部署成本，不得用 per-probe 归一化消除），但必须与 utility 维度联合判定。",
+    "mandatory_metrics": [
+      "total_trajectory_harm",
+      "support_harm_rate（harm probes / support probes）",
+      "delayed_harm",
+      "paired_incremental_harm（同 context 配对）",
+      "生命周期计数拆开报告：winners / skills_created / approved / confirmed / removed（不得用 adoption 一词混指）"
+    ],
+    "prohibited_metric": "harm / unit gain 不得作为主指标——对照臂 gain=0 时该比值退化",
+    "target_headroom_precheck": {
+      "requirement": "fresh Target 数据集在正式使用前必须通过 headroom 预检",
+      "method": "在该数据集与目标 series 不相交的切片上（保住目标 series 封存状态），跑固定 outlier_mad vs identity，统计 gain 分布",
+      "criterion": "gain 分布的 sd 与 IQR 需与 development cohort 同量级（PROPOSED: sd >= dev_sd / 3）；否则该数据集不得作为 transfer 实验靶子",
+      "rationale": "在动态范围为 dev 1/6 的靶子上问『Source Memory 是否有用』，即使 n 达标也难以量出",
+      "llm_cost": "0"
+    },
+    "budget_reference_non_binding": "探索性参考，非硬门：按 a5v3 观测 winner rate 做二项模拟，约需 16 context/臂 才达 80% 功效。该数字来自自适应 probe 的近似模拟，不适合作为未来协议的强制门；仅用于预算规划。"
+  }
+}

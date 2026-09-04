@@ -1,0 +1,243 @@
+{
+  "experiment_id": "v1-e31-fresh-a5-two-slot-vs-a3",
+  "note": "E3.1 fresh matched-budget A5-two-slot vs A3（真实 Fast LLM；virgin KDD cohort E31；四轮：三轮适配+一轮采用；每轮 Support ≤2（Slow replay 计入）；四轮累计 ≤8；单 Target PASS 只称跨数据集迁移候选证据）；判定修正 2026-08-12（delayed 只比同轮——原 NEGATIVE_TRANSFER 基于跨轮不可比 delayed）",
+  "cohort": [
+    "T153",
+    "T154",
+    "T155",
+    "T156",
+    "T157",
+    "T158",
+    "T159",
+    "T16",
+    "T160",
+    "T161",
+    "T162",
+    "T163",
+    "T164",
+    "T165",
+    "T166",
+    "T167",
+    "T168",
+    "T169",
+    "T17",
+    "T170"
+  ],
+  "origins": [
+    600,
+    792,
+    888
+  ],
+  "r4_origin": 984,
+  "budget": 2,
+  "source_episodes": [
+    "monash_weather_daily_target_winsorize_p40_src_pair1",
+    "monash_weather_daily_target_winsorize_p40_swap_monash_weather_daily_target_winsorize_p40_src_pair1"
+  ],
+  "arms": {
+    "A5": {
+      "rounds": [
+        {
+          "origin": 600,
+          "probes": [
+            [
+              "level_shift_repair",
+              2.5061806208169566
+            ]
+          ],
+          "winner": [
+            {
+              "op": "repair_level_shift",
+              "params": {
+                "estimated_offset": -65.5,
+                "region_end_fraction": 0.355,
+                "region_start_fraction": 0.23
+              }
+            }
+          ],
+          "receipts": 1,
+          "harm": 0,
+          "delayed_utility": 1.2347753493435603,
+          "approved_skill_id": "fast_winner_repair_level_shift",
+          "memory_resolution": "rendered"
+        },
+        {
+          "origin": 792,
+          "probes": [
+            [
+              "level_shift_local_repair",
+              -0.5405587846272975
+            ]
+          ],
+          "winner": null,
+          "receipts": 1,
+          "harm": 1,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "memory_resolution": "rendered_empty"
+        },
+        {
+          "origin": 888,
+          "probes": [],
+          "winner": null,
+          "receipts": 0,
+          "harm": 0,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "memory_resolution": "rendered"
+        }
+      ],
+      "r4": {
+        "pool": [
+          "identity",
+          "level_shift_local"
+        ],
+        "retrieved": [
+          "fast_winner_repair_level_shift"
+        ],
+        "probes": [
+          [
+            "level_shift_local",
+            4.2035439368926735
+          ]
+        ],
+        "winner": [
+          {
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": -65.5,
+              "region_end_fraction": 0.21646341463414634,
+              "region_start_fraction": 0.1402439024390244
+            }
+          }
+        ],
+        "receipts": 1
+      },
+      "removal_pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "removal_no_skill": true,
+      "total_support_receipts": 2,
+      "first_positive_round": 1,
+      "harm_before_recovery": 0,
+      "harm_magnitude_before_recovery": 0,
+      "final_delayed_utility": 1.2347753493435603,
+      "approved_skill_id": "fast_winner_repair_level_shift",
+      "feedback_to_reliable_local_skill": 1,
+      "abstained": false
+    },
+    "A3": {
+      "rounds": [
+        {
+          "origin": 600,
+          "probes": [
+            [
+              "level_shift_repair",
+              2.5061806208169566
+            ]
+          ],
+          "winner": [
+            {
+              "op": "repair_level_shift",
+              "params": {
+                "estimated_offset": -65.5,
+                "region_end_fraction": 0.355,
+                "region_start_fraction": 0.23
+              }
+            }
+          ],
+          "receipts": 1,
+          "harm": 0,
+          "delayed_utility": 1.2347753493435603,
+          "approved_skill_id": "fast_winner_repair_level_shift",
+          "memory_resolution": "no_memory"
+        },
+        {
+          "origin": 792,
+          "probes": [
+            [
+              "repair_level_shift_local",
+              -0.5405587846272975
+            ]
+          ],
+          "winner": null,
+          "receipts": 1,
+          "harm": 1,
+          "delayed_utility": null,
+          "approved_skill_id": null,
+          "memory_resolution": "rendered"
+        },
+        {
+          "origin": 888,
+          "probes": [
+            [
+              "repair_level_shift_local",
+              2.02076964497536
+            ]
+          ],
+          "winner": [
+            {
+              "op": "repair_level_shift",
+              "params": {
+                "estimated_offset": -65.5,
+                "region_end_fraction": 0.23986486486486486,
+                "region_start_fraction": 0.1554054054054054
+              }
+            }
+          ],
+          "receipts": 1,
+          "harm": 0,
+          "delayed_utility": 2.8856027255486962,
+          "approved_skill_id": null,
+          "memory_resolution": "rendered"
+        }
+      ],
+      "r4": {
+        "pool": [
+          "identity",
+          "level_shift_region"
+        ],
+        "retrieved": [
+          "fast_winner_repair_level_shift"
+        ],
+        "probes": [
+          [
+            "level_shift_region",
+            4.2035439368926735
+          ]
+        ],
+        "winner": [
+          {
+            "op": "repair_level_shift",
+            "params": {
+              "estimated_offset": -65.5,
+              "region_end_fraction": 0.21646341463414634,
+              "region_start_fraction": 0.1402439024390244
+            }
+          }
+        ],
+        "receipts": 1
+      },
+      "removal_pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "removal_no_skill": true,
+      "total_support_receipts": 3,
+      "first_positive_round": 1,
+      "harm_before_recovery": 0,
+      "harm_magnitude_before_recovery": 0,
+      "final_delayed_utility": 2.8856027255486962,
+      "approved_skill_id": "fast_winner_repair_level_shift",
+      "feedback_to_reliable_local_skill": 1,
+      "abstained": false
+    }
+  },
+  "verdict": "NO_SIGNAL",
+  "reason": "memory rendered (A5) but trajectories/metrics identical on comparable rounds"
+}

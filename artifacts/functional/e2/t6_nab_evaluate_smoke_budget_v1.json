@@ -1,0 +1,285 @@
+{
+  "protocol_version": "t6_nab_evaluate_smoke_v1",
+  "entry": "--evaluate-smoke",
+  "note": "the frozen execution body, run on Source stand-in cells with a scripted backend; writes no plan artifact and touches no Target outcome",
+  "stand_in_cohorts": {
+    "target_cpc": [
+      "ec2_cpu_utilization_24ae8d.csv",
+      "ec2_cpu_utilization_53ea38.csv"
+    ],
+    "target_cpm": [
+      "ambient_temperature_system_failure.csv",
+      "cpu_utilization_asg_misconfiguration.csv"
+    ]
+  },
+  "checks": [
+    {
+      "id": "B1_eight_cells_in_frozen_order",
+      "ok": false,
+      "detail": "cells executed: ['target_cpc/A3/r1']"
+    },
+    {
+      "id": "B1_live_calls_per_cell",
+      "ok": false,
+      "detail": "per-cell call counts: {\"target_cpc/A3/r1\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpc/A5/r1\": {\"run_online_round\": 0, \"open_delayed\": 0, \"activate_approved\": 0}}"
+    },
+    {
+      "id": "B2_episode_keys_correct",
+      "ok": true,
+      "detail": "every written Episode keyed anomaly_detection|aegists_iforest_v1|macro_event_f1"
+    },
+    {
+      "id": "B2_a5_sees_bank_a3_does_not",
+      "ok": false,
+      "detail": "A5 cells retrieving Source cards: []; A3 cells: none"
+    },
+    {
+      "id": "B3_lifecycle_reachable",
+      "ok": false,
+      "detail": "cells that reached a Draft decision: []"
+    },
+    {
+      "id": "B4_budget_counts_down",
+      "ok": true,
+      "detail": "per-cell AD fit counter strictly increases: [('target_cpc/A3/r1', 0, 6)]"
+    },
+    {
+      "id": "B4_overrun_interrupts",
+      "ok": true,
+      "detail": "starved run stopped with CONSUMER_FIT_BUDGET_EXCEEDED after 1 of 8 cells"
+    },
+    {
+      "id": "B5_zero_target_label_service",
+      "ok": true,
+      "detail": "target key requests [], breached False, target values retained False"
+    }
+  ],
+  "lifecycle": [
+    {
+      "cell": "target_cpc/A3/r1",
+      "support_relations": [
+        "NEUTRAL",
+        "NEUTRAL"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY",
+        "EPISODE_ONLY"
+      ]
+    }
+  ],
+  "call_counts": {
+    "target_cpc/A3/r1": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpc/A5/r1": {
+      "run_online_round": 0,
+      "open_delayed": 0,
+      "activate_approved": 0
+    }
+  },
+  "budget_trace": {
+    "ad_fits_used": 6,
+    "ad_fit_cap": 6,
+    "llm_calls": 0,
+    "llm_cap": 48,
+    "per_cell": [
+      {
+        "cell": "target_cpc/A3/r1",
+        "ad_fits_before": 0,
+        "ad_fits_after": 6,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      }
+    ]
+  },
+  "readings": {
+    "target_cpc/A3": {
+      "non_identity_trials_before_first_local_active": ">8",
+      "first_activation_round": null,
+      "final_delayed_macro_f1_gain": null,
+      "harmed_support_receipts": 0,
+      "harmed_series_total": 0,
+      "worst_per_series_delayed_gain": 0.0,
+      "abstentions": 1,
+      "source_cards_retrieved": [],
+      "memory_resolution_per_round": [
+        "no_memory"
+      ],
+      "target_feedback_consumed": 2,
+      "llm_calls": 0,
+      "rounds_completed": 1,
+      "activations": 0
+    },
+    "target_cpc/A5": {
+      "non_identity_trials_before_first_local_active": ">8",
+      "first_activation_round": null,
+      "final_delayed_macro_f1_gain": null,
+      "harmed_support_receipts": 0,
+      "harmed_series_total": 0,
+      "worst_per_series_delayed_gain": null,
+      "abstentions": 0,
+      "source_cards_retrieved": [],
+      "memory_resolution_per_round": [],
+      "target_feedback_consumed": 0,
+      "llm_calls": 0,
+      "rounds_completed": 0,
+      "activations": 0
+    }
+  },
+  "cells": [
+    {
+      "cell": "target_cpc/A3/r1",
+      "cohort": "target_cpc",
+      "arm": "A3",
+      "round": "r1",
+      "support_origin": 1613,
+      "delayed_origin": 2218,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 0,
+      "retrieval_before_round": {
+        "held": 0,
+        "card_ids": [],
+        "rendered": false,
+        "source_cards": [],
+        "target_cards": []
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 0,
+      "pool": [
+        "identity",
+        "cand_outlier_iqr",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_outlier_iqr",
+      "memory_resolution": "no_memory",
+      "proposal_count": 2,
+      "support_receipts": 2,
+      "non_identity_trials": 2,
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": 0.0
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.0
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 0,
+      "harmed_series_in_episodes": 0,
+      "worst_per_series_gain": 0.0,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpc_target_outlier_iqr_a3_r1_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "outlier_iqr",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        },
+        {
+          "episode_id": "target_cpc_target_winsorize_a3_r1_p2",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "winsorize",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 6,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "outlier_iqr",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpc/A5/r1",
+      "cohort": "target_cpc",
+      "arm": "A5",
+      "round": "r1",
+      "support_origin": 1613,
+      "delayed_origin": 2218,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 20,
+      "retrieval_before_round": {
+        "held": 20,
+        "card_ids": [
+          "t6_source_aws_cloudwatch_r1_winsorize",
+          "t6_source_aws_cloudwatch_r1_hampel_filter",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_aws_cloudwatch_r1_identity"
+        ],
+        "source_cards": [
+          "t6_source_aws_cloudwatch_r1_winsorize",
+          "t6_source_aws_cloudwatch_r1_hampel_filter",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_aws_cloudwatch_r1_identity"
+        ],
+        "target_cards": [],
+        "rendered": true,
+        "rendered_sha256": "41c6b0add9e39c955665544f8cdc185d6b982d3a71ffb7977f54f6dc7577dfdc"
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 6,
+      "error": "CONSUMER_FIT_BUDGET_EXCEEDED: AD fit budget cannot cover cell target_cpc/A5/r1: 6 used of 6, 6 needed"
+    }
+  ],
+  "label_wall": {
+    "released": false,
+    "target_values_retained_in_memory": false,
+    "key_presence_discloses_nothing": "all six Target files carry an entry in combined_windows.json, so the presence of a key says nothing about which series is the clean one; only the window list would, and it is dropped",
+    "target_keys_walled": [
+      "realAdExchange/exchange-2_cpc_results.csv",
+      "realAdExchange/exchange-2_cpm_results.csv",
+      "realAdExchange/exchange-3_cpc_results.csv",
+      "realAdExchange/exchange-3_cpm_results.csv",
+      "realAdExchange/exchange-4_cpc_results.csv",
+      "realAdExchange/exchange-4_cpm_results.csv"
+    ],
+    "target_key_requests": [],
+    "breached": false
+  },
+  "stopped": "CONSUMER_FIT_BUDGET_EXCEEDED",
+  "stop_reason": "CONSUMER_FIT_BUDGET_EXCEEDED: AD fit budget cannot cover cell target_cpc/A5/r1: 6 used of 6, 6 needed",
+  "evaluate_released_untouched": true,
+  "verdict": {
+    "verdict": "SMOKE_BUDGET_STOP_REACHED",
+    "reason": "CONSUMER_FIT_BUDGET_EXCEEDED: AD fit budget cannot cover cell target_cpc/A5/r1: 6 used of 6, 6 needed",
+    "cells_completed": 1
+  }
+}

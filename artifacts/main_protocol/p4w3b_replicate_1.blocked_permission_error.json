@@ -1,0 +1,542 @@
+{
+  "stage": "P4W3_SOURCE_LINE_V3",
+  "run_label": "clean_post_fix_replicate_1",
+  "run_ledger": {
+    "this_run": "clean_post_fix_replicate_1",
+    "why_this_one_counts": "the first complete trajectory taken after every instrument fix: the risk-refusal routing, the clause-only Slow call, the restricted-Draft lifecycle, and serving_scope persistence",
+    "prior_runs_and_why_they_do_not_count": [
+      {
+        "artifact": "p4w2_source_line_v2.card_evidence_missing.json",
+        "llm_calls": 33,
+        "status": "SUPERSEDED",
+        "why": "the card reaching Slow carried none of the refusal facts"
+      },
+      {
+        "artifact": "p4w2_source_line_v2.card_without_applicability.json",
+        "llm_calls": 36,
+        "status": "SUPERSEDED_PARTIALLY_VALID",
+        "why": "two rounds spent their retry budget on a missing observable_applicability the manifest schema required"
+      },
+      {
+        "artifact": "p4w2_source_line_v2.json",
+        "llm_calls": 29,
+        "status": "VALID_FOR_V2",
+        "why": "valid, but v2 geometry: one revision, then the Draft was destroyed"
+      },
+      {
+        "artifact": "p4w3_source_line_v3.json",
+        "llm_calls": 30,
+        "status": "MECHANISM_ONLY",
+        "why": "the lifecycle ran and a Skill was activated, but skill_entry_to_dict dropped serving_scope on persistence, so what the gates approved and what the store kept differed; it cannot evidence a reusable scoped Skill"
+      },
+      {
+        "artifact": null,
+        "llm_calls": null,
+        "status": "INTERRUPTED",
+        "why": "stopped during the fifth origin, 4 of 5 complete, no artifact written; its store did confirm serving_scope now persists. Call count unrecorded -- comparable runs had spent 24 by that point"
+      }
+    ],
+    "prior_recorded_llm_calls": 128
+  },
+  "written_at": "2026-09-02T20:06:36.168150+08:00",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "contract_v3": {
+    "stage": "P4U_V3_METHOD_REVISION",
+    "version": "P4U-v3",
+    "supersedes_nothing": "v1 and v2 are imported and still govern geometry, arms, budgets, endpoints and the risk-refusal attribution; no earlier artifact is rewritten and no earlier reading is reinterpreted",
+    "v2": {
+      "stage": "P4U_V2_METHOD_REVISION",
+      "version": "P4U-v2",
+      "supersedes_nothing": "v1 is imported and still governs geometry, arms, budgets and endpoints; no v1 artifact is rewritten and no v1 reading is reinterpreted",
+      "v1": {
+        "stage": "P4U_MAIN_EXPERIMENT_CONTRACT",
+        "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+        "subject": "the policy the Harness deploys, not a fixed program",
+        "geometry": {
+          "target_slice": "readable[80:120]",
+          "source_slice": "readable[160:200]",
+          "held_in_origins": [
+            1896,
+            2136,
+            2376,
+            2616,
+            2856
+          ],
+          "held_out_origins": [
+            4056,
+            4296,
+            4536,
+            4776,
+            5016
+          ],
+          "anchor_axis_frozen": true,
+          "why_new_cohorts_not_new_origins": "anchors are frozen and all clear the filter past origin 900, so the training corpus is origin-invariant; a new cohort is what makes a new training condition"
+        },
+        "arms": {
+          "Static": {
+            "llm": false,
+            "role": "reference",
+            "scope": "none"
+          },
+          "GlobalBestFixed": {
+            "llm": false,
+            "role": "baseline",
+            "scope": "all_serving_series"
+          },
+          "OpenLoopTargeter": {
+            "llm": false,
+            "role": "baseline",
+            "note": "the diagnostic router, never the method"
+          },
+          "A3": {
+            "llm": true,
+            "role": "ablation",
+            "what": "Target-local Scoped Harness with no prior Skills"
+          },
+          "A5": {
+            "llm": true,
+            "role": "full system",
+            "what": "audited Source Skills, then Target held-in calibration"
+          },
+          "ParallelAtB": {
+            "llm": true,
+            "role": "equal-budget baseline"
+          }
+        },
+        "scope_origination": {
+          "fast_proposes": "Program only",
+          "runtime_initializes": "evaluation.main_protocol_p4.scope_initializer",
+          "slow_revises": "atomically with the Program, via the PATCH's serving_scope",
+          "fast_propose_schema_changed": false,
+          "rules": "the initialiser reads only deployment-visible features and may not see a UID, a cohort name or any Outcome; its family table and thresholds are frozen before the run and are identical for A3 and A5; the Runner may supply or resolve a Scope but may never hand-pick one after seeing a result; every deployment records scope_source as one of runtime_initializer / source_skill / slow_revision",
+          "a_later_fast_emitted_scope_is_a_separate_version": "it would need the schema, H0, the parsing chain and the snapshot lock changed together, then validation on a new unexposed Target; it is not part of this round and is not an H3"
+        },
+        "per_arm_budget": {
+          "support_a_rounds": 7,
+          "independent_support_b_rounds": 1,
+          "probes": 24,
+          "llm_calls": 6,
+          "tokens": 60000,
+          "accepted_updates": 1,
+          "wall_seconds": 2700,
+          "identical_for_a3_and_a5": true
+        },
+        "primary_contrasts": [
+          "A3 - Static",
+          "A5 - A3"
+        ],
+        "endpoints": {
+          "utility_vs_static": "mean per-series gain of the deployed policy",
+          "deployment_coverage": "treated / served, where treated means the series actually ran through a program pipeline; assigned-but-refused counts as abstention, not coverage",
+          "harmed_fraction": "<= 0.20",
+          "max_single_series_harm": "<= 0.30",
+          "skill_formation": "Skills formed, Scopes revised, causal reuse observed",
+          "cost": "LLM calls, tokens, Consumer fits and wall seconds per arm"
+        },
+        "stopping_rules": {
+          "A5_TREATMENT_EMPTY": "if the Source line forms zero Active Skills, stop and record it; do not run A5 as if it had a treatment",
+          "held_out_stays_closed": "until every arm is frozen; then Fast-only, zero feedback, zero write-back, one reading",
+          "no_baseline_feedback": "Static / BestFixed / Targeter results are sealed before A3 and A5 and may not be used to change them"
+        },
+        "run_order": [
+          "freeze this contract",
+          "run the three 0-LLM baselines and seal them",
+          "configure transport explicitly; never let the client default",
+          "live Scope smoke on one cell",
+          "Source line: form and approve Skills naturally",
+          "if Source Active Skills == 0 -> A5_TREATMENT_EMPTY and stop",
+          "Target: Static / A3 / A5 / Parallel@B",
+          "freeze all arms, then open held-out once"
+        ],
+        "boundary": {
+          "llm_calls_before_transport_is_configured": 0,
+          "held_out_reads_before_all_arms_frozen": 0,
+          "ucr_test_outcome_reads": 0,
+          "natural_final_outcome_reads": 0,
+          "thresholds_changed": 0,
+          "operators_added": 0
+        },
+        "disclosed_selection": "cohorts and origins were screened for whether the missing-aware sMASE is defined at all; no gain, error or utility participated, and the exposure ledger reads only which cells were evaluated",
+        "supply_audit": "p4s_main_experiment_supply.json",
+        "exposure_ledger": "p4t_exposure_ledger.json"
+      },
+      "first_fault": "RISK_REFUSAL_INVISIBLE_TO_FAULT_ROUTER",
+      "risk_refusal_route": {
+        "when": "the admission gate refuses a probe whose aggregate gain clears the material line, for harmed_fraction_over_budget or single_series_harm_over_budget",
+        "attributed_cause": "RISK_GAP",
+        "why_not_skill_library_gap": "the fault is not a missing Skill; a candidate was found and refused for a Scope/Risk conflict, and the cause code is the recorded claim",
+        "surface_catalog_this_round": [
+          "skill_library.entries/{skill_id}"
+        ],
+        "operation": "ADD",
+        "catalog_is_narrower_than_the_route": "RISK_GAP also authorizes its risk-guard and verification surfaces; this round exposes only the Skill ADD, so a single ruling cannot quietly become licence to edit H0's global scope_risk_guards",
+        "route_table_change": {
+          "file": "evaluation/minipipe/feedback/fault_routes.json",
+          "change": "RISK_GAP.target_classes += ['capability']",
+          "additive": true,
+          "newly_authorized": [
+            "RISK_GAP x capability x ADD x capability",
+            "RISK_GAP x capability x PATCH x capability"
+          ],
+          "nothing_previously_authorized_was_withdrawn": true
+        }
+      },
+      "slow_mandate": {
+        "adds": "one inactive Draft capability Skill, in a fork",
+        "program": "frozen to the probed program, operators and parameters alike",
+        "observable_applicability": "fixed by the Runtime; Slow may not write it.  It decides when the Skill is retrieved, which is a different question from which served series it may treat",
+        "serving_scope": "the only writable field: a monotone narrowing of the probe's own Scope, adding at most 1 clause",
+        "may_not_touch": [
+          "operators",
+          "risk thresholds",
+          "Observation features",
+          "the Fast schema",
+          "H0 verification.rules.scope_risk_guards",
+          "cohorts, origins, per-arm budgets"
+        ]
+      },
+      "required_preflight": {
+        "module": "evaluation.main_protocol_p4.scope_narrowing_preflight",
+        "why": "the route table's monotone rule is a target-class gate that never sees the predicate, and RISK_GAP is not in the narrow-direction map at all.  Without this preflight a Draft could be ADDed under an authorized cause carrying a Scope that reaches further than the one it replaced",
+        "structural_check_is_the_transferable_one": "a subset check is cohort-local; requiring the revised clause set to be a superset of the original makes the narrowing hold on every cohort, because a conjunction with more clauses selects fewer series by construction",
+        "checks": [
+          "keeps every original clause",
+          "adds at most one clause",
+          "the added clause names a deployment-visible feature",
+          "resolves to a strict subset at the origin it was derived from"
+        ]
+      },
+      "promotion_gates": [
+        "support_reverify: the frozen program under the revised Scope is re-probed on the same Support face",
+        "delayed_reresolved: at origin+48 the predicate is resolved again from that origin's own features -- never carried over as a UID list -- and the revised Scope must clear every line there",
+        "re_encounter: the Skill is retrieved and deployed safely at a later origin it did not help produce"
+      ],
+      "delayed_admission": {
+        "min_coverage_treated_of_served": "5/20",
+        "min_aggregate_gain": 0.005,
+        "max_harmed_fraction": 0.2,
+        "max_single_series_harm": 0.3,
+        "thresholds_changed": 0,
+        "why_a_coverage_floor": "narrowing to almost nothing clears every risk line and deploys nothing; the floor is declared here, before the run, so a degenerate abstention cannot be read afterwards as a success",
+        "support_is_not_an_endpoint": "the Support reading is the feedback the revision was derived from, so it cannot also be the evidence that the revision generalises"
+      },
+      "oracle_quarantine": {
+        "may_cross_into_the_run": "nothing",
+        "explicitly_withheld_from_slow": [
+          "the feature the oracle selected",
+          "its threshold",
+          "the identity of the excluded series",
+          "the ranking of candidates"
+        ],
+        "must_not_change": [
+          "the Slow prompt or any instruction text",
+          "the candidate ordering or the programs probed",
+          "scope_initializer's family table or thresholds"
+        ],
+        "what_it_was_used_for": "one decision, taken before the run: whether the revision class contains a feasible Scope at all, so that a Slow failure would be attributable to Slow rather than to an impossible task"
+      },
+      "artifacts": {
+        "source_line": "artifacts/main_protocol/p4w2_source_line_v2.json",
+        "does_not_overwrite": [
+          "p4w_source_line.json",
+          "p4x_admission_regime.json",
+          "p4y_oracle_scope_bound.json",
+          "p4z_risk_refusal_routing.json"
+        ],
+        "must_persist": [
+          "every probe's full per-series gain vector",
+          "the resolved serving series at both the support and delayed origins",
+          "the narrowing preflight verdict for every proposed revision",
+          "the attributed cause and the surface actually authorized"
+        ],
+        "why_per_series_is_mandatory": "a dry run destroyed the v1 vectors and they could not be rebuilt from anything; every risk verdict in this protocol is a statement about them, so an artifact without them cannot be re-audited"
+      },
+      "run_order": [
+        "freeze this revision and lock the route change as additive",
+        "Source line v2: risk refusals routed, Drafts ADDed, Scopes narrowed",
+        "if a Draft clears Support, delayed and one re-encounter -> it is a Skill",
+        "if none does -> record which gate stopped it and stop; do not run A5",
+        "freeze the Source Skills, then Target: Static / A3 / A5 / Parallel@B",
+        "freeze all arms, then open held-out once"
+      ],
+      "boundary": {
+        "llm_calls_before_transport_is_configured": 0,
+        "held_out_reads_before_all_arms_frozen": 0,
+        "ucr_test_outcome_reads": 0,
+        "natural_final_outcome_reads": 0,
+        "thresholds_changed": 0,
+        "operators_added": 0,
+        "route_table_causes_added": 0,
+        "route_table_target_classes_added": 1,
+        "surfaces_added": 0,
+        "artifacts_overwritten": 0
+      }
+    },
+    "why_v3": {
+      "the_call_was_spent_by_probe_order": "origin 2136: the refused probe routed to Slow was hampel_filter, which p4y had already shown admits zero feasible one-clause narrowings at that origin; the other refused probe there admits 11",
+      "half_the_calls_died_on_protocol": "3 of 5 rounds ended on manifest schema errors before any Scope judgement: fields at the payload's top level, a malformed dependency_precondition_shas.observable_contract, and a required observable_applicability",
+      "the_lifecycle_gave_one_move": "origin 2136 cleared coverage 7/20, aggregate +0.182 and harmed fraction 0.05, and missed only single-series harm at 0.921; the Draft was then destroyed with no second revision"
+    },
+    "manifest_assembly": {
+      "module": "evaluation.main_protocol_p4.scope_clause_agent",
+      "slow_output_schema": "slow_scope_clause_v1",
+      "slow_authors": [
+        "new_value.serving_scope.predicate[-1]"
+      ],
+      "runtime_authors": [
+        "edit_id",
+        "base_harness_sha",
+        "target_pattern_id",
+        "target_surface_id",
+        "operation",
+        "surface_precondition",
+        "dependency_precondition_shas",
+        "new_value.skill_id",
+        "new_value.skill_kind",
+        "new_value.revision",
+        "new_value.body",
+        "new_value.allowed_tools",
+        "new_value.risk_guards",
+        "new_value.observable_applicability",
+        "observable_applicability",
+        "predicted_agent_behavior_change",
+        "predicted_data_effect",
+        "falsification_condition",
+        "patch_id"
+      ],
+      "what_is_given_up": "predicted_agent_behavior_change, predicted_data_effect and falsification_condition were the agent's own commitments and are now Runtime boilerplate.  They gate nothing in this protocol, but the loss is recorded here rather than left to be found in a diff",
+      "what_is_not_given_up": "the clause itself.  The Runtime never proposes a feature, a direction or a threshold, never repairs a clause it dislikes, and refuses rather than substitutes when a clause is unusable",
+      "assembled_manifest_is_validated_against": "slow_edit_v1",
+      "aggregate_negative_path_unchanged": "the historical TTHASlowAgent still serves it; only the risk-refusal branch takes the clause agent"
+    },
+    "candidate_selection": {
+      "module": "evaluation.main_protocol_p4.scope_repair_distance",
+      "distance": "the fewest served series that would have to be excluded before the coverage, aggregate, harmed-fraction and single-series lines all hold",
+      "computed_from": "the Support-A per-series gain vector already on the refusal",
+      "ties": "larger aggregate gain, then candidate id",
+      "greedy_is_exact": "dropping the k most-harmful series is simultaneously optimal for all four lines, so the greedy count is the minimum over all subsets",
+      "does_not_use": [
+        "the oracle bound p4y",
+        "the feature the oracle selected",
+        "its threshold",
+        "the identity of any series"
+      ],
+      "is_a_support_window_number": "p4y proves a feasible Scope exists in the Support window, not that the predicate transfers to the delayed window; this ranks local repairability and promises no repair",
+      "reaches_slow": "nothing -- the ranking selects, it is never put in the card",
+      "deferred_to_end_of_round_because": "a choice among refusals cannot be made until every refusal is known; the aggregate-negative trigger still fires in-loop on the first material failure, bit-identically"
+    },
+    "restricted_draft_lifecycle": {
+      "module": "evaluation.main_protocol_p4.restricted_draft",
+      "on_delayed_conflict": "the Draft is restricted, not destroyed: kept as a Runner record, never written to the active snapshot, never retrieved, never counted as a Skill, and never used to serve a prediction",
+      "held_outside_the_snapshot_because": "the claim under test is how many Skills survived; a record that is not a Skill must not be able to be counted as one",
+      "second_revision": {
+        "where": "the next held-in origin",
+        "how": "the frozen program is re-supplied as a probe candidate carrying the predicate it had reached; if it is refused again on the tail budget, the ordinary risk-refusal route gives it one more clause",
+        "program": "unchanged, operators and parameters alike",
+        "predicate": "monotone narrowing only, at most one further clause",
+        "total_added_clauses": 2,
+        "counted_against": "the frozen initialiser's own predicate, not the previous revision, so the bound cannot be walked past one legal step at a time",
+        "coverage_floor": "unchanged at 5/20",
+        "thresholds_operators_features_budget": "unchanged"
+      },
+      "max_revisions": 2,
+      "then": "a second delayed failure closes this version of the Source line; a pass goes on to one independent re-encounter, and only a Draft that clears that is activated",
+      "geometry_limit_recorded": "a Draft first restricted at the last held-in origin (2856) has no next origin to be revised at, and is closed as out_of_origins rather than counted as a second failure"
+    },
+    "freeze_into_the_arms": {
+      "requirement": "whatever the Source line runs under must then be frozen unchanged into A3 and A5 alike",
+      "why": "a lifecycle available to one arm and not the other would make the A3/A5 contrast a comparison of protocols rather than of Skill inheritance, which is the only thing that contrast is for",
+      "applies_to": [
+        "the clause-only Slow call and the Runtime manifest assembly",
+        "the risk-refusal selection rule",
+        "the restricted-Draft lifecycle and its two-revision bound"
+      ],
+      "budgets_unchanged": true
+    },
+    "separate_finding": {
+      "name": "CANDIDATE_SUPPLY_INSTABILITY",
+      "observed": "at origin 2856 the Fast agent proposed no candidate at all, on the origin where AGENTS 5.1 had already found period_median_complete -> outlier_* positive on both faces: Program headroom is known to exist there and no candidate was supplied",
+      "first_fault_family": "Program exists but no candidate -- Observation / localization / supply, a different family from the Scope/Risk conflict this contract addresses",
+      "action_this_round": "recorded, not repaired",
+      "why_not_now": "repairing candidate supply and the Scope lifecycle in the same run would make a change in the outcome unattributable to either"
+    },
+    "delayed_admission": {
+      "min_coverage_treated_of_served": "5/20",
+      "min_aggregate_gain": 0.005,
+      "max_harmed_fraction": 0.2,
+      "max_single_series_harm": 0.3,
+      "thresholds_changed": 0,
+      "why_a_coverage_floor": "narrowing to almost nothing clears every risk line and deploys nothing; the floor is declared here, before the run, so a degenerate abstention cannot be read afterwards as a success",
+      "support_is_not_an_endpoint": "the Support reading is the feedback the revision was derived from, so it cannot also be the evidence that the revision generalises"
+    },
+    "promotion_gates": [
+      "support_reverify: the frozen program under the revised Scope is re-probed on the same Support face",
+      "delayed_reresolved: at origin+48 the predicate is resolved again from that origin's own features -- never carried over as a UID list -- and the revised Scope must clear every line there",
+      "re_encounter: the Skill is retrieved and deployed safely at a later origin it did not help produce",
+      "second_revision: a Draft restricted by a delayed conflict may be revised once more at the next held-in origin, and must clear the same four lines there on a delayed reading of its own"
+    ],
+    "artifacts": {
+      "source_line": "artifacts/main_protocol/p4w3_source_line_v3.json",
+      "does_not_overwrite": [
+        "p4w_source_line.json",
+        "p4w2_source_line_v2.json",
+        "p4x_admission_regime.json",
+        "p4y_oracle_scope_bound.json",
+        "p4z_risk_refusal_routing.json"
+      ],
+      "must_persist": [
+        "every probe's full per-series gain vector",
+        "the resolved serving series at both the support and delayed origins",
+        "the narrowing preflight verdict for every proposed revision",
+        "the attributed cause and the surface actually authorized",
+        "the full risk-refusal ranking of every round, not only the selection",
+        "every clause Slow proposed, including the ones that were unusable",
+        "each restricted Draft's root predicate, every revision, and every delayed reading it failed"
+      ]
+    },
+    "run_order": [
+      "freeze this revision and lock the three changes as additive",
+      "Source line v3: rank refusals, one clause per call, restrict rather than destroy, one further revision at the next origin",
+      "a Draft that clears Support, delayed and one re-encounter is a Skill",
+      "if none does -> this version of the Source line is closed as a clean null",
+      "freeze the mechanism into A3 and A5 alike, then Target",
+      "freeze all arms, then open held-out once"
+    ],
+    "boundary": {
+      "llm_calls_before_transport_is_configured": 0,
+      "held_out_reads_before_all_arms_frozen": 0,
+      "ucr_test_outcome_reads": 0,
+      "natural_final_outcome_reads": 0,
+      "thresholds_changed": 0,
+      "operators_added": 0,
+      "route_table_causes_added": 0,
+      "route_table_target_classes_added": 0,
+      "surfaces_added": 0,
+      "artifacts_overwritten": 0,
+      "risk_thresholds_changed": 0,
+      "observation_features_added": 0,
+      "stage_schemas_added": 1,
+      "source_llm_budget_raised": 0
+    }
+  },
+  "contract_frozen": {
+    "v1": {
+      "frozen": true,
+      "failures": [],
+      "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+      "target_slice": "readable[80:120]",
+      "source_slice": "readable[160:200]",
+      "held_in_origins": [
+        1896,
+        2136,
+        2376,
+        2616,
+        2856
+      ],
+      "held_out_origins": [
+        4056,
+        4296,
+        4536,
+        4776,
+        5016
+      ],
+      "arms": [
+        "A3",
+        "A5",
+        "GlobalBestFixed",
+        "OpenLoopTargeter",
+        "ParallelAtB",
+        "Static"
+      ],
+      "primary_contrasts": [
+        "A3 - Static",
+        "A5 - A3"
+      ],
+      "exposure_ledger_clears_held_out": true
+    },
+    "v2": {
+      "frozen": true,
+      "failures": [],
+      "version": "P4U-v2",
+      "v1_frozen": true,
+      "risk_gap_may_add_a_capability_skill": true,
+      "max_added_clauses": 1
+    },
+    "v3": {
+      "frozen": true,
+      "failures": [],
+      "version": "P4U-v3",
+      "v2_frozen": true,
+      "v1_frozen": true,
+      "max_added_clauses": 1,
+      "max_total_added_clauses": 2,
+      "max_revisions": 2
+    }
+  },
+  "cohort": "source readable[160:200]",
+  "face": "support_a",
+  "origins": [
+    1896,
+    2136,
+    2376,
+    2616,
+    2856
+  ],
+  "source_budget": {
+    "llm_calls": 60,
+    "rounds": 5,
+    "face": "support_a",
+    "is_an_arm": false,
+    "enters_a3_a5_comparison": false,
+    "v1_spent": 28,
+    "why_raised": "v1's ceiling covered Fast only; routing adds a Slow call",
+    "why_not_raised": "v2 spent roughly half its calls on manifest schema errors; v3 removes that cost rather than paying for it twice",
+    "v2_spent_across_three_attempts": 98
+  },
+  "transport": {
+    "base_url": "https://api.nowaterapi.xyz/v1",
+    "model": "gpt-5.6-sol",
+    "key_source": "CPA_API_KEY",
+    "missing": [],
+    "ready": true,
+    "why_no_default": "an unset base URL would send a key to whatever endpoint the client defaults to; a missing setting is a refusal, not a fallback"
+  },
+  "status": "COMPLETE",
+  "rounds": [
+    {
+      "origin": 1896,
+      "error": "PermissionError: [WinError 5] 拒绝访问。: 'C:\\\\Users\\\\辉\\\\Desktop\\\\Agent\\\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\\\.p4w3_source_store\\\\.snapshot-y2fm3a0w' -> 'C:\\\\Users\\\\辉\\\\Desktop\\\\Agent\\\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\\\.p4w3_source_",
+      "llm_calls_so_far": 6
+    }
+  ],
+  "restricted_drafts": {
+    "drafts": [],
+    "open": [],
+    "max_revisions": 2,
+    "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+  },
+  "activated_skill_ids": [],
+  "re_encounters_observed": [],
+  "candidate_supply_instability": [],
+  "llm_calls": 6,
+  "wall_seconds": 426.0,
+  "verdict": "A5_TREATMENT_EMPTY",
+  "stopping_rule_reading": "if the Source line forms zero Active Skills, stop and record it; do not run A5 as if it had a treatment",
+  "boundary": {
+    "llm_calls_before_transport_is_configured": 0,
+    "held_out_reads_before_all_arms_frozen": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0,
+    "route_table_causes_added": 0,
+    "route_table_target_classes_added": 0,
+    "surfaces_added": 0,
+    "artifacts_overwritten": 0,
+    "risk_thresholds_changed": 0,
+    "observation_features_added": 0,
+    "stage_schemas_added": 1,
+    "source_llm_budget_raised": 0,
+    "held_out_reads": 0
+  }
+}

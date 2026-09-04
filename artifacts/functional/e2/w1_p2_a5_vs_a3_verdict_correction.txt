@@ -1,0 +1,38 @@
+Wave 4 verdict 修正记录（2026-08-13，用户核查 → 接线修复 → 重跑）
+
+原 verdict：ADHERENCE_GAP（w1_p2_a5_vs_a3_report.json 首版——已被
+重跑覆盖）——不成立（承重接线错误）：
+  - Runner 对 A3/A5 都构造 TTHAMethod(..., h0, ())——Experience 为空；
+  - fast_features["experience_reference"] 不是注入通道（online_loop
+    直接调 method.prepare()，不读 fast_features）；
+  - 真正注入通道 = TTHAMethod 第三参 experience_episodes →
+    fast_agent.prepare(experience_episodes=...) → resolve →
+    render 进 instruction（method.py:171 / fast_agent.py:703-719）。
+  - 实际运行：A3/A5 都空 Memory——两臂 abstain 不能证明
+    "检索到但不遵循"。
+
+接线修复后重跑（A5: TTHAMethod(..., h0, tuple(source_eps))）：
+  A3: memory_resolution_status = no_memory → abstain
+  A5: memory_resolution_status = contrast_pack → 探测
+      impute_linear_local（+0.0）——不再 abstain
+  → wiring check 通过（用户要求：A3=no_memory / A5=contrast_pack /
+    注入后 A5 行为改变）→ verdict = MEMORY_TO_ACTION_ONLY
+    （行为改变但无结果改善——+0.0 非 material positive）
+
+按用户指令（A5 行为改变 → 正式重做等预算 A5/A3 于未暴露 Target 或
+跨数据集 Context-matched Target）：
+  - NN5 无更多未消费 origin（600/632/680=Source、712=已消费、
+    728=S3b 已消费）；
+  - KDD 跨数据集 feasibility：前 12 series @600 missing_fraction
+    全部 0.0（KDD 无缺失域）——与 NN5 Source（≈0.023）无 Context
+    overlap → 跨数据集 impute_fft Target 不可行。
+  → NO_TARGET_CONTEXT_PREVALENCE（任务书判定档）+ 停止规则
+    （"没有 Context-matched Target"）→ Wave 4 正式收束。
+
+最终诚实结论：
+  - Memory 注入链路验证成功（no_memory → contrast_pack → 行为改变）；
+  - MEMORY_TO_ACTION_ONLY：Source Memory 改变 Agent 行为但未在 @712
+    产生结果改善；
+  - 等预算收益无法在可用 Target 上验证（Target context scarcity：
+    NN5 origin 耗尽 + KDD 无 missingness overlap）；
+  - 阻塞面：Target context scarcity（+ Wave 2/3-B 的 Observation gap）。

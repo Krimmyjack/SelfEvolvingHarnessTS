@@ -1,0 +1,147 @@
+{
+  "stage": "HEC1_INSTRUMENT",
+  "written_at": "2026-09-03T11:28:24.884853+08:00",
+  "contract_version": "P4U-v4",
+  "course_artifact": "k0_smoke_t2",
+  "ordering": "forward",
+  "phase": "phase_t_forward",
+  "checks": [
+    {
+      "check": "completeness",
+      "passed": true,
+      "planned_cells": 8,
+      "seen_cells": 8,
+      "missing_cells": [],
+      "units_completed": 2,
+      "units_floor_at_0.8_N": 1
+    },
+    {
+      "check": "no_run_fault",
+      "passed": true,
+      "status": "COMPLETE",
+      "run_fault": null,
+      "verdict_field": null,
+      "note": "a blocked course carries RUN_BLOCKED_NO_VERDICT, which is an instrument reading and never a scientific verdict"
+    },
+    {
+      "check": "budget",
+      "passed": true,
+      "llm_total": 0,
+      "ordering_cap": 500,
+      "per_unit_arm_cap": 5,
+      "cells_over_cell_cap": [],
+      "blocked_before_backend": 0,
+      "scripted_calls_not_billed": 0,
+      "note": "a blocked call is refused before the backend and is not billed, so a non-zero blocked count is health rather than overspend"
+    },
+    {
+      "check": "gate_authority",
+      "passed": true,
+      "violations": [],
+      "frozen_arm_activations": [],
+      "recorded_disagreements": [],
+      "disagreement_count": 0
+    },
+    {
+      "check": "exposure",
+      "passed": true,
+      "held_out_origins": [
+        4056,
+        4296,
+        4536,
+        4776,
+        5016
+      ],
+      "windows_touching_held_out": [],
+      "illegal_windows": [],
+      "declared_offsets": [
+        0,
+        48,
+        144
+      ],
+      "held_out_reads_recorded": 0
+    },
+    {
+      "check": "frozen_reset",
+      "passed": true,
+      "frozen_arms": [
+        "A5-frozen"
+      ],
+      "problems": [],
+      "evidence": {
+        "A5-frozen": {
+          "resets": [
+            false,
+            true
+          ],
+          "bank_rows": [
+            0,
+            0
+          ],
+          "carried_skills": [],
+          "resupplied_drafts": [],
+          "dropped_drafts_at_rebuild": [
+            null,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "check": "replay",
+      "passed": true,
+      "allowance": {
+        "share": 0.25,
+        "projected_course_fits": 36,
+        "allowance": 9,
+        "spent": 0,
+        "within": true
+      },
+      "problems": [],
+      "candidates_starved_by_the_cap": []
+    },
+    {
+      "check": "accounting",
+      "passed": true,
+      "problems": [],
+      "units_without_an_evaluation_face": [],
+      "why_that_is_not_a_failure": "the +144 window can run past a series' observed data, which is a property of the data and drops the unit for every arm equally; the count is reported so the curve's usable N is not overstated",
+      "ledgers": {
+        "llm_fast": 0,
+        "llm_outer": 0,
+        "llm_total": 0,
+        "replay_fits": 0,
+        "shadow_fits": 0,
+        "course_fits": 23,
+        "baseline_fits": 0,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "cache_hit_rate": null,
+        "wall_seconds": 27.6
+      }
+    }
+  ],
+  "checks_passed": 8,
+  "checks_total": 8,
+  "passed": true,
+  "may_continue": true,
+  "reads": [
+    "counts",
+    "ledgers",
+    "set intersections"
+  ],
+  "does_not_read": [
+    "any gain",
+    "any utility",
+    "any verdict",
+    "the curve"
+  ],
+  "why_this_may_be_self_run": "every check is a mechanical assertion, so it cannot be influenced by whether the result looked good; interpreting the curve is a different script and a different hand",
+  "on_failure": "stop.  Repair the instrument and resume from the checkpoint; never re-throw the science",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0
+  },
+  "wall_seconds": 0.0
+}

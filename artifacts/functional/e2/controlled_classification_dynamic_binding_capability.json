@@ -1,0 +1,43 @@
+{
+  "capability_id": "controlled_classification_local_event_dynamic_binding_v1",
+  "status": "CONTROLLED_CROSS_DATASET_SUPPORTED",
+  "task_context": {
+    "task": "classification",
+    "consumer": "ridge-raw-plus-difference-v1",
+    "metric": "classification accuracy",
+    "quality_contract": "classification-local-event-quality",
+    "requires_binary_class_evidence": true,
+    "requires_current_fit_observation": true
+  },
+  "workflow_supply": [
+    "OBSERVE_CROSS_COHORT_CLASS_IMPULSE_TOPOLOGY",
+    "BIND_CURRENT_FIT_PATTERN_NODES",
+    "CENTER_EXCLUDED_LOCAL_MEDIAN_REPAIR"
+  ],
+  "observation": {
+    "type": "cross_cohort_class_conditioned_impulse_topology",
+    "visibility": "training and allowed Support evidence only",
+    "use": "distinguish fit-only artifact evidence from stable task-event evidence and bind current-fit nodes",
+    "utility_claim": "observation and binding evidence only; not a general natural-defect certificate"
+  },
+  "control": {
+    "eligible_action": "execute bound center-excluded local median repair",
+    "contraindicated_action": "ABSTAIN_KEEP_INCUMBENT",
+    "fallback": "IDENTITY"
+  },
+  "risk": {
+    "abstain_on_stable_task_event": true,
+    "event_erasure_guard": true,
+    "do_not_use_query_outcome_for_binding": true,
+    "do_not_reuse_source_node_indices": true
+  },
+  "evidence": {
+    "controlled_target_count": 6,
+    "A5_minus_A3_macro_adapt_auc": 0.08325562892618532,
+    "negative_A5_vs_A3_target_count": 0,
+    "A5_policy_event_harm_max": 0.0,
+    "supported_report": "source_promoted_binding_capability_transfer_report.json",
+    "source_update_report": "source_program_binding_harness_update_report.json"
+  },
+  "claim_limit": "Controlled injected artifacts on real UCR backgrounds; valid for multi-skill Harness behavior and controlled transfer tests, not a natural-defect capability claim."
+}

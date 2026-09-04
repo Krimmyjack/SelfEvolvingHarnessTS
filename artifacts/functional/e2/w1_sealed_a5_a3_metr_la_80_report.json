@@ -1,0 +1,321 @@
+{
+  "arms": {
+    "a3": {
+      "metrics": {
+        "abstention_count": 0,
+        "first_positive_support_receipt_index": 2,
+        "harm_count": 0,
+        "harm_magnitude_sum": 0.0,
+        "proposal_count": 3
+      },
+      "r1": {
+        "origin": 792,
+        "probes": [
+          {
+            "chosen": "cand_denoise_median",
+            "episode_id": "metr_la_target_denoise_median_r1_a3_p1",
+            "first_positive": false,
+            "gain": 0.0,
+            "kind": "support",
+            "op": "denoise_median",
+            "passed": true,
+            "proposal": 1,
+            "relation": "NEGATIVE"
+          },
+          {
+            "chosen": "cand_winsorize",
+            "episode_id": "metr_la_target_winsorize_r1_a3_p2",
+            "first_positive": true,
+            "gain": 1.8894102744748622,
+            "kind": "support",
+            "op": "winsorize",
+            "passed": true,
+            "proposal": 2,
+            "relation": "POSITIVE"
+          }
+        ],
+        "round": "r1_a3"
+      },
+      "r1_delayed": {
+        "delayed_gain": 0.08704398654837364,
+        "delayed_origin": 840,
+        "episode_id": "metr_la_target_winsorize_r1_a3_p2",
+        "op": "winsorize",
+        "relation": "POSITIVE",
+        "round": "r1_a3",
+        "status": "LOCAL_ACTIVE"
+      },
+      "r2": {
+        "origin": 888,
+        "probes": [
+          {
+            "chosen": "cand_skill_winsoriz-sealed-a3",
+            "episode_id": "metr_la_target_winsorize_r2_a3_p1",
+            "first_positive": true,
+            "gain": 0.3312185685066016,
+            "kind": "support",
+            "op": "winsorize",
+            "passed": true,
+            "proposal": 1,
+            "relation": "POSITIVE"
+          }
+        ],
+        "round": "r2_a3"
+      },
+      "r2_delayed": {
+        "delayed_gain": 0.5497106788184429,
+        "delayed_origin": 936,
+        "episode_id": "metr_la_target_winsorize_r2_a3_p1",
+        "op": "winsorize",
+        "relation": "POSITIVE",
+        "round": "r2_a3",
+        "status": "LOCAL_ACTIVE"
+      },
+      "select_logs": [
+        {
+          "chosen": "cand_denoise_median",
+          "memory_excerpt": "== Experience memory (signed) ==\n  (no applicable signed experience)\n\n== Probe semantics (important) ==\nChoosing a candidate means requesting one budgeted Support probe — it does NOT mean final deployment. The current Support of a Reference 1 operator has not yet been confirmed; that is not a reason",
+          "raw": "{\"chosen_candidate_id\":\"cand_denoise_median\",\"evidence_refs\":[\"change.median_acf_at_calendar_period_delta\",\"change.median_normalized_seasonal_residual_delta\",\"recent.median_acf_at_calendar_period\",\"re"
+        },
+        {
+          "chosen": "cand_winsorize",
+          "memory_excerpt": "== Experience memory (signed) ==\n  (no applicable signed experience)\n\n== Probe semantics (important) ==\nChoosing a candidate means requesting one budgeted Support probe — it does NOT mean final deployment. The current Support of a Reference 1 operator has not yet been confirmed; that is not a reason",
+          "raw": "{\"chosen_candidate_id\":\"cand_winsorize\",\"evidence_refs\":[\"change.median_normalized_seasonal_residual_delta\",\"change.median_acf_at_calendar_period_delta\",\"recent.median_normalized_seasonal_residual\"],\""
+        },
+        {
+          "chosen": "cand_skill_winsoriz-sealed-a3",
+          "memory_excerpt": "== Experience memory (signed) ==\nThe following references come from verified historical experience.\nUse them as a guide.\n\nReference 1: candidate operators ['winsorize'] carried paired positive Support/delayed evidence from the same historical episode (weak reference: context matching not yet calibra",
+          "raw": "{\"chosen_candidate_id\":\"cand_skill_winsoriz-sealed-a3\",\"evidence_refs\":[\"Reference 1\"],\"rationale\":\"Reference 1 reports paired positive Support and delayed evidence for winsorize and explicitly recomm"
+        },
+        {
+          "chosen": "cand_skill_winsoriz-sealed-a3",
+          "memory_excerpt": "== Experience memory (signed) ==\n  (no applicable signed experience)\n\n== Probe semantics (important) ==\nChoosing a candidate means requesting one budgeted Support probe — it does NOT mean final deployment. The current Support of a Reference 1 operator has not yet been confirmed; that is not a reason",
+          "raw": "{\"chosen_candidate_id\":\"cand_skill_winsoriz-sealed-a3\",\"evidence_refs\":[\"change.median_normalized_seasonal_residual_delta\",\"change.median_acf_at_calendar_period_delta\",\"recent.median_normalized_season"
+        }
+      ],
+      "skill": {
+        "skill_id": "winsoriz-sealed-a3",
+        "status": "LOCAL_ACTIVE",
+        "steps": [
+          {
+            "op": "winsorize",
+            "params": {}
+          }
+        ]
+      }
+    },
+    "a5": {
+      "metrics": {
+        "abstention_count": 2,
+        "first_positive_support_receipt_index": null,
+        "harm_count": 0,
+        "harm_magnitude_sum": 0.0,
+        "proposal_count": 2
+      },
+      "r1": {
+        "origin": 792,
+        "probes": [
+          {
+            "chosen": "identity",
+            "kind": "abstain",
+            "proposal": 1
+          }
+        ],
+        "round": "r1_a5"
+      },
+      "r1_delayed": null,
+      "r2": {
+        "origin": 888,
+        "probes": [
+          {
+            "chosen": "identity",
+            "kind": "abstain",
+            "proposal": 1
+          }
+        ],
+        "round": "r2_a5"
+      },
+      "r2_delayed": null,
+      "select_logs": [
+        {
+          "chosen": "identity",
+          "memory_excerpt": "== Experience memory (signed) ==\nThe following references come from verified historical experience.\nUse them as a guide.\n\nReference 3: candidate operators ['winsorize'] carried only negative evidence in historical experience (harmful Support/delayed windows; weak reference: no context matching). Avo",
+          "raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"Reference 3\"],\"rationale\":\"No verified evidence supports cand_denoise_median in the current context. The only historical evidence is negative and ap"
+        },
+        {
+          "chosen": "identity",
+          "memory_excerpt": "== Experience memory (signed) ==\nThe following references come from verified historical experience.\nUse them as a guide.\n\nReference 3: candidate operators ['winsorize'] carried only negative evidence in historical experience (harmful Support/delayed windows; weak reference: no context matching). Avo",
+          "raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"Reference 3\"],\"rationale\":\"No verified evidence supports cand_denoise_median in the current context. The only historical evidence is negative and co"
+        },
+        {
+          "chosen": "identity",
+          "memory_excerpt": "== Experience memory (signed) ==\nThe following references come from verified historical experience.\nUse them as a guide.\n\nReference 3: candidate operators ['winsorize'] carried only negative evidence in historical experience (harmful Support/delayed windows; weak reference: no context matching). Avo",
+          "raw": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[],\"rationale\":\"No verified evidence supports cand_denoise_median in this context. The only historical reference concerns winsorize and is not applica"
+        }
+      ],
+      "skill": null
+    }
+  },
+  "cohort_offset": 80,
+  "cohorts": {
+    "disjoint": true,
+    "exposure_class": "certified_virgin",
+    "source_uids": [
+      "65f07030934a229a8b5555edc8a50db47b9a2a66c29cc672b44bb6c6204053d0",
+      "666166f98ef9d001e07166d382cfe3defcc3828f437db3fb76fb110034e76153",
+      "67574e8ba16a252ee6f29d3515c75c1d62f6e563a1dc6c7b1f08252f3866391c",
+      "6768f20135992f79cba20e56f156480d46a31c788c146d2347fa4836ff2229ae",
+      "686dc4d9c5ae7c3bb5754e533c7f410f3599402b4d32c01735b2aa326b375443",
+      "6960b3c9513d4637d02ac7467083a957268e4d6172a45955cbdea3d856014382",
+      "6b099c4557be501a2972ad43b212fb4c82be3b8d15d1f227194ea665557ca438",
+      "6d86c9e8105e147305b42271799c4205bcebbe73914d9cb8991560d3d7ce34a6",
+      "703e4e3abe2b9e94751cc439127e4da9580b8c55dd9c3065add8c95a779a1332",
+      "71614ac7299a8e28d31b5738a611ee3724188c3d3301c107c0ae55bb85a452ea",
+      "730c3718b8c89673019f4108b1226aacd0b7608661016619162e49f29594ab47",
+      "7354edad08ddca46268c0806d6365677660fd0be8fd4698d7270525ba7e2761d",
+      "7559c106d95280b938085b08e614768e461db492eae8ad99128b4d67885a5bf4",
+      "77c93d367c0bb369003885ac8a99fb63af9b5636156eff0016c3c9a3c919a801",
+      "78f00e6dc5cd5e930ab7b33fae15b2526f2749a76918f6cfc79460f3f85cb926",
+      "7a379147dfcf7157a4b1801830d5698bcdb979b6154ef7369c9b539d9ed4bb7f",
+      "7c1cacb904ba75fad5b3ac6902ab637a49e693f6cf250316ef3530def06dc785",
+      "7f0f90350b629b717002bdae216ad160afc75a50982c781c06f0e7bc66bf937d",
+      "802e760a8c1e2b3c36f37c92a0791954ece17ad5c7695cede251ae79ec94ff69",
+      "825f5c4cabe1dafbc46a5eafdc6b35c872c1cd5c5ba922d08426c042c875693e"
+    ],
+    "target_uids": [
+      "8579f109e8a75e8b61a79dad27da1e7ee0f3129eb3c5d7eda421b79625b57ee0",
+      "872d2afac08c9ef05a332bc149ed667153d9392654efc53d62f9c020c6d8b5cf",
+      "886ee20f96aff034b9fcd30810f62835b75ff4a917d9def0d680301033dbd30b",
+      "889f953ff627ae6c8792a9507f65114f7ea3b58f1e6314fd677e4ed6e6fbd004",
+      "8a69cebf246ba7836872ffcf72cd60e9753db5f3ba053805aaefd248b070b4bd",
+      "8aa38b4f5085869f6b78e7f6c559ed56b0b5c3f338693b5aa9f4164d573817f2",
+      "8b0fa3369b01170ce4e2c4f5a120fdc297fd898173d4d27297dc93de8bfbc234",
+      "8bba0657777869c5a3afc08b1f2fdaa570c5188ea2f5f5f46c5aad0c7f5a984b",
+      "8da30e133a2aef706b07fd05836c7db161a42864b96e77c95ded1bb22a2e6e9a",
+      "8da7b60a8afe34f2cccaf1b46f1803e8a357f420eba45e587ac52d7a2da37935",
+      "8e2e39ecb3f25f35d4e60ae744a5394c0f3d8c9dae973c2c128f8dbf13ccba63",
+      "8e6b651e49196e9df3a8cc7ccac0552381f14e08db26761737eeca3069f36242",
+      "8e9e1888f052002852eadd77443949a9391ddc1a1f1c2fdb22f9464548d818bf",
+      "8f6a7b3a28f2ddf34af5dff49d289360035d5648f3f4752fcb18fa807d581cdd",
+      "9007f900a994254144dad884d6a13e8224cd4492c2a79eab0bee9f5629e16a97",
+      "904e91e4f10451a0fee0ce5365ae6c43c422a864656bfbb51896801468228302",
+      "90699b9b0a1042c5f38ed48219b73ebde39ca1e6c97e174493bfe4b42296dee2",
+      "917db71a79a1a56239c47b13d0097a1796b9b8cbf6eef28a8a04bef3f8ec5f7c",
+      "9188b3a8585206f0339a6bf625f44b703d86d23ec449e8887d06cb6a91fc68dd",
+      "921cc5aef03a86c7112d6ed75ac1e9f6b647104c6b8a7c8fae38f23e4dbbe211"
+    ]
+  },
+  "dataset": "metr_la",
+  "experiment_id": "v1-sealed-a5a3",
+  "lifecycle_closure": {
+    "expected_from_delayed_relation": "degrade",
+    "no_episode_deletion": true,
+    "no_future_read_plan_only": true,
+    "r2_episode_delayed_updated": false,
+    "r2_relations": {
+      "a3": "POSITIVE",
+      "a5": null
+    },
+    "r3_plan_only": {
+      "a3": {
+        "chosen": "cand_skill_winsoriz-sealed-a3",
+        "evaluated": false,
+        "origin": 984,
+        "pool": [
+          "cand_skill_winsoriz-sealed-a3",
+          "cand_outlier_mad"
+        ],
+        "round": "r3_a3"
+      },
+      "a5": {
+        "chosen": "identity",
+        "evaluated": false,
+        "origin": 984,
+        "pool": [
+          "cand_denoise_median"
+        ],
+        "round": "r3_a5"
+      }
+    },
+    "skill_degraded_or_abstain_at_984": false,
+    "skill_pool_position_at_984": {
+      "a3": 0,
+      "a5": null
+    },
+    "skill_status": {
+      "a3": "LOCAL_ACTIVE",
+      "a5": null
+    }
+  },
+  "llm_api_call_count": 7,
+  "origins": {
+    "assertions": {
+      "r2_delayed_in_data": true,
+      "r2_minus_r1_equals_2h": true,
+      "source_window_before_r1": true
+    },
+    "r1": 792,
+    "r1_delayed": 840,
+    "r2": 888,
+    "r2_delayed": 936,
+    "source": 600,
+    "source_delayed": 648
+  },
+  "selector": "llm-select",
+  "source": {
+    "delayed": [
+      {
+        "delayed_gain": 0.0,
+        "delayed_origin": 648,
+        "episode_id": "metr_la_target_denoise_median_src600_p1",
+        "op": "denoise_median",
+        "relation": "ABSTAIN",
+        "round": "src600_p1",
+        "status": "EPISODE_ONLY"
+      },
+      {
+        "delayed_gain": -0.008172780274729563,
+        "delayed_origin": 648,
+        "episode_id": "metr_la_target_winsorize_src600_p2",
+        "op": "winsorize",
+        "relation": "NEGATIVE",
+        "round": "src600_p2",
+        "status": "EPISODE_ONLY"
+      }
+    ],
+    "memory_episodes": 2,
+    "relations": [
+      "ABSTAIN",
+      "NEGATIVE"
+    ],
+    "round": {
+      "origin": 600,
+      "probes": [
+        {
+          "chosen": "cand_denoise_median",
+          "episode_id": "metr_la_target_denoise_median_src600_p1",
+          "first_positive": false,
+          "gain": 0.0,
+          "kind": "support",
+          "op": "denoise_median",
+          "passed": true,
+          "proposal": 1,
+          "relation": "NEGATIVE"
+        },
+        {
+          "chosen": "cand_winsorize",
+          "episode_id": "metr_la_target_winsorize_src600_p2",
+          "first_positive": false,
+          "gain": -0.02487430954610592,
+          "kind": "support",
+          "op": "winsorize",
+          "passed": true,
+          "proposal": 2,
+          "relation": "NEGATIVE"
+        }
+      ],
+      "round": "src600"
+    }
+  },
+  "verdict": "SEALED_A5A3_NEGATIVE"
+}

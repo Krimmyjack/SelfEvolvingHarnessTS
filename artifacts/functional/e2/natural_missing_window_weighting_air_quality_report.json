@@ -1,0 +1,183 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "One independent natural dataset with two predeclared target roles. A PASS confirms this narrow Skill version; it is not a universal missing-data rule.",
+  "compute": {
+    "consumer_fit_count": 3,
+    "llm_api_call_count": 0
+  },
+  "dataset": "UCI Air Quality",
+  "experiment_id": "E2-natural-missing-window-weighting-UCI-Air-Quality",
+  "feasibility_rejections": [
+    {
+      "channel": "CO(GT)",
+      "reason": "no fixed Air Quality evaluation cutoff passed availability admission"
+    }
+  ],
+  "gate": {
+    "A5_harmful_role_count_zero": true,
+    "A5_macro_strictly_greater_than_A3": false,
+    "at_least_one_role_A5_strictly_improves_A3": false,
+    "at_least_one_role_has_material_headroom": true,
+    "passed": false
+  },
+  "information_boundary": {
+    "evaluation_outcomes_sealed_until_this_run": true,
+    "parser_header_and_initial_rows_seen_before_run": true,
+    "query_future_used_for_planning_or_confirmation": false
+  },
+  "scientific_role": "independent natural dataset confirmation of a frozen Skill candidate",
+  "source": {
+    "license": "CC BY 4.0",
+    "missing_semantics": "official -200 missing marker converted to NaN",
+    "url": "https://archive.ics.uci.edu/dataset/360/air+quality"
+  },
+  "summary": {
+    "A5_harmful_role_count": 0,
+    "A5_helpful_role_count": 0,
+    "A5_minus_A3": -0.26336151882993164,
+    "adapt_auc": {
+      "A3": 0.5960787868744446,
+      "A5": 0.33271726804451296
+    },
+    "material_headroom_role_count": 1,
+    "role_count": 1
+  },
+  "target_roles": [
+    {
+      "arms": {
+        "A3": {
+          "adapt_auc": 0.5960787868744446,
+          "curve": [
+            {
+              "budget": 0,
+              "expected_over_probe_orders": true,
+              "fixed_query_gain": 0.0
+            },
+            {
+              "budget": 1,
+              "expected_over_probe_orders": true,
+              "fixed_query_gain": 0.7947717158325929
+            },
+            {
+              "budget": 2,
+              "expected_over_probe_orders": true,
+              "fixed_query_gain": 0.7947717158325929
+            }
+          ]
+        },
+        "A4": {
+          "fixed_query_gain": 0.4436230240593506,
+          "harmful": false,
+          "selected_program": "ATTENUATE_MISSING_WINDOW"
+        },
+        "A5": {
+          "adapt_auc": 0.33271726804451296,
+          "curve": [
+            {
+              "abstained": true,
+              "budget": 0,
+              "fixed_query_gain": 0.0,
+              "probed_group": null,
+              "probed_query_gain_evaluator_only": null,
+              "probed_support_gain": null,
+              "selected_action": "IDENTITY",
+              "selected_auxiliary_group": null,
+              "selected_support_gain": 0.0,
+              "terminal": false
+            },
+            {
+              "abstained": false,
+              "budget": 1,
+              "fixed_query_gain": 0.4436230240593506,
+              "probed_group": "ATTENUATE_MISSING_WINDOW",
+              "probed_query_gain_evaluator_only": 0.4436230240593506,
+              "probed_support_gain": 0.2746103512814203,
+              "selected_action": "ADD_AUXILIARY_SEMANTIC_GROUP",
+              "selected_auxiliary_group": "ATTENUATE_MISSING_WINDOW",
+              "selected_support_gain": 0.2746103512814203,
+              "terminal": true
+            },
+            {
+              "abstained": false,
+              "budget": 2,
+              "fixed_query_gain": 0.4436230240593506,
+              "probed_group": null,
+              "probed_query_gain_evaluator_only": null,
+              "probed_support_gain": null,
+              "selected_action": "ADD_AUXILIARY_SEMANTIC_GROUP",
+              "selected_auxiliary_group": "ATTENUATE_MISSING_WINDOW",
+              "selected_support_gain": 0.2746103512814203,
+              "terminal": true
+            }
+          ],
+          "harmful": false
+        }
+      },
+      "channel": "NO2(GT)",
+      "gate": {
+        "A5_harmful_false": true,
+        "A5_strictly_greater_than_A3": false,
+        "material_query_headroom": true,
+        "passed": false
+      },
+      "geometry": {
+        "evaluation_stop": 9288,
+        "historical_origins": [
+          9240,
+          9216,
+          9192
+        ],
+        "query_future_used_for_planning_or_confirmation": false,
+        "training_anchor_count": 117
+      },
+      "programs": [
+        {
+          "historical_policy_gain_vs_identity": 0.0,
+          "historical_policy_loss": 1.2379505062098675,
+          "program": "KEEP_ALL",
+          "query_gain_vs_identity": 0.0,
+          "query_loss": 1.9278327895414962,
+          "unreliable_window_weight": 1.0
+        },
+        {
+          "historical_policy_gain_vs_identity": 0.2746103512814203,
+          "historical_policy_loss": 0.9633401549284472,
+          "program": "ATTENUATE_MISSING_WINDOW",
+          "query_gain_vs_identity": 0.4436230240593506,
+          "query_loss": 1.4842097654821456,
+          "unreliable_window_weight": 0.25
+        },
+        {
+          "historical_policy_gain_vs_identity": 0.4015865467320623,
+          "historical_policy_loss": 0.8363639594778052,
+          "program": "EXCLUDE_MISSING_WINDOW",
+          "query_gain_vs_identity": 1.1459204076058351,
+          "query_loss": 0.781912381935661,
+          "unreliable_window_weight": 0.0
+        }
+      ],
+      "retrieved_source_episode": {
+        "context": {
+          "median_missing_fraction": 0.07916666666666666,
+          "unreliable_window_fraction": 0.9895833333333334
+        },
+        "dataset_audit_only": "noaa_global_hourly",
+        "probe_order": [
+          "ATTENUATE_MISSING_WINDOW",
+          "EXCLUDE_MISSING_WINDOW"
+        ]
+      },
+      "summary": {
+        "A5_minus_A3": -0.26336151882993164,
+        "menu_oracle_program_evaluator_only": "EXCLUDE_MISSING_WINDOW",
+        "menu_oracle_query_gain_evaluator_only": 1.1459204076058351,
+        "unreliable_training_window_count": 114
+      },
+      "target_context": {
+        "median_missing_fraction": 0.04583333333333333,
+        "unreliable_window_fraction": 0.9743589743589743
+      }
+    }
+  ],
+  "verdict": "INDEPENDENT_DATASET_MISSING_WINDOW_SKILL_CONFIRMATION_FAIL"
+}

@@ -1,0 +1,68 @@
+{
+  "experiment_id": "MEMO",
+  "revision": 1,
+  "date_drafted": "2026-08-16",
+  "state": "DRAFT_PREPARED_NOT_STARTED",
+  "_gating": "本地裁决：Pattern 实验先行。MEMO 现在只做协议准备，不启动，避免两个机制同时变化后无法归因。",
+  "framing": "目标不是让 Memory 在零反馈下判断『该不该执行』，而是验证相似 Action–Response Experience 能否更好地排序候选、减少试错与 harm。",
+  "two_distinct_experiments": {
+    "_why_separated": "主控 agent 提出：本地的归因论证（检索键不足→分不清 Memory 无效还是 Context 不足）只对跨 series 检索成立，对自身历史那条不成立。混为一谈会导致后续跑的不是同一个实验。",
+    "MEMO_A_own_history": {
+      "definition": "per-series prequential：仅用本 series 更早 origin 的实测 gain 决定当前 origin 是否行动",
+      "aggregator": "沿用已冻结的 historical_program_stability = min(gain@t-H, gain@t-2H, gain@t-3H)，不新造",
+      "tau": "主 τ=0（无自由参数）；次 τ=M=0.005。两者都预注册，主判据用 τ=0",
+      "depends_on_pattern": false,
+      "_note": "不受 Pattern 质量混淆，可独立运行",
+      "prior_on_record": "先验很差：gain 的 within-series 占比 60.5%，A5 仅 6/35 series 符号一致。预期为空结果。排在 Pattern exit 3 之后作为第一发，而非现在跑。",
+      "policies": [
+        "P_never（恒 identity，gain≡0）",
+        "P_always（恒执行）",
+        "P_memo(τ)"
+      ],
+      "metrics": [
+        "每决策点实测 gain 均值（分 cohort）",
+        "harm 率 = 实测 gain < -M 的比例",
+        "决策点数"
+      ],
+      "verdict_branches": {
+        "MEMORY_CONDITIONING_WORKS": "P_memo 在两 cohort 内同时优于 P_never 与 P_always，且 harm 率低于 P_always",
+        "MEMORY_HELPS_ONLY_AS_VETO": "不增值但 harm 率显著低于 P_always —— 归入 Risk/Probe Gate，与 F4 合并",
+        "MEMORY_CONDITIONING_NULL": "两 cohort 未同时达成"
+      }
+    },
+    "MEMO_B_retrieval": {
+      "definition": "跨 series 检索相似 Action–Response Experience，用于候选排序",
+      "depends_on_pattern": true,
+      "_gate": "必须等 Pattern 实验产出可描述 current-origin 状态的检索键；否则只会按 series 指纹检索",
+      "baselines": [
+        "冻结 registry 固定序（FULLOP2/USEL 用的那个）",
+        "随机序"
+      ],
+      "metrics": [
+        "排序质量：首选候选的 Support 符号与幅度",
+        "达到首个正收益所需 probe 数",
+        "harm 率"
+      ],
+      "why_baseline_is_beatable": "USEL 已证 chosen-first 排序失准（5/6 context 的 chosen program Support 为负）"
+    }
+  },
+  "shared_discipline": {
+    "exposure": "确认臂预算现在定死：KDD 合格未选 145 条 + metr_la 47 条，一次性，只确认一次",
+    "information_wall": "检索输入只允许运行前可见量；outcome 仅作标签，不进检索输入（沿用 USEL Memory 守卫）",
+    "delayed": "delayed 只负责转害撤销，不参与正向判定",
+    "no_feature_stacking": "不得在同一批已暴露数据上连续追加特征族直到显著"
+  },
+  "pattern_experiment_criteria_requested_by_main_agent": {
+    "_issue": "本地三条出口中，出口 1『能预测收益方向』缺少运行前冻结的数字，会变成后验裁定",
+    "proposed_frozen_criterion": "held-out series 上 signed gain 的 LOO-series skill >= 0.15 且相对纯 F1 的增量 >= 0.05 —— 与 GRID0 P1B 同口径，可直接对比",
+    "secondary_reported_not_decisive": "sign accuracy（材料格符号不平衡，只报不判）",
+    "withdrawn_by_main_agent": "此前提议的『within-series 方差 >= 30.7% 硬门』撤回。本地正确指出：交互项的 within 方差可以很高，即使其中一个因子是 series 常量（全局季节性 × 最近周期漂移即是）。逐特征硬门会砍掉合法交互因子。改为保留 within 占比为免费诊断，去留只看 held-out 增量。"
+  },
+  "sequence_on_record": [
+    "局部多尺度 Pattern",
+    "一次 held-out 确认",
+    "成功 → Pattern-conditioned Memory / Rule Card（即 MEMO_B）",
+    "失败 → MEMO_A + 少量 Target Support",
+    "delayed 全程只负责转害撤销"
+  ]
+}

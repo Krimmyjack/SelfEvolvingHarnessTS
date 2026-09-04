@@ -68,16 +68,10 @@ data/**
 
 # Large arrays. The already-tracked legacy npz stays tracked.
 *.npz
-
-# Local experiment dumps. Already-tracked frozen/manifests/compatibility/releases
-# and already-tracked e2 files stay tracked; this only blocks new adds.
-artifacts/main_protocol/
-artifacts/visualization/
-artifacts/experience/
-artifacts/functional/e1p/
-artifacts/functional/e1t/
-artifacts/functional/e1tr/
-artifacts/functional/e2/
+# Artifacts are uploaded; lift the global npz/log/zip bans inside that tree.
+!artifacts/**/*.npz
+!artifacts/**/*.log
+!artifacts/**/*.zip
 
 # Root runtime skill-stores / experiment state (hidden dirs).
 .*_store/
@@ -100,6 +94,7 @@ artifacts/functional/e2/
 
 # Logs and one-off scratch at repo root.
 *.log
+!artifacts/**/*.log
 /_*.log
 /_*.py
 /_*.ps1

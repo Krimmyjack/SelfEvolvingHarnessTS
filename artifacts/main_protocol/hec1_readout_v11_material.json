@@ -1,0 +1,179 @@
+{
+  "criteria": {
+    "D_o_material_in_at_least_2_of_3": false,
+    "d_c_positive_in_at_least_3_of_4": false,
+    "harm_online_not_worse_in_every_ordering": true,
+    "P2_survival_chain_in_any_ordering": false
+  },
+  "code_freeze": {
+    "code_commit_by_ordering": {},
+    "runner_files_clean_by_ordering": {},
+    "one_commit": false,
+    "all_clean": false,
+    "commit": null
+  },
+  "cohort_endpoint_d_c": {},
+  "cohort_sign_pattern": {
+    "unit": "cohort",
+    "n": 0,
+    "ties": 0,
+    "trials": 0,
+    "positive": 0,
+    "negative": 0,
+    "exact_binomial_probability": null,
+    "floor_at_all_positive": null,
+    "why": "every paired difference was a tie",
+    "role": "DESCRIPTIVE"
+  },
+  "cohort_bootstrap": {
+    "n": 0,
+    "mean": null,
+    "interval_90": null,
+    "role": "DESCRIPTIVE"
+  },
+  "statistics_role": "DESCRIPTIVE development mechanism curve; no significance gate (sol final ruling 2026-09-03 §2)",
+  "stage": "HEC1_READOUT",
+  "written_at": "2026-09-03T15:17:49.893439+08:00",
+  "oracle_banner": "ORACLE_WALL: computed after the course from the scoring ledger only.  No Episode bank is opened and no value here may reach a prompt.",
+  "contract_version": "P4U-v4.1",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "evidence_grade": "DEVELOPMENT (development mechanism curve)",
+  "orderings_found": [],
+  "orderings_expected": [
+    "forward",
+    "reverse",
+    "interleaved"
+  ],
+  "scoreability": {
+    "scheduled_units": 26,
+    "scoreable_units": 23,
+    "unscoreable_units": [
+      {
+        "block": "[0:40]",
+        "origin": 2856,
+        "reason": "horizon contains no observed truth"
+      },
+      {
+        "block": "[40:80]",
+        "origin": 2856,
+        "reason": "horizon contains no observed truth"
+      },
+      {
+        "block": "[120:160]",
+        "origin": 1656,
+        "reason": "horizon contains no observed truth"
+      }
+    ],
+    "completion_fraction": 0.8,
+    "min_paired_curve_points": 19,
+    "rounding": "ceil; int() would accept 18/23 = 78.3% as if it were 80%",
+    "same_list_for_every_ordering": true,
+    "unscoreable_units_still_learn": "they are probed, gated and written to the bank; only the curve point is absent, and it is absent for every arm identically",
+    "derived_by": "evaluation.main_protocol_p4.preflight_hec1_evaluability"
+  },
+  "artifacts_rejected": [
+    {
+      "artifact": "hec1_course_e2e6.json",
+      "why": "not one of the three live ordering labels"
+    },
+    {
+      "artifact": "hec1_course_e2e6_frozen_ledger_fix.json",
+      "why": "not one of the three live ordering labels"
+    },
+    {
+      "artifact": "hec1_course_e2e6_review_fixes.json",
+      "why": "not one of the three live ordering labels"
+    },
+    {
+      "artifact": "hec1_course_e2e_probe.json",
+      "why": "not one of the three live ordering labels"
+    },
+    {
+      "artifact": "hec1_course_forward_shakedown.json",
+      "why": "not one of the three live ordering labels"
+    },
+    {
+      "artifact": "hec1_course_k0_smoke_t2.json",
+      "why": "not one of the three live ordering labels"
+    },
+    {
+      "artifact": "hec1_course_k0_smoke_t2b.json",
+      "why": "not one of the three live ordering labels"
+    }
+  ],
+  "why_rejection_is_listed": "a course artifact that is offline, incomplete or a test label must not enter the curve, and the reason it did not is worth reading",
+  "orderings": [],
+  "material_terminal_difference": {
+    "line": 0.115,
+    "derivation": "material 0.005 x 23 scoreable units",
+    "orderings_at_or_above_the_line": 0,
+    "orderings_merely_above_zero": 0,
+    "why_not_just_positive": "a terminal difference of a few hundredths over 23 units is 23 readings of nearly nothing; positive is not material"
+  },
+  "terminal_differences_above_zero": 0,
+  "terminal_differences_at_or_above_material": 0,
+  "statistics": {
+    "status": "DESCRIPTIVE development mechanism curve (sol final ruling §2)",
+    "unit_of_analysis": "cohort",
+    "n_cohorts": 4,
+    "why_not_origin": "anchors are frozen and origin-invariant past 900, so two origins of one cohort are a time re-encounter of one training condition, not two independent samples",
+    "no_significance_gate": "a one-sided exact sign test on 4 cohorts has a floor of 1/16 = 0.0625 even at 4/4, so alpha 0.05 can never be reached; it is not a pass criterion.  The exact binomial probability is reported with that floor stated",
+    "primary_endpoint": "terminal cumulative difference D_o = sum over units of (online - frozen) evaluation-face aggregate_gain, per ordering",
+    "cohort_endpoint": "d_c = mean over the cohort's units of (online - frozen), averaged over the three orderings; four numbers",
+    "secondary_endpoints": [
+      "AUC of the cumulative-difference curve",
+      "difference at the midpoint unit"
+    ],
+    "monotonicity": "not required; local dips are allowed",
+    "qualitative_criteria_for_P1": [
+      "D_o > 0 in at least 2 of 3 orderings",
+      "d_c > 0 in at least 3 of 4 cohorts",
+      "harm events online <= frozen in every ordering"
+    ],
+    "reported_only": [
+      "exact binomial probability of the cohort sign pattern (floor 0.0625)",
+      "cohort bootstrap percentile interval, n = 4, as uncertainty description",
+      "per-unit sign counts, as correlated descriptive counts"
+    ],
+    "orderings_are_not_seeds": "the three orderings share data, cache and units; they are drawn as three curves, never as a confidence band",
+    "confirmatory_statistics": "deferred to a fresh experiment with at least 8 independent cohorts or datasets (one-sided Wilcoxon signed-rank, or sign test needing >= 7 of 8)"
+  },
+  "preregistered": {
+    "P1_evolution": {
+      "claim": "online minus frozen cumulative safe utility on the evaluation face ends **at or above 0.115** in at least 2 of 3 orderings and is above 0 in at least 3 of 4 cohorts; harm online does not exceed frozen; monotonic growth is not required",
+      "material_terminal_difference": 0.115,
+      "why_a_material_line": "0.005 per unit x 23 scoreable units.  A terminal difference of a few hundredths over 23 units is 23 readings of nearly nothing; positive is not the same as material",
+      "first_fault_if_not": {
+        "recall deploys worse than frozen searching on the spot": "Scope too wide -- the memory face",
+        "cards minted near zero": "Fast candidate starvation -- the supply face",
+        "difference positive but not significant": "trigger density too low -- the course face"
+      }
+    },
+    "P2_survival": {
+      "claim": "at least one Draft inside Phase T clears delayed after at most 2 narrowings, survives, and beats frozen on the same unit at least once in a re-encounter",
+      "first_fault_if_not": {
+        "still breaching the single-series line after narrowing": "attribute by the three-state machine first, then choose a face",
+        "never reaching delayed": "Support re-probe budget"
+      }
+    },
+    "P3_accumulation": {
+      "claim": "scored only when Phase S leaves a survivor; A5-online minus A3-online cumulative above 0",
+      "first_fault_if_not": {
+        "K0 Scope match near zero on the Target": "K0 unreachable -- report by stratum, do not change the course",
+        "matched but no gain": "cross-cohort generalisation"
+      }
+    },
+    "none_of_these_reads_as": "evolution does not work"
+  },
+  "verdict": "HEC1_INCONCLUSIVE",
+  "why": "0 of 3 orderings present and 0 of those reached 19 paired curve points; the pre-registered criteria need all three",
+  "h1_h3_consistency": "CONSISTENT / MIXED / NOT_OBSERVED, annotated per ordering once all three are in",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 0,
+    "held_out_reads": 0,
+    "reads": "the scoring ledger only",
+    "opens_episode_bank": false
+  },
+  "wall_seconds": 0.0
+}

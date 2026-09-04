@@ -1,0 +1,1543 @@
+{
+  "stage": "P4B_BOUNDED_RISK_FORECAST",
+  "status": "COMPLETE",
+  "started_at": "2026-09-01T01:25:53.173134+08:00",
+  "backend_mode": "scripted",
+  "transport": {
+    "backend": "scripted",
+    "model": null
+  },
+  "smoke": true,
+  "evidence_grade": "SMOKE_NOT_EVIDENCE",
+  "smoke_kind": null,
+  "smoke_checks": null,
+  "frozen_contract": {
+    "task": "forecast",
+    "consumer": "pooled_ridge_a1",
+    "primary_metric": "sMASE",
+    "preregistration": "docs/P4B_BOUNDED_RISK_GATE_PREREGISTRATION_2026-08-31.md",
+    "does_not_supersede": "artifacts/main_protocol/p4_forecast_performance_b8_llm8_run2_20260830.json",
+    "experiment_label": "PROSPECTIVE_RISK_UTILITY_POLICY_EXPERIMENT",
+    "question": "does the bounded-risk admission gate change Target-local adaptation, Skill formation, and held-out utility, relative to the strict 20/20 gate?",
+    "not_tested_here": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it",
+    "source_treatment": {
+      "active": false,
+      "reading": "the audited Source card is installed in both arms and is applicable at no origin in this study; it is correctly silent, and the accumulation treatment is therefore empty",
+      "arm_names_are_historical": "the arms are coded A5-strict / A5-bounded for continuity with P2-P4; read them as Online-strict / Online-bounded, since neither arm's Source knowledge activates here",
+      "scope_match_gate_for_a_real_a5_study": {
+        "requirement": "at least 1 pre-audited Source Skill must match the deployment-visible context of at least one held-in origin",
+        "inadmissible_way_to_pass": "widening an existing card's observable_applicability so it matches; that manufactures the treatment instead of finding it"
+      }
+    },
+    "geometry": {
+      "grid_step": 48,
+      "minimum_spacing": 240,
+      "minimum_spacing_rule": "CONTEXT_LENGTH + HORIZON",
+      "old_p4_origins": [
+        600,
+        648,
+        696,
+        744,
+        792,
+        840,
+        888,
+        936
+      ],
+      "old_p4_eval_end": 984,
+      "rule": "greedy on the 48-step grid, minimum spacing 240, skipping origins whose context window is not evaluable",
+      "viability_screen": "structural: the Consumer's robust scale on [origin-192, origin) must not collapse to its floor for any evaluation series; reads observed history only, no Outcome",
+      "held_in_origins": [
+        1176,
+        1416,
+        1656,
+        1896,
+        2136,
+        2376,
+        2616,
+        2856
+      ],
+      "held_in_eval_end": 2904,
+      "held_out_origins": [
+        3096,
+        3576,
+        3816,
+        4056,
+        4296,
+        4584,
+        4824,
+        6600
+      ],
+      "held_out_eval_end": 6648,
+      "held_in_spacings": [
+        240,
+        240,
+        240,
+        240,
+        240,
+        240,
+        240
+      ],
+      "held_out_spacings": [
+        480,
+        240,
+        240,
+        240,
+        288,
+        240,
+        1776
+      ],
+      "outcome_read_during_selection": false,
+      "held_in_context_opens_at": 984,
+      "held_out_context_opens_at": 2904,
+      "slack_beyond_isolation_old_to_held_in": 0,
+      "slack_beyond_isolation_held_in_to_held_out": 0
+    },
+    "arms": [
+      {
+        "name": "A5-strict",
+        "snapshot_source": "shared_initial",
+        "carries_state_across_origins": true,
+        "admission_rule": {
+          "rule": "strict_positive_only",
+          "max_harmed_fraction": 0.0,
+          "max_single_series_harm": 0.0
+        },
+        "held_out_role": "primary"
+      },
+      {
+        "name": "A5-bounded",
+        "snapshot_source": "shared_initial",
+        "carries_state_across_origins": true,
+        "admission_rule": {
+          "rule": "bounded_risk_v1",
+          "max_harmed_fraction": 0.2,
+          "max_single_series_harm": 0.3
+        },
+        "held_out_role": "primary"
+      }
+    ],
+    "deterministic_references": [
+      "Static",
+      "Parallel Best-of-N@8"
+    ],
+    "bounded_budget": {
+      "max_harmed_fraction": 0.2,
+      "max_single_series_harm": 0.3,
+      "scope": "pooled_ridge_a1 + sMASE only; does not transfer"
+    },
+    "offline_sensitivity_point": {
+      "max_harmed_fraction": 0.05,
+      "max_single_series_harm": 0.1,
+      "method": "offline re-read of the collected per-series log; no new run"
+    },
+    "per_cell_budget": {
+      "full_support_evaluations": 8,
+      "support_a_max": 7,
+      "support_b_max": 1,
+      "cheap_probe_max": 24,
+      "llm_call_max": 8,
+      "token_max": 60000,
+      "accepted_update_max": 1,
+      "wall_seconds_max": 2700
+    },
+    "cells": {
+      "held_in": 48,
+      "held_out": 48,
+      "held_out_spends_llm": false,
+      "global_llm_call_cap": 384
+    },
+    "allow_slow": false,
+    "statistics": {
+      "unit": "origin",
+      "aggregation": "mean over the 3 replicas within an origin, then paired",
+      "n": 8,
+      "test": "paired Wilcoxon signed-rank, two-sided, alpha=0.05",
+      "interval": "BCa bootstrap 95% CI, 10000 resamples, clustered on origin",
+      "power_note": "n=8: the smallest attainable two-sided p is 0.0078 and p<0.05 needs W<=3, so only a near-unanimous sign split can reach significance; a neutral verdict means undetectable here, not zero"
+    }
+  },
+  "preflight": {
+    "stage": "P4B_PREFLIGHT",
+    "status": "PASS",
+    "dataset": "KDD Cup 2018 with missing values",
+    "data_role": "EXPOSED_DEVELOPMENT",
+    "shortest_series_length": 10898,
+    "origin_plan": {
+      "rule": "greedy on the 48-step grid, minimum spacing 240, skipping origins whose context window is not evaluable",
+      "viability_screen": "structural: the Consumer's robust scale on [origin-192, origin) must not collapse to its floor for any evaluation series; reads observed history only, no Outcome",
+      "held_in_origins": [
+        1176,
+        1416,
+        1656,
+        1896,
+        2136,
+        2376,
+        2616,
+        2856
+      ],
+      "held_in_eval_end": 2904,
+      "held_out_origins": [
+        3096,
+        3576,
+        3816,
+        4056,
+        4296,
+        4584,
+        4824,
+        6600
+      ],
+      "held_out_eval_end": 6648,
+      "held_in_spacings": [
+        240,
+        240,
+        240,
+        240,
+        240,
+        240,
+        240
+      ],
+      "held_out_spacings": [
+        480,
+        240,
+        240,
+        240,
+        288,
+        240,
+        1776
+      ],
+      "replica_orders": {
+        "Forward": [
+          1176,
+          1416,
+          1656,
+          1896,
+          2136,
+          2376,
+          2616,
+          2856
+        ],
+        "Reverse": [
+          2856,
+          2616,
+          2376,
+          2136,
+          1896,
+          1656,
+          1416,
+          1176
+        ],
+        "Interleaved": [
+          1176,
+          2136,
+          1416,
+          2376,
+          1656,
+          2616,
+          1896,
+          2856
+        ]
+      },
+      "outcome_read_during_selection": false
+    },
+    "viability_census": {
+      "screened": 114,
+      "viable": [
+        1176,
+        1224,
+        1272,
+        1320,
+        1368,
+        1416,
+        1464,
+        1512,
+        1560,
+        1608,
+        1656,
+        1704,
+        1752,
+        1800,
+        1848,
+        1896,
+        1944,
+        1992,
+        2040,
+        2088,
+        2136,
+        2184,
+        2232,
+        2280,
+        2328,
+        2376,
+        2424,
+        2472,
+        2520,
+        2568,
+        2616,
+        2664,
+        2712,
+        2760,
+        2808,
+        2856,
+        2904,
+        2952,
+        3000,
+        3048,
+        3096,
+        3576,
+        3624,
+        3672,
+        3720,
+        3768,
+        3816,
+        3864,
+        3912,
+        3960,
+        4008,
+        4056,
+        4104,
+        4152,
+        4200,
+        4248,
+        4296,
+        4344,
+        4392,
+        4440,
+        4488,
+        4584,
+        4632,
+        4680,
+        4728,
+        4776,
+        4824,
+        6600
+      ],
+      "rejected": [
+        3144,
+        3192,
+        3240,
+        3288,
+        3336,
+        3384,
+        3432,
+        3480,
+        3528,
+        4536,
+        4872,
+        4920,
+        4968,
+        5016,
+        5064,
+        5112,
+        5160,
+        5208,
+        5256,
+        5304,
+        5352,
+        5400,
+        5448,
+        5496,
+        5544,
+        5592,
+        5640,
+        5688,
+        5736,
+        5784,
+        5832,
+        5880,
+        5928,
+        5976,
+        6024,
+        6072,
+        6120,
+        6168,
+        6216,
+        6264,
+        6312,
+        6360,
+        6408,
+        6456,
+        6504,
+        6552
+      ],
+      "rejection_reason": "context window robust scale collapsed to its floor",
+      "outcome_reads": 0,
+      "consumer_fits": 0,
+      "llm_calls": 0
+    },
+    "source_scope_census": {
+      "skill_id": "s2a_forecast_supply_v0",
+      "origins_checked": [
+        1176,
+        1416,
+        1656,
+        1896,
+        2136,
+        2376,
+        2616,
+        2856,
+        3096,
+        3576,
+        3816,
+        4056,
+        4296,
+        4584,
+        4824,
+        6600,
+        600,
+        648,
+        696,
+        744,
+        792,
+        840,
+        888,
+        936
+      ],
+      "matched_origins": [],
+      "match_count": 0,
+      "minimum_for_an_accumulation_study": 1,
+      "accumulation_treatment_active": false,
+      "consequence_if_zero": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it",
+      "consumer_fits": 0,
+      "outcome_reads": 0,
+      "llm_calls": 0
+    },
+    "geometry_failures": [],
+    "strict_equivalence_receipt": "artifacts/main_protocol/p4b_preflight_strict_equivalence.json",
+    "llm_calls": 0
+  },
+  "replicas": [
+    "Forward"
+  ],
+  "held_in_origins": [
+    1176,
+    1416
+  ],
+  "held_out_origins": [
+    3096,
+    3576
+  ],
+  "held_in_rows": [
+    {
+      "phase": "held_in",
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "sequence_index": 1,
+      "origin": 1176,
+      "admission_rule": {
+        "rule": "strict_positive_only",
+        "max_harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity"
+      ],
+      "chosen_candidate_id": "identity",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 0,
+      "probes": [],
+      "episodes_written": [],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 1.768
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    {
+      "phase": "held_in",
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "sequence_index": 2,
+      "origin": 1416,
+      "admission_rule": {
+        "rule": "strict_positive_only",
+        "max_harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity"
+      ],
+      "chosen_candidate_id": "identity",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 0,
+      "probes": [],
+      "episodes_written": [],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 2.424
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    {
+      "phase": "held_in",
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "sequence_index": 1,
+      "origin": 1176,
+      "admission_rule": {
+        "rule": "bounded_risk_v1",
+        "max_harmed_fraction": 0.2,
+        "max_single_series_harm": 0.3
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity"
+      ],
+      "chosen_candidate_id": "identity",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 0,
+      "probes": [],
+      "episodes_written": [],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 1.736
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    },
+    {
+      "phase": "held_in",
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "sequence_index": 2,
+      "origin": 1416,
+      "admission_rule": {
+        "rule": "bounded_risk_v1",
+        "max_harmed_fraction": 0.2,
+        "max_single_series_harm": 0.3
+      },
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "candidate_ids": [
+        "identity"
+      ],
+      "chosen_candidate_id": "identity",
+      "abstain_reason": null,
+      "winner_candidate_id": "",
+      "winner_program": [],
+      "abstained": true,
+      "support_receipts_used": 0,
+      "probes": [],
+      "episodes_written": [],
+      "approved_skill_id": null,
+      "activated": false,
+      "incumbent_after": [],
+      "incumbent_changed": false,
+      "store_semantics_changed": false,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 0,
+        "cheap_probes": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 2.429
+      },
+      "boundary": {
+        "held_out_origins_touched": 0,
+        "natural_final_outcome_reads": 0
+      }
+    }
+  ],
+  "held_out_rows": [
+    {
+      "phase": "held_out",
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "held_out_role": "primary",
+      "origin": 3096,
+      "face": "support_a",
+      "identity_smase": 3.5192520232149724,
+      "deployed_smase": 3.5192520232149724,
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 0,
+      "harmed_fraction": 0.0,
+      "worst_single_series_harm": 0.0,
+      "per_series_gain": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "identity_per_series_smase": [
+        6.9545355337937735,
+        5.484546690778733,
+        2.47979673652468,
+        7.15042927320846,
+        7.189762490723115,
+        1.2740405372051962,
+        0.8375761038077427,
+        4.348319328111978,
+        1.444725680686815,
+        4.61216860369437,
+        3.2487121613347334,
+        6.282946618779744,
+        1.7579061105724962,
+        0.41448030251475537,
+        3.361482636720354,
+        1.314320215870438,
+        3.5618359341496886,
+        5.612825403743017,
+        1.9160132204256985,
+        1.1386168816536626
+      ],
+      "consumer_fits": 0,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [],
+        "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "no frozen Skill and no incumbent; identity is the fallback"
+      },
+      "feedback_taken": false,
+      "state_written": false
+    },
+    {
+      "phase": "held_out",
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "held_out_role": "primary",
+      "origin": 3576,
+      "face": "support_a",
+      "identity_smase": 0.9556999204422857,
+      "deployed_smase": 0.9556999204422857,
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 0,
+      "harmed_fraction": 0.0,
+      "worst_single_series_harm": 0.0,
+      "per_series_gain": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "identity_per_series_smase": [
+        0.4125481430381675,
+        4.2229633379379345,
+        0.3723319885820329,
+        0.4805159543497618,
+        0.7782761145204277,
+        0.5758572441647122,
+        0.4244100153994514,
+        2.137462598009719,
+        0.71793021996778,
+        0.312959373327311,
+        2.9277341020025087,
+        0.36413911525311166,
+        0.3266644726161468,
+        0.5349595492929199,
+        1.9387244197955624,
+        0.3406496404547786,
+        0.4700337742279849,
+        0.8721761584198012,
+        0.4437032231054343,
+        0.4599589643801655
+      ],
+      "consumer_fits": 0,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [],
+        "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "no frozen Skill and no incumbent; identity is the fallback"
+      },
+      "feedback_taken": false,
+      "state_written": false
+    },
+    {
+      "phase": "held_out",
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "held_out_role": "primary",
+      "origin": 3096,
+      "face": "support_a",
+      "identity_smase": 3.5192520232149724,
+      "deployed_smase": 3.5192520232149724,
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 0,
+      "harmed_fraction": 0.0,
+      "worst_single_series_harm": 0.0,
+      "per_series_gain": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "identity_per_series_smase": [
+        6.9545355337937735,
+        5.484546690778733,
+        2.47979673652468,
+        7.15042927320846,
+        7.189762490723115,
+        1.2740405372051962,
+        0.8375761038077427,
+        4.348319328111978,
+        1.444725680686815,
+        4.61216860369437,
+        3.2487121613347334,
+        6.282946618779744,
+        1.7579061105724962,
+        0.41448030251475537,
+        3.361482636720354,
+        1.314320215870438,
+        3.5618359341496886,
+        5.612825403743017,
+        1.9160132204256985,
+        1.1386168816536626
+      ],
+      "consumer_fits": 0,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [],
+        "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "no frozen Skill and no incumbent; identity is the fallback"
+      },
+      "feedback_taken": false,
+      "state_written": false
+    },
+    {
+      "phase": "held_out",
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "held_out_role": "primary",
+      "origin": 3576,
+      "face": "support_a",
+      "identity_smase": 0.9556999204422857,
+      "deployed_smase": 0.9556999204422857,
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 0,
+      "harmed_fraction": 0.0,
+      "worst_single_series_harm": 0.0,
+      "per_series_gain": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "identity_per_series_smase": [
+        0.4125481430381675,
+        4.2229633379379345,
+        0.3723319885820329,
+        0.4805159543497618,
+        0.7782761145204277,
+        0.5758572441647122,
+        0.4244100153994514,
+        2.137462598009719,
+        0.71793021996778,
+        0.312959373327311,
+        2.9277341020025087,
+        0.36413911525311166,
+        0.3266644726161468,
+        0.5349595492929199,
+        1.9387244197955624,
+        0.3406496404547786,
+        0.4700337742279849,
+        0.8721761584198012,
+        0.4437032231054343,
+        0.4599589643801655
+      ],
+      "consumer_fits": 0,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [],
+        "deploy_source": "FROZEN_LEDGER_NO_INCUMBENT_IDENTITY",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "no frozen Skill and no incumbent; identity is the fallback"
+      },
+      "feedback_taken": false,
+      "state_written": false
+    },
+    {
+      "phase": "held_out",
+      "arm": "Static",
+      "replica": "Forward",
+      "held_out_role": "reference",
+      "origin": 3096,
+      "face": "support_a",
+      "identity_smase": 3.5192520232149724,
+      "deployed_smase": 3.5192520232149724,
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 0,
+      "harmed_fraction": 0.0,
+      "worst_single_series_harm": 0.0,
+      "per_series_gain": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "identity_per_series_smase": [
+        6.9545355337937735,
+        5.484546690778733,
+        2.47979673652468,
+        7.15042927320846,
+        7.189762490723115,
+        1.2740405372051962,
+        0.8375761038077427,
+        4.348319328111978,
+        1.444725680686815,
+        4.61216860369437,
+        3.2487121613347334,
+        6.282946618779744,
+        1.7579061105724962,
+        0.41448030251475537,
+        3.361482636720354,
+        1.314320215870438,
+        3.5618359341496886,
+        5.612825403743017,
+        1.9160132204256985,
+        1.1386168816536626
+      ],
+      "consumer_fits": 0,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [],
+        "deploy_source": "identity",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "Static: identity frozen on every origin"
+      },
+      "feedback_taken": false,
+      "state_written": false
+    },
+    {
+      "phase": "held_out",
+      "arm": "Static",
+      "replica": "Forward",
+      "held_out_role": "reference",
+      "origin": 3576,
+      "face": "support_a",
+      "identity_smase": 0.9556999204422857,
+      "deployed_smase": 0.9556999204422857,
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 0,
+      "harmed_fraction": 0.0,
+      "worst_single_series_harm": 0.0,
+      "per_series_gain": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "identity_per_series_smase": [
+        0.4125481430381675,
+        4.2229633379379345,
+        0.3723319885820329,
+        0.4805159543497618,
+        0.7782761145204277,
+        0.5758572441647122,
+        0.4244100153994514,
+        2.137462598009719,
+        0.71793021996778,
+        0.312959373327311,
+        2.9277341020025087,
+        0.36413911525311166,
+        0.3266644726161468,
+        0.5349595492929199,
+        1.9387244197955624,
+        0.3406496404547786,
+        0.4700337742279849,
+        0.8721761584198012,
+        0.4437032231054343,
+        0.4599589643801655
+      ],
+      "consumer_fits": 0,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [],
+        "deploy_source": "identity",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "Static: identity frozen on every origin"
+      },
+      "feedback_taken": false,
+      "state_written": false
+    },
+    {
+      "phase": "held_out",
+      "arm": "Parallel Best-of-N@8",
+      "replica": "Forward",
+      "held_out_role": "reference",
+      "origin": 3096,
+      "face": "support_a",
+      "identity_smase": 3.5192520232149724,
+      "deployed_smase": 2.651064381338642,
+      "delta_utility_vs_identity": 0.8681876418763306,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 5,
+      "harmed_fraction": 0.25,
+      "worst_single_series_harm": 1.319353358904805,
+      "per_series_gain": [
+        2.546506632571493,
+        1.859800554932423,
+        -0.6886765075873256,
+        2.629899050322642,
+        2.7621459799260455,
+        0.07808868959075976,
+        0.3577060874440052,
+        1.0746927825836337,
+        0.17981535524588832,
+        1.9816897995237786,
+        -1.319353358904805,
+        3.036635504800478,
+        -0.06331606811442003,
+        0.08981411199377304,
+        -0.14425482436406023,
+        -0.07146174082128876,
+        0.5903477452186592,
+        1.5544885811578295,
+        0.6449327062704404,
+        0.26425175573666126
+      ],
+      "identity_per_series_smase": [
+        6.9545355337937735,
+        5.484546690778733,
+        2.47979673652468,
+        7.15042927320846,
+        7.189762490723115,
+        1.2740405372051962,
+        0.8375761038077427,
+        4.348319328111978,
+        1.444725680686815,
+        4.61216860369437,
+        3.2487121613347334,
+        6.282946618779744,
+        1.7579061105724962,
+        0.41448030251475537,
+        3.361482636720354,
+        1.314320215870438,
+        3.5618359341496886,
+        5.612825403743017,
+        1.9160132204256985,
+        1.1386168816536626
+      ],
+      "consumer_fits": 1,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "deploy_source": "frozen_held_in_selection",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "program selected on held-in and redeployed unchanged"
+      },
+      "parallel_selection_face": "held_in",
+      "feedback_taken": false,
+      "state_written": false,
+      "selected_program": "outlier_iqr"
+    },
+    {
+      "phase": "held_out",
+      "arm": "Parallel Best-of-N@8",
+      "replica": "Forward",
+      "held_out_role": "reference",
+      "origin": 3576,
+      "face": "support_a",
+      "identity_smase": 0.9556999204422857,
+      "deployed_smase": 0.7960226702348582,
+      "delta_utility_vs_identity": 0.1596772502074275,
+      "material_harm_event": false,
+      "series_count": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "worst_single_series_harm": 0.07684518476839997,
+      "per_series_gain": [
+        0.07993889739436189,
+        0.8072466819413786,
+        0.029849778162854834,
+        0.15125836199042036,
+        0.13887744037974037,
+        0.05085327267841577,
+        0.1416795159733174,
+        0.38597600039096935,
+        0.23763711592515474,
+        0.060028590992972086,
+        0.3041027480329994,
+        -0.07684518476839997,
+        0.02232725125740409,
+        0.08461231959078058,
+        0.22619391354124452,
+        0.02911767903467133,
+        0.06676039158490449,
+        0.28967212895258077,
+        0.08138220801738294,
+        0.08287589307539484
+      ],
+      "identity_per_series_smase": [
+        0.4125481430381675,
+        4.2229633379379345,
+        0.3723319885820329,
+        0.4805159543497618,
+        0.7782761145204277,
+        0.5758572441647122,
+        0.4244100153994514,
+        2.137462598009719,
+        0.71793021996778,
+        0.312959373327311,
+        2.9277341020025087,
+        0.36413911525311166,
+        0.3266644726161468,
+        0.5349595492929199,
+        1.9387244197955624,
+        0.3406496404547786,
+        0.4700337742279849,
+        0.8721761584198012,
+        0.4437032231054343,
+        0.4599589643801655
+      ],
+      "consumer_fits": 1,
+      "identity_reference_fits": 1,
+      "llm_calls": 0,
+      "deploy": {
+        "applied_steps": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ],
+        "deploy_source": "frozen_held_in_selection",
+        "active_skill_id": null,
+        "recall_hit": false,
+        "why": "program selected on held-in and redeployed unchanged"
+      },
+      "parallel_selection_face": "held_in",
+      "feedback_taken": false,
+      "state_written": false,
+      "selected_program": "outlier_iqr"
+    }
+  ],
+  "frozen_arms": [
+    {
+      "arm": "A5-strict",
+      "replica": "Forward",
+      "approved_skill_ids": [],
+      "incumbent": null
+    },
+    {
+      "arm": "A5-bounded",
+      "replica": "Forward",
+      "approved_skill_ids": [],
+      "incumbent": null
+    }
+  ],
+  "releases": "NONE",
+  "natural_final_outcome_reads": 0,
+  "frozen_blocks_touched": true,
+  "shard": null,
+  "initial_knowledge": {
+    "source": {
+      "status": "PASS",
+      "source": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+      "producer_selection_rule": "unique role=producer and arm=A5-online",
+      "skill_id": "s2a_forecast_supply_v0",
+      "task_consumer_metric": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE"
+      },
+      "requires_target_support": true,
+      "supplies_candidates": true,
+      "grants_execution": false,
+      "evidence_semantics": "legacy source supply-only soft prior",
+      "kdd_capability_claim": false,
+      "beneficiary_conversion_claim": false
+    },
+    "historical_task_skill_ids": [
+      "s2a_forecast_supply_v0"
+    ],
+    "both_arms_share_initial_knowledge": true,
+    "source_scope_match_count": 0,
+    "accumulation_treatment_active": false
+  },
+  "parallel_selection": {
+    "comparator": "Parallel Best-of-N@8",
+    "selection_face": "held_in",
+    "selection_origins": [
+      1176,
+      1416
+    ],
+    "candidates": [
+      "identity",
+      "impute_linear",
+      "hampel_filter",
+      "winsorize",
+      "outlier_iqr",
+      "impute_fft",
+      "impute_ema",
+      "period_complete"
+    ],
+    "candidate_count": 8,
+    "mean_support_a_smase": {
+      "identity": 1.5182135231169576,
+      "impute_linear": 1.5182135231169576,
+      "hampel_filter": 1.5289638273435315,
+      "winsorize": 1.378953815501327,
+      "outlier_iqr": 1.2279507605776203,
+      "impute_fft": 1.5182135231169576,
+      "impute_ema": 1.5182135231169576,
+      "period_complete": 1.5182135231169576
+    },
+    "selected_program": "outlier_iqr",
+    "frozen_steps": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "selection_rule": "minimum mean Support-A sMASE across the held-in origins, ties broken by program name",
+    "held_out_origins_read_during_selection": 0,
+    "consumer_fits": 16,
+    "llm_calls": 0
+  },
+  "analysis": {
+    "primary_utility": {
+      "left": "A5-bounded",
+      "right": "A5-strict",
+      "field": "delta_utility_vs_identity",
+      "unit": "origin",
+      "origins": [
+        3096,
+        3576
+      ],
+      "left_origin_means": [
+        0.0,
+        0.0
+      ],
+      "right_origin_means": [
+        0.0,
+        0.0
+      ],
+      "paired_differences": [
+        0.0,
+        0.0
+      ],
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "positive_origins": 0,
+      "negative_origins": 0,
+      "wilcoxon": {
+        "statistic": null,
+        "p_two_sided": null,
+        "n_pairs": 2,
+        "n_nonzero": 0,
+        "note": "every paired difference was exactly zero; no test is defined"
+      },
+      "bca_95": {
+        "point_estimate": 0.0,
+        "low": 0.0,
+        "high": 0.0,
+        "resamples": 0,
+        "alpha": 0.05,
+        "note": "degenerate sample; interval collapses to the point estimate"
+      }
+    },
+    "secondary_cross_arm": {
+      "Static": {
+        "left": "A5-bounded",
+        "right": "Static",
+        "field": "delta_utility_vs_identity",
+        "unit": "origin",
+        "origins": [
+          3096,
+          3576
+        ],
+        "left_origin_means": [
+          0.0,
+          0.0
+        ],
+        "right_origin_means": [
+          0.0,
+          0.0
+        ],
+        "paired_differences": [
+          0.0,
+          0.0
+        ],
+        "mean_difference": 0.0,
+        "median_difference": 0.0,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 2,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      },
+      "Parallel Best-of-N@8": {
+        "left": "A5-bounded",
+        "right": "Parallel Best-of-N@8",
+        "field": "delta_utility_vs_identity",
+        "unit": "origin",
+        "origins": [
+          3096,
+          3576
+        ],
+        "left_origin_means": [
+          0.0,
+          0.0
+        ],
+        "right_origin_means": [
+          0.8681876418763306,
+          0.1596772502074275
+        ],
+        "paired_differences": [
+          -0.8681876418763306,
+          -0.1596772502074275
+        ],
+        "mean_difference": -0.513932446041879,
+        "median_difference": -0.513932446041879,
+        "positive_origins": 0,
+        "negative_origins": 2,
+        "wilcoxon": {
+          "statistic": 0.0,
+          "p_two_sided": 0.5,
+          "n_pairs": 2,
+          "n_nonzero": 2,
+          "positive_rank_sum": 0.0,
+          "negative_rank_sum": 3.0,
+          "method": "exact enumeration over 2^n sign assignments"
+        },
+        "bca_95": {
+          "point_estimate": -0.513932446041879,
+          "low": -0.8681876418763306,
+          "high": -0.513932446041879,
+          "resamples": 10000,
+          "alpha": 0.05,
+          "bias_correction_z0": -0.6757490312086387,
+          "acceleration": 0.0,
+          "resample_unit": "origin"
+        }
+      }
+    },
+    "accumulation_contrast": {
+      "reported": false,
+      "reason": "cross-domain accumulation benefit: both online arms carry the same audited Source card and it is applicable at none of this study's origins, so the accumulation treatment is empty and no arm difference could express it"
+    },
+    "risk_contrasts": {
+      "harmed_fraction": {
+        "left": "A5-bounded",
+        "right": "A5-strict",
+        "field": "harmed_fraction",
+        "unit": "origin",
+        "origins": [
+          3096,
+          3576
+        ],
+        "left_origin_means": [
+          0.0,
+          0.0
+        ],
+        "right_origin_means": [
+          0.0,
+          0.0
+        ],
+        "paired_differences": [
+          0.0,
+          0.0
+        ],
+        "mean_difference": 0.0,
+        "median_difference": 0.0,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 2,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      },
+      "worst_single_series_harm": {
+        "left": "A5-bounded",
+        "right": "A5-strict",
+        "field": "worst_single_series_harm",
+        "unit": "origin",
+        "origins": [
+          3096,
+          3576
+        ],
+        "left_origin_means": [
+          0.0,
+          0.0
+        ],
+        "right_origin_means": [
+          0.0,
+          0.0
+        ],
+        "paired_differences": [
+          0.0,
+          0.0
+        ],
+        "mean_difference": 0.0,
+        "median_difference": 0.0,
+        "positive_origins": 0,
+        "negative_origins": 0,
+        "wilcoxon": {
+          "statistic": null,
+          "p_two_sided": null,
+          "n_pairs": 2,
+          "n_nonzero": 0,
+          "note": "every paired difference was exactly zero; no test is defined"
+        },
+        "bca_95": {
+          "point_estimate": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "resamples": 0,
+          "alpha": 0.05,
+          "note": "degenerate sample; interval collapses to the point estimate"
+        }
+      }
+    },
+    "bounded_held_out_worst_single_series_harm": 0.0,
+    "bounded_held_out_material_harm_rate": 0.0,
+    "any_admission_held_in": false,
+    "support_a_admissions": 0,
+    "active_skills_formed": 0,
+    "causal_reuse_observed": false,
+    "gated_writeback": {
+      "identical": true,
+      "cells_checked": 4,
+      "ungated_writes": [],
+      "verdict": "WRITEBACK_GATED",
+      "per_arm_store_delta": [
+        {
+          "arm": "A5-strict",
+          "replica": "Forward",
+          "identical": true,
+          "entries_before": 2,
+          "entries_after": 2,
+          "changed_entries": []
+        },
+        {
+          "arm": "A5-bounded",
+          "replica": "Forward",
+          "identical": true,
+          "entries_before": 2,
+          "entries_after": 2,
+          "changed_entries": []
+        }
+      ]
+    },
+    "power": {
+      "n": 2,
+      "smallest_attainable_two_sided_p": 0.5,
+      "reaches_alpha_05": false,
+      "reading": "only a near-unanimous sign split can reach significance at this n; a neutral verdict means undetectable by this design, not zero"
+    },
+    "verdict": {
+      "verdict": "BOUNDED_GATE_STILL_BLOCKING",
+      "blocking": true,
+      "blocking_face": "SUPPORT_A",
+      "reading": "no candidate was admitted at Support-A anywhere in held-in"
+    }
+  },
+  "completed_at": "2026-09-01T01:26:12.609711+08:00",
+  "wall_seconds": 127.081
+}

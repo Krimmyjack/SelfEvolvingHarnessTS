@@ -1,0 +1,135 @@
+{
+  "task_episode_id": "e1v2_task_02",
+  "arm": "A5",
+  "horizon": 48,
+  "observation_cutoff": 3360,
+  "scope_series_count": 8,
+  "wrong_prior_label": "open-loop repair_level_shift / level-only",
+  "wrong_prior_family": "level",
+  "wrong_prior_operator": "repair_level_shift",
+  "wrong_prior_try": "Lead with repair_level_shift as the sole open-loop level prior.",
+  "source_skill_id": "source_investigation_v1",
+  "source_skill_served": true,
+  "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_v1"
+  ],
+  "observation_families": [
+    "outlier",
+    "structural"
+  ],
+  "gate_receipt": {
+    "gate": "m1a_source_probe_gate",
+    "fired": false,
+    "match": true,
+    "has_source_prior": true,
+    "prior_family": "structural",
+    "observation_families": [
+      "outlier",
+      "structural"
+    ],
+    "is_authorization": false,
+    "is_confirmation": false,
+    "may_rank_first": true,
+    "may_monopolize_k": false,
+    "requires_target_support": true,
+    "execution_authorized": false,
+    "error_code": null,
+    "reason": "",
+    "try_operators": [
+      "repair_level_shift"
+    ]
+  },
+  "gate_fired": false,
+  "gate_match": true,
+  "gate_error_code": null,
+  "is_authorization": false,
+  "is_confirmation": false,
+  "execution_authorized": false,
+  "may_monopolize_k": false,
+  "source_prior_grants_execution": false,
+  "wrong_family_monopolized_k": false,
+  "rls_monopolized_k": false,
+  "wrong_prior_treated_as_confirmation": false,
+  "source_probe_receipts": [],
+  "families": [
+    "structural",
+    "impute"
+  ],
+  "first_ops": [
+    "repair_level_shift",
+    "period_complete"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "repair_level_excursion",
+      "addresses_hypothesis_id": "level_excursion_cluster",
+      "first_op": "repair_level_shift",
+      "family": "structural",
+      "ops": [
+        "repair_level_shift"
+      ]
+    },
+    {
+      "candidate_id": "complete_period_inconsistency",
+      "addresses_hypothesis_id": "period_inconsistency_cluster",
+      "first_op": "period_complete",
+      "family": "impute",
+      "ops": [
+        "period_complete"
+      ]
+    }
+  ],
+  "protocol_error": null,
+  "infrastructure_error": null,
+  "propose_entered": true,
+  "retries_happened": true,
+  "validation_retry_count": 1,
+  "validation_error_codes": [
+    "AGENT_ENVELOPE_INVALID"
+  ],
+  "llm_calls": 9,
+  "workspace_tool_calls": 6,
+  "raw_candidate_count": 2,
+  "propose_payload_keys": [
+    "candidates"
+  ],
+  "propose_stage_payload": {
+    "candidates": [
+      {
+        "candidate_id": "repair_level_excursion",
+        "addresses_hypothesis_id": "level_excursion_cluster",
+        "steps": [
+          {
+            "op": "repair_level_shift",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "candidate_id": "complete_period_inconsistency",
+        "addresses_hypothesis_id": "period_inconsistency_cluster",
+        "steps": [
+          {
+            "op": "period_complete",
+            "params": {}
+          }
+        ]
+      }
+    ]
+  },
+  "inspect_hypothesis_ids": [
+    "level_excursion_cluster",
+    "period_inconsistency_cluster"
+  ],
+  "inject": {
+    "skill_id": "source_investigation_v1",
+    "try": "Lead with repair_level_shift as the sole open-loop level prior.",
+    "try_family": "structural",
+    "inject": "edit_controller_add",
+    "frozen_runtime_bundle_sha": "02647e29a0036f6815733c7d066775d249e229ee1bebf84ae64c3afa97d53cb5",
+    "frozen_harness_content_sha": "4e9e8e6b30589ee25a5de6523d8ffc9ec1bfbd4910574ccf650617a11aea9afa"
+  }
+}

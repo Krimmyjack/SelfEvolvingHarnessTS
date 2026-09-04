@@ -1,0 +1,197 @@
+{
+  "checks": {
+    "at_most_one_surface_modification": true,
+    "llm_calls_within_budget": true,
+    "llm_chose_or_declared_unidentifiable": true,
+    "llm_no_self_approval": true,
+    "llm_received_separate_contexts": true,
+    "structural_preflight_verdict": true
+  },
+  "context_evidence": {
+    "failure_context": {
+      "delayed": {
+        "change.coverage_delta": -0.09375,
+        "change.maximum_missing_run_length_delta": 18.0,
+        "change.median_acf_at_calendar_period_delta": -0.062139255419750405,
+        "change.median_normalized_seasonal_residual_delta": 0.01141149459463403,
+        "change.median_robust_center_delta": 4178.25,
+        "change.median_robust_scale_delta": 91.55054999999993,
+        "change.missing_run_count_delta": 20.0,
+        "recent.coverage": 0.90625,
+        "recent.maximum_missing_run_length": 18.0,
+        "recent.median_acf_at_calendar_period": 0.8729811068075339,
+        "recent.median_normalized_seasonal_residual": 0.22806820002690442,
+        "recent.median_robust_center": 80020.75,
+        "recent.median_robust_scale": 21431.7243,
+        "recent.missing_run_count": 20.0
+      },
+      "support": {
+        "change.coverage_delta": -0.09375,
+        "change.maximum_missing_run_length_delta": 18.0,
+        "change.median_acf_at_calendar_period_delta": -0.00674882730098969,
+        "change.median_normalized_seasonal_residual_delta": 0.06039576314912126,
+        "change.median_robust_center_delta": 10261.25,
+        "change.median_robust_scale_delta": 7116.85065,
+        "change.missing_run_count_delta": 20.0,
+        "recent.coverage": 0.90625,
+        "recent.maximum_missing_run_length": 18.0,
+        "recent.median_acf_at_calendar_period": 0.9353376373141993,
+        "recent.median_normalized_seasonal_residual": 0.20181996715956435,
+        "recent.median_robust_center": 81433.75,
+        "recent.median_robust_scale": 24846.8934,
+        "recent.missing_run_count": 20.0
+      }
+    },
+    "success_context": {
+      "delayed": {
+        "change.coverage_delta": -0.09375,
+        "change.maximum_missing_run_length_delta": 18.0,
+        "change.median_acf_at_calendar_period_delta": 0.023953050369062145,
+        "change.median_normalized_seasonal_residual_delta": 0.07724297560821375,
+        "change.median_robust_center_delta": 8655.25,
+        "change.median_robust_scale_delta": 8529.768450000003,
+        "change.missing_run_count_delta": 20.0,
+        "recent.coverage": 0.90625,
+        "recent.maximum_missing_run_length": 18.0,
+        "recent.median_acf_at_calendar_period": 0.9316977511429472,
+        "recent.median_normalized_seasonal_residual": 0.23278805759276078,
+        "recent.median_robust_center": 81733.5,
+        "recent.median_robust_scale": 25029.9945,
+        "recent.missing_run_count": 20.0
+      },
+      "support": {
+        "change.coverage_delta": 0.0,
+        "change.maximum_missing_run_length_delta": 0.0,
+        "change.median_acf_at_calendar_period_delta": 0.03753806832304263,
+        "change.median_normalized_seasonal_residual_delta": 0.023209579850122397,
+        "change.median_robust_center_delta": 6709.0,
+        "change.median_robust_scale_delta": 8420.426699999996,
+        "change.missing_run_count_delta": 0.0,
+        "recent.coverage": 1.0,
+        "recent.maximum_missing_run_length": 0.0,
+        "recent.median_acf_at_calendar_period": 0.9247257926499679,
+        "recent.median_normalized_seasonal_residual": 0.22454448364696428,
+        "recent.median_robust_center": 82495.75,
+        "recent.median_robust_scale": 24363.565799999997,
+        "recent.missing_run_count": 0.0
+      }
+    }
+  },
+  "experiment_id": "v1-slow-path-smoke",
+  "failure_package": {
+    "facts": {
+      "evaluator_scope": "training_windows_only",
+      "first_probe_harm_on_failure_support": true,
+      "historical_context_count": 2,
+      "radius_calibrated": false
+    },
+    "failure_family": "workflow_effect_sign_flip",
+    "first_fault_candidates": [
+      "observation",
+      "program",
+      "scope",
+      "risk",
+      "memory",
+      "control"
+    ],
+    "observed_effects": {
+      "failure": {
+        "delayed_gain": 0.6099994164925304,
+        "delayed_origin": 976,
+        "status": "CONFLICT (support negative, delayed positive)",
+        "support_gain": -0.16359757720514345,
+        "support_origin": 928
+      },
+      "success": {
+        "delayed_gain": 0.5109757360087217,
+        "delayed_origin": 880,
+        "status": "LOCAL_ACTIVE (POSITIVE)",
+        "support_gain": 0.14402955193148748,
+        "support_origin": 832
+      }
+    },
+    "pattern_id": "gefcom-winsorize-sign-flip",
+    "workflow": {
+      "evaluator": "v6._evaluate (per-training-window, cohort Ridge sMASE)",
+      "operator": "winsorize",
+      "params": {},
+      "scope": "training_windows_only"
+    }
+  },
+  "llm_api_call_count": 1,
+  "no_proposal_reason": null,
+  "note": "smoke only: structural preflight (not compiler); replay validation and edit application deferred to the full slow-path slice",
+  "outcome": "FACE_ACTION_MISMATCH_NO_REPLAY",
+  "proposed_manifest": {
+    "edit_id": "add_local_sign_flip_diagnosis",
+    "operation": "ADD",
+    "target_pattern_id": "gefcom-winsorize-sign-flip",
+    "target_surface_id": "skill_library.entries/local_sign_flip_diagnosis"
+  },
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "model": "gpt-5.6-luna"
+  },
+  "structural_preflight": {
+    "base_sha_matches_snapshot": true,
+    "falsification_condition": [
+      "Reject the edit if deterministic replay on an applicable forecast case with missing observations does not retrieve local_sign_flip_diagnosis, or if the resulting proposal merges disjoint localized hypotheses despite distinct public support and delayed missingness evidence."
+    ],
+    "first_fault_face_encoded": "observation",
+    "llm_calls": 1,
+    "minimal_patch": null,
+    "new_value_summary": {
+      "allowed_tools": [],
+      "body": "Inspect public support and delayed context separately for missingness, missing-run length, robust local deviation, level continuity, and period consistency before proposing a repair. When a workflow effect changes sign between contexts, preserve disjoint narrow hypotheses and attribute the first fault only to the strongest directly observed face. Do not merge broad low-density spans or infer private rankings, clean references, injection metadata, or candidate utility.",
+      "observable_applicability": {
+        "all": [
+          {
+            "feature": "task_kind",
+            "op": "==",
+            "value": "forecast"
+          },
+          {
+            "feature": "missing_fraction",
+            "op": ">",
+            "value": 0
+          }
+        ]
+      },
+      "risk_guards": {
+        "no_private_evidence": true,
+        "observable_applicability_only": true,
+        "preserve_disjoint_local_hypotheses": true
+      },
+      "skill_id": "local_sign_flip_diagnosis"
+    },
+    "operation": "ADD",
+    "operation_allowed": true,
+    "predicted_agent_behavior_change": [
+      "retrieve_skill:local_sign_flip_diagnosis",
+      "supply_effect_distinct"
+    ],
+    "preflight": "ACCEPTED",
+    "stage": "manifest",
+    "surface_in_catalog": true,
+    "target_surface_id": "skill_library.entries/local_sign_flip_diagnosis"
+  },
+  "surface_catalog": [
+    {
+      "allowed_operations": [
+        "ADD"
+      ],
+      "operation": "ADD",
+      "surface_id": "skill_library.entries/{skill_id}",
+      "surface_type": "skill"
+    },
+    {
+      "allowed_operations": [
+        "PATCH"
+      ],
+      "operation": "PATCH",
+      "surface_id": "bootstrap_skills.entries/inspect_and_localize.body",
+      "surface_type": "skill_body"
+    }
+  ],
+  "verdict": "SLOW_PATH_PROPOSAL_WIRING_SMOKE_PARTIAL"
+}

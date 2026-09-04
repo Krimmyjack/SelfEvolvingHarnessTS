@@ -1,0 +1,801 @@
+{
+  "experiment_id": "v1-program-supply-dev",
+  "note": "Wave 4b：Program Supply 分支——预注册搜索空间穷举无全过候选（development exposure——零新 Claim）",
+  "family": {
+    "workflow": "winsorize",
+    "sign": "NEGATIVE",
+    "n_episodes": 6,
+    "independent_series": [
+      "T1",
+      "T10",
+      "T100",
+      "T101"
+    ],
+    "n_series": 4,
+    "origins": [
+      600,
+      888,
+      984
+    ],
+    "episodes": [
+      {
+        "series": "T100",
+        "origin": 600,
+        "gain": -0.16439602463408765
+      },
+      {
+        "series": "T10",
+        "origin": 600,
+        "gain": -0.04887324425857553
+      },
+      {
+        "series": "T100",
+        "origin": 888,
+        "gain": -0.03868390208881667
+      },
+      {
+        "series": "T10",
+        "origin": 888,
+        "gain": -0.032415223262408865
+      },
+      {
+        "series": "T101",
+        "origin": 984,
+        "gain": -0.02434660784991416
+      },
+      {
+        "series": "T1",
+        "origin": 888,
+        "gain": -0.015448824427035879
+      }
+    ],
+    "min_gain": -0.16439602463408765,
+    "max_gain": -0.015448824427035879,
+    "replacement_headroom": {
+      "winsorize": {
+        "per_episode_gains": [
+          {
+            "series": "T100",
+            "origin": 600,
+            "gain": -0.16439602463408765
+          },
+          {
+            "series": "T10",
+            "origin": 600,
+            "gain": -0.04887324425857553
+          },
+          {
+            "series": "T100",
+            "origin": 888,
+            "gain": -0.03868390208881667
+          },
+          {
+            "series": "T10",
+            "origin": 888,
+            "gain": -0.032415223262408865
+          },
+          {
+            "series": "T101",
+            "origin": 984,
+            "gain": -0.02434660784991416
+          },
+          {
+            "series": "T1",
+            "origin": 888,
+            "gain": -0.015448824427035879
+          }
+        ],
+        "common_positive": false
+      },
+      "outlier_mad": {
+        "per_episode_gains": [
+          {
+            "series": "T100",
+            "origin": 600,
+            "gain": 0.28776088892638985
+          },
+          {
+            "series": "T10",
+            "origin": 600,
+            "gain": -0.04699599947334576
+          },
+          {
+            "series": "T100",
+            "origin": 888,
+            "gain": 0.1423245540507111
+          },
+          {
+            "series": "T10",
+            "origin": 888,
+            "gain": 0.0029457029644843757
+          },
+          {
+            "series": "T101",
+            "origin": 984,
+            "gain": 0.0
+          },
+          {
+            "series": "T1",
+            "origin": 888,
+            "gain": -0.002871009254668211
+          }
+        ],
+        "common_positive": false
+      },
+      "hampel_filter": {
+        "per_episode_gains": [
+          {
+            "series": "T100",
+            "origin": 600,
+            "gain": -0.08100393680437046
+          },
+          {
+            "series": "T10",
+            "origin": 600,
+            "gain": 0.033122865502676735
+          },
+          {
+            "series": "T100",
+            "origin": 888,
+            "gain": -0.07646564032435121
+          },
+          {
+            "series": "T10",
+            "origin": 888,
+            "gain": -0.11744769997066684
+          },
+          {
+            "series": "T101",
+            "origin": 984,
+            "gain": 0.0005833962578585261
+          },
+          {
+            "series": "T1",
+            "origin": 888,
+            "gain": 0.005433239438771942
+          }
+        ],
+        "common_positive": false
+      }
+    }
+  },
+  "search_space": {
+    "hampel_variants": {
+      "V2": {
+        "window": 7,
+        "n_sigmas": 3.0,
+        "global_z_min": 1.0
+      },
+      "V3": {
+        "window": 3,
+        "n_sigmas": 0.5,
+        "global_z_min": 1.0
+      },
+      "V4": {
+        "window": 5,
+        "n_sigmas": 2.0,
+        "global_z_min": 1.0
+      }
+    },
+    "pairs": [
+      [
+        "winsorize",
+        "outlier_mad"
+      ],
+      [
+        "winsorize",
+        "hampel_filter"
+      ],
+      [
+        "outlier_mad",
+        "winsorize"
+      ],
+      [
+        "outlier_mad",
+        "hampel_filter"
+      ],
+      [
+        "hampel_filter",
+        "winsorize"
+      ],
+      [
+        "hampel_filter",
+        "outlier_mad"
+      ]
+    ],
+    "seed_from_census_headroom": {
+      "winsorize": {
+        "per_episode_gains": [
+          {
+            "series": "T100",
+            "origin": 600,
+            "gain": -0.16439602463408765
+          },
+          {
+            "series": "T10",
+            "origin": 600,
+            "gain": -0.04887324425857553
+          },
+          {
+            "series": "T100",
+            "origin": 888,
+            "gain": -0.03868390208881667
+          },
+          {
+            "series": "T10",
+            "origin": 888,
+            "gain": -0.032415223262408865
+          },
+          {
+            "series": "T101",
+            "origin": 984,
+            "gain": -0.02434660784991416
+          },
+          {
+            "series": "T1",
+            "origin": 888,
+            "gain": -0.015448824427035879
+          }
+        ],
+        "common_positive": false
+      },
+      "outlier_mad": {
+        "per_episode_gains": [
+          {
+            "series": "T100",
+            "origin": 600,
+            "gain": 0.28776088892638985
+          },
+          {
+            "series": "T10",
+            "origin": 600,
+            "gain": -0.04699599947334576
+          },
+          {
+            "series": "T100",
+            "origin": 888,
+            "gain": 0.1423245540507111
+          },
+          {
+            "series": "T10",
+            "origin": 888,
+            "gain": 0.0029457029644843757
+          },
+          {
+            "series": "T101",
+            "origin": 984,
+            "gain": 0.0
+          },
+          {
+            "series": "T1",
+            "origin": 888,
+            "gain": -0.002871009254668211
+          }
+        ],
+        "common_positive": false
+      },
+      "hampel_filter": {
+        "per_episode_gains": [
+          {
+            "series": "T100",
+            "origin": 600,
+            "gain": -0.08100393680437046
+          },
+          {
+            "series": "T10",
+            "origin": 600,
+            "gain": 0.033122865502676735
+          },
+          {
+            "series": "T100",
+            "origin": 888,
+            "gain": -0.07646564032435121
+          },
+          {
+            "series": "T10",
+            "origin": 888,
+            "gain": -0.11744769997066684
+          },
+          {
+            "series": "T101",
+            "origin": 984,
+            "gain": 0.0005833962578585261
+          },
+          {
+            "series": "T1",
+            "origin": 888,
+            "gain": 0.005433239438771942
+          }
+        ],
+        "common_positive": false
+      }
+    }
+  },
+  "search": [
+    {
+      "label": "hampel_V2",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 7,
+            "n_sigmas": 3.0,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": 0.2181673429148847,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.002111609974419615,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": -0.008916359131564744,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.0023628911343538395,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": 0.0016166472731280468,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.011858661844602159,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "hampel_V3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.5,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": -0.08100393680437046,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": 0.033122865502676735,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": -0.07646564032435121,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.11744769997066684,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": 0.0005833962578585261,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": 0.005433239438771942,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "hampel_V4",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 5,
+            "n_sigmas": 2.0,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": -0.026805517935408307,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": 0.01750132660855641,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": -0.0818696397439137,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.028233380977867872,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": 0.00047852394317904334,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.016169338424727453,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "winsorize_to_outlier_mad",
+      "steps": [
+        [
+          "winsorize",
+          {}
+        ],
+        [
+          "outlier_mad",
+          {}
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": 0.06889082477127273,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.04366239303062969,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": 0.08452309983277939,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.04770560525093037,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": -0.02434660784991416,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": 0.013845749877108071,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "winsorize_to_hampel_filter",
+      "steps": [
+        [
+          "winsorize",
+          {}
+        ],
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": -0.24351526476186391,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.022927857992201428,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": -0.10657898085482576,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.145574020274144,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": -0.02109986705055933,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.011631982793725681,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "outlier_mad_to_winsorize",
+      "steps": [
+        [
+          "outlier_mad",
+          {}
+        ],
+        [
+          "winsorize",
+          {}
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": 0.06889082477127273,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.04366239303062969,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": 0.08452309983277939,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.04770560525093037,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": -0.02434660784991416,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": 0.013845749877108071,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "outlier_mad_to_hampel_filter",
+      "steps": [
+        [
+          "outlier_mad",
+          {}
+        ],
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": 0.27813249495017534,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": 0.006674676610827657,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": 0.11511715521410937,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.11958912673476241,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": 0.0005833962578585261,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.002698083340670454,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "hampel_filter_to_winsorize",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ],
+        [
+          "winsorize",
+          {}
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": -0.2521403481444926,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.006320433544831694,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": -0.0979249594327688,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.15268592872125852,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": -0.02103460091056264,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.011669063711334804,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    },
+    {
+      "label": "hampel_filter_to_outlier_mad",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ],
+        [
+          "outlier_mad",
+          {}
+        ]
+      ],
+      "per_window_gains": [
+        {
+          "series": "T100",
+          "origin": 600,
+          "gain": 0.27813249495017534,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 600,
+          "gain": -0.01509045035486567,
+          "passed": true
+        },
+        {
+          "series": "T100",
+          "origin": 888,
+          "gain": 0.11511715521410937,
+          "passed": true
+        },
+        {
+          "series": "T10",
+          "origin": 888,
+          "gain": -0.09978859914520433,
+          "passed": true
+        },
+        {
+          "series": "T101",
+          "origin": 984,
+          "gain": 0.0005833962578585261,
+          "passed": true
+        },
+        {
+          "series": "T1",
+          "origin": 888,
+          "gain": -0.002698083340670454,
+          "passed": true
+        }
+      ],
+      "all_pass": false
+    }
+  ],
+  "verdict": "SUPPLY_EXHAUSTED"
+}

@@ -1,0 +1,134 @@
+{
+  "budget": 2,
+  "checks": {
+    "1_replay_a_repair": true,
+    "2_replay_b_winsorize_or_abstain": true,
+    "2b_replay_c_abstain": true,
+    "3_pool_identical": true,
+    "4_same_winner": true,
+    "5_support_budget_le_2": true,
+    "6_delayed_downgrade_path": true,
+    "7_abstain_keeps_candidates": true
+  },
+  "dataset": "uci_electricity_load_diagrams",
+  "delayed_origin": 840,
+  "downgrade_demo": {
+    "local_status": "RESTRICTED",
+    "op": "winsorize",
+    "relation": "CONFLICT",
+    "skill_written": null
+  },
+  "experiment_id": "v1-bounded-two-candidate-runtime-control",
+  "note": "development replay 验收（P0 已记录 LLM 输出；已暴露 UCI offset120 @792；不称 fresh 证据）",
+  "offset": 80,
+  "replays": [
+    {
+      "delayed_gain": 0.10434241864365568,
+      "final_relation": "POSITIVE",
+      "level": "M_positive",
+      "llm_chosen": "cand_repair_level_shift",
+      "name": "A_llm_repair",
+      "pool": [
+        "repair_level_shift",
+        "winsorize"
+      ],
+      "probe_order": [
+        "repair_level_shift",
+        "winsorize"
+      ],
+      "probes": [
+        {
+          "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_rtctrl_A_llm_repair_p1",
+          "gain": -0.019826691357280435,
+          "op": "repair_level_shift",
+          "passed": true,
+          "probe": 1,
+          "relation": "NEGATIVE"
+        },
+        {
+          "delayed_gain": 0.10434241864365568,
+          "episode_id": "uci_electricity_load_diagrams_target_winsorize_rtctrl_A_llm_repair_p2",
+          "final_relation": "POSITIVE",
+          "gain": 0.0375572501556003,
+          "op": "winsorize",
+          "passed": true,
+          "probe": 2,
+          "relation": "POSITIVE"
+        }
+      ],
+      "signed_repair_verdict": "POSITIVE_PRIOR",
+      "skill_written": "winsorize",
+      "winner": "winsorize"
+    },
+    {
+      "delayed_gain": 0.10434241864365568,
+      "final_relation": "POSITIVE",
+      "level": "M_negative",
+      "llm_chosen": "cand_winsorize",
+      "name": "B_llm_winsorize",
+      "pool": [
+        "repair_level_shift",
+        "winsorize"
+      ],
+      "probe_order": [
+        "winsorize",
+        "repair_level_shift"
+      ],
+      "probes": [
+        {
+          "delayed_gain": 0.10434241864365568,
+          "episode_id": "uci_electricity_load_diagrams_target_winsorize_rtctrl_B_llm_winsorize_p1",
+          "final_relation": "POSITIVE",
+          "gain": 0.0375572501556003,
+          "op": "winsorize",
+          "passed": true,
+          "probe": 1,
+          "relation": "POSITIVE"
+        }
+      ],
+      "signed_repair_verdict": "RISK_PRIOR",
+      "skill_written": "winsorize",
+      "winner": "winsorize"
+    },
+    {
+      "delayed_gain": 0.10434241864365568,
+      "final_relation": "POSITIVE",
+      "level": "M_remove",
+      "llm_chosen": "identity",
+      "name": "C_llm_abstain",
+      "pool": [
+        "repair_level_shift",
+        "winsorize"
+      ],
+      "probe_order": [
+        "repair_level_shift",
+        "winsorize"
+      ],
+      "probes": [
+        {
+          "episode_id": "uci_electricity_load_diagrams_target_repair_level_shift_rtctrl_C_llm_abstain_p1",
+          "gain": -0.019826691357280435,
+          "op": "repair_level_shift",
+          "passed": true,
+          "probe": 1,
+          "relation": "NEGATIVE"
+        },
+        {
+          "delayed_gain": 0.10434241864365568,
+          "episode_id": "uci_electricity_load_diagrams_target_winsorize_rtctrl_C_llm_abstain_p2",
+          "final_relation": "POSITIVE",
+          "gain": 0.0375572501556003,
+          "op": "winsorize",
+          "passed": true,
+          "probe": 2,
+          "relation": "POSITIVE"
+        }
+      ],
+      "signed_repair_verdict": null,
+      "skill_written": "winsorize",
+      "winner": "winsorize"
+    }
+  ],
+  "support_origin": 792,
+  "verdict": "BOUNDED_TWO_CANDIDATE_RUNTIME_CONTROL_DEVELOPMENT_PASS"
+}

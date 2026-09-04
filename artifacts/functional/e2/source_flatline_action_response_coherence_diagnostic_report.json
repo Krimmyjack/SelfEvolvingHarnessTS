@@ -1,0 +1,143 @@
+{
+  "capability_claim": false,
+  "causal_hypothesis": "Harmful GEFCom actions rejected by the W35 signed guard have lower support exact-singleton sign coherence than the beneficial FRED/Traffic actions that the same frozen guard rejected incorrectly.",
+  "claim_limit": "Exposed Source-only zero-new-fit diagnostic. PASS only permits one future frozen patch; FAIL closes the current Flatline Context family.",
+  "compute_accounting": {
+    "consumer_fit_count": 0,
+    "grouped_consumer_refit_count": 0,
+    "grouped_small_matrix_solve_count": 330,
+    "per_action_consumer_refit_count": 0,
+    "reference_solve_count": 21,
+    "w29_action_value_grouped_small_matrix_solve_count": 168,
+    "w29_attribution_grouped_small_matrix_solve_count": 36,
+    "w29_reference_solve_count": 12,
+    "w30_action_value_grouped_small_matrix_solve_count": 126,
+    "w30_reference_solve_count": 9
+  },
+  "configuration": {
+    "consumer_fit_count": 0,
+    "context_exposure": "INSTANCE_SEEN",
+    "datasets": [
+      "gefcom2012_load",
+      "legacy_monash:fred_md",
+      "legacy_monash:nn5_daily",
+      "metr_la",
+      "monash:traffic_hourly"
+    ],
+    "episode_count": 294,
+    "observation": "action__support_exact_singleton_sign_coherence",
+    "observation_definition": "Among the existing proxy-selected actions, compute each action's exact singleton gain averaged only over the current support indices; return the fraction whose exact mean gain is strictly positive.",
+    "outcome_exposure": "EXPOSED",
+    "query_response_role": "exposed diagnostic label only",
+    "query_response_used_in_observation": false,
+    "retrieval_or_guard_changed": false,
+    "singleton_gain_sum_used_as_group_utility": false,
+    "target_query_opened": false,
+    "threshold_tuned": false
+  },
+  "descriptive": {
+    "all_locally_executed_low_coherence_harm_risk_auroc": 0.49243746364165214,
+    "locally_executed_episode_count": 227,
+    "locally_executed_harmful_episode_count": 36,
+    "mean_coherence_by_outcome": {
+      "beneficial": 0.9634655048267614,
+      "harmful": 0.9727292768959435
+    }
+  },
+  "failure_pattern_card": {
+    "correct_harmful_gefcom": [
+      {
+        "action__support_exact_singleton_sign_coherence": 1.0,
+        "budget": 1,
+        "cohort_id": "w30_fresh_replay_exposed",
+        "dataset_id": "gefcom2012_load",
+        "diagnostic_failure_type": "CORRECT_HARMFUL_ABSTENTION",
+        "episode_id": "w30|gefcom2012_load|seed=1|b1_split_0",
+        "local_decision": "EXECUTE",
+        "query_gain_if_locally_executed_exposed_label": -0.05799181414728435,
+        "seed": 1,
+        "signed_multiscale_decision": "ABSTAIN",
+        "split_id": "b1_split_0"
+      },
+      {
+        "action__support_exact_singleton_sign_coherence": 1.0,
+        "budget": 1,
+        "cohort_id": "w30_fresh_replay_exposed",
+        "dataset_id": "gefcom2012_load",
+        "diagnostic_failure_type": "CORRECT_HARMFUL_ABSTENTION",
+        "episode_id": "w30|gefcom2012_load|seed=1|b1_split_2",
+        "local_decision": "EXECUTE",
+        "query_gain_if_locally_executed_exposed_label": -0.0445775077016786,
+        "seed": 1,
+        "signed_multiscale_decision": "ABSTAIN",
+        "split_id": "b1_split_2"
+      }
+    ],
+    "false_beneficial_fred_traffic": [
+      {
+        "action__support_exact_singleton_sign_coherence": 1.0,
+        "budget": 2,
+        "cohort_id": "w29_development_exposed",
+        "dataset_id": "legacy_monash:fred_md",
+        "diagnostic_failure_type": "FALSE_BENEFICIAL_ABSTENTION",
+        "episode_id": "w29|legacy_monash:fred_md|seed=0|b2_split_2",
+        "local_decision": "EXECUTE",
+        "query_gain_if_locally_executed_exposed_label": 0.07090685730461721,
+        "seed": 0,
+        "signed_multiscale_decision": "ABSTAIN",
+        "split_id": "b2_split_2"
+      },
+      {
+        "action__support_exact_singleton_sign_coherence": 1.0,
+        "budget": 2,
+        "cohort_id": "w29_development_exposed",
+        "dataset_id": "legacy_monash:fred_md",
+        "diagnostic_failure_type": "FALSE_BENEFICIAL_ABSTENTION",
+        "episode_id": "w29|legacy_monash:fred_md|seed=1|b2_split_1",
+        "local_decision": "EXECUTE",
+        "query_gain_if_locally_executed_exposed_label": 0.09406396626150215,
+        "seed": 1,
+        "signed_multiscale_decision": "ABSTAIN",
+        "split_id": "b2_split_1"
+      },
+      {
+        "action__support_exact_singleton_sign_coherence": 0.6666666666666666,
+        "budget": 1,
+        "cohort_id": "w29_development_exposed",
+        "dataset_id": "monash:traffic_hourly",
+        "diagnostic_failure_type": "FALSE_BENEFICIAL_ABSTENTION",
+        "episode_id": "w29|monash:traffic_hourly|seed=2|b1_split_3",
+        "local_decision": "EXECUTE",
+        "query_gain_if_locally_executed_exposed_label": 0.19920395588684078,
+        "seed": 2,
+        "signed_multiscale_decision": "ABSTAIN",
+        "split_id": "b1_split_3"
+      }
+    ],
+    "selection": "local EXECUTE and frozen W35 signed multiscale ABSTAIN; correct is harmful GEFCom, false is beneficial FRED/Traffic"
+  },
+  "formal_transfer": false,
+  "gates": {
+    "primary_pass": false,
+    "primary_requires_exactly_two_correct_and_three_false_cases": true,
+    "primary_requires_max_correct_below_min_false": true
+  },
+  "harness_update_applied": false,
+  "memory_claim": false,
+  "next_step_if_fail": "Close the Flatline Context family. Do not add Context fields, tune retrieval, or add Memory against these exposed outcomes.",
+  "next_step_if_pass": "Freeze this one Observation and compile one next fresh Source patch; do not tune a threshold on these exposed outcomes.",
+  "primary": {
+    "expected_correct_harmful_count": 2,
+    "expected_false_beneficial_count": 3,
+    "five_case_low_coherence_harm_risk_auroc": 0.3333333333333333,
+    "max_correct_harmful_coherence": 1.0,
+    "min_false_beneficial_coherence": 0.6666666666666666,
+    "observed_correct_harmful_count": 2,
+    "observed_false_beneficial_count": 3,
+    "strict_low_coherence_separation": false
+  },
+  "schema_version": "e2-flatline-action-response-coherence-diagnostic/1",
+  "scientific_role": "zero_new_fit_exposed_program_conditioned_observation_diagnostic",
+  "target_query_opened": false,
+  "verdict": "ACTION_RESPONSE_COHERENCE_DIAGNOSTIC_FAIL"
+}

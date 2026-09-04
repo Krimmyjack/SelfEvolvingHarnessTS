@@ -1,0 +1,97 @@
+{
+  "case": {
+    "a": "denoise_median",
+    "b": "outlier_iqr",
+    "c1": "winsorize",
+    "c2": "outlier_mad",
+    "delayed": 952,
+    "delayed_AB": -0.06125772464287427,
+    "delayed_AC1": 0.2572125429345453,
+    "domain": "gefcom2012_load",
+    "gain_AB": -0.1302066421576531,
+    "gain_A_only": 0.0,
+    "gain_B_only": -0.1302066421576531,
+    "origin": 904,
+    "support_AC1": 0.4000053662007894
+  },
+  "checks": {
+    "10_zero_future_read": true,
+    "11_zero_live_llm": true,
+    "12_no_new_schema": true,
+    "1_trigger_automatic": true,
+    "2_episode_id_update": true,
+    "3_slow_received_real_failure": true,
+    "5_llm_no_self_approval": true
+  },
+  "details": {
+    "fast_round": {
+      "chosen": "cand_denoise_median",
+      "origin": 904,
+      "pool": [
+        "identity",
+        "cand_denoise_median",
+        "cand_outlier_iqr"
+      ],
+      "probe_order": [
+        "denoise_median",
+        "outlier_iqr"
+      ],
+      "probes": [
+        {
+          "delayed_gain": 0.0,
+          "episode_id": "gefcom2012_load_target_denoise_median_auto_r1_p1",
+          "gain": 0.0,
+          "op": "denoise_median",
+          "passed": true,
+          "probe": 1,
+          "relation": "NEGATIVE",
+          "relation_after_delayed": "ABSTAIN"
+        },
+        {
+          "delayed_gain": -0.06125772464287427,
+          "episode_id": "gefcom2012_load_target_outlier_iqr_auto_r1_p2",
+          "gain": -0.1302066421576531,
+          "op": "outlier_iqr",
+          "passed": true,
+          "probe": 2,
+          "relation": "NEGATIVE",
+          "relation_after_delayed": "NEGATIVE"
+        }
+      ],
+      "slow_update": {
+        "card_counterfactual": {
+          "A_then_B_delayed_gain": -0.06125772464287427,
+          "A_then_B_support_gain": -0.1302066421576531
+        },
+        "card_workflow": [
+          "denoise_median",
+          "outlier_iqr"
+        ],
+        "frozen_program": null,
+        "preflight": "REJECTED",
+        "skill_id": "gefcom2012_load_denoise_median_winsorize_repair",
+        "stage": "preflight_rejected"
+      },
+      "triggered_slow": true
+    }
+  },
+  "events": [
+    {
+      "card_counterfactual": {
+        "A_then_B_delayed_gain": -0.06125772464287427,
+        "A_then_B_support_gain": -0.1302066421576531
+      },
+      "card_workflow": [
+        "denoise_median",
+        "outlier_iqr"
+      ],
+      "frozen_program": null,
+      "preflight": "REJECTED",
+      "skill_id": "gefcom2012_load_denoise_median_winsorize_repair",
+      "stage": "preflight_rejected"
+    }
+  ],
+  "experiment_id": "v1-method-level-auto-slow-wiring",
+  "note": "P3.1-A 零 LLM 方法层接线（development；已暴露 case；不称自然自进化）",
+  "verdict": "ACTION_UNAVAILABLE"
+}

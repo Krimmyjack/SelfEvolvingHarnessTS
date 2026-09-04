@@ -1,0 +1,156 @@
+{
+  "task_episode_id": "e1v2_task_01",
+  "arm": "A5",
+  "horizon": 48,
+  "observation_cutoff": 3072,
+  "scope_series_count": 8,
+  "wrong_prior_label": "impute-only period_complete",
+  "wrong_prior_family": "impute",
+  "wrong_prior_operator": "period_complete",
+  "wrong_prior_try": "Lead with period_complete as the sole prior on this forecast Task.",
+  "source_skill_id": "source_investigation_v1",
+  "source_skill_served": true,
+  "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "source_investigation_v1"
+  ],
+  "observation_families": [
+    "outlier",
+    "structural"
+  ],
+  "gate_receipt": {
+    "gate": "m1a_source_probe_gate",
+    "fired": true,
+    "match": false,
+    "has_source_prior": true,
+    "prior_family": "impute",
+    "observation_families": [
+      "outlier",
+      "structural"
+    ],
+    "is_authorization": false,
+    "is_confirmation": false,
+    "may_rank_first": false,
+    "may_monopolize_k": false,
+    "requires_target_support": true,
+    "execution_authorized": false,
+    "error_code": "SOURCE_WRONG_PRIOR",
+    "reason": "Source TRY family 'impute' does not match observation-flagged families ['outlier', 'structural']; the prior is not confirmation or an execution right",
+    "try_operators": [
+      "period_complete"
+    ]
+  },
+  "gate_fired": true,
+  "gate_match": false,
+  "gate_error_code": "SOURCE_WRONG_PRIOR",
+  "is_authorization": false,
+  "is_confirmation": false,
+  "execution_authorized": false,
+  "may_monopolize_k": false,
+  "source_prior_grants_execution": false,
+  "wrong_family_monopolized_k": false,
+  "wrong_prior_treated_as_confirmation": false,
+  "source_probe_receipts": [
+    {
+      "gate": "m1a_source_probe_gate",
+      "fired": true,
+      "match": false,
+      "has_source_prior": true,
+      "prior_family": "impute",
+      "observation_families": [
+        "outlier",
+        "structural"
+      ],
+      "is_authorization": false,
+      "is_confirmation": false,
+      "may_rank_first": false,
+      "may_monopolize_k": false,
+      "requires_target_support": true,
+      "execution_authorized": false,
+      "error_code": "SOURCE_WRONG_PRIOR",
+      "reason": "Source TRY family 'impute' does not match observation-flagged families ['outlier', 'structural']; the prior is not confirmation or an execution right",
+      "try_operators": [
+        "period_complete"
+      ]
+    }
+  ],
+  "families": [
+    "outlier",
+    "structural"
+  ],
+  "first_ops": [
+    "hampel_filter",
+    "repair_level_shift"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "hampel_extreme_deviation",
+      "addresses_hypothesis_id": "scoped_extreme_deviation",
+      "first_op": "hampel_filter",
+      "family": "outlier",
+      "ops": [
+        "hampel_filter"
+      ]
+    },
+    {
+      "candidate_id": "level_shift_extreme_deviation",
+      "addresses_hypothesis_id": "scoped_extreme_deviation",
+      "first_op": "repair_level_shift",
+      "family": "structural",
+      "ops": [
+        "repair_level_shift"
+      ]
+    }
+  ],
+  "protocol_error": null,
+  "infrastructure_error": null,
+  "propose_entered": true,
+  "retries_happened": true,
+  "validation_retry_count": 1,
+  "validation_error_codes": [
+    "FAMILY_MONOPOLY"
+  ],
+  "llm_calls": 10,
+  "workspace_tool_calls": 6,
+  "raw_candidate_count": 2,
+  "propose_payload_keys": [
+    "candidates"
+  ],
+  "propose_stage_payload": {
+    "candidates": [
+      {
+        "candidate_id": "hampel_extreme_deviation",
+        "addresses_hypothesis_id": "scoped_extreme_deviation",
+        "steps": [
+          {
+            "op": "hampel_filter",
+            "params": {}
+          }
+        ]
+      },
+      {
+        "candidate_id": "level_shift_extreme_deviation",
+        "addresses_hypothesis_id": "scoped_extreme_deviation",
+        "steps": [
+          {
+            "op": "repair_level_shift",
+            "params": {}
+          }
+        ]
+      }
+    ]
+  },
+  "inspect_hypothesis_ids": [
+    "scoped_extreme_deviation"
+  ],
+  "inject": {
+    "skill_id": "source_investigation_v1",
+    "try": "Lead with period_complete as the sole prior on this forecast Task.",
+    "try_family": "impute",
+    "inject": "edit_controller_add",
+    "frozen_runtime_bundle_sha": "55781e1085cee07b501d22b2871483ae279a5f807b5fedffaea712579ce2847c",
+    "frozen_harness_content_sha": "23e2e2af7b598148a0ba068c4b70fe3a81a4e98413466cfffd880d165c15851a"
+  }
+}

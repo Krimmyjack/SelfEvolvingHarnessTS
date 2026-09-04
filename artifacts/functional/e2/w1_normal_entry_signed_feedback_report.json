@@ -1,0 +1,128 @@
+{
+  "case": {
+    "delayed_origin": 976,
+    "origin": 928,
+    "step_a": "impute_ssm",
+    "step_b": "outlier_iqr",
+    "support": {
+      "A_only": -0.15432,
+      "A_to_B": -0.10249,
+      "B_only": 0.04386,
+      "identity": null
+    }
+  },
+  "checks": {
+    "chosen_program_support_detail": {
+      "chosen": "cand_skill_outlie-target-v1",
+      "gain": 0.027190356020410977,
+      "origin": 976,
+      "steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "verification_passed": true
+    },
+    "conflict_degrades_skill": true,
+    "conflict_skill_not_hard_deleted": true,
+    "delayed_only_updates_this_round": true,
+    "no_future_read_before_decision": true,
+    "no_new_schema_registry_sha": true,
+    "normal_entry_tthamethod": true,
+    "positive_keeps_skill_priority": true,
+    "scope_executor_consumes_chosen_program": true,
+    "support_immediate_writeback": true,
+    "zero_llm_and_arm_separation": true
+  },
+  "experiment_id": "v1-normal-entry-signed-feedback",
+  "feedback_control": "fast_agent 注入点：Reference 1 → Skill 前（slot 保留）；Reference 2/3 → Skill 降级排后（预算截断=不硬删除）",
+  "llm_api_call_count": 0,
+  "memory_arms": {
+    "round0_empty": [],
+    "roundA_positive": [
+      "gefcom_target_outlier_iqr_origin928"
+    ],
+    "roundB_conflict": [
+      "gefcom_target_outlier_iqr_origin928_swap"
+    ]
+  },
+  "rounds": {
+    "round0": {
+      "candidate_pool_order": [
+        "cand_skill_outlie-target-v1",
+        "cand_impute_linear"
+      ],
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ],
+      "round": "round0_empty"
+    },
+    "roundA_positive": {
+      "candidate_pool_order": [
+        "cand_skill_outlie-target-v1",
+        "cand_impute_linear"
+      ],
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ],
+      "round": "roundA_positive"
+    },
+    "roundB_conflict": {
+      "candidate_pool_order": [
+        "cand_impute_linear",
+        "cand_skill_outlie-target-v1"
+      ],
+      "chosen": "cand_impute_linear",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "impute_linear",
+          "params": {
+            "strength": 1.0
+          }
+        }
+      ],
+      "compilation": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ],
+      "round": "roundB_conflict"
+    }
+  },
+  "selector": "SequentialSelectorBackend（中性：按公开候选顺序选第一个非 identity——池顺序即优先级）",
+  "skill": {
+    "frozen_steps": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "skill_id": "outlie-target-v1"
+  },
+  "verdict": "METHOD_LEVEL_SIGNED_EPISODE_TO_SKILL_PRIORITY_MECHANISM_PASS"
+}

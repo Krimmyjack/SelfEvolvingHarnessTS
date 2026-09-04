@@ -1,0 +1,1025 @@
+{
+  "experiment_id": "v1-p0-batch-evidence-causal",
+  "note": "P0：Batch Evidence 因果使用决定性实验（用户裁决最高优先级——冻结规则见 docstring；development——零新 Claim）",
+  "frozen": {
+    "rule": "unique all-presented-gains>=M -> pick else ABSTAIN",
+    "M": 0.005,
+    "model": "gpt-5.6-luna",
+    "temperature": 0,
+    "arms": [
+      "full",
+      "reversed",
+      "swap",
+      "mean_only",
+      "single_episode"
+    ],
+    "reps": 2
+  },
+  "cases": [
+    {
+      "index": 1,
+      "kind": "patch",
+      "table": "t117",
+      "labels": [
+        "outlier_mad",
+        "hampel_filter"
+      ],
+      "subset": [
+        888,
+        984
+      ],
+      "gains": {
+        "outlier_mad": [
+          0.11986118246492228,
+          -0.060764531483190165
+        ],
+        "hampel_filter": [
+          0.033984644049736445,
+          0.01504251303971138
+        ]
+      },
+      "winner": "hampel_filter",
+      "natural": true,
+      "single_episode_biased": true,
+      "mark": "natural"
+    },
+    {
+      "index": 2,
+      "kind": "patch",
+      "table": "dev",
+      "labels": [
+        "outlier_mad",
+        "outlier_mad_to_hampel_filter"
+      ],
+      "subset": [
+        "T100@600",
+        "T10@600"
+      ],
+      "gains": {
+        "outlier_mad": [
+          0.28776088892638985,
+          -0.04699599947334576
+        ],
+        "outlier_mad_to_hampel_filter": [
+          0.27813249495017534,
+          0.006674676610827657
+        ]
+      },
+      "winner": "outlier_mad_to_hampel_filter",
+      "natural": false,
+      "single_episode_biased": true,
+      "mark": "development_control"
+    },
+    {
+      "index": 3,
+      "kind": "patch",
+      "table": "dev",
+      "labels": [
+        "hampel_filter",
+        "outlier_mad_to_hampel_filter"
+      ],
+      "subset": [
+        "T10@600",
+        "T100@888"
+      ],
+      "gains": {
+        "hampel_filter": [
+          0.033122865502676735,
+          -0.07646564032435121
+        ],
+        "outlier_mad_to_hampel_filter": [
+          0.006674676610827657,
+          0.11511715521410937
+        ]
+      },
+      "winner": "outlier_mad_to_hampel_filter",
+      "natural": false,
+      "single_episode_biased": true,
+      "mark": "development_control"
+    },
+    {
+      "index": 4,
+      "kind": "abstain",
+      "table": "dev",
+      "labels": [
+        "outlier_mad",
+        "hampel_filter"
+      ],
+      "subset": [
+        "T100@600",
+        "T10@600",
+        "T100@888",
+        "T10@888",
+        "T101@984",
+        "T1@888"
+      ],
+      "gains": {
+        "outlier_mad": [
+          0.28776088892638985,
+          -0.04699599947334576,
+          0.1423245540507111,
+          0.0029457029644843757,
+          0.0,
+          -0.002871009254668211
+        ],
+        "hampel_filter": [
+          -0.08100393680437046,
+          0.033122865502676735,
+          -0.07646564032435121,
+          -0.11744769997066684,
+          0.0005833962578585261,
+          0.005433239438771942
+        ]
+      },
+      "winner": null,
+      "natural": true,
+      "single_episode_biased": false,
+      "mark": "natural"
+    },
+    {
+      "index": 5,
+      "kind": "abstain",
+      "table": "dev",
+      "labels": [
+        "outlier_mad",
+        "hampel_V2"
+      ],
+      "subset": [
+        "T100@600",
+        "T10@600",
+        "T100@888",
+        "T10@888",
+        "T101@984",
+        "T1@888"
+      ],
+      "gains": {
+        "outlier_mad": [
+          0.28776088892638985,
+          -0.04699599947334576,
+          0.1423245540507111,
+          0.0029457029644843757,
+          0.0,
+          -0.002871009254668211
+        ],
+        "hampel_V2": [
+          0.2181673429148847,
+          -0.002111609974419615,
+          -0.008916359131564744,
+          -0.0023628911343538395,
+          0.0016166472731280468,
+          -0.011858661844602159
+        ]
+      },
+      "winner": null,
+      "natural": false,
+      "single_episode_biased": false,
+      "mark": "development_control"
+    },
+    {
+      "index": 6,
+      "kind": "abstain",
+      "table": "dev",
+      "labels": [
+        "outlier_mad",
+        "hampel_V4"
+      ],
+      "subset": [
+        "T100@600",
+        "T10@600",
+        "T100@888",
+        "T10@888",
+        "T101@984",
+        "T1@888"
+      ],
+      "gains": {
+        "outlier_mad": [
+          0.28776088892638985,
+          -0.04699599947334576,
+          0.1423245540507111,
+          0.0029457029644843757,
+          0.0,
+          -0.002871009254668211
+        ],
+        "hampel_V4": [
+          -0.026805517935408307,
+          0.01750132660855641,
+          -0.0818696397439137,
+          -0.028233380977867872,
+          0.00047852394317904334,
+          -0.016169338424727453
+        ]
+      },
+      "winner": null,
+      "natural": false,
+      "single_episode_biased": false,
+      "mark": "development_control"
+    }
+  ],
+  "cells": [
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "full",
+      "rep": 1,
+      "expected": "patch-1-hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "full",
+      "rep": 2,
+      "expected": "patch-1-hampel_filter",
+      "decision": "patch-1-hampel_filter",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "reversed",
+      "rep": 1,
+      "expected": "patch-1-hampel_filter",
+      "decision": "patch-1-hampel_filter",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "reversed",
+      "rep": 2,
+      "expected": "patch-1-hampel_filter",
+      "decision": "patch-1-hampel_filter",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": true,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "swap",
+      "rep": 1,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "swap",
+      "rep": 2,
+      "expected": "patch-0-outlier_mad",
+      "decision": "patch-0-outlier_mad",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": true,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "mean_only",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "mean_only",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "single_episode",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 1,
+      "kind": "patch",
+      "arm": "single_episode",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "full",
+      "rep": 1,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "full",
+      "rep": 2,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "reversed",
+      "rep": 1,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": true,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "reversed",
+      "rep": 2,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "swap",
+      "rep": 1,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": true,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "swap",
+      "rep": 2,
+      "expected": "patch-0-outlier_mad",
+      "decision": "patch-0-outlier_mad",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "mean_only",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "mean_only",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "single_episode",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 2,
+      "kind": "patch",
+      "arm": "single_episode",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "full",
+      "rep": 1,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "full",
+      "rep": 2,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "reversed",
+      "rep": 1,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "patch-1-outlier_mad_to_hampel_filter",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "reversed",
+      "rep": 2,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "swap",
+      "rep": 1,
+      "expected": "patch-0-hampel_filter",
+      "decision": "patch-0-hampel_filter",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "swap",
+      "rep": 2,
+      "expected": "patch-0-hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "mean_only",
+      "rep": 1,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "patch-1-outlier_mad_to_hampel_filter",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "mean_only",
+      "rep": 2,
+      "expected": "patch-1-outlier_mad_to_hampel_filter",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "single_episode",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 3,
+      "kind": "patch",
+      "arm": "single_episode",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "full",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "full",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "reversed",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "reversed",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "swap",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "swap",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "mean_only",
+      "rep": 1,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "mean_only",
+      "rep": 2,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": true,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "single_episode",
+      "rep": 1,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 4,
+      "kind": "abstain",
+      "arm": "single_episode",
+      "rep": 2,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "full",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "full",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "reversed",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "reversed",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "swap",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "swap",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "mean_only",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "mean_only",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "single_episode",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 5,
+      "kind": "abstain",
+      "arm": "single_episode",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "full",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "full",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "reversed",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "reversed",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "swap",
+      "rep": 1,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "insufficient_public_evidence",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "swap",
+      "rep": 2,
+      "expected": "ABSTAIN",
+      "decision": "ABSTAIN",
+      "correct": true,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "mean_only",
+      "rep": 1,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "mean_only",
+      "rep": 2,
+      "expected": "patch-0-outlier_mad",
+      "decision": "patch-0-outlier_mad",
+      "correct": true,
+      "reason": "manifest",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "single_episode",
+      "rep": 1,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 1,
+      "whole_retried": false,
+      "protocol_error": false
+    },
+    {
+      "case": 6,
+      "kind": "abstain",
+      "arm": "single_episode",
+      "rep": 2,
+      "expected": "patch-0-outlier_mad",
+      "decision": "ABSTAIN",
+      "correct": false,
+      "reason": "no_authorized_minimal_edit",
+      "calls": 2,
+      "whole_retried": false,
+      "protocol_error": false
+    }
+  ],
+  "metrics": {
+    "protocol_valid_rate": 1.0,
+    "full_batch_evidence_consistent_rate": 0.5833333333333334,
+    "candidate_order_consistency": 0.8333333333333334,
+    "swap_eligible_predicted_flip_rate": 0.16666666666666666,
+    "patch_choice_accuracy_A": 0.16666666666666666,
+    "abstain_accuracy_A": 1.0,
+    "mean_only_accuracy": 0.6666666666666666,
+    "single_episode_accuracy": 0.6666666666666666,
+    "full_batch_vs_mean_only_delta": -0.08333333333333326,
+    "full_batch_vs_single_episode_delta": -0.08333333333333326,
+    "total_llm_calls": 72
+  },
+  "gates": {
+    "protocol_valid_100": true,
+    "full_batch_ge_80": false,
+    "order_ge_80": true,
+    "swap_flip_ge_75": false,
+    "patch_ge_80": false,
+    "abstain_ge_80": true,
+    "full_not_weaker_than_mean": false,
+    "full_not_weaker_than_single": false
+  },
+  "first_fault": "BATCH_ALIGNMENT_NOT_USED",
+  "verdict": "BATCH_EVIDENCE_CAUSAL_USE_DEVELOPMENT_FAIL"
+}

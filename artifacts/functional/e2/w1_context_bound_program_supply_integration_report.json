@@ -1,0 +1,69 @@
+{
+  "checks": {
+    "10_episode_skill_written": true,
+    "11_next_round_uses_skill": true,
+    "12_no_future_read": true,
+    "1_actionable_has_repair": true,
+    "2_params_match_public_features": true,
+    "3_pool_le_two_nonidentity": true,
+    "4_pool_has_denoise_and_repair": true,
+    "5_llm_chose_repair": true,
+    "6_program_is_bound": true,
+    "7_verifier_passed": true,
+    "8_support_positive": true,
+    "9_delayed_positive": true
+  },
+  "cohort_offset": 40,
+  "dataset": "uci_electricity_load_diagrams",
+  "details": {
+    "actionable": [
+      "impute_linear",
+      "impute_fft",
+      "impute_ema",
+      "period_complete",
+      "period_median_complete",
+      "impute_ssm",
+      "impute_ar",
+      "denoise_median",
+      "winsorize",
+      "outlier_iqr",
+      "outlier_mad",
+      "hampel_filter",
+      "repair_level_shift",
+      "resample_uniform"
+    ],
+    "delayed_gain": 0.07231898338506881,
+    "episode": {
+      "episode_id": "uci_electricity_load_diagrams_target_bound_repair_level_shift_cbpsi_r1",
+      "relation": "POSITIVE"
+    },
+    "repair_steps": [
+      {
+        "op": "repair_level_shift",
+        "params": {
+          "estimated_offset": 24.242059672762338,
+          "region_end_fraction": 0.7298387096774194,
+          "region_start_fraction": 0.5282258064516129
+        }
+      }
+    ],
+    "round1_chosen": "cand_repair_level_shift",
+    "round1_pool": [
+      "identity",
+      "cand_repair_level_shift",
+      "cand_denoise_median"
+    ],
+    "round2_chosen": "cand_skill_uci-bound-repair-v1",
+    "round2_pool": [
+      "identity",
+      "cand_skill_uci-bound-repair-v1",
+      "cand_repair_level_shift"
+    ],
+    "support_gain": 0.08272030011535159
+  },
+  "experiment_id": "v1-context-bound-program-supply-integration",
+  "llm_api_call_count": 2,
+  "next_origin": 792,
+  "origin": 744,
+  "verdict": "CONTEXT_BOUND_PROGRAM_SUPPLY_DEVELOPMENT_PASS"
+}

@@ -1,0 +1,242 @@
+{
+  "candidate_after_patch": {
+    "applicability": {
+      "cohort_topology": "multi_series_cross_sectional",
+      "on_mismatch": "ABSTAIN"
+    },
+    "capability_id": "cold_start_candidate_e2_76",
+    "status": "CANDIDATE",
+    "workflow_supply_unchanged": true
+  },
+  "capability_or_memory_written": false,
+  "claim_limit": "Exposed categorical mismatch replay. A PASS restricts this Candidate and removes known harm; it is not promotion or fresh Target transfer.",
+  "compute": {
+    "consumer_fit_count": 0,
+    "llm_api_call_count": 1
+  },
+  "deterministic_replay": {
+    "behavior_nontrivial": true,
+    "known_mismatch_abstains_before_probe": true,
+    "mismatch_adaptation_curve": [
+      {
+        "abstained": true,
+        "budget": 0,
+        "fixed_query_gain": 0.0,
+        "selected_workflow": "IDENTITY",
+        "terminal": true
+      },
+      {
+        "abstained": true,
+        "budget": 1,
+        "fixed_query_gain": 0.0,
+        "selected_workflow": "IDENTITY",
+        "terminal": true
+      },
+      {
+        "abstained": true,
+        "budget": 2,
+        "fixed_query_gain": 0.0,
+        "selected_workflow": "IDENTITY",
+        "terminal": true
+      }
+    ],
+    "mismatch_execution_context": {
+      "cohort_topology": "single_series_temporal_origins"
+    },
+    "mismatch_probe_calls": [],
+    "mismatch_selected_workflow": "IDENTITY",
+    "prior_A5_harm_count": 2,
+    "repaired_harm_count": 0,
+    "source_like_adaptation_curve": [
+      {
+        "abstained": true,
+        "budget": 0,
+        "fixed_query_gain": 0.0,
+        "selected_workflow": "IDENTITY",
+        "terminal": false
+      },
+      {
+        "abstained": false,
+        "budget": 1,
+        "fixed_query_gain": 0.06556725539360686,
+        "selected_workflow": "W_period_median_imputation",
+        "terminal": false
+      },
+      {
+        "abstained": false,
+        "budget": 2,
+        "fixed_query_gain": 0.06556725539360686,
+        "selected_workflow": "W_period_median_imputation",
+        "terminal": false
+      }
+    ],
+    "source_like_execution_context": {
+      "cohort_topology": "multi_series_cross_sectional"
+    },
+    "source_like_probe_calls": [
+      "W_period_median_imputation",
+      "W_ar_imputation"
+    ],
+    "source_like_scope_still_executes": true,
+    "source_like_selected_workflow": "W_period_median_imputation"
+  },
+  "experiment_id": "E2.80-live-LLM-natural-imputation-Scope-repair",
+  "failure_dossier_sent_to_llm": {
+    "allowed_patch_values": {
+      "ADD_OBSERVATION": [
+        "source_policy_episode_workflow_prior"
+      ],
+      "COMPOSE_WORKFLOW": [],
+      "PATCH_CONTROL": [
+        "keep_best_support_so_far"
+      ],
+      "RESTRICT_SCOPE": [
+        {
+          "cohort_topology": "multi_series_cross_sectional",
+          "on_mismatch": "ABSTAIN"
+        }
+      ]
+    },
+    "categorical_first_faults": [
+      {
+        "code": "SOURCE_SCOPE_OMITS_COHORT_TOPOLOGY",
+        "observed_behavior": "Source evidence comes from a different cohort topology and a positive Support confirmation is harmful on the Target Query",
+        "surface": "applicability"
+      }
+    ],
+    "dossier_id": "policy_episode_first_faults_v3",
+    "failure_case_count": 1,
+    "fault_support": {
+      "cohort_topology_scope_fault_count": 1,
+      "observation_fault_case_count": 0,
+      "overwrite_fault_case_count": 0,
+      "support_to_query_harmful_replay_count": 0
+    },
+    "forbidden_changes": [
+      "workflow_supply",
+      "program_supply",
+      "consumer",
+      "metric",
+      "memory_schema",
+      "query_visibility"
+    ],
+    "privacy": {
+      "dataset_identity_included": false,
+      "effect_magnitudes_included": false,
+      "raw_time_series_included": false
+    }
+  },
+  "gate": {
+    "known_mismatch_abstains_before_probe": true,
+    "passed": true,
+    "repaired_harm_zero": true,
+    "scope_patch_compiled": true,
+    "source_like_scope_still_executes": true,
+    "source_like_selects_nonidentity": true,
+    "workflow_supply_unchanged": true
+  },
+  "information_boundary": {
+    "cached_query_effect_used_by_replay_evaluator": true,
+    "categorical_query_outcome_used_for_slow_path": true,
+    "llm_received_dataset_identity": false,
+    "llm_received_effect_magnitude": false,
+    "llm_received_raw_time_series": false,
+    "raw_query_target_values_received_by_llm": false,
+    "repair_truth_used": false
+  },
+  "llm": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 157,
+    "prompt_tokens": 327,
+    "proposal": {
+      "operations": [
+        {
+          "operation": "RESTRICT_SCOPE",
+          "target_surface": "applicability",
+          "value": {
+            "cohort_topology": "multi_series_cross_sectional",
+            "on_mismatch": "ABSTAIN"
+          }
+        }
+      ],
+      "patch_id": "patch_policy_episode_first_faults_v3_001"
+    },
+    "requested_model": "gpt-5.5",
+    "returned_model": "gpt-5.5"
+  },
+  "resolved_candidate": {
+    "applicability": {
+      "cohort_topology": "multi_series_cross_sectional",
+      "on_mismatch": "ABSTAIN"
+    },
+    "applied_patch_id": "patch_policy_episode_first_faults_v3_001",
+    "capability_id": "cold_start_candidate_e2_76",
+    "control": {
+      "confirmation": "current Support exact grouped gain > 0",
+      "fallback": "IDENTITY",
+      "selection": "largest positive current-Support gain seen so far",
+      "type": "keep_best_support_so_far"
+    },
+    "evidence": {
+      "promotion_status": "NOT_EVALUATED",
+      "source_policy_episode_count": 3
+    },
+    "observation": {
+      "type": "source_policy_episode_workflow_prior",
+      "use": "order current-Support Workflow probes",
+      "utility_claim": "prior only; current Support must confirm utility"
+    },
+    "promotion_result": {
+      "active_memory_write": false,
+      "reason": "source-evidenced cohort topology only; mismatch abstains",
+      "status": "RESTRICTED"
+    },
+    "risk": {
+      "abstain_if_no_positive_confirmation": true,
+      "do_not_allow_later_probe_to_overwrite_confirmed_workflow": false,
+      "do_not_use_query_future_for_ordering_or_confirmation": true
+    },
+    "source_prior": {
+      "candidate_order_count": 2,
+      "mean_source_adaptation_auc": 0.48320022564636905,
+      "source_policy_episode_count": 3,
+      "workflow_order": [
+        "W_period_median_imputation",
+        "W_ar_imputation"
+      ]
+    },
+    "status": "RESTRICTED",
+    "task_context": {
+      "consumer": "shared frozen Ridge",
+      "context": "observable natural missing values with known period",
+      "task": "forecasting"
+    },
+    "workflow_supply": [
+      "W_period_median_imputation",
+      "W_ar_imputation"
+    ]
+  },
+  "scientific_role": "failure-driven restriction of a Candidate whose Source evidence omits the observed Target cohort topology",
+  "source_candidate": {
+    "source_cohort_topology": "multi_series_cross_sectional",
+    "status_before": "CANDIDATE",
+    "workflow_order": [
+      "W_period_median_imputation",
+      "W_ar_imputation"
+    ]
+  },
+  "typed_patch": {
+    "operations": [
+      {
+        "operation": "RESTRICT_SCOPE",
+        "target_surface": "applicability",
+        "value": {
+          "cohort_topology": "multi_series_cross_sectional",
+          "on_mismatch": "ABSTAIN"
+        }
+      }
+    ],
+    "patch_id": "patch_policy_episode_first_faults_v3_001"
+  },
+  "verdict": "FAILURE_DRIVEN_SCOPE_REPAIR_PASS"
+}

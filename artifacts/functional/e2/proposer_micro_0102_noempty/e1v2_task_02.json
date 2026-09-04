@@ -1,0 +1,84 @@
+{
+  "task_episode_id": "e1v2_task_02",
+  "arm": "A3",
+  "horizon": 48,
+  "observation_cutoff": 3360,
+  "scope_series_count": 8,
+  "families": [
+    "outlier",
+    "impute"
+  ],
+  "first_ops": [
+    "hampel_filter",
+    "period_complete"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "c1",
+      "addresses_hypothesis_id": "h1",
+      "first_op": "hampel_filter",
+      "family": "outlier",
+      "ops": [
+        "hampel_filter"
+      ]
+    },
+    {
+      "candidate_id": "c2",
+      "addresses_hypothesis_id": "h1",
+      "first_op": "period_complete",
+      "family": "impute",
+      "ops": [
+        "period_complete"
+      ]
+    }
+  ],
+  "protocol_error": null,
+  "infrastructure_error": null,
+  "propose_entered": true,
+  "retries_happened": true,
+  "validation_retry_count": 1,
+  "validation_error_codes": [
+    "FAMILY_MONOPOLY"
+  ],
+  "llm_calls": 4,
+  "workspace_tool_calls": 1,
+  "raw_candidate_count": 2,
+  "raw_candidate_types": [
+    "mappingproxy",
+    "mappingproxy"
+  ],
+  "propose_payload_keys": [
+    "candidates"
+  ],
+  "propose_stage_payload": {
+    "candidates": [
+      {
+        "candidate_id": "c1",
+        "addresses_hypothesis_id": "h1",
+        "steps": [
+          {
+            "op": "hampel_filter",
+            "params": {
+              "window": 7,
+              "n_sigmas": 3.0,
+              "global_z_min": 0.0
+            }
+          }
+        ]
+      },
+      {
+        "candidate_id": "c2",
+        "addresses_hypothesis_id": "h1",
+        "steps": [
+          {
+            "op": "period_complete",
+            "params": {}
+          }
+        ]
+      }
+    ]
+  },
+  "inspect_hypothesis_ids": [
+    "h1"
+  ]
+}

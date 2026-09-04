@@ -1,0 +1,326 @@
+{
+  "experiment_id": "v1-pia-calibration-dev",
+  "note": "P2 失败原因分支 → P3 PIA 校准：first-order Response Sketch（程序干预幅度——算子直接应用）vs 已暴露 gold——只做筛选定位，绝不接批准——development exposure——零新 Claim——零 LLM——零新评估",
+  "gold": {
+    "n_rows": 122,
+    "n_sketched": 122,
+    "sources": {
+      "census_probes": 44,
+      "headroom": 24,
+      "supply": 54
+    }
+  },
+  "metrics": {
+    "sign_agreement": 0.4731182795698925,
+    "sign_agreement_n": 93,
+    "harmful_fp": 11,
+    "harmful_fp_rate": 0.09016393442622951,
+    "benign_fn": 38,
+    "topk_recall": {
+      "1": 0.2,
+      "2": 0.2
+    },
+    "topk_random_baseline": {
+      "1": 0.15714285714285714,
+      "2": 0.3142857142857143
+    },
+    "n_windows_used": 5
+  },
+  "screening": {
+    "r0": {
+      "skipped": 4,
+      "saved_fraction": 0.03278688524590164,
+      "missed_positive": 0,
+      "skipped_harmful": 0
+    },
+    "tau_sweep": [
+      {
+        "tau": 0.0001,
+        "skipped": 4,
+        "saved_fraction": 0.03278688524590164,
+        "missed_positive": 0,
+        "skipped_harmful": 0
+      },
+      {
+        "tau": 0.001,
+        "skipped": 4,
+        "saved_fraction": 0.03278688524590164,
+        "missed_positive": 0,
+        "skipped_harmful": 0
+      },
+      {
+        "tau": 0.003,
+        "skipped": 8,
+        "saved_fraction": 0.06557377049180328,
+        "missed_positive": 2,
+        "skipped_harmful": 0
+      },
+      {
+        "tau": 0.01,
+        "skipped": 23,
+        "saved_fraction": 0.1885245901639344,
+        "missed_positive": 3,
+        "skipped_harmful": 3
+      },
+      {
+        "tau": 0.03,
+        "skipped": 47,
+        "saved_fraction": 0.38524590163934425,
+        "missed_positive": 8,
+        "skipped_harmful": 17
+      },
+      {
+        "tau": 0.1,
+        "skipped": 96,
+        "saved_fraction": 0.7868852459016393,
+        "missed_positive": 29,
+        "skipped_harmful": 40
+      }
+    ]
+  },
+  "harmful_fp_rows": [
+    {
+      "series": "T100",
+      "origin": 600,
+      "source": "headroom_wave3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.08100393680437046,
+      "sketch": {
+        "modified_fraction": 0.04833333333333333,
+        "delta_mean": 0.013166666666666663,
+        "delta_mean_abs": 0.02516666666666667,
+        "norm_mag": 0.017677325014740782
+      }
+    },
+    {
+      "series": "T100",
+      "origin": 888,
+      "source": "headroom_wave3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.07646564032435121,
+      "sketch": {
+        "modified_fraction": 0.05405405405405406,
+        "delta_mean": 0.014752252252252249,
+        "delta_mean_abs": 0.03096846846846847,
+        "norm_mag": 0.024688669974201157
+      }
+    },
+    {
+      "series": "T10",
+      "origin": 888,
+      "source": "headroom_wave3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.11744769997066684,
+      "sketch": {
+        "modified_fraction": 0.061936936936936936,
+        "delta_mean": 0.009684684684684686,
+        "delta_mean_abs": 0.03153153153153153,
+        "norm_mag": 0.03843647658996218
+      }
+    },
+    {
+      "series": "T105",
+      "origin": 984,
+      "source": "headroom_block2",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.1,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.0077417876994627655,
+      "sketch": {
+        "modified_fraction": 0.08841463414634146,
+        "delta_mean": 0.02032520325203252,
+        "delta_mean_abs": 0.3719512195121951,
+        "norm_mag": 0.008750992218227834
+      }
+    },
+    {
+      "series": "T100",
+      "origin": 888,
+      "source": "supply_hampel_V2",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 7,
+            "n_sigmas": 3.0,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.008916359131564744,
+      "sketch": {
+        "modified_fraction": 0.018018018018018018,
+        "delta_mean": 0.018918918918918916,
+        "delta_mean_abs": 0.03333333333333333,
+        "norm_mag": 0.02657398659041288
+      }
+    },
+    {
+      "series": "T100",
+      "origin": 600,
+      "source": "supply_hampel_V3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.5,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.08100393680437046,
+      "sketch": {
+        "modified_fraction": 0.04833333333333333,
+        "delta_mean": 0.013166666666666663,
+        "delta_mean_abs": 0.02516666666666667,
+        "norm_mag": 0.017677325014740782
+      }
+    },
+    {
+      "series": "T100",
+      "origin": 888,
+      "source": "supply_hampel_V3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.5,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.07646564032435121,
+      "sketch": {
+        "modified_fraction": 0.05405405405405406,
+        "delta_mean": 0.014752252252252249,
+        "delta_mean_abs": 0.03096846846846847,
+        "norm_mag": 0.024688669974201157
+      }
+    },
+    {
+      "series": "T10",
+      "origin": 888,
+      "source": "supply_hampel_V3",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 3,
+            "n_sigmas": 0.5,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.11744769997066684,
+      "sketch": {
+        "modified_fraction": 0.061936936936936936,
+        "delta_mean": 0.009684684684684686,
+        "delta_mean_abs": 0.03153153153153153,
+        "norm_mag": 0.03843647658996218
+      }
+    },
+    {
+      "series": "T100",
+      "origin": 600,
+      "source": "supply_hampel_V4",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 5,
+            "n_sigmas": 2.0,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.026805517935408307,
+      "sketch": {
+        "modified_fraction": 0.02,
+        "delta_mean": 0.01016666666666667,
+        "delta_mean_abs": 0.01983333333333333,
+        "norm_mag": 0.013931136932146706
+      }
+    },
+    {
+      "series": "T100",
+      "origin": 888,
+      "source": "supply_hampel_V4",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 5,
+            "n_sigmas": 2.0,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.0818696397439137,
+      "sketch": {
+        "modified_fraction": 0.02027027027027027,
+        "delta_mean": 0.013400900900900903,
+        "delta_mean_abs": 0.020833333333333332,
+        "norm_mag": 0.01660874161900805
+      }
+    },
+    {
+      "series": "T10",
+      "origin": 888,
+      "source": "supply_hampel_V4",
+      "steps": [
+        [
+          "hampel_filter",
+          {
+            "window": 5,
+            "n_sigmas": 2.0,
+            "global_z_min": 1.0
+          }
+        ]
+      ],
+      "gain": -0.028233380977867872,
+      "sketch": {
+        "modified_fraction": 0.02252252252252252,
+        "delta_mean": 0.012049549549549548,
+        "delta_mean_abs": 0.021058558558558562,
+        "norm_mag": 0.025670075436867605
+      }
+    }
+  ],
+  "verdict": "PIA_SKETCH_SAFE_SCREENING_MARGINAL"
+}

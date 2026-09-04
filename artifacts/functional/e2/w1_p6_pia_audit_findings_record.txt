@@ -1,0 +1,26 @@
+P6 + PIA 只读审计记录（2026-08-13，三角色流程 checker 审计 → reviewer 裁决）
+
+审计结论：承重问题 无。两个 verdict 均成立：
+  - P6：BATCH_EVIDENCE_CONTRIBUTES+DETERMINISTIC_SEARCH_SUFFICES
+  - PIA：PIA_SKETCH_SAFE_SCREENING_MARGINAL
+预注册一致性 / 报告真实性（PIA 指标全量重算逐字段一致）/ 纪律合规
+（C/D 引用逐字核实 witness v3、wave4a r2、evc dev 报告）/ 装置一致性
+（p41 cohort executor 与 census executor 各与已暴露装置同款）全部 PASS。
+
+条款级偏差 4 项（非承重——不影响任何 verdict）：
+
+1. P6：E_pos 弃权未按预注册 §3 记 "abstain_with_headroom"，代码对
+   no_manifest 一律返回 "abstain"（run_v1_matched_budget_four_arm_dev.py
+   _a_classify/_b_classify）。
+2. P6：evidence_verdict 判定未实现预注册 §5 的"而 C 产出"守卫
+   （本次 C 确实产出 pending——结果有效，守卫缺失仅理论风险）。
+3. PIA：docstring gold 枚举错（写"92 行/block2 4 窗口/headroom 12+6"；
+   实际 122 行 = probes 44（wave3 24 + block2 20）+ headroom 24（wave3
+   18 含 winsorize 自替代行 + block2 6）+ supply 54）。选择规则本身
+   （全量纳入不挑 outcome）被遵守——是枚举数错，非 outcome 选择。
+4. PIA：saved_ok 把 R0 与 Rτ(1e-2) 并集双计（0.0328+0.1885=0.2213 vs
+   并集 0.1885）——方向偏乐观但不过阈值（均 ≥0.10），verdict 不变。
+
+reviewer 裁决：REPAIR_AS_NOTES——报告不覆盖、实验不重跑；4 项修正在
+runner 代码/docstring 层最小落地（分类标签、守卫、枚举、并集口径），
+本记录为修复前状态的留痕。修复不改变任何已落盘报告的 verdict。

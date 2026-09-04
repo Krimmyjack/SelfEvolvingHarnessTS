@@ -1,0 +1,2072 @@
+{
+  "protocol_version": "t233_newobs_supply_pooled_v1",
+  "verdict": "POOLED_COMPLETE",
+  "cohort": "T233",
+  "observation_arm": "NEW_OBS",
+  "exposure": "already exposed development data; not fresh",
+  "sealed_data_read": [],
+  "sealed_note": "Already-exposed T233 only. KDD W3, NOAA and g3_final_query_outcome were not opened by any of the three executions or by this pooling step.",
+  "what_this_is": "Three clean NEW_OBS supply executions merged under one distinct-Task rule. The OLD_OBS arm was not re-run: the observation A/B question was already answered by exec1, and nothing here revisits it.",
+  "instrument_fixes": {
+    "stage_validation_retries_parameterized": "fast_path._run_stage and run_agentic_fast_path, and runner._run_arm, now accept a validation_retries keyword. Its default is 1 -- the value previously hard-coded in fast_path -- so every other caller in the repository behaves exactly as before and no existing readout moves. Only run_t233_supply_obs_ab passes 2, and only when asked on the command line. exec1 ran at 1; exec2 and exec3 ran at 2.",
+    "ungrounded_citation_rejection_count_fixed": "The driver counted this only from stage_validation, which is populated after a stage returns and is therefore empty when the stage died -- so a fatal grounding rejection was counted as 0, the exact case the counter existed to catch. FastPathTrace now carries the terminal validator error code, runner surfaces it, and the driver reports recovered and fatal separately as well as their sum.",
+    "no_other_code_touched": "No M0b working-tree change, no historical artifact and no threshold was modified, and nothing was committed."
+  },
+  "pinned_parameters": {
+    "note": "Carried verbatim from each execution's own report rather than restated here, so the pooled artifact cannot disagree with the runs it pools. Everything except stage_validation_retries and observation_arms_run is identical across the three executions.",
+    "differs_across_executions": {
+      "stage_validation_retries": {
+        "exec1": 1,
+        "exec2": 2,
+        "exec3": 2
+      },
+      "observation_arms_run": {
+        "exec1": [
+          "OLD_OBS",
+          "NEW_OBS"
+        ],
+        "exec2": [
+          "NEW_OBS"
+        ],
+        "exec3": [
+          "NEW_OBS"
+        ]
+      }
+    },
+    "per_execution": {
+      "exec1": {
+        "note": "Reused from the existing cold-arm code path, not invented here. v1's charged_probe_cost of 4 on non-active Tasks and 1 on active ones is exactly _run_arm's B+1 / real_probe_count rule at B=3, which is why these defaults are read as the v1 budgets too.",
+        "per_episode_primitive": "runner._run_arm",
+        "cohort": "T233",
+        "task_roster": "e1._frozen_task_roster()[:19] (g1.A5A3_MAX_N)",
+        "workspace_tool_budget": 6,
+        "support_probe_budget_B": 3,
+        "material_threshold": 0.005,
+        "horizon": 48,
+        "source_prior": null,
+        "episode_arm_token": "A3",
+        "llm_call_budget_requested_by_run_arm": 24,
+        "llm_guardrail_applied_per_task_arm": 20,
+        "llm_guardrail_note": "The driver caps _run_arm's request of 24 at 20 per Task per arm. v1 observed 4-11 LLM calls per Task, so the cap is not expected to bind; each row records llm_guardrail_reached rather than assuming it did not.",
+        "model": "gpt-5.6-luna",
+        "base_url": "https://api.agicto.cn/v1",
+        "consumer_and_judge": "unchanged paired evaluator via _probe_compiled",
+        "thresholds_changed": []
+      },
+      "exec2": {
+        "execution_label": "exec2",
+        "observation_arms_run": [
+          "NEW_OBS"
+        ],
+        "stage_validation_retries": 2,
+        "instrument_fixes_relative_to_exec1": {
+          "stage_validation_retries": "fast_path._run_stage / run_agentic_fast_path and runner._run_arm now take a validation_retries keyword. The default is 1, the value previously hard-coded at fast_path.py:292, so every other caller in the repository is byte-for-byte unchanged. Only this driver passes a different value, and only when asked to on the command line.",
+          "ungrounded_citation_rejections": "The counter previously read only stage_validation, which is populated after a stage returns and is therefore empty whenever the stage died -- so a fatal grounding rejection was silently counted as 0. FastPathTrace now records the terminal validator error code, and the count is the sum of recovered and fatal, reported separately as ungrounded_citation_rejections_recovered and ungrounded_citation_rejections_fatal."
+        },
+        "note": "Reused from the existing cold-arm code path, not invented here. v1's charged_probe_cost of 4 on non-active Tasks and 1 on active ones is exactly _run_arm's B+1 / real_probe_count rule at B=3, which is why these defaults are read as the v1 budgets too.",
+        "per_episode_primitive": "runner._run_arm",
+        "cohort": "T233",
+        "task_roster": "e1._frozen_task_roster()[:19] (g1.A5A3_MAX_N)",
+        "workspace_tool_budget": 6,
+        "support_probe_budget_B": 3,
+        "material_threshold": 0.005,
+        "horizon": 48,
+        "source_prior": null,
+        "episode_arm_token": "A3",
+        "llm_call_budget_requested_by_run_arm": 24,
+        "llm_guardrail_applied_per_task_arm": 20,
+        "llm_guardrail_note": "The driver caps _run_arm's request of 24 at 20 per Task per arm. v1 observed 4-11 LLM calls per Task, so the cap is not expected to bind; each row records llm_guardrail_reached rather than assuming it did not.",
+        "model": "gpt-5.6-luna",
+        "base_url": "https://api.agicto.cn/v1",
+        "consumer_and_judge": "unchanged paired evaluator via _probe_compiled",
+        "thresholds_changed": []
+      },
+      "exec3": {
+        "execution_label": "exec3",
+        "observation_arms_run": [
+          "NEW_OBS"
+        ],
+        "stage_validation_retries": 2,
+        "instrument_fixes_relative_to_exec1": {
+          "stage_validation_retries": "fast_path._run_stage / run_agentic_fast_path and runner._run_arm now take a validation_retries keyword. The default is 1, the value previously hard-coded at fast_path.py:292, so every other caller in the repository is byte-for-byte unchanged. Only this driver passes a different value, and only when asked to on the command line.",
+          "ungrounded_citation_rejections": "The counter previously read only stage_validation, which is populated after a stage returns and is therefore empty whenever the stage died -- so a fatal grounding rejection was silently counted as 0. FastPathTrace now records the terminal validator error code, and the count is the sum of recovered and fatal, reported separately as ungrounded_citation_rejections_recovered and ungrounded_citation_rejections_fatal."
+        },
+        "note": "Reused from the existing cold-arm code path, not invented here. v1's charged_probe_cost of 4 on non-active Tasks and 1 on active ones is exactly _run_arm's B+1 / real_probe_count rule at B=3, which is why these defaults are read as the v1 budgets too.",
+        "per_episode_primitive": "runner._run_arm",
+        "cohort": "T233",
+        "task_roster": "e1._frozen_task_roster()[:19] (g1.A5A3_MAX_N)",
+        "workspace_tool_budget": 6,
+        "support_probe_budget_B": 3,
+        "material_threshold": 0.005,
+        "horizon": 48,
+        "source_prior": null,
+        "episode_arm_token": "A3",
+        "llm_call_budget_requested_by_run_arm": 24,
+        "llm_guardrail_applied_per_task_arm": 20,
+        "llm_guardrail_note": "The driver caps _run_arm's request of 24 at 20 per Task per arm. v1 observed 4-11 LLM calls per Task, so the cap is not expected to bind; each row records llm_guardrail_reached rather than assuming it did not.",
+        "model": "gpt-5.6-luna",
+        "base_url": "https://api.agicto.cn/v1",
+        "consumer_and_judge": "unchanged paired evaluator via _probe_compiled",
+        "thresholds_changed": []
+      }
+    }
+  },
+  "executions": [
+    {
+      "execution": "exec1",
+      "stage_validation_retries": 1,
+      "observation_arms_run": [
+        "OLD_OBS",
+        "NEW_OBS"
+      ],
+      "verdict": "OBSAB_COMPLETE",
+      "arm_runs_scored": 19,
+      "protocol_errors": 5,
+      "protocol_error_rate": 0.2631578947368421,
+      "request_observation": 11,
+      "request_observation_rate": 0.5789473684210527,
+      "arm_runs_with_a_probe": 14,
+      "inspect_returned_only_after_a_second_retry": [],
+      "arm_runs_rescued_by_the_second_retry": 0,
+      "counterfactual_protocol_errors_at_retry_1": 5,
+      "counterfactual_protocol_error_rate_at_retry_1": 0.2631578947368421,
+      "probe_total": 15,
+      "stop_reasons": {
+        "AGENT_ABSTAIN": 2,
+        "AGENT_PROTOCOL_ERROR": 5,
+        "REQUEST_OBSERVATION": 11,
+        "TRUST_DRAFT_GATE_PASS": 1
+      },
+      "llm_calls": 89,
+      "tasks_citing_m0b_field": [
+        "e1v2_task_01",
+        "e1v2_task_02",
+        "e1v2_task_03",
+        "e1v2_task_05",
+        "e1v2_task_06",
+        "e1v2_task_07",
+        "e1v2_task_08",
+        "e1v2_task_09",
+        "e1v2_task_12",
+        "e1v2_task_13",
+        "e1v2_task_16",
+        "e1v2_task_17",
+        "e1v2_task_18"
+      ]
+    },
+    {
+      "execution": "exec2",
+      "stage_validation_retries": 2,
+      "observation_arms_run": [
+        "NEW_OBS"
+      ],
+      "verdict": "OBSAB_COMPLETE",
+      "arm_runs_scored": 19,
+      "protocol_errors": 8,
+      "protocol_error_rate": 0.42105263157894735,
+      "request_observation": 11,
+      "request_observation_rate": 0.5789473684210527,
+      "arm_runs_with_a_probe": 11,
+      "inspect_returned_only_after_a_second_retry": [
+        "e1v2_task_08"
+      ],
+      "arm_runs_rescued_by_the_second_retry": 1,
+      "counterfactual_protocol_errors_at_retry_1": 9,
+      "counterfactual_protocol_error_rate_at_retry_1": 0.47368421052631576,
+      "probe_total": 11,
+      "stop_reasons": {
+        "AGENT_PROTOCOL_ERROR": 8,
+        "REQUEST_OBSERVATION": 11
+      },
+      "llm_calls": 85,
+      "tasks_citing_m0b_field": [
+        "e1v2_task_01",
+        "e1v2_task_04",
+        "e1v2_task_05",
+        "e1v2_task_06",
+        "e1v2_task_08",
+        "e1v2_task_09",
+        "e1v2_task_12",
+        "e1v2_task_13",
+        "e1v2_task_14",
+        "e1v2_task_17",
+        "e1v2_task_18"
+      ]
+    },
+    {
+      "execution": "exec3",
+      "stage_validation_retries": 2,
+      "observation_arms_run": [
+        "NEW_OBS"
+      ],
+      "verdict": "OBSAB_COMPLETE",
+      "arm_runs_scored": 19,
+      "protocol_errors": 7,
+      "protocol_error_rate": 0.3684210526315789,
+      "request_observation": 8,
+      "request_observation_rate": 0.42105263157894735,
+      "arm_runs_with_a_probe": 12,
+      "inspect_returned_only_after_a_second_retry": [
+        "e1v2_task_04",
+        "e1v2_task_11",
+        "e1v2_task_14"
+      ],
+      "arm_runs_rescued_by_the_second_retry": 3,
+      "counterfactual_protocol_errors_at_retry_1": 10,
+      "counterfactual_protocol_error_rate_at_retry_1": 0.5263157894736842,
+      "probe_total": 12,
+      "stop_reasons": {
+        "AGENT_ABSTAIN": 4,
+        "AGENT_PROTOCOL_ERROR": 7,
+        "REQUEST_OBSERVATION": 8
+      },
+      "llm_calls": 89,
+      "tasks_citing_m0b_field": [
+        "e1v2_task_02",
+        "e1v2_task_03",
+        "e1v2_task_04",
+        "e1v2_task_07",
+        "e1v2_task_09",
+        "e1v2_task_10",
+        "e1v2_task_11",
+        "e1v2_task_12",
+        "e1v2_task_14",
+        "e1v2_task_15",
+        "e1v2_task_19"
+      ]
+    }
+  ],
+  "funnel": {
+    "note": "exec1 rates are its NEW_OBS arm only, so they are comparable with the single-arm supplementary executions. The 34.2% quoted in the forensics report was both arms pooled; NEW_OBS alone is stated here as new_obs_only_protocol_error_rate.",
+    "per_execution": [
+      {
+        "execution": "exec1",
+        "stage_validation_retries": 1,
+        "arm_runs_scored": 19,
+        "protocol_errors": 5,
+        "protocol_error_rate": 0.2631578947368421,
+        "request_observation": 11,
+        "request_observation_rate": 0.5789473684210527,
+        "arm_runs_with_a_probe": 14,
+        "probe_total": 15,
+        "llm_calls": 89,
+        "stop_reasons": {
+          "AGENT_ABSTAIN": 2,
+          "AGENT_PROTOCOL_ERROR": 5,
+          "REQUEST_OBSERVATION": 11,
+          "TRUST_DRAFT_GATE_PASS": 1
+        },
+        "arm_runs_rescued_by_the_second_retry": 0,
+        "inspect_returned_only_after_a_second_retry": [],
+        "counterfactual_protocol_error_rate_at_retry_1": 0.2631578947368421
+      },
+      {
+        "execution": "exec2",
+        "stage_validation_retries": 2,
+        "arm_runs_scored": 19,
+        "protocol_errors": 8,
+        "protocol_error_rate": 0.42105263157894735,
+        "request_observation": 11,
+        "request_observation_rate": 0.5789473684210527,
+        "arm_runs_with_a_probe": 11,
+        "probe_total": 11,
+        "llm_calls": 85,
+        "stop_reasons": {
+          "AGENT_PROTOCOL_ERROR": 8,
+          "REQUEST_OBSERVATION": 11
+        },
+        "arm_runs_rescued_by_the_second_retry": 1,
+        "inspect_returned_only_after_a_second_retry": [
+          "e1v2_task_08"
+        ],
+        "counterfactual_protocol_error_rate_at_retry_1": 0.47368421052631576
+      },
+      {
+        "execution": "exec3",
+        "stage_validation_retries": 2,
+        "arm_runs_scored": 19,
+        "protocol_errors": 7,
+        "protocol_error_rate": 0.3684210526315789,
+        "request_observation": 8,
+        "request_observation_rate": 0.42105263157894735,
+        "arm_runs_with_a_probe": 12,
+        "probe_total": 12,
+        "llm_calls": 89,
+        "stop_reasons": {
+          "AGENT_ABSTAIN": 4,
+          "AGENT_PROTOCOL_ERROR": 7,
+          "REQUEST_OBSERVATION": 8
+        },
+        "arm_runs_rescued_by_the_second_retry": 3,
+        "inspect_returned_only_after_a_second_retry": [
+          "e1v2_task_04",
+          "e1v2_task_11",
+          "e1v2_task_14"
+        ],
+        "counterfactual_protocol_error_rate_at_retry_1": 0.5263157894736842
+      }
+    ],
+    "retry_1_baseline_exec1_new_obs_only": {
+      "arm_runs_scored": 19,
+      "protocol_errors": 5,
+      "protocol_error_rate": 0.2631578947368421
+    },
+    "retry_2_pooled": {
+      "executions": [
+        "exec2",
+        "exec3"
+      ],
+      "arm_runs_scored": 38,
+      "protocol_errors": 15,
+      "protocol_error_rate": 0.39473684210526316,
+      "arm_runs_rescued_by_the_second_retry": 4,
+      "counterfactual_protocol_error_rate_at_retry_1": 0.5
+    },
+    "all_three_executions_pooled": {
+      "arm_runs_scored": 57,
+      "protocol_errors": 20,
+      "request_observation": 30,
+      "arm_runs_with_a_probe": 37
+    }
+  },
+  "retry_verdict": {
+    "retry_1_rate": 0.2631578947368421,
+    "retry_2_rate": 0.39473684210526316,
+    "retry_2_reduced_the_error_rate": false,
+    "arm_runs_rescued_by_the_second_retry": 4,
+    "counterfactual_retry_1_rate_on_the_retry_2_runs": 0.5,
+    "second_retry_worked_as_designed": true,
+    "reading": "Two things are true at once here, and collapsing them into one number would misreport the fix.\n\n**The second retry did work as designed.** 4 arm runs across the two retry-2 executions had their inspect stage return only on the second repair attempt (`e1v2_task_08`, `e1v2_task_04`, `e1v2_task_11`, `e1v2_task_14`). A stage only records a retry count when it returned, so at a budget of 1 every one of those would have exited as `AGENT_PROTOCOL_ERROR`. Holding the observed first-pass behaviour fixed, retry 2 converted 4 would-be fatal errors into completed stages: 50.0% would have become 39.5%.\n\n**And the net rate still rose against exec1.** It went from 26.3% at retry 1 to 39.5% at retry 2, and every retry-2 execution individually sits above the retry-1 baseline. The repair budget is not what dominates this rate. The first-pass slip rate itself moved more between executions than one extra repair attempt could offset, and the errors landed on different Tasks each time. exec2 newly failed on 4 Tasks that exec1 completed (`e1v2_task_02`, `e1v2_task_03`, `e1v2_task_07`, `e1v2_task_16`); exec3 newly failed on 7 Tasks that exec1 completed (`e1v2_task_01`, `e1v2_task_05`, `e1v2_task_06`, `e1v2_task_13`, `e1v2_task_16`, `e1v2_task_17`, `e1v2_task_18`), and not one Task failed in all three executions. That is what a variance-dominated process looks like, not a stable task-geometry effect, which also weakens the exec1 reading that tied these errors to a low `estimated_region_start_fraction`.\n\nSo the fix is worth keeping available and is not worth promoting to a default on this evidence: it buys a real but small recovery, against a noise floor large enough that three executions of 19 Tasks cannot resolve a rate difference of this size. The default of 1 stays the default."
+  },
+  "protocol_error_locality": {
+    "protocol_error_tasks_by_execution": {
+      "exec1": [
+        "e1v2_task_10",
+        "e1v2_task_11",
+        "e1v2_task_14",
+        "e1v2_task_15",
+        "e1v2_task_19"
+      ],
+      "exec2": [
+        "e1v2_task_02",
+        "e1v2_task_03",
+        "e1v2_task_07",
+        "e1v2_task_10",
+        "e1v2_task_11",
+        "e1v2_task_15",
+        "e1v2_task_16",
+        "e1v2_task_19"
+      ],
+      "exec3": [
+        "e1v2_task_01",
+        "e1v2_task_05",
+        "e1v2_task_06",
+        "e1v2_task_13",
+        "e1v2_task_16",
+        "e1v2_task_17",
+        "e1v2_task_18"
+      ]
+    },
+    "tasks_failing_in_every_execution": [],
+    "new_failures_not_seen_in_exec1": {
+      "exec2": [
+        "e1v2_task_02",
+        "e1v2_task_03",
+        "e1v2_task_07",
+        "e1v2_task_16"
+      ],
+      "exec3": [
+        "e1v2_task_01",
+        "e1v2_task_05",
+        "e1v2_task_06",
+        "e1v2_task_13",
+        "e1v2_task_16",
+        "e1v2_task_17",
+        "e1v2_task_18"
+      ]
+    },
+    "exec1_failures_that_recovered_elsewhere": {
+      "exec2": [
+        "e1v2_task_14"
+      ],
+      "exec3": [
+        "e1v2_task_10",
+        "e1v2_task_11",
+        "e1v2_task_14",
+        "e1v2_task_15",
+        "e1v2_task_19"
+      ]
+    }
+  },
+  "pooled_census": {
+    "counting_rule": {
+      "unit_of_evidence": "distinct Task Episode, pooled across executions",
+      "repeat_positive_same_task": "counted once; re-sampling one Task on the same already-exposed data is not independent evidence",
+      "sign_flip_across_executions": "reported as a conflict for that cell and excluded from both the positive and the negative column",
+      "opposing_definition": "distinct negative Tasks plus conflict Tasks; either blocks a precheck",
+      "material_threshold": 0.005,
+      "precheck_min_distinct_positive_tasks": 3
+    },
+    "cells": [
+      {
+        "program": "hampel_filter",
+        "context_condition": false,
+        "distinct_positive_tasks": 2,
+        "distinct_negative_tasks": 3,
+        "conflict_tasks": 2,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 5,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_17",
+            "by_execution": {
+              "exec2": "positive"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_18",
+            "by_execution": {
+              "exec1": "positive",
+              "exec2": "positive"
+            }
+          }
+        ],
+        "negative": [
+          {
+            "task_episode_id": "e1v2_task_01",
+            "by_execution": {
+              "exec2": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_04",
+            "by_execution": {
+              "exec3": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_14",
+            "by_execution": {
+              "exec2": "negative"
+            }
+          }
+        ],
+        "conflict": [
+          {
+            "task_episode_id": "e1v2_task_12",
+            "by_execution": {
+              "exec1": "negative",
+              "exec2": "positive",
+              "exec3": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_13",
+            "by_execution": {
+              "exec1": "positive",
+              "exec2": "negative"
+            }
+          }
+        ],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1",
+          "exec2",
+          "exec3"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 1
+      },
+      {
+        "program": "hampel_filter",
+        "context_condition": true,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 2,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 2,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_03",
+            "by_execution": {
+              "exec3": "positive"
+            }
+          }
+        ],
+        "negative": [
+          {
+            "task_episode_id": "e1v2_task_07",
+            "by_execution": {
+              "exec3": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_09",
+            "by_execution": {
+              "exec2": "negative"
+            }
+          }
+        ],
+        "conflict": [],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec2",
+          "exec3"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 2
+      },
+      {
+        "program": "outlier_mad+repair_level_shift",
+        "context_condition": false,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 0,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_08",
+            "by_execution": {
+              "exec1": "positive"
+            }
+          }
+        ],
+        "negative": [],
+        "conflict": [],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 2
+      },
+      {
+        "program": "period_median_complete",
+        "context_condition": false,
+        "distinct_positive_tasks": 0,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 1,
+        "opposing_tasks": 0,
+        "positive": [],
+        "negative": [],
+        "conflict": [],
+        "immaterial_only": [
+          {
+            "task_episode_id": "e1v2_task_02",
+            "by_execution": {
+              "exec1": "immaterial"
+            }
+          }
+        ],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 3
+      },
+      {
+        "program": "repair_level_shift",
+        "context_condition": false,
+        "distinct_positive_tasks": 5,
+        "distinct_negative_tasks": 7,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 1,
+        "opposing_tasks": 7,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_04",
+            "by_execution": {
+              "exec2": "positive"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_06",
+            "by_execution": {
+              "exec2": "positive"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_10",
+            "by_execution": {
+              "exec3": "positive"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_11",
+            "by_execution": {
+              "exec3": "positive"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_19",
+            "by_execution": {
+              "exec3": "positive"
+            }
+          }
+        ],
+        "negative": [
+          {
+            "task_episode_id": "e1v2_task_01",
+            "by_execution": {
+              "exec1": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_05",
+            "by_execution": {
+              "exec1": "negative",
+              "exec2": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_08",
+            "by_execution": {
+              "exec2": "negative",
+              "exec3": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_14",
+            "by_execution": {
+              "exec3": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_15",
+            "by_execution": {
+              "exec3": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_16",
+            "by_execution": {
+              "exec1": "negative"
+            }
+          },
+          {
+            "task_episode_id": "e1v2_task_17",
+            "by_execution": {
+              "exec1": "negative"
+            }
+          }
+        ],
+        "conflict": [],
+        "immaterial_only": [
+          {
+            "task_episode_id": "e1v2_task_02",
+            "by_execution": {
+              "exec1": "immaterial",
+              "exec3": "immaterial"
+            }
+          }
+        ],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1",
+          "exec2",
+          "exec3"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 0
+      },
+      {
+        "program": "repair_level_shift",
+        "context_condition": true,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 0,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_09",
+            "by_execution": {
+              "exec1": "positive",
+              "exec3": "positive"
+            }
+          }
+        ],
+        "negative": [],
+        "conflict": [],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1",
+          "exec3"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 2
+      },
+      {
+        "program": "repair_level_shift+denoise_median",
+        "context_condition": false,
+        "distinct_positive_tasks": 0,
+        "distinct_negative_tasks": 1,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 1,
+        "positive": [],
+        "negative": [
+          {
+            "task_episode_id": "e1v2_task_04",
+            "by_execution": {
+              "exec1": "negative"
+            }
+          }
+        ],
+        "conflict": [],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 3
+      },
+      {
+        "program": "repair_level_shift+hampel_filter",
+        "context_condition": false,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 0,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_06",
+            "by_execution": {
+              "exec1": "positive"
+            }
+          }
+        ],
+        "negative": [],
+        "conflict": [],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 2
+      },
+      {
+        "program": "repair_level_shift+winsorize",
+        "context_condition": true,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 0,
+        "opposing_tasks": 0,
+        "positive": [
+          {
+            "task_episode_id": "e1v2_task_03",
+            "by_execution": {
+              "exec1": "positive"
+            }
+          }
+        ],
+        "negative": [],
+        "conflict": [],
+        "immaterial_only": [],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 2
+      },
+      {
+        "program": "resample_uniform",
+        "context_condition": true,
+        "distinct_positive_tasks": 0,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "immaterial_only_tasks": 1,
+        "opposing_tasks": 0,
+        "positive": [],
+        "negative": [],
+        "conflict": [],
+        "immaterial_only": [
+          {
+            "task_episode_id": "e1v2_task_07",
+            "by_execution": {
+              "exec1": "immaterial"
+            }
+          }
+        ],
+        "positive_or_negative_with_immaterial_elsewhere": [],
+        "executions_contributing": [
+          "exec1"
+        ],
+        "meets_precheck_threshold": false,
+        "distinct_positive_tasks_short_of_threshold": 3
+      }
+    ]
+  },
+  "authorization_precheck": {
+    "is_a_precheck_only": true,
+    "authorization_actions_taken": [],
+    "no_try_written": true,
+    "no_skill_written": true,
+    "no_authorization_artifact_modified": true,
+    "nothing_promoted": true,
+    "precheck_eligible_cell_count": 0,
+    "precheck_eligible_cells": [],
+    "closest_three_cells": [
+      {
+        "program": "repair_level_shift",
+        "context_condition": false,
+        "distinct_positive_tasks": 5,
+        "distinct_negative_tasks": 7,
+        "conflict_tasks": 0,
+        "opposing_tasks": 7,
+        "tasks_short_of_threshold": 0,
+        "blocked_by_opposing": true,
+        "executions_contributing": [
+          "exec1",
+          "exec2",
+          "exec3"
+        ]
+      },
+      {
+        "program": "hampel_filter",
+        "context_condition": false,
+        "distinct_positive_tasks": 2,
+        "distinct_negative_tasks": 3,
+        "conflict_tasks": 2,
+        "opposing_tasks": 5,
+        "tasks_short_of_threshold": 1,
+        "blocked_by_opposing": true,
+        "executions_contributing": [
+          "exec1",
+          "exec2",
+          "exec3"
+        ]
+      },
+      {
+        "program": "outlier_mad+repair_level_shift",
+        "context_condition": false,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "opposing_tasks": 0,
+        "tasks_short_of_threshold": 2,
+        "blocked_by_opposing": false,
+        "executions_contributing": [
+          "exec1"
+        ]
+      }
+    ]
+  },
+  "outlier_mad_recurrence": {
+    "question": "One of the two discarded exec1-era executions produced an outlier_mad cell at 3 distinct positives. Does any outlier_mad cell reappear across the three clean executions?",
+    "reading": "The family appears only as `outlier_mad+repair_level_shift`, and only in exec1 -- the two retry-2 executions never probed an `outlier_mad` program at all. Its pooled count is 1 distinct positive Task, so it does **not** reach the 3-Task threshold the discarded execution appeared to clear. The discarded execution's `outlier_mad` cell does not reproduce.",
+    "reappeared_at_all": true,
+    "programs_probed_per_execution": {
+      "exec1": [
+        "outlier_mad+repair_level_shift"
+      ],
+      "exec2": [],
+      "exec3": []
+    },
+    "cells": [
+      {
+        "program": "outlier_mad+repair_level_shift",
+        "context_condition": false,
+        "distinct_positive_tasks": 1,
+        "distinct_negative_tasks": 0,
+        "conflict_tasks": 0,
+        "meets_precheck_threshold": false,
+        "executions_contributing": [
+          "exec1"
+        ]
+      }
+    ],
+    "reaches_three_distinct_positives": false
+  },
+  "per_execution_task_rows": [
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_01",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 11,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.060922122539536085,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_02",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 2,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.0038515977416943756,
+          "sign": "immaterial"
+        },
+        {
+          "program": "period_median_complete",
+          "context_condition": false,
+          "support_gain": 0.0,
+          "sign": "immaterial"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_03",
+      "context_condition": true,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift+winsorize",
+          "context_condition": true,
+          "support_gain": 0.30506293472447016,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_04",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift+denoise_median",
+          "context_condition": false,
+          "support_gain": -0.04479739911185437,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_05",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.03697603390389423,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_06",
+      "context_condition": false,
+      "stop_reason": "TRUST_DRAFT_GATE_PASS",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift+hampel_filter",
+          "context_condition": false,
+          "support_gain": 0.0965606279025507,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_07",
+      "context_condition": true,
+      "stop_reason": "AGENT_ABSTAIN",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "resample_uniform",
+          "context_condition": true,
+          "support_gain": 0.0,
+          "sign": "immaterial"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_08",
+      "context_condition": false,
+      "stop_reason": "AGENT_ABSTAIN",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "outlier_mad+repair_level_shift",
+          "context_condition": false,
+          "support_gain": 0.07542407853647441,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_09",
+      "context_condition": true,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": true,
+          "support_gain": 0.02821778088795821,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_10",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 3,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_11",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: StagePostValidationError: evidence feature 'estimated_level_offset=35.6' is not a deployment-visible public feature; cite only features from the current feature summary.",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 3,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_12",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": -0.16166514437812665,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_13",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": 0.12686805323057035,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_14",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 3,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_15",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 3,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_16",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.11395850817160412,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_17",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.24089469634968272,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_18",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": 0.09028885192442877,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec1",
+      "task_episode_id": "e1v2_task_19",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": null,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 3,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_01",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": -0.08351611418166908,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_02",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_03",
+      "context_condition": true,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_04",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": 0.03526712748037246,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_05",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.03697603390389423,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_06",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": 0.07093183041587298,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_07",
+      "context_condition": true,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_08",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 2,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.033867737598807984,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_09",
+      "context_condition": true,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": true,
+          "support_gain": -0.09381198309784529,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_10",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_11",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: StagePostValidationError: evidence feature 'level_excursion_score=18.364543860294578' is not a deployment-visible public feature; cite only features from the current feature summary.",
+      "terminal_validation_error_code": "HYPOTHESIS_EVIDENCE_UNGROUNDED",
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 1,
+      "ungrounded_citation_rejections_fatal": 1,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 5,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_12",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": 0.04899359962303427,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_13",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": -0.1894501313428696,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_14",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": -0.2857511746697632,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_15",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_16",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.requested_public_tools items must be unique",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 6,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_17",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": 0.009743849753351366,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_18",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": 0.09028885192442877,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec2",
+      "task_episode_id": "e1v2_task_19",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: StagePostValidationError: evidence feature 'estimated_level_offset=35.6' is not a deployment-visible public feature; cite only features from the current feature summary.",
+      "terminal_validation_error_code": "HYPOTHESIS_EVIDENCE_UNGROUNDED",
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 1,
+      "ungrounded_citation_rejections_fatal": 1,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_01",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_02",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.0038515977416943756,
+          "sign": "immaterial"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_03",
+      "context_condition": true,
+      "stop_reason": "AGENT_ABSTAIN",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": true,
+          "support_gain": 0.02347144461701643,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_04",
+      "context_condition": false,
+      "stop_reason": "AGENT_ABSTAIN",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 2,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 7,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": -0.022120317494376804,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_05",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: StagePostValidationError: evidence feature 'level_excursion_score=14.781218229017583' is not a deployment-visible public feature; cite only features from the current feature summary.",
+      "terminal_validation_error_code": "HYPOTHESIS_EVIDENCE_UNGROUNDED",
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 1,
+      "ungrounded_citation_rejections_fatal": 1,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 5,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_06",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions has too few items",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_07",
+      "context_condition": true,
+      "stop_reason": "AGENT_ABSTAIN",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": true,
+          "support_gain": -0.077800847185018,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_08",
+      "context_condition": false,
+      "stop_reason": "AGENT_ABSTAIN",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.033867737598807984,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_09",
+      "context_condition": true,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": true,
+          "support_gain": 0.02821778088795821,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_10",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": 0.04314140145790115,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_11",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 2,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": 0.005942396420990624,
+          "sign": "positive"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_12",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "hampel_filter",
+          "context_condition": false,
+          "support_gain": -0.16166514437812665,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_13",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: StagePostValidationError: evidence feature 'local_robust_z_peak=35.98606581442775' is not a deployment-visible public feature; cite only features from the current feature summary.",
+      "terminal_validation_error_code": "HYPOTHESIS_EVIDENCE_UNGROUNDED",
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 1,
+      "ungrounded_citation_rejections_fatal": 1,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_14",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 2,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 6,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.05575660998908947,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_15",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 0,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 4,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": -0.0805416713774546,
+          "sign": "negative"
+        }
+      ]
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_16",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_17",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_18",
+      "context_condition": false,
+      "stop_reason": "AGENT_PROTOCOL_ERROR",
+      "protocol_error": "inspect: AgentProtocolError: payload.pattern_hypotheses[0].region_fractions[0] has wrong type",
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": null,
+      "any_stage_retried": false,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": false,
+      "real_support_probe_count": 0,
+      "llm_calls": 4,
+      "probed_cells": []
+    },
+    {
+      "execution": "exec3",
+      "task_episode_id": "e1v2_task_19",
+      "context_condition": false,
+      "stop_reason": "REQUEST_OBSERVATION",
+      "protocol_error": null,
+      "terminal_validation_error_code": null,
+      "inspect_validation_retry_count": 1,
+      "any_stage_retried": true,
+      "ungrounded_citation_rejections": 0,
+      "ungrounded_citation_rejections_fatal": 0,
+      "cites_any_m0b_field": true,
+      "real_support_probe_count": 1,
+      "llm_calls": 5,
+      "probed_cells": [
+        {
+          "program": "repair_level_shift",
+          "context_condition": false,
+          "support_gain": 0.005086451486941331,
+          "sign": "positive"
+        }
+      ]
+    }
+  ]
+}

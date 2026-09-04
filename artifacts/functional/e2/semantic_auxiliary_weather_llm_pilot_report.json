@@ -1,0 +1,440 @@
+{
+  "capability_or_memory_written": false,
+  "claim_limit": "single new natural dataset with two target roles; functional LLM-plan pilot only, not cross-dataset Promotion or a general LLM success claim",
+  "compute_counts": {
+    "exact_weighted_candidate_solve_count": 6,
+    "per_action_consumer_refit_count": 0,
+    "query_outcome_logical_materialization_count": 1,
+    "ridge_reference_solve_count": 2,
+    "total_ridge_solve_count": 8
+  },
+  "dataset": "Monash Weather daily panel",
+  "eligibility": {
+    "eligible_count_by_role": {
+      "maxtemp": 20,
+      "mintemp": 20,
+      "rain": 20,
+      "solar": 20
+    },
+    "rejected_before_first_20_eligible": {
+      "maxtemp": 10,
+      "mintemp": 10,
+      "rain": 10,
+      "solar": 3
+    },
+    "rows_seen_until_first_20_eligible": {
+      "maxtemp": 30,
+      "mintemp": 30,
+      "rain": 30,
+      "solar": 23
+    },
+    "rule": "public row order; length and finite through 976; all frozen contexts scale-valid; pre-future history seasonal-scale-valid"
+  },
+  "experiment_id": "E2-semantic-auxiliary-weather-LLM-plan-pilot",
+  "gate": {
+    "A5_changes_top1_order_or_behavior": true,
+    "A5_harmful_target_count_zero": true,
+    "A5_macro_strictly_greater_than_A3": false,
+    "A5_minus_A3_nonnegative_2_of_2": true,
+    "passed": false
+  },
+  "macro": {
+    "A5_B2_abstain_target_count": 2,
+    "A5_minus_A3": 0.0,
+    "adapt_auc": {
+      "A3": 0.0,
+      "A5": 0.0
+    },
+    "changed_order_or_behavior_target_count": 2,
+    "harmful_A5_target_count": 0,
+    "nonnegative_target_count": 2
+  },
+  "plan": {
+    "LLM_plan_frozen_before_outcome": true,
+    "path": "artifacts/functional/e2/semantic_auxiliary_weather_llm_plan.json",
+    "plan_rewritten_by_runner": false,
+    "planner_id": "llm_semantic_probe_v1",
+    "planner_runtime": "gpt-5.6-sol-high isolated subagent invocation"
+  },
+  "protocol": {
+    "A3": "public role order excluding target; no Source Memory",
+    "A5": "exact two-probe order from frozen LLM typed plan",
+    "anchors": [
+      240,
+      300,
+      360,
+      420,
+      480,
+      540
+    ],
+    "auxiliary_weight": 0.25,
+    "consumer": "Ridge(alpha=1.0, unpenalized intercept)",
+    "context_length": 192,
+    "control": "stop on first strictly positive exact Support gain; otherwise continue then abstain",
+    "feedback_budgets": [
+      0,
+      1,
+      2
+    ],
+    "future_half_open": [
+      928,
+      976
+    ],
+    "horizon": 48,
+    "metric": "per-series sMASE; four-series Support and Query means",
+    "original_uci_opened": false,
+    "period": 7,
+    "public_roles": [
+      "rain",
+      "mintemp",
+      "maxtemp",
+      "solar"
+    ],
+    "query_used_for_decision": false,
+    "targets": [
+      "mintemp",
+      "solar"
+    ],
+    "train_stop": 928
+  },
+  "scientific_role": "sealed functional pilot on one new natural dataset",
+  "targets": [
+    {
+      "A3_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "probed_group": null,
+          "probed_query_gain_evaluator_only": null,
+          "probed_support_gain": null,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 1,
+          "fixed_query_gain": 0.0,
+          "probed_group": "rain",
+          "probed_query_gain_evaluator_only": -0.5109541192812783,
+          "probed_support_gain": -0.7207435887053258,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 2,
+          "fixed_query_gain": 0.0,
+          "probed_group": "maxtemp",
+          "probed_query_gain_evaluator_only": -0.21762258686177427,
+          "probed_support_gain": -0.11541695821301542,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        }
+      ],
+      "A3_order_public_metadata": [
+        "rain",
+        "maxtemp",
+        "solar"
+      ],
+      "A5_abstained_at_B2": true,
+      "A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "probed_group": null,
+          "probed_query_gain_evaluator_only": null,
+          "probed_support_gain": null,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 1,
+          "fixed_query_gain": 0.0,
+          "probed_group": "maxtemp",
+          "probed_query_gain_evaluator_only": -0.21762258686177427,
+          "probed_support_gain": -0.11541695821301542,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 2,
+          "fixed_query_gain": 0.0,
+          "probed_group": "solar",
+          "probed_query_gain_evaluator_only": 0.01904193061745532,
+          "probed_support_gain": -0.2514471773874153,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        }
+      ],
+      "A5_harmful": false,
+      "A5_minus_A3": 0.0,
+      "A5_order_frozen_llm_plan": [
+        "maxtemp",
+        "solar"
+      ],
+      "adapt_auc": {
+        "A3": 0.0,
+        "A5": 0.0
+      },
+      "candidate_exact_gains": [
+        {
+          "auxiliary_group": "rain",
+          "per_query_series_gain": [
+            -0.3683912781659837,
+            -0.36430393364506775,
+            -0.15689506512938767,
+            -1.1542262001846744
+          ],
+          "per_support_series_gain": [
+            -1.2121622066273319,
+            -0.26007013830020154,
+            -0.6652720490638571,
+            -0.745469960829913
+          ],
+          "query_gain": -0.5109541192812783,
+          "support_gain": -0.7207435887053258,
+          "weight": 0.25
+        },
+        {
+          "auxiliary_group": "maxtemp",
+          "per_query_series_gain": [
+            -0.4037965728286339,
+            -0.25489304960131554,
+            0.04552691301906964,
+            -0.2573276380362173
+          ],
+          "per_support_series_gain": [
+            -0.4233572824744767,
+            0.3698097192658638,
+            -0.3663295441387264,
+            -0.041790725504722404
+          ],
+          "query_gain": -0.21762258686177427,
+          "support_gain": -0.11541695821301542,
+          "weight": 0.25
+        },
+        {
+          "auxiliary_group": "solar",
+          "per_query_series_gain": [
+            -0.12418943099726554,
+            -0.18260780379626818,
+            0.05591658859901205,
+            0.32704836866434295
+          ],
+          "per_support_series_gain": [
+            -0.3191973323062749,
+            0.04721389500336226,
+            -0.5153294423194448,
+            -0.21847582992730386
+          ],
+          "query_gain": 0.01904193061745532,
+          "support_gain": -0.2514471773874153,
+          "weight": 0.25
+        }
+      ],
+      "entity_matching_claimed": false,
+      "full_menu_query_oracle_descriptive": {
+        "auxiliary_group": "solar",
+        "evaluator_only": true,
+        "query_headroom": 0.01904193061745532,
+        "selected_action": "ADD_AUXILIARY_SEMANTIC_GROUP",
+        "weight": 0.25
+      },
+      "order_or_behavior_changed": true,
+      "role_level_training_pool_augmentation": true,
+      "roster_counts": {
+        "query": 4,
+        "support": 4,
+        "train": 12
+      },
+      "selected_behavior_changed": false,
+      "target": "mintemp",
+      "top1_or_order_changed": true
+    },
+    {
+      "A3_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "probed_group": null,
+          "probed_query_gain_evaluator_only": null,
+          "probed_support_gain": null,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 1,
+          "fixed_query_gain": 0.0,
+          "probed_group": "rain",
+          "probed_query_gain_evaluator_only": -0.7289859496937403,
+          "probed_support_gain": -0.8343661835539147,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 2,
+          "fixed_query_gain": 0.0,
+          "probed_group": "mintemp",
+          "probed_query_gain_evaluator_only": -0.245013505458497,
+          "probed_support_gain": -0.5999309057159828,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        }
+      ],
+      "A3_order_public_metadata": [
+        "rain",
+        "mintemp",
+        "maxtemp"
+      ],
+      "A5_abstained_at_B2": true,
+      "A5_curve": [
+        {
+          "abstained": true,
+          "budget": 0,
+          "fixed_query_gain": 0.0,
+          "probed_group": null,
+          "probed_query_gain_evaluator_only": null,
+          "probed_support_gain": null,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 1,
+          "fixed_query_gain": 0.0,
+          "probed_group": "maxtemp",
+          "probed_query_gain_evaluator_only": -0.43975959634301864,
+          "probed_support_gain": -0.569005702046285,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        },
+        {
+          "abstained": true,
+          "budget": 2,
+          "fixed_query_gain": 0.0,
+          "probed_group": "mintemp",
+          "probed_query_gain_evaluator_only": -0.245013505458497,
+          "probed_support_gain": -0.5999309057159828,
+          "selected_action": "IDENTITY",
+          "selected_auxiliary_group": null,
+          "selected_support_gain": 0.0,
+          "terminal": false
+        }
+      ],
+      "A5_harmful": false,
+      "A5_minus_A3": 0.0,
+      "A5_order_frozen_llm_plan": [
+        "maxtemp",
+        "mintemp"
+      ],
+      "adapt_auc": {
+        "A3": 0.0,
+        "A5": 0.0
+      },
+      "candidate_exact_gains": [
+        {
+          "auxiliary_group": "rain",
+          "per_query_series_gain": [
+            -1.0114079536732077,
+            -0.770900574228705,
+            -0.3623195266243039,
+            -0.771315744248745
+          ],
+          "per_support_series_gain": [
+            -0.7771089163962521,
+            -0.9182845498891208,
+            -0.9182845498891208,
+            -0.723786718041165
+          ],
+          "query_gain": -0.7289859496937403,
+          "support_gain": -0.8343661835539147,
+          "weight": 0.25
+        },
+        {
+          "auxiliary_group": "mintemp",
+          "per_query_series_gain": [
+            -0.38906417467991117,
+            -0.2555279602670466,
+            -0.05123531368330181,
+            -0.28422657320372846
+          ],
+          "per_support_series_gain": [
+            -0.8285117760811977,
+            -0.36469823550150915,
+            -0.36469823550150915,
+            -0.8418153757797153
+          ],
+          "query_gain": -0.245013505458497,
+          "support_gain": -0.5999309057159828,
+          "weight": 0.25
+        },
+        {
+          "auxiliary_group": "maxtemp",
+          "per_query_series_gain": [
+            -0.6285379065943101,
+            -0.45052081397041777,
+            -0.38776805846306683,
+            -0.29221160634428
+          ],
+          "per_support_series_gain": [
+            -0.5548382266376144,
+            -0.5832876697709779,
+            -0.5832876697709779,
+            -0.5546092420055697
+          ],
+          "query_gain": -0.43975959634301864,
+          "support_gain": -0.569005702046285,
+          "weight": 0.25
+        }
+      ],
+      "entity_matching_claimed": false,
+      "full_menu_query_oracle_descriptive": {
+        "auxiliary_group": null,
+        "evaluator_only": true,
+        "query_headroom": 0.0,
+        "selected_action": "IDENTITY",
+        "weight": null
+      },
+      "order_or_behavior_changed": true,
+      "role_level_training_pool_augmentation": true,
+      "roster_counts": {
+        "query": 4,
+        "support": 4,
+        "train": 12
+      },
+      "selected_behavior_changed": false,
+      "target": "solar",
+      "top1_or_order_changed": true
+    }
+  ],
+  "verdict": "LLM_SEMANTIC_WORKFLOW_PILOT_FAIL"
+}

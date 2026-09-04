@@ -1,0 +1,285 @@
+{
+  "protocol_version": "g3_candidate_screening_v3",
+  "criteria": {
+    "min_train_series": 12,
+    "min_eval_series": 8,
+    "min_series_length": 5760,
+    "max_eval_loss_spread": 5.0,
+    "max_single_series_loss_share": 0.4,
+    "min_series_with_public_phenomenon": 4,
+    "development_origins": [
+      1104,
+      1368,
+      1800
+    ],
+    "sealed_from_index": 3072,
+    "fixed_before_any_candidate_was_opened": true,
+    "rationale": "Weather's Judge was unreadable at a 24.4x eval-loss spread and T233 reads at 2.0x; the bar is set once, between them, and is never moved to make a candidate pass"
+  },
+  "exposed_families": {
+    "energy": [
+      "uci_electricity_load_diagrams",
+      "gefcom2012_load"
+    ],
+    "traffic": [
+      "metr_la",
+      "monash:traffic_hourly"
+    ],
+    "weather": [
+      "noaa_global_hourly",
+      "tsl_weather_jena"
+    ],
+    "epidemiology": [
+      "monash:covid_deaths"
+    ],
+    "finance": [
+      "monash:nn5_daily"
+    ],
+    "air_quality": [
+      "kdd2018"
+    ],
+    "legacy_mixed": [
+      "fred_md",
+      "saugeenday",
+      "sunspot",
+      "tourism_monthly",
+      "us_births",
+      "nn5_daily",
+      "covid_deaths"
+    ]
+  },
+  "sealed": {
+    "noaa": true,
+    "g3_final_query_outcome": true
+  },
+  "candidates": [
+    {
+      "candidate": "psm",
+      "criteria": {
+        "min_train_series": 12,
+        "min_eval_series": 8,
+        "min_series_length": 5760,
+        "max_eval_loss_spread": 5.0,
+        "max_single_series_loss_share": 0.4,
+        "min_series_with_public_phenomenon": 4,
+        "development_origins": [
+          1104,
+          1368,
+          1800
+        ],
+        "sealed_from_index": 3072,
+        "fixed_before_any_candidate_was_opened": true,
+        "rationale": "Weather's Judge was unreadable at a 24.4x eval-loss spread and T233 reads at 2.0x; the bar is set once, between them, and is never moved to make a candidate pass"
+      },
+      "provenance": {
+        "source_path": "shared_tsq_datasets/PSM/train.csv",
+        "original_source_family": "eBay Pooled Server Metrics: application server telemetry, 25 channels, minute resolution",
+        "prior_outcome_exposure_in_family": false
+      },
+      "fresh_identity": "FRESH_SOURCE_FAMILY",
+      "structure": {
+        "numeric_column_count": 26,
+        "columns_long_enough": 26,
+        "series_length": 20000,
+        "pass": true
+      },
+      "window_coverage": {
+        "series_with_an_all_missing_window": 1,
+        "examples": [
+          "feature_21"
+        ]
+      },
+      "substrate": {
+        "columns_clean_under_both_guards": 25,
+        "pass": true,
+        "zero_new_outcome": true
+      },
+      "roster": {
+        "train": [
+          "timestamp_(min)",
+          "feature_0",
+          "feature_1",
+          "feature_2",
+          "feature_3",
+          "feature_4",
+          "feature_5",
+          "feature_6",
+          "feature_7",
+          "feature_8",
+          "feature_9",
+          "feature_10"
+        ],
+        "eval": [
+          "feature_11",
+          "feature_12",
+          "feature_13",
+          "feature_14",
+          "feature_15",
+          "feature_16",
+          "feature_17",
+          "feature_18"
+        ]
+      },
+      "public_phenomena": {
+        "series_with_public_phenomenon": 1,
+        "pass": false,
+        "per_series": {
+          "timestamp_(min)": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 1.3485423973649895,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_0": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 1.8910388057252379,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_1": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 1.9175739632388764,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_2": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 5.191784022793487,
+            "estimated_region_width": 0.013020833333333315,
+            "has_public_phenomenon": true
+          },
+          "feature_3": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 2.355268866093967,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_4": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 1.603049787096842,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_5": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 1.8104751964898065,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_6": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 2.89067468347113,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_7": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 2.0641962488132792,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_8": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 2.0768104148234463,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_9": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 2.02549347685998,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          },
+          "feature_10": {
+            "missing_fraction": 0.0,
+            "outlier_fraction": 0.0,
+            "local_robust_z_peak": 2.1854829370458946,
+            "estimated_region_width": 0.0,
+            "has_public_phenomenon": false
+          }
+        }
+      },
+      "verdict": "REJECTED_NO_PUBLIC_PHENOMENON"
+    },
+    {
+      "candidate": "swat",
+      "criteria": {
+        "min_train_series": 12,
+        "min_eval_series": 8,
+        "min_series_length": 5760,
+        "max_eval_loss_spread": 5.0,
+        "max_single_series_loss_share": 0.4,
+        "min_series_with_public_phenomenon": 4,
+        "development_origins": [
+          1104,
+          1368,
+          1800
+        ],
+        "sealed_from_index": 3072,
+        "fixed_before_any_candidate_was_opened": true,
+        "rationale": "Weather's Judge was unreadable at a 24.4x eval-loss spread and T233 reads at 2.0x; the bar is set once, between them, and is never moved to make a candidate pass"
+      },
+      "provenance": {
+        "source_path": "shared_tsq_datasets/SWaT/swat2.csv",
+        "original_source_family": "Secure Water Treatment testbed: industrial control sensors and actuators, 51 channels, second resolution",
+        "prior_outcome_exposure_in_family": false
+      },
+      "fresh_identity": "FRESH_SOURCE_FAMILY",
+      "structure": {
+        "numeric_column_count": 52,
+        "columns_long_enough": 52,
+        "series_length": 20000,
+        "pass": true
+      },
+      "window_coverage": {
+        "series_with_an_all_missing_window": 0,
+        "examples": []
+      },
+      "substrate": {
+        "columns_clean_under_both_guards": 15,
+        "pass": false,
+        "zero_new_outcome": true
+      },
+      "verdict": "REJECTED_SUBSTRATE"
+    }
+  ],
+  "fresh_sourcing_status": {
+    "state": "OPEN_BACKGROUND_SEARCH",
+    "blocking_the_main_line": false,
+    "screened_so_far": [
+      {
+        "candidate": "electricity",
+        "family": "UCI ElectricityLoadDiagrams / energy",
+        "outcome": "exposed family; retained as development cohort"
+      },
+      {
+        "candidate": "traffic",
+        "family": "PeMS Bay Area / traffic",
+        "outcome": "exposed family (same network as monash:traffic_hourly)"
+      },
+      {
+        "candidate": "psm",
+        "family": "eBay pooled server metrics",
+        "outcome": "fresh family, rejected: only 1 series carries a publicly observable phenomenon against a bar of 4 -- the channels arrive pre-normalized, so the Operator DSL has nothing to act on"
+      },
+      {
+        "candidate": "swat",
+        "family": "Secure Water Treatment testbed",
+        "outcome": "fresh family, rejected: 15 of 52 columns clean under both substrate guards against a bar of 20 -- the actuator channels are near-constant and hit the scale floor"
+      }
+    ],
+    "note": "both fresh-family candidates were rejected on pre-registered criteria, not on freshness, and no criterion was moved to let one through. No Outcome was opened on any candidate.",
+    "next_directions_if_resumed": "a fresh family needs both an unnormalized signal (so public phenomena exist) and enough non-degenerate channels. Server and industrial-control corpora fail the first and second respectively."
+  }
+}

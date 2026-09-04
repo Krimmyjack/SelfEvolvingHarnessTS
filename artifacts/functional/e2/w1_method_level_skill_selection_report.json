@@ -1,0 +1,165 @@
+{
+  "case": {
+    "delayed_origin": 976,
+    "origin": 928,
+    "step_a": "impute_ssm",
+    "step_b": "outlier_iqr",
+    "support": {
+      "A_only": -0.15432,
+      "A_to_B": -0.10249,
+      "B_only": 0.04386,
+      "identity": null
+    }
+  },
+  "cells": {
+    "1_base": {
+      "candidate_program_steps": {
+        "cand_impute_fft": [
+          {
+            "op": "impute_fft",
+            "params": {}
+          }
+        ]
+      },
+      "chosen": "cand_impute_fft",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "impute_fft",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "execution": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ]
+    },
+    "2_double_propose": {
+      "candidate_program_steps": {
+        "cand_impute_linear": [
+          {
+            "op": "impute_linear",
+            "params": {
+              "strength": 1.0
+            }
+          }
+        ],
+        "cand_skill_outlie-target-v1": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ]
+      },
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "execution": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ]
+    },
+    "2_skill_alone": {
+      "candidate_program_steps": {
+        "cand_impute_linear": [
+          {
+            "op": "impute_linear",
+            "params": {
+              "strength": 1.0
+            }
+          }
+        ],
+        "cand_skill_outlie-target-v1": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ]
+      },
+      "chosen": "cand_skill_outlie-target-v1",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "execution": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "outlie-target-v1"
+      ]
+    },
+    "3_episode_alone": {
+      "candidate_program_steps": {
+        "cand_outlier_iqr": [
+          {
+            "op": "outlier_iqr",
+            "params": {}
+          }
+        ]
+      },
+      "chosen": "cand_outlier_iqr",
+      "chosen_steps_from_result_program": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "compilation": "ok",
+      "execution": "ok",
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ]
+    }
+  },
+  "checks": {
+    "chosen_program_steps_from_result": true,
+    "neutral_selector_no_skill_text_parsing": true,
+    "skill_alone_chosen_is_skill_candidate": true,
+    "skill_survives_double_propose": true,
+    "slot_reserved_identity_plus_skill_plus_at_most_one_agent": true,
+    "support_link_complete": true,
+    "support_link_detail": {
+      "chosen": "cand_skill_outlie-target-v1",
+      "gain": 0.027190356020410977,
+      "note": "accept 或 reject 均算链路完成（沿 chosen Program 执行）",
+      "origin": 976,
+      "steps": [
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "verification_passed": true
+    }
+  },
+  "experiment_id": "v1-method-level-skill-selection",
+  "injection_point": "fast_agent._skill_frozen_candidates + slot 保留（Agent proposals 截断到 1）",
+  "llm_api_call_count": 0,
+  "selector": "DeterministicStrategyBackend(prefer_skill_in_select=True)（中性：只匹配 candidate_id 前缀，不解析 Skill 文本）",
+  "skill": {
+    "frozen_steps": [
+      {
+        "op": "outlier_iqr",
+        "params": {}
+      }
+    ],
+    "skill_id": "outlie-target-v1"
+  },
+  "verdict": "METHOD_LEVEL_SKILL_SUPPLY_AND_FORCED_SELECTION_POSITIVE_CONTROL_PASS"
+}

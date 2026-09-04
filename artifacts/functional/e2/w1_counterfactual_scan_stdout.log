@@ -1,0 +1,23 @@
+== gefcom: max_len=1024 period=24 roster=20 pool=20
+== pool: impute_linear, impute_fft, impute_ema, period_complete, period_median_complete, impute_ssm, impute_ar, denoise_savgol, denoise_wavelet, denoise_median, smooth_ma, denoise_stl, winsorize, outlier_iqr, outlier_mad, hampel_filter, stl_decompose, fft_decompose, smooth_ema, resample_uniform
+== origin 928: single-op table ...
+   single positive n=8: [('impute_fft', 0.01849), ('denoise_savgol', 0.14763), ('denoise_wavelet', 0.10342), ('smooth_ma', 0.09782), ('outlier_iqr', 0.04386), ('outlier_mad', 0.028), ('fft_decompose', 0.66552), ('smooth_ema', 0.44296)]
+   single negative/conflict n=12
+   cand: impute_linear->impute_fft support AB=0.0 A=0.0 B=0.01849 delayed AB=0.0 dA=None dB=-0.03496
+   cand: impute_fft->denoise_stl support AB=-1.92161 A=0.01849 B=-1.77506 delayed AB=-0.29196 dA=-0.03496 dB=None
+   cand: impute_fft->winsorize support AB=-0.18876 A=0.01849 B=-0.1636 delayed AB=0.58685 dA=-0.03496 dB=None
+   cand: impute_fft->hampel_filter support AB=-0.11462 A=0.01849 B=-0.12775 delayed AB=-0.00396 dA=-0.03496 dB=None
+   cand: impute_fft->stl_decompose support AB=-1.92161 A=0.01849 B=-1.77506 delayed AB=-0.29196 dA=-0.03496 dB=None
+   cand: impute_ema->impute_fft support AB=-0.02756 A=-0.02756 B=0.01849 delayed AB=-0.0018 dA=None dB=-0.03496
+   cand: period_complete->impute_fft support AB=0.0 A=0.0 B=0.01849 delayed AB=0.0 dA=None dB=-0.03496
+   cand: period_median_complete->impute_fft support AB=-0.03583 A=-0.03583 B=0.01849 delayed AB=-0.89442 dA=None dB=-0.03496
+   cand: impute_ssm->impute_fft support AB=-0.15432 A=-0.15432 B=0.01849 delayed AB=-0.03704 dA=None dB=-0.03496
+   cand: impute_ssm->denoise_savgol support AB=-0.12954 A=-0.15432 B=0.14763 delayed AB=0.03244 dA=None dB=0.2874
+   cand: impute_ssm->denoise_wavelet support AB=-0.07512 A=-0.15432 B=0.10342 delayed AB=-0.3608 dA=None dB=-0.183
+   cand: impute_ssm->smooth_ma support AB=-0.15444 A=-0.15432 B=0.09782 delayed AB=0.23595 dA=None dB=0.51478
+   cand: impute_ssm->outlier_iqr support AB=-0.10249 A=-0.15432 B=0.04386 delayed AB=-0.01342 dA=None dB=0.02719
+   cand: impute_ssm->outlier_mad support AB=-0.11993 A=-0.15432 B=0.028 delayed AB=-0.03615 dA=None dB=-0.01046
+   cand: impute_ar->impute_fft support AB=-0.35471 A=-0.35471 B=0.01849 delayed AB=-0.58293 dA=None dB=-0.03496
+   cand: impute_ar->smooth_ma support AB=-0.05861 A=-0.35471 B=0.09782 delayed AB=-0.23417 dA=None dB=0.51478
+   cand: impute_ar->outlier_iqr support AB=-0.29612 A=-0.35471 B=0.04386 delayed AB=-0.53239 dA=None dB=0.02719
+   cand: impute_ar->outlier_mad support AB=-0.29306 A=-0.35471 B=0.028 delayed AB=-0.61478 dA=None dB=-0.01046

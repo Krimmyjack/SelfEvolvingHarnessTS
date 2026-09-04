@@ -1,0 +1,119 @@
+{
+  "protocol_version": "v1.2.1-Core+p4-split-2-forecast-b8",
+  "stage": "P4_SPLIT_RELEASE_GATE",
+  "historical_p3_verdict_preserved": "P3_UNIFIED_VERTICAL_INTEGRATION_PASS__P4_HELD",
+  "historical_p3_release_p4_preserved": false,
+  "p4_performance": {
+    "gate": "P4_PERFORMANCE",
+    "status": "RELEASED",
+    "answers": [
+      "H1",
+      "H2"
+    ],
+    "release_by_task": {
+      "forecast": true,
+      "classification": true,
+      "anomaly_detection": false
+    },
+    "forecast_launch_authorized": true,
+    "classification_launch_authorized": true,
+    "ad_positive_performance_claim_authorized": false,
+    "rq3_not_exercised_is_not_a_blocker": true,
+    "failures": []
+  },
+  "p4_evolution": {
+    "gate": "P4_EVOLUTION",
+    "status": "HELD",
+    "answers": [
+      "H3"
+    ],
+    "rq3_status_by_task": {
+      "forecast": "RQ3_NOT_EXERCISED",
+      "classification": "RQ3_NOT_EXERCISED",
+      "anomaly_detection": "RQ3_NOT_EXERCISED"
+    },
+    "observed_p3_treatment_state": {
+      "forecast": "TERMINAL_RISK_CONTROL",
+      "classification": "NO_TREATMENT",
+      "anomaly_detection": "NO_TREATMENT"
+    },
+    "required_chain": [
+      "production pending update",
+      "independent Support-B approval",
+      "promotion",
+      "versioned revision",
+      "independent later re-encounter",
+      "material utility or cost improvement over K0-fixed"
+    ],
+    "does_not_block_h1_h2": true
+  },
+  "p4_ad": {
+    "gate": "P4_AD",
+    "status": "RELEASED_CONDITIONING_AND_SAFETY_ONLY",
+    "allowed_evidence": [
+      "Task/Consumer conditioning",
+      "signal protection",
+      "safe refusal",
+      "no-negative-transfer diagnostics"
+    ],
+    "positive_performance_claim_authorized": false,
+    "online_revision_claim_authorized": false,
+    "consumer_metric_or_matching_change_authorized": false,
+    "main_interpretation": "INVERTED_EFFECT_OBSERVED"
+  },
+  "execution_plan": {
+    "episodes_per_task": 8,
+    "replicas": [
+      "Forward",
+      "Reverse",
+      "Interleaved"
+    ],
+    "arms": [
+      "Static",
+      "A3-reset",
+      "K0-fixed",
+      "A5-online"
+    ],
+    "budget_scope": "FORECAST_P4_PERFORMANCE_ONLY",
+    "full_support_budget": 8,
+    "support_a_budget": 7,
+    "support_b_budget": 1,
+    "cheap_probe_budget": 24,
+    "llm_call_budget": 6,
+    "token_budget": 60000,
+    "accepted_update_budget": 1,
+    "wall_seconds_budget": 2700,
+    "forecast_budget": {
+      "operating_point": "B=8",
+      "full_support_consumer_evaluations": 8,
+      "support_a_max": 7,
+      "support_b_max": 1,
+      "cheap_probe_max": 24,
+      "llm_call_max": 6,
+      "token_max": 60000,
+      "accepted_update_max": 1,
+      "wall_seconds_max": 2700
+    },
+    "classification_budget": {
+      "operating_point": "B=4",
+      "status": "UNCHANGED_BY_FORECAST_SPLIT_2"
+    },
+    "ad_budget": {
+      "operating_point": "B=4",
+      "status": "SAFETY_ONLY__NO_POSITIVE_PERFORMANCE_RUN"
+    },
+    "matched_baseline": "Parallel Best-of-N@8",
+    "matched_budget": true,
+    "adaptive_arms_share_exact_budget_vector": true,
+    "a5_budget_exception": false,
+    "k0_a5_same_initial_knowledge": true,
+    "a5_only_arm_with_cross_unit_writeback": true,
+    "task_local_experience_and_skill_only": true
+  },
+  "next_stage_release": false,
+  "natural_final_release": false,
+  "final_outcome_reads": 0,
+  "p3_runner_invocations": 0,
+  "p3_report_writes": 0,
+  "blocking_failures": []
+}

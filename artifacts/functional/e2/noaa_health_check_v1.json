@@ -1,0 +1,261 @@
+{
+  "protocol_version": "noaa_health_check_v1",
+  "role": "instrument check on the sealed confirmation set before any of it is spent: can the Judge be read on this cohort at all",
+  "not_authorization_evidence": "no Skill, no Episode, no Harness change and no claim about NOAA utility. Development region only, and the sealed region is not read",
+  "overall_verdict": "NOAA_STRUCTURE_FAIL",
+  "overall_verdict_reason": "structure failed (0 of 19 materialized series reach the 5760-point minimum, and 20 are needed); substrate double guard, public phenomenon were never reached, so they are neither passed nor failed;  the frozen screen itself returned REJECTED_STRUCTURE, so the readability probe was not run and no Outcome was opened",
+  "pre_registered": {
+    "fixed_before_the_run": true,
+    "zero_llm": true,
+    "why_before_the_spend": "unreadability cannot be diagnosed after the Outcome is opened: it looks like a null result.  Weather failed at a 24.4x eval-loss spread and T233 reads at 2.0x",
+    "sealed_rule": "no index at or past g3_sourcing.SEALED_FROM_INDEX=3072 is read.  Every series is truncated to that prefix at load time and the truncation is asserted, so the constraint holds by construction",
+    "step_0_in_place": "the data has to exist and be readable, and its path, series count, channel structure and shortest length are quoted verbatim from the frozen registry rather than recalled",
+    "step_1_outcome_blind": "the frozen screening criteria in g3_sourcing, applied through its own functions: structure (min_train_series, min_eval_series, min_series_length), the substrate double guard, and the public phenomenon census.  Any one failing is NOAA_STRUCTURE_FAIL and step 2 does not run",
+    "step_2_readability_probe": "identity baseline only, at the frozen development origins, read for eval-loss spread and largest single-series loss share against the frozen bars; pooled always, per_channel only when the channel structure supports it",
+    "criteria_are_read_not_restated": true,
+    "criteria": {
+      "min_train_series": 12,
+      "min_eval_series": 8,
+      "min_series_length": 5760,
+      "max_eval_loss_spread": 5.0,
+      "max_single_series_loss_share": 0.4,
+      "min_series_with_public_phenomenon": 4,
+      "development_origins": [
+        1104,
+        1368,
+        1800
+      ],
+      "sealed_from_index": 3072,
+      "fixed_before_any_candidate_was_opened": true,
+      "rationale": "Weather's Judge was unreadable at a 24.4x eval-loss spread and T233 reads at 2.0x; the bar is set once, between them, and is never moved to make a candidate pass"
+    },
+    "per_channel_rule": "per_channel is measured only when the cohort has at least 2 training channels",
+    "delayed_reading_rule": "the last development origin is read as the delayed block; its readings must be finite, strictly positive and not degenerate to a single value",
+    "retrain_budget": 12,
+    "verdicts": [
+      "NOAA_HEALTH_PROCEED: every measured Consumer variant clears the frozen bars",
+      "PROCEED_POOLED_ONLY: pooled clears them and per_channel does not",
+      "NOAA_JUDGE_UNREADABLE: the readability probe ran and failed",
+      "NOAA_STRUCTURE_FAIL: an outcome-blind criterion failed, so the probe was not run",
+      "NOAA_DATA_MISSING: the data is not there or cannot be read"
+    ],
+    "verdicts_are_reported_side_by_side": true,
+    "no_threshold_is_moved": true
+  },
+  "step_0_in_place": {
+    "dataset_id": "noaa_global_hourly",
+    "designated_by": "evaluation/functional/task_episode_harness/e1.py::SEALED_CONFIRMATION_DATASET",
+    "registry_path": "artifacts/frozen/benchmark_v02/series_registry.jsonl",
+    "registry_exists": true,
+    "clean_base_path": "data/benchmark_v0_2/clean_base",
+    "sealed_semantics": {
+      "kind": "index_sealed_boundary",
+      "sealed_from_index": 3072,
+      "constant_source": "evaluation/functional/task_episode_harness/agentic/g3_sourcing.py::SEALED_FROM_INDEX",
+      "cross_check_recipe_module": 3072,
+      "development_origins": [
+        1104,
+        1368,
+        1800
+      ],
+      "horizon": 48,
+      "farthest_index_the_probe_would_read": 1848,
+      "probe_inside_boundary": true,
+      "enforcement": "every loaded series is sliced to [:3072] before any consumer sees it, and an assertion refuses to continue if any array is longer"
+    },
+    "manifest_entry": {
+      "broad_domain": "weather",
+      "claim_tier": "headline",
+      "independence": "independent_entities",
+      "n_series": 40,
+      "network_id": null,
+      "note": "NOAA ISD hourly surface temperature, the sealed U (unseen-domain) pool. Stations are geographically dispersed across the US by a hash-ordered selection. Carries heavy, genuinely natural missingness -- which is the point: it is the one source whose defects nobody injected."
+    },
+    "status": "READABLE",
+    "registry_series_count": 40,
+    "materialized_series_count": 19,
+    "unmaterialized_series_count": 21,
+    "registry_lengths": {
+      "1024": 40
+    },
+    "shortest_registry_length": 1024,
+    "longest_registry_length": 1024,
+    "frequency": [
+      "hourly"
+    ],
+    "exposure_class": [
+      "certified_virgin"
+    ],
+    "overlap_family": [
+      "noaa_isd"
+    ],
+    "overlap_status": [
+      "resolved"
+    ],
+    "roles_allowed": [
+      "[\"support_a\", \"support_b\", \"dev_query\", \"final_query\", \"u\"]"
+    ],
+    "channel_structure": {
+      "shape": "one univariate series per record",
+      "series_are_channels": true,
+      "distinct_entities": 40,
+      "entity_field": "entity_id, the NOAA ISD station identifier",
+      "array_shape_example": [
+        1024
+      ],
+      "note": "there is no multi-channel matrix here: each record is one station's hourly series, so a per_channel Consumer treats each training series as its own channel"
+    },
+    "example_record_dir": "data/benchmark_v0_2/clean_base/2de3c478aa8b2091587af359d5cca05dbed7285ce8ae4fccd92c25a188732fef",
+    "raw_source_dir": "data/benchmark_v0/raw/noaa_global_hourly",
+    "raw_source_dir_exists": true,
+    "raw_station_files": 74,
+    "raw_note": "listed by filesystem metadata only; not one byte of raw series content is read by this check",
+    "load_report": {
+      "loaded_series": 19,
+      "series_truncated_at_the_boundary": 0,
+      "truncated_examples": [],
+      "longest_loaded_length": 1024,
+      "shortest_loaded_length": 1024,
+      "no_index_at_or_past_boundary_was_read": true
+    }
+  },
+  "step_1_outcome_blind_screen": {
+    "pass": false,
+    "structure": {
+      "criterion": "at least 12 train plus 8 eval series, each at least 5760 long",
+      "series_needed": 20,
+      "registry_series": 40,
+      "materialized_series": 19,
+      "series_at_or_over_min_length": 0,
+      "length_read_from": "the frozen registry's length field, so no series value is read to decide this",
+      "shortest_length": 1024,
+      "pass": false,
+      "reason": "0 of 19 materialized series reach the 5760-point minimum, and 20 are needed"
+    },
+    "substrate_double_guard": {
+      "criterion": "both the train and the eval substrate guard call the series clean, for at least 20 of them",
+      "reached": false,
+      "result": null,
+      "not_reached_because": "the screen returned REJECTED_STRUCTURE before the guards ran"
+    },
+    "public_phenomenon": {
+      "criterion": "at least 4 training series carry a publicly visible phenomenon",
+      "reached": false,
+      "result": null,
+      "not_reached_because": "the screen returned REJECTED_STRUCTURE before the census ran"
+    },
+    "frozen_screen_verdict": "REJECTED_STRUCTURE",
+    "frozen_screen_result": {
+      "candidate": "noaa_global_hourly",
+      "provenance": {
+        "source_path": "UNKNOWN",
+        "original_source_family": "UNKNOWN",
+        "prior_outcome_exposure_in_family": null
+      },
+      "fresh_identity": "SOURCE_FAMILY_EXPOSURE_UNRESOLVED",
+      "structure": {
+        "numeric_column_count": 19,
+        "columns_long_enough": 0,
+        "series_length": 1024,
+        "pass": false
+      },
+      "verdict": "REJECTED_STRUCTURE"
+    },
+    "frozen_screen_reach": {
+      "public_phenomenon_cutoff": 3072,
+      "train_guard_anchors": [
+        312,
+        372,
+        432,
+        492,
+        552,
+        612,
+        672,
+        732,
+        792,
+        852
+      ],
+      "train_guard_farthest_index": 900,
+      "train_guard_inside_boundary": true,
+      "eval_guard_roster_tasks": [
+        "e1v2_task_01",
+        "e1v2_task_02",
+        "e1v2_task_03",
+        "e1v2_task_04",
+        "e1v2_task_05",
+        "e1v2_task_06",
+        "e1v2_task_07",
+        "e1v2_task_08",
+        "e1v2_task_09"
+      ],
+      "eval_guard_farthest_index": 5616,
+      "eval_guard_inside_boundary": false,
+      "note": "the frozen roster's first Support origin is the sealed boundary itself, so the eval substrate guard necessarily reads into the sealed region.  Under this check's zero-read rule that guard cannot be completed on any cohort, NOAA included"
+    },
+    "zero_outcome_opened": true
+  },
+  "step_2_readability_probe": {
+    "ran": false,
+    "reason": "the outcome-blind screen did not pass, so the readability probe was not run and no Outcome was opened",
+    "consumer_retrains": 0,
+    "retrain_budget": 12
+  },
+  "exposure_ledger": {
+    "dataset_id": "noaa_global_hourly",
+    "context_partition": {
+      "state_after_this_check": "INSTANCE_SEEN",
+      "what_was_seen": "series values on the prefix below index 3072, plus registry metadata"
+    },
+    "development_outcome_partition": {
+      "state_after_this_check": "UNTOUCHED",
+      "consumer_retrains": 0,
+      "why": "the outcome-blind screen failed, so no Consumer was fitted and no Judge reading was taken by this check"
+    },
+    "sealed_partition": {
+      "state_after_this_check": "SEALED",
+      "boundary": 3072,
+      "indices_read_at_or_past_boundary": 0,
+      "enforcement": "every loaded series is sliced to [:3072] before any consumer sees it, and an assertion refuses to continue if any array is longer",
+      "note": "no NOAA series in the frozen materialization even reaches index 3072, so the boundary was never approached"
+    },
+    "prior_exposure_on_the_record": {
+      "claim_under_test": "this dataset was described as the last sealed reserve, never touched",
+      "artifacts_already_on_disk": [
+        "artifacts/functional/e2/autonomous_natural_workflow_scope_induction_v2_noaa_confirmation_report.json",
+        "artifacts/functional/e2/noaa_health_check_v1.json",
+        "artifacts/functional/e2/noaa_multichannel_local_repair_2025_report.json",
+        "artifacts/functional/e2/noaa_multichannel_local_repair_p0_report.json",
+        "artifacts/functional/e2/w1_a5_vs_a3_report_noaa.json",
+        "artifacts/functional/e2/w1_noaa_a5_vs_a3_report.json",
+        "artifacts/functional/e2/w1_noaa_cross_domain_premise_report.json",
+        "artifacts/functional/e2/w1_noaa_impute_census_report.json",
+        "artifacts/functional/e2/w1_noaa_impute_fft_census_report.json",
+        "artifacts/functional/e2/w1_noaa_impute_linear_census_report.json"
+      ],
+      "artifact_count": 10,
+      "reading": "these are this project's own NOAA reports; a reserve with outcome reports already written is not untouched.  Reported as found, not resolved here"
+    },
+    "registry_says": {
+      "exposure_class": [
+        "certified_virgin"
+      ],
+      "overlap_status": [
+        "resolved"
+      ],
+      "overlap_family": [
+        "noaa_isd"
+      ]
+    },
+    "g3_exposed_families_says": {
+      "weather": [
+        "noaa_global_hourly",
+        "tsl_weather_jena"
+      ],
+      "note": "g3_sourcing.EXPOSED_FAMILIES lists noaa_global_hourly under the exposed weather family, while the frozen registry marks every one of its series certified_virgin.  Both readings are recorded; this check does not adjudicate between them"
+    }
+  },
+  "llm_calls": 0,
+  "consumer_retrains": 0,
+  "retrain_budget": 12,
+  "wall_seconds": 0.14586009993217885
+}

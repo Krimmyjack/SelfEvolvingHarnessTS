@@ -1,0 +1,76 @@
+{
+  "decisions": [
+    {
+      "capability_id": "historical_policy_episode_workflow_v1",
+      "context_id": "forecast_general_regular_panel",
+      "decision": "RETRIEVE_AND_PROBE",
+      "reason_codes": [
+        "GENERAL_FORECAST_MATCH",
+        "CURRENT_SUPPORT_AVAILABLE"
+      ],
+      "workflow_steps": [
+        "retrieve phase-aligned historical PolicyEpisodes for W_rowblock/W_curation/W_temporal_origin",
+        "probe current Support in retrieved order",
+        "stop on first positive; otherwise IDENTITY"
+      ]
+    },
+    {
+      "capability_id": "missing_window_weighting_workflow_v1",
+      "context_id": "forecast_missing_mixed_reliable_history",
+      "decision": "RETRIEVE_AND_PROBE",
+      "reason_codes": [
+        "SPECIFIC_MISSING_GEOMETRY_MATCH",
+        "MIXED_WINDOW_SUPPORT",
+        "MINIMUM_ORIGIN_COUNT_MET"
+      ],
+      "workflow_steps": [
+        "observe natural-missing training-window composition",
+        "retrieve Source PolicyEpisode to order ATTENUATE/EXCLUDE probes",
+        "confirm on at least two phase-aligned historical Target origins",
+        "stop on first positive; otherwise KEEP_ALL"
+      ]
+    },
+    {
+      "capability_id": "missing_window_weighting_workflow_v1",
+      "context_id": "forecast_missing_insufficient_history",
+      "decision": "RETRIEVE_AND_ABSTAIN",
+      "reason_codes": [
+        "SPECIFIC_MISSING_GEOMETRY_MATCH",
+        "INSUFFICIENT_HISTORICAL_ORIGINS",
+        "ABSTENTION_GUARD"
+      ],
+      "workflow_steps": [
+        "ABSTAIN_KEEP_ALL"
+      ]
+    },
+    {
+      "capability_id": "missing_window_weighting_workflow_v1",
+      "context_id": "forecast_missing_no_actionable_geometry",
+      "decision": "RETRIEVE_AND_ABSTAIN",
+      "reason_codes": [
+        "ALL_TRAINING_WINDOWS_UNRELIABLE",
+        "ABSTENTION_GUARD",
+        "NO_CURRENT_SUPPORT_FEEDBACK"
+      ],
+      "workflow_steps": []
+    },
+    {
+      "capability_id": null,
+      "context_id": "classification_not_supported_by_forecast_skills",
+      "decision": "NO_APPLICABLE_SKILL",
+      "reason_codes": [
+        "TASK_MISMATCH"
+      ],
+      "workflow_steps": []
+    }
+  ],
+  "new_skills_invented": [],
+  "provider": {
+    "base_url": "https://api.agicto.cn/v1",
+    "completion_tokens": 890,
+    "prompt_tokens": 5695,
+    "requested_model": "gpt-5.6-luna",
+    "returned_model": "gpt-5.6-luna"
+  },
+  "unadmitted_skills_selected": []
+}

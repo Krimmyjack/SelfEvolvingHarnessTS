@@ -1,0 +1,926 @@
+{
+  "stage": "P4D_GAP_REPAIRABILITY_AUDIT",
+  "status": "COMPLETE",
+  "written_at": "2026-09-01T14:02:55.184061+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_EXHAUSTIVE_PROGRAM_SWEEP",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "does_not_merge_with": "EXPOSED_DEVELOPMENT__KDD2018_WITHOUT_MISSING",
+  "parallel_to": "artifacts/main_protocol/p4c_program_repairability_audit.json",
+  "boundary": {
+    "llm_calls": 0,
+    "consumer_fits": 4764,
+    "held_out_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "natural_final_outcome_reads": 0,
+    "thresholds_changed": 0,
+    "operators_added": 0
+  },
+  "geometry": {
+    "origins_swept": [
+      1176,
+      1896,
+      2136,
+      2376,
+      2616,
+      2856
+    ],
+    "support_a": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T119",
+      "T12"
+    ],
+    "support_b": [
+      "T120",
+      "T121",
+      "T122",
+      "T123",
+      "T124",
+      "T125",
+      "T126",
+      "T127",
+      "T128",
+      "T129",
+      "T13",
+      "T130",
+      "T131",
+      "T132",
+      "T133",
+      "T134",
+      "T135",
+      "T137",
+      "T138",
+      "T139"
+    ],
+    "series_per_face": 20,
+    "origins_not_evaluable": {
+      "origins": [
+        1416,
+        1656
+      ],
+      "status": "NOT_EVALUABLE",
+      "not_a_failure": true,
+      "why": "an eval series has no observed truth anywhere in that horizon (1416: T101, T102; 1656: T11), so the missing-aware sMASE is undefined for it; scoring the origin would compare predictions against linear interpolation rather than against observation",
+      "alternative_rejected": "dropping the affected series instead of the origin would leave 18 or 19 eval series there, making the harmed_fraction denominator inconsistent across origins"
+    }
+  },
+  "identity_semantics": "identity == _linear_integrity, so impute_linear is ZERO_BEHAVIOR by construction and the live question is whether fft / ema / period-median / ar completion beat linear interpolation",
+  "space": {
+    "programs_enumerated": 396,
+    "programs_readable_somewhere": 171,
+    "programs_stable_on_both_faces_somewhere": 19
+  },
+  "completion_family": {
+    "programs_touching_completion": 201,
+    "stable_on_both_faces_anywhere": [
+      {
+        "program_id": "period_median_complete>outlier_mad",
+        "single_step": false,
+        "stable_origins": [
+          2856
+        ],
+        "a_face_admitted_origins": [
+          2136,
+          2856
+        ],
+        "b_face_admitted_origins": [
+          2856
+        ],
+        "best_support_a_gain": 0.7553015835266903
+      },
+      {
+        "program_id": "period_median_complete>outlier_iqr",
+        "single_step": false,
+        "stable_origins": [
+          2856
+        ],
+        "a_face_admitted_origins": [
+          2856
+        ],
+        "b_face_admitted_origins": [
+          2856
+        ],
+        "best_support_a_gain": 0.7362597369733415
+      },
+      {
+        "program_id": "period_median_complete>winsorize",
+        "single_step": false,
+        "stable_origins": [
+          2856
+        ],
+        "a_face_admitted_origins": [
+          2856
+        ],
+        "b_face_admitted_origins": [
+          1176,
+          2856
+        ],
+        "best_support_a_gain": 0.7039271594533203
+      },
+      {
+        "program_id": "impute_linear>winsorize",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "period_complete>winsorize",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_linear",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_fft",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_ema",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>period_complete",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>period_median_complete",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_ar",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      }
+    ],
+    "top_by_support_a_gain": [
+      {
+        "program_id": "period_median_complete>outlier_mad",
+        "single_step": false,
+        "stable_origins": [
+          2856
+        ],
+        "a_face_admitted_origins": [
+          2136,
+          2856
+        ],
+        "b_face_admitted_origins": [
+          2856
+        ],
+        "best_support_a_gain": 0.7553015835266903
+      },
+      {
+        "program_id": "period_median_complete>outlier_iqr",
+        "single_step": false,
+        "stable_origins": [
+          2856
+        ],
+        "a_face_admitted_origins": [
+          2856
+        ],
+        "b_face_admitted_origins": [
+          2856
+        ],
+        "best_support_a_gain": 0.7362597369733415
+      },
+      {
+        "program_id": "period_median_complete>winsorize",
+        "single_step": false,
+        "stable_origins": [
+          2856
+        ],
+        "a_face_admitted_origins": [
+          2856
+        ],
+        "b_face_admitted_origins": [
+          1176,
+          2856
+        ],
+        "best_support_a_gain": 0.7039271594533203
+      },
+      {
+        "program_id": "impute_linear>winsorize",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "period_complete>winsorize",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_linear",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_fft",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_ema",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>period_complete",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>period_median_complete",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "winsorize>impute_ar",
+        "single_step": false,
+        "stable_origins": [
+          2136
+        ],
+        "a_face_admitted_origins": [
+          2136
+        ],
+        "b_face_admitted_origins": [
+          2136
+        ],
+        "best_support_a_gain": 0.35848679075728485
+      },
+      {
+        "program_id": "impute_ema>outlier_iqr",
+        "single_step": false,
+        "stable_origins": [],
+        "a_face_admitted_origins": [],
+        "b_face_admitted_origins": [],
+        "best_support_a_gain": 0.7777451834564266
+      },
+      {
+        "program_id": "impute_fft>outlier_iqr",
+        "single_step": false,
+        "stable_origins": [],
+        "a_face_admitted_origins": [],
+        "b_face_admitted_origins": [],
+        "best_support_a_gain": 0.6741748401900767
+      },
+      {
+        "program_id": "impute_fft>winsorize",
+        "single_step": false,
+        "stable_origins": [],
+        "a_face_admitted_origins": [],
+        "b_face_admitted_origins": [
+          2376,
+          2856
+        ],
+        "best_support_a_gain": 0.6236499823805131
+      },
+      {
+        "program_id": "impute_ar>outlier_iqr",
+        "single_step": false,
+        "stable_origins": [],
+        "a_face_admitted_origins": [
+          1896
+        ],
+        "b_face_admitted_origins": [],
+        "best_support_a_gain": 0.6195812030083896
+      }
+    ]
+  },
+  "stable_programs": [
+    {
+      "program_id": "winsorize",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "impute_linear>winsorize",
+      "steps": [
+        {
+          "op": "impute_linear",
+          "params": {}
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "period_complete>winsorize",
+      "steps": [
+        {
+          "op": "period_complete",
+          "params": {}
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "period_median_complete>winsorize",
+      "steps": [
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2856
+      ]
+    },
+    {
+      "program_id": "period_median_complete>outlier_iqr",
+      "steps": [
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        },
+        {
+          "op": "outlier_iqr",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2856
+      ]
+    },
+    {
+      "program_id": "period_median_complete>outlier_mad",
+      "steps": [
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        },
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2856
+      ]
+    },
+    {
+      "program_id": "denoise_median>winsorize",
+      "steps": [
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>impute_linear",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "impute_linear",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>impute_fft",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "impute_fft",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>impute_ema",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "impute_ema",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>period_complete",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "period_complete",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>period_median_complete",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "period_median_complete",
+          "params": {
+            "period": 24,
+            "cycles": 3,
+            "min_donors": 2
+          }
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>impute_ar",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "impute_ar",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>denoise_median",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "denoise_median",
+          "params": {
+            "window": 1,
+            "strength": 1.0
+          }
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>winsorize",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>outlier_mad",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "winsorize>resample_uniform",
+      "steps": [
+        {
+          "op": "winsorize",
+          "params": {}
+        },
+        {
+          "op": "resample_uniform",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "outlier_mad>winsorize",
+      "steps": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    },
+    {
+      "program_id": "resample_uniform>winsorize",
+      "steps": [
+        {
+          "op": "resample_uniform",
+          "params": {}
+        },
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "stable_origins": [
+        2136
+      ]
+    }
+  ],
+  "per_series_gain_tensor": {
+    "path": "artifacts/main_protocol/p4d_gap_per_series_gain.npz",
+    "shape": [
+      396,
+      6,
+      2,
+      20
+    ],
+    "axes": [
+      "program",
+      "origin",
+      "face",
+      "series"
+    ],
+    "note": "NaN where the program was refused or unreadable on that face; this is the matrix P4c computed and discarded"
+  },
+  "wall_seconds": 1211.4,
+  "verdict": "STABLE_CANDIDATE_AT_TWO_ORIGINS__NO_CROSS_ORIGIN_TRANSFER",
+  "releases": "NONE",
+  "distinct_stable_effects": {
+    "method": "stable (program, origin) findings clustered by their exact concatenated support_a|support_b per-series gain vector; programs that compose an operator with one the preflight measured as ZERO_BEHAVIOR collapse onto the same effect and must not be counted as separate discoveries",
+    "stable_program_origin_pairs": 19,
+    "distinct_effects": 7,
+    "origins_with_any_stable_effect": [
+      2136,
+      2856
+    ],
+    "origins_swept": [
+      1176,
+      1896,
+      2136,
+      2376,
+      2616,
+      2856
+    ],
+    "programs_stable_at_more_than_one_origin": 0,
+    "effects": [
+      {
+        "origin": 2136,
+        "alias_programs": [
+          "denoise_median>winsorize",
+          "impute_linear>winsorize",
+          "period_complete>winsorize",
+          "resample_uniform>winsorize",
+          "winsorize",
+          "winsorize>denoise_median",
+          "winsorize>impute_ar",
+          "winsorize>impute_ema",
+          "winsorize>impute_fft",
+          "winsorize>impute_linear",
+          "winsorize>period_complete",
+          "winsorize>period_median_complete",
+          "winsorize>resample_uniform"
+        ],
+        "alias_count": 13,
+        "support_a": {
+          "mean_gain": 0.25879,
+          "harmed_series": 3
+        },
+        "support_b": {
+          "mean_gain": 0.236527,
+          "harmed_series": 4
+        }
+      },
+      {
+        "origin": 2136,
+        "alias_programs": [
+          "winsorize>winsorize"
+        ],
+        "alias_count": 1,
+        "support_a": {
+          "mean_gain": 0.259301,
+          "harmed_series": 3
+        },
+        "support_b": {
+          "mean_gain": 0.236261,
+          "harmed_series": 4
+        }
+      },
+      {
+        "origin": 2136,
+        "alias_programs": [
+          "winsorize>outlier_mad"
+        ],
+        "alias_count": 1,
+        "support_a": {
+          "mean_gain": 0.285392,
+          "harmed_series": 2
+        },
+        "support_b": {
+          "mean_gain": 0.299389,
+          "harmed_series": 4
+        }
+      },
+      {
+        "origin": 2136,
+        "alias_programs": [
+          "outlier_mad>winsorize"
+        ],
+        "alias_count": 1,
+        "support_a": {
+          "mean_gain": 0.285392,
+          "harmed_series": 2
+        },
+        "support_b": {
+          "mean_gain": 0.299392,
+          "harmed_series": 4
+        }
+      },
+      {
+        "origin": 2856,
+        "alias_programs": [
+          "period_median_complete>winsorize"
+        ],
+        "alias_count": 1,
+        "support_a": {
+          "mean_gain": 0.562038,
+          "harmed_series": 3
+        },
+        "support_b": {
+          "mean_gain": 0.316754,
+          "harmed_series": 3
+        }
+      },
+      {
+        "origin": 2856,
+        "alias_programs": [
+          "period_median_complete>outlier_iqr"
+        ],
+        "alias_count": 1,
+        "support_a": {
+          "mean_gain": 0.649614,
+          "harmed_series": 3
+        },
+        "support_b": {
+          "mean_gain": 0.287785,
+          "harmed_series": 3
+        }
+      },
+      {
+        "origin": 2856,
+        "alias_programs": [
+          "period_median_complete>outlier_mad"
+        ],
+        "alias_count": 1,
+        "support_a": {
+          "mean_gain": 0.610798,
+          "harmed_series": 3
+        },
+        "support_b": {
+          "mean_gain": 0.316694,
+          "harmed_series": 4
+        }
+      }
+    ],
+    "reading": "19 stable pairs collapse to 7 distinct effects at 2 of 6 origins, and no program is stable at more than one origin; the cross-origin transfer failure that closed P4b/P4c is unchanged"
+  }
+}

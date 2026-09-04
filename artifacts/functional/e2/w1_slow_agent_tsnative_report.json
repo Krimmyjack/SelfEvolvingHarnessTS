@@ -1,0 +1,64 @@
+{
+  "case": "GEFCom winsorize @928（暴露开发测试；outlier_iqr 正控隐藏）",
+  "checks": {
+    "abstain_true": false,
+    "cand_hampel_filter_delayed_no_flip": false,
+    "cand_hampel_filter_support_positive": true,
+    "cand_hampel_filter_verifier": true,
+    "cand_outlier_mad_delayed_no_flip": false,
+    "cand_outlier_mad_support_positive": true,
+    "cand_outlier_mad_verifier": true,
+    "diagnosis_is_unidentifiable": false,
+    "diagnosis_matches_payload": true,
+    "diagnostic_probe_nonempty": false,
+    "llm_calls_le_2": true,
+    "llm_generated_legal_candidate": true,
+    "no_verifier_or_skill_when_abstain": false,
+    "programs_empty": false
+  },
+  "experiment_id": "v1-slow-agent-tsnative",
+  "input": {
+    "contrast_diff_keys": [
+      "change.coverage_delta",
+      "change.maximum_missing_run_length_delta",
+      "change.median_acf_at_calendar_period_delta",
+      "change.median_normalized_seasonal_residual_delta",
+      "change.median_robust_center_delta",
+      "change.median_robust_scale_delta",
+      "change.missing_run_count_delta",
+      "recent.coverage",
+      "recent.maximum_missing_run_length",
+      "recent.median_acf_at_calendar_period",
+      "recent.median_normalized_seasonal_residual",
+      "recent.median_robust_center",
+      "recent.median_robust_scale",
+      "recent.missing_run_count"
+    ],
+    "contrast_same_count": 0,
+    "dq_decision_point": 928,
+    "task": "forecast|ridge|sMASE"
+  },
+  "llm": {
+    "ok": true,
+    "payload": {
+      "abstain": false,
+      "diagnosis": "PROGRAM_DEFECT",
+      "diagnostic_probe": "",
+      "programs": [
+        {
+          "op": "hampel_filter",
+          "params": {},
+          "rationale": "Winsorize is unsuitable in this context because its application coincided with a 0.09375 coverage loss, 20 new missing runs, and a maximum missing run of 18, while the seasonal residual worsened. A Hampel-based outlier replacement is a bounded alternative aimed at contamination without intentionally sacrificing coverage; its effect should be validated on the same decision window."
+        },
+        {
+          "op": "outlier_mad",
+          "params": {},
+          "rationale": "The failure indicates that winsorization damaged data availability and level/scale integrity (robust-center delta 10261.25 and scale delta 7116.85065). MAD-based outlier handling is a robust alternative for suppressing extreme contamination while better preserving the underlying level and seasonal structure; coverage and missing-run metrics should be checked after application."
+        }
+      ]
+    },
+    "raw": "{\"diagnosis\":\"PROGRAM_DEFECT\",\"programs\":[{\"op\":\"hampel_filter\",\"params\":{},\"rationale\":\"Winsorize is unsuitable in this context because its application coincided with a 0.09375 coverage loss, 20 new missing runs, and a maximum missing run of 18, while the seasonal residual worsened. A Hampel-based outlier replacement is a bounded alternative aimed at contamination without intentionally sacrificing coverage; its effect should be validated on the same decision window.\"},{\"op\":\"outlier_mad\",\"params\":{},\"rationale\":\"The failure indicates that winsorization damaged data availability and level/scale integrity (robust-center delta 10261.25 and scale delta 7116.85065). MAD-based outlier handling is a robust alternative for suppressing extreme contamination while better preserving the underlying level and seasonal structure; coverage and missing-run metrics should be checked after application.\"}],\"diagnostic_probe\":\"\",\"abstain\":false}"
+  },
+  "llm_api_call_count": 1,
+  "verdict": "PROGRAM_REPLAY_FAILED"
+}

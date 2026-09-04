@@ -1,0 +1,89 @@
+{
+  "stage": "P4W_SOURCE_LINE_SUPERSEDED_FIRST_PASS",
+  "status": "SUPERSEDED",
+  "provenance": "RECONSTRUCTED_FROM_RUN_STDOUT_AND_A_READ_OF_THE_ARTIFACT",
+  "why_reconstructed": "the first pass wrote artifacts/main_protocol/p4w_source_line.json; a later --dry-run of the same runner overwrote that file before it was copied. Every field below was read out of the original artifact or printed by the original run and is transcribed verbatim; no number here was recomputed or inferred. Fields the original carried but that were not read before the overwrite (per-series gains, risk profiles, admission verdicts, program steps) are absent rather than guessed -- their absence is exactly the defect this pass exposed.",
+  "written_at": "2026-09-01",
+  "what_it_was": "the first live pass of the Source line, run with the admission policy left at the library default",
+  "defect_found": {
+    "what": "the runner never installed an admission policy, so online_loop gated every probe on admission_policy.DEFAULT = strict_positive_only",
+    "why_it_matters": "under strict, a probe earns deployment rights only when NO served series is materially harmed. The adjudicated operating point for this protocol is BOUNDED_V1 at 0.20 / 0.30, and the main contract states its own endpoints in those two numbers. The arm was therefore gated on one rule and would have been reported against another.",
+    "how_it_presented": "winner=identity and fast_skill_event=None at all five origins, which reads as 'the Agent never formed a Skill' -- the same shape as an abstention, and the same shape as the earlier base_url misconfiguration",
+    "what_it_actually_was": "five of five rounds produced legal Support receipts with clearly positive scoped gains; the gate refused them, the Agent did not fail to propose",
+    "second_defect": "the artifact serialised only candidate_id / kind / gain / passed / serving_scope from each probe row, dropping admission, risk_profile, per_series_gain and program_steps -- the exact fields that distinguish a refused deployment from an absent proposal"
+  },
+  "verdict_as_written": "A5_TREATMENT_EMPTY",
+  "verdict_is_not_to_be_used": "the stopping rule must not fire on a run whose gate was not the protocol's gate",
+  "cohort": "source readable[160:200]",
+  "face": "support_a",
+  "llm_calls": 26,
+  "held_out_reads": 0,
+  "rounds": [
+    {
+      "origin": 1896,
+      "candidate_ids": ["identity", "impute_missing_region", "filter_extreme_deviation"],
+      "chosen_candidate_id": "filter_extreme_deviation",
+      "probes": [
+        {"candidate_id": "filter_extreme_deviation", "kind": "probe", "gain": 0.31990962156114766, "passed": true, "scope_type": "serving_series_predicate"},
+        {"candidate_id": "impute_missing_region", "kind": "probe", "gain": 0.0, "passed": true, "scope_type": "serving_series_predicate"}
+      ],
+      "winner_program": null,
+      "fast_skill_event": null,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2136,
+      "candidate_ids": ["identity", "hampel_extreme_deviation"],
+      "chosen_candidate_id": "hampel_extreme_deviation",
+      "probes": [
+        {"candidate_id": "hampel_extreme_deviation", "kind": "probe", "gain": 0.04566408187116067, "passed": true, "scope_type": "serving_series_predicate"}
+      ],
+      "winner_program": null,
+      "fast_skill_event": null,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2376,
+      "candidate_ids": ["identity"],
+      "chosen_candidate_id": "",
+      "probes": [],
+      "winner_program": null,
+      "fast_skill_event": null,
+      "approved_skill_id": null,
+      "note": "the only round in which the Agent genuinely proposed nothing beyond identity"
+    },
+    {
+      "origin": 2616,
+      "candidate_ids": ["identity", "localized_outlier_iqr", "localized_outlier_mad"],
+      "chosen_candidate_id": "localized_outlier_iqr",
+      "probes": [
+        {"candidate_id": "localized_outlier_iqr", "kind": "probe", "gain": 0.27769956968973086, "passed": true, "scope_type": "serving_series_predicate"},
+        {"candidate_id": "localized_outlier_mad", "kind": "probe", "gain": 0.28626981469266033, "passed": true, "scope_type": "serving_series_predicate"}
+      ],
+      "winner_program": null,
+      "fast_skill_event": null,
+      "approved_skill_id": null
+    },
+    {
+      "origin": 2856,
+      "candidate_ids": ["identity", "hampel_extreme_deviation"],
+      "chosen_candidate_id": "hampel_extreme_deviation",
+      "probes": [
+        {"candidate_id": "hampel_extreme_deviation", "kind": "probe", "gain": 0.09170399319077105, "passed": true, "scope_type": "serving_series_predicate"}
+      ],
+      "winner_program": null,
+      "fast_skill_event": null,
+      "approved_skill_id": null
+    }
+  ],
+  "runtime_status": {"active_skills": [], "draft_skills": [], "episodes_count": 6},
+  "what_still_holds_from_this_pass": [
+    "the Scope chain ran on every probe: each carried a serving_series_predicate, so the scoped serving evaluator was genuinely in the path",
+    "the Agent proposed a real Program in four of five rounds",
+    "held_out_reads = 0"
+  ],
+  "corrections_applied": [
+    "the runner now installs p4b_contract.BOUNDED_POLICY and records the rule in force; no threshold was changed",
+    "the runner now serialises the complete probe row, so an admission refusal can never again look like an absent proposal"
+  ]
+}

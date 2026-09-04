@@ -1,0 +1,1098 @@
+{
+  "protocol_version": "t6_nab_evaluate_smoke_v1",
+  "entry": "--evaluate-smoke",
+  "note": "the frozen execution body, run on Source stand-in cells with a scripted backend; writes no plan artifact and touches no Target outcome",
+  "stand_in_cohorts": {
+    "target_cpc": [
+      "ec2_cpu_utilization_24ae8d.csv",
+      "ec2_cpu_utilization_53ea38.csv"
+    ],
+    "target_cpm": [
+      "ambient_temperature_system_failure.csv",
+      "cpu_utilization_asg_misconfiguration.csv"
+    ]
+  },
+  "checks": [
+    {
+      "id": "B1_eight_cells_in_frozen_order",
+      "ok": true,
+      "detail": "cells executed: ['target_cpc/A3/r1', 'target_cpc/A5/r1', 'target_cpc/A3/r2', 'target_cpc/A5/r2', 'target_cpm/A5/r1', 'target_cpm/A3/r1', 'target_cpm/A5/r2', 'target_cpm/A3/r2']"
+    },
+    {
+      "id": "B1_live_calls_per_cell",
+      "ok": true,
+      "detail": "per-cell call counts: {\"target_cpc/A3/r1\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpc/A5/r1\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpc/A3/r2\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpc/A5/r2\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpm/A5/r1\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpm/A3/r1\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpm/A5/r2\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}, \"target_cpm/A3/r2\": {\"run_online_round\": 1, \"open_delayed\": 1, \"activate_approved\": 0}}"
+    },
+    {
+      "id": "B2_episode_keys_correct",
+      "ok": true,
+      "detail": "every written Episode keyed anomaly_detection|aegists_iforest_v1|macro_event_f1"
+    },
+    {
+      "id": "B2_a5_sees_bank_a3_does_not",
+      "ok": true,
+      "detail": "A5 cells retrieving Source cards: ['target_cpc/A5/r1', 'target_cpc/A5/r2', 'target_cpm/A5/r1', 'target_cpm/A5/r2']; A3 cells: none"
+    },
+    {
+      "id": "B3_lifecycle_reachable",
+      "ok": false,
+      "detail": "cells that reached a Draft decision: []"
+    },
+    {
+      "id": "B5_zero_target_label_service",
+      "ok": true,
+      "detail": "target key requests [], breached False, target values retained False"
+    }
+  ],
+  "lifecycle": [
+    {
+      "cell": "target_cpc/A3/r1",
+      "support_relations": [
+        "NEUTRAL",
+        "NEUTRAL"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY",
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpc/A5/r1",
+      "support_relations": [
+        "NEUTRAL",
+        "NEUTRAL"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY",
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpc/A3/r2",
+      "support_relations": [
+        "NEUTRAL"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpc/A5/r2",
+      "support_relations": [
+        "NEUTRAL"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpm/A5/r1",
+      "support_relations": [
+        "NEUTRAL",
+        "NEGATIVE"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY",
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpm/A3/r1",
+      "support_relations": [
+        "NEUTRAL",
+        "NEGATIVE"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY",
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpm/A5/r2",
+      "support_relations": [
+        "NEGATIVE"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY"
+      ]
+    },
+    {
+      "cell": "target_cpm/A3/r2",
+      "support_relations": [
+        "NEGATIVE"
+      ],
+      "fast_skill_stage": null,
+      "delayed_stage": null,
+      "delayed_relation": null,
+      "local_status": [
+        "EPISODE_ONLY"
+      ]
+    }
+  ],
+  "call_counts": {
+    "target_cpc/A3/r1": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpc/A5/r1": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpc/A3/r2": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpc/A5/r2": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpm/A5/r1": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpm/A3/r1": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpm/A5/r2": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    },
+    "target_cpm/A3/r2": {
+      "run_online_round": 1,
+      "open_delayed": 1,
+      "activate_approved": 0
+    }
+  },
+  "budget_trace": {
+    "ad_fits_used": 40,
+    "ad_fit_cap": 60,
+    "llm_calls": 0,
+    "llm_cap": 48,
+    "per_cell": [
+      {
+        "cell": "target_cpc/A3/r1",
+        "ad_fits_before": 0,
+        "ad_fits_after": 6,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpc/A5/r1",
+        "ad_fits_before": 6,
+        "ad_fits_after": 12,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpc/A3/r2",
+        "ad_fits_before": 12,
+        "ad_fits_after": 16,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpc/A5/r2",
+        "ad_fits_before": 16,
+        "ad_fits_after": 20,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpm/A5/r1",
+        "ad_fits_before": 20,
+        "ad_fits_after": 26,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpm/A3/r1",
+        "ad_fits_before": 26,
+        "ad_fits_after": 32,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpm/A5/r2",
+        "ad_fits_before": 32,
+        "ad_fits_after": 36,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      },
+      {
+        "cell": "target_cpm/A3/r2",
+        "ad_fits_before": 36,
+        "ad_fits_after": 40,
+        "llm_calls_before": 0,
+        "llm_calls_after": 0
+      }
+    ]
+  },
+  "readings": {
+    "target_cpc/A3": {
+      "non_identity_trials_before_first_local_active": ">8",
+      "first_activation_round": null,
+      "final_delayed_macro_f1_gain": null,
+      "harmed_support_receipts": 0,
+      "harmed_series_total": 0,
+      "worst_per_series_delayed_gain": 0.0,
+      "abstentions": 2,
+      "source_cards_retrieved": [],
+      "memory_resolution_per_round": [
+        "no_memory",
+        "rendered_empty"
+      ],
+      "target_feedback_consumed": 3,
+      "llm_calls": 0,
+      "rounds_completed": 2,
+      "activations": 0
+    },
+    "target_cpc/A5": {
+      "non_identity_trials_before_first_local_active": ">8",
+      "first_activation_round": null,
+      "final_delayed_macro_f1_gain": null,
+      "harmed_support_receipts": 0,
+      "harmed_series_total": 0,
+      "worst_per_series_delayed_gain": 0.0,
+      "abstentions": 2,
+      "source_cards_retrieved": [
+        "t6_source_aws_cloudwatch_r1_hampel_filter",
+        "t6_source_aws_cloudwatch_r1_identity",
+        "t6_source_aws_cloudwatch_r1_winsorize",
+        "t6_source_aws_cloudwatch_r2_identity",
+        "t6_source_aws_cloudwatch_r2_winsorize",
+        "t6_source_known_cause_r2_hampel_filter",
+        "t6_source_known_cause_r2_outlier_iqr"
+      ],
+      "memory_resolution_per_round": [
+        "contrast_pack",
+        "rendered_empty"
+      ],
+      "target_feedback_consumed": 3,
+      "llm_calls": 0,
+      "rounds_completed": 2,
+      "activations": 0
+    },
+    "target_cpm/A5": {
+      "non_identity_trials_before_first_local_active": ">8",
+      "first_activation_round": null,
+      "final_delayed_macro_f1_gain": null,
+      "harmed_support_receipts": 2,
+      "harmed_series_total": 2,
+      "worst_per_series_delayed_gain": -0.16666666666666669,
+      "abstentions": 2,
+      "source_cards_retrieved": [
+        "t6_source_aws_cloudwatch_r2_winsorize",
+        "t6_source_known_cause_r1_identity",
+        "t6_source_known_cause_r2_hampel_filter",
+        "t6_source_known_cause_r2_identity",
+        "t6_source_known_cause_r2_outlier_iqr"
+      ],
+      "memory_resolution_per_round": [
+        "contrast_pack",
+        "rendered_empty"
+      ],
+      "target_feedback_consumed": 3,
+      "llm_calls": 0,
+      "rounds_completed": 2,
+      "activations": 0
+    },
+    "target_cpm/A3": {
+      "non_identity_trials_before_first_local_active": ">8",
+      "first_activation_round": null,
+      "final_delayed_macro_f1_gain": null,
+      "harmed_support_receipts": 2,
+      "harmed_series_total": 2,
+      "worst_per_series_delayed_gain": -0.16666666666666669,
+      "abstentions": 2,
+      "source_cards_retrieved": [],
+      "memory_resolution_per_round": [
+        "no_memory",
+        "rendered_empty"
+      ],
+      "target_feedback_consumed": 3,
+      "llm_calls": 0,
+      "rounds_completed": 2,
+      "activations": 0
+    }
+  },
+  "cells": [
+    {
+      "cell": "target_cpc/A3/r1",
+      "cohort": "target_cpc",
+      "arm": "A3",
+      "round": "r1",
+      "support_origin": 1613,
+      "delayed_origin": 2218,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 0,
+      "retrieval_before_round": {
+        "held": 0,
+        "card_ids": [],
+        "rendered": false,
+        "source_cards": [],
+        "target_cards": []
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 0,
+      "pool": [
+        "identity",
+        "cand_outlier_iqr",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_outlier_iqr",
+      "memory_resolution": "no_memory",
+      "proposal_count": 2,
+      "support_receipts": 2,
+      "non_identity_trials": 2,
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": 0.0
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.0
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 0,
+      "harmed_series_in_episodes": 0,
+      "worst_per_series_gain": 0.0,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpc_target_outlier_iqr_a3_r1_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "outlier_iqr",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        },
+        {
+          "episode_id": "target_cpc_target_winsorize_a3_r1_p2",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "winsorize",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 6,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "outlier_iqr",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpc/A5/r1",
+      "cohort": "target_cpc",
+      "arm": "A5",
+      "round": "r1",
+      "support_origin": 1613,
+      "delayed_origin": 2218,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 20,
+      "retrieval_before_round": {
+        "held": 20,
+        "card_ids": [
+          "t6_source_aws_cloudwatch_r1_winsorize",
+          "t6_source_aws_cloudwatch_r1_hampel_filter",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_aws_cloudwatch_r1_identity"
+        ],
+        "source_cards": [
+          "t6_source_aws_cloudwatch_r1_winsorize",
+          "t6_source_aws_cloudwatch_r1_hampel_filter",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_aws_cloudwatch_r1_identity"
+        ],
+        "target_cards": [],
+        "rendered": true,
+        "rendered_sha256": "41c6b0add9e39c955665544f8cdc185d6b982d3a71ffb7977f54f6dc7577dfdc"
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 6,
+      "pool": [
+        "identity",
+        "cand_outlier_iqr",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_outlier_iqr",
+      "memory_resolution": "contrast_pack",
+      "proposal_count": 2,
+      "support_receipts": 2,
+      "non_identity_trials": 2,
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": 0.0
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.0
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 0,
+      "harmed_series_in_episodes": 0,
+      "worst_per_series_gain": 0.0,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpc_target_outlier_iqr_a5_r1_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "outlier_iqr",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        },
+        {
+          "episode_id": "target_cpc_target_winsorize_a5_r1_p2",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "winsorize",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 12,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "outlier_iqr",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 1613,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpc/A3/r2",
+      "cohort": "target_cpc",
+      "arm": "A3",
+      "round": "r2",
+      "support_origin": 2822,
+      "delayed_origin": 3427,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 0,
+      "retrieval_before_round": {
+        "held": 2,
+        "card_ids": [],
+        "source_cards": [],
+        "target_cards": [],
+        "rendered": false,
+        "rendered_sha256": null
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 12,
+      "pool": [
+        "identity",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_winsorize",
+      "memory_resolution": "rendered_empty",
+      "proposal_count": 1,
+      "support_receipts": 1,
+      "non_identity_trials": 1,
+      "probes": [
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.0
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 0,
+      "harmed_series_in_episodes": 0,
+      "worst_per_series_gain": 0.0,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpc_target_winsorize_a3_r2_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "winsorize",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 16,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 2822,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 2822,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpc/A5/r2",
+      "cohort": "target_cpc",
+      "arm": "A5",
+      "round": "r2",
+      "support_origin": 2822,
+      "delayed_origin": 3427,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 20,
+      "retrieval_before_round": {
+        "held": 22,
+        "card_ids": [
+          "t6_source_aws_cloudwatch_r2_winsorize",
+          "t6_source_known_cause_r2_outlier_iqr",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_aws_cloudwatch_r2_identity"
+        ],
+        "source_cards": [
+          "t6_source_aws_cloudwatch_r2_winsorize",
+          "t6_source_known_cause_r2_outlier_iqr",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_aws_cloudwatch_r2_identity"
+        ],
+        "target_cards": [],
+        "rendered": true,
+        "rendered_sha256": "41c6b0add9e39c955665544f8cdc185d6b982d3a71ffb7977f54f6dc7577dfdc"
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 16,
+      "pool": [
+        "identity",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_winsorize",
+      "memory_resolution": "rendered_empty",
+      "proposal_count": 1,
+      "support_receipts": 1,
+      "non_identity_trials": 1,
+      "probes": [
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": 0.0
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 0,
+      "harmed_series_in_episodes": 0,
+      "worst_per_series_gain": 0.0,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpc_target_winsorize_a5_r2_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpc",
+          "workflow_signature": "winsorize",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 20,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 2822,
+          "macro_f1": 0.0
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 2822,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpm/A5/r1",
+      "cohort": "target_cpm",
+      "arm": "A5",
+      "round": "r1",
+      "support_origin": 2907,
+      "delayed_origin": 3997,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 20,
+      "retrieval_before_round": {
+        "held": 20,
+        "card_ids": [
+          "t6_source_aws_cloudwatch_r2_winsorize",
+          "t6_source_known_cause_r2_outlier_iqr",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_known_cause_r1_identity"
+        ],
+        "source_cards": [
+          "t6_source_aws_cloudwatch_r2_winsorize",
+          "t6_source_known_cause_r2_outlier_iqr",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_known_cause_r1_identity"
+        ],
+        "target_cards": [],
+        "rendered": true,
+        "rendered_sha256": "eb633d9ceb149adc7ba81131d157f45b3ac415a479c01c7064c94c1b38e6ca68"
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 20,
+      "pool": [
+        "identity",
+        "cand_outlier_iqr",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_outlier_iqr",
+      "memory_resolution": "contrast_pack",
+      "proposal_count": 2,
+      "support_receipts": 2,
+      "non_identity_trials": 2,
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": 0.0
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": -0.08333333333333334
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 1,
+      "harmed_series_in_episodes": 1,
+      "worst_per_series_gain": -0.16666666666666669,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpm_target_outlier_iqr_a5_r1_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpm",
+          "workflow_signature": "outlier_iqr",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        },
+        {
+          "episode_id": "target_cpm_target_winsorize_a5_r1_p2",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpm",
+          "workflow_signature": "winsorize",
+          "relation": "NEGATIVE",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 26,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 2907,
+          "macro_f1": 0.08333333333333334
+        },
+        {
+          "signature": "outlier_iqr",
+          "part": "support",
+          "origin": 2907,
+          "macro_f1": 0.08333333333333334
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 2907,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpm/A3/r1",
+      "cohort": "target_cpm",
+      "arm": "A3",
+      "round": "r1",
+      "support_origin": 2907,
+      "delayed_origin": 3997,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 0,
+      "retrieval_before_round": {
+        "held": 0,
+        "card_ids": [],
+        "rendered": false,
+        "source_cards": [],
+        "target_cards": []
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 26,
+      "pool": [
+        "identity",
+        "cand_outlier_iqr",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_outlier_iqr",
+      "memory_resolution": "no_memory",
+      "proposal_count": 2,
+      "support_receipts": 2,
+      "non_identity_trials": 2,
+      "probes": [
+        {
+          "candidate_id": "cand_outlier_iqr",
+          "kind": "probe",
+          "gain": 0.0
+        },
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": -0.08333333333333334
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 1,
+      "harmed_series_in_episodes": 1,
+      "worst_per_series_gain": -0.16666666666666669,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpm_target_outlier_iqr_a3_r1_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpm",
+          "workflow_signature": "outlier_iqr",
+          "relation": "NEUTRAL",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        },
+        {
+          "episode_id": "target_cpm_target_winsorize_a3_r1_p2",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpm",
+          "workflow_signature": "winsorize",
+          "relation": "NEGATIVE",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 32,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 2907,
+          "macro_f1": 0.08333333333333334
+        },
+        {
+          "signature": "outlier_iqr",
+          "part": "support",
+          "origin": 2907,
+          "macro_f1": 0.08333333333333334
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 2907,
+          "macro_f1": 0.0
+        }
+      ]
+    },
+    {
+      "cell": "target_cpm/A5/r2",
+      "cohort": "target_cpm",
+      "arm": "A5",
+      "round": "r2",
+      "support_origin": 5087,
+      "delayed_origin": 6177,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 20,
+      "retrieval_before_round": {
+        "held": 22,
+        "card_ids": [
+          "t6_source_aws_cloudwatch_r2_winsorize",
+          "target_cpm_target_winsorize_a5_r1_p2",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_known_cause_r2_identity"
+        ],
+        "source_cards": [
+          "t6_source_aws_cloudwatch_r2_winsorize",
+          "t6_source_known_cause_r2_hampel_filter",
+          "t6_source_known_cause_r2_identity"
+        ],
+        "target_cards": [
+          "target_cpm_target_winsorize_a5_r1_p2"
+        ],
+        "rendered": true,
+        "rendered_sha256": "52a20f3314ccd177b189c904e402e10a8695e22a573d87424543ee7ef780932e"
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 32,
+      "pool": [
+        "identity",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_winsorize",
+      "memory_resolution": "rendered_empty",
+      "proposal_count": 1,
+      "support_receipts": 1,
+      "non_identity_trials": 1,
+      "probes": [
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": -0.0196969696969697
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 1,
+      "harmed_series_in_episodes": 1,
+      "worst_per_series_gain": -0.0393939393939394,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpm_target_winsorize_a5_r2_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpm",
+          "workflow_signature": "winsorize",
+          "relation": "NEGATIVE",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 36,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 5087,
+          "macro_f1": 0.05
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 5087,
+          "macro_f1": 0.030303030303030304
+        }
+      ]
+    },
+    {
+      "cell": "target_cpm/A3/r2",
+      "cohort": "target_cpm",
+      "arm": "A3",
+      "round": "r2",
+      "support_origin": 5087,
+      "delayed_origin": 6177,
+      "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+      "memory_size": 0,
+      "retrieval_before_round": {
+        "held": 2,
+        "card_ids": [
+          "target_cpm_target_winsorize_a3_r1_p2"
+        ],
+        "source_cards": [],
+        "target_cards": [
+          "target_cpm_target_winsorize_a3_r1_p2"
+        ],
+        "rendered": true,
+        "rendered_sha256": "46a8fb2c1eb008eb278b3ea1949ad4e41537e69783680f6b110fd224bccb9051"
+      },
+      "llm_calls_before": 0,
+      "ad_fits_before": 36,
+      "pool": [
+        "identity",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_winsorize",
+      "memory_resolution": "rendered_empty",
+      "proposal_count": 1,
+      "support_receipts": 1,
+      "non_identity_trials": 1,
+      "probes": [
+        {
+          "candidate_id": "cand_winsorize",
+          "kind": "probe",
+          "gain": -0.0196969696969697
+        }
+      ],
+      "winner_program": null,
+      "abstained": true,
+      "harm_count": 1,
+      "harmed_series_in_episodes": 1,
+      "worst_per_series_gain": -0.0393939393939394,
+      "fast_skill_event": null,
+      "delayed_event": null,
+      "delayed_utility": null,
+      "approved_skill_id": null,
+      "activated": false,
+      "episode_rows": [
+        {
+          "episode_id": "target_cpm_target_winsorize_a3_r2_p1",
+          "task_consumer_key": "anomaly_detection|aegists_iforest_v1|macro_event_f1",
+          "domain_namespace": "target_cpm",
+          "workflow_signature": "winsorize",
+          "relation": "NEGATIVE",
+          "evidence_level": "SUPPORT",
+          "local_status": "EPISODE_ONLY"
+        }
+      ],
+      "local_active_episodes": [],
+      "restricted_episodes": [],
+      "llm_calls_after": 0,
+      "ad_fits_after": 40,
+      "adapter_calls": [
+        {
+          "signature": "identity",
+          "part": "support",
+          "origin": 5087,
+          "macro_f1": 0.05
+        },
+        {
+          "signature": "winsorize",
+          "part": "support",
+          "origin": 5087,
+          "macro_f1": 0.030303030303030304
+        }
+      ]
+    }
+  ],
+  "label_wall": {
+    "released": false,
+    "target_values_retained_in_memory": false,
+    "key_presence_discloses_nothing": "all six Target files carry an entry in combined_windows.json, so the presence of a key says nothing about which series is the clean one; only the window list would, and it is dropped",
+    "target_keys_walled": [
+      "realAdExchange/exchange-2_cpc_results.csv",
+      "realAdExchange/exchange-2_cpm_results.csv",
+      "realAdExchange/exchange-3_cpc_results.csv",
+      "realAdExchange/exchange-3_cpm_results.csv",
+      "realAdExchange/exchange-4_cpc_results.csv",
+      "realAdExchange/exchange-4_cpm_results.csv"
+    ],
+    "target_key_requests": [],
+    "breached": false
+  },
+  "stopped": null,
+  "stop_reason": null,
+  "evaluate_released_untouched": true,
+  "verdict": {
+    "verdict": "SMOKE_MECHANICAL_FAULT",
+    "reason": "first fault: ['B3_lifecycle_reachable']"
+  }
+}

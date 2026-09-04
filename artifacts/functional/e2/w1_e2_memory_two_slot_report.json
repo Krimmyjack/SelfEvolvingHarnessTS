@@ -1,0 +1,110 @@
+{
+  "experiment_id": "v1-e2-memory-two-slot",
+  "note": "E2 Source Memory 双槽（已暴露数据/零 LLM——三臂比较；仅一个 Control：reserve_exploration_slot）",
+  "arms": {
+    "A5_hard": {
+      "pool": [
+        "identity",
+        "cand_winsorize"
+      ],
+      "probes": [
+        [
+          "cand_winsorize",
+          0.25733337625677066
+        ]
+      ],
+      "receipts": 1
+    },
+    "A5_two_slot": {
+      "pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_denoise_median"
+      ],
+      "probes": [
+        [
+          "cand_winsorize",
+          0.25733337625677066
+        ]
+      ],
+      "receipts": 1
+    },
+    "A3": {
+      "pool": [
+        "identity",
+        "cand_denoise_median",
+        "cand_winsorize"
+      ],
+      "probes": [
+        [
+          "cand_denoise_median",
+          0.0
+        ],
+        [
+          "cand_winsorize",
+          0.25733337625677066
+        ]
+      ],
+      "receipts": 2
+    },
+    "A5_two_slot_negative_source": {
+      "r1": {
+        "pool": [
+          "identity",
+          "cand_denoise_median"
+        ],
+        "probes": [
+          [
+            "cand_denoise_median",
+            0.0
+          ]
+        ],
+        "receipts": 1
+      },
+      "r2": {
+        "pool": [
+          "identity",
+          "cand_winsorize"
+        ],
+        "probes": [
+          [
+            "cand_winsorize",
+            0.5880965144274193
+          ]
+        ],
+        "receipts": 1
+      }
+    }
+  },
+  "target_coverage": {
+    "r1_probe_op": "cand_winsorize",
+    "r1_gain": -0.1426334267351992,
+    "r2_pool": [
+      "identity",
+      "cand_winsorize"
+    ],
+    "r2_chosen": "cand_winsorize",
+    "r2_probes": [
+      [
+        "cand_winsorize",
+        -0.08411687539427182
+      ]
+    ],
+    "source_verdict_r1": "POSITIVE_PRIOR",
+    "source_verdict_r2": "UNKNOWN",
+    "target_overrides": true
+  },
+  "checks": {
+    "C1_exploration_slot_preserved": true,
+    "C2_source_priority_limited": true,
+    "C3_negative_only_degrades": true,
+    "C4_target_overrides_source": true,
+    "C5_budget_identical": true
+  },
+  "verdict": "MEMORY_TWO_SLOT_CONTROL_PASS",
+  "review_caveats": [
+    "审查 2026-08-12 caveat 1（承重）：traffic 臂实际探测系列（0414c7e9=T635 @792/888）因 registry 漂移（当前 806 支 eligible vs sealed 时代更小集合）未被任何先验运行探测——\"零新数据\"在 traffic 臂仅 origin/算子级成立（fresh 求值）；sealed 正例（T307 +0.4045）与 E2 的 +0.2573 是不同系列；Source Episode 数值（±0.4/±0.03）为声明值。机制结论不受影响（三臂同一系列同装置相对比较），但消费记录以本报告为准（T635 @792/888 已暴露）。",
+    "审查 caveat 2：C4 的 UNKNOWN 真实机制是 n_hist 2→4 的 weak→radius 模式切换 + @984 查询落在全部证据半径外（同 query 加负例得 RISK_PRIOR）——方向（Source 排序被覆盖）真实，归因以本段为准（非成对中和）。",
+    "审查 caveat 5：C4 判别力——R2 实际探测在两种 verdict 下结果相同（backend 池仅 winsorize）——覆盖结论依赖 verdict 层重放（重放忠实）。"
+  ]
+}

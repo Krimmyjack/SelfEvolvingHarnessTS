@@ -1,0 +1,177 @@
+{
+  "actionable_context_check": [
+    {
+      "center_delta": 10.822133100528845,
+      "coverage": 1.0,
+      "level_shift": true,
+      "missing": false,
+      "origin": 648,
+      "outlier_signal": false,
+      "seasonal_residual": 0.21698733735099981
+    },
+    {
+      "center_delta": 6.002761773987999,
+      "coverage": 1.0,
+      "level_shift": true,
+      "missing": false,
+      "origin": 744,
+      "outlier_signal": false,
+      "seasonal_residual": 0.19279194208372763
+    },
+    {
+      "center_delta": -24.896662166692977,
+      "coverage": 1.0,
+      "level_shift": true,
+      "missing": false,
+      "origin": 840,
+      "outlier_signal": false,
+      "seasonal_residual": 0.16983913292906985
+    }
+  ],
+  "behavior_changed": false,
+  "budget_per_round": 2,
+  "cohort_offset": 40,
+  "dataset": "uci_electricity_load_diagrams",
+  "experiment_id": "v1-true-normal-entry-agentic-online-pilot_context_actionable_uci",
+  "fault_checks": {},
+  "first_fault": null,
+  "harm_after_memory_round": false,
+  "interpretation": "agent_safe_abstain（supply 正常、LLM 基于 Context 稳定 abstain——非 supply stall）",
+  "llm_api_call_count": 6,
+  "remove_ctrl_flipped": false,
+  "rounds": [
+    [
+      648,
+      696
+    ],
+    [
+      744,
+      792
+    ],
+    [
+      840,
+      888
+    ]
+  ],
+  "rounds_log": [
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.median_acf_at_calendar_period\",\"experience_memory\"],\"rationale\":\"No signed experience or strong negative evidence is available. Recent data has full coverage, no missing runs, and strong calendar-",
+          "pool": [
+            "identity",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        },
+        {
+          "attempt": 2,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.median_acf_at_calendar_period\",\"Experience memory: no applicable signed experience\"],\"rationale\":\"Select the identity reference for the budgeted Support probe. The recent context is complete and strongly seasonal, while the",
+          "pool": [
+            "identity",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        }
+      ],
+      "delayed_origin": 696,
+      "memory_after": [],
+      "origin": 648,
+      "receipt_count": 0,
+      "round": 1
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.median_acf_at_calendar_period\",\"recent.median_normalized_seasonal_residual\",\"change.median_normalized_seasonal_residual_delta\"],\"rationale\":\"No signed experience or strong negative evidence is present. The recent series has",
+          "pool": [
+            "identity",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        },
+        {
+          "attempt": 2,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.missing_run_count\",\"recent.maximum_missing_run_length\",\"change.median_normalized_seasonal_residual_delta\",\"change.median_robust_scale_delta\"],\"rationale\":\"Choose the reference identity operator for the budgeted Support prob",
+          "pool": [
+            "identity",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        }
+      ],
+      "delayed_origin": 792,
+      "memory_after": [],
+      "origin": 744,
+      "receipt_count": 0,
+      "round": 2
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.median_acf_at_calendar_period\",\"change.coverage_delta\",\"change.maximum_missing_run_length_delta\"],\"rationale\":\"Request the Support probe for the identity reference operator. Coverage is c",
+          "pool": [
+            "identity",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        },
+        {
+          "attempt": 2,
+          "chosen": "identity",
+          "episode_id": null,
+          "gain": null,
+          "kind": "abstain",
+          "llm_rationale": "{\"chosen_candidate_id\":\"identity\",\"evidence_refs\":[\"recent.coverage\",\"recent.maximum_missing_run_length\",\"recent.missing_run_count\",\"change.coverage_delta\",\"change.maximum_missing_run_length_delta\",\"change.missing_run_count_delta\"],\"rationale\":\"Select the identity reference for the budgeted Support ",
+          "pool": [
+            "identity",
+            "cand_denoise_median"
+          ],
+          "program": null,
+          "relation": null,
+          "verifier_passed": null
+        }
+      ],
+      "delayed_origin": 888,
+      "memory_after": [],
+      "origin": 840,
+      "receipt_count": 0,
+      "round": 3
+    }
+  ],
+  "supply_ok": true,
+  "verdict": "AGENT_PROGRAM_SUPPLY_STALLED"
+}

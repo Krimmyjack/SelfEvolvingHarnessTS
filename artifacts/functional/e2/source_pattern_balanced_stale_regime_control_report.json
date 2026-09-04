@@ -1,0 +1,254 @@
+{
+  "capability_claim": false,
+  "causal_hypothesis": "Excluding a contiguous old training regime helps when its visible context-to-target mapping has become stale, but is not a universal improvement when the old mapping remains recurrent.",
+  "claim_limit": "Controlled mapping-reversal calibration on exposed natural Source bases. It is not natural defect prevalence, promotion, or transfer evidence.",
+  "configuration": {
+    "consumer": "Ridge(alpha=1.0, fit_intercept=True, solver=svd)",
+    "datasets": [
+      "monash:traffic_hourly",
+      "legacy_monash:fred_md"
+    ],
+    "matched_risk": "same natural rows with unchanged old targets",
+    "metric": "per-series sMASE",
+    "natural_base_series": true,
+    "old_anchors": [
+      240,
+      300,
+      360
+    ],
+    "program": "weight old-anchor rows 0 and recent-anchor rows 1",
+    "recent_anchors": [
+      420,
+      480,
+      540
+    ],
+    "stale_control": "multiply normalized targets at old anchors by -1",
+    "thresholds": {
+      "maximum_recurrent_mean_gain": 0.01,
+      "minimum_positive_uids": 6,
+      "minimum_stale_mean_gain": 0.05,
+      "minimum_stale_minus_recurrent_mean_gain": 0.05
+    }
+  },
+  "consumer_fit_count": 6,
+  "dataset_evidence": [
+    {
+      "dataset_gate_pass": false,
+      "dataset_id": "monash:traffic_hourly",
+      "per_uid": [
+        {
+          "clean_all_smase": 1.6876281315797883,
+          "recent_only_smase": 1.8111231152082268,
+          "recurrent_program_gain": -0.12349498362843847,
+          "series_uid": "46207986409372e54e056a02a02ca773d54ae8d2583596ea8b57216e42e087f5",
+          "stale_all_smase": 3.8240770017912062,
+          "stale_program_gain": 2.0129538865829795
+        },
+        {
+          "clean_all_smase": 1.7315313073941807,
+          "recent_only_smase": 1.083936160229885,
+          "recurrent_program_gain": 0.6475951471642958,
+          "series_uid": "464e26099c4a2ea3898cf0a3c60dea54afc2e02318280486bf927ab45e3dbe8a",
+          "stale_all_smase": 1.7535571837731647,
+          "stale_program_gain": 0.6696210235432798
+        },
+        {
+          "clean_all_smase": 2.427301752890204,
+          "recent_only_smase": 1.9021487712580485,
+          "recurrent_program_gain": 0.5251529816321554,
+          "series_uid": "4b40390ecc8b85cda60d07eecf8e69c1ae08178117cd64a8403b1445c8e02247",
+          "stale_all_smase": 3.8660601134073462,
+          "stale_program_gain": 1.9639113421492977
+        },
+        {
+          "clean_all_smase": 1.4939178297878595,
+          "recent_only_smase": 1.4643819560534086,
+          "recurrent_program_gain": 0.02953587373445088,
+          "series_uid": "4c97d6377cbfe273ebab9f8f3df5c3d9ce336c498bf75975475336955bed8121",
+          "stale_all_smase": 3.5396855704629258,
+          "stale_program_gain": 2.075303614409517
+        },
+        {
+          "clean_all_smase": 1.3871835425823307,
+          "recent_only_smase": 1.2467267366430317,
+          "recurrent_program_gain": 0.140456805939299,
+          "series_uid": "514352533a895aac0c89f4d5d5f823e05f0eb6635aff681d37cfc0882dc62d80",
+          "stale_all_smase": 2.6911092338468388,
+          "stale_program_gain": 1.444382497203807
+        },
+        {
+          "clean_all_smase": 2.4053864622320624,
+          "recent_only_smase": 1.7216420996817245,
+          "recurrent_program_gain": 0.6837443625503379,
+          "series_uid": "54b5a1fe33b4e45c6e5b44699ca5a3f7116b2f7a02b306376bd784afe7fa1c8b",
+          "stale_all_smase": 3.3408296059323495,
+          "stale_program_gain": 1.619187506250625
+        },
+        {
+          "clean_all_smase": 1.5229008375897641,
+          "recent_only_smase": 1.533979598581642,
+          "recurrent_program_gain": -0.011078760991877878,
+          "series_uid": "554594a7c21dea008fb03eef8153593b8f31bfc90a773cb2c0b8b955e5bd5efe",
+          "stale_all_smase": 2.9551261055054425,
+          "stale_program_gain": 1.4211465069238005
+        },
+        {
+          "clean_all_smase": 1.1486775539079939,
+          "recent_only_smase": 0.480432887727372,
+          "recurrent_program_gain": 0.6682446661806218,
+          "series_uid": "57faa43db3d9f2d889cfa681aee6bb5648df784c27536915a5b6f5504b5a4b44",
+          "stale_all_smase": 1.3103166211869515,
+          "stale_program_gain": 0.8298837334595794
+        }
+      ],
+      "recurrent_matched_risk": {
+        "harmful_uid_count": 2,
+        "mean_gain": 0.32001951157260555,
+        "median_gain": 0.3328048937857272,
+        "positive_uid_count": 6,
+        "risk_contrast_pass": false,
+        "visible_mapping_observation": {
+          "maximum_shape_correlation": 0.5910327055672853,
+          "mean_old_recent_target_shape_rms_distance": 1.223985713544688,
+          "median_old_recent_target_shape_correlation": -0.020943515923989325,
+          "minimum_shape_correlation": -0.5059244226632215,
+          "series_count": 12,
+          "used_for_program_selection": false,
+          "visibility": "training_context_and_target_only"
+        }
+      },
+      "stale_case": {
+        "harmful_uid_count": 0,
+        "headroom_pass": true,
+        "mean_gain": 1.5045487638153607,
+        "median_gain": 1.5317850017272159,
+        "positive_uid_count": 8,
+        "visible_mapping_observation": {
+          "maximum_shape_correlation": 0.5059244226632215,
+          "mean_old_recent_target_shape_rms_distance": 1.426088963583222,
+          "median_old_recent_target_shape_correlation": 0.020943515923989325,
+          "minimum_shape_correlation": -0.5910327055672853,
+          "series_count": 12,
+          "used_for_program_selection": false,
+          "visibility": "training_context_and_target_only"
+        }
+      },
+      "stale_minus_recurrent_mean_gain": 1.184529252242755
+    },
+    {
+      "dataset_gate_pass": true,
+      "dataset_id": "legacy_monash:fred_md",
+      "per_uid": [
+        {
+          "clean_all_smase": 1.70114019594096,
+          "recent_only_smase": 2.6268061182192226,
+          "recurrent_program_gain": -0.9256659222782626,
+          "series_uid": "9318befb252d1ded230f7e4ce9d443737663da91012a1013f616ecd9d4d088b7",
+          "stale_all_smase": 2.8716548635105794,
+          "stale_program_gain": 0.2448487452913568
+        },
+        {
+          "clean_all_smase": 1.8557313913547597,
+          "recent_only_smase": 1.426502362667696,
+          "recurrent_program_gain": 0.4292290286870637,
+          "series_uid": "a66110a8b0633a832911b2425e9dd0f2b7ad76c4e85676f6b530b37e8b4d0ba3",
+          "stale_all_smase": 3.4691975236192194,
+          "stale_program_gain": 2.0426951609515234
+        },
+        {
+          "clean_all_smase": 0.6136416969150763,
+          "recent_only_smase": 0.5674737456540466,
+          "recurrent_program_gain": 0.04616795126102968,
+          "series_uid": "aa4ad4dd61282f8ddc1ef5dd1076b6fac3973d882112b386cc8f08b8ac7a8882",
+          "stale_all_smase": 15.508963279523485,
+          "stale_program_gain": 14.941489533869438
+        },
+        {
+          "clean_all_smase": 2.0540508052711215,
+          "recent_only_smase": 3.346750950392249,
+          "recurrent_program_gain": -1.2927001451211275,
+          "series_uid": "b6addd6fdebd414aec6394c9f2529a49b98acb50cbe71ccf0fc53c978e337ccb",
+          "stale_all_smase": 16.597062443641025,
+          "stale_program_gain": 13.250311493248777
+        },
+        {
+          "clean_all_smase": 0.786131699599607,
+          "recent_only_smase": 1.5536763323892222,
+          "recurrent_program_gain": -0.7675446327896152,
+          "series_uid": "e2f7668887a1c26c58128a597b8724073390c7c3eaa4e04836e740a9a30b6993",
+          "stale_all_smase": 3.9730051625326124,
+          "stale_program_gain": 2.41932883014339
+        },
+        {
+          "clean_all_smase": 1.5471107106880158,
+          "recent_only_smase": 2.1311083588502857,
+          "recurrent_program_gain": -0.58399764816227,
+          "series_uid": "e41ce762e3a609d3edb03eca9fdcabb7e1e5867643ceca15ac97973d5e04d47d",
+          "stale_all_smase": 4.667725908962203,
+          "stale_program_gain": 2.5366175501119175
+        },
+        {
+          "clean_all_smase": 2.040715801058841,
+          "recent_only_smase": 2.71091140410514,
+          "recurrent_program_gain": -0.6701956030462988,
+          "series_uid": "f0cd80ff19cf9a172f4315ebb7509fa7eba10d03bb61fe88cf099656ffdb44f1",
+          "stale_all_smase": 19.395207470318464,
+          "stale_program_gain": 16.684296066213324
+        },
+        {
+          "clean_all_smase": 1.352895987942664,
+          "recent_only_smase": 1.6208714448668848,
+          "recurrent_program_gain": -0.26797545692422076,
+          "series_uid": "f8e8c797319ee8f04bd89e90c4733f326051cd06708043320160f422a04f3fd5",
+          "stale_all_smase": 1.938570274278343,
+          "stale_program_gain": 0.3176988294114582
+        }
+      ],
+      "recurrent_matched_risk": {
+        "harmful_uid_count": 6,
+        "mean_gain": -0.5040853035467127,
+        "median_gain": -0.6270966256042844,
+        "positive_uid_count": 2,
+        "risk_contrast_pass": true,
+        "visible_mapping_observation": {
+          "maximum_shape_correlation": 0.9933916988229092,
+          "mean_old_recent_target_shape_rms_distance": 0.6279655345938435,
+          "median_old_recent_target_shape_correlation": 0.7253866723940887,
+          "minimum_shape_correlation": -0.575960263812705,
+          "series_count": 12,
+          "used_for_program_selection": false,
+          "visibility": "training_context_and_target_only"
+        }
+      },
+      "stale_case": {
+        "harmful_uid_count": 0,
+        "headroom_pass": true,
+        "mean_gain": 6.554660776155148,
+        "median_gain": 2.4779731901276536,
+        "positive_uid_count": 8,
+        "visible_mapping_observation": {
+          "maximum_shape_correlation": 0.575960263812705,
+          "mean_old_recent_target_shape_rms_distance": 4.050684937772218,
+          "median_old_recent_target_shape_correlation": -0.7253866723940887,
+          "minimum_shape_correlation": -0.9933916988229092,
+          "series_count": 12,
+          "used_for_program_selection": false,
+          "visibility": "training_context_and_target_only"
+        }
+      },
+      "stale_minus_recurrent_mean_gain": 7.058746079701861
+    }
+  ],
+  "formal_transfer": false,
+  "next_step_if_fail": "Stop the current Ridge stale-regime control; do not build a Witness or Memory from an unreadable/non-heterogeneous Program effect.",
+  "next_step_if_pass": "Freeze one deployable mapping-disagreement Observation and test whether it selects exclude versus abstain across held-out natural base datasets.",
+  "overall": {
+    "all_dataset_context_contrast_pass": false,
+    "dataset_count": 2,
+    "passing_dataset_count": 1
+  },
+  "schema_version": "e2-pattern-balanced-stale-regime-control/1",
+  "scientific_role": "controlled_context_conditioned_program_effect_calibration",
+  "target_query_opened": false,
+  "verdict": "PATTERN_BALANCED_STALE_REGIME_CONTROL_FAIL"
+}

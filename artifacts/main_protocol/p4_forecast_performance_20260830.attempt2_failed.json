@@ -1,0 +1,519 @@
+{
+  "protocol_version": "v1.2.1-Core+p4-split-1",
+  "stage": "P4_FORECAST_PERFORMANCE_EVOLUTION",
+  "evidence_grade": "EVOLUTION_PERFORMANCE",
+  "status": "FAILED",
+  "started_at": "2026-08-30T17:27:58+08:00",
+  "completed_at": "2026-08-30T17:28:07+08:00",
+  "backend_mode": "live",
+  "release": {
+    "source": "artifacts/main_protocol/p4_split_gate_20260830.json",
+    "checks": {
+      "performance_released": true,
+      "forecast_authorized": true,
+      "evolution_held": true,
+      "rq3_does_not_block_h1_h2": true,
+      "four_core_arms_frozen": true,
+      "three_replicas_frozen": true,
+      "eight_episodes_frozen": true,
+      "b4_frozen": true,
+      "matched_budget": true,
+      "task_local_only": true,
+      "final_closed": true
+    },
+    "performance_status": "RELEASED",
+    "evolution_status": "HELD"
+  },
+  "scope": {
+    "performance_hypotheses": [
+      "H1",
+      "H2"
+    ],
+    "evolution_h3_status": "HELD__RQ3_NOT_EXERCISED",
+    "ad_scope": "NOT_RUN_IN_FORECAST_COMPONENT",
+    "natural_agent_feedback_treatment": true,
+    "controlled_treatment_rows": 0,
+    "injected_treatment_rows": 0,
+    "query_evaluations": 0,
+    "natural_final_outcome_reads": 0,
+    "ucr_test_outcome_reads": 0,
+    "sealed_ad_outcome_reads": 0
+  },
+  "frozen_contract": {
+    "task": "forecast",
+    "consumer": "pooled_ridge_a1",
+    "primary_metric": "sMASE",
+    "common_dsl_source": "P1 frozen Forecast Common DSL",
+    "core_arms": [
+      "Static",
+      "A3-reset",
+      "K0-fixed",
+      "A5-online"
+    ],
+    "h2_comparator": "Parallel Best-of-N@4",
+    "origins": [
+      600,
+      648,
+      696,
+      744,
+      792,
+      840,
+      888,
+      936
+    ],
+    "replica_orders": {
+      "Forward": [
+        600,
+        648,
+        696,
+        744,
+        792,
+        840,
+        888,
+        936
+      ],
+      "Reverse": [
+        936,
+        888,
+        840,
+        792,
+        744,
+        696,
+        648,
+        600
+      ],
+      "Interleaved": [
+        600,
+        792,
+        648,
+        840,
+        696,
+        888,
+        744,
+        936
+      ]
+    },
+    "k0_a5_same_initial_knowledge": true,
+    "a5_only_cross_unit_writeback": true,
+    "task_local_experience_and_skill_only": true,
+    "no_operator_consumer_metric_or_threshold_change": true
+  },
+  "budget": {
+    "operating_point": "B=4",
+    "per_method_cell": {
+      "full_support_consumer_evaluations": 4,
+      "support_a_max": 3,
+      "support_b_max": 1,
+      "cheap_probe_max": 12,
+      "llm_call_max": 4,
+      "token_max": 40000,
+      "accepted_update_max": 1,
+      "wall_seconds_max": 2700
+    },
+    "adaptive_cell_count": 72,
+    "global_llm_call_cap": 288,
+    "core_cell_count": 96,
+    "h2_comparator_cell_count": 24,
+    "matched_ceiling_not_required_spend": true
+  },
+  "unit_plan": [
+    {
+      "replica": "Forward",
+      "sequence_index": 1,
+      "episode_id": "E1",
+      "origin": 600,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 2,
+      "episode_id": "E2",
+      "origin": 648,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 3,
+      "episode_id": "E3",
+      "origin": 696,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 4,
+      "episode_id": "E4",
+      "origin": 744,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 5,
+      "episode_id": "E5",
+      "origin": 792,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 6,
+      "episode_id": "E6",
+      "origin": 840,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 7,
+      "episode_id": "E7",
+      "origin": 888,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 8,
+      "episode_id": "E8",
+      "origin": 936,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 1,
+      "episode_id": "E8",
+      "origin": 936,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 2,
+      "episode_id": "E7",
+      "origin": 888,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 3,
+      "episode_id": "E6",
+      "origin": 840,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 4,
+      "episode_id": "E5",
+      "origin": 792,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 5,
+      "episode_id": "E4",
+      "origin": 744,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 6,
+      "episode_id": "E3",
+      "origin": 696,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 7,
+      "episode_id": "E2",
+      "origin": 648,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Reverse",
+      "sequence_index": 8,
+      "episode_id": "E1",
+      "origin": 600,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 1,
+      "episode_id": "E1",
+      "origin": 600,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 2,
+      "episode_id": "E5",
+      "origin": 792,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 3,
+      "episode_id": "E2",
+      "origin": 648,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 4,
+      "episode_id": "E6",
+      "origin": 840,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 5,
+      "episode_id": "E3",
+      "origin": 696,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 6,
+      "episode_id": "E7",
+      "origin": 888,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 7,
+      "episode_id": "E4",
+      "origin": 744,
+      "horizon": 48,
+      "natural_episode": true
+    },
+    {
+      "replica": "Interleaved",
+      "sequence_index": 8,
+      "episode_id": "E8",
+      "origin": 936,
+      "horizon": 48,
+      "natural_episode": true
+    }
+  ],
+  "expected": {
+    "core_cells": 96,
+    "h2_comparator_cells": 24
+  },
+  "progress": {
+    "completed_units": 0,
+    "completed_core_cells": 0,
+    "completed_h2_comparator_cells": 0
+  },
+  "data": {
+    "dataset": "KDD Cup 2018 with missing values",
+    "data_role": "EXPOSED_EVOLUTION",
+    "support_a_series_count": 20,
+    "support_b_series_count": 20,
+    "natural_origin_count": 8,
+    "treatment_generation": "natural Agent proposals plus task-native feedback",
+    "controlled_or_injected_treatment": false,
+    "development_query_evaluations": 0,
+    "natural_final_outcome_reads": 0
+  },
+  "initial_knowledge": {
+    "source": {
+      "status": "PASS",
+      "source": "artifacts/functional/e2/s2a_g1_run1_r2.json",
+      "producer_selection_rule": "unique role=producer and arm=A5-online",
+      "skill_id": "s2a_forecast_supply_v0",
+      "task_consumer_metric": {
+        "task_kind": "forecast",
+        "consumer_id": "pooled_ridge_a1",
+        "metric": "sMASE"
+      },
+      "requires_target_support": true,
+      "supplies_candidates": true,
+      "grants_execution": false,
+      "evidence_semantics": "legacy source supply-only soft prior",
+      "kdd_capability_claim": false,
+      "beneficiary_conversion_claim": false
+    },
+    "historical_task_skill_ids": [
+      "s2a_forecast_supply_v0"
+    ],
+    "wrong_task_skill_installed": false,
+    "k0_a5_initial_semantics_equal": true,
+    "only_a5_carries_state_across_units": true
+  },
+  "rows": [
+    {
+      "replica": "Forward",
+      "sequence_index": 1,
+      "episode_id": "E1",
+      "origin": 600,
+      "horizon": 48,
+      "natural_episode": true,
+      "task": "forecast",
+      "consumer": "pooled_ridge_a1",
+      "metric": "sMASE",
+      "method": "Static",
+      "task_native": {
+        "smase": 2.1644264418177395,
+        "utility": -2.1644264418177395,
+        "median_series_smase": 1.7887654402903235,
+        "worst_series_smase": 4.892185970807333,
+        "per_series_smase": [
+          1.3892054103580254,
+          1.499188298446197,
+          4.147636592594472,
+          1.4872266150784996,
+          1.4854886948318702,
+          1.7683819908482201,
+          1.565479694769761,
+          2.5607387659955667,
+          2.4344803370135524,
+          2.6720287533286142,
+          0.9452263034013946,
+          1.8091488897324266,
+          1.4052270789695007,
+          4.892185970807333,
+          2.2706840169283367,
+          2.7896534139855635,
+          1.0796925507925261,
+          1.313291594310411,
+          3.2738231685161234,
+          2.4997406956463912
+        ],
+        "behavior_point_count": 0
+      },
+      "delta_utility_vs_identity": 0.0,
+      "material_harm_event": false,
+      "material_harm_magnitude": 0.0,
+      "usage": {
+        "support_a_full_evaluations": 0,
+        "support_b_full_evaluations": 1,
+        "full_support_evaluations": 1,
+        "raw_consumer_fits": 1,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.015
+      },
+      "details": {
+        "selected_program": "identity",
+        "lifecycle_calls": 0,
+        "identity_reference_fit_allocated_here": true,
+        "cross_unit_writeback": false
+      },
+      "status": "PASS"
+    },
+    {
+      "replica": "Forward",
+      "sequence_index": 1,
+      "episode_id": "E1",
+      "origin": 600,
+      "horizon": 48,
+      "natural_episode": true,
+      "task": "forecast",
+      "consumer": "pooled_ridge_a1",
+      "metric": "sMASE",
+      "method": "Parallel Best-of-N@4",
+      "task_native": {
+        "smase": 2.066603355226312,
+        "utility": -2.066603355226312,
+        "median_series_smase": 1.652586147554299,
+        "worst_series_smase": 4.749642245778818,
+        "per_series_smase": [
+          1.3418336812798077,
+          1.3914274730314877,
+          3.851301898384507,
+          1.3645767993609814,
+          1.3363397951393239,
+          1.559890341857959,
+          1.3044347041390585,
+          2.4433884140769173,
+          2.498918806687009,
+          2.7543063682110804,
+          0.9697513751661315,
+          1.7452819532506385,
+          1.4577602059665655,
+          4.749642245778818,
+          2.1987633950308685,
+          2.8893164738890698,
+          0.7993099732526778,
+          1.1430200096666483,
+          2.9353477672366592,
+          2.5974554231200306
+        ],
+        "behavior_point_count": 1852
+      },
+      "delta_utility_vs_identity": 0.09782308659142736,
+      "material_harm_event": false,
+      "material_harm_magnitude": 0.0,
+      "usage": {
+        "support_a_full_evaluations": 3,
+        "support_b_full_evaluations": 1,
+        "full_support_evaluations": 4,
+        "raw_consumer_fits": 4,
+        "cheap_probes": 0,
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tokens": 0,
+        "accepted_updates": 0,
+        "wall_seconds": 0.108
+      },
+      "details": {
+        "candidate_programs": [
+          "impute_linear",
+          "hampel_filter",
+          "winsorize"
+        ],
+        "support_a_candidate_utility": {
+          "impute_linear": -2.0690534863693095,
+          "hampel_filter": -2.1421615326612438,
+          "winsorize": -2.006468568338067
+        },
+        "selected_program": "winsorize",
+        "independent_search_only": true,
+        "cross_unit_writeback": false
+      },
+      "status": "PASS"
+    }
+  ],
+  "aggregates": null,
+  "protocol_errors": [
+    "PermissionDeniedError: Error code: 403 - {'error': {'code': 'insufficient_quota', 'message': 'insufficient API quota', 'type': 'insufficient_quota'}}"
+  ],
+  "shared_identity_reference": [
+    {
+      "replica": "Forward",
+      "sequence_index": 1,
+      "episode_id": "E1",
+      "origin": 600,
+      "horizon": 48,
+      "natural_episode": true,
+      "raw_consumer_fits": 2,
+      "support_b_fit_allocated_to_static": 1,
+      "unallocated_support_a_reference_fit": 1,
+      "wall_seconds": 0.032,
+      "unallocated_support_a_wall_seconds": 0.017
+    }
+  ],
+  "failure_trace": "Traceback (most recent call last):\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\main_protocol_p4\\run_forecast_p4_performance.py\", line 991, in run\n    row, end_snapshot, end_episodes = _adaptive_row(\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\main_protocol_p4\\run_forecast_p4_performance.py\", line 618, in _adaptive_row\n    result = run_online_round(\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\online_loop.py\", line 386, in run_online_round\n    method.prepare(\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\method.py\", line 354, in prepare\n    result, trace = self.fast_agent.prepare(\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\fast_agent.py\", line 946, in prepare\n    inspect = self.core.run_stage(\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\methods\\ttha\\agent_core.py\", line 421, in run_stage\n    response = self.backend.complete(request)\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\run_e2_t6_cls_op_shared_harness.py\", line 658, in complete\n    response = self._inner.complete(request)\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\runtime\\agent_backend.py\", line 456, in complete\n    response = self.delegate.complete(request)\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\evaluation\\functional\\task_episode_harness\\agentic\\runner.py\", line 232, in complete\n    return self.delegate.complete(request)\n  File \"C:\\Users\\辉\\desktop\\agent\\SelfEvolvingHarnessTS-deepseek-guidance-evolution\\SelfEvolvingHarnessTS\\runtime\\agent_backend.py\", line 539, in complete\n    completion = self._client.chat.completions.create(\n  File \"D:\\Anaconda_envs\\envs\\project\\lib\\site-packages\\openai\\_utils\\_utils.py\", line 298, in wrapper\n    return func(*args, **kwargs)\n  File \"D:\\Anaconda_envs\\envs\\project\\lib\\site-packages\\openai\\resources\\chat\\completions\\completions.py\", line 1281, in create\n    return self._post(\n  File \"D:\\Anaconda_envs\\envs\\project\\lib\\site-packages\\openai\\_base_client.py\", line 1332, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n  File \"D:\\Anaconda_envs\\envs\\project\\lib\\site-packages\\openai\\_base_client.py\", line 1105, in request\n    raise self._make_status_error_from_response(err.response) from None\nopenai.PermissionDeniedError: Error code: 403 - {'error': {'code': 'insufficient_quota', 'message': 'insufficient API quota', 'type': 'insufficient_quota'}}\n",
+  "natural_final_release": false,
+  "final_outcome_reads": 0
+}

@@ -1,0 +1,156 @@
+{
+  "experiment_id": "v1-kdd2018-applicability-binding-replay",
+  "note": "P4.3 development replay（已暴露 @984；零新 LLM/零新数据；dev-level——只证修复机制有效，不追溯 fresh PASS）",
+  "origin": 984,
+  "delayed": 1032,
+  "approved_snapshot_sha": "e8e9e3b75664394c6452247782ddf0112d152197cc4ff5db51fb9f01256b3d36",
+  "rebound_snapshot_sha": "44b6def5f142ec0d...",
+  "sha_formula_consistent": true,
+  "rebound_applicability": {
+    "all": [
+      {
+        "feature": "task_kind",
+        "op": "==",
+        "value": "forecast"
+      }
+    ]
+  },
+  "fabricated_applicability": {
+    "all": [
+      {
+        "feature": "task_kind",
+        "op": "==",
+        "value": "forecast"
+      },
+      {
+        "feature": "clipping_probe_direction",
+        "op": "==",
+        "value": "negative"
+      }
+    ]
+  },
+  "features_at_origin": {
+    "task_kind": "forecast",
+    "clipping_probe_direction": "unknown",
+    "imputation_probe_direction": "unknown",
+    "denoising_probe_direction": "unknown",
+    "level_probe_direction": "unknown"
+  },
+  "section1_gate_mechanism": {
+    "a_units": [
+      {
+        "case": "task_kind",
+        "ok": true,
+        "value": {
+          "all": [
+            {
+              "feature": "task_kind",
+              "op": "==",
+              "value": "forecast"
+            }
+          ]
+        }
+      },
+      {
+        "case": "empty_sig_const_true",
+        "ok": true,
+        "value": {
+          "const": true
+        }
+      }
+    ],
+    "b_units": [
+      {
+        "case": "card_bound_reachable",
+        "ok": true,
+        "reason": "ok"
+      },
+      {
+        "case": "fabricated_rejected_provenance",
+        "ok": true,
+        "reason": "feature_not_in_card_signature:clipping_probe_direction"
+      },
+      {
+        "case": "fabricated_rejected_context",
+        "ok": true,
+        "reason": "not_retrievable_in_current_context"
+      }
+    ],
+    "integration": {
+      "clip_card": {
+        "stage": "applicability_unreachable",
+        "applicability_reason": "not_retrievable_in_current_context",
+        "action": "ACTION_UNAVAILABLE",
+        "error": null
+      },
+      "task_card": {
+        "stage": "pending",
+        "applicability_reason": null,
+        "action": null,
+        "error": null
+      },
+      "empty_sig_card": {
+        "stage": "pending",
+        "applicability_reason": null,
+        "action": null,
+        "error": null
+      }
+    },
+    "pass": true
+  },
+  "arms": {
+    "ADOPT": {
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify",
+        "winsorize_negative_outlier_mad"
+      ],
+      "pool": [
+        "identity",
+        "cand_skill_winsorize_negative_outlier_mad",
+        "cand_winsorize"
+      ],
+      "chosen": "cand_skill_winsorize_negative_outlier_mad",
+      "chosen_program": [
+        {
+          "op": "outlier_mad",
+          "params": {}
+        }
+      ],
+      "support_gain": -0.060764531483190165,
+      "support_passed": true,
+      "delayed_gain": 0.2566546515685566
+    },
+    "REMOVE": {
+      "retrieved_skill_ids": [
+        "build_contrastive_candidates",
+        "inspect_and_localize",
+        "select_or_identity_and_verify"
+      ],
+      "pool": [
+        "identity",
+        "cand_winsorize",
+        "cand_outlier_mad",
+        "cand_hampel_filter"
+      ],
+      "chosen": "cand_winsorize",
+      "chosen_program": [
+        {
+          "op": "winsorize",
+          "params": {}
+        }
+      ],
+      "support_gain": -0.08411687539427182,
+      "support_passed": true,
+      "delayed_gain": 0.1993229191734609
+    }
+  },
+  "checks": {
+    "R1_skill_retrieved": true,
+    "R2_chosen_is_skill": true,
+    "R3_executed": true,
+    "R4_removal_restores": true
+  },
+  "verdict": "APPLICABILITY_BINDING_DEV_REPLAY_PASS"
+}

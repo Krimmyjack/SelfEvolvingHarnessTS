@@ -1,0 +1,37 @@
+{
+  "experiment_id": "v1-draft-authority-gap-check",
+  "note": "P0 缺口确认（零 LLM/零 outcome——prepare 只读 [0,origin)）",
+  "origin": 984,
+  "skill": {
+    "skill_id": "winsorize_negative_outlier_mad",
+    "applicability": {
+      "all": [
+        {
+          "feature": "task_kind",
+          "op": "==",
+          "value": "forecast"
+        }
+      ]
+    },
+    "requires_target_support": null
+  },
+  "pool": [
+    "identity",
+    "cand_skill_winsorize_negative_outlier_mad",
+    "cand_winsorize"
+  ],
+  "chosen": "cand_skill_winsorize_negative_outlier_mad",
+  "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "winsorize_negative_outlier_mad"
+  ],
+  "checks": {
+    "G1_retrieved": true,
+    "G2_in_pool": true,
+    "G3_before_agent_candidates": true,
+    "G4_chosen_without_support": true
+  },
+  "verdict": "DRAFT_EXECUTION_AUTHORITY_GAP"
+}

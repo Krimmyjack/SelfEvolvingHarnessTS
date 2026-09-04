@@ -1,0 +1,108 @@
+{
+  "experiment_id": "v1-group-fault-dev",
+  "note": "Group fault dev（已暴露数据零新 outcome——不形成 Claim；多轨迹共同归因最小切片：分组→capsule→共同 headroom→组级 Patch→组内/组外验证→pending→delayed）",
+  "groups": [
+    {
+      "workflow": "winsorize",
+      "sign": "NEGATIVE",
+      "episodes": [
+        "kdd_cup_2018_target_winsorize_gf_T117_888",
+        "kdd_cup_2018_target_winsorize_gf_T117_984"
+      ]
+    }
+  ],
+  "capsule": {
+    "workflow": "winsorize",
+    "sign": "NEGATIVE",
+    "n_episodes": 2,
+    "origins": [
+      888,
+      984
+    ],
+    "per_view": {
+      "n_views": 8,
+      "worsen_fraction": 0.625,
+      "improve_fraction": 0.3125
+    },
+    "cohort_gain": {
+      "min": -0.1426,
+      "max": -0.0841,
+      "mean": -0.1134
+    },
+    "delayed_signs": {
+      "unevaluated": 2
+    }
+  },
+  "headroom": {
+    "outlier_mad": {
+      "per_episode_gains": [
+        {
+          "series": "T117",
+          "origin": 888,
+          "gain": 0.11986118246492228
+        },
+        {
+          "series": "T117",
+          "origin": 984,
+          "gain": -0.060764531483190165
+        }
+      ],
+      "common_positive": false
+    },
+    "hampel_filter": {
+      "per_episode_gains": [
+        {
+          "series": "T117",
+          "origin": 888,
+          "gain": 0.033984644049736445
+        },
+        {
+          "series": "T117",
+          "origin": 984,
+          "gain": 0.01504251303971138
+        }
+      ],
+      "common_positive": true
+    }
+  },
+  "common_alternatives": [
+    "hampel_filter"
+  ],
+  "group_feedback_event": {
+    "stage": "pending",
+    "edit_id": "group_winsorize_replacement",
+    "group_capsule": {
+      "n_episodes": 2,
+      "workflow": "winsorize",
+      "sign": "NEGATIVE"
+    },
+    "frozen_program": [
+      {
+        "op": "hampel_filter",
+        "params": {
+          "window": 3,
+          "n_sigmas": 0.1,
+          "global_z_min": 1.0
+        }
+      }
+    ],
+    "patch_id": "patch-replace-winsorize-with-hampel_filter",
+    "group_replay": [
+      {
+        "origin": 888,
+        "gain": 0.033984644049736445
+      },
+      {
+        "origin": 984,
+        "gain": 0.01504251303971138
+      }
+    ],
+    "holdout_gain": 0.0013144587058273594
+  },
+  "delayed_event": {
+    "stage": "delayed_rejected",
+    "delayed_gain": -0.11660631332403537,
+    "delayed_reject_reason": "material_negative"
+  },
+  "verdict": "GROUP_FAULT_DELAYED_DELAYED_REJECTED"
+}

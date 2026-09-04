@@ -1,0 +1,145 @@
+{
+  "stage": "P4W_SOURCE_LINE",
+  "written_at": "2026-09-02T01:51:18.153338+08:00",
+  "evidence_grade": "DEVELOPMENT_ONLY_SOURCE_SKILL_FORMATION",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "question": "does the Harness form and approve Skills on the Source cohort, so that A5 has a treatment that was not written by hand",
+  "not_on_trial": [
+    "A5 > A3: nothing measured here enters that comparison",
+    "utility on the Target: this cohort is never scored there"
+  ],
+  "cohort": "source readable[160:200]",
+  "origins": [
+    1896,
+    2136,
+    2376,
+    2616,
+    2856
+  ],
+  "delayed_origin_rule": "origin + 48",
+  "source_budget": {
+    "llm_calls": 40,
+    "rounds": 5,
+    "face": "support_a",
+    "is_an_arm": false,
+    "enters_a3_a5_comparison": false
+  },
+  "admission_policy": {
+    "rule": "bounded_risk_v1",
+    "max_harmed_fraction": 0.2,
+    "max_single_series_harm": 0.3,
+    "library_default_would_have_been": "strict_positive_only",
+    "thresholds_changed": 0
+  },
+  "scope_origination": {
+    "fast_proposes": "Program only",
+    "runtime_initializes": "evaluation.main_protocol_p4.scope_initializer",
+    "slow_revises": "atomically with the Program, via the PATCH's serving_scope",
+    "fast_propose_schema_changed": false,
+    "rules": "the initialiser reads only deployment-visible features and may not see a UID, a cohort name or any Outcome; its family table and thresholds are frozen before the run and are identical for A3 and A5; the Runner may supply or resolve a Scope but may never hand-pick one after seeing a result; every deployment records scope_source as one of runtime_initializer / source_skill / slow_revision",
+    "a_later_fast_emitted_scope_is_a_separate_version": "it would need the schema, H0, the parsing chain and the snapshot lock changed together, then validation on a new unexposed Target; it is not part of this round and is not an H3"
+  },
+  "initializer_rules": {
+    "reads_only_deployment_visible_features": true,
+    "forbidden_inputs": [
+      "series UID",
+      "cohort name",
+      "any Outcome"
+    ],
+    "family_table": {
+      "impute_linear": {
+        "feature": "missing_fraction",
+        "op": ">=",
+        "threshold": 0.05
+      },
+      "impute_fft": {
+        "feature": "missing_fraction",
+        "op": ">=",
+        "threshold": 0.05
+      },
+      "impute_ema": {
+        "feature": "missing_fraction",
+        "op": ">=",
+        "threshold": 0.05
+      },
+      "impute_ar": {
+        "feature": "missing_fraction",
+        "op": ">=",
+        "threshold": 0.05
+      },
+      "period_complete": {
+        "feature": "missing_fraction",
+        "op": ">=",
+        "threshold": 0.05
+      },
+      "period_median_complete": {
+        "feature": "missing_fraction",
+        "op": ">=",
+        "threshold": 0.05
+      },
+      "outlier_iqr": {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+      },
+      "outlier_mad": {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+      },
+      "winsorize": {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+      },
+      "hampel_filter": {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+      },
+      "repair_level_shift": {
+        "feature": "level_excursion_score",
+        "op": ">=",
+        "threshold": 0.5
+      },
+      "repair_burst_segment": {
+        "feature": "level_excursion_score",
+        "op": ">=",
+        "threshold": 0.5
+      }
+    },
+    "fallback": {
+      "scope_type": "all_serving_series",
+      "predicate": []
+    },
+    "identical_for_a3_and_a5": true,
+    "runner_may": [
+      "supply a Scope",
+      "resolve a Scope"
+    ],
+    "runner_may_not": [
+      "hand-pick a Scope after seeing the result",
+      "vary the initialiser between arms"
+    ],
+    "scope_sources_recorded": [
+      "runtime_initializer",
+      "source_skill",
+      "slow_revision"
+    ],
+    "thresholds_are_domain_constants": "5% missingness materiality and robust-z 3.0, fixed before any Target feature was inspected"
+  },
+  "transport": {
+    "base_url": null,
+    "model": null,
+    "key_source": "OPENAI_API_KEY",
+    "missing": [
+      "M0_AGENT_BASE_URL",
+      "M0_AGENT_MODEL"
+    ],
+    "ready": false,
+    "why_no_default": "an unset base URL would send a key to whatever endpoint the client defaults to; a missing setting is a refusal, not a fallback"
+  },
+  "status": "BLOCKED_ON_TRANSPORT",
+  "llm_calls": 0,
+  "verdict": "TRANSPORT_NOT_CONFIGURED"
+}

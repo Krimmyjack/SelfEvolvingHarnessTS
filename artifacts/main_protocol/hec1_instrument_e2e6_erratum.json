@@ -1,0 +1,25 @@
+{
+  "stage": "HEC1_INSTRUMENT_ERRATUM",
+  "written_at": "2026-09-03T10:40:00+08:00",
+  "written_by": "Fable (mainline review), 0 LLM, 0 fits",
+  "subject": "artifacts/main_protocol/hec1_instrument_e2e6.{json,md}",
+  "course_artifact_unchanged": "artifacts/main_protocol/hec1_course_e2e6.json",
+  "what_happened": [
+    "The first reading of hec1_instrument_e2e6 was produced by audit_hec1_instrument.py before the frozen_reset check knew about the Draft ledger: 8/8 PASS, may_continue=true, written 2026-09-03T10:04:00+08:00.",
+    "The frozen_reset check was then tightened (a frozen arm that is resupplied a restricted Draft opened in an earlier unit is a FAIL) and re-run against the SAME course artifact hec1_course_e2e6.json.",
+    "The audit script names its output after the course label, so the re-run wrote hec1_instrument_e2e6.{json,md} again: the reading is now frozen_reset FAIL, 7/8, may_continue=false.",
+    "The original 8/8 bytes were not committed and were not copied before the re-run; they are NOT RECOVERABLE and are not reconstructed here.  Their content is quoted in the ledger entry of 2026-09-03 10:xx (STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md) from the reviewer's read of the file before the re-run: checks 8/8, frozen_reset evidence {resets:[false,true,true,true,true,true], bank_rows:[0,0,0,0,0,0], carried_skills:[]}, ledgers {replay_fits:15, course_fits:51, llm_total:0, wall_seconds:35.6}."
+  ],
+  "why_the_course_artifact_is_not_affected": "hec1_course_e2e6.json was never rewritten; it still records the leak (A3-frozen cells at positions 2-5 carry resupplied_candidate_ids=['resupplied_draft_1']) and is the evidence the tightened check was written against.",
+  "reading_now_in_hec1_instrument_e2e6": {
+    "checks_passed": 7,
+    "checks_total": 8,
+    "failed": ["frozen_reset"],
+    "why": "the frozen arm was resupplied a restricted Draft opened in an earlier unit"
+  },
+  "post_fix_readings_use_new_paths": [
+    "artifacts/main_protocol/hec1_course_e2e6_frozen_ledger_fix.json + hec1_instrument_e2e6_frozen_ledger_fix.json: 8/8 after the Draft-ledger reset (10:2x)",
+    "artifacts/main_protocol/hec1_course_e2e6_review_fixes.json + hec1_instrument_e2e6_review_fixes.json: 8/8 after the K0 hand-off, REVISE-in-place and replay NOT_APPLICABLE fixes (10:3x)"
+  ],
+  "rule_from_here": "instrument and scientific artifacts are never overwritten; an audit re-run on an existing course must be given a new label (the audit script should take --out or derive it from the course label plus a suffix), and any past overwrite is disclosed by an appended erratum like this one."
+}
