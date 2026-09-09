@@ -1,0 +1,1593 @@
+{
+ "stage": "DEV_AUTO1_SKILL_REVISION",
+ "package": "DEV-AUTO-1: autonomous Skill revision, development level",
+ "what_this_is_not": [
+  "not the formal A3/A5 main experiment",
+  "development level only: every unit here is already exposed",
+  "no sealed data, no TARGET_HELD_IN unit and no +144 face was read"
+ ],
+ "written_at": "2026-09-06T18:22:13.259411+08:00",
+ "finished_at": "2026-09-06T18:22:48.787816+08:00",
+ "smoke": {
+  "smoke": "DEV_AUTO1_PREFLIGHT",
+  "llm_calls": 0,
+  "consumer_fits": 0,
+  "passed": true,
+  "checks": [
+   {
+    "check": "population_and_boundary",
+    "passed": true,
+    "cells_in_the_ordering": 26,
+    "development_units": 21,
+    "excluded": [
+     {
+      "position": 18,
+      "why": "held for the Target, not development"
+     },
+     {
+      "position": 19,
+      "why": "held for the Target, not development"
+     },
+     {
+      "position": 20,
+      "why": "held for the Target, not development"
+     },
+     {
+      "position": 21,
+      "why": "held for the Target, not development"
+     },
+     {
+      "position": 22,
+      "why": "held for the Target, not development"
+     }
+    ],
+    "excluded_by": "exposure name, never by a property of a reading",
+    "positions_before_the_boundary": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "positions_after_the_boundary": [
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     23,
+     24,
+     25
+    ],
+    "course_order_preserved": true
+   },
+   {
+    "check": "entry_state_is_the_m_r0d_reconstruction",
+    "passed": true,
+    "processed_units": 5,
+    "bank_rows": 7,
+    "held_lineage_keys": [
+     "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]"
+    ],
+    "drafts": [
+     {
+      "draft_id": "resupplied_draft_1",
+      "program": "outlier_mad",
+      "state": "REVISABLE",
+      "revisions": 0,
+      "verification_attempts": 1,
+      "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+      "current_scope": {
+       "scope_type": "serving_series_predicate",
+       "predicate": [
+        {
+         "feature": "local_robust_z_peak",
+         "op": ">=",
+         "threshold": 3.0
+        }
+       ]
+      }
+     }
+    ],
+    "a_deep_copy_reproduces_the_ledger": true,
+    "why_a_deep_copy": "both arms start from the same reconstruction; sharing one ledger object would let one arm's revision appear in the other's state"
+   },
+   {
+    "check": "the_skill_under_revision",
+    "passed": true,
+    "snapshot": {
+     "path": ".hec1_runs\\v11fix_chain\\k0_store\\98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+     "resolved_from": "course artifact k0_snapshot",
+     "runtime_bundle_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b"
+    },
+    "skill_id": "fast_winner_forecast_ridge_smase_outlier_mad",
+    "frozen_body_parses_to": "outlier_mad({})",
+    "ancestor_program": "outlier_mad({})",
+    "serving_scope": {
+     "predicate": [
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 3.0
+      }
+     ],
+     "scope_type": "serving_series_predicate"
+    },
+    "parser": "fast_agent._parse_frozen_steps, the Fast consumer's own"
+   },
+   {
+    "check": "the_workflow_edit_uses_an_existing_authorised_route",
+    "passed": true,
+    "surface": "skill_library.entries/fast_winner_forecast_ridge_smase_outlier_mad.body",
+    "target_class": "capability",
+    "allowed_operations": [
+     "PATCH"
+    ],
+    "cause": "OUTCOME_GAP",
+    "authorised": true,
+    "why_not": null,
+    "risk_gap_is_refused_for_this_edit": true,
+    "routes_added": 0,
+    "surfaces_added": 0
+   },
+   {
+    "check": "the_proposal_schema_admits_both_edits_and_nothing_else",
+    "passed": true,
+    "results": {
+     "a_scope_proposal": {
+      "valid": true,
+      "why_not": null
+     },
+     "a_workflow_proposal": {
+      "valid": true,
+      "why_not": null
+     },
+     "an_empty_proposal_list": {
+      "valid": true,
+      "why_not": null
+     },
+     "an_unknown_kind": {
+      "valid": false,
+      "why_not": "payload.proposals[0].kind is outside enum"
+     },
+     "a_three_operator_program": {
+      "valid": false,
+      "why_not": "payload.proposals[0].workflow_program has too many items"
+     },
+     "an_extra_top_level_field": {
+      "valid": false,
+      "why_not": "payload has unexpected fields: ['threshold']"
+     }
+    },
+    "schema_is_passed_inline": true,
+    "why_inline": "every file under methods/ttha/schemas is a dependency SHA of every snapshot lock; adding one would rotate K0's runtime bundle and this package would no longer start from the K0 the course started from",
+    "schema_files_added": 0
+   },
+   {
+    "check": "the_feedback_is_whole",
+    "passed": true,
+    "units_available": 100,
+    "units_sent": 100,
+    "nothing_was_truncated": true,
+    "both_faces_present": [
+     "support_face",
+     "delayed_face"
+    ],
+    "gained_lost_unchanged_are_named": {
+     "gained": [
+      "a"
+     ],
+     "lost": [
+      "b"
+     ],
+     "unchanged": 1
+    },
+    "earlier_attempts_carried": 1,
+    "operators_offered": 29,
+    "what_the_production_prompt_did": "rows[:60] of one face with no unit or series identity, and one line of 'direction not feasible' for an earlier failure"
+   },
+   {
+    "check": "the_evaluator_refuses_before_it_spends",
+    "passed": true,
+    "an_operator_outside_the_registry": {
+     "outcome": "ILLEGAL_PROGRAM",
+     "why": "not_an_operator: not in the operator registry"
+    },
+    "the_parent_program_proposed_again": {
+     "outcome": "NO_CHANGE",
+     "why": "the proposed program is the parent program"
+    },
+    "a_feature_outside_the_frozen_vocabulary": {
+     "outcome": "SLOW_CLAUSE_UNUSABLE",
+     "why": "'series_uid' is not in the frozen Scope vocabulary; the deployment could not read it at serving time"
+    },
+    "the_replay_callable_raises_if_entered": true,
+    "consumer_fits_spent": 0
+   },
+   {
+    "check": "the_package_ceilings_refuse_before_the_spend",
+    "passed": true,
+    "fit_ceiling": 1000,
+    "llm_ceiling": 400,
+    "wall_ceiling_seconds": 21600,
+    "one_more_fit_fits": true,
+    "two_more_do_not": true,
+    "stop_reasons": {
+     "fits": "FIT_CEILING_REACHED",
+     "llm": "LLM_CEILING_REACHED"
+    },
+    "there_is_no_per_candidate_llm_cap": true
+   },
+   {
+    "check": "the_evaluation_face_is_not_reachable_from_this_runner",
+    "passed": true,
+    "occurrences": {
+     "_evaluate_face": 0,
+     "EVALUATION_OFFSET": 0,
+     "evaluation_origin": 0
+    },
+    "mentions_in_prose_only": 4,
+    "why": "run_unit_arm scores the +144 face on every cell; this package is authorised not to read it, so the call is absent rather than guarded"
+   }
+  ]
+ },
+ "geometry": {
+  "ordering": "forward",
+  "state_reconstructed_from": "A5-online",
+  "boundary_position": 4,
+  "entry_state": {
+   "processed_units": 5,
+   "bank_rows": 7,
+   "drafts": [
+    {
+     "draft_id": "resupplied_draft_1",
+     "program": "outlier_mad",
+     "state": "REVISABLE",
+     "revisions": 0,
+     "verification_attempts": 1,
+     "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+     "current_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     }
+    }
+   ],
+   "held_lineage_keys": [
+    "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]"
+   ]
+  },
+  "units_planned": [
+   5
+  ],
+  "units_completed_by_both_arms": [
+   5
+  ],
+  "excluded_units": [
+   {
+    "position": 18,
+    "unit": {
+     "block": "[80:120]",
+     "span": [
+      80,
+      120
+     ],
+     "origin": 1896,
+     "exposure": [
+      "TARGET_HELD_IN"
+     ]
+    },
+    "exposure": [
+     "TARGET_HELD_IN"
+    ],
+    "side": "after_the_boundary",
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 19,
+    "unit": {
+     "block": "[80:120]",
+     "span": [
+      80,
+      120
+     ],
+     "origin": 2136,
+     "exposure": [
+      "TARGET_HELD_IN"
+     ]
+    },
+    "exposure": [
+     "TARGET_HELD_IN"
+    ],
+    "side": "after_the_boundary",
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 20,
+    "unit": {
+     "block": "[80:120]",
+     "span": [
+      80,
+      120
+     ],
+     "origin": 2376,
+     "exposure": [
+      "TARGET_HELD_IN"
+     ]
+    },
+    "exposure": [
+     "TARGET_HELD_IN"
+    ],
+    "side": "after_the_boundary",
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 21,
+    "unit": {
+     "block": "[80:120]",
+     "span": [
+      80,
+      120
+     ],
+     "origin": 2616,
+     "exposure": [
+      "TARGET_HELD_IN"
+     ]
+    },
+    "exposure": [
+     "TARGET_HELD_IN"
+    ],
+    "side": "after_the_boundary",
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 22,
+    "unit": {
+     "block": "[80:120]",
+     "span": [
+      80,
+      120
+     ],
+     "origin": 2856,
+     "exposure": [
+      "TARGET_HELD_IN"
+     ]
+    },
+    "exposure": [
+     "TARGET_HELD_IN"
+    ],
+    "side": "after_the_boundary",
+    "why": "held for the Target, not development"
+   }
+  ],
+  "k0_snapshot": {
+   "path": ".hec1_runs\\v11fix_chain\\k0_store\\98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+   "resolved_from": "course artifact k0_snapshot",
+   "runtime_bundle_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b"
+  },
+  "ancestor": {
+   "program": "outlier_mad({})",
+   "serving_scope": {
+    "scope_type": "serving_series_predicate",
+    "predicate": [
+     {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 3.0
+     }
+    ]
+   },
+   "skill_id": "fast_winner_forecast_ridge_smase_outlier_mad"
+  },
+  "scoring": "the full served population on every unit; an out-of-scope series carries the raw prediction and scores exactly 0",
+  "not_read": [
+   "the +144 evaluation face",
+   "TARGET_HELD_IN units",
+   "sealed data"
+  ]
+ },
+ "arms": {
+  "frozen-skill": {
+   "what_it_may_do": "full Target-local exploration inside each unit; the Skill library is rebuilt from the entry snapshot at every unit",
+   "cross_unit_skill_state": "none"
+  },
+  "revising-skill": {
+   "what_it_may_do": "everything the control may do, plus a revision step after every unit: propose, have the tool measure, write an accepted revision onto the Skill, and use it later",
+   "cross_unit_skill_state": "carried"
+  },
+  "shared": "same model, same transport, same per-unit-arm LLM cap (5), same probe budget, same feedback access rules, same entry state"
+ },
+ "stopped_at": null,
+ "per_arm": {
+  "frozen-skill": {
+   "units": 1,
+   "support_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.0,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 0,
+    "total_treated_series": 0,
+    "worst_single_series_harm": 0.0,
+    "faces_not_readable": 0
+   },
+   "delayed_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.0,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 0,
+    "total_treated_series": 0,
+    "worst_single_series_harm": null,
+    "faces_not_readable": 0,
+    "authoritative_gate_passes": 0
+   },
+   "deployed_via": {
+    "identity": 1
+   },
+   "deployed_program": {
+    "identity": 1
+   },
+   "units_that_deployed_nothing": 1,
+   "distinct_programs_probed": [
+    "outlier_mad({})"
+   ],
+   "skills_retrieved": {
+    "build_contrastive_candidates": 1,
+    "inspect_and_localize": 1,
+    "select_or_identity_and_verify": 1,
+    "fast_winner_forecast_ridge_smase_outlier_mad": 1
+   }
+  },
+  "revising-skill": {
+   "units": 1,
+   "support_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.0,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 0,
+    "total_treated_series": 0,
+    "worst_single_series_harm": 0.0,
+    "faces_not_readable": 0
+   },
+   "delayed_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.0,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 0,
+    "total_treated_series": 0,
+    "worst_single_series_harm": null,
+    "faces_not_readable": 0,
+    "authoritative_gate_passes": 0
+   },
+   "deployed_via": {
+    "identity": 1
+   },
+   "deployed_program": {
+    "identity": 1
+   },
+   "units_that_deployed_nothing": 1,
+   "distinct_programs_probed": [
+    "outlier_mad({})"
+   ],
+   "skills_retrieved": {
+    "build_contrastive_candidates": 1,
+    "inspect_and_localize": 1,
+    "select_or_identity_and_verify": 1,
+    "fast_winner_forecast_ridge_smase_outlier_mad": 1
+   }
+  }
+ },
+ "cells": [
+  {
+   "unit": {
+    "block": "[0:40]",
+    "span": [
+     0,
+     40
+    ],
+    "origin": 2856,
+    "exposure": [
+     "SPENT_DEV"
+    ]
+   },
+   "position": 5,
+   "arm": "frozen-skill",
+   "served": 20,
+   "reset": {
+    "reset": false,
+    "reason": "first unit"
+   },
+   "faults": [],
+   "snapshot_skill_ids_at_start": [
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "skill_bodies_at_start": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "active_program_signatures_at_start": {
+    "outlier_mad({})": "fast_winner_forecast_ridge_smase_outlier_mad"
+   },
+   "resupplied_programs_offered": {
+    "resupplied_draft_1": "outlier_mad({})"
+   },
+   "llm_calls_this_cell": 5,
+   "llm_calls_billed_by_the_backend_meter": 5,
+   "support_fits_this_cell": 4,
+   "support_evaluations_without_a_fit_count": 0,
+   "support_evaluations_with_unmeasured_cost": 0,
+   "baseline_evaluations_this_cell": 1,
+   "baseline_cache_hits_this_cell": 1,
+   "baseline_evaluations_failed_this_cell": 0,
+   "fast_decision": {
+    "decision": "PROPOSED",
+    "candidate_count": 1,
+    "no_proposal_reason": null,
+    "payload_summary": "{\"candidates\": [\"outlier_mad_explore\"]}",
+    "vocabulary": [
+     "PROPOSED",
+     "ABSTAINED_WITH_REASON",
+     "EMPTY_OUTPUT",
+     "MALFORMED"
+    ]
+   },
+   "candidate_program_steps": {
+    "outlier_mad_explore": "outlier_mad({})"
+   },
+   "probes": [
+    {
+     "candidate_id": "outlier_mad_explore",
+     "kind": "probe",
+     "gain": 0.24646830557933108,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T109",
+      "T110",
+      "T111",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11443710861177214,
+      0.5250238187601353,
+      -0.10946325603697576,
+      0.2436345307109028,
+      0.889705513377922,
+      0.0,
+      0.0,
+      0.0,
+      0.12086582583628869,
+      0.0,
+      0.5799517467741326,
+      0.18737405171084132,
+      0.0,
+      0.05574257986082298,
+      0.015876184398240567,
+      0.784271266744351,
+      1.2783819082889276,
+      0.15843959145041087,
+      0.0,
+      0.08512524109884834
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576,
+      "min_per_series_gain": -0.10946325603697576,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "strict_positive_only",
+      "reason": "relation_not_positive",
+      "aggregate_gain": 0.24646830557933108,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "CONFLICT",
+     "consumer_fits": 2
+    },
+    {
+     "candidate_id": "resupplied_draft_1",
+     "kind": "probe",
+     "gain": 0.24646830557933108,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T109",
+      "T110",
+      "T111",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11443710861177214,
+      0.5250238187601353,
+      -0.10946325603697576,
+      0.2436345307109028,
+      0.889705513377922,
+      0.0,
+      0.0,
+      0.0,
+      0.12086582583628869,
+      0.0,
+      0.5799517467741326,
+      0.18737405171084132,
+      0.0,
+      0.05574257986082298,
+      0.015876184398240567,
+      0.784271266744351,
+      1.2783819082889276,
+      0.15843959145041087,
+      0.0,
+      0.08512524109884834
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576,
+      "min_per_series_gain": -0.10946325603697576,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "strict_positive_only",
+      "reason": "relation_not_positive",
+      "aggregate_gain": 0.24646830557933108,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "CONFLICT",
+     "consumer_fits": 2
+    }
+   ],
+   "risk_refusals": 0,
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "resupplied_candidate_ids": [
+    "resupplied_draft_1"
+   ],
+   "deployed": null,
+   "deployed_label": "identity",
+   "deployed_scope": null,
+   "winner_candidate_id": null,
+   "winner_from_skill_candidate": false,
+   "winner_from_resupplied_draft": false,
+   "deployed_via": "identity",
+   "support_reading": {
+    "identity": true,
+    "treated": 0,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.0,
+     "T101": 0.0,
+     "T102": 0.0,
+     "T103": 0.0,
+     "T104": 0.0,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": 0.0,
+     "T109": 0.0,
+     "T11": 0.0,
+     "T110": 0.0,
+     "T111": 0.0,
+     "T113": 0.0,
+     "T114": 0.0,
+     "T115": 0.0,
+     "T116": 0.0,
+     "T117": 0.0,
+     "T118": 0.0,
+     "T119": 0.0,
+     "T12": 0.0
+    },
+    "aggregate_gain": 0.0,
+    "harmed_fraction": 0.0,
+    "harmed_series": 0,
+    "max_single_series_harm": 0.0,
+    "consumer_fits": 0
+   },
+   "delayed_reading": null,
+   "delayed_gate": null,
+   "activated": false,
+   "bank_rows_after": 7,
+   "active_skill_ids": [],
+   "skill_bodies_at_end": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "wall_seconds": 9.9
+  },
+  {
+   "unit": {
+    "block": "[0:40]",
+    "span": [
+     0,
+     40
+    ],
+    "origin": 2856,
+    "exposure": [
+     "SPENT_DEV"
+    ]
+   },
+   "position": 5,
+   "arm": "revising-skill",
+   "served": 20,
+   "reset": {
+    "reset": false,
+    "reason": "first unit"
+   },
+   "faults": [],
+   "snapshot_skill_ids_at_start": [
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "skill_bodies_at_start": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "active_program_signatures_at_start": {
+    "outlier_mad({})": "fast_winner_forecast_ridge_smase_outlier_mad"
+   },
+   "resupplied_programs_offered": {
+    "resupplied_draft_1": "outlier_mad({})"
+   },
+   "llm_calls_this_cell": 5,
+   "llm_calls_billed_by_the_backend_meter": 5,
+   "support_fits_this_cell": 4,
+   "support_evaluations_without_a_fit_count": 0,
+   "support_evaluations_with_unmeasured_cost": 0,
+   "baseline_evaluations_this_cell": 0,
+   "baseline_cache_hits_this_cell": 2,
+   "baseline_evaluations_failed_this_cell": 0,
+   "fast_decision": {
+    "decision": "PROPOSED",
+    "candidate_count": 1,
+    "no_proposal_reason": null,
+    "payload_summary": "{\"candidates\": [\"cand_local_extreme_outlier\"]}",
+    "vocabulary": [
+     "PROPOSED",
+     "ABSTAINED_WITH_REASON",
+     "EMPTY_OUTPUT",
+     "MALFORMED"
+    ]
+   },
+   "candidate_program_steps": {
+    "cand_local_extreme_outlier": "outlier_mad({})"
+   },
+   "probes": [
+    {
+     "candidate_id": "cand_local_extreme_outlier",
+     "kind": "probe",
+     "gain": 0.24646830557933108,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T109",
+      "T110",
+      "T111",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11443710861177214,
+      0.5250238187601353,
+      -0.10946325603697576,
+      0.2436345307109028,
+      0.889705513377922,
+      0.0,
+      0.0,
+      0.0,
+      0.12086582583628869,
+      0.0,
+      0.5799517467741326,
+      0.18737405171084132,
+      0.0,
+      0.05574257986082298,
+      0.015876184398240567,
+      0.784271266744351,
+      1.2783819082889276,
+      0.15843959145041087,
+      0.0,
+      0.08512524109884834
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576,
+      "min_per_series_gain": -0.10946325603697576,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "strict_positive_only",
+      "reason": "relation_not_positive",
+      "aggregate_gain": 0.24646830557933108,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "CONFLICT",
+     "consumer_fits": 2
+    },
+    {
+     "candidate_id": "resupplied_draft_1",
+     "kind": "probe",
+     "gain": 0.24646830557933108,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T109",
+      "T110",
+      "T111",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11443710861177214,
+      0.5250238187601353,
+      -0.10946325603697576,
+      0.2436345307109028,
+      0.889705513377922,
+      0.0,
+      0.0,
+      0.0,
+      0.12086582583628869,
+      0.0,
+      0.5799517467741326,
+      0.18737405171084132,
+      0.0,
+      0.05574257986082298,
+      0.015876184398240567,
+      0.784271266744351,
+      1.2783819082889276,
+      0.15843959145041087,
+      0.0,
+      0.08512524109884834
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576,
+      "min_per_series_gain": -0.10946325603697576,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "strict_positive_only",
+      "reason": "relation_not_positive",
+      "aggregate_gain": 0.24646830557933108,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "CONFLICT",
+     "consumer_fits": 2
+    }
+   ],
+   "risk_refusals": 0,
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "resupplied_candidate_ids": [
+    "resupplied_draft_1"
+   ],
+   "deployed": null,
+   "deployed_label": "identity",
+   "deployed_scope": null,
+   "winner_candidate_id": null,
+   "winner_from_skill_candidate": false,
+   "winner_from_resupplied_draft": false,
+   "deployed_via": "identity",
+   "support_reading": {
+    "identity": true,
+    "treated": 0,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.0,
+     "T101": 0.0,
+     "T102": 0.0,
+     "T103": 0.0,
+     "T104": 0.0,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": 0.0,
+     "T109": 0.0,
+     "T11": 0.0,
+     "T110": 0.0,
+     "T111": 0.0,
+     "T113": 0.0,
+     "T114": 0.0,
+     "T115": 0.0,
+     "T116": 0.0,
+     "T117": 0.0,
+     "T118": 0.0,
+     "T119": 0.0,
+     "T12": 0.0
+    },
+    "aggregate_gain": 0.0,
+    "harmed_fraction": 0.0,
+    "harmed_series": 0,
+    "max_single_series_harm": 0.0,
+    "consumer_fits": 0
+   },
+   "delayed_reading": null,
+   "delayed_gate": null,
+   "activated": false,
+   "bank_rows_after": 9,
+   "active_skill_ids": [],
+   "skill_bodies_at_end": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "wall_seconds": 8.56
+  }
+ ],
+ "revision_steps": [
+  {
+   "position": 5,
+   "origin": 2856,
+   "arm": "revising-skill",
+   "parent_policy": {
+    "program": "outlier_mad({})",
+    "serving_scope": {
+     "scope_type": "serving_series_predicate",
+     "predicate": [
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 3.0
+      }
+     ]
+    },
+    "screen": {
+     "cells": 6,
+     "cells_readable": 6,
+     "unusable": [],
+     "mean_aggregate_gain_over_the_served_population": 0.249964,
+     "cells_at_or_above_the_coverage_floor": 6,
+     "worst_single_series_harm": 0.947602,
+     "worst_harmed_fraction": 0.4,
+     "consumer_fits_spent": 12
+    },
+    "why_this_is_the_target": "the K0 card holds deployment rights at every position in this course and was never revoked"
+   },
+   "bank_rows_for_calibration": 120,
+   "feedback_sent": {
+    "units_sent": 1,
+    "units_available": 1,
+    "nothing_was_truncated": true,
+    "earlier_attempts_included": 0
+   },
+   "proposer": {
+    "outcome": "PROPOSED",
+    "no_proposal_reason": null,
+    "no_modification_reason": null
+   },
+   "proposals": [
+    {
+     "kind": "workflow_program",
+     "what_changes": "Replace the frozen outlier_mad program with a hampel_filter program, which uses a different operator mechanism for outlier suppression and may better handle series with strong local deviation peaks within the serving scope.",
+     "expected_change": "This is expected to affect series currently in the scope (local_robust_z_peak >= 3.0). Since the prior identity run treated 0 series, the current comparison gives no support or harm signal; the change is a minimal single-operator exploration to test whether the hampel mechanism yields any gain over the raw pipeline for these high-deviation series.",
+     "workflow_program": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ]
+    },
+    {
+     "kind": "scope_clause",
+     "what_changes": "Tighten the serving scope by requiring, in addition to a high local robust z peak, a meaningful level excursion so that the outlier treatment is applied only to series that show both a localized spike and a sustained level shift, reducing risk of harming series with only transient noise.",
+     "expected_change": "This is expected to reduce the number of series treated below the current scope; it keeps the existing high-z condition and adds a level_excursion_score >= condition. Series with only a high z peak but weak level excursion will be excluded and remain raw with zero score, which may increase aggregate gain if the current narrow scope was not well targeted.",
+     "scope_clause": {
+      "feature": "level_excursion_score",
+      "op": ">=",
+      "threshold": 1.0
+     }
+    }
+   ],
+   "evaluations": [
+    {
+     "kind": "workflow_program",
+     "what_changes": "Replace the frozen outlier_mad program with a hampel_filter program, which uses a different operator mechanism for outlier suppression and may better handle series with strong local deviation peaks within the serving scope.",
+     "expected_change": "This is expected to affect series currently in the scope (local_robust_z_peak >= 3.0). Since the prior identity run treated 0 series, the current comparison gives no support or harm signal; the change is a minimal single-operator exploration to test whether the hampel mechanism yields any gain over the raw pipeline for these high-deviation series.",
+     "legality": {
+      "label": "hampel_filter({})",
+      "steps": [
+       {
+        "op": "hampel_filter",
+        "params": {}
+       }
+      ],
+      "length": 1,
+      "operators": [
+       {
+        "op": "hampel_filter",
+        "in_registry": true,
+        "allowed_tasks": [
+         "forecast",
+         "classification",
+         "anomaly_detection"
+        ],
+        "public_parameter_schema": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "window": {
+           "type": "integer",
+           "minimum": 3
+          },
+          "n_sigmas": {
+           "type": "number",
+           "minimum": 0.1
+          },
+          "global_z_min": {
+           "type": "number",
+           "minimum": 0.0
+          }
+         }
+        },
+        "declared_defaults_used": true
+       }
+      ],
+      "typed_program": [
+       {
+        "op": "hampel_filter",
+        "params": {}
+       }
+      ],
+      "legal": true,
+      "reasons": []
+     },
+     "program_replayed": "hampel_filter({})",
+     "scope_replayed": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "steps_replayed": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "screen": {
+      "per_cell": [
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1176,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 9,
+        "aggregate_gain": 0.108299,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 1.177283
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1896,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 10,
+        "aggregate_gain": 0.025822,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.71219
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2136,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 8,
+        "aggregate_gain": 0.118723,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.358934
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2376,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 18,
+        "aggregate_gain": -0.249105,
+        "harmed_fraction": 0.5,
+        "max_single_series_harm": 2.163178
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2616,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 12,
+        "aggregate_gain": 0.137736,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.540148
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2856,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 14,
+        "aggregate_gain": 0.117352,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.828234
+       }
+      ],
+      "summary": {
+       "cells": 6,
+       "cells_readable": 6,
+       "unusable": [],
+       "mean_aggregate_gain_over_the_served_population": 0.043138,
+       "cells_at_or_above_the_coverage_floor": 6,
+       "worst_single_series_harm": 2.163178,
+       "worst_harmed_fraction": 0.5
+      },
+      "consumer_fits_spent": 12
+     },
+     "comparison_with_the_parent": {
+      "parent_mean_aggregate_gain": 0.249964,
+      "candidate_mean_aggregate_gain": 0.043138,
+      "difference": -0.206826,
+      "material": 0.005,
+      "denominator": "the full served population"
+     },
+     "outcome": "RISK_LINE_FAILED",
+     "failed_lines": [
+      "harmed_fraction",
+      "single_series_harm"
+     ],
+     "why": "the replay over the processed units fails harmed_fraction, single_series_harm"
+    },
+    {
+     "kind": "scope_clause",
+     "what_changes": "Tighten the serving scope by requiring, in addition to a high local robust z peak, a meaningful level excursion so that the outlier treatment is applied only to series that show both a localized spike and a sustained level shift, reducing risk of harming series with only transient noise.",
+     "expected_change": "This is expected to reduce the number of series treated below the current scope; it keeps the existing high-z condition and adds a level_excursion_score >= condition. Series with only a high z peak but weak level excursion will be excluded and remain raw with zero score, which may increase aggregate gain if the current narrow scope was not well targeted.",
+     "calibration": {
+      "outcome": "NO_FEASIBLE_THRESHOLD",
+      "feature": "level_excursion_score",
+      "direction": ">=",
+      "candidates_tried": [
+       {
+        "threshold": 0.0,
+        "treated": 71,
+        "aggregate_gain": 0.422475,
+        "harmed_fraction": 0.1972,
+        "max_single_series_harm": 0.947602,
+        "lines": {
+         "coverage_floor": true,
+         "aggregate": true,
+         "harmed_fraction": true,
+         "single_series_harm": false
+        },
+        "feasible": false
+       },
+       {
+        "threshold": 1.0,
+        "treated": 3,
+        "aggregate_gain": 0.127777,
+        "harmed_fraction": 0.3333,
+        "max_single_series_harm": 0.013753,
+        "lines": {
+         "coverage_floor": false,
+         "aggregate": true,
+         "harmed_fraction": false,
+         "single_series_harm": true
+        },
+        "feasible": false
+       },
+       {
+        "threshold": 3.0,
+        "treated": 3,
+        "aggregate_gain": 0.127777,
+        "harmed_fraction": 0.3333,
+        "max_single_series_harm": 0.013753,
+        "lines": {
+         "coverage_floor": false,
+         "aggregate": true,
+         "harmed_fraction": false,
+         "single_series_harm": true
+        },
+        "feasible": false
+       },
+       {
+        "threshold": 6.0,
+        "treated": 0,
+        "aggregate_gain": null,
+        "harmed_fraction": null,
+        "max_single_series_harm": null,
+        "lines": {
+         "coverage_floor": false,
+         "aggregate": false,
+         "harmed_fraction": false,
+         "single_series_harm": false
+        },
+        "feasible": false
+       }
+      ],
+      "notes": [
+       "LLM_THRESHOLD_IGNORED"
+      ],
+      "shadow": {
+       "outcome": "BEST_STUMP",
+       "clause": {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 6.0
+       },
+       "feature": "local_robust_z_peak",
+       "direction": ">=",
+       "threshold": 6.0,
+       "objective": 0.69405,
+       "treated": 23,
+       "reading": {
+        "aggregate_gain": 0.69405,
+        "harmed_fraction": 0.0435,
+        "max_single_series_harm": 0.109463,
+        "lines": {
+         "coverage_floor": true,
+         "aggregate": true,
+         "harmed_fraction": true,
+         "single_series_harm": true
+        }
+       },
+       "considered": 96,
+       "feasible_count": 8,
+       "vocabulary": [
+        "missing_fraction",
+        "longest_missing_run_fraction",
+        "local_robust_z_peak",
+        "estimated_region_start_fraction",
+        "estimated_region_end_fraction",
+        "level_region_fraction",
+        "level_region_end_fraction",
+        "outlier_region_end_fraction",
+        "level_excursion_score",
+        "estimated_level_offset",
+        "period_change_score",
+        "period_reliability"
+       ],
+       "deployable": false,
+       "why_not_deployable": "the shadow measures how much of a Scope revision the LLM contributed; deploying it would delete the contrast it exists to provide"
+      },
+      "slow_threshold_as_returned": 1.0,
+      "rationale": null
+     },
+     "outcome": "NO_FEASIBLE_THRESHOLD",
+     "why": "no frozen bin edge of 'level_excursion_score' in direction '>=' clears the four lines on the bank evidence",
+     "edges_tried": [
+      0.0,
+      1.0,
+      3.0,
+      6.0
+     ]
+    }
+   ],
+   "outcome": "PROPOSED",
+   "accepted": 0
+  }
+ ],
+ "attempt_log": [
+  {
+   "proposed_after_unit_at_position": 5,
+   "kind": "workflow_program",
+   "what_you_proposed": [
+    {
+     "op": "hampel_filter",
+     "params": {}
+    }
+   ],
+   "what_you_said_it_would_change": "This is expected to affect series currently in the scope (local_robust_z_peak >= 3.0). Since the prior identity run treated 0 series, the current comparison gives no support or harm signal; the change is a minimal single-operator exploration to test whether the hampel mechanism yields any gain over the raw pipeline for these high-deviation series.",
+   "outcome": "RISK_LINE_FAILED",
+   "why": "the replay over the processed units fails harmed_fraction, single_series_harm",
+   "measured_on_the_processed_units": {
+    "mean_aggregate_gain_over_the_served_population": 0.043138,
+    "parent_delivers": 0.249964,
+    "difference": -0.206826,
+    "worst_single_series_harm": 2.163178,
+    "worst_harmed_fraction": 0.5,
+    "cells_at_or_above_the_coverage_floor": 6,
+    "cells_readable": 6
+   },
+   "risk_lines_that_failed": [
+    "harmed_fraction",
+    "single_series_harm"
+   ]
+  },
+  {
+   "proposed_after_unit_at_position": 5,
+   "kind": "scope_clause",
+   "what_you_proposed": {
+    "feature": "level_excursion_score",
+    "op": ">=",
+    "threshold": 1.0
+   },
+   "what_you_said_it_would_change": "This is expected to reduce the number of series treated below the current scope; it keeps the existing high-z condition and adds a level_excursion_score >= condition. Series with only a high z peak but weak level excursion will be excluded and remain raw with zero score, which may increase aggregate gain if the current narrow scope was not well targeted.",
+   "outcome": "NO_FEASIBLE_THRESHOLD",
+   "why": "no frozen bin edge of 'level_excursion_score' in direction '>=' clears the four lines on the bank evidence",
+   "frozen_bin_edges_tried": [
+    0.0,
+    1.0,
+    3.0,
+    6.0
+   ]
+  }
+ ],
+ "promotions_to_the_skill_card": [],
+ "pending_revisions_never_verified": {},
+ "actual_cost": {
+  "physical_consumer_fits": 32,
+  "physical_consumer_fits_by_arm": {
+   "frozen-skill": 4,
+   "revising-skill": 28
+  },
+  "fit_ceiling": 1000,
+  "llm_calls": 11,
+  "llm_calls_by_arm": {
+   "frozen-skill": 5,
+   "revising-skill": 6
+  },
+  "llm_ceiling": 400,
+  "wall_seconds": 28.7,
+  "wall_ceiling": 21600,
+  "counting": "every physical fit, including the ones spent inside a call that then raised; no allowance carried over"
+ },
+ "ledgers": {
+  "llm_fast": 10,
+  "llm_outer": 1,
+  "llm_total": 11,
+  "replay_fits": 24,
+  "shadow_fits": 0,
+  "course_fits": 0,
+  "course_fits_cover": "the delayed gate and the evaluation face",
+  "support_fits": 8,
+  "support_fits_unrecorded_probes": 0,
+  "support_fits_note": "Support probe fits, counted only where the evaluator reported them; probes that reported none are counted as unrecorded rather than as zero.  Courses run before this counter existed have no Support line at all and their Support cost stays a derivation, not a reading",
+  "baseline_fits": 0,
+  "baseline_evaluations": 1,
+  "baseline_cache_hits": 3,
+  "baseline_evaluations_failed": 0,
+  "support_fits_unmeasured_after_error": 0,
+  "baseline_note": "the reference model, shared by every arm on a unit because it is cached per (executor, origin).  COMPLETED executions and cache hits are counted; they are not folded into support_fits and not priced, because the injected evaluator reports no fit count and charging a shared model is an open protocol question",
+  "baseline_evaluations_is_not_a_fit_total": "it counts completed reference evaluations, one per (executor, origin).  What each one costs the Consumer is not reported by the injected evaluator, so this line must not be read as, or added to, a total of Consumer fits",
+  "unmeasured_cost_note": "an evaluation that raised inside the Consumer had already spent an unrecoverable amount: scoped_evaluate reports consumer_fits only on a normal return.  Those are counted here as unmeasured rather than added to any total as zero",
+  "cache_hits": 0,
+  "cache_misses": 0,
+  "cache_hit_rate": null,
+  "cache_counts": "the replay prediction cache",
+  "llm_prompt_cache_enabled": false,
+  "why_no_llm_prompt_cache": "wiring CachedAgentBackend would change what the arms are charged for and how their proposals diverge; it is not enabled for HEC-1 and its absence is recorded rather than left as a zero that looks like a miss rate",
+  "wall_seconds": 0.0
+ },
+ "boundary": {
+  "evaluation_face_reads": 0,
+  "sealed_reads": 0,
+  "target_held_in_reads": 0,
+  "thresholds_changed": 0,
+  "operators_added": 0,
+  "risk_denominator_changed": 0,
+  "frozen_bin_edges_changed": 0,
+  "production_runner_files_changed": 0
+ },
+ "code_state": {
+  "run_commit_claimed_by_artifacts": "d690850be1cb70d1da5f7034dbb097f42ba42e36",
+  "head_commit": "f9f96d7cb8d424a81105ddff3a6bde92c7a2253e",
+  "files": [
+   {
+    "path": "evaluation/main_protocol_p4/run_hec1.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "evaluation/main_protocol_p4/outer_loop.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "evaluation/main_protocol_p4/restricted_draft.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "evaluation/main_protocol_p4/hec1_contract.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "evaluation/main_protocol_p4/scope_threshold_tool.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "evaluation/main_protocol_p4/scoped_serving_evaluator.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "methods/ttha/online_loop.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "methods/ttha/admission_policy.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "methods/ttha/scope_executor.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   }
+  ],
+  "all_identical": false,
+  "why": "historical behaviour may only be explained with the code that produced it; where HEAD differs the current file is not used"
+ }
+}

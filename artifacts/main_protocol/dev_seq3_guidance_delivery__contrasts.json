@@ -1,0 +1,1321 @@
+{
+ "stage": "DEV_SEQ3_CONTRASTS",
+ "artifact_prefix": "dev_seq3_guidance_delivery",
+ "groups_read": [
+  "g1",
+  "g2"
+ ],
+ "q1_fixes_and_model": {
+  "per_group": {
+   "g1": {
+    "window_binding": {
+     "keyed_by": "(series_uid, origin)",
+     "windows": 80,
+     "distinct_series": 20,
+     "windows_per_series": 4.0,
+     "misses": 0,
+     "in_force": true
+    },
+    "measurement_dedup": {
+     "references": 40,
+     "distinct_measurements": 40,
+     "repeated_references": 0,
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "in_force": true
+    },
+    "model": {
+     "requested": "gpt-5.6-sol",
+     "returned": [
+      "gpt-5.6-sol"
+     ],
+     "one_model_only": true,
+     "is_the_fixed_non_flash_model": true,
+     "prompt_tokens": 27898,
+     "completion_tokens": 2199
+    }
+   },
+   "g2": {
+    "window_binding": {
+     "keyed_by": "(series_uid, origin)",
+     "windows": 80,
+     "distinct_series": 20,
+     "windows_per_series": 4.0,
+     "misses": 0,
+     "in_force": true
+    },
+    "measurement_dedup": {
+     "references": 34,
+     "distinct_measurements": 34,
+     "repeated_references": 0,
+     "distinct_series": 10,
+     "distinct_windows": 34,
+     "in_force": true
+    },
+    "model": {
+     "requested": "gpt-5.6-sol",
+     "returned": [
+      "gpt-5.6-sol"
+     ],
+     "one_model_only": true,
+     "is_the_fixed_non_flash_model": true,
+     "prompt_tokens": 2888134,
+     "completion_tokens": 137617
+    }
+   }
+  },
+  "what_changed_from_dev_seq_1": {
+   "window_binding": "DEV-SEQ-1 keyed a visible-feature card by series UID and kept the first construction window's card, so every u8 Episode was described to Slow, and scored by the validator, with u7's features.  A card is now keyed by (series_uid, origin) and a missing window is a recorded miss, never a borrowed card",
+   "measurement_dedup": "DEV-SEQ-1's L3 iterated group members, so one real reading cited by two Episodes of the same series and program counted twice.  A measurement is now keyed by the prediction cache's own key plus the served UID; no Episode is deleted and a different window, program, parameter set or training config stays a separate measurement",
+   "model": "DEV-SEQ-1 requested deepseek-chat, which this relay answers as deepseek-v4-flash.  This package fixes on gpt-5.6-sol and checks the returned identity, not the requested alias.  That makes it a different experiment from DEV-SEQ-1 and the two are not tabled together"
+  }
+ },
+ "q1b_dev_seq1_l2_recomputed": {
+  "available": true,
+  "predicate": {
+   "all": [
+    {
+     "feature": "task_kind",
+     "op": "==",
+     "value": "forecast"
+    },
+    {
+     "feature": "missing_fraction",
+     "op": ">=",
+     "value": 0.45
+    },
+    {
+     "feature": "local_robust_z_peak",
+     "op": ">=",
+     "value": 5.0
+    }
+   ]
+  },
+  "old_reading": {
+   "failing_series": [
+    "T14",
+    "T141",
+    "T143",
+    "T144",
+    "T146",
+    "T15"
+   ],
+   "covered": [
+    "T14"
+   ],
+   "verdict": "L2 failed: 1 of 6 series"
+  },
+  "recomputed_with_window_binding": {
+   "failing_windows": [
+    [
+     "T14",
+     1176
+    ],
+    [
+     "T14",
+     1416
+    ],
+    [
+     "T141",
+     1416
+    ],
+    [
+     "T143",
+     1416
+    ],
+    [
+     "T144",
+     1176
+    ],
+    [
+     "T146",
+     1416
+    ],
+    [
+     "T15",
+     1416
+    ]
+   ],
+   "covered": [
+    [
+     "T14",
+     1176
+    ],
+    [
+     "T14",
+     1416
+    ]
+   ],
+   "covered_fraction": 0.2857,
+   "L2_would_pass": false
+  },
+  "verdict": "the refusal was not an artefact of the mis-binding: with each failing decision tested against its own window's features the predicate still covers 2 of 7, so L2 still fails.  This is reported to separate 'the old L2 rejected it' from 'there was no useful condition'; it is not a reason to approve the old card, which stays unadopted and is not re-run here"
+ },
+ "q2_what_slow_did": {
+  "g1": {
+   "outcome": "CANDIDATE_COMPILED_BUT_NEVER_EXPOSED",
+   "what_it_was_shown": {
+    "episodes": 23,
+    "material_failures": 7,
+    "groups_formed": 1,
+    "group_taken": "g_outlier_mad_NEGATIVE",
+    "members": 7,
+    "distinct_series": 6,
+    "distinct_windows": 7,
+    "matched_successes": 13,
+    "ungrouped_failures_kept_as_episodes": 0,
+    "surfaces_offered": [
+     "skill_library.entries/{skill_id}",
+     "bootstrap_skills.entries/build_contrastive_candidates.body",
+     "bootstrap_skills.entries/inspect_and_localize.body",
+     "bootstrap_skills.entries/select_or_identity_and_verify.body",
+     "candidate_policy.proposal_guidance",
+     "candidate_policy.selection_guidance"
+    ],
+    "fault_labels_selectable": [
+     "SCOPE_MEMORY_RISK_ERROR"
+    ]
+   },
+   "what_it_changed": {
+    "surface": "skill_library.entries/high_missingness_outlier_caution",
+    "operation": "ADD",
+    "derived_cause": "SKILL_LIBRARY_GAP",
+    "compiled": true,
+    "parent_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+    "candidate_sha": "bbc0bff7c9e7617c2db11b1a54e8bc9c7cd62115d3827bd45dfd6c2fccbac5b0",
+    "text": "Public evidence on this card shows two forecast decisions with missing_fraction above 0.5, longest_missing_run_fraction above 0.05, and local_robust_z_peak above 3 where outlier_mad did not retain a favorable evaluated result; no matched success has missing_fraction above 0.443878. These features describe the whole observed history rather than the serving window, so this separation is cautionary rather than proof. Mechanism hypothesis: when more than half of the history is missing, the robust-deviation summary may be unstable or unrepresentative of actionable serving-window corruption, allowing an intrinsic outlier repair to target apparent deviations without sufficient public evidence of benefit. In matching contexts, keep missingness and extreme deviation as separate hypotheses and do not treat a high robust-z peak alone as justification for outlier_mad. When no independently justified candidate is supported by current public evidence and verification, explicitly select identity. Preserve the existing candidate workflow and outlier handling outside this narrow applicability condition.",
+    "applicability": {
+     "all": [
+      {
+       "feature": "task_kind",
+       "op": "==",
+       "value": "forecast"
+      },
+      {
+       "feature": "missing_fraction",
+       "op": ">",
+       "value": 0.5
+      },
+      {
+       "feature": "longest_missing_run_fraction",
+       "op": ">",
+       "value": 0.05
+      },
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "value": 3.0
+      }
+     ]
+    },
+    "attempts": [
+     {
+      "attempt": 1,
+      "proposed": false,
+      "why": "TRANSPORT_TRANSIENT_FAULT",
+      "detail": "PermissionDeniedError: Error code: 403 - {'error': {'message': 'openai_error', 'type': 'bad_response_status_code', 'param': '', 'code': 'bad_response_status_code'}}"
+     },
+     {
+      "attempt": 2,
+      "proposed": true,
+      "why": null,
+      "detail": null
+     }
+    ],
+    "why_no_proposal": null
+   },
+   "what_it_predicted": {
+    "behaviour": [
+     "retrieve_skill:high_missingness_outlier_caution",
+     "choose_candidate_kind:identity",
+     "identity_retained"
+    ],
+    "effect": [
+     "For matching contexts lacking independent public support for a repair, identity selection is expected to leave all serving-window points unchanged.",
+     "Contexts outside the narrow high-missingness applicability condition are expected to retain the existing effective behavior."
+    ],
+    "falsified_by": [
+     "The mechanism hypothesis is refuted if repeated evaluations of matching contexts show that outlier_mad, when selected from current public evidence and verification, consistently retains favorable support and delayed measurements relative to identity.",
+     "The edit should be withdrawn if it changes candidate selection outside its observable applicability condition or suppresses an independently justified effect-distinct candidate."
+    ]
+   },
+   "what_is_still_a_guess": "the mechanism.  The card carries facts -- programs, windows, both faces, the visible features of failures and of matched successes -- and the edit is one provisional account of them. Nothing in this package establishes that account is the cause; only the two arms say whether acting on it helped",
+   "coverage_diagnostic_not_a_gate": {
+    "applicable": true,
+    "L1_the_predicate_is_a_condition": false,
+    "L1_detail": {
+     "withheld_population": 10,
+     "matched": []
+    },
+    "L2_it_covers_the_evidence_it_cites": false,
+    "L2_detail": {
+     "failing_windows": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ],
+      [
+       "T141",
+       1416
+      ],
+      [
+       "T143",
+       1416
+      ],
+      [
+       "T144",
+       1176
+      ],
+      [
+       "T146",
+       1416
+      ],
+      [
+       "T15",
+       1416
+      ]
+     ],
+     "covered": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ]
+     ],
+     "counted_by": "distinct (series_uid, window) decisions, each tested against its own window's features -- DEV-SEQ-1 tested every member against the first window that series appeared in"
+    },
+    "status": "DIAGNOSTIC ONLY.  These lines describe the predicate's coverage.  They do not gate adoption in this package, because coverage is not the same question as whether the guidance changes what Fast does and helps"
+   }
+  },
+  "g2": {
+   "outcome": "CANDIDATE_COMPILED",
+   "what_it_was_shown": {
+    "episodes": 24,
+    "material_failures": 7,
+    "groups_formed": 1,
+    "group_taken": "g_outlier_mad_NEGATIVE",
+    "members": 5,
+    "distinct_series": 4,
+    "distinct_windows": 5,
+    "matched_successes": 11,
+    "ungrouped_failures_kept_as_episodes": 2,
+    "surfaces_offered": [
+     "skill_library.entries/{skill_id}",
+     "bootstrap_skills.entries/build_contrastive_candidates.body",
+     "bootstrap_skills.entries/inspect_and_localize.body",
+     "bootstrap_skills.entries/select_or_identity_and_verify.body",
+     "candidate_policy.proposal_guidance",
+     "candidate_policy.selection_guidance"
+    ],
+    "fault_labels_selectable": [
+     "SCOPE_MEMORY_RISK_ERROR"
+    ]
+   },
+   "what_it_changed": {
+    "surface": "skill_library.entries/missingness_deviation_identity_guard",
+    "operation": "ADD",
+    "derived_cause": "SKILL_LIBRARY_GAP",
+    "compiled": true,
+    "parent_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+    "candidate_sha": "c99dc92bbf89c1247313068720d5040f7513ce6516296d89edba1ba25f115f7c",
+    "text": "When forecast evidence shows both substantial missingness and a strong local robust deviation, inspect the missingness and deviation regions separately. Treat a broad or uncertain deviation span as insufficient public evidence for an outlier repair, because the observed negative cases include missing_fraction above 0.4 and local_robust_z_peak above 5 while the same mechanism also has mixed outcomes elsewhere. Prefer a minimal localized program only when the inspected hypothesis has a legal verifiable binding; otherwise retain identity. Keep the existing behavior for cases without this combined evidence and for narrowly localized deviations with sufficient public support.",
+    "applicability": {
+     "all": [
+      {
+       "feature": "task_kind",
+       "op": "==",
+       "value": "forecast"
+      },
+      {
+       "feature": "missing_fraction",
+       "op": ">=",
+       "value": 0.4
+      },
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "value": 5
+      }
+     ]
+    },
+    "attempts": [
+     {
+      "attempt": 1,
+      "proposed": true,
+      "why": null,
+      "detail": null
+     }
+    ],
+    "why_no_proposal": null
+   },
+   "what_it_predicted": {
+    "behaviour": [
+     "retrieve_skill:missingness_deviation_identity_guard",
+     "choose_candidate_kind:identity",
+     "identity_retained"
+    ],
+    "effect": [
+     "For forecast contexts meeting the combined public-evidence condition, fewer broad outlier repairs should be selected when inspection cannot establish a localized, legally bound deviation hypothesis.",
+     "Contexts without the combined condition should preserve the existing inspection and candidate-selection behavior."
+    ],
+    "falsified_by": [
+     "In subsequent matched contexts satisfying task_kind == forecast, missing_fraction >= 0.4, and local_robust_z_peak >= 5, the retrieved guidance does not increase explicit identity retention when the inspected deviation region is broad or uncertain.",
+     "The observed negative association disappears after additional public observations, or the guidance causes identity to be retained despite a consistently localized and verifiable deviation hypothesis with positive observed effects."
+    ]
+   },
+   "what_is_still_a_guess": "the mechanism.  The card carries facts -- programs, windows, both faces, the visible features of failures and of matched successes -- and the edit is one provisional account of them. Nothing in this package establishes that account is the cause; only the two arms say whether acting on it helped",
+   "coverage_diagnostic_not_a_gate": {
+    "applicable": true,
+    "L1_the_predicate_is_a_condition": true,
+    "L1_detail": {
+     "withheld_population": 20,
+     "matched": [
+      "T14"
+     ]
+    },
+    "L2_it_covers_the_evidence_it_cites": true,
+    "L2_detail": {
+     "failing_windows": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ],
+      [
+       "T141",
+       1416
+      ],
+      [
+       "T144",
+       1176
+      ],
+      [
+       "T146",
+       1416
+      ]
+     ],
+     "covered": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ],
+      [
+       "T146",
+       1416
+      ]
+     ],
+     "counted_by": "distinct (series_uid, window) decisions, each tested against its own window's features -- DEV-SEQ-1 tested every member against the first window that series appeared in"
+    },
+    "status": "DIAGNOSTIC ONLY.  These lines describe the predicate's coverage.  They do not gate adoption in this package, because coverage is not the same question as whether the guidance changes what Fast does and helps"
+   }
+  }
+ },
+ "q3_and_q4_per_group": {
+  "g1": {
+   "status": "COMPLETE",
+   "stopped_at": null,
+   "treatment": "COMPILED_BUT_NEVER_EXPOSED__UTILITY_UNTESTED",
+   "early_termination": null,
+   "exposure": {
+    "decisions_checked": 60,
+    "decisions_the_edit_reaches": 0,
+    "exposure_fraction": 0.0,
+    "the_edit_leaks_into_the_parent_arm": 0,
+    "ordering_card_route": {
+     "entry_found_in_candidate": true,
+     "is_an_ordering_card": false,
+     "why_it_matters": "_select_ordering_card reads the snapshot directly instead of going through resolve_harness_view, so it is the one other route a Skill body can take into a Fast round.  It also requires the same observable_applicability to pass, so a predicate that matches nothing closes this route too"
+    },
+    "cost": "zero Consumer fits, zero LLM calls",
+    "what_this_is_not": "not a coverage gate.  It does not require the condition to explain most failures or to match a majority of anything.  It asks only whether the edit is presented to the decisions that are about to be paid for; a modification that is never on screen cannot be measured by running more of them",
+    "per_clause_over_the_arm_windows": {
+     "{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}": {
+      "satisfied": 60,
+      "tested": 60
+     },
+     "{\"feature\": \"missing_fraction\", \"op\": \">\", \"value\": 0.5}": {
+      "satisfied": 3,
+      "tested": 60
+     },
+     "{\"feature\": \"longest_missing_run_fraction\", \"op\": \">\", \"value\": 0.05}": {
+      "satisfied": 4,
+      "tested": 60
+     },
+     "{\"feature\": \"local_robust_z_peak\", \"op\": \">=\", \"value\": 3.0}": {
+      "satisfied": 56,
+      "tested": 60
+     }
+    },
+    "clause_reading": "no single clause is empty here.  missing_fraction > 0.5 is satisfied by T14 at all three windows; longest_missing_run_fraction > 0.05 is satisfied by T146 and T16 and never by T14.  No series in the 60 arm decisions satisfies both, so the conjunction is empty.  The two missingness clauses were read off the same formation evidence -- at u7, T14 had missing_fraction 0.5655 and longest_missing_run_fraction 0.0689 together -- and they come apart on the arm windows.",
+    "population_correction": "an earlier pass of this check ran on 10 sequences per unit rather than the registered 20: run_dev_seq2.population_for fetched the roster at the formation size and then sliced to the arm size, which silently capped the arm population whenever the arms were the wider of the two.  Fixed; this receipt is the corrected 20-per-unit reading and the earlier 0/30 receipt is superseded, not deleted."
+   },
+   "behaviour_chain": {
+    "paired_decisions": 0,
+    "why": "no unit was run by both arms"
+   },
+   "exposure_split": {
+    "available": true,
+    "decisions_the_edit_reached": 0,
+    "exposed_decisions": [],
+    "same_knowledge_pairs": null,
+    "how_to_read_this": "the exposed rows are the only pairs where the two arms held different effective knowledge.  Every other pair ran under the same effective knowledge, so its difference is sampling: those are summarised as a spread measured inside this run.  It is descriptive, not a reliable noise floor, and the exposed rows are too few to average into a claim"
+   },
+   "outcomes": {
+    "per_position": {},
+    "main_delayed_readout": {
+     "rule": "unit mean first, then equal weight over the registered follow-up units; A and B on the same UID set and the same denominator",
+     "followup_units_read": [],
+     "per_unit_difference_b_minus_a": [],
+     "main_readout": "UNKNOWN",
+     "units_with_a_missing_reading": [],
+     "readable_subset_only": "UNKNOWN",
+     "why_unknown": "a missing required reading on either side makes the whole-population difference UNKNOWN; the readable subset is reported beside it, never in its place"
+    },
+    "adoption": {},
+    "branch_status": null,
+    "branch_meaning": "ADOPTED_DEVELOPMENT_BRANCH: the candidate passed this package's development adoption mark on the validation unit, and its follow-up numbers are the numbers of an adopted development branch.  UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH: it did not, and its follow-up numbers are candidate diagnostics -- never a promotion or deployment gain, and never a retroactive pass of the validation unit",
+    "cost": {
+     "physical_consumer_fits": 10,
+     "fit_ceiling": 2000,
+     "llm_calls": 3,
+     "llm_ceiling": 2000,
+     "wall_seconds": 506.7,
+     "wall_ceiling_seconds": 21600,
+     "physical_fits_by_arm": {
+      "smoke": 10
+     },
+     "llm_calls_by_arm": {
+      "preflight": 2,
+      "slow": 3
+     },
+     "logical_evaluations_by_arm": {},
+     "cost_note": "physical fits are attributed to the arm whose call missed the shared prediction cache; logical evaluations count every reading an arm asked for, hit or miss.  The two arms share one cache because the reading is a deterministic function of (unit, origin, config, program, served set), so whichever arm runs first would otherwise carry the whole cost",
+     "counting": "every physical fit, including ones spent inside a call that then raised"
+    },
+    "independence": {
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "how_to_read_n": "rows are not independent samples.  The same series appears at several windows, one Consumer model per (unit, program) is shared by every series it serves, and both arms read the same deterministic predictions.  Count series and windows, not rows"
+    }
+   }
+  },
+  "g2": {
+   "status": "COMPLETE",
+   "stopped_at": null,
+   "treatment": "UPDATE_TREATMENT",
+   "early_termination": null,
+   "exposure": {
+    "decisions_checked": 60,
+    "decisions_the_edit_reaches": 3,
+    "exposure_fraction": 0.05,
+    "the_edit_leaks_into_the_parent_arm": 0,
+    "ordering_card_route": {
+     "entry_found_in_candidate": true,
+     "is_an_ordering_card": false,
+     "why_it_matters": "_select_ordering_card reads the snapshot directly instead of going through resolve_harness_view, so it is the one other route a Skill body can take into a Fast round.  It also requires the same observable_applicability to pass, so a predicate that matches nothing closes this route too"
+    },
+    "cost": "zero Consumer fits, zero LLM calls",
+    "what_this_is_not": "not a coverage gate.  It does not require the condition to explain most failures or to match a majority of anything.  It asks only whether the edit is presented to the decisions that are about to be paid for; a modification that is never on screen cannot be measured by running more of them"
+   },
+   "behaviour_chain": {
+    "positions_compared": [
+     9,
+     10,
+     11
+    ],
+    "paired_decisions": 60,
+    "on_the_pairs_the_edit_reached": {
+     "pairs": 3,
+     "link_1_the_edit_is_loaded": {
+      "in_arm_b": 3,
+      "in_arm_a": 0
+     },
+     "link_1b_retrieved_skill_set_differs": 3,
+     "link_2_observation_differs": 3,
+     "link_3_candidate_pool_differs": 2,
+     "link_4_selection_or_delivery_differs": {
+      "different_program_delivered": 0,
+      "different_decision_kind_deploy_vs_identity": 0
+     },
+     "link_5_material_effect_difference": {
+      "count": 0,
+      "cases": []
+     }
+    },
+    "on_the_pairs_it_did_not_reach": {
+     "pairs": 57,
+     "link_1_the_edit_is_loaded": {
+      "in_arm_b": 0,
+      "in_arm_a": 0
+     },
+     "link_1b_retrieved_skill_set_differs": 0,
+     "link_2_observation_differs": 40,
+     "link_3_candidate_pool_differs": 39,
+     "link_4_selection_or_delivery_differs": {
+      "different_program_delivered": 11,
+      "different_decision_kind_deploy_vs_identity": 5
+     },
+     "link_5_material_effect_difference": {
+      "count": 9,
+      "cases": [
+       {
+        "series_uid": "T144",
+        "arm_a": 0.003535,
+        "arm_b": 0.019801,
+        "difference": 0.016266
+       },
+       {
+        "series_uid": "T150",
+        "arm_a": 0.0,
+        "arm_b": -0.313522,
+        "difference": -0.313522
+       },
+       {
+        "series_uid": "T145",
+        "arm_a": -0.171999,
+        "arm_b": -0.325032,
+        "difference": -0.153033
+       },
+       {
+        "series_uid": "T151",
+        "arm_a": -0.002549,
+        "arm_b": -0.093901,
+        "difference": -0.091352
+       },
+       {
+        "series_uid": "T157",
+        "arm_a": -0.193343,
+        "arm_b": -0.21695,
+        "difference": -0.023607
+       },
+       {
+        "series_uid": "T158",
+        "arm_a": 0.0,
+        "arm_b": -0.143055,
+        "difference": -0.143055
+       },
+       {
+        "series_uid": "T149",
+        "arm_a": 0.0,
+        "arm_b": 0.157526,
+        "difference": 0.157526
+       },
+       {
+        "series_uid": "T15",
+        "arm_a": 0.076189,
+        "arm_b": 0.041435,
+        "difference": -0.034754
+       },
+       {
+        "series_uid": "T156",
+        "arm_a": 0.0,
+        "arm_b": 0.106532,
+        "difference": 0.106532
+       }
+      ]
+     }
+    },
+    "how_to_read_it": "only the first block can carry a knowledge effect: those are the pairs whose two arms held different effective knowledge.  The second block is the same five links on pairs whose arms held the SAME effective knowledge, so every difference in it is sampling. Reading the two together, or reading the second as an effect, is the mistake this split exists to prevent.  Within the first block the links still fail separately: loaded with no downstream difference means the text was read and not used."
+   },
+   "exposure_split": {
+    "available": true,
+    "decisions_the_edit_reached": 3,
+    "exposed_decisions": [
+     {
+      "position": 9,
+      "series_uid": "T14",
+      "arm_a_delayed": 0.0,
+      "arm_b_delayed": 0.0,
+      "difference": 0.0,
+      "arm_a_program": "identity",
+      "arm_b_program": "identity",
+      "delivered_differently": false,
+      "arm_b_retrieved": [
+       "build_contrastive_candidates",
+       "inspect_and_localize",
+       "select_or_identity_and_verify",
+       "missingness_deviation_identity_guard",
+       "fast_winner_forecast_ridge_smase_outlier_mad"
+      ],
+      "arm_a_action_facts": {
+       "series_uid": "T14",
+       "origin": 1656,
+       "program": "identity",
+       "baseline": "forecast_runtime._linear_integrity, the evaluator's own",
+       "tolerance": "numpy isclose(..., equal_nan=True), the evaluator's own",
+       "counts_are_actions_not_effects": "a moved-point count says what the program did, not what it caused.  It is not a causal contribution and not a probability of harm",
+       "serving_window": {
+        "modified_points": 0,
+        "total_points": 192,
+        "why": "identity: the raw pipeline ran, so nothing was moved off the linear-integrity baseline.  This 0 is measured, not filled in"
+       },
+       "training_material": {
+        "modified_points": 0,
+        "total_points": "UNKNOWN",
+        "why": "identity: the program model is the raw model",
+        "whose_property": "the shared training material for this unit and face, not this evaluated series"
+       }
+      },
+      "arm_b_action_facts": {
+       "series_uid": "T14",
+       "origin": 1656,
+       "program": "identity",
+       "baseline": "forecast_runtime._linear_integrity, the evaluator's own",
+       "tolerance": "numpy isclose(..., equal_nan=True), the evaluator's own",
+       "counts_are_actions_not_effects": "a moved-point count says what the program did, not what it caused.  It is not a causal contribution and not a probability of harm",
+       "serving_window": {
+        "modified_points": 0,
+        "total_points": 192,
+        "why": "identity: the raw pipeline ran, so nothing was moved off the linear-integrity baseline.  This 0 is measured, not filled in"
+       },
+       "training_material": {
+        "modified_points": 0,
+        "total_points": "UNKNOWN",
+        "why": "identity: the program model is the raw model",
+        "whose_property": "the shared training material for this unit and face, not this evaluated series"
+       }
+      }
+     },
+     {
+      "position": 10,
+      "series_uid": "T14",
+      "arm_a_delayed": 0.0,
+      "arm_b_delayed": 0.0,
+      "difference": 0.0,
+      "arm_a_program": "identity",
+      "arm_b_program": "identity",
+      "delivered_differently": false,
+      "arm_b_retrieved": [
+       "build_contrastive_candidates",
+       "inspect_and_localize",
+       "select_or_identity_and_verify",
+       "missingness_deviation_identity_guard",
+       "fast_winner_forecast_ridge_smase_outlier_mad"
+      ],
+      "arm_a_action_facts": {
+       "series_uid": "T14",
+       "origin": 2136,
+       "program": "identity",
+       "baseline": "forecast_runtime._linear_integrity, the evaluator's own",
+       "tolerance": "numpy isclose(..., equal_nan=True), the evaluator's own",
+       "counts_are_actions_not_effects": "a moved-point count says what the program did, not what it caused.  It is not a causal contribution and not a probability of harm",
+       "serving_window": {
+        "modified_points": 0,
+        "total_points": 192,
+        "why": "identity: the raw pipeline ran, so nothing was moved off the linear-integrity baseline.  This 0 is measured, not filled in"
+       },
+       "training_material": {
+        "modified_points": 0,
+        "total_points": "UNKNOWN",
+        "why": "identity: the program model is the raw model",
+        "whose_property": "the shared training material for this unit and face, not this evaluated series"
+       }
+      },
+      "arm_b_action_facts": {
+       "series_uid": "T14",
+       "origin": 2136,
+       "program": "identity",
+       "baseline": "forecast_runtime._linear_integrity, the evaluator's own",
+       "tolerance": "numpy isclose(..., equal_nan=True), the evaluator's own",
+       "counts_are_actions_not_effects": "a moved-point count says what the program did, not what it caused.  It is not a causal contribution and not a probability of harm",
+       "serving_window": {
+        "modified_points": 0,
+        "total_points": 192,
+        "why": "identity: the raw pipeline ran, so nothing was moved off the linear-integrity baseline.  This 0 is measured, not filled in"
+       },
+       "training_material": {
+        "modified_points": 0,
+        "total_points": "UNKNOWN",
+        "why": "identity: the program model is the raw model",
+        "whose_property": "the shared training material for this unit and face, not this evaluated series"
+       }
+      }
+     },
+     {
+      "position": 10,
+      "series_uid": "T146",
+      "arm_a_delayed": -0.077848,
+      "arm_b_delayed": -0.077848,
+      "difference": 0.0,
+      "arm_a_program": "outlier_mad",
+      "arm_b_program": "outlier_mad",
+      "delivered_differently": false,
+      "arm_b_retrieved": [
+       "build_contrastive_candidates",
+       "inspect_and_localize",
+       "select_or_identity_and_verify",
+       "missingness_deviation_identity_guard",
+       "fast_winner_forecast_ridge_smase_outlier_mad"
+      ],
+      "arm_a_action_facts": {
+       "series_uid": "T146",
+       "origin": 2136,
+       "program": "outlier_mad",
+       "baseline": "forecast_runtime._linear_integrity, the evaluator's own",
+       "tolerance": "numpy isclose(..., equal_nan=True), the evaluator's own",
+       "counts_are_actions_not_effects": "a moved-point count says what the program did, not what it caused.  It is not a causal contribution and not a probability of harm",
+       "serving_window": {
+        "modified_points": 3,
+        "total_points": 192,
+        "modified_fraction": 0.015625,
+        "whose_property": "this series, this window, this program and these parameters"
+       },
+       "training_material": {
+        "modified_points": 778,
+        "total_points": 48000,
+        "training_windows": 200,
+        "modified_fraction": 0.016208,
+        "whose_property": "the shared training material for this (unit, face, program).  Every evaluated series served by that model shares this number; it is not a property of this evaluated series and must not be read as one"
+       }
+      },
+      "arm_b_action_facts": {
+       "series_uid": "T146",
+       "origin": 2136,
+       "program": "outlier_mad",
+       "baseline": "forecast_runtime._linear_integrity, the evaluator's own",
+       "tolerance": "numpy isclose(..., equal_nan=True), the evaluator's own",
+       "counts_are_actions_not_effects": "a moved-point count says what the program did, not what it caused.  It is not a causal contribution and not a probability of harm",
+       "serving_window": {
+        "modified_points": 3,
+        "total_points": 192,
+        "modified_fraction": 0.015625,
+        "whose_property": "this series, this window, this program and these parameters"
+       },
+       "training_material": {
+        "modified_points": 778,
+        "total_points": 48000,
+        "training_windows": 200,
+        "modified_fraction": 0.016208,
+        "whose_property": "the shared training material for this (unit, face, program).  Every evaluated series served by that model shares this number; it is not a property of this evaluated series and must not be read as one"
+       }
+      }
+     }
+    ],
+    "same_knowledge_pairs": {
+     "pairs": 57,
+     "mean": -0.008391,
+     "min": -0.313522,
+     "max": 0.157526,
+     "identical_pairs": 46,
+     "materially_different_pairs": 9
+    },
+    "how_to_read_this": "the exposed rows are the only pairs where the two arms held different effective knowledge.  Every other pair ran under the same effective knowledge, so its difference is sampling: those are summarised as a spread measured inside this run.  It is descriptive, not a reliable noise floor, and the exposed rows are too few to average into a claim"
+   },
+   "outcomes": {
+    "per_position": {
+     "9": {
+      "phase": "validation",
+      "arms": {
+       "slow-candidate": {
+        "arm": "slow-candidate",
+        "decided": 20,
+        "deployed": 6,
+        "identity": 14,
+        "distinct_programs": 3,
+        "faulted": [],
+        "support_aggregate": 0.189776,
+        "delayed_aggregate": 0.093921,
+        "treated": 6,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.313522,
+        "authoritative_gate_passes": false,
+        "wall_seconds": 1414.66
+       },
+       "knowledge-frozen": {
+        "arm": "knowledge-frozen",
+        "decided": 20,
+        "deployed": 4,
+        "identity": 16,
+        "distinct_programs": 1,
+        "faulted": [],
+        "support_aggregate": 0.180056,
+        "delayed_aggregate": 0.108549,
+        "treated": 4,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "authoritative_gate_passes": false,
+        "wall_seconds": 975.62
+       }
+      },
+      "paired_delayed": {
+       "population": [
+        "T14",
+        "T140",
+        "T141",
+        "T143",
+        "T144",
+        "T145",
+        "T146",
+        "T147",
+        "T149",
+        "T15",
+        "T150",
+        "T151",
+        "T152",
+        "T153",
+        "T155",
+        "T156",
+        "T157",
+        "T158",
+        "T159",
+        "T16"
+       ],
+       "population_size": 20,
+       "readable_pairs": [
+        "T14",
+        "T140",
+        "T141",
+        "T143",
+        "T144",
+        "T145",
+        "T146",
+        "T147",
+        "T149",
+        "T15",
+        "T150",
+        "T151",
+        "T152",
+        "T153",
+        "T155",
+        "T156",
+        "T157",
+        "T158",
+        "T159",
+        "T16"
+       ],
+       "missing_on_either_side": [],
+       "complete": true,
+       "mean_a": 0.108549,
+       "mean_b": 0.093921,
+       "paired_difference_b_minus_a": -0.014628,
+       "whole_population_difference": -0.014628,
+       "coverage_of_the_readable_subset": 1.0,
+       "denominator_rule": "the same UID set and the same denominator on both sides; a missing reading on either side makes the whole-population difference UNKNOWN and the readable subset is reported separately, never in its place"
+      }
+     },
+     "10": {
+      "phase": "followup",
+      "arms": {
+       "slow-candidate": {
+        "arm": "slow-candidate",
+        "decided": 20,
+        "deployed": 17,
+        "identity": 3,
+        "distinct_programs": 2,
+        "faulted": [],
+        "support_aggregate": 0.130093,
+        "delayed_aggregate": 0.011625,
+        "treated": 17,
+        "harmed_fraction": 0.4,
+        "max_single_series_harm": 0.361806,
+        "authoritative_gate_passes": false,
+        "wall_seconds": 1231.58
+       },
+       "knowledge-frozen": {
+        "arm": "knowledge-frozen",
+        "decided": 20,
+        "deployed": 16,
+        "identity": 4,
+        "distinct_programs": 1,
+        "faulted": [],
+        "support_aggregate": 0.119071,
+        "delayed_aggregate": 0.032377,
+        "treated": 16,
+        "harmed_fraction": 0.3,
+        "max_single_series_harm": 0.361806,
+        "authoritative_gate_passes": false,
+        "wall_seconds": 694.76
+       }
+      },
+      "paired_delayed": {
+       "population": [
+        "T14",
+        "T140",
+        "T141",
+        "T143",
+        "T144",
+        "T145",
+        "T146",
+        "T147",
+        "T149",
+        "T15",
+        "T150",
+        "T151",
+        "T152",
+        "T153",
+        "T155",
+        "T156",
+        "T157",
+        "T158",
+        "T159",
+        "T16"
+       ],
+       "population_size": 20,
+       "readable_pairs": [
+        "T14",
+        "T140",
+        "T141",
+        "T143",
+        "T144",
+        "T145",
+        "T146",
+        "T147",
+        "T149",
+        "T15",
+        "T150",
+        "T151",
+        "T152",
+        "T153",
+        "T155",
+        "T156",
+        "T157",
+        "T158",
+        "T159",
+        "T16"
+       ],
+       "missing_on_either_side": [],
+       "complete": true,
+       "mean_a": 0.032377,
+       "mean_b": 0.011625,
+       "paired_difference_b_minus_a": -0.020752,
+       "whole_population_difference": -0.020752,
+       "coverage_of_the_readable_subset": 1.0,
+       "denominator_rule": "the same UID set and the same denominator on both sides; a missing reading on either side makes the whole-population difference UNKNOWN and the readable subset is reported separately, never in its place"
+      },
+      "reference": {
+       "raw": {
+        "delayed_aggregate": 0.0
+       },
+       "fixed_preparation": {
+        "delayed_aggregate": 0.070976
+       }
+      }
+     },
+     "11": {
+      "phase": "followup",
+      "arms": {
+       "slow-candidate": {
+        "arm": "slow-candidate",
+        "decided": 20,
+        "deployed": 17,
+        "identity": 3,
+        "distinct_programs": 3,
+        "faulted": [],
+        "support_aggregate": 0.330674,
+        "delayed_aggregate": 0.275898,
+        "treated": 17,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.19238,
+        "authoritative_gate_passes": true,
+        "wall_seconds": 1086.63
+       },
+       "knowledge-frozen": {
+        "arm": "knowledge-frozen",
+        "decided": 20,
+        "deployed": 15,
+        "identity": 5,
+        "distinct_programs": 1,
+        "faulted": [],
+        "support_aggregate": 0.312048,
+        "delayed_aggregate": 0.264433,
+        "treated": 15,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.19238,
+        "authoritative_gate_passes": true,
+        "wall_seconds": 1249.03
+       }
+      },
+      "paired_delayed": {
+       "population": [
+        "T14",
+        "T140",
+        "T141",
+        "T143",
+        "T144",
+        "T145",
+        "T146",
+        "T147",
+        "T149",
+        "T15",
+        "T150",
+        "T151",
+        "T152",
+        "T153",
+        "T155",
+        "T156",
+        "T157",
+        "T158",
+        "T159",
+        "T16"
+       ],
+       "population_size": 20,
+       "readable_pairs": [
+        "T14",
+        "T140",
+        "T141",
+        "T143",
+        "T144",
+        "T145",
+        "T146",
+        "T147",
+        "T149",
+        "T15",
+        "T150",
+        "T151",
+        "T152",
+        "T153",
+        "T155",
+        "T156",
+        "T157",
+        "T158",
+        "T159",
+        "T16"
+       ],
+       "missing_on_either_side": [],
+       "complete": true,
+       "mean_a": 0.264433,
+       "mean_b": 0.275898,
+       "paired_difference_b_minus_a": 0.011465,
+       "whole_population_difference": 0.011465,
+       "coverage_of_the_readable_subset": 1.0,
+       "denominator_rule": "the same UID set and the same denominator on both sides; a missing reading on either side makes the whole-population difference UNKNOWN and the readable subset is reported separately, never in its place"
+      },
+      "reference": {
+       "raw": {
+        "delayed_aggregate": 0.0
+       },
+       "fixed_preparation": {
+        "delayed_aggregate": 0.256704
+       }
+      }
+     }
+    },
+    "main_delayed_readout": {
+     "rule": "unit mean first, then equal weight over the registered follow-up units; A and B on the same UID set and the same denominator",
+     "followup_units_read": [
+      "10",
+      "11"
+     ],
+     "per_unit_difference_b_minus_a": [
+      -0.020752,
+      0.011465
+     ],
+     "main_readout": -0.004644,
+     "units_with_a_missing_reading": [],
+     "readable_subset_only": -0.004644,
+     "why_unknown": "a missing required reading on either side makes the whole-population difference UNKNOWN; the readable subset is reported beside it, never in its place"
+    },
+    "adoption": {
+     "paired": {
+      "population": [
+       "T14",
+       "T140",
+       "T141",
+       "T143",
+       "T144",
+       "T145",
+       "T146",
+       "T147",
+       "T149",
+       "T15",
+       "T150",
+       "T151",
+       "T152",
+       "T153",
+       "T155",
+       "T156",
+       "T157",
+       "T158",
+       "T159",
+       "T16"
+      ],
+      "population_size": 20,
+      "readable_pairs": [
+       "T14",
+       "T140",
+       "T141",
+       "T143",
+       "T144",
+       "T145",
+       "T146",
+       "T147",
+       "T149",
+       "T15",
+       "T150",
+       "T151",
+       "T152",
+       "T153",
+       "T155",
+       "T156",
+       "T157",
+       "T158",
+       "T159",
+       "T16"
+      ],
+      "missing_on_either_side": [],
+      "complete": true,
+      "mean_a": 0.108549,
+      "mean_b": 0.093921,
+      "paired_difference_b_minus_a": -0.014628,
+      "whole_population_difference": -0.014628,
+      "coverage_of_the_readable_subset": 1.0,
+      "denominator_rule": "the same UID set and the same denominator on both sides; a missing reading on either side makes the whole-population difference UNKNOWN and the readable subset is reported separately, never in its place"
+     },
+     "material_threshold": 0.005,
+     "candidate_gate": {
+      "lines": {
+       "coverage_floor": true,
+       "aggregate": true,
+       "harmed_fraction": true,
+       "single_series_harm": false
+      },
+      "passes": false,
+      "failed_lines": [
+       "single_series_harm"
+      ],
+      "authority": "p4_gate",
+      "thresholds": {
+       "min_treated": 5,
+       "min_aggregate": 0.005,
+       "max_harmed_fraction": 0.2,
+       "max_single_series_harm": 0.3
+      }
+     },
+     "lines": {
+      "readings_complete_and_comparable": true,
+      "paired_delayed_gain_reaches_material": false,
+      "candidate_passes_the_authoritative_gate_on_this_unit": false
+     },
+     "adoptable": false,
+     "failed_lines": [
+      "paired_delayed_gain_reaches_material",
+      "candidate_passes_the_authoritative_gate_on_this_unit"
+     ],
+     "registered_before_the_run": true,
+     "what_it_is_not": "a development-level adoption mark for this package.  It is not a production deployment permission, it does not grant a Shared Capability, and failing it does not end the candidate's follow-up: an unadopted candidate is still carried into the follow-up units as a diagnostic branch, so 'the guidance has no value' can be told apart from 'the adoption rule did not pass it'"
+    },
+    "branch_status": "UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH",
+    "branch_meaning": "ADOPTED_DEVELOPMENT_BRANCH: the candidate passed this package's development adoption mark on the validation unit, and its follow-up numbers are the numbers of an adopted development branch.  UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH: it did not, and its follow-up numbers are candidate diagnostics -- never a promotion or deployment gain, and never a retroactive pass of the validation unit",
+    "cost": {
+     "physical_consumer_fits": 60,
+     "fit_ceiling": 2000,
+     "llm_calls": 540,
+     "llm_ceiling": 2000,
+     "wall_seconds": 9529.8,
+     "wall_ceiling_seconds": 21600,
+     "physical_fits_by_arm": {
+      "reference": 8,
+      "slow-candidate": 32,
+      "smoke": 20
+     },
+     "llm_calls_by_arm": {
+      "knowledge-frozen": 268,
+      "preflight": 4,
+      "slow": 4,
+      "slow-candidate": 268
+     },
+     "logical_evaluations_by_arm": {
+      "knowledge-frozen": 139,
+      "slow-candidate": 146
+     },
+     "cost_note": "physical fits are attributed to the arm whose call missed the shared prediction cache; logical evaluations count every reading an arm asked for, hit or miss.  The two arms share one cache because the reading is a deterministic function of (unit, origin, config, program, served set), so whichever arm runs first would otherwise carry the whole cost",
+     "counting": "every physical fit, including ones spent inside a call that then raised"
+    },
+    "independence": {
+     "distinct_series": 10,
+     "distinct_windows": 34,
+     "how_to_read_n": "rows are not independent samples.  The same series appears at several windows, one Consumer model per (unit, program) is shared by every series it serves, and both arms read the same deterministic predictions.  Count series and windows, not rows"
+    }
+   }
+  }
+ },
+ "q5_consistency": {
+  "per_group": {
+   "g1": {
+    "treatment": "COMPILED_BUT_NEVER_EXPOSED__UTILITY_UNTESTED",
+    "surface": "skill_library.entries/high_missingness_outlier_caution",
+    "outcome": "CANDIDATE_COMPILED_BUT_NEVER_EXPOSED",
+    "adoptable": null,
+    "main_readout": "UNKNOWN",
+    "behaviour_links_on_reached_pairs": null
+   },
+   "g2": {
+    "treatment": "UPDATE_TREATMENT",
+    "surface": "skill_library.entries/missingness_deviation_identity_guard",
+    "outcome": "CANDIDATE_COMPILED",
+    "adoptable": false,
+    "main_readout": -0.004644,
+    "behaviour_links_on_reached_pairs": {
+     "pairs": 3,
+     "link_1_the_edit_is_loaded": {
+      "in_arm_b": 3,
+      "in_arm_a": 0
+     },
+     "link_1b_retrieved_skill_set_differs": 3,
+     "link_2_observation_differs": 3,
+     "link_3_candidate_pool_differs": 2,
+     "link_4_selection_or_delivery_differs": {
+      "different_program_delivered": 0,
+      "different_decision_kind_deploy_vs_identity": 0
+     },
+     "link_5_material_effect_difference": {
+      "count": 0,
+      "cases": []
+     }
+    }
+   }
+  },
+  "agree_on_treatment": false,
+  "agree_on_surface": false,
+  "main_readouts": [
+   "UNKNOWN",
+   -0.004644
+  ],
+  "reading": "the groups differ in whether a candidate formed at all, so any difference between them is not a difference between two versions of the same edit",
+  "no_significance_is_claimed": "two groups on the same data are random repeats, not independent replications; no test is run and no significance is claimed"
+ },
+ "q6_open_question": {
+  "earliest_blocked_link": "DELIVERY: the edit changed what was observed or proposed but never what was delivered, so no reading could differ",
+  "one_suggestion_only": "one next step is named in the report.  No third group, no ablation and no sealed experiment is started from here"
+ },
+ "cost": {
+  "physical_consumer_fits": 60,
+  "llm_calls": 540,
+  "wall_seconds": 9529.8,
+  "ledgers_by_run_id": {
+   "pkg3": {
+    "fits": 60,
+    "llm": 540,
+    "wall": 9529.8
+   }
+  },
+  "aggregation_rule": "groups sharing a run id share one cumulative budget file, so their line total is the maximum, not the sum; groups with independent run ids are summed",
+  "ceilings": {
+   "fits": 2000,
+   "llm": 2000,
+   "wall_seconds": 21600
+  }
+ },
+ "boundaries_respected": [
+  "no sealed material, no TARGET_HELD_IN unit and no +144 face read",
+  "Consumer training and serving geometry, the DSL, the risk lines, the scoring denominators and the verifier are untouched",
+  "the model never edits its own approval rule: adoption is decided by a deterministic check on readings it did not produce",
+  "no raw cross-trajectory Episode reaches Fast in either arm",
+  "no new hash, manifest platform or ledger; the prediction cache's own key is reused",
+  "historical receipts are not overwritten and nothing is committed"
+ ]
+}

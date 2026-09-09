@@ -628,8 +628,13 @@ def _fire_risk_refusal_slow(
     _patch_scope = _scope_of_patch(sev)
     # 谓词内容没有任何现成检查：路由表的"单调收窄"是目标类闸门，从不看
     # 谓词，RISK_GAP 更不在方向表里。一次修订是不是真收窄只能在这里判。
-    _pf = (dict(scope_revision_preflight(
-               chosen["scope_spec"], _patch_scope, origin) or {})
+    # 身份透传：预检要按"这条 Draft 的 root"计累计子句，而一个谓词可以同时
+    # 是几个程序的 current_scope。不传程序，预检只能按谓词猜 root——猜错或
+    # 猜不出时它会当成首次修订，累计上限就形同虚设。只对声明接受该参数的
+    # 预检传（accepts_program_steps），其它注入方逐位保持三参调用。
+    _pf = (dict(_call_preflight(scope_revision_preflight,
+                                chosen["scope_spec"], _patch_scope, origin,
+                                _steps_of_patch(sev)) or {})
            if (_patch_scope is not None
                and scope_revision_preflight is not None) else None)
     result._scope_revision_preflight = _pf
@@ -892,6 +897,21 @@ def run_online_round(
             aggregate_gain=gain,
             per_series_gains=getattr(rr, "per_view_gain", None))
         result.actual_probed_programs[-1]["admission"] = _adm.to_dict()
+        # M-R0 修复：把 Episode 的**规范 relation** 直接写在 probe 记录上。
+        # AdmissionVerdict 没有 relation 字段，只有 reason；下游若从
+        # admission 里取 relation 会恒得 None，再退到 reason，就把
+        # within_risk_budget / harmed_fraction_over_budget 这类**准入理由**
+        # 当成了关系词表，普查的 POSITIVE / CONFLICT / NEGATIVE 计数因此恒为
+        # 0。这里写的是 classify_relation 的产物本身——同一个既有定义，不重
+        # 算、不改成功/冲突语义；admitted 也**不**等同于 POSITIVE：bounded
+        # 规则下一个 CONFLICT 同样可以 admitted=True。
+        result.actual_probed_programs[-1]["relation"] = str(ep.relation)
+        # Support 面的 Consumer fits：只有 receipt 真的报了才记。未报的
+        # （不走 scoped 双管线的历史路径）留 None，由上游标记为不可还原，
+        # 而不是补一个看起来像测量值的 0。
+        _receipt_fits = getattr(rr, "consumer_fits", None)
+        result.actual_probed_programs[-1]["consumer_fits"] = (
+            None if _receipt_fits is None else int(_receipt_fits))
         if str(ep.relation) == "POSITIVE":
             if result.first_positive_support_receipt_index is None:
                 result.first_positive_support_receipt_index = (
@@ -1287,9 +1307,12 @@ def run_online_round(
                                 # scope_resolver 同样的注入方式——methods 层
                                 # 不反向依赖 evaluation 层）；不注入时逐位保持
                                 # 历史行为。
+                                # 身份透传：见 _call_preflight 的注记。
                                 _pf = (
-                                    dict(scope_revision_preflight(
-                                        _scope_spec, _patch_scope, origin) or {})
+                                    dict(_call_preflight(
+                                        scope_revision_preflight,
+                                        _scope_spec, _patch_scope, origin,
+                                        _steps_of_patch(sev)) or {})
                                     if (_patch_scope is not None
                                         and scope_revision_preflight is not None)
                                     else None)
@@ -1789,6 +1812,26 @@ def _op_of(cand: str, steps: Sequence[tuple[str, Mapping[str, object]]]
     if steps:
         return str(steps[0][0])
     return cand
+
+
+def _call_preflight(preflight: Any, original: Any, proposed: Any, origin: int,
+                    program_steps: Any) -> Any:
+    """调用注入的 Scope 修订预检，尽可能把**被修订的那个程序**一并交给它。
+
+    预检要按"这条 Draft 的 root"计累计子句，而同一个谓词可以同时是好几个
+    程序的 current_scope（HEC-1 的初始化把同一条
+    ``local_robust_z_peak >= 3.0`` 发给每个 ``outlier_*``）。拿不到程序身份
+    时，预检只能按谓词找 root；找错或找不到时它会当成首次修订，
+    ``MAX_TOTAL_ADDED_CLAUSES`` 那一段被整段跳过，累计上限形同虚设。
+
+    只有声明了 ``accepts_program_steps`` 的预检才收这个关键字参数；其余注入
+    方（v2 的无 ledger 版本、其它执行线的测试桩）逐位保持三参调用，不因为
+    身份可得而被改签名。
+    """
+    if getattr(preflight, "accepts_program_steps", False):
+        return preflight(original, proposed, origin,
+                         program_steps=program_steps)
+    return preflight(original, proposed, origin)
 
 
 def _steps_of_patch(sev: Mapping[str, Any]) -> tuple[tuple[str, dict], ...]:

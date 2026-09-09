@@ -1,0 +1,711 @@
+{
+ "stage": "DEV_SEQ2_CONTRASTS",
+ "artifact_prefix": "dev_seq2_slow_update_to_fast",
+ "groups_read": [
+  "g1",
+  "g2"
+ ],
+ "q1_fixes_and_model": {
+  "per_group": {
+   "g1": {
+    "window_binding": {
+     "keyed_by": "(series_uid, origin)",
+     "windows": 50,
+     "distinct_series": 10,
+     "windows_per_series": 5.0,
+     "misses": 0,
+     "in_force": true
+    },
+    "measurement_dedup": {
+     "references": 40,
+     "distinct_measurements": 40,
+     "repeated_references": 0,
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "in_force": true
+    },
+    "model": {
+     "requested": "gpt-5.6-sol",
+     "returned": [],
+     "one_model_only": false,
+     "is_the_fixed_non_flash_model": false,
+     "prompt_tokens": 0,
+     "completion_tokens": 0
+    }
+   },
+   "g2": {
+    "window_binding": {
+     "keyed_by": "(series_uid, origin)",
+     "windows": 50,
+     "distinct_series": 10,
+     "windows_per_series": 5.0,
+     "misses": 0,
+     "in_force": true
+    },
+    "measurement_dedup": {
+     "references": 34,
+     "distinct_measurements": 34,
+     "repeated_references": 0,
+     "distinct_series": 10,
+     "distinct_windows": 34,
+     "in_force": true
+    },
+    "model": {
+     "requested": "gpt-5.6-sol",
+     "returned": [],
+     "one_model_only": false,
+     "is_the_fixed_non_flash_model": false,
+     "prompt_tokens": 0,
+     "completion_tokens": 0
+    }
+   }
+  },
+  "what_changed_from_dev_seq_1": {
+   "window_binding": "DEV-SEQ-1 keyed a visible-feature card by series UID and kept the first construction window's card, so every u8 Episode was described to Slow, and scored by the validator, with u7's features.  A card is now keyed by (series_uid, origin) and a missing window is a recorded miss, never a borrowed card",
+   "measurement_dedup": "DEV-SEQ-1's L3 iterated group members, so one real reading cited by two Episodes of the same series and program counted twice.  A measurement is now keyed by the prediction cache's own key plus the served UID; no Episode is deleted and a different window, program, parameter set or training config stays a separate measurement",
+   "model": "DEV-SEQ-1 requested deepseek-chat, which this relay answers as deepseek-v4-flash.  This package fixes on gpt-5.6-sol and checks the returned identity, not the requested alias.  That makes it a different experiment from DEV-SEQ-1 and the two are not tabled together"
+  }
+ },
+ "q1b_dev_seq1_l2_recomputed": {
+  "available": true,
+  "predicate": {
+   "all": [
+    {
+     "feature": "task_kind",
+     "op": "==",
+     "value": "forecast"
+    },
+    {
+     "feature": "missing_fraction",
+     "op": ">=",
+     "value": 0.45
+    },
+    {
+     "feature": "local_robust_z_peak",
+     "op": ">=",
+     "value": 5.0
+    }
+   ]
+  },
+  "old_reading": {
+   "failing_series": [
+    "T14",
+    "T141",
+    "T143",
+    "T144",
+    "T146",
+    "T15"
+   ],
+   "covered": [
+    "T14"
+   ],
+   "verdict": "L2 failed: 1 of 6 series"
+  },
+  "recomputed_with_window_binding": {
+   "failing_windows": [
+    [
+     "T14",
+     1176
+    ],
+    [
+     "T14",
+     1416
+    ],
+    [
+     "T141",
+     1416
+    ],
+    [
+     "T143",
+     1416
+    ],
+    [
+     "T144",
+     1176
+    ],
+    [
+     "T146",
+     1416
+    ],
+    [
+     "T15",
+     1416
+    ]
+   ],
+   "covered": [
+    [
+     "T14",
+     1176
+    ],
+    [
+     "T14",
+     1416
+    ]
+   ],
+   "covered_fraction": 0.2857,
+   "L2_would_pass": false
+  },
+  "verdict": "the refusal was not an artefact of the mis-binding: with each failing decision tested against its own window's features the predicate still covers 2 of 7, so L2 still fails.  This is reported to separate 'the old L2 rejected it' from 'there was no useful condition'; it is not a reason to approve the old card, which stays unadopted and is not re-run here"
+ },
+ "q2_what_slow_did": {
+  "g1": {
+   "outcome": "CANDIDATE_COMPILED",
+   "what_it_was_shown": {
+    "episodes": 23,
+    "material_failures": 7,
+    "groups_formed": 1,
+    "group_taken": "g_outlier_mad_NEGATIVE",
+    "members": 7,
+    "distinct_series": 6,
+    "distinct_windows": 7,
+    "matched_successes": 13,
+    "ungrouped_failures_kept_as_episodes": 0,
+    "surfaces_offered": [
+     "skill_library.entries/{skill_id}",
+     "bootstrap_skills.entries/build_contrastive_candidates.body",
+     "bootstrap_skills.entries/inspect_and_localize.body",
+     "bootstrap_skills.entries/select_or_identity_and_verify.body",
+     "candidate_policy.proposal_guidance",
+     "candidate_policy.selection_guidance"
+    ],
+    "fault_labels_selectable": [
+     "SCOPE_MEMORY_RISK_ERROR"
+    ]
+   },
+   "what_it_changed": {
+    "surface": "skill_library.entries/high_missingness_linear_imputation",
+    "operation": "ADD",
+    "derived_cause": "SKILL_LIBRARY_GAP",
+    "compiled": true,
+    "parent_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+    "candidate_sha": "ee99ac2d060d43f526a5f54ef7e3af7696dcfe70f6c21b3363e99eff6e67ce77",
+    "text": "When task_kind is forecast and missing_fraction is at least 0.5 with a longest missing run fraction of at least 0.05, inspect missingness as a distinct pattern hypothesis. If the current inspection supplies a legal local region, propose at most one minimal impute_linear PROGRAM candidate bound to that hypothesis. Keep the candidate local, preserve identity as the runtime control, and abstain when no legal binding or sufficient public evidence exists.",
+    "applicability": {
+     "all": [
+      {
+       "feature": "task_kind",
+       "op": "==",
+       "value": "forecast"
+      },
+      {
+       "feature": "missing_fraction",
+       "op": ">=",
+       "value": 0.5
+      },
+      {
+       "feature": "longest_missing_run_fraction",
+       "op": ">=",
+       "value": 0.05
+      }
+     ]
+    },
+    "attempts": [
+     {
+      "attempt": 1,
+      "proposed": true,
+      "why": null,
+      "detail": null
+     }
+    ],
+    "why_no_proposal": null
+   },
+   "what_it_predicted": {
+    "behaviour": [
+     "retrieve_skill:high_missingness_linear_imputation",
+     "supply_operator:impute_linear",
+     "choose_candidate_kind:program",
+     "identity_retained",
+     "scope_modified_fraction<=0.35"
+    ],
+    "effect": [
+     "High-missingness forecast contexts meeting the applicability condition will receive a locally verified impute_linear candidate alongside the existing identity control.",
+     "Values outside the inspected candidate region should remain unchanged."
+    ],
+    "falsified_by": [
+     "In independently verified contexts satisfying the applicability condition, the added skill is not retrieved or impute_linear is not proposed when a legal local missingness hypothesis exists.",
+     "Verification shows modifications outside the addressed missingness region or a modified fraction above 0.35.",
+     "Observed support for the locally verified impute_linear candidate is consistently non-positive while identity remains preferable."
+    ]
+   },
+   "what_is_still_a_guess": "the mechanism.  The card carries facts -- programs, windows, both faces, the visible features of failures and of matched successes -- and the edit is one provisional account of them. Nothing in this package establishes that account is the cause; only the two arms say whether acting on it helped",
+   "coverage_diagnostic_not_a_gate": {
+    "applicable": true,
+    "L1_the_predicate_is_a_condition": false,
+    "L1_detail": {
+     "withheld_population": 6,
+     "matched": []
+    },
+    "L2_it_covers_the_evidence_it_cites": false,
+    "L2_detail": {
+     "failing_windows": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ],
+      [
+       "T141",
+       1416
+      ],
+      [
+       "T143",
+       1416
+      ],
+      [
+       "T144",
+       1176
+      ],
+      [
+       "T146",
+       1416
+      ],
+      [
+       "T15",
+       1416
+      ]
+     ],
+     "covered": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ]
+     ],
+     "counted_by": "distinct (series_uid, window) decisions, each tested against its own window's features -- DEV-SEQ-1 tested every member against the first window that series appeared in"
+    },
+    "status": "DIAGNOSTIC ONLY.  These lines describe the predicate's coverage.  They do not gate adoption in this package, because coverage is not the same question as whether the guidance changes what Fast does and helps"
+   }
+  },
+  "g2": {
+   "outcome": "CANDIDATE_COMPILED",
+   "what_it_was_shown": {
+    "episodes": 24,
+    "material_failures": 7,
+    "groups_formed": 1,
+    "group_taken": "g_outlier_mad_NEGATIVE",
+    "members": 5,
+    "distinct_series": 4,
+    "distinct_windows": 5,
+    "matched_successes": 11,
+    "ungrouped_failures_kept_as_episodes": 2,
+    "surfaces_offered": [
+     "skill_library.entries/{skill_id}",
+     "bootstrap_skills.entries/build_contrastive_candidates.body",
+     "bootstrap_skills.entries/inspect_and_localize.body",
+     "bootstrap_skills.entries/select_or_identity_and_verify.body",
+     "candidate_policy.proposal_guidance",
+     "candidate_policy.selection_guidance"
+    ],
+    "fault_labels_selectable": [
+     "SCOPE_MEMORY_RISK_ERROR"
+    ]
+   },
+   "what_it_changed": {
+    "surface": "skill_library.entries/dense_missingness_outlier_caution",
+    "operation": "ADD",
+    "derived_cause": "SKILL_LIBRARY_GAP",
+    "compiled": true,
+    "parent_sha": "98dea3b037b790528cd745f8cbdf657da0285c25f91df53e9c572a0dfc87563b",
+    "candidate_sha": "1d4b7677cec6dba589c5fa082e1a48fd7e07431ba89d54a72a14178903c872a7",
+    "text": "Public evidence on this pattern shows three negative outlier_mad decisions with missing_fraction above 0.41 and longest_missing_run_fraction above 0.057, while matched successes have missing_fraction at or below 0.228 and longest_missing_run_fraction at or below 0.038. The mechanism hypothesis is that dense, clustered missingness can make a high local robust-z reading insufficient by itself to identify an extreme-deviation repair target; this may be wrong and does not negate outlier handling in lower-missingness contexts where it has worked. When this applicability condition holds, inspect missingness as the dominant competing mechanism and keep it distinct from extreme deviation. At selection, retain identity when the verified pool contains only an outlier-oriented program and public evidence does not independently justify that repair; choose a program only when its verified mechanism addresses the current observable hypothesis and its scope is supported.",
+    "applicability": {
+     "all": [
+      {
+       "feature": "task_kind",
+       "op": "==",
+       "value": "forecast"
+      },
+      {
+       "feature": "missing_fraction",
+       "op": ">=",
+       "value": 0.4
+      },
+      {
+       "feature": "longest_missing_run_fraction",
+       "op": ">=",
+       "value": 0.05
+      },
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "value": 4.0
+      }
+     ]
+    },
+    "attempts": [
+     {
+      "attempt": 1,
+      "proposed": true,
+      "why": null,
+      "detail": null
+     }
+    ],
+    "why_no_proposal": null
+   },
+   "what_it_predicted": {
+    "behaviour": [
+     "retrieve_skill:dense_missingness_outlier_caution",
+     "choose_candidate_kind:identity",
+     "identity_retained"
+    ],
+    "effect": [
+     "Reduce selection of outlier_mad in forecast contexts with simultaneously dense and clustered missingness where robust-z evidence may be confounded, while preserving existing outlier behavior outside the narrow applicability condition."
+    ],
+    "falsified_by": [
+     "Refute the mechanism hypothesis if held-out contexts satisfying the applicability condition show that selecting a verified outlier-oriented program consistently improves delayed effect over identity, or if the edit does not reduce outlier-program selection in those contexts."
+    ]
+   },
+   "what_is_still_a_guess": "the mechanism.  The card carries facts -- programs, windows, both faces, the visible features of failures and of matched successes -- and the edit is one provisional account of them. Nothing in this package establishes that account is the cause; only the two arms say whether acting on it helped",
+   "coverage_diagnostic_not_a_gate": {
+    "applicable": true,
+    "L1_the_predicate_is_a_condition": false,
+    "L1_detail": {
+     "withheld_population": 6,
+     "matched": []
+    },
+    "L2_it_covers_the_evidence_it_cites": true,
+    "L2_detail": {
+     "failing_windows": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ],
+      [
+       "T141",
+       1416
+      ],
+      [
+       "T144",
+       1176
+      ],
+      [
+       "T146",
+       1416
+      ]
+     ],
+     "covered": [
+      [
+       "T14",
+       1176
+      ],
+      [
+       "T14",
+       1416
+      ],
+      [
+       "T146",
+       1416
+      ]
+     ],
+     "counted_by": "distinct (series_uid, window) decisions, each tested against its own window's features -- DEV-SEQ-1 tested every member against the first window that series appeared in"
+    },
+    "status": "DIAGNOSTIC ONLY.  These lines describe the predicate's coverage.  They do not gate adoption in this package, because coverage is not the same question as whether the guidance changes what Fast does and helps"
+   }
+  }
+ },
+ "q3_and_q4_per_group": {
+  "g1": {
+   "status": "STOPPED",
+   "stopped_at": {
+    "phase": "followup",
+    "position": 10,
+    "arm": "slow-candidate",
+    "why": "NOT_RUN__RESUME_ONLY"
+   },
+   "treatment": "COMPILED_BUT_NEVER_EXPOSED__UTILITY_UNTESTED",
+   "early_termination": {
+    "terminated_early": true,
+    "reason": "zero guidance exposure: the compiled candidate matched none of the 18 remaining registered arm decisions, so every one of them would have run under the parent knowledge; confirmed at zero cost before stopping",
+    "what_was_kept": "every checkpoint the group actually paid for is in this artifact: the formation units, the batch boundary and any arm unit that completed.  Nothing is deleted and no cost is written off",
+    "what_was_not_run": "the remaining paired arm decisions of the registered plan",
+    "this_is_not_a_complete_experiment": "the guidance's utility is UNTESTED, not measured as zero.  This group must not be presented as a completed two-arm comparison, and a later package must not quote only the groups whose edit did reach Fast"
+   },
+   "exposure": {
+    "decisions_checked": 18,
+    "decisions_the_edit_reaches": 0,
+    "exposure_fraction": 0.0,
+    "the_edit_leaks_into_the_parent_arm": 0,
+    "ordering_card_route": {
+     "entry_found_in_candidate": true,
+     "is_an_ordering_card": false,
+     "why_it_matters": "_select_ordering_card reads the snapshot directly instead of going through resolve_harness_view, so it is the one other route a Skill body can take into a Fast round.  It also requires the same observable_applicability to pass, so a predicate that matches nothing closes this route too"
+    },
+    "cost": "zero Consumer fits, zero LLM calls",
+    "what_this_is_not": "not a coverage gate.  It does not require the condition to explain most failures or to match a majority of anything.  It asks only whether the edit is presented to the decisions that are about to be paid for; a modification that is never on screen cannot be measured by running more of them",
+    "per_clause_over_the_arm_windows": {
+     "{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}": {
+      "satisfied": 18,
+      "tested": 18,
+      "fraction": 1.0
+     },
+     "{\"feature\": \"missing_fraction\", \"op\": \">=\", \"value\": 0.5}": {
+      "satisfied": 3,
+      "tested": 18,
+      "fraction": 0.1667
+     },
+     "{\"feature\": \"longest_missing_run_fraction\", \"op\": \">=\", \"value\": 0.05}": {
+      "satisfied": 0,
+      "tested": 18,
+      "fraction": 0.0
+     }
+    },
+    "clause_reading": "the conjunction matches nothing, and the clauses fail for different reasons: the missingness level clause still holds for one series at every window, while the longest-missing-run clause holds nowhere.  That second feature is a fraction of the observed window, and the window grows as the course advances, so its value decays monotonically -- the card retires itself one window after it was written"
+   },
+   "behaviour_chain": {
+    "paired_decisions": 0,
+    "why": "no unit was run by both arms"
+   },
+   "exposure_split": {
+    "available": true,
+    "decisions_the_edit_reached": 0,
+    "exposed_decisions": [],
+    "same_knowledge_pairs": null,
+    "how_to_read_this": "the exposed rows are the only pairs where the two arms held different effective knowledge.  Every other pair ran under the same effective knowledge, so its difference is sampling: those are summarised as a spread measured inside this run.  It is descriptive, not a reliable noise floor, and the exposed rows are too few to average into a claim"
+   },
+   "outcomes": {
+    "per_position": {
+     "9": {
+      "phase": "validation",
+      "arms": {
+       "knowledge-frozen": {
+        "arm": "knowledge-frozen",
+        "decided": 6,
+        "deployed": 2,
+        "identity": 4,
+        "distinct_programs": 2,
+        "faulted": [],
+        "support_aggregate": 0.015504,
+        "delayed_aggregate": 0.0197,
+        "treated": 2,
+        "harmed_fraction": 0.0,
+        "max_single_series_harm": 0.0,
+        "authoritative_gate_passes": false,
+        "wall_seconds": 1067.79
+       }
+      },
+      "paired_delayed": null
+     }
+    },
+    "main_delayed_readout": {
+     "rule": "unit mean first, then equal weight over the registered follow-up units; A and B on the same UID set and the same denominator",
+     "followup_units_read": [],
+     "per_unit_difference_b_minus_a": [],
+     "main_readout": "UNKNOWN",
+     "units_with_a_missing_reading": [],
+     "readable_subset_only": "UNKNOWN",
+     "why_unknown": "a missing required reading on either side makes the whole-population difference UNKNOWN; the readable subset is reported beside it, never in its place"
+    },
+    "adoption": {},
+    "branch_status": "UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH",
+    "branch_meaning": "ADOPTED_DEVELOPMENT_BRANCH: the candidate passed this package's development adoption mark on the validation unit, and its follow-up numbers are the numbers of an adopted development branch.  UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH: it did not, and its follow-up numbers are candidate diagnostics -- never a promotion or deployment gain, and never a retroactive pass of the validation unit",
+    "cost": {
+     "physical_consumer_fits": 22,
+     "fit_ceiling": 1000,
+     "llm_calls": 121,
+     "llm_ceiling": 1000,
+     "wall_seconds": 6131.0,
+     "wall_ceiling_seconds": 21600,
+     "physical_fits_by_arm": {
+      "formation": 12,
+      "knowledge-frozen": 10
+     },
+     "llm_calls_by_arm": {
+      "formation": 95,
+      "knowledge-frozen": 25,
+      "preflight": 1,
+      "slow": 1
+     },
+     "logical_evaluations_by_arm": {
+      "formation": 47,
+      "knowledge-frozen": 15
+     },
+     "cost_note": "physical fits are attributed to the arm whose call missed the shared prediction cache; logical evaluations count every reading an arm asked for, hit or miss.  The two arms share one cache because the reading is a deterministic function of (unit, origin, config, program, served set), so whichever arm runs first would otherwise carry the whole cost",
+     "counting": "every physical fit, including ones spent inside a call that then raised",
+     "accounting_note": "taken from the last checkpoint this group wrote (validation, arm knowledge-frozen).  The close-out that assembled this artifact spent 0 fits and 0 LLM calls and is reported separately.  One further arm unit (validation, arm slow-candidate) was in flight when the group was stopped on purpose; it never checkpointed, so its partial spend is real but not itemised here and is not written off -- it is reported in the package's cost section as unattributed in-flight spend."
+    },
+    "independence": {
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "how_to_read_n": "rows are not independent samples.  The same series appears at several windows, one Consumer model per (unit, program) is shared by every series it serves, and both arms read the same deterministic predictions.  Count series and windows, not rows"
+    }
+   }
+  },
+  "g2": {
+   "status": "STOPPED",
+   "stopped_at": {
+    "phase": "followup",
+    "position": 10,
+    "arm": "knowledge-frozen",
+    "why": "NOT_RUN__RESUME_ONLY"
+   },
+   "treatment": "COMPILED_BUT_NEVER_EXPOSED__UTILITY_UNTESTED",
+   "early_termination": {
+    "terminated_early": true,
+    "reason": "zero guidance exposure: the compiled candidate matched none of the 18 remaining registered arm decisions, confirmed at zero cost before stopping; same blocking clause as g1 (longest_missing_run_fraction >= 0.05, 0/18)",
+    "what_was_kept": "every checkpoint the group actually paid for is in this artifact: the formation units, the batch boundary and any arm unit that completed.  Nothing is deleted and no cost is written off",
+    "what_was_not_run": "the remaining paired arm decisions of the registered plan",
+    "this_is_not_a_complete_experiment": "the guidance's utility is UNTESTED, not measured as zero.  This group must not be presented as a completed two-arm comparison, and a later package must not quote only the groups whose edit did reach Fast"
+   },
+   "exposure": {
+    "decisions_checked": 18,
+    "decisions_the_edit_reaches": 0,
+    "exposure_fraction": 0.0,
+    "the_edit_leaks_into_the_parent_arm": 0,
+    "ordering_card_route": {
+     "entry_found_in_candidate": true,
+     "is_an_ordering_card": false,
+     "why_it_matters": "_select_ordering_card reads the snapshot directly instead of going through resolve_harness_view, so it is the one other route a Skill body can take into a Fast round.  It also requires the same observable_applicability to pass, so a predicate that matches nothing closes this route too"
+    },
+    "cost": "zero Consumer fits, zero LLM calls",
+    "what_this_is_not": "not a coverage gate.  It does not require the condition to explain most failures or to match a majority of anything.  It asks only whether the edit is presented to the decisions that are about to be paid for; a modification that is never on screen cannot be measured by running more of them",
+    "per_clause_over_the_arm_windows": {
+     "{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}": {
+      "satisfied": 18,
+      "tested": 18
+     },
+     "{\"feature\": \"missing_fraction\", \"op\": \">=\", \"value\": 0.4}": {
+      "satisfied": 3,
+      "tested": 18
+     },
+     "{\"feature\": \"longest_missing_run_fraction\", \"op\": \">=\", \"value\": 0.05}": {
+      "satisfied": 0,
+      "tested": 18
+     },
+     "{\"feature\": \"local_robust_z_peak\", \"op\": \">=\", \"value\": 4.0}": {
+      "satisfied": 15,
+      "tested": 18
+     }
+    }
+   },
+   "behaviour_chain": {
+    "paired_decisions": 0,
+    "why": "no unit was run by both arms"
+   },
+   "exposure_split": {
+    "available": true,
+    "decisions_the_edit_reached": 0,
+    "exposed_decisions": [],
+    "same_knowledge_pairs": null,
+    "how_to_read_this": "the exposed rows are the only pairs where the two arms held different effective knowledge.  Every other pair ran under the same effective knowledge, so its difference is sampling: those are summarised as a spread measured inside this run.  It is descriptive, not a reliable noise floor, and the exposed rows are too few to average into a claim"
+   },
+   "outcomes": {
+    "per_position": {},
+    "main_delayed_readout": {
+     "rule": "unit mean first, then equal weight over the registered follow-up units; A and B on the same UID set and the same denominator",
+     "followup_units_read": [],
+     "per_unit_difference_b_minus_a": [],
+     "main_readout": "UNKNOWN",
+     "units_with_a_missing_reading": [],
+     "readable_subset_only": "UNKNOWN",
+     "why_unknown": "a missing required reading on either side makes the whole-population difference UNKNOWN; the readable subset is reported beside it, never in its place"
+    },
+    "adoption": {},
+    "branch_status": "UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH",
+    "branch_meaning": "ADOPTED_DEVELOPMENT_BRANCH: the candidate passed this package's development adoption mark on the validation unit, and its follow-up numbers are the numbers of an adopted development branch.  UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH: it did not, and its follow-up numbers are candidate diagnostics -- never a promotion or deployment gain, and never a retroactive pass of the validation unit",
+    "cost": {
+     "physical_consumer_fits": 18,
+     "fit_ceiling": 1000,
+     "llm_calls": 85,
+     "llm_ceiling": 1000,
+     "wall_seconds": 3058.6,
+     "wall_ceiling_seconds": 21600,
+     "physical_fits_by_arm": {
+      "formation": 18
+     },
+     "llm_calls_by_arm": {
+      "formation": 85,
+      "preflight": 1
+     },
+     "logical_evaluations_by_arm": {
+      "formation": 45
+     },
+     "cost_note": "physical fits are attributed to the arm whose call missed the shared prediction cache; logical evaluations count every reading an arm asked for, hit or miss.  The two arms share one cache because the reading is a deterministic function of (unit, origin, config, program, served set), so whichever arm runs first would otherwise carry the whole cost",
+     "counting": "every physical fit, including ones spent inside a call that then raised",
+     "accounting_note": "taken from the last checkpoint this group wrote (formation u008).  The close-out that assembled this artifact spent 0 fits and 0 LLM calls.  The Slow boundary call itself came after that checkpoint and is real but not itemised here; it is reported in the package cost section."
+    },
+    "independence": {
+     "distinct_series": 10,
+     "distinct_windows": 34,
+     "how_to_read_n": "rows are not independent samples.  The same series appears at several windows, one Consumer model per (unit, program) is shared by every series it serves, and both arms read the same deterministic predictions.  Count series and windows, not rows"
+    }
+   }
+  }
+ },
+ "q5_consistency": {
+  "per_group": {
+   "g1": {
+    "treatment": "COMPILED_BUT_NEVER_EXPOSED__UTILITY_UNTESTED",
+    "surface": "skill_library.entries/high_missingness_linear_imputation",
+    "outcome": "CANDIDATE_COMPILED",
+    "adoptable": null,
+    "main_readout": "UNKNOWN",
+    "behaviour_links_on_reached_pairs": null
+   },
+   "g2": {
+    "treatment": "COMPILED_BUT_NEVER_EXPOSED__UTILITY_UNTESTED",
+    "surface": "skill_library.entries/dense_missingness_outlier_caution",
+    "outcome": "CANDIDATE_COMPILED",
+    "adoptable": null,
+    "main_readout": "UNKNOWN",
+    "behaviour_links_on_reached_pairs": null
+   }
+  },
+  "agree_on_treatment": true,
+  "agree_on_surface": false,
+  "main_readouts": [
+   "UNKNOWN",
+   "UNKNOWN"
+  ],
+  "reading": "the two groups edited different surfaces, so they are two different modifications rather than a repeat of one",
+  "no_significance_is_claimed": "two groups on the same data are random repeats, not independent replications; no test is run and no significance is claimed"
+ },
+ "q6_open_question": {
+  "earliest_blocked_link": "LOADING: the edit compiled into a legal candidate and then reached 0 of 36 registered arm decisions, so no paired decision could differ.  The guidance's utility is UNTESTED, not measured as zero.  What is blocked is the step between 'Slow can write a legal edit' and 'the edit is presented to the sequences it was written about'",
+  "groups_never_exposed": [
+   "g1",
+   "g2"
+  ],
+  "one_suggestion_only": "one next step is named in the report.  No third group, no ablation and no sealed experiment is started from here"
+ },
+ "cost": {
+  "physical_consumer_fits": 40,
+  "llm_calls": 206,
+  "wall_seconds": 9189.6,
+  "ledgers_by_run_id": {
+   "pkg": {
+    "fits": 22,
+    "llm": 121,
+    "wall": 6131.0
+   },
+   "pkg2": {
+    "fits": 18,
+    "llm": 85,
+    "wall": 3058.6
+   }
+  },
+  "aggregation_rule": "groups sharing a run id share one cumulative budget file, so their line total is the maximum, not the sum; groups with independent run ids are summed",
+  "ceilings": {
+   "fits": 2000,
+   "llm": 2000,
+   "wall_seconds": 21600
+  }
+ },
+ "boundaries_respected": [
+  "no sealed material, no TARGET_HELD_IN unit and no +144 face read",
+  "Consumer training and serving geometry, the DSL, the risk lines, the scoring denominators and the verifier are untouched",
+  "the model never edits its own approval rule: adoption is decided by a deterministic check on readings it did not produce",
+  "no raw cross-trajectory Episode reaches Fast in either arm",
+  "no new hash, manifest platform or ledger; the prediction cache's own key is reused",
+  "historical receipts are not overwritten and nothing is committed"
+ ]
+}

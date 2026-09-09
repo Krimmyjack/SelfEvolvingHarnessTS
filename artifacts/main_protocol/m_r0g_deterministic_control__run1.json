@@ -1,0 +1,769 @@
+{
+ "stage": "M_R0G_DETERMINISTIC_CONTROL",
+ "written_at": "2026-09-05T20:46:39.805841+08:00",
+ "finished_at": "2026-09-05T20:46:54.191168+08:00",
+ "what_this_is": "the ScopeFit shadow search, promoted from a recorded contrast to an actual proposer, through the identical calibration, preflight and replay path, then paired against its Scope ancestor and raw on one later unit",
+ "what_this_is_not": [
+  "a deployment: no Skill activated, no Store written, no rights issued",
+  "an LLM comparison: n=1 here against n=1 and n=2 there",
+  "a course: the run stops after one later unit"
+ ],
+ "authorised_ceiling": {
+  "consumer_fits": 20,
+  "llm_calls": 0
+ },
+ "proposer": {
+  "kind": "deterministic",
+  "search": "scope_threshold_tool.best_stump",
+  "llm_calls": 0,
+  "no_backend_constructed": true,
+  "routed_through": "outer_loop._clause_for -> scope_threshold_tool.clause_from_slow, the same calibration the model's payload gets",
+  "calls": [
+   {
+    "candidate": "REVISE",
+    "proposer": "best_stump",
+    "llm_calls": 0,
+    "already_refused": [],
+    "outcome": "BEST_STUMP",
+    "feasible_count": 8,
+    "returned": {
+     "feature": "local_robust_z_peak",
+     "op": ">=",
+     "threshold": 6.0
+    }
+   }
+  ]
+ },
+ "target": {
+  "ordering": "forward",
+  "arm": "A5-online",
+  "k_index": 1,
+  "boundary_position": 4,
+  "bank_rows": 7,
+  "units_in_bank": 5
+ },
+ "code_state": {
+  "run_commit_claimed_by_artifacts": "d690850be1cb70d1da5f7034dbb097f42ba42e36",
+  "head_commit": "f9f96d7cb8d424a81105ddff3a6bde92c7a2253e",
+  "files": [
+   {
+    "path": "evaluation/main_protocol_p4/run_hec1.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "evaluation/main_protocol_p4/outer_loop.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "evaluation/main_protocol_p4/restricted_draft.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "evaluation/main_protocol_p4/hec1_contract.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "evaluation/main_protocol_p4/scope_threshold_tool.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "evaluation/main_protocol_p4/scoped_serving_evaluator.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "methods/ttha/online_loop.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   },
+   {
+    "path": "methods/ttha/admission_policy.py",
+    "identical_to_run_commit": true,
+    "worktree_clean": true
+   },
+   {
+    "path": "methods/ttha/scope_executor.py",
+    "identical_to_run_commit": false,
+    "worktree_clean": false
+   }
+  ],
+  "all_identical": false,
+  "why": "historical behaviour may only be explained with the code that produced it; where HEAD differs the current file is not used"
+ },
+ "outer_step": {
+  "k_index": 1,
+  "units_in_bank": 5,
+  "groups": [
+   {
+    "task_consumer_key": "forecast|pooled-ridge-a1|sMASE",
+    "program_signature": "impute_linear({})",
+    "root_scope_signature": "serving_series_predicate[missing_fraction>=0.05]",
+    "census_key": "forecast|pooled-ridge-a1|sMASE|impute_linear({})@serving_series_predicate[missing_fraction>=0.05]",
+    "aliases": [],
+    "unit_count": 1,
+    "observations": 1,
+    "relation_counts": {
+     "NEGATIVE": 1
+    },
+    "unit_votes": {
+     "NEGATIVE": 1
+    },
+    "units_without_a_consistent_relation": [],
+    "positive_units": 0,
+    "adverse_units": 1,
+    "bank_rows_seen": 1,
+    "duplicate_observations_dropped": 0,
+    "units_with_more_than_one_distinct_observation": []
+   },
+   {
+    "task_consumer_key": "forecast|pooled-ridge-a1|sMASE",
+    "program_signature": "outlier_mad({})",
+    "root_scope_signature": "serving_series_predicate[local_robust_z_peak>=3]",
+    "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+    "aliases": [],
+    "unit_count": 5,
+    "observations": 5,
+    "relation_counts": {
+     "CONFLICT": 5
+    },
+    "unit_votes": {
+     "CONFLICT": 5
+    },
+    "units_without_a_consistent_relation": [],
+    "positive_units": 0,
+    "adverse_units": 5,
+    "bank_rows_seen": 6,
+    "duplicate_observations_dropped": 1,
+    "units_with_more_than_one_distinct_observation": []
+   }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+   {
+    "kind": "REVISE",
+    "program_signature": "outlier_mad({})",
+    "why": "a REVISABLE Draft has 100 new bank rows to calibrate a further clause on",
+    "evidence": {
+     "bank_rows": 100,
+     "revisions_so_far": 0,
+     "folded_from_narrow": {
+      "adverse_units": 5,
+      "unit_votes": {
+       "CONFLICT": 5
+      },
+      "relation_counts": {
+       "CONFLICT": 5
+      },
+      "units": [
+       {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 1176,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 1896,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 2136,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 2376,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 2616,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       }
+      ]
+     }
+    },
+    "calibration": {
+     "outcome": "CALIBRATED",
+     "clause": {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 6.0
+     },
+     "feature": "local_robust_z_peak",
+     "direction": ">=",
+     "threshold": 6.0,
+     "threshold_is_a_frozen_bin_edge": true,
+     "bin_edges": [
+      0.0,
+      1.0,
+      3.0,
+      6.0
+     ],
+     "treated": 16,
+     "bank_rows_in_scope_before": 57,
+     "reading": {
+      "aggregate_gain": 0.823018,
+      "harmed_fraction": 0.0,
+      "max_single_series_harm": 0.0,
+      "lines": {
+       "coverage_floor": true,
+       "aggregate": true,
+       "harmed_fraction": true,
+       "single_series_harm": true
+      }
+     },
+     "candidates_tried": [
+      {
+       "threshold": 0.0,
+       "treated": 57,
+       "aggregate_gain": 0.439761,
+       "harmed_fraction": 0.2281,
+       "max_single_series_harm": 0.947602,
+       "lines": {
+        "coverage_floor": true,
+        "aggregate": true,
+        "harmed_fraction": false,
+        "single_series_harm": false
+       },
+       "feasible": false
+      },
+      {
+       "threshold": 1.0,
+       "treated": 57,
+       "aggregate_gain": 0.439761,
+       "harmed_fraction": 0.2281,
+       "max_single_series_harm": 0.947602,
+       "lines": {
+        "coverage_floor": true,
+        "aggregate": true,
+        "harmed_fraction": false,
+        "single_series_harm": false
+       },
+       "feasible": false
+      },
+      {
+       "threshold": 3.0,
+       "treated": 57,
+       "aggregate_gain": 0.439761,
+       "harmed_fraction": 0.2281,
+       "max_single_series_harm": 0.947602,
+       "lines": {
+        "coverage_floor": true,
+        "aggregate": true,
+        "harmed_fraction": false,
+        "single_series_harm": false
+       },
+       "feasible": false
+      },
+      {
+       "threshold": 6.0,
+       "treated": 16,
+       "aggregate_gain": 0.823018,
+       "harmed_fraction": 0.0,
+       "max_single_series_harm": 0.0,
+       "lines": {
+        "coverage_floor": true,
+        "aggregate": true,
+        "harmed_fraction": true,
+        "single_series_harm": true
+       },
+       "feasible": true
+      }
+     ],
+     "tie_break": "unique_widest",
+     "rule": "candidate thresholds are the feature's frozen bin edges; take the widest edge clearing aggregate >= material, harmed fraction, single-series harm and the coverage floor; ties take the coarser box",
+     "policy": {
+      "material": 0.005,
+      "max_harmed_fraction": 0.2,
+      "max_single_series_harm": 0.3,
+      "min_treated": 5,
+      "thresholds_changed": 0
+     },
+     "notes": [
+      "LLM_THRESHOLD_IGNORED"
+     ],
+     "slow_threshold_as_returned": 6.0,
+     "rationale": null,
+     "shadow": {
+      "outcome": "BEST_STUMP",
+      "clause": {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 6.0
+      },
+      "feature": "local_robust_z_peak",
+      "direction": ">=",
+      "threshold": 6.0,
+      "objective": 0.823018,
+      "treated": 16,
+      "reading": {
+       "aggregate_gain": 0.823018,
+       "harmed_fraction": 0.0,
+       "max_single_series_harm": 0.0,
+       "lines": {
+        "coverage_floor": true,
+        "aggregate": true,
+        "harmed_fraction": true,
+        "single_series_harm": true
+       }
+      },
+      "considered": 96,
+      "feasible_count": 8,
+      "vocabulary": [
+       "missing_fraction",
+       "longest_missing_run_fraction",
+       "local_robust_z_peak",
+       "estimated_region_start_fraction",
+       "estimated_region_end_fraction",
+       "level_region_fraction",
+       "level_region_end_fraction",
+       "outlier_region_end_fraction",
+       "level_excursion_score",
+       "estimated_level_offset",
+       "period_change_score",
+       "period_reliability"
+      ],
+      "deployable": false,
+      "why_not_deployable": "the shadow measures how much of a Scope revision the LLM contributed; deploying it would delete the contrast it exists to provide"
+     },
+     "slow_and_shadow_agree": true
+    },
+    "narrowing_preflight": {
+     "accepted": true,
+     "reason": "structurally_narrower_semantics_unchecked",
+     "added_clauses": [
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 6.0
+      }
+     ],
+     "original_resolved": null,
+     "proposed_resolved": null,
+     "excluded_series": null,
+     "checks": {
+      "keeps_every_original_clause": true,
+      "adds_at_most_one_clause": true,
+      "keeps_every_root_clause": true,
+      "within_lifecycle_clause_budget": true
+     },
+     "max_added_clauses": 1,
+     "total_added_since_root": 1,
+     "max_total_added_clauses": 2
+    },
+    "scope": {
+     "scope_type": "serving_series_predicate",
+     "predicate": [
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 3.0
+      },
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 6.0
+      }
+     ]
+    },
+    "root_scope_signature": null,
+    "replay": {
+     "cells_replayed": 5,
+     "cells_applicable": 0,
+     "cells_not_applicable": [
+      {
+       "unit": {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 1176,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       "treated": 4,
+       "why": "predicate resolves below the coverage floor"
+      },
+      {
+       "unit": {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 1896,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       "treated": 1,
+       "why": "predicate resolves below the coverage floor"
+      },
+      {
+       "unit": {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 2136,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       "treated": 4,
+       "why": "predicate resolves below the coverage floor"
+      },
+      {
+       "unit": {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 2376,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       "treated": 4,
+       "why": "predicate resolves below the coverage floor"
+      },
+      {
+       "unit": {
+        "block": "[0:40]",
+        "span": [
+         0,
+         40
+        ],
+        "origin": 2616,
+        "exposure": [
+         "SPENT_DEV"
+        ]
+       },
+       "treated": 3,
+       "why": "predicate resolves below the coverage floor"
+      }
+     ],
+     "replay_fits": 10,
+     "passed": false,
+     "violations": [],
+     "reason": "NOT_APPLICABLE",
+     "does_not_grant": "deployment rights; a Draft only comes out of here"
+    },
+    "outcome": "NOT_APPLICABLE"
+   }
+  ],
+  "drift_signals": [],
+  "revocation_recommendations": [],
+  "drafts_opened": [],
+  "drafts_revised": [],
+  "rejected": [
+   {
+    "kind": "REVISE",
+    "program_signature": "outlier_mad({})",
+    "reason": "NOT_APPLICABLE",
+    "violations": []
+   }
+  ],
+  "rejected_count": 1,
+  "slow_calls": 1,
+  "replay_fits": 10,
+  "shadow_records": [
+   {
+    "candidate": "REVISE",
+    "program_signature": "outlier_mad({})",
+    "slow": {
+     "feature": "local_robust_z_peak",
+     "direction": ">="
+    },
+    "shadow": {
+     "outcome": "BEST_STUMP",
+     "clause": {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 6.0
+     },
+     "feature": "local_robust_z_peak",
+     "direction": ">=",
+     "threshold": 6.0,
+     "objective": 0.823018,
+     "treated": 16,
+     "reading": {
+      "aggregate_gain": 0.823018,
+      "harmed_fraction": 0.0,
+      "max_single_series_harm": 0.0,
+      "lines": {
+       "coverage_floor": true,
+       "aggregate": true,
+       "harmed_fraction": true,
+       "single_series_harm": true
+      }
+     },
+     "considered": 96,
+     "feasible_count": 8,
+     "vocabulary": [
+      "missing_fraction",
+      "longest_missing_run_fraction",
+      "local_robust_z_peak",
+      "estimated_region_start_fraction",
+      "estimated_region_end_fraction",
+      "level_region_fraction",
+      "level_region_end_fraction",
+      "outlier_region_end_fraction",
+      "level_excursion_score",
+      "estimated_level_offset",
+      "period_change_score",
+      "period_reliability"
+     ],
+     "deployable": false,
+     "why_not_deployable": "the shadow measures how much of a Scope revision the LLM contributed; deploying it would delete the contrast it exists to provide"
+    },
+    "agree": true
+   }
+  ],
+  "wall_seconds": 4.177,
+  "empty_reason": null,
+  "bank_boundary": {
+   "arm": "A5-online",
+   "units": [
+    {
+     "block": "[0:40]",
+     "span": [
+      0,
+      40
+     ],
+     "origin": 1176,
+     "exposure": [
+      "SPENT_DEV"
+     ]
+    },
+    {
+     "block": "[0:40]",
+     "span": [
+      0,
+      40
+     ],
+     "origin": 1896,
+     "exposure": [
+      "SPENT_DEV"
+     ]
+    },
+    {
+     "block": "[0:40]",
+     "span": [
+      0,
+      40
+     ],
+     "origin": 2136,
+     "exposure": [
+      "SPENT_DEV"
+     ]
+    },
+    {
+     "block": "[0:40]",
+     "span": [
+      0,
+      40
+     ],
+     "origin": 2376,
+     "exposure": [
+      "SPENT_DEV"
+     ]
+    },
+    {
+     "block": "[0:40]",
+     "span": [
+      0,
+      40
+     ],
+     "origin": 2616,
+     "exposure": [
+      "SPENT_DEV"
+     ]
+    }
+   ],
+   "excludes": [
+    "the evaluation face (+144)",
+    "future units",
+    "other arms",
+    "held-out"
+   ]
+  },
+  "wrote_active": false,
+  "why_no_active_write": "the replay screen selects and the Draft carries no deployment rights; only a new unit's Support and delayed reading can produce an Active Skill"
+ },
+ "run_fault": null,
+ "drafts_before": [
+  {
+   "draft_id": "resupplied_draft_1",
+   "program": "outlier_mad",
+   "state": "REVISABLE",
+   "revisions": 0,
+   "verification_attempts": 1,
+   "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+   "current_scope": {
+    "scope_type": "serving_series_predicate",
+    "predicate": [
+     {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 3.0
+     }
+    ]
+   }
+  }
+ ],
+ "drafts_after": [
+  {
+   "draft_id": "resupplied_draft_1",
+   "state": "REVISABLE",
+   "revisions": 0,
+   "verification_attempts": 1,
+   "closed": null,
+   "current_scope": {
+    "scope_type": "serving_series_predicate",
+    "predicate": [
+     {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 3.0
+     }
+    ]
+   },
+   "root_scope": {
+    "scope_type": "serving_series_predicate",
+    "predicate": [
+     {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 3.0
+     }
+    ]
+   },
+   "clauses_added_since_root": 0,
+   "revision_history": [],
+   "deployable": false
+  }
+ ],
+ "state_written": {
+  "candidate_outcome": "NOT_APPLICABLE",
+  "revisions": [
+   0,
+   0
+  ],
+  "scope_before": {
+   "scope_type": "serving_series_predicate",
+   "predicate": [
+    {
+     "feature": "local_robust_z_peak",
+     "op": ">=",
+     "threshold": 3.0
+    }
+   ]
+  },
+  "scope_after": {
+   "scope_type": "serving_series_predicate",
+   "predicate": [
+    {
+     "feature": "local_robust_z_peak",
+     "op": ">=",
+     "threshold": 3.0
+    }
+   ]
+  },
+  "clauses_added_since_root": 0,
+  "no_second_shell": true,
+  "still_not_deployable": true,
+  "state": "REVISABLE"
+ },
+ "verification": {
+  "status": "NOT_RUN",
+  "why": "the candidate did not survive the screen; the authorisation says a failure is not chased with a second candidate",
+  "fits": 0
+ },
+ "actual_cost": {
+  "llm_calls": 0,
+  "consumer_fits_total": 10,
+  "of_which_replay_screen": 10,
+  "of_which_verification": 0,
+  "within_ceiling": true,
+  "replay_cache": {
+   "arm": "A5-online",
+   "entries": 5,
+   "physical_fits": 10,
+   "logical_evaluations": 5,
+   "cache_hits": 0,
+   "hit_rate": 0.0,
+   "key": [
+    "arm",
+    "unit",
+    "face_origin",
+    "consumer_config",
+    "typed_program"
+   ],
+   "scope_is_not_in_the_key": "re-masking is the point; both models are Scope-independent and each series' loss depends only on its own prediction row",
+   "never_shared": [
+    "across arms",
+    "across Consumers",
+    "with future cells"
+   ]
+  },
+  "blocked_before_backend": []
+ },
+ "boundary": {
+  "skills_activated": 0,
+  "deployment_rights_issued": 0,
+  "stores_written": 0,
+  "snapshots_minted": 0,
+  "evaluation_face_reads": 0,
+  "held_out_reads": 0,
+  "sealed_reads": 0,
+  "thresholds_changed": 0,
+  "production_code_changed": 0,
+  "later_units_touched": 1,
+  "which_later_unit": {
+   "position": 6,
+   "block": "[0:40]",
+   "origin": 3576
+  }
+ }
+}

@@ -1,0 +1,421 @@
+{
+ "stage": "DEV_SEQ2_CONTRASTS",
+ "groups_read": [
+  "g1",
+  "g2"
+ ],
+ "q1_fixes_and_model": {
+  "per_group": {
+   "g1": {
+    "window_binding": {
+     "keyed_by": "(series_uid, origin)",
+     "windows": 50,
+     "distinct_series": 10,
+     "windows_per_series": 5.0,
+     "misses": 0,
+     "in_force": true
+    },
+    "measurement_dedup": {
+     "references": 40,
+     "distinct_measurements": 40,
+     "repeated_references": 0,
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "in_force": true
+    },
+    "model": {
+     "requested": "deepseek-v4-flash",
+     "returned": [
+      "deepseek-v4-flash"
+     ],
+     "one_model_only": true,
+     "is_the_fixed_non_flash_model": false,
+     "prompt_tokens": 440750,
+     "completion_tokens": 294295
+    }
+   },
+   "g2": {
+    "window_binding": {
+     "keyed_by": "(series_uid, origin)",
+     "windows": 50,
+     "distinct_series": 10,
+     "windows_per_series": 5.0,
+     "misses": 0,
+     "in_force": true
+    },
+    "measurement_dedup": {
+     "references": 40,
+     "distinct_measurements": 40,
+     "repeated_references": 0,
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "in_force": true
+    },
+    "model": {
+     "requested": "deepseek-v4-flash",
+     "returned": [
+      "deepseek-v4-flash"
+     ],
+     "one_model_only": true,
+     "is_the_fixed_non_flash_model": false,
+     "prompt_tokens": 442927,
+     "completion_tokens": 314880
+    }
+   }
+  },
+  "what_changed_from_dev_seq_1": {
+   "window_binding": "DEV-SEQ-1 keyed a visible-feature card by series UID and kept the first construction window's card, so every u8 Episode was described to Slow, and scored by the validator, with u7's features.  A card is now keyed by (series_uid, origin) and a missing window is a recorded miss, never a borrowed card",
+   "measurement_dedup": "DEV-SEQ-1's L3 iterated group members, so one real reading cited by two Episodes of the same series and program counted twice.  A measurement is now keyed by the prediction cache's own key plus the served UID; no Episode is deleted and a different window, program, parameter set or training config stays a separate measurement",
+   "model": "DEV-SEQ-1 requested deepseek-chat, which this relay answers as deepseek-v4-flash.  This package fixes on gpt-5.6-sol and checks the returned identity, not the requested alias.  That makes it a different experiment from DEV-SEQ-1 and the two are not tabled together"
+  }
+ },
+ "q1b_dev_seq1_l2_recomputed": {
+  "available": true,
+  "predicate": {
+   "all": [
+    {
+     "feature": "task_kind",
+     "op": "==",
+     "value": "forecast"
+    },
+    {
+     "feature": "missing_fraction",
+     "op": ">=",
+     "value": 0.45
+    },
+    {
+     "feature": "local_robust_z_peak",
+     "op": ">=",
+     "value": 5.0
+    }
+   ]
+  },
+  "old_reading": {
+   "failing_series": [
+    "T14",
+    "T141",
+    "T143",
+    "T144",
+    "T146",
+    "T15"
+   ],
+   "covered": [
+    "T14"
+   ],
+   "verdict": "L2 failed: 1 of 6 series"
+  },
+  "recomputed_with_window_binding": {
+   "failing_windows": [
+    [
+     "T14",
+     1176
+    ],
+    [
+     "T14",
+     1416
+    ],
+    [
+     "T141",
+     1416
+    ],
+    [
+     "T143",
+     1416
+    ],
+    [
+     "T144",
+     1176
+    ],
+    [
+     "T146",
+     1416
+    ],
+    [
+     "T15",
+     1416
+    ]
+   ],
+   "covered": [
+    [
+     "T14",
+     1176
+    ],
+    [
+     "T14",
+     1416
+    ]
+   ],
+   "covered_fraction": 0.2857,
+   "L2_would_pass": false
+  },
+  "verdict": "the refusal was not an artefact of the mis-binding: with each failing decision tested against its own window's features the predicate still covers 2 of 7, so L2 still fails.  This is reported to separate 'the old L2 rejected it' from 'there was no useful condition'; it is not a reason to approve the old card, which stays unadopted and is not re-run here"
+ },
+ "q2_what_slow_did": {
+  "g1": {
+   "outcome": "NO_PROPOSAL",
+   "what_it_was_shown": {
+    "episodes": 23,
+    "material_failures": 7,
+    "groups_formed": 1,
+    "group_taken": "g_outlier_mad_NEGATIVE",
+    "members": 6,
+    "distinct_series": 6,
+    "distinct_windows": 6,
+    "matched_successes": 12,
+    "ungrouped_failures_kept_as_episodes": 1,
+    "surfaces_offered": [
+     "skill_library.entries/{skill_id}",
+     "bootstrap_skills.entries/build_contrastive_candidates.body",
+     "bootstrap_skills.entries/inspect_and_localize.body",
+     "bootstrap_skills.entries/select_or_identity_and_verify.body",
+     "candidate_policy.proposal_guidance",
+     "candidate_policy.selection_guidance"
+    ],
+    "fault_labels_selectable": [
+     "SCOPE_MEMORY_RISK_ERROR"
+    ]
+   },
+   "what_it_changed": {
+    "surface": null,
+    "operation": null,
+    "derived_cause": null,
+    "compiled": null,
+    "parent_sha": null,
+    "candidate_sha": null,
+    "text": null,
+    "applicability": null,
+    "attempts": [
+     {
+      "attempt": 1,
+      "proposed": false,
+      "why": "SLOW_ABSTAINED",
+      "detail": "insufficient_public_evidence"
+     }
+    ],
+    "why_no_proposal": "insufficient_public_evidence"
+   },
+   "what_it_predicted": {
+    "behaviour": null,
+    "effect": null,
+    "falsified_by": null
+   },
+   "what_is_still_a_guess": "the mechanism.  The card carries facts -- programs, windows, both faces, the visible features of failures and of matched successes -- and the edit is one provisional account of them. Nothing in this package establishes that account is the cause; only the two arms say whether acting on it helped",
+   "coverage_diagnostic_not_a_gate": null
+  },
+  "g2": {
+   "outcome": "NO_PROPOSAL",
+   "what_it_was_shown": {
+    "episodes": 24,
+    "material_failures": 9,
+    "groups_formed": 2,
+    "group_taken": "g_outlier_mad_NEGATIVE",
+    "members": 7,
+    "distinct_series": 6,
+    "distinct_windows": 7,
+    "matched_successes": 12,
+    "ungrouped_failures_kept_as_episodes": 0,
+    "surfaces_offered": [
+     "skill_library.entries/{skill_id}",
+     "bootstrap_skills.entries/build_contrastive_candidates.body",
+     "bootstrap_skills.entries/inspect_and_localize.body",
+     "bootstrap_skills.entries/select_or_identity_and_verify.body",
+     "candidate_policy.proposal_guidance",
+     "candidate_policy.selection_guidance"
+    ],
+    "fault_labels_selectable": [
+     "SCOPE_MEMORY_RISK_ERROR"
+    ]
+   },
+   "what_it_changed": {
+    "surface": null,
+    "operation": null,
+    "derived_cause": null,
+    "compiled": null,
+    "parent_sha": null,
+    "candidate_sha": null,
+    "text": null,
+    "applicability": null,
+    "attempts": [
+     {
+      "attempt": 1,
+      "proposed": false,
+      "why": "SLOW_ABSTAINED",
+      "detail": "insufficient_public_evidence"
+     }
+    ],
+    "why_no_proposal": "insufficient_public_evidence"
+   },
+   "what_it_predicted": {
+    "behaviour": null,
+    "effect": null,
+    "falsified_by": null
+   },
+   "what_is_still_a_guess": "the mechanism.  The card carries facts -- programs, windows, both faces, the visible features of failures and of matched successes -- and the edit is one provisional account of them. Nothing in this package establishes that account is the cause; only the two arms say whether acting on it helped",
+   "coverage_diagnostic_not_a_gate": null
+  }
+ },
+ "q3_and_q4_per_group": {
+  "g1": {
+   "status": "COMPLETE",
+   "stopped_at": null,
+   "treatment": "NO_UPDATE_TREATMENT",
+   "early_termination": null,
+   "exposure": {},
+   "behaviour_chain": {
+    "paired_decisions": 0,
+    "why": "no unit was run by both arms"
+   },
+   "outcomes": {
+    "per_position": {},
+    "main_delayed_readout": {
+     "rule": "unit mean first, then equal weight over the registered follow-up units; A and B on the same UID set and the same denominator",
+     "followup_units_read": [],
+     "per_unit_difference_b_minus_a": [],
+     "main_readout": "UNKNOWN",
+     "units_with_a_missing_reading": [],
+     "readable_subset_only": "UNKNOWN",
+     "why_unknown": "a missing required reading on either side makes the whole-population difference UNKNOWN; the readable subset is reported beside it, never in its place"
+    },
+    "adoption": {},
+    "branch_status": null,
+    "branch_meaning": "ADOPTED_DEVELOPMENT_BRANCH: the candidate passed this package's development adoption mark on the validation unit, and its follow-up numbers are the numbers of an adopted development branch.  UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH: it did not, and its follow-up numbers are candidate diagnostics -- never a promotion or deployment gain, and never a retroactive pass of the validation unit",
+    "cost": {
+     "physical_consumer_fits": 20,
+     "fit_ceiling": 1000,
+     "llm_calls": 97,
+     "llm_ceiling": 1000,
+     "wall_seconds": 2602.2,
+     "wall_ceiling_seconds": 21600,
+     "physical_fits_by_arm": {
+      "formation": 20
+     },
+     "llm_calls_by_arm": {
+      "formation": 96,
+      "preflight": 1,
+      "slow": 1
+     },
+     "logical_evaluations_by_arm": {
+      "formation": 47
+     },
+     "cost_note": "physical fits are attributed to the arm whose call missed the shared prediction cache; logical evaluations count every reading an arm asked for, hit or miss.  The two arms share one cache because the reading is a deterministic function of (unit, origin, config, program, served set), so whichever arm runs first would otherwise carry the whole cost",
+     "counting": "every physical fit, including ones spent inside a call that then raised"
+    },
+    "independence": {
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "how_to_read_n": "rows are not independent samples.  The same series appears at several windows, one Consumer model per (unit, program) is shared by every series it serves, and both arms read the same deterministic predictions.  Count series and windows, not rows"
+    }
+   }
+  },
+  "g2": {
+   "status": "COMPLETE",
+   "stopped_at": null,
+   "treatment": "NO_UPDATE_TREATMENT",
+   "early_termination": null,
+   "exposure": {},
+   "behaviour_chain": {
+    "paired_decisions": 0,
+    "why": "no unit was run by both arms"
+   },
+   "outcomes": {
+    "per_position": {},
+    "main_delayed_readout": {
+     "rule": "unit mean first, then equal weight over the registered follow-up units; A and B on the same UID set and the same denominator",
+     "followup_units_read": [],
+     "per_unit_difference_b_minus_a": [],
+     "main_readout": "UNKNOWN",
+     "units_with_a_missing_reading": [],
+     "readable_subset_only": "UNKNOWN",
+     "why_unknown": "a missing required reading on either side makes the whole-population difference UNKNOWN; the readable subset is reported beside it, never in its place"
+    },
+    "adoption": {},
+    "branch_status": null,
+    "branch_meaning": "ADOPTED_DEVELOPMENT_BRANCH: the candidate passed this package's development adoption mark on the validation unit, and its follow-up numbers are the numbers of an adopted development branch.  UNADOPTED_CANDIDATE_DIAGNOSTIC_BRANCH: it did not, and its follow-up numbers are candidate diagnostics -- never a promotion or deployment gain, and never a retroactive pass of the validation unit",
+    "cost": {
+     "physical_consumer_fits": 36,
+     "fit_ceiling": 1000,
+     "llm_calls": 195,
+     "llm_ceiling": 1000,
+     "wall_seconds": 8138.6,
+     "wall_ceiling_seconds": 21600,
+     "physical_fits_by_arm": {
+      "formation": 36
+     },
+     "llm_calls_by_arm": {
+      "formation": 193,
+      "preflight": 2,
+      "slow": 2
+     },
+     "logical_evaluations_by_arm": {
+      "formation": 95
+     },
+     "cost_note": "physical fits are attributed to the arm whose call missed the shared prediction cache; logical evaluations count every reading an arm asked for, hit or miss.  The two arms share one cache because the reading is a deterministic function of (unit, origin, config, program, served set), so whichever arm runs first would otherwise carry the whole cost",
+     "counting": "every physical fit, including ones spent inside a call that then raised"
+    },
+    "independence": {
+     "distinct_series": 10,
+     "distinct_windows": 40,
+     "how_to_read_n": "rows are not independent samples.  The same series appears at several windows, one Consumer model per (unit, program) is shared by every series it serves, and both arms read the same deterministic predictions.  Count series and windows, not rows"
+    }
+   }
+  }
+ },
+ "q5_consistency": {
+  "per_group": {
+   "g1": {
+    "treatment": "NO_UPDATE_TREATMENT",
+    "surface": null,
+    "outcome": "NO_PROPOSAL",
+    "adoptable": null,
+    "main_readout": "UNKNOWN",
+    "behaviour_links": {}
+   },
+   "g2": {
+    "treatment": "NO_UPDATE_TREATMENT",
+    "surface": null,
+    "outcome": "NO_PROPOSAL",
+    "adoptable": null,
+    "main_readout": "UNKNOWN",
+    "behaviour_links": {}
+   }
+  },
+  "agree_on_treatment": true,
+  "agree_on_surface": true,
+  "main_readouts": [
+   "UNKNOWN",
+   "UNKNOWN"
+  ],
+  "reading": "the groups differ in whether a candidate formed at all, so any difference between them is not a difference between two versions of the same edit",
+  "no_significance_is_claimed": "two groups on the same data are random repeats, not independent replications; no test is run and no significance is claimed"
+ },
+ "q6_open_question": {
+  "earliest_blocked_link": "PROPOSAL: no legal candidate formed in either group, so nothing downstream was tested",
+  "one_suggestion_only": "one next step is named in the report.  No third group, no ablation and no sealed experiment is started from here"
+ },
+ "cost": {
+  "physical_consumer_fits": 36,
+  "llm_calls": 195,
+  "wall_seconds": 8138.6,
+  "ledgers_by_run_id": {
+   "flash": {
+    "fits": 36,
+    "llm": 195,
+    "wall": 8138.6
+   }
+  },
+  "aggregation_rule": "groups sharing a run id share one cumulative budget file, so their line total is the maximum, not the sum; groups with independent run ids are summed",
+  "ceilings": {
+   "fits": 2000,
+   "llm": 2000,
+   "wall_seconds": 21600
+  }
+ },
+ "boundaries_respected": [
+  "no sealed material, no TARGET_HELD_IN unit and no +144 face read",
+  "Consumer training and serving geometry, the DSL, the risk lines, the scoring denominators and the verifier are untouched",
+  "the model never edits its own approval rule: adoption is decided by a deterministic check on readings it did not produce",
+  "no raw cross-trajectory Episode reaches Fast in either arm",
+  "no new hash, manifest platform or ledger; the prediction cache's own key is reused",
+  "historical receipts are not overwritten and nothing is committed"
+ ]
+}

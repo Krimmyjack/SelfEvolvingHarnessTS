@@ -5,6 +5,13 @@
 Source-v3 成功为前置)与五项补件(指标定义 / 统计单位与检验 / 重遇定义 / 课程构成 / 预算量级)。
 sol 核准后:§8 待裁项落定 → 冻结件成文 → 主线写入项目 `AGENTS.md` §5 状态锁(本稿不改正典)。
 
+> **2026-09-04 课末补记（执行结果优先于本规划稿）**：HEC-1 scientific 三顺序已完成，冻结 readout 判
+> `HEC1_EVOLUTION_NOT_SUPPORTED`：物质终点差仅 1/3 顺序、cohort 正向 2/4、harm 条件成立、P2 修订存活链为 0；Phase F
+> 保持关闭。事后 0-LLM 诊断表明程序菜单有安全 outcome-side headroom（14/23），同时存在 Fast 供给缺口和更深的
+> Support→evaluation 安全漂移（34 个 Support-safe 候选仅 10 个保持安全；换候选只救 1/16）。当前路线由“等待曲线”更新为
+> “HEC-1 收口 → HEC-2 per-channel 单假设 → Dataset/Domain-level 主实验设计”。详见
+> `docs/HEC1_ZERO_LLM_DIAGNOSTIC_CLOSURE_2026-09-04.md`。
+
 与既有文件的关系:`MAIN_EXPERIMENT_DESIGN_SKELETON_2026-08-28.md` v1 仍是结构设计(C5 拆层、
 三档难度、D1-D5、G1-G5);本稿是其 Phase 2「进化轴」的操作化协议,并吸收 P4 线 2026-09-01 的两项
 更正(§5.1 天然缺口线、§5.2 serving-side 几何)。`p4u_main_experiment_contract.json`(v1)与
@@ -579,6 +586,83 @@ A3-online),判据 3 不评分,其余照跑,**但 Phase F 不开**——HEC-1 以
 **v1.1 事件记录**:首条 Forward(2026-09-03 11:25 发车)因发车后审查抓出接线缺陷 + `MIN_POSITIVE_UNITS_FOR_ADD=2`
 与阶梯 v2 冲突 + 发车字节未提交,降为 `FORWARD_SHAKEDOWN`;Phase S-v1(K0 空)标 `superseded`;科学顺序在 v1.1
 commit 下重跑。详见 `HEC1_V1_1_AMENDMENT_REQUEST_2026-09-03.md` §3b。
+
+## 12.2 HEC-2 之后候选池(只记不议;读数前不讨论)
+
+**相关工作锚点:WikiSkill(arXiv 2608.27454,Google Research,2026-08-27;用户点名,主线评读 2026-09-03)**:Raw / Wiki / Skill
+三层 + Inference Agent → Wiki Maintainer → Skill Proposer(原子提案)→ validation gating & rollback(wiki 永不回滚);~8 轮、
+3 次独立运行、paired bootstrap;五 benchmark × 五模型;消融:Proposer 得持久 wiki +15.0,Inference Agent 访问 wiki −2.8。
+**三处独立收敛**(论文引作外部佐证):Inference Agent 禁访问 wiki ≡ 我们 Fast 禁读 raw Episode(T233 拒绝);Skill 可回滚 / wiki
+不回滚 ≡ Draft 永不删除 / Active 可撤销;三层 ≡ Episode bank / 普查+ledger+H1–H3 / Skill 卡(他们中间层由 LLM 写叙事,我们
+确定性)。**两处根本不同 = 我们的定位**:他们有真值(validation 准确率,接受规则"比历史最好高",无 harm/尾部约束),我们的
+验证是带噪声、带尾部风险的下游效用——整套治理为"无真值"而建;他们的 Skill 是 prompt 文本(≈ 我们已不作要求的 Instruction/
+General 面),我们进化的是可执行程序 + 部署可见 Scope 的 Specific 层;他们同分布测试,我们跨窗口/cohort/域。**可借(只动报告)**:
+Table 4/5 式"提案 vs 接受"计数与早/中/晚阶段分布;多数据集合同把"独立 seed"列进确认性设计。同族:EvoSkill、SkillOpt、
+Trace2Skill。
+
+**两决策 ScopeSpec(D5 直接指向,2026-09-03 夜)**:pooled 下"进入 Scope"同时决定 (a) 哪些序列的训练行被准备(改变模型)与
+(b) 哪些序列的 serving context 被准备。D5 `ROUTE_DOMINANT` 表明收益与伤害主要经 (a) 流动。候选设计 = ScopeSpec 拆为两个部署
+可见谓词:训练侧准备集与服务侧准备集可不同;Slow 分别收窄。位置:HEC-2 ① 之后、多数据集合同之前评估是否纳入;不进 HEC-1/HEC-2 ①。
+
+**sol 定稿方向(2026-09-03 夜):Dataset/Domain-level 主实验 = 下一版论文真正主实验。** 三层单位:origin/window(学习)、
+dataset(统计/迁移/计分最小独立单位)、domain(Source/Target 组织与跨域分层)。每域 ≥2 个独立数据集:Source datasets → K_t →
+新域 adaptation dataset(held-in,可反馈)→ A5/A3 同预算校准 → 新域 evaluation dataset(held-out,Fast-only)→ 一次开 Outcome
+→ 合法结果进 K_(t+1)。五臂:A5 / A3 / A5-frozen / Static / validation-search;四减法:A3−Static(域内适应)、A5−A3(过去域经验)、
+online−frozen(持续进化)、A5−validation-search(积累是否超过搜索)。小数据集三口径:同域多小集 → 整集 held-in/held-out;单集
+时间长 → 时间切分(只称同数据集时间泛化);单域单小集 → 只作 Fast-only 安全 / case study。最低 4 域 × 2 集 = 8 集;确认性统计
+最好 6–8 个 Target 域,4 域只作描述性多域证据。域按数据生成过程预定义;数据集名/域 ID 只用于切分,**不进 Prompt / Scope / Skill**。
+曲线横轴改为**累计经历的数据集/域数**;报告每集 held-out gain、相对 Static 累计安全效用、A5−A3 跨集优势、harmful 集比例与
+最坏伤害、跨集/域 Match→Supply→Deploy 漏斗、新域 abstain/负迁移率、成本;**先对 dataset 宏平均再对 domain 宏平均**。新合同:
+覆盖门改 `ceil(r × N_served)` + 最低绝对数;风险证据跨多 held-in origin 聚合;Task/horizon/Consumer/scale-free metric 统一;
+每集预算相同或按预注册公式缩放;不适用记 `NOT_APPLICABLE`;Source-derived Skill 到新域只有 probe 权。KDD 重新定位为机制与
+接线验收;HEC-2 per-channel 验证路由;TSFM 在同一 domain split 上只换 Consumer;留 ≥1 新数据集(最好新域)作最终密封。
+
+**主线六处补充(同日)**:① **顺序混淆**是新的最大方差源——≥2 条预注册顺序按位置分报;预算够则加 **LODO 变体**(K = 其余全部
+数据集,无顺序混淆,承担"迁移"主张;顺序版承担"曲线"主张,两者分写);② **只预注册一个主检验**(A5−A3),其余三个减法为次级;
+③ **between-dataset 整合 = 已建外环把 k 换成数据集边界**(普查 → Slow → replay 于已归档数据集 → prequential 于下一数据集),
+不建新机器;④ 跨数据集部署比 p4u 同序列后段更难——每个评价数据集考前只读 Context 算覆盖率并分层报告,"覆盖为零"是正式结果
+类别;⑤ period/horizon 跨数据集不可"统一",预注册每集 (period, horizon) 映射、horizon 以 period 倍数表达;门的相对比例与多
+origin 聚合正是此前裁"只留未来合同"的那件事,此处合法落地;⑥ **Consumer 选择依赖 HEC-2 ①**——per-channel 若拆掉尾部路由,
+多数据集合同应在其结果之后冻结。**代价预估**:8 集 × ~10 held-in origin × 3 LLM 臂 × 5 ≈ 1200 LLM/顺序,两顺序 ≈ 2400,
+≈16 h/顺序;每集一个 serving-side 适配器是关键路径(现仅 KDD);仓内多数预测集 Outcome 已曝光,主体为 development 级多域机制
+证据,fresh 主张只落在最后的密封数据集/域。**下一轮的 D2/D3**(HEC-1 读数后起草):0-LLM 数据资产审计任务书(集数、域归属、
+序列数与长度、曝光状态、可行切分、程序可执行性、Ridge/TSFM 接口)与 Dataset/Domain 合同骨架。
+
+**HEC-D · leave-one-domain-out 确认性实验(用户提出,2026-09-03 夜)**:小数据集切 held-in/held-out 太薄时,以**域/数据集
+为最小单位**——≥8 个预测域,同 Consumer、同程序空间、同风险线,只换域;每域内部仍按时间切 held-in(少量 origin)/ held-out;
+K 由其余域积累、冻结后在留出域一次考;主读数 = 各域配对差 + Wilcoxon(合同 STATISTICS 预留的确认性检验);每域考前
+只读 Context 算覆盖率并**分层报告、不挑域**(Epilepsy2 教训);迁移只走可观察 Pattern × Consumer,**禁止**以数据集/域名作
+Scope 理由(正典)。Solar F2 并入为其中一个域。前置成本:每域一个 serving-side 适配器 + 曝光台账核验(多数域已曝光,
+只能作 development 域;fresh 域需单列)。位置:HEC-1 读数 → HEC-2 ① per-channel → **HEC-D** → 写论文。它直接回答
+外部有效性与"cross-domain"两刀;within-dataset 之上的级别只能由它给出。
+
+## 13. 设计阶段状态(2026-09-05):方法 v2 降为 Architecture A 基线;设计进入**机制识别阶段**
+
+- **裁定链**:导师定向"要成果" → 主线出 v2(实体证据 Scope)→ 用户批"过拟合局部问题、不 principled" → 主线重推机制之因 →
+  sol 六条修正 + Kimi 三点 → **共识:v2 降为 hard-entity 安全基线;先冻结 0-LLM 机制测量协议,再按测量选最简方法,再冻结方法;
+  测量完成前不冻结任何 response-model Skill,不改正典。** v2 §6 正典修订请求撤回。
+- **机制之因(压缩版)**:① Action–Response 关系不可观测/不稳定(Pattern 描述"数据长什么样",不描述"对该 Consumer 是否有益");
+  ② Consumer 介导的干扰(pooled 下训练侧处理经共享模型广播,"处理效应"与"换模型效应"混合);③ treatment 激发不足(实验问题)。
+  Kimi 统一表述:**行动、证据、Skill 粒度必须与 Consumer 效应粒度同余**;pooled Ridge 违反;"把池化从 Consumer 挪进估计器"。
+- **主线独立补充**:结构化异质性所在的层被找错——项目前提预测的是 Task × Consumer 族 × Pattern 类型三条结构轴,库内已有
+  Task 轴符号反转证据(KDD Forecast 正 / Yahoo AD 12/12 负,正典 §4)与 Pattern 轴缺口依赖(P4d);Skill 键应为普查格;
+  P4 的 +0.2629 是 pooled 下唯一同余(数据集级)的合法正结果;臂改为 frozen / adapt / evolve 以分计适应与进化。
+- **协议与路线**:`docs/M_MECHANISM_MEASUREMENT_PROTOCOL_2026-09-05.md`(M0 跨格前提表 · M1 可学习性/持续性 · M2 方差分解 ·
+  M3 Pattern 预测增量 · M4 种植阳性对照 · M5 Stage A;预写决策表;V3 骨架为候选非权威;HEC-3 五臂;迁移 Solar / AD 目标;六周时间线)。
+  **HEC-2 live 草案暂缓冻结**;§12 路线中 Stage A 保留,Stage B 是否开由决策表统一决定。
+- **r2(astra 评审后,同日)**:M0 加匹配格(同数据换任务 / 同任务换数据);§2b 改三足迹表,pooled 下 serving-context 逐序列面列为合法;
+  M1 改为相对无历史基线的增量;决策表改 Gate 0 / Gate 1 / 分支;**唯一结构编辑面默认 = Workflow 组合**(CODE FACT:HEC-1 的
+  `FLAGGED` 状态无修订动作,修订可达性 ≈ 0 是构造性的);第一段 live 改为**最小闭环阶段**(唯一目标 = 一条可重复的自然修订链),
+  五臂多集曲线后移;AD 只作条件化检查面。
+- **执行计划(astra 评审后,同日)**:`docs/NEXT_EXPERIMENT_EXECUTION_PLAN_2026-09-05.md` —— 一页状态(已完成 / 已验证 / 仅候选 /
+  尚未支持)、最小研究问题与 DSL 边界、M 拆"核心闭环必需 / 补充解释"两组(新增 M-R0 修订可达性审计、M-W Workflow 可修复性)、
+  三臂 A / B / C(第一臂保留局部适应)+ Static、Chain-D 与 Chain-S 分开计数、`SUSPENDED` 与 `lineage_id` 谱系继承、成功/完成/
+  失败预写、数据角色核实(Solar 0 缺失 ⇒ 只测弃疗/无伤害)、前 10 个工作日任务表与预算展开、三件事清单。r2 口径按附录 C 同步修订。
+- **第一批核查收口(同日晚;M-R0 + 计费 = Opus,数据资产 = grok)**:HEC-1 判词不变,追加"实现限制"——外环 `ADD`/`NARROW` 在 30/30 步被
+  普查 relation 词表接线阻断(反事实 26 `NARROW` / 6 `ADD`);delayed 不入 bank 为协议事项;阈值工具 0/5 校准 ⇒ 修词表非充分。主线三处预设
+  撤回(Draft 来源 8/11 持权卡、K0 从未丢权、无撤销 ⇒ `SUSPENDED` 不立项)。Solar 用途待核实、0 缺失不排除 K0;本地无带缺口预测 fresh
+  Target(推荐 Wind Farms 含缺失版,待授权)。**下一路径固定**:最小接线修复 → 非作者复核 → 0-LLM 原路径可达性重放 → 再定 M-W/编辑面。
+  详见执行计划 §1/§4.3/§7.0/附录 D–E;协议 M §2d 已定稿。
 
 ## 11. 工件与文件指针
 

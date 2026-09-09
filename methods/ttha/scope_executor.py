@@ -112,6 +112,11 @@ class SupportReceipt:
     per_view_gain: list[float] = field(default_factory=list)
     behavior_point_count: int = 0
     error: str | None = None
+    #: 本次 receipt 花掉的 Consumer fits，**只在评估器自己报了才填**。
+    #: scoped 双管线（scoped_evaluate）会返回 consumer_fits；注入式
+    #: evaluate_fn（v6._evaluate）不返回，此时留 None——上游据此把该次
+    #: Support 成本记为"不可还原"，而不是补一个看起来像测量值的 0。
+    consumer_fits: int | None = None
 
 
 class ScopeExecutor:
@@ -146,6 +151,33 @@ class ScopeExecutor:
         self.modification_fraction_scope = str(modification_fraction_scope)
         self._baseline_cache: dict[int, float] = {}
         self._per_view_cache: dict[int, list[float]] = {}
+        #: Support-face cost, accumulated on the executor rather than only on
+        #: the receipt.  A round that raises after probing still leaves its
+        #: cost here, so the caller can bill what happened without depending
+        #: on a result object it never received.
+        self.support_fits_spent: int = 0
+        #: Candidate evaluations whose evaluator reported no fit count.  Kept
+        #: apart from zero: unmeasured is not free.
+        self.support_evaluations_without_a_fit_count: int = 0
+        #: The reference model, which is cached per ``(executor, origin)`` and
+        #: therefore shared by every arm that reads this unit.  Counted as
+        #: **completed** executions and cache hits rather than folded into the
+        #: Support line, because charging a shared model to whichever probe
+        #: happened to trigger it would report one arm's cost as another's.
+        #: A count of evaluations is not a count of fits: the injected
+        #: ``evaluate_fn`` reports no fit total of its own.
+        self.baseline_evaluations: int = 0
+        self.baseline_cache_hits: int = 0
+        #: A reference evaluation that raised part-way.  Some Consumer work was
+        #: done and how much cannot be recovered, so it is counted here instead
+        #: of in ``baseline_evaluations`` -- which must stay "one completed
+        #: reference reading" -- and never rounded down to nothing.
+        self.baseline_evaluations_failed: int = 0
+        #: A candidate evaluation that raised inside the Consumer.  Whatever it
+        #: spent before raising is unrecoverable: ``scoped_evaluate`` reports
+        #: ``consumer_fits`` only on the way out, so a failure returns no
+        #: number at all.  Counted as unmeasured, never as zero.
+        self.support_evaluations_with_unmeasured_cost: int = 0
 
     def _evaluate(self, roster, values, compiled, config, *, origin: int) -> dict[str, Any]:
         if self._evaluate_impl is None:
@@ -329,10 +361,20 @@ class ScopeExecutor:
 
     def _baseline(self, origin: int) -> dict[str, Any]:
         if origin not in self._baseline_cache:
-            result = self._evaluate(self.roster, self.values, None, self.config,
-                                    origin=origin)
+            try:
+                result = self._evaluate(self.roster, self.values, None,
+                                        self.config, origin=origin)
+            except Exception:
+                # Counted apart: work was done and its size is unrecoverable,
+                # so it must not land in "completed reference readings" and
+                # must not silently vanish either.
+                self.baseline_evaluations_failed += 1
+                raise
+            self.baseline_evaluations += 1
             self._baseline_cache[origin] = float(result["mean_smase"])
             self._per_view_cache[origin] = [float(v) for v in result["per_view_smase"]]
+        else:
+            self.baseline_cache_hits += 1
         return {"mean_smase": self._baseline_cache[origin],
                 "per_view_smase": self._per_view_cache[origin]}
 
@@ -374,13 +416,27 @@ class ScopeExecutor:
                     origin=origin, scope=frozenset(serving_scope),
                     serving_mode="scoped")
         except Exception as exc:  # 仪器失败不伪装成负经验
+            # 成本边界：Consumer 内部抛错时，已经花掉多少 fit 无法恢复
+            # （scoped_evaluate 只在正常返回时报 consumer_fits）。记为
+            # "未计量"，不静默算 0——0 会让未测量的成本看起来像没有成本。
+            self.support_evaluations_with_unmeasured_cost += 1
             return SupportReceipt(
                 origin=origin, verification=verification, gain=None,
                 error=f"{type(exc).__name__}: {exc}")
         per_view = [float(ref - cand) for ref, cand in zip(
             baseline["per_view_smase"], candidate_result["per_view_smase"])]
+        # 只有评估器自己报了 consumer_fits 才记；注入式 evaluate_fn 不报，
+        # 留 None。基线 fit 不并进来：它按 (executor, origin) 缓存并被同一
+        # 单元的所有臂共享，摊给某一次 receipt 会把共享成本记成独占成本。
+        reported_fits = candidate_result.get("consumer_fits")
+        if reported_fits is None:
+            self.support_evaluations_without_a_fit_count += 1
+        else:
+            self.support_fits_spent += int(reported_fits)
         return SupportReceipt(
             origin=origin, verification=verification,
             gain=float(baseline["mean_smase"] - candidate_result["mean_smase"]),
             per_view_gain=per_view,
-            behavior_point_count=int(candidate_result["behavior_point_count"]))
+            behavior_point_count=int(candidate_result["behavior_point_count"]),
+            consumer_fits=(None if reported_fits is None
+                           else int(reported_fits)))

@@ -1,0 +1,141 @@
+{
+ "decisions_checked": 18,
+ "decisions_the_edit_reaches": 0,
+ "exposure_fraction": 0.0,
+ "the_edit_leaks_into_the_parent_arm": 0,
+ "per_decision": [
+  {
+   "position": "10",
+   "series_uid": "T14",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "10",
+   "series_uid": "T140",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "10",
+   "series_uid": "T141",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "10",
+   "series_uid": "T143",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "10",
+   "series_uid": "T144",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "10",
+   "series_uid": "T145",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "11",
+   "series_uid": "T14",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "11",
+   "series_uid": "T140",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "11",
+   "series_uid": "T141",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "11",
+   "series_uid": "T143",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "11",
+   "series_uid": "T144",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "11",
+   "series_uid": "T145",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "9",
+   "series_uid": "T14",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "9",
+   "series_uid": "T140",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "9",
+   "series_uid": "T141",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "9",
+   "series_uid": "T143",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "9",
+   "series_uid": "T144",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  },
+  {
+   "position": "9",
+   "series_uid": "T145",
+   "edit_is_in_the_candidate_view": false,
+   "edit_is_in_the_parent_view": false
+  }
+ ],
+ "ordering_card_route": {
+  "entry_found_in_candidate": true,
+  "is_an_ordering_card": false,
+  "why_it_matters": "_select_ordering_card reads the snapshot directly instead of going through resolve_harness_view, so it is the one other route a Skill body can take into a Fast round.  It also requires the same observable_applicability to pass, so a predicate that matches nothing closes this route too"
+ },
+ "cost": "zero Consumer fits, zero LLM calls",
+ "what_this_is_not": "not a coverage gate.  It does not require the condition to explain most failures or to match a majority of anything.  It asks only whether the edit is presented to the decisions that are about to be paid for; a modification that is never on screen cannot be measured by running more of them",
+ "per_clause_over_the_arm_windows": {
+  "{\"feature\": \"task_kind\", \"op\": \"==\", \"value\": \"forecast\"}": {
+   "satisfied": 18,
+   "tested": 18,
+   "fraction": 1.0
+  },
+  "{\"feature\": \"missing_fraction\", \"op\": \">=\", \"value\": 0.5}": {
+   "satisfied": 3,
+   "tested": 18,
+   "fraction": 0.1667
+  },
+  "{\"feature\": \"longest_missing_run_fraction\", \"op\": \">=\", \"value\": 0.05}": {
+   "satisfied": 0,
+   "tested": 18,
+   "fraction": 0.0
+  }
+ },
+ "clause_reading": "the conjunction matches nothing, and the clauses fail for different reasons: the missingness level clause still holds for one series at every window, while the longest-missing-run clause holds nowhere.  That second feature is a fraction of the observed window, and the window grows as the course advances, so its value decays monotonically -- the card retires itself one window after it was written"
+}

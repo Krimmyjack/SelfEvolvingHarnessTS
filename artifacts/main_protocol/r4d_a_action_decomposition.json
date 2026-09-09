@@ -1,0 +1,950 @@
+{
+ "task": "R4D_A_ACTION_DECOMPOSITION",
+ "generated_at": "2026-09-08T00:59:31.569431+08:00",
+ "evidence_class": "MECHANISM / INSTRUMENT; development only; not a capability or generalisation claim",
+ "question": "under pooled Ridge, how much of a Program's per-series effect comes from the shared training-corpus model swap (route) and how much from that series' own serving context being prepared (ctx)?",
+ "boundary": {
+  "physical_fits": 12,
+  "physical_fits_hard_cap": 24,
+  "physical_fits_target": 12,
+  "physical_fits_by_model": {
+   "[0:40]|ANCESTOR": 1,
+   "[0:40]|W2_pmc_then_outlier_mad": 1,
+   "[0:40]|raw": 1,
+   "[120:160]|ANCESTOR": 1,
+   "[120:160]|W2_pmc_then_outlier_mad": 1,
+   "[120:160]|raw": 1,
+   "[40:80]|ANCESTOR": 1,
+   "[40:80]|W2_pmc_then_outlier_mad": 1,
+   "[40:80]|raw": 1,
+   "[80:120]|ANCESTOR": 1,
+   "[80:120]|W2_pmc_then_outlier_mad": 1,
+   "[80:120]|raw": 1
+  },
+  "fit_counting_rule": "one _serve call = one physical Ridge fit",
+  "physical_fits_scope": "this run only; the ledger cannot see earlier runs, so a package that replays the script must add the runs up itself when reporting against the cap",
+  "llm_calls": 0,
+  "held_out_reads": 0,
+  "held_out_frontier": 4056,
+  "held_out_origins": [
+   4056,
+   4296,
+   4536,
+   4776,
+   5016
+  ],
+  "max_time_index_read": 3911,
+  "raw_series_window_reads": 1640,
+  "existing_files_edited": 0,
+  "m_r0k_prediction_store_written": false,
+  "new_prediction_store": "_scratch/r4d_a_three_cell_store.json",
+  "new_sha_or_hash": 0,
+  "git_commits": 0,
+  "sub_agents_spawned": 0
+ },
+ "provenance": {
+  "store": "_scratch/m_r0k_prediction_store.json",
+  "store_entries": 263,
+  "loader": "preflight_natural_gap_variant.load_variant",
+  "data_version": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+  "nan_count": 503712,
+  "programs": {
+   "ANCESTOR": [
+    [
+     "outlier_mad",
+     {}
+    ]
+   ],
+   "W2_pmc_then_outlier_mad": [
+    [
+     "period_median_complete",
+     {
+      "period": 24,
+      "cycles": 3,
+      "min_donors": 2
+     }
+    ],
+    [
+     "outlier_mad",
+     {}
+    ]
+   ]
+  },
+  "program_source": {
+   "ANCESTOR": "smoke_m_r0k_scope_workflow.ANCESTOR_PROGRAM",
+   "W2_pmc_then_outlier_mad": "smoke_m_r0k_scope_workflow.WORKFLOW_CANDIDATES['W2_pmc_then_outlier_mad']"
+  },
+  "compilation_path": "ScopeExecutor(roster, at.values, config, evaluate_fn=representation_view.forecast_runtime._evaluate, max_modified_fraction=run_forecast_p4_performance.MAX_MODIFIED_FRACTION)._compiled(steps) -- the same call run_hec1._executor / ReplayPredictionCache._build used to produce the store (run_hec1.py:432-437, 612)",
+  "reused_functions": [
+   "scoped_serving_evaluator._training_windows",
+   "scoped_serving_evaluator._prepare",
+   "scoped_serving_evaluator._design",
+   "scoped_serving_evaluator._serve",
+   "run_e2_autonomous_natural_workflow_generation._linear_integrity",
+   "run_e2_autonomous_natural_workflow_generation._apply_program",
+   "run_e2_autonomous_natural_workflow_generation._center_scale",
+   "benchmark_v02.metrics.seasonal_scale",
+   "benchmark_v02.metrics.smase"
+  ],
+  "served_context_handling": "identical to scoped_evaluate: the Program is applied to the 192-step window raw[origin-192:origin] alone and nothing is truncated from a longer window (scoped_serving_evaluator.py:169-186)",
+  "metric": "smase(truth[observed], prediction[observed], scale=seasonal_scale(raw[:origin], isfinite, period=config['period'], min_pairs=32)); truth = raw[origin:origin+48]; observed = isfinite(truth) -- scoped_evaluate.py:187-222 unchanged",
+  "view": "identity",
+  "one_fit_per_block_basis": "R4C section 4: anchors frozen at [312...852], retention anchor+48 <= origin, smallest store origin 1176, so a block's training corpus is origin-invariant.  Re-checked here value by value per block (see block_invariance).",
+  "batching_is_exact": "_serve fits once from x_train/targets/weights and then predicts every context handed to it; _exact_weighted_ridge_prediction's solve never reads x_eval (run_e2_cross_series_curation.py:2826-2831), so putting the raw and the prepared contexts in one call yields L_pr and L_pp from a single physical fit",
+  "block_invariance": {
+   "[0:40]": {
+    "reference_origin": 1176,
+    "n_windows": 200,
+    "n_train_series": 20,
+    "anchors_all": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "anchors_retained": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "origins_checked": [
+     1176,
+     1224,
+     1896,
+     1944,
+     2136,
+     2184,
+     2376,
+     2424,
+     2616,
+     2664,
+     2856,
+     2904,
+     3576,
+     3624
+    ],
+    "identical_window_sets": true,
+    "identical_train_series": true
+   },
+   "[120:160]": {
+    "reference_origin": 1176,
+    "n_windows": 200,
+    "n_train_series": 20,
+    "anchors_all": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "anchors_retained": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "origins_checked": [
+     1176,
+     1224,
+     1416,
+     1464,
+     1656,
+     1704
+    ],
+    "identical_window_sets": true,
+    "identical_train_series": true
+   },
+   "[40:80]": {
+    "reference_origin": 1176,
+    "n_windows": 200,
+    "n_train_series": 20,
+    "anchors_all": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "anchors_retained": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "origins_checked": [
+     1176,
+     1224,
+     1416,
+     1464,
+     1656,
+     1704,
+     2136,
+     2184,
+     2376,
+     2424,
+     2616,
+     2664,
+     2856,
+     2904,
+     3576,
+     3624,
+     3816,
+     3864
+    ],
+    "identical_window_sets": true,
+    "identical_train_series": true
+   },
+   "[80:120]": {
+    "reference_origin": 1176,
+    "n_windows": 200,
+    "n_train_series": 20,
+    "anchors_all": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "anchors_retained": [
+     312,
+     372,
+     432,
+     492,
+     552,
+     612,
+     672,
+     732,
+     792,
+     852
+    ],
+    "origins_checked": [
+     1176,
+     1224,
+     1416,
+     1464
+    ],
+    "identical_window_sets": true,
+    "identical_train_series": true
+   }
+  },
+  "train_behavior_points": {
+   "[0:40]": {
+    "ANCESTOR": 899,
+    "W2_pmc_then_outlier_mad": 5201
+   },
+   "[120:160]": {
+    "ANCESTOR": 1420,
+    "W2_pmc_then_outlier_mad": 2302
+   },
+   "[40:80]": {
+    "ANCESTOR": 778,
+    "W2_pmc_then_outlier_mad": 4948
+   },
+   "[80:120]": {
+    "ANCESTOR": 1129,
+    "W2_pmc_then_outlier_mad": 4277
+   }
+  },
+  "faces_per_block": {
+   "[0:40]": [
+    {
+     "position": 0,
+     "face": "delayed_face",
+     "origin": 1224
+    },
+    {
+     "position": 0,
+     "face": "support_face",
+     "origin": 1176
+    },
+    {
+     "position": 1,
+     "face": "delayed_face",
+     "origin": 1944
+    },
+    {
+     "position": 1,
+     "face": "support_face",
+     "origin": 1896
+    },
+    {
+     "position": 2,
+     "face": "delayed_face",
+     "origin": 2184
+    },
+    {
+     "position": 2,
+     "face": "support_face",
+     "origin": 2136
+    },
+    {
+     "position": 3,
+     "face": "delayed_face",
+     "origin": 2424
+    },
+    {
+     "position": 3,
+     "face": "support_face",
+     "origin": 2376
+    },
+    {
+     "position": 4,
+     "face": "delayed_face",
+     "origin": 2664
+    },
+    {
+     "position": 4,
+     "face": "support_face",
+     "origin": 2616
+    },
+    {
+     "position": 5,
+     "face": "delayed_face",
+     "origin": 2904
+    },
+    {
+     "position": 5,
+     "face": "support_face",
+     "origin": 2856
+    },
+    {
+     "position": 6,
+     "face": "delayed_face",
+     "origin": 3624
+    },
+    {
+     "position": 6,
+     "face": "support_face",
+     "origin": 3576
+    }
+   ],
+   "[120:160]": [
+    {
+     "position": 23,
+     "face": "delayed_face",
+     "origin": 1224
+    },
+    {
+     "position": 23,
+     "face": "support_face",
+     "origin": 1176
+    },
+    {
+     "position": 24,
+     "face": "delayed_face",
+     "origin": 1464
+    },
+    {
+     "position": 24,
+     "face": "support_face",
+     "origin": 1416
+    },
+    {
+     "position": 25,
+     "face": "delayed_face",
+     "origin": 1704
+    },
+    {
+     "position": 25,
+     "face": "support_face",
+     "origin": 1656
+    }
+   ],
+   "[40:80]": [
+    {
+     "position": 7,
+     "face": "delayed_face",
+     "origin": 1224
+    },
+    {
+     "position": 7,
+     "face": "support_face",
+     "origin": 1176
+    },
+    {
+     "position": 8,
+     "face": "delayed_face",
+     "origin": 1464
+    },
+    {
+     "position": 8,
+     "face": "support_face",
+     "origin": 1416
+    },
+    {
+     "position": 9,
+     "face": "delayed_face",
+     "origin": 1704
+    },
+    {
+     "position": 9,
+     "face": "support_face",
+     "origin": 1656
+    },
+    {
+     "position": 10,
+     "face": "delayed_face",
+     "origin": 2184
+    },
+    {
+     "position": 10,
+     "face": "support_face",
+     "origin": 2136
+    },
+    {
+     "position": 11,
+     "face": "delayed_face",
+     "origin": 2424
+    },
+    {
+     "position": 11,
+     "face": "support_face",
+     "origin": 2376
+    },
+    {
+     "position": 12,
+     "face": "delayed_face",
+     "origin": 2664
+    },
+    {
+     "position": 12,
+     "face": "support_face",
+     "origin": 2616
+    },
+    {
+     "position": 13,
+     "face": "delayed_face",
+     "origin": 2904
+    },
+    {
+     "position": 13,
+     "face": "support_face",
+     "origin": 2856
+    },
+    {
+     "position": 14,
+     "face": "delayed_face",
+     "origin": 3624
+    },
+    {
+     "position": 14,
+     "face": "support_face",
+     "origin": 3576
+    },
+    {
+     "position": 15,
+     "face": "delayed_face",
+     "origin": 3864
+    },
+    {
+     "position": 15,
+     "face": "support_face",
+     "origin": 3816
+    }
+   ],
+   "[80:120]": [
+    {
+     "position": 16,
+     "face": "delayed_face",
+     "origin": 1224
+    },
+    {
+     "position": 16,
+     "face": "support_face",
+     "origin": 1176
+    },
+    {
+     "position": 17,
+     "face": "delayed_face",
+     "origin": 1464
+    },
+    {
+     "position": 17,
+     "face": "support_face",
+     "origin": 1416
+    }
+   ]
+  }
+ },
+ "definitions": {
+  "L_rr": "raw model / raw context (= Static = store raw_per_view)",
+  "L_pr": "program model / raw context",
+  "L_pp": "program model / program-prepared context (= store program_per_view)",
+  "route": "L_pr - L_rr, the shared-model channel",
+  "ctx": "L_pp - L_pr, this series' own context channel",
+  "total": "L_pp - L_rr = route + ctx; equals -g in the store's sign convention (g = raw_per_view - program_per_view)",
+  "severe_harm": "total > 0.30 (store convention: g < -0.30)",
+  "route_is_most_negative_component": "in gain terms the most negative component; for the loss that is the largest positive one, i.e. route > ctx",
+  "frozen": {
+   "severe_harm": 0.3,
+   "route_share_dominant": 0.6,
+   "severe_route_dominant": 0.6,
+   "reconcile_tolerance": 1e-09
+  }
+ },
+ "population": {
+  "blocks": [
+   "[0:40]",
+   "[120:160]",
+   "[40:80]",
+   "[80:120]"
+  ],
+  "faces": 42,
+  "rows": 1680,
+  "rows_per_program": 840,
+  "not_evaluable_rows": 0,
+  "faces_per_block_count": {
+   "[0:40]": 14,
+   "[120:160]": 6,
+   "[40:80]": 18,
+   "[80:120]": 4
+  }
+ },
+ "reconciliation": {
+  "tolerance": 1e-09,
+  "per_program": {
+   "ANCESTOR": {
+    "n": 840,
+    "L_rr_reproduced": 840,
+    "L_rr_reproduction_rate": 1.0,
+    "L_rr_bit_identical": 788,
+    "L_rr_max_abs_delta": 1.3322676295501878e-15,
+    "L_pp_reproduced": 840,
+    "L_pp_reproduction_rate": 1.0,
+    "L_pp_bit_identical": 788,
+    "L_pp_max_abs_delta": 6.661338147750939e-16
+   },
+   "W2_pmc_then_outlier_mad": {
+    "n": 840,
+    "L_rr_reproduced": 840,
+    "L_rr_reproduction_rate": 1.0,
+    "L_rr_bit_identical": 788,
+    "L_rr_max_abs_delta": 1.3322676295501878e-15,
+    "L_pp_reproduced": 840,
+    "L_pp_reproduction_rate": 1.0,
+    "L_pp_bit_identical": 791,
+    "L_pp_max_abs_delta": 8.881784197001252e-16
+   }
+  },
+  "compared_rows": 1680,
+  "L_rr_reproduction_rate_overall": 1.0,
+  "L_pp_reproduction_rate_overall": 1.0,
+  "max_abs_delta_L_rr": 1.3322676295501878e-15,
+  "max_abs_delta_L_pp": 8.881784197001252e-16,
+  "offenders": [],
+  "n_offenders": 0,
+  "passed": true,
+  "consequence": "route / ctx readings are reported as registered"
+ },
+ "decomposition": {
+  "ANCESTOR|support_face": {
+   "program": "ANCESTOR",
+   "scope": "support_face",
+   "n": 420,
+   "route_algebraic_share": 0.768009429,
+   "ctx_algebraic_share": 0.231990571,
+   "sum_abs_route": 136.40870774,
+   "sum_abs_ctx": 41.204616623,
+   "n_severe_harm": 28,
+   "severe_harm_rate": 0.066666667,
+   "severe_route_most_negative": 27,
+   "severe_route_most_negative_share": 0.964285714,
+   "route_mean": -0.163761133,
+   "route_median": -0.083867398,
+   "ctx_mean": -0.081666133,
+   "ctx_median": 0.0,
+   "total_mean": -0.245427266,
+   "total_median": -0.119454794,
+   "route_sign_agrees_with_total": 0.94047619,
+   "ctx_sign_agrees_with_total": 0.276190476,
+   "route_ctx_same_sign_rate": 0.216666667,
+   "spearman_route_total": 0.901856263,
+   "spearman_ctx_total": 0.21428704,
+   "verdict": "ROUTE_DOMINANT",
+   "verdict_if_reconciled": "ROUTE_DOMINANT"
+  },
+  "ANCESTOR|delayed_face": {
+   "program": "ANCESTOR",
+   "scope": "delayed_face",
+   "n": 420,
+   "route_algebraic_share": 0.80376688,
+   "ctx_algebraic_share": 0.19623312,
+   "sum_abs_route": 127.914158434,
+   "sum_abs_ctx": 31.229197278,
+   "n_severe_harm": 31,
+   "severe_harm_rate": 0.073809524,
+   "severe_route_most_negative": 30,
+   "severe_route_most_negative_share": 0.967741935,
+   "route_mean": -0.161654515,
+   "route_median": -0.105627802,
+   "ctx_mean": -0.062990815,
+   "ctx_median": 0.0,
+   "total_mean": -0.224645329,
+   "total_median": -0.130229006,
+   "route_sign_agrees_with_total": 0.945238095,
+   "ctx_sign_agrees_with_total": 0.257142857,
+   "route_ctx_same_sign_rate": 0.202380952,
+   "spearman_route_total": 0.937469357,
+   "spearman_ctx_total": 0.245078368,
+   "verdict": "ROUTE_DOMINANT",
+   "verdict_if_reconciled": "ROUTE_DOMINANT"
+  },
+  "ANCESTOR|both_faces": {
+   "program": "ANCESTOR",
+   "scope": "both_faces",
+   "n": 840,
+   "route_algebraic_share": 0.784907566,
+   "ctx_algebraic_share": 0.215092434,
+   "sum_abs_route": 264.322866174,
+   "sum_abs_ctx": 72.433813901,
+   "n_severe_harm": 59,
+   "severe_harm_rate": 0.070238095,
+   "severe_route_most_negative": 57,
+   "severe_route_most_negative_share": 0.966101695,
+   "route_mean": -0.162707824,
+   "route_median": -0.093033272,
+   "ctx_mean": -0.072328474,
+   "ctx_median": 0.0,
+   "total_mean": -0.235036298,
+   "total_median": -0.12374975,
+   "route_sign_agrees_with_total": 0.942857143,
+   "ctx_sign_agrees_with_total": 0.266666667,
+   "route_ctx_same_sign_rate": 0.20952381,
+   "spearman_route_total": 0.920054511,
+   "spearman_ctx_total": 0.228908554,
+   "verdict": "ROUTE_DOMINANT",
+   "verdict_if_reconciled": "ROUTE_DOMINANT"
+  },
+  "W2_pmc_then_outlier_mad|support_face": {
+   "program": "W2_pmc_then_outlier_mad",
+   "scope": "support_face",
+   "n": 420,
+   "route_algebraic_share": 0.714483157,
+   "ctx_algebraic_share": 0.285516843,
+   "sum_abs_route": 198.158559336,
+   "sum_abs_ctx": 79.186760022,
+   "n_severe_harm": 60,
+   "severe_harm_rate": 0.142857143,
+   "severe_route_most_negative": 39,
+   "severe_route_most_negative_share": 0.65,
+   "route_mean": -0.256276681,
+   "route_median": -0.112454517,
+   "ctx_mean": -0.016041217,
+   "ctx_median": 0.0,
+   "total_mean": -0.272317898,
+   "total_median": -0.112692724,
+   "route_sign_agrees_with_total": 0.871428571,
+   "ctx_sign_agrees_with_total": 0.507142857,
+   "route_ctx_same_sign_rate": 0.378571429,
+   "spearman_route_total": 0.867865464,
+   "spearman_ctx_total": 0.29190122,
+   "verdict": "ROUTE_DOMINANT",
+   "verdict_if_reconciled": "ROUTE_DOMINANT"
+  },
+  "W2_pmc_then_outlier_mad|delayed_face": {
+   "program": "W2_pmc_then_outlier_mad",
+   "scope": "delayed_face",
+   "n": 420,
+   "route_algebraic_share": 0.703445421,
+   "ctx_algebraic_share": 0.296554579,
+   "sum_abs_route": 185.306208545,
+   "sum_abs_ctx": 78.120352996,
+   "n_severe_harm": 75,
+   "severe_harm_rate": 0.178571429,
+   "severe_route_most_negative": 59,
+   "severe_route_most_negative_share": 0.786666667,
+   "route_mean": -0.174467469,
+   "route_median": -0.142246309,
+   "ctx_mean": -0.010535302,
+   "ctx_median": 0.0,
+   "total_mean": -0.185002771,
+   "total_median": -0.119970913,
+   "route_sign_agrees_with_total": 0.869047619,
+   "ctx_sign_agrees_with_total": 0.519047619,
+   "route_ctx_same_sign_rate": 0.388095238,
+   "spearman_route_total": 0.846592425,
+   "spearman_ctx_total": 0.255882915,
+   "verdict": "ROUTE_DOMINANT",
+   "verdict_if_reconciled": "ROUTE_DOMINANT"
+  },
+  "W2_pmc_then_outlier_mad|both_faces": {
+   "program": "W2_pmc_then_outlier_mad",
+   "scope": "both_faces",
+   "n": 840,
+   "route_algebraic_share": 0.709106337,
+   "ctx_algebraic_share": 0.290893663,
+   "sum_abs_route": 383.464767881,
+   "sum_abs_ctx": 157.307113018,
+   "n_severe_harm": 135,
+   "severe_harm_rate": 0.160714286,
+   "severe_route_most_negative": 98,
+   "severe_route_most_negative_share": 0.725925926,
+   "route_mean": -0.215372075,
+   "route_median": -0.119121277,
+   "ctx_mean": -0.01328826,
+   "ctx_median": 0.0,
+   "total_mean": -0.228660334,
+   "total_median": -0.116507694,
+   "route_sign_agrees_with_total": 0.870238095,
+   "ctx_sign_agrees_with_total": 0.513095238,
+   "route_ctx_same_sign_rate": 0.383333333,
+   "spearman_route_total": 0.857872308,
+   "spearman_ctx_total": 0.273619555,
+   "verdict": "ROUTE_DOMINANT",
+   "verdict_if_reconciled": "ROUTE_DOMINANT"
+  }
+ },
+ "serving_window_unmodified": {
+  "definition": "_apply_program(context, compiled) equals _linear_integrity(context) value by value, i.e. _prepare's moved count is 0 on the 192-step served window",
+  "per_program_face": {
+   "ANCESTOR|support_face": {
+    "n_instances": 420,
+    "n_evaluable": 420,
+    "n_serving_unmodified": 236,
+    "share_serving_unmodified": 0.561904762,
+    "total_distribution_unmodified": {
+     "n": 236,
+     "mean": -0.156326715,
+     "median": -0.083867398,
+     "p10": -0.642751016,
+     "p90": 0.241303984,
+     "min": -2.310024561,
+     "max": 1.180821209,
+     "share_positive": 0.322033898,
+     "share_severe_harm": 0.06779661
+    },
+    "total_distribution_modified": {
+     "n": 184,
+     "mean": -0.359708407,
+     "median": -0.187606561,
+     "p10": -1.10756631,
+     "p90": 0.186162337,
+     "min": -5.293310936,
+     "max": 0.947602355,
+     "share_positive": 0.288043478,
+     "share_severe_harm": 0.065217391
+    },
+    "severe_harm_instances": 28,
+    "severe_harm_carried_by_unmodified": 16,
+    "share_of_severe_harm_on_unmodified_windows": 0.571428571,
+    "ctx_exactly_zero_on_unmodified": 236
+   },
+   "ANCESTOR|delayed_face": {
+    "n_instances": 420,
+    "n_evaluable": 420,
+    "n_serving_unmodified": 269,
+    "share_serving_unmodified": 0.64047619,
+    "total_distribution_unmodified": {
+     "n": 269,
+     "mean": -0.165911426,
+     "median": -0.106531812,
+     "p10": -0.695573647,
+     "p90": 0.280453821,
+     "min": -2.262031061,
+     "max": 2.02152086,
+     "share_positive": 0.342007435,
+     "share_severe_harm": 0.089219331
+    },
+    "total_distribution_modified": {
+     "n": 151,
+     "mean": -0.32927725,
+     "median": -0.191402477,
+     "p10": -0.837136985,
+     "p90": 0.134275235,
+     "min": -7.198667665,
+     "max": 1.11575474,
+     "share_positive": 0.271523179,
+     "share_severe_harm": 0.046357616
+    },
+    "severe_harm_instances": 31,
+    "severe_harm_carried_by_unmodified": 24,
+    "share_of_severe_harm_on_unmodified_windows": 0.774193548,
+    "ctx_exactly_zero_on_unmodified": 269
+   },
+   "ANCESTOR|both_faces": {
+    "n_instances": 840,
+    "n_evaluable": 840,
+    "n_serving_unmodified": 505,
+    "share_serving_unmodified": 0.601190476,
+    "total_distribution_unmodified": {
+     "n": 505,
+     "mean": -0.161432234,
+     "median": -0.088251758,
+     "p10": -0.676561882,
+     "p90": 0.253739515,
+     "min": -2.310024561,
+     "max": 2.02152086,
+     "share_positive": 0.332673267,
+     "share_severe_harm": 0.079207921
+    },
+    "total_distribution_modified": {
+     "n": 335,
+     "mean": -0.345991677,
+     "median": -0.18783907,
+     "p10": -0.972618615,
+     "p90": 0.153318126,
+     "min": -7.198667665,
+     "max": 1.11575474,
+     "share_positive": 0.280597015,
+     "share_severe_harm": 0.056716418
+    },
+    "severe_harm_instances": 59,
+    "severe_harm_carried_by_unmodified": 40,
+    "share_of_severe_harm_on_unmodified_windows": 0.677966102,
+    "ctx_exactly_zero_on_unmodified": 505
+   },
+   "W2_pmc_then_outlier_mad|support_face": {
+    "n_instances": 420,
+    "n_evaluable": 420,
+    "n_serving_unmodified": 75,
+    "share_serving_unmodified": 0.178571429,
+    "total_distribution_unmodified": {
+     "n": 75,
+     "mean": -0.042357851,
+     "median": -0.046277591,
+     "p10": -0.376983034,
+     "p90": 0.53279103,
+     "min": -2.162142365,
+     "max": 1.396325829,
+     "share_positive": 0.346666667,
+     "share_severe_harm": 0.133333333
+    },
+    "total_distribution_modified": {
+     "n": 345,
+     "mean": -0.322309212,
+     "median": -0.144585551,
+     "p10": -1.346798662,
+     "p90": 0.399162792,
+     "min": -5.419002672,
+     "max": 1.826279038,
+     "share_positive": 0.362318841,
+     "share_severe_harm": 0.144927536
+    },
+    "severe_harm_instances": 60,
+    "severe_harm_carried_by_unmodified": 10,
+    "share_of_severe_harm_on_unmodified_windows": 0.166666667,
+    "ctx_exactly_zero_on_unmodified": 75
+   },
+   "W2_pmc_then_outlier_mad|delayed_face": {
+    "n_instances": 420,
+    "n_evaluable": 420,
+    "n_serving_unmodified": 42,
+    "share_serving_unmodified": 0.1,
+    "total_distribution_unmodified": {
+     "n": 42,
+     "mean": -0.160801183,
+     "median": -0.183461843,
+     "p10": -0.817001423,
+     "p90": 0.407712467,
+     "min": -1.813196099,
+     "max": 0.890430736,
+     "share_positive": 0.380952381,
+     "share_severe_harm": 0.19047619
+    },
+    "total_distribution_modified": {
+     "n": 378,
+     "mean": -0.187691836,
+     "median": -0.117592377,
+     "p10": -0.916960921,
+     "p90": 0.456657032,
+     "min": -7.591418638,
+     "max": 1.848863568,
+     "share_positive": 0.354497354,
+     "share_severe_harm": 0.177248677
+    },
+    "severe_harm_instances": 75,
+    "severe_harm_carried_by_unmodified": 8,
+    "share_of_severe_harm_on_unmodified_windows": 0.106666667,
+    "ctx_exactly_zero_on_unmodified": 42
+   },
+   "W2_pmc_then_outlier_mad|both_faces": {
+    "n_instances": 840,
+    "n_evaluable": 840,
+    "n_serving_unmodified": 117,
+    "share_serving_unmodified": 0.139285714,
+    "total_distribution_unmodified": {
+     "n": 117,
+     "mean": -0.08487597,
+     "median": -0.063425959,
+     "p10": -0.580548495,
+     "p90": 0.498672389,
+     "min": -2.162142365,
+     "max": 1.396325829,
+     "share_positive": 0.358974359,
+     "share_severe_harm": 0.153846154
+    },
+    "total_distribution_modified": {
+     "n": 723,
+     "mean": -0.251928344,
+     "median": -0.127786179,
+     "p10": -1.125050665,
+     "p90": 0.428294145,
+     "min": -7.591418638,
+     "max": 1.848863568,
+     "share_positive": 0.358229599,
+     "share_severe_harm": 0.161825726
+    },
+    "severe_harm_instances": 135,
+    "severe_harm_carried_by_unmodified": 18,
+    "share_of_severe_harm_on_unmodified_windows": 0.133333333,
+    "ctx_exactly_zero_on_unmodified": 117
+   }
+  }
+ },
+ "d5_reference": {
+  "verdict": "ROUTE_DOMINANT",
+  "windows": 11,
+  "route_share": 0.73,
+  "severe_route_most_negative": "8/10",
+  "covered_by_this_package": false
+ },
+ "verdicts": {
+  "ANCESTOR|support_face": "ROUTE_DOMINANT",
+  "ANCESTOR|delayed_face": "ROUTE_DOMINANT",
+  "ANCESTOR|both_faces": "ROUTE_DOMINANT",
+  "W2_pmc_then_outlier_mad|support_face": "ROUTE_DOMINANT",
+  "W2_pmc_then_outlier_mad|delayed_face": "ROUTE_DOMINANT",
+  "W2_pmc_then_outlier_mad|both_faces": "ROUTE_DOMINANT"
+ },
+ "reliable": true
+}

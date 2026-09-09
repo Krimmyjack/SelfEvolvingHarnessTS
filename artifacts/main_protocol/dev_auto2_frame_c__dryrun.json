@@ -1,0 +1,3834 @@
+{
+ "stage": "DEV_AUTO2_FRAME_C",
+ "package": "DEV-AUTO-2: a live Frame C revision course on the repaired wiring, development level",
+ "what_this_is_not": [
+  "not the formal A3/A5 main experiment",
+  "development level only: every unit here is already exposed",
+  "no sealed data, no TARGET_HELD_IN unit and no +144 face was read",
+  "no known-good program was supplied to or hinted at the model"
+ ],
+ "acceptance_rule": {
+  "frame": "C",
+  "rule": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+  "queue_order": "Queued candidates are ordered by, in this order: (1) the common-denominator utility difference against the parent over the units already processed, larger first; (2) fewer cells where the pair is confirmed not executable and falls back to raw, because a program that cannot run on the cells already seen is less likely to run on the next one; (3) the position it was proposed at, then the order the model returned it.  Every input is a reading on evidence that has already arrived; no later unit, no later face and no future score enters the key.",
+  "shared_refusals": [
+   "MALFORMED",
+   "UNKNOWN_KIND",
+   "ILLEGAL_PROGRAM",
+   "NO_CHANGE",
+   "SLOW_CLAUSE_UNUSABLE",
+   "SLOW_ABSTAINED",
+   "NO_FEASIBLE_THRESHOLD",
+   "NARROWING_REFUSED"
+  ],
+  "demoted_to_evidence": [
+   "RISK_LINE_FAILED",
+   "NOT_BETTER_THAN_THE_PARENT",
+   "NOT_READABLE",
+   "ACCEPTED_FOR_VERIFICATION"
+  ]
+ },
+ "written_at": "2026-09-06T23:54:40.244926+08:00",
+ "finished_at": "2026-09-06T23:56:33.668741+08:00",
+ "smoke": {
+  "stage": "DEV_AUTO2_SMOKE",
+  "passed": true,
+  "llm_calls": 0,
+  "consumer_fits": 0,
+  "checks": [
+   {
+    "check": "the_comparator_is_in_the_live_step",
+    "passed": true,
+    "findings": {
+     "the_step_keeps_the_parents_cells": true,
+     "and_passes_them_to_the_comparator": true,
+     "one_declared_unit_set": true,
+     "the_refused_cells_stay_in_the_denominator": true,
+     "three_states_survive": true
+    },
+    "comparison": {
+     "candidate": 0.15,
+     "reference": 0.2,
+     "difference": -0.05,
+     "material": 0.005,
+     "candidate_beats_the_reference_by_material": false,
+     "counted_over": 6
+    }
+   },
+   {
+    "check": "an_unknown_cell_still_withholds_the_verdict",
+    "passed": true,
+    "unknown": {
+     "candidate": [
+      "pos2"
+     ],
+     "reference": []
+    },
+    "counted_over": 2
+   },
+   {
+    "check": "frame_c_refuses_legality_and_only_that",
+    "passed": true,
+    "findings": {
+     "the_two_sets_do_not_overlap": true,
+     "together_they_cover_every_outcome_the_evaluator_returns": true,
+     "and_every_forwarded_calibration_outcome_is_a_refusal": true,
+     "an_unlisted_outcome_is_not_silently_queued": true,
+     "the_absolute_verdict_is_still_recorded": true,
+     "calibration_is_still_the_existing_tool": true
+    },
+    "shared_refusals": [
+     "ILLEGAL_PROGRAM",
+     "MALFORMED",
+     "NARROWING_REFUSED",
+     "NO_CHANGE",
+     "NO_FEASIBLE_THRESHOLD",
+     "SLOW_ABSTAINED",
+     "SLOW_CLAUSE_UNUSABLE",
+     "UNKNOWN_KIND"
+    ],
+    "demoted_to_evidence": [
+     "ACCEPTED_FOR_VERIFICATION",
+     "NOT_BETTER_THAN_THE_PARENT",
+     "NOT_READABLE",
+     "RISK_LINE_FAILED"
+    ],
+    "outcomes_the_evaluator_can_return": [
+     "ACCEPTED_FOR_VERIFICATION",
+     "ILLEGAL_PROGRAM",
+     "MALFORMED",
+     "NARROWING_REFUSED",
+     "NOT_BETTER_THAN_THE_PARENT",
+     "NOT_READABLE",
+     "NO_CHANGE",
+     "NO_FEASIBLE_THRESHOLD",
+     "RISK_LINE_FAILED",
+     "SLOW_ABSTAINED",
+     "SLOW_CLAUSE_UNUSABLE",
+     "UNKNOWN_KIND"
+    ]
+   },
+   {
+    "check": "the_declared_order_is_the_order_used",
+    "passed": true,
+    "findings": {
+     "higher_utility_first_then_fewer_unusable_cells": true,
+     "the_step_actually_sorts_by_it": true,
+     "and_opens_drafts_in_that_order": true,
+     "the_key_reads_no_future": true,
+     "the_rule_is_published_to_slow": true
+    },
+    "sorted_indices": [
+     2,
+     1,
+     0,
+     3
+    ]
+   },
+   {
+    "check": "the_runner_supplies_but_does_not_select",
+    "passed": true,
+    "findings": {
+     "a_queued_candidate_gets_a_rights_less_draft": true,
+     "and_is_offered_to_later_units": true,
+     "the_cell_passes_the_resupply_to_fast": true,
+     "the_runner_never_forces_a_winner": true,
+     "the_same_lineage_cannot_be_reopened": true,
+     "promotion_needs_fast_to_have_deployed_it": true,
+     "the_step_opens_drafts_through_the_ledger": true,
+     "verification_counting_is_the_production_call": true
+    },
+    "refusal_when_reopened": "lineage 'k1' already has a Draft (resupplied_draft_1, state=None, closed=None) i",
+    "lifecycle_bounds": {
+     "max_revisions": 2,
+     "max_verification_attempts": 3
+    }
+   },
+   {
+    "check": "the_repaired_wiring_is_still_in_place",
+    "passed": true,
+    "findings": {
+     "both_arms_carry_their_state": true,
+     "no_per_cell_reseed": true,
+     "seeded_once_each": true,
+     "the_released_admission_rule_is_installed": true,
+     "the_fast_budget_is_the_package_allowance": true,
+     "the_hec1_contract_is_untouched": true,
+     "only_the_revising_arm_gets_the_channel": true
+    },
+    "per_arm_llm": 200,
+    "admission": {
+     "rule": "bounded_risk_v1",
+     "max_harmed_fraction": 0.2,
+     "max_single_series_harm": 0.3
+    }
+   },
+   {
+    "check": "the_arm_can_activate_the_snapshot_it_starts_on",
+    "passed": true,
+    "findings": {
+     "the_start_snapshot_is_materialized_into_the_arms_store": true,
+     "before_the_course_loop": true,
+     "and_the_build_tag_is_the_carrying_arms": true,
+     "activation_still_needs_an_approved_delayed_event": true
+    },
+    "why": "materializing grants nothing: the snapshot made activatable is the one the arm already runs"
+   },
+   {
+    "check": "nothing_in_the_instrument_or_the_boundary_moved",
+    "passed": true,
+    "findings": {
+     "risk_lines": true,
+     "the_scope_grid": true,
+     "the_evaluation_face_is_unreachable": true
+    },
+    "risk": {
+     "policy": "bounded_risk_v1",
+     "material": 0.005,
+     "max_harmed_fraction": 0.2,
+     "max_single_series_harm": 0.3,
+     "min_treated": 5,
+     "thresholds_changed": 0,
+     "where_the_gate_sits": "held-in delayed, deciding execution rights.  What is worth keeping and revising is a separate question decided by the memory admission rule, as AGENTS 4 requires",
+     "on_failure": "the three-state machine decides; the gate itself does not move"
+    }
+   },
+   {
+    "check": "no_known_winner_reaches_the_model",
+    "passed": true,
+    "leaked": [],
+    "the_operator_table_is_the_whole_registry": 29,
+    "note": "the operator table names every legal operator, which is not a hint; what must not appear is a program, a score or a finding from the earlier packages"
+   }
+  ]
+ },
+ "transport": {
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-chat",
+  "source": "M0_AGENT_*"
+ },
+ "admission_rule_in_force": {
+  "rule": "bounded_risk_v1",
+  "max_harmed_fraction": 0.2,
+  "max_single_series_harm": 0.3
+ },
+ "geometry": {
+  "ordering": "forward",
+  "source_arm": "A5-online",
+  "units_planned": [
+   5,
+   6
+  ],
+  "units_completed_by_both_arms": [
+   5,
+   6
+  ],
+  "excluded_units": [
+   {
+    "position": 18,
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 19,
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 20,
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 21,
+    "why": "held for the Target, not development"
+   },
+   {
+    "position": 22,
+    "why": "held for the Target, not development"
+   }
+  ],
+  "entry_state": "M-R0d k1 reconstruction, both arms, once",
+  "k0_snapshot_source": "course artifact k0_snapshot"
+ },
+ "stopped_at": null,
+ "per_arm": {
+  "frozen-skill": {
+   "units": 2,
+   "support_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.123234,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 1,
+    "total_treated_series": 14,
+    "worst_single_series_harm": 0.109463,
+    "faces_not_readable": 0
+   },
+   "delayed_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.124372,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 4,
+    "total_treated_series": 14,
+    "worst_single_series_harm": 0.165476,
+    "faces_not_readable": 0,
+    "authoritative_gate_passes": 1
+   },
+   "deployed_via": {
+    "searched_active_program": 1,
+    "identity": 1
+   },
+   "deployed_program": {
+    "outlier_mad({})": 1,
+    "identity": 1
+   },
+   "units_that_deployed_nothing": 1,
+   "distinct_programs_probed": [
+    "outlier_mad({})"
+   ],
+   "skills_retrieved": {
+    "build_contrastive_candidates": 2,
+    "inspect_and_localize": 2,
+    "select_or_identity_and_verify": 2,
+    "fast_winner_forecast_ridge_smase_outlier_mad": 2
+   }
+  },
+  "revising-skill": {
+   "units": 2,
+   "support_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.123234,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 1,
+    "total_treated_series": 14,
+    "worst_single_series_harm": 0.109463,
+    "faces_not_readable": 0
+   },
+   "delayed_face": {
+    "mean_aggregate_gain_over_the_served_population": 0.124372,
+    "units_scoring_exactly_zero": 1,
+    "total_harmed_series": 4,
+    "total_treated_series": 14,
+    "worst_single_series_harm": 0.165476,
+    "faces_not_readable": 0,
+    "authoritative_gate_passes": 1
+   },
+   "deployed_via": {
+    "searched_active_program": 1,
+    "identity": 1
+   },
+   "deployed_program": {
+    "outlier_mad({})": 1,
+    "identity": 1
+   },
+   "units_that_deployed_nothing": 1,
+   "distinct_programs_probed": [
+    "outlier_mad({})"
+   ],
+   "skills_retrieved": {
+    "build_contrastive_candidates": 2,
+    "inspect_and_localize": 2,
+    "select_or_identity_and_verify": 2,
+    "fast_winner_forecast_ridge_smase_outlier_mad": 2
+   }
+  }
+ },
+ "cells": [
+  {
+   "unit": {
+    "block": "[0:40]",
+    "span": [
+     0,
+     40
+    ],
+    "origin": 2856,
+    "exposure": [
+     "SPENT_DEV"
+    ]
+   },
+   "position": 5,
+   "arm": "frozen-skill",
+   "served": 20,
+   "reset": {
+    "reset": false,
+    "reason": "online arm carries its store"
+   },
+   "faults": [],
+   "llm_cap_in_force_this_cell": 200,
+   "llm_cap_is_the_package_allowance": true,
+   "snapshot_skill_ids_at_start": [
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "skill_bodies_at_start": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "active_program_signatures_at_start": {
+    "outlier_mad({})": "fast_winner_forecast_ridge_smase_outlier_mad"
+   },
+   "resupplied_programs_offered": {
+    "resupplied_draft_1": "outlier_mad({})"
+   },
+   "llm_calls_this_cell": 6,
+   "llm_calls_billed_by_the_backend_meter": 6,
+   "support_fits_this_cell": 2,
+   "support_evaluations_without_a_fit_count": 0,
+   "support_evaluations_with_unmeasured_cost": 0,
+   "baseline_evaluations_this_cell": 1,
+   "baseline_cache_hits_this_cell": 0,
+   "baseline_evaluations_failed_this_cell": 0,
+   "cell_stop": {
+    "llm_budget_truncated_this_cell": false,
+    "llm_cap_in_force": 200,
+    "llm_calls_this_cell": 6,
+    "model_abstained_with_a_reason": false,
+    "risk_refusals_this_cell": 0,
+    "note": "a truncated cell is not evidence that the model had nothing to propose, and a risk refusal is not evidence that it did not look"
+   },
+   "fast_decision": {
+    "decision": "PROPOSED",
+    "candidate_count": 1,
+    "no_proposal_reason": null,
+    "payload_summary": "{\"candidates\": [\"mad_outlier_trim\"]}",
+    "vocabulary": [
+     "PROPOSED",
+     "ABSTAINED_WITH_REASON",
+     "EMPTY_OUTPUT",
+     "MALFORMED"
+    ]
+   },
+   "candidate_program_steps": {
+    "mad_outlier_trim": "outlier_mad({})"
+   },
+   "probes": [
+    {
+     "candidate_id": "mad_outlier_trim",
+     "kind": "probe",
+     "gain": 0.24646830557933108,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T109",
+      "T110",
+      "T111",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11443710861177214,
+      0.5250238187601353,
+      -0.10946325603697576,
+      0.2436345307109028,
+      0.889705513377922,
+      0.0,
+      0.0,
+      0.0,
+      0.12086582583628869,
+      0.0,
+      0.5799517467741326,
+      0.18737405171084132,
+      0.0,
+      0.05574257986082298,
+      0.015876184398240567,
+      0.784271266744351,
+      1.2783819082889276,
+      0.15843959145041087,
+      0.0,
+      0.08512524109884834
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576,
+      "min_per_series_gain": -0.10946325603697576,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": true,
+      "rule": "bounded_risk_v1",
+      "reason": "within_risk_budget",
+      "aggregate_gain": 0.24646830557933108,
+      "series_count": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576
+     },
+     "relation": "CONFLICT",
+     "consumer_fits": 2
+    }
+   ],
+   "risk_refusals": 0,
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "resupplied_candidate_ids": [
+    "resupplied_draft_1"
+   ],
+   "deployed": [
+    {
+     "op": "outlier_mad",
+     "params": {}
+    }
+   ],
+   "deployed_label": "outlier_mad({})",
+   "deployed_scope": {
+    "scope_type": "serving_series_predicate",
+    "predicate": [
+     {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 3.0
+     }
+    ]
+   },
+   "winner_candidate_id": "mad_outlier_trim",
+   "winner_from_skill_candidate": false,
+   "winner_from_resupplied_draft": false,
+   "deployed_via": "searched_active_program",
+   "support_reading": {
+    "identity": false,
+    "treated": 14,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.114437,
+     "T101": 0.525024,
+     "T102": -0.109463,
+     "T103": 0.243635,
+     "T104": 0.889706,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": 0.0,
+     "T109": 0.120866,
+     "T11": 0.0,
+     "T110": 0.579952,
+     "T111": 0.187374,
+     "T113": 0.0,
+     "T114": 0.055743,
+     "T115": 0.015876,
+     "T116": 0.784271,
+     "T117": 1.278382,
+     "T118": 0.15844,
+     "T119": 0.0,
+     "T12": 0.085125
+    },
+    "aggregate_gain": 0.246468,
+    "harmed_fraction": 0.05,
+    "max_single_series_harm": 0.109463,
+    "consumer_fits": 0,
+    "mean_smase": 1.480929637668853,
+    "static_mean_smase": 1.7273979432481845,
+    "harmed_series": 1
+   },
+   "delayed_reading": {
+    "identity": false,
+    "treated": 14,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.487633,
+     "T101": 0.75457,
+     "T102": 0.0,
+     "T103": 0.17067,
+     "T104": 1.02205,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": -0.085655,
+     "T109": -0.147201,
+     "T11": 0.0,
+     "T110": 0.273123,
+     "T111": 0.0,
+     "T113": 0.0,
+     "T114": 0.355938,
+     "T115": -0.165476,
+     "T116": 0.320267,
+     "T117": 0.723785,
+     "T118": -0.056669,
+     "T119": 0.768969,
+     "T12": 0.552897
+    },
+    "aggregate_gain": 0.248745,
+    "harmed_fraction": 0.2,
+    "max_single_series_harm": 0.165476,
+    "mean_smase": 2.576031251650188,
+    "static_mean_smase": 2.824776331897753,
+    "harmed_series": 4
+   },
+   "delayed_gate": {
+    "lines": {
+     "coverage_floor": true,
+     "aggregate": true,
+     "harmed_fraction": true,
+     "single_series_harm": true
+    },
+    "passes": true,
+    "failed_lines": [],
+    "authority": "p4_gate",
+    "thresholds": {
+     "min_treated": 5,
+     "min_aggregate": 0.005,
+     "max_harmed_fraction": 0.2,
+     "max_single_series_harm": 0.3
+    }
+   },
+   "gate_disagreement": {
+    "p4_gate": {
+     "passes": true,
+     "failed_lines": []
+    },
+    "online_loop_event": "none",
+    "resolved_by": "p4_gate",
+    "disagree": true,
+    "kind": "LOST_ACTIVATION",
+    "failed_risk_lines": [],
+    "state": {
+     "snapshot_before": [
+      "fast_winner_forecast_ridge_smase_outlier_mad"
+     ],
+     "snapshot_after": [
+      "fast_winner_forecast_ridge_smase_outlier_mad"
+     ],
+     "store_active_before": null,
+     "store_active_after": null,
+     "unchanged": true
+    },
+    "state_unchanged": true,
+    "may_activate": true,
+    "demotes_the_ordering": false,
+    "note": "an online_loop approval never triggers activate_approved on its own, and the P4 gate is now consulted *before* the snapshot is committed; a coverage-floor-only disagreement with no state movement is the structural calibre difference and is disclosed, while a risk-line disagreement or any state movement demotes"
+   },
+   "authority_state": {
+    "snapshot_before": [
+     "fast_winner_forecast_ridge_smase_outlier_mad"
+    ],
+    "snapshot_after": [
+     "fast_winner_forecast_ridge_smase_outlier_mad"
+    ],
+    "store_active_before": null,
+    "store_active_after": null,
+    "unchanged": true
+   },
+   "activated": false,
+   "bank_rows_after": 8,
+   "active_skill_ids": [],
+   "skill_bodies_at_end": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "wall_seconds": 16.4
+  },
+  {
+   "unit": {
+    "block": "[0:40]",
+    "span": [
+     0,
+     40
+    ],
+    "origin": 2856,
+    "exposure": [
+     "SPENT_DEV"
+    ]
+   },
+   "position": 5,
+   "arm": "revising-skill",
+   "served": 20,
+   "reset": {
+    "reset": false,
+    "reason": "online arm carries its store"
+   },
+   "faults": [],
+   "llm_cap_in_force_this_cell": 200,
+   "llm_cap_is_the_package_allowance": true,
+   "snapshot_skill_ids_at_start": [
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "skill_bodies_at_start": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "active_program_signatures_at_start": {
+    "outlier_mad({})": "fast_winner_forecast_ridge_smase_outlier_mad"
+   },
+   "resupplied_programs_offered": {
+    "resupplied_draft_1": "outlier_mad({})"
+   },
+   "llm_calls_this_cell": 6,
+   "llm_calls_billed_by_the_backend_meter": 6,
+   "support_fits_this_cell": 2,
+   "support_evaluations_without_a_fit_count": 0,
+   "support_evaluations_with_unmeasured_cost": 0,
+   "baseline_evaluations_this_cell": 0,
+   "baseline_cache_hits_this_cell": 1,
+   "baseline_evaluations_failed_this_cell": 0,
+   "cell_stop": {
+    "llm_budget_truncated_this_cell": false,
+    "llm_cap_in_force": 200,
+    "llm_calls_this_cell": 6,
+    "model_abstained_with_a_reason": false,
+    "risk_refusals_this_cell": 0,
+    "note": "a truncated cell is not evidence that the model had nothing to propose, and a risk refusal is not evidence that it did not look"
+   },
+   "fast_decision": {
+    "decision": "PROPOSED",
+    "candidate_count": 1,
+    "no_proposal_reason": null,
+    "payload_summary": "{\"candidates\": [\"mad_outlier_repair\"]}",
+    "vocabulary": [
+     "PROPOSED",
+     "ABSTAINED_WITH_REASON",
+     "EMPTY_OUTPUT",
+     "MALFORMED"
+    ]
+   },
+   "candidate_program_steps": {
+    "mad_outlier_repair": "outlier_mad({})"
+   },
+   "probes": [
+    {
+     "candidate_id": "mad_outlier_repair",
+     "kind": "probe",
+     "gain": 0.24646830557933108,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T109",
+      "T110",
+      "T111",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11443710861177214,
+      0.5250238187601353,
+      -0.10946325603697576,
+      0.2436345307109028,
+      0.889705513377922,
+      0.0,
+      0.0,
+      0.0,
+      0.12086582583628869,
+      0.0,
+      0.5799517467741326,
+      0.18737405171084132,
+      0.0,
+      0.05574257986082298,
+      0.015876184398240567,
+      0.784271266744351,
+      1.2783819082889276,
+      0.15843959145041087,
+      0.0,
+      0.08512524109884834
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576,
+      "min_per_series_gain": -0.10946325603697576,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": true,
+      "rule": "bounded_risk_v1",
+      "reason": "within_risk_budget",
+      "aggregate_gain": 0.24646830557933108,
+      "series_count": 20,
+      "harmed_count": 1,
+      "harmed_fraction": 0.05,
+      "max_single_series_harm": 0.10946325603697576
+     },
+     "relation": "CONFLICT",
+     "consumer_fits": 2
+    }
+   ],
+   "risk_refusals": 0,
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "resupplied_candidate_ids": [
+    "resupplied_draft_1"
+   ],
+   "deployed": [
+    {
+     "op": "outlier_mad",
+     "params": {}
+    }
+   ],
+   "deployed_label": "outlier_mad({})",
+   "deployed_scope": {
+    "scope_type": "serving_series_predicate",
+    "predicate": [
+     {
+      "feature": "local_robust_z_peak",
+      "op": ">=",
+      "threshold": 3.0
+     }
+    ]
+   },
+   "winner_candidate_id": "mad_outlier_repair",
+   "winner_from_skill_candidate": false,
+   "winner_from_resupplied_draft": false,
+   "deployed_via": "searched_active_program",
+   "support_reading": {
+    "identity": false,
+    "treated": 14,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.114437,
+     "T101": 0.525024,
+     "T102": -0.109463,
+     "T103": 0.243635,
+     "T104": 0.889706,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": 0.0,
+     "T109": 0.120866,
+     "T11": 0.0,
+     "T110": 0.579952,
+     "T111": 0.187374,
+     "T113": 0.0,
+     "T114": 0.055743,
+     "T115": 0.015876,
+     "T116": 0.784271,
+     "T117": 1.278382,
+     "T118": 0.15844,
+     "T119": 0.0,
+     "T12": 0.085125
+    },
+    "aggregate_gain": 0.246468,
+    "harmed_fraction": 0.05,
+    "max_single_series_harm": 0.109463,
+    "consumer_fits": 0,
+    "mean_smase": 1.480929637668853,
+    "static_mean_smase": 1.7273979432481845,
+    "harmed_series": 1
+   },
+   "delayed_reading": {
+    "identity": false,
+    "treated": 14,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.487633,
+     "T101": 0.75457,
+     "T102": 0.0,
+     "T103": 0.17067,
+     "T104": 1.02205,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": -0.085655,
+     "T109": -0.147201,
+     "T11": 0.0,
+     "T110": 0.273123,
+     "T111": 0.0,
+     "T113": 0.0,
+     "T114": 0.355938,
+     "T115": -0.165476,
+     "T116": 0.320267,
+     "T117": 0.723785,
+     "T118": -0.056669,
+     "T119": 0.768969,
+     "T12": 0.552897
+    },
+    "aggregate_gain": 0.248745,
+    "harmed_fraction": 0.2,
+    "max_single_series_harm": 0.165476,
+    "mean_smase": 2.576031251650188,
+    "static_mean_smase": 2.824776331897753,
+    "harmed_series": 4
+   },
+   "delayed_gate": {
+    "lines": {
+     "coverage_floor": true,
+     "aggregate": true,
+     "harmed_fraction": true,
+     "single_series_harm": true
+    },
+    "passes": true,
+    "failed_lines": [],
+    "authority": "p4_gate",
+    "thresholds": {
+     "min_treated": 5,
+     "min_aggregate": 0.005,
+     "max_harmed_fraction": 0.2,
+     "max_single_series_harm": 0.3
+    }
+   },
+   "gate_disagreement": {
+    "p4_gate": {
+     "passes": true,
+     "failed_lines": []
+    },
+    "online_loop_event": "none",
+    "resolved_by": "p4_gate",
+    "disagree": true,
+    "kind": "LOST_ACTIVATION",
+    "failed_risk_lines": [],
+    "state": {
+     "snapshot_before": [
+      "fast_winner_forecast_ridge_smase_outlier_mad"
+     ],
+     "snapshot_after": [
+      "fast_winner_forecast_ridge_smase_outlier_mad"
+     ],
+     "store_active_before": null,
+     "store_active_after": null,
+     "unchanged": true
+    },
+    "state_unchanged": true,
+    "may_activate": true,
+    "demotes_the_ordering": false,
+    "note": "an online_loop approval never triggers activate_approved on its own, and the P4 gate is now consulted *before* the snapshot is committed; a coverage-floor-only disagreement with no state movement is the structural calibre difference and is disclosed, while a risk-line disagreement or any state movement demotes"
+   },
+   "authority_state": {
+    "snapshot_before": [
+     "fast_winner_forecast_ridge_smase_outlier_mad"
+    ],
+    "snapshot_after": [
+     "fast_winner_forecast_ridge_smase_outlier_mad"
+    ],
+    "store_active_before": null,
+    "store_active_after": null,
+    "unchanged": true
+   },
+   "activated": false,
+   "bank_rows_after": 8,
+   "active_skill_ids": [],
+   "skill_bodies_at_end": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "wall_seconds": 32.39
+  },
+  {
+   "unit": {
+    "block": "[0:40]",
+    "span": [
+     0,
+     40
+    ],
+    "origin": 3576,
+    "exposure": [
+     "UNREAD"
+    ]
+   },
+   "position": 6,
+   "arm": "frozen-skill",
+   "served": 20,
+   "reset": {
+    "reset": false,
+    "reason": "online arm carries its store"
+   },
+   "faults": [],
+   "llm_cap_in_force_this_cell": 194,
+   "llm_cap_is_the_package_allowance": true,
+   "snapshot_skill_ids_at_start": [
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "skill_bodies_at_start": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "active_program_signatures_at_start": {
+    "outlier_mad({})": "fast_winner_forecast_ridge_smase_outlier_mad"
+   },
+   "resupplied_programs_offered": {
+    "resupplied_draft_1": "outlier_mad({})"
+   },
+   "llm_calls_this_cell": 4,
+   "llm_calls_billed_by_the_backend_meter": 4,
+   "support_fits_this_cell": 4,
+   "support_evaluations_without_a_fit_count": 0,
+   "support_evaluations_with_unmeasured_cost": 0,
+   "baseline_evaluations_this_cell": 1,
+   "baseline_cache_hits_this_cell": 1,
+   "baseline_evaluations_failed_this_cell": 0,
+   "cell_stop": {
+    "llm_budget_truncated_this_cell": false,
+    "llm_cap_in_force": 194,
+    "llm_calls_this_cell": 4,
+    "model_abstained_with_a_reason": false,
+    "risk_refusals_this_cell": 0,
+    "note": "a truncated cell is not evidence that the model had nothing to propose, and a risk refusal is not evidence that it did not look"
+   },
+   "fast_decision": {
+    "decision": "PROPOSED",
+    "candidate_count": 1,
+    "no_proposal_reason": null,
+    "payload_summary": "{\"candidates\": [\"extreme_deviation_mad_repair\"]}",
+    "vocabulary": [
+     "PROPOSED",
+     "ABSTAINED_WITH_REASON",
+     "EMPTY_OUTPUT",
+     "MALFORMED"
+    ]
+   },
+   "candidate_program_steps": {
+    "extreme_deviation_mad_repair": "outlier_mad({})"
+   },
+   "probes": [
+    {
+     "candidate_id": "extreme_deviation_mad_repair",
+     "kind": "probe",
+     "gain": -0.07702256435230748,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T119",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.09718958186070839,
+      -0.17058030127259505,
+      0.03295492344711534,
+      0.041721052735971764,
+      0.31929112353203426,
+      -0.013206394646990138,
+      -0.004442234168433146,
+      0.18636939391607754,
+      0.028360663801686725,
+      -1.0580346109897198,
+      0.15544521075483475,
+      0.06854955240113292,
+      0.08668607623140501,
+      -0.08265544871117314,
+      0.1258860582853829,
+      -0.1093987663046253,
+      -0.09276275110995469,
+      0.000430772101590815,
+      -1.180821209325603,
+      0.02856602041500228
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 7,
+      "harmed_fraction": 0.35,
+      "max_single_series_harm": 1.180821209325603,
+      "min_per_series_gain": -1.180821209325603,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "bounded_risk_v1",
+      "reason": "aggregate_below_material_line",
+      "aggregate_gain": -0.07702256435230748,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "NEGATIVE",
+     "consumer_fits": 2
+    },
+    {
+     "candidate_id": "resupplied_draft_1",
+     "kind": "probe",
+     "gain": -0.07702256435230748,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T119",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.09718958186070839,
+      -0.17058030127259505,
+      0.03295492344711534,
+      0.041721052735971764,
+      0.31929112353203426,
+      -0.013206394646990138,
+      -0.004442234168433146,
+      0.18636939391607754,
+      0.028360663801686725,
+      -1.0580346109897198,
+      0.15544521075483475,
+      0.06854955240113292,
+      0.08668607623140501,
+      -0.08265544871117314,
+      0.1258860582853829,
+      -0.1093987663046253,
+      -0.09276275110995469,
+      0.000430772101590815,
+      -1.180821209325603,
+      0.02856602041500228
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 7,
+      "harmed_fraction": 0.35,
+      "max_single_series_harm": 1.180821209325603,
+      "min_per_series_gain": -1.180821209325603,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "bounded_risk_v1",
+      "reason": "aggregate_below_material_line",
+      "aggregate_gain": -0.07702256435230748,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "NEGATIVE",
+     "consumer_fits": 2
+    }
+   ],
+   "risk_refusals": 0,
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "resupplied_candidate_ids": [
+    "resupplied_draft_1"
+   ],
+   "deployed": null,
+   "deployed_label": "identity",
+   "deployed_scope": null,
+   "winner_candidate_id": null,
+   "winner_from_skill_candidate": false,
+   "winner_from_resupplied_draft": false,
+   "deployed_via": "identity",
+   "support_reading": {
+    "identity": true,
+    "treated": 0,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.0,
+     "T101": 0.0,
+     "T102": 0.0,
+     "T103": 0.0,
+     "T104": 0.0,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": 0.0,
+     "T109": 0.0,
+     "T11": 0.0,
+     "T110": 0.0,
+     "T111": 0.0,
+     "T113": 0.0,
+     "T114": 0.0,
+     "T115": 0.0,
+     "T116": 0.0,
+     "T117": 0.0,
+     "T118": 0.0,
+     "T119": 0.0,
+     "T12": 0.0
+    },
+    "aggregate_gain": 0.0,
+    "harmed_fraction": 0.0,
+    "harmed_series": 0,
+    "max_single_series_harm": 0.0,
+    "consumer_fits": 0
+   },
+   "delayed_reading": null,
+   "delayed_gate": null,
+   "activated": false,
+   "bank_rows_after": 10,
+   "active_skill_ids": [],
+   "skill_bodies_at_end": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "wall_seconds": 10.27
+  },
+  {
+   "unit": {
+    "block": "[0:40]",
+    "span": [
+     0,
+     40
+    ],
+    "origin": 3576,
+    "exposure": [
+     "UNREAD"
+    ]
+   },
+   "position": 6,
+   "arm": "revising-skill",
+   "served": 20,
+   "reset": {
+    "reset": false,
+    "reason": "online arm carries its store"
+   },
+   "faults": [],
+   "llm_cap_in_force_this_cell": 193,
+   "llm_cap_is_the_package_allowance": true,
+   "snapshot_skill_ids_at_start": [
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "skill_bodies_at_start": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "active_program_signatures_at_start": {
+    "outlier_mad({})": "fast_winner_forecast_ridge_smase_outlier_mad"
+   },
+   "resupplied_programs_offered": {
+    "resupplied_draft_1": "winsorize({})",
+    "resupplied_draft_2": "outlier_iqr({})"
+   },
+   "llm_calls_this_cell": 5,
+   "llm_calls_billed_by_the_backend_meter": 5,
+   "support_fits_this_cell": 4,
+   "support_evaluations_without_a_fit_count": 0,
+   "support_evaluations_with_unmeasured_cost": 0,
+   "baseline_evaluations_this_cell": 0,
+   "baseline_cache_hits_this_cell": 2,
+   "baseline_evaluations_failed_this_cell": 0,
+   "cell_stop": {
+    "llm_budget_truncated_this_cell": false,
+    "llm_cap_in_force": 193,
+    "llm_calls_this_cell": 5,
+    "model_abstained_with_a_reason": false,
+    "risk_refusals_this_cell": 0,
+    "note": "a truncated cell is not evidence that the model had nothing to propose, and a risk refusal is not evidence that it did not look"
+   },
+   "fast_decision": {
+    "decision": "PROPOSED",
+    "candidate_count": 1,
+    "no_proposal_reason": null,
+    "payload_summary": "{\"candidates\": [\"outlier_mad_exploration\"]}",
+    "vocabulary": [
+     "PROPOSED",
+     "ABSTAINED_WITH_REASON",
+     "EMPTY_OUTPUT",
+     "MALFORMED"
+    ]
+   },
+   "candidate_program_steps": {
+    "outlier_mad_exploration": "outlier_mad({})"
+   },
+   "probes": [
+    {
+     "candidate_id": "outlier_mad_exploration",
+     "kind": "probe",
+     "gain": -0.07702256435230748,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T119",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.09718958186070839,
+      -0.17058030127259505,
+      0.03295492344711534,
+      0.041721052735971764,
+      0.31929112353203426,
+      -0.013206394646990138,
+      -0.004442234168433146,
+      0.18636939391607754,
+      0.028360663801686725,
+      -1.0580346109897198,
+      0.15544521075483475,
+      0.06854955240113292,
+      0.08668607623140501,
+      -0.08265544871117314,
+      0.1258860582853829,
+      -0.1093987663046253,
+      -0.09276275110995469,
+      0.000430772101590815,
+      -1.180821209325603,
+      0.02856602041500228
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 7,
+      "harmed_fraction": 0.35,
+      "max_single_series_harm": 1.180821209325603,
+      "min_per_series_gain": -1.180821209325603,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "bounded_risk_v1",
+      "reason": "aggregate_below_material_line",
+      "aggregate_gain": -0.07702256435230748,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "NEGATIVE",
+     "consumer_fits": 2
+    },
+    {
+     "candidate_id": "resupplied_draft_1",
+     "kind": "probe",
+     "gain": -0.03787571041720117,
+     "passed": true,
+     "program_steps": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "serving_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "resolved_serving_series": [
+      "T1",
+      "T101",
+      "T102",
+      "T103",
+      "T104",
+      "T105",
+      "T107",
+      "T108",
+      "T109",
+      "T11",
+      "T110",
+      "T111",
+      "T113",
+      "T114",
+      "T115",
+      "T116",
+      "T117",
+      "T118",
+      "T119",
+      "T12"
+     ],
+     "per_series_gain": [
+      0.11411905980281897,
+      -0.23913811938493312,
+      0.07327417528501576,
+      0.02870686097047792,
+      0.3758519633604869,
+      -0.014913375903016002,
+      -0.07273267529476168,
+      0.2915762769920453,
+      0.03933652833423068,
+      -1.2418746529660711,
+      0.3215027748918481,
+      0.04144324285301931,
+      -0.10200497594342073,
+      0.13298116362800005,
+      0.08675677136117671,
+      0.0795421243579213,
+      0.09842751623653079,
+      0.03845368785094422,
+      -0.8416106320510748,
+      0.03278807727474062
+     ],
+     "risk_profile": {
+      "series_read": 20,
+      "harmed_count": 6,
+      "harmed_fraction": 0.3,
+      "max_single_series_harm": 1.2418746529660711,
+      "min_per_series_gain": -1.2418746529660711,
+      "material_threshold": 0.005
+     },
+     "source_skill_id": null,
+     "admission": {
+      "admitted": false,
+      "rule": "bounded_risk_v1",
+      "reason": "aggregate_below_material_line",
+      "aggregate_gain": -0.03787571041720117,
+      "series_count": null,
+      "harmed_count": null,
+      "harmed_fraction": null,
+      "max_single_series_harm": null
+     },
+     "relation": "NEGATIVE",
+     "consumer_fits": 2
+    },
+    {
+     "candidate_id": "resupplied_draft_2",
+     "kind": "verifier_rejected",
+     "gain": null,
+     "passed": false,
+     "program_steps": [
+      {
+       "op": "outlier_iqr",
+       "params": {}
+      }
+     ]
+    }
+   ],
+   "risk_refusals": 0,
+   "retrieved_skill_ids": [
+    "build_contrastive_candidates",
+    "inspect_and_localize",
+    "select_or_identity_and_verify",
+    "fast_winner_forecast_ridge_smase_outlier_mad"
+   ],
+   "resupplied_candidate_ids": [
+    "resupplied_draft_1",
+    "resupplied_draft_2"
+   ],
+   "deployed": null,
+   "deployed_label": "identity",
+   "deployed_scope": null,
+   "winner_candidate_id": null,
+   "winner_from_skill_candidate": false,
+   "winner_from_resupplied_draft": false,
+   "deployed_via": "identity",
+   "support_reading": {
+    "identity": true,
+    "treated": 0,
+    "served": 20,
+    "per_series_gain": {
+     "T1": 0.0,
+     "T101": 0.0,
+     "T102": 0.0,
+     "T103": 0.0,
+     "T104": 0.0,
+     "T105": 0.0,
+     "T107": 0.0,
+     "T108": 0.0,
+     "T109": 0.0,
+     "T11": 0.0,
+     "T110": 0.0,
+     "T111": 0.0,
+     "T113": 0.0,
+     "T114": 0.0,
+     "T115": 0.0,
+     "T116": 0.0,
+     "T117": 0.0,
+     "T118": 0.0,
+     "T119": 0.0,
+     "T12": 0.0
+    },
+    "aggregate_gain": 0.0,
+    "harmed_fraction": 0.0,
+    "harmed_series": 0,
+    "max_single_series_harm": 0.0,
+    "consumer_fits": 0
+   },
+   "delayed_reading": null,
+   "delayed_gate": null,
+   "activated": false,
+   "bank_rows_after": 10,
+   "active_skill_ids": [],
+   "skill_bodies_at_end": {
+    "fast_winner_forecast_ridge_smase_outlier_mad": "Frozen program steps: [{\"op\": \"outlier_mad\", \"params\": {}}]"
+   },
+   "wall_seconds": 11.58
+  }
+ ],
+ "revision_steps": [
+  {
+   "position": 5,
+   "origin": 2856,
+   "arm": "revising-skill",
+   "frame": "C",
+   "parent_policy": {
+    "program": "outlier_mad({})",
+    "serving_scope": {
+     "scope_type": "serving_series_predicate",
+     "predicate": [
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 3.0
+      }
+     ]
+    },
+    "screen": {
+     "cells": 6,
+     "cells_readable": 6,
+     "cells_applicable": 6,
+     "unusable": [],
+     "mean_aggregate_gain_over_the_served_population": 0.249964,
+     "cells_at_or_above_the_coverage_floor": 6,
+     "worst_single_series_harm": 0.947602,
+     "worst_harmed_fraction": 0.4,
+     "production_screen_violations": {
+      "single_series_harm": 3,
+      "harmed_fraction": 1
+     },
+     "screen_rule": "outer_loop.screen: any single applicable cell that breaches a line eliminates the candidate; there is no averaging across cells",
+     "consumer_fits_spent": 10
+    },
+    "per_cell_states": {
+     "READ": 6,
+     "RAW_FALLBACK": 0,
+     "UNKNOWN": 0
+    },
+    "the_parents_own_production_screen_violations": [
+     "harmed_fraction",
+     "single_series_harm"
+    ],
+    "the_parent_passes_its_own_screen": false,
+    "read_from": "the Skill card as it stands at this step"
+   },
+   "bank_rows_for_calibration": 120,
+   "feedback_sent": {
+    "units_sent": 1,
+    "units_available": 1,
+    "nothing_was_truncated": true,
+    "earlier_attempts_included": 0,
+    "carries_the_frame_c_rule": true
+   },
+   "proposer": {
+    "outcome": "PROPOSED",
+    "no_proposal_reason": null,
+    "no_modification_reason": null
+   },
+   "proposals": [
+    {
+     "kind": "workflow_program",
+     "workflow_program": [
+      {
+       "op": "outlier_iqr"
+      }
+     ],
+     "what_changes": "Replaces the frozen MAD outlier filter with an IQR-based outlier filter, which uses a different spread estimator and will modify a different set of series.",
+     "expected_change": "Expected to change treatment of series T108, T109, T115, and T118 — the series that lost under outlier_mad — and possibly reduce the worst single-series harm (0.165) while preserving gains on the 13 series that gained in the support face."
+    },
+    {
+     "kind": "workflow_program",
+     "workflow_program": [
+      {
+       "op": "winsorize"
+      }
+     ],
+     "what_changes": "Replaces the MAD outlier filtering with winsorization, which caps extreme values rather than removing/replacing them, changing the skew correction mechanism entirely.",
+     "expected_change": "Expected to affect the same high local_robust_z_peak series in scope, but with a softer transformation; likely to reduce harm on T108 and T115 while retaining gains on most treated series."
+    }
+   ],
+   "queue_order_applied": [
+    {
+     "program": "winsorize({})",
+     "kind": "workflow_program",
+     "key": [
+      0.014528,
+      0
+     ]
+    },
+    {
+     "program": "outlier_iqr({})",
+     "kind": "workflow_program",
+     "key": [
+      0.249964,
+      6
+     ]
+    }
+   ],
+   "evaluations": [
+    {
+     "kind": "workflow_program",
+     "what_changes": "Replaces the frozen MAD outlier filter with an IQR-based outlier filter, which uses a different spread estimator and will modify a different set of series.",
+     "expected_change": "Expected to change treatment of series T108, T109, T115, and T118 — the series that lost under outlier_mad — and possibly reduce the worst single-series harm (0.165) while preserving gains on the 13 series that gained in the support face.",
+     "legality": {
+      "label": "outlier_iqr({})",
+      "steps": [
+       {
+        "op": "outlier_iqr",
+        "params": {}
+       }
+      ],
+      "length": 1,
+      "operators": [
+       {
+        "op": "outlier_iqr",
+        "in_registry": true,
+        "allowed_tasks": [
+         "forecast",
+         "classification",
+         "anomaly_detection"
+        ],
+        "public_parameter_schema": null,
+        "declared_defaults_used": true
+       }
+      ],
+      "typed_program": [
+       {
+        "op": "outlier_iqr",
+        "params": {}
+       }
+      ],
+      "legal": true,
+      "reasons": []
+     },
+     "program_replayed": "outlier_iqr({})",
+     "scope_replayed": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "steps_replayed": [
+      {
+       "op": "outlier_iqr",
+       "params": {}
+      }
+     ],
+     "screen": {
+      "per_cell": [
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1176,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "unusable": "WINDOW_VERIFIER_REJECTED at origin 1176",
+        "aggregate_gain": null
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1896,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "unusable": "WINDOW_VERIFIER_REJECTED at origin 1896",
+        "aggregate_gain": null
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2136,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "unusable": "WINDOW_VERIFIER_REJECTED at origin 2136",
+        "aggregate_gain": null
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2376,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "unusable": "WINDOW_VERIFIER_REJECTED at origin 2376",
+        "aggregate_gain": null
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2616,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "unusable": "WINDOW_VERIFIER_REJECTED at origin 2616",
+        "aggregate_gain": null
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2856,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "unusable": "WINDOW_VERIFIER_REJECTED at origin 2856",
+        "aggregate_gain": null
+       }
+      ],
+      "summary": {
+       "cells": 6,
+       "cells_readable": 0,
+       "cells_applicable": 0,
+       "unusable": [
+        "WINDOW_VERIFIER_REJECTED at origin 1176",
+        "WINDOW_VERIFIER_REJECTED at origin 1896",
+        "WINDOW_VERIFIER_REJECTED at origin 2136",
+        "WINDOW_VERIFIER_REJECTED at origin 2376",
+        "WINDOW_VERIFIER_REJECTED at origin 2616",
+        "WINDOW_VERIFIER_REJECTED at origin 2856"
+       ],
+       "mean_aggregate_gain_over_the_served_population": null,
+       "cells_at_or_above_the_coverage_floor": 0,
+       "worst_single_series_harm": null,
+       "worst_harmed_fraction": null,
+       "production_screen_violations": {},
+       "screen_rule": "outer_loop.screen: any single applicable cell that breaches a line eliminates the candidate; there is no averaging across cells"
+      },
+      "consumer_fits_spent": 0
+     },
+     "relative_to_the_parent_screen": {
+      "status": "INDEPENDENT ANALYSIS COLUMN ONLY -- no rule, threshold or gate is changed by it and it grants nothing",
+      "parent_passes_the_production_screen": false,
+      "parent_screen_violations": [
+       "harmed_fraction",
+       "single_series_harm"
+      ],
+      "candidate_worst_single_series_harm_is_worse_than_the_parents": null,
+      "candidate_worst_harmed_fraction_is_worse_than_the_parents": null,
+      "candidate_beats_the_parent_utility_by_material": false,
+      "would_be_kept_under_4_5_c_with_the_parent_as_the_bar": false
+     },
+     "comparison_with_the_parent": {
+      "parent_mean_aggregate_gain": 0.249964,
+      "candidate_mean_aggregate_gain": null,
+      "difference": null,
+      "material": 0.005,
+      "denominator": "the full served population"
+     },
+     "outcome": "NOT_READABLE",
+     "why": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+     "frame": "C",
+     "common_denominator_comparison": {
+      "comparison_kind": "parent PROGRAM replay over the units already processed -- evidence, not a veto, under Frame C",
+      "face": "support_face",
+      "candidate": "outlier_iqr({})",
+      "reference": "the parent program on the Skill card",
+      "denominator_rule": "one declared unit set for both sides; every unit keeps the full served population; a confirmed-not-executable cell scores its raw fallback at 0.0 and stays in the denominator; an UNKNOWN cell is neither zeroed nor dropped quietly",
+      "units_declared": 6,
+      "units_scored_on_both_sides": 6,
+      "candidate_cell_states": {
+       "READ": 0,
+       "RAW_FALLBACK": 6,
+       "UNKNOWN": 0
+      },
+      "reference_cell_states": {
+       "READ": 6,
+       "RAW_FALLBACK": 0,
+       "UNKNOWN": 0
+      },
+      "unknown_cells": {
+       "candidate": [],
+       "reference": []
+      },
+      "mean_aggregate_gain": {
+       "candidate": 0.0,
+       "reference": 0.249964,
+       "difference": -0.249964,
+       "material": 0.005,
+       "candidate_beats_the_reference_by_material": false,
+       "counted_over": 6
+      },
+      "cross_unit_worst": {
+       "single_series_harm": {
+        "candidate": 0.0,
+        "reference": 0.947602,
+        "candidate_worse": false
+       },
+       "harmed_fraction": {
+        "candidate": 0.0,
+        "reference": 0.4,
+        "candidate_worse": false
+       }
+      },
+      "per_unit_risk": {
+       "units_where_the_candidate_is_worse": {
+        "single_series_harm": [],
+        "harmed_fraction": []
+       },
+       "cross_unit_worst_hides_a_per_unit_regression": {
+        "single_series_harm": false,
+        "harmed_fraction": false
+       },
+       "why_both_are_shown": "a candidate can hold the cross-unit worst while being worse than the reference on some individual unit; the two are different statements and neither implies the other"
+      },
+      "per_unit": [
+       {
+        "key": "pos0",
+        "position": 0,
+        "origin": 1176,
+        "both_determined": true,
+        "candidate": {
+         "state": "RAW_FALLBACK",
+         "status": "WINDOW_VERIFIER_REJECTED",
+         "aggregate_gain": 0.0,
+         "harmed_fraction": 0.0,
+         "max_single_series_harm": 0.0,
+         "treated": 0
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.313973,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.947602,
+         "treated": 9
+        },
+        "difference": -0.313973,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos1",
+        "position": 1,
+        "origin": 1896,
+        "both_determined": true,
+        "candidate": {
+         "state": "RAW_FALLBACK",
+         "status": "WINDOW_VERIFIER_REJECTED",
+         "aggregate_gain": 0.0,
+         "harmed_fraction": 0.0,
+         "max_single_series_harm": 0.0,
+         "treated": 0
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.285454,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.173032,
+         "treated": 10
+        },
+        "difference": -0.285454,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos2",
+        "position": 2,
+        "origin": 2136,
+        "both_determined": true,
+        "candidate": {
+         "state": "RAW_FALLBACK",
+         "status": "WINDOW_VERIFIER_REJECTED",
+         "aggregate_gain": 0.0,
+         "harmed_fraction": 0.0,
+         "max_single_series_harm": 0.0,
+         "treated": 0
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.126939,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.43889,
+         "treated": 8
+        },
+        "difference": -0.126939,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos3",
+        "position": 3,
+        "origin": 2376,
+        "both_determined": true,
+        "candidate": {
+         "state": "RAW_FALLBACK",
+         "status": "WINDOW_VERIFIER_REJECTED",
+         "aggregate_gain": 0.0,
+         "harmed_fraction": 0.0,
+         "max_single_series_harm": 0.0,
+         "treated": 0
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.096886,
+         "harmed_fraction": 0.4,
+         "max_single_series_harm": 0.553555,
+         "treated": 18
+        },
+        "difference": -0.096886,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos4",
+        "position": 4,
+        "origin": 2616,
+        "both_determined": true,
+        "candidate": {
+         "state": "RAW_FALLBACK",
+         "status": "WINDOW_VERIFIER_REJECTED",
+         "aggregate_gain": 0.0,
+         "harmed_fraction": 0.0,
+         "max_single_series_harm": 0.0,
+         "treated": 0
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.430066,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.206858,
+         "treated": 12
+        },
+        "difference": -0.430066,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos5",
+        "position": 5,
+        "origin": 2856,
+        "both_determined": true,
+        "candidate": {
+         "state": "RAW_FALLBACK",
+         "status": "WINDOW_VERIFIER_REJECTED",
+         "aggregate_gain": 0.0,
+         "harmed_fraction": 0.0,
+         "max_single_series_harm": 0.0,
+         "treated": 0
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.246468,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.109463,
+         "treated": 14
+        },
+        "difference": -0.246468,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       }
+      ],
+      "verdict_is_complete": true,
+      "why_the_verdict_is_withheld": []
+     },
+     "the_absolute_screen_would_have_said": {
+      "outcome": "NOT_READABLE",
+      "failed_lines": null,
+      "why": "no processed cell produced a reading",
+      "note": "recorded, not acted on -- Frame C does not veto on it"
+     },
+     "frame_c_outcome": "QUEUED_FOR_VERIFICATION",
+     "written_back": {
+      "applied": true,
+      "draft_id": "resupplied_draft_2",
+      "channel": "a rights-less Draft; later units are offered it through resupplied_programs_for_verification and Fast decides"
+     }
+    },
+    {
+     "kind": "workflow_program",
+     "what_changes": "Replaces the MAD outlier filtering with winsorization, which caps extreme values rather than removing/replacing them, changing the skew correction mechanism entirely.",
+     "expected_change": "Expected to affect the same high local_robust_z_peak series in scope, but with a softer transformation; likely to reduce harm on T108 and T115 while retaining gains on most treated series.",
+     "legality": {
+      "label": "winsorize({})",
+      "steps": [
+       {
+        "op": "winsorize",
+        "params": {}
+       }
+      ],
+      "length": 1,
+      "operators": [
+       {
+        "op": "winsorize",
+        "in_registry": true,
+        "allowed_tasks": [
+         "forecast",
+         "classification",
+         "anomaly_detection"
+        ],
+        "public_parameter_schema": null,
+        "declared_defaults_used": true
+       }
+      ],
+      "typed_program": [
+       {
+        "op": "winsorize",
+        "params": {}
+       }
+      ],
+      "legal": true,
+      "reasons": []
+     },
+     "program_replayed": "winsorize({})",
+     "scope_replayed": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "steps_replayed": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "screen": {
+      "per_cell": [
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1176,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 9,
+        "aggregate_gain": 0.349858,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.837992
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1896,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 10,
+        "aggregate_gain": 0.26852,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.730141
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2136,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 8,
+        "aggregate_gain": 0.131697,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.037733
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2376,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 18,
+        "aggregate_gain": 0.166055,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.494407
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2616,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 12,
+        "aggregate_gain": 0.265542,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.393505
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2856,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 14,
+        "aggregate_gain": 0.230942,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.138195
+       }
+      ],
+      "summary": {
+       "cells": 6,
+       "cells_readable": 6,
+       "cells_applicable": 6,
+       "unusable": [],
+       "mean_aggregate_gain_over_the_served_population": 0.235436,
+       "cells_at_or_above_the_coverage_floor": 6,
+       "worst_single_series_harm": 0.837992,
+       "worst_harmed_fraction": 0.2,
+       "production_screen_violations": {
+        "single_series_harm": 4
+       },
+       "screen_rule": "outer_loop.screen: any single applicable cell that breaches a line eliminates the candidate; there is no averaging across cells"
+      },
+      "consumer_fits_spent": 12
+     },
+     "relative_to_the_parent_screen": {
+      "status": "INDEPENDENT ANALYSIS COLUMN ONLY -- no rule, threshold or gate is changed by it and it grants nothing",
+      "parent_passes_the_production_screen": false,
+      "parent_screen_violations": [
+       "harmed_fraction",
+       "single_series_harm"
+      ],
+      "candidate_worst_single_series_harm_is_worse_than_the_parents": false,
+      "candidate_worst_harmed_fraction_is_worse_than_the_parents": false,
+      "candidate_beats_the_parent_utility_by_material": false,
+      "would_be_kept_under_4_5_c_with_the_parent_as_the_bar": false
+     },
+     "comparison_with_the_parent": {
+      "parent_mean_aggregate_gain": 0.249964,
+      "candidate_mean_aggregate_gain": 0.235436,
+      "difference": -0.014528,
+      "material": 0.005,
+      "denominator": "the full served population"
+     },
+     "outcome": "RISK_LINE_FAILED",
+     "failed_lines": [
+      "single_series_harm"
+     ],
+     "why": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+     "frame": "C",
+     "common_denominator_comparison": {
+      "comparison_kind": "parent PROGRAM replay over the units already processed -- evidence, not a veto, under Frame C",
+      "face": "support_face",
+      "candidate": "winsorize({})",
+      "reference": "the parent program on the Skill card",
+      "denominator_rule": "one declared unit set for both sides; every unit keeps the full served population; a confirmed-not-executable cell scores its raw fallback at 0.0 and stays in the denominator; an UNKNOWN cell is neither zeroed nor dropped quietly",
+      "units_declared": 6,
+      "units_scored_on_both_sides": 6,
+      "candidate_cell_states": {
+       "READ": 6,
+       "RAW_FALLBACK": 0,
+       "UNKNOWN": 0
+      },
+      "reference_cell_states": {
+       "READ": 6,
+       "RAW_FALLBACK": 0,
+       "UNKNOWN": 0
+      },
+      "unknown_cells": {
+       "candidate": [],
+       "reference": []
+      },
+      "mean_aggregate_gain": {
+       "candidate": 0.235436,
+       "reference": 0.249964,
+       "difference": -0.014528,
+       "material": 0.005,
+       "candidate_beats_the_reference_by_material": false,
+       "counted_over": 6
+      },
+      "cross_unit_worst": {
+       "single_series_harm": {
+        "candidate": 0.837992,
+        "reference": 0.947602,
+        "candidate_worse": false
+       },
+       "harmed_fraction": {
+        "candidate": 0.2,
+        "reference": 0.4,
+        "candidate_worse": false
+       }
+      },
+      "per_unit_risk": {
+       "units_where_the_candidate_is_worse": {
+        "single_series_harm": [
+         "pos1",
+         "pos4",
+         "pos5"
+        ],
+        "harmed_fraction": [
+         "pos1",
+         "pos4",
+         "pos5"
+        ]
+       },
+       "cross_unit_worst_hides_a_per_unit_regression": {
+        "single_series_harm": true,
+        "harmed_fraction": true
+       },
+       "why_both_are_shown": "a candidate can hold the cross-unit worst while being worse than the reference on some individual unit; the two are different statements and neither implies the other"
+      },
+      "per_unit": [
+       {
+        "key": "pos0",
+        "position": 0,
+        "origin": 1176,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.349858,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.837992,
+         "treated": 9
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.313973,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.947602,
+         "treated": 9
+        },
+        "difference": 0.035885,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos1",
+        "position": 1,
+        "origin": 1896,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.26852,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.730141,
+         "treated": 10
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.285454,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.173032,
+         "treated": 10
+        },
+        "difference": -0.016934,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos2",
+        "position": 2,
+        "origin": 2136,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.131697,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.037733,
+         "treated": 8
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.126939,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.43889,
+         "treated": 8
+        },
+        "difference": 0.004758,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos3",
+        "position": 3,
+        "origin": 2376,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.166055,
+         "harmed_fraction": 0.2,
+         "max_single_series_harm": 0.494407,
+         "treated": 18
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.096886,
+         "harmed_fraction": 0.4,
+         "max_single_series_harm": 0.553555,
+         "treated": 18
+        },
+        "difference": 0.069169,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos4",
+        "position": 4,
+        "origin": 2616,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.265542,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.393505,
+         "treated": 12
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.430066,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.206858,
+         "treated": 12
+        },
+        "difference": -0.164524,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos5",
+        "position": 5,
+        "origin": 2856,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.230942,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.138195,
+         "treated": 14
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.246468,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.109463,
+         "treated": 14
+        },
+        "difference": -0.015526,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       }
+      ],
+      "verdict_is_complete": true,
+      "why_the_verdict_is_withheld": []
+     },
+     "the_absolute_screen_would_have_said": {
+      "outcome": "RISK_LINE_FAILED",
+      "failed_lines": [
+       "single_series_harm"
+      ],
+      "why": "the replay over the processed units fails single_series_harm",
+      "note": "recorded, not acted on -- Frame C does not veto on it"
+     },
+     "frame_c_outcome": "QUEUED_FOR_VERIFICATION",
+     "written_back": {
+      "applied": true,
+      "draft_id": "resupplied_draft_1",
+      "channel": "a rights-less Draft; later units are offered it through resupplied_programs_for_verification and Fast decides"
+     }
+    }
+   ],
+   "outcome": "PROPOSED",
+   "queued": 2,
+   "drafts_opened": 2
+  },
+  {
+   "position": 6,
+   "origin": 3576,
+   "arm": "revising-skill",
+   "frame": "C",
+   "parent_policy": {
+    "program": "outlier_mad({})",
+    "serving_scope": {
+     "scope_type": "serving_series_predicate",
+     "predicate": [
+      {
+       "feature": "local_robust_z_peak",
+       "op": ">=",
+       "threshold": 3.0
+      }
+     ]
+    },
+    "screen": {
+     "cells": 7,
+     "cells_readable": 7,
+     "cells_applicable": 7,
+     "unusable": [],
+     "mean_aggregate_gain_over_the_served_population": 0.203252,
+     "cells_at_or_above_the_coverage_floor": 7,
+     "worst_single_series_harm": 1.180821,
+     "worst_harmed_fraction": 0.4,
+     "production_screen_violations": {
+      "single_series_harm": 4,
+      "harmed_fraction": 2,
+      "aggregate_not_material": 1
+     },
+     "screen_rule": "outer_loop.screen: any single applicable cell that breaches a line eliminates the candidate; there is no averaging across cells",
+     "consumer_fits_spent": 2
+    },
+    "per_cell_states": {
+     "READ": 7,
+     "RAW_FALLBACK": 0,
+     "UNKNOWN": 0
+    },
+    "the_parents_own_production_screen_violations": [
+     "aggregate_not_material",
+     "harmed_fraction",
+     "single_series_harm"
+    ],
+    "the_parent_passes_its_own_screen": false,
+    "read_from": "the Skill card as it stands at this step"
+   },
+   "bank_rows_for_calibration": 140,
+   "feedback_sent": {
+    "units_sent": 2,
+    "units_available": 2,
+    "nothing_was_truncated": true,
+    "earlier_attempts_included": 2,
+    "carries_the_frame_c_rule": true
+   },
+   "proposer": {
+    "outcome": "PROPOSED",
+    "no_proposal_reason": null,
+    "no_modification_reason": null
+   },
+   "proposals": [
+    {
+     "kind": "workflow_program",
+     "workflow_program": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "what_changes": "Replace the frozen outlier_mad step with a hampel_filter, an effect-distinct mechanism that flags isolated spikes via a rolling window rather than a global MAD threshold, targeting the same high-local-robust-z series but with different failure modes.",
+     "expected_change": "Expected to improve the gate-failing harmed_fraction and single_series_harm lines: the delayed face loss on T108, T109, T115, T118 should shrink, and the worst single_series_harm (0.165) should drop below the 0.3 risk bound, while most of the 10 gaining series retain their benefit."
+    },
+    {
+     "kind": "scope_clause",
+     "scope_clause": {
+      "feature": "outlier_region_end_fraction",
+      "op": "<="
+     },
+     "what_changes": "Narrow the serving scope to series where the high robust-z peak occupies a relatively early region (outlier_region_end_fraction bounded above), excluding series whose outlier region extends late into the series.",
+     "expected_change": "Expected to exclude T108, T109, T115, and T118 — all late-region outliers that lost under the current program — while retaining most of the 10 gaining early/mid-region series, thereby improving the harmed_fraction and single_series_harm lines."
+    }
+   ],
+   "queue_order_applied": [
+    {
+     "program": "hampel_filter({})",
+     "kind": "workflow_program",
+     "key": [
+      0.185625,
+      0
+     ]
+    }
+   ],
+   "evaluations": [
+    {
+     "kind": "workflow_program",
+     "what_changes": "Replace the frozen outlier_mad step with a hampel_filter, an effect-distinct mechanism that flags isolated spikes via a rolling window rather than a global MAD threshold, targeting the same high-local-robust-z series but with different failure modes.",
+     "expected_change": "Expected to improve the gate-failing harmed_fraction and single_series_harm lines: the delayed face loss on T108, T109, T115, T118 should shrink, and the worst single_series_harm (0.165) should drop below the 0.3 risk bound, while most of the 10 gaining series retain their benefit.",
+     "legality": {
+      "label": "hampel_filter({})",
+      "steps": [
+       {
+        "op": "hampel_filter",
+        "params": {}
+       }
+      ],
+      "length": 1,
+      "operators": [
+       {
+        "op": "hampel_filter",
+        "in_registry": true,
+        "allowed_tasks": [
+         "forecast",
+         "classification",
+         "anomaly_detection"
+        ],
+        "public_parameter_schema": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "window": {
+           "type": "integer",
+           "minimum": 3
+          },
+          "n_sigmas": {
+           "type": "number",
+           "minimum": 0.1
+          },
+          "global_z_min": {
+           "type": "number",
+           "minimum": 0.0
+          }
+         }
+        },
+        "declared_defaults_used": true
+       }
+      ],
+      "typed_program": [
+       {
+        "op": "hampel_filter",
+        "params": {}
+       }
+      ],
+      "legal": true,
+      "reasons": []
+     },
+     "program_replayed": "hampel_filter({})",
+     "scope_replayed": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "steps_replayed": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "screen": {
+      "per_cell": [
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1176,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 9,
+        "aggregate_gain": 0.108299,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 1.177283
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 1896,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 10,
+        "aggregate_gain": 0.025822,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.71219
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2136,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 8,
+        "aggregate_gain": 0.118723,
+        "harmed_fraction": 0.05,
+        "max_single_series_harm": 0.358934
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2376,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 18,
+        "aggregate_gain": -0.249105,
+        "harmed_fraction": 0.5,
+        "max_single_series_harm": 2.163178
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2616,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 12,
+        "aggregate_gain": 0.137736,
+        "harmed_fraction": 0.1,
+        "max_single_series_harm": 0.540148
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 2856,
+         "exposure": [
+          "SPENT_DEV"
+         ]
+        },
+        "treated": 14,
+        "aggregate_gain": 0.117352,
+        "harmed_fraction": 0.2,
+        "max_single_series_harm": 0.828234
+       },
+       {
+        "unit": {
+         "block": "[0:40]",
+         "span": [
+          0,
+          40
+         ],
+         "origin": 3576,
+         "exposure": [
+          "UNREAD"
+         ]
+        },
+        "treated": 20,
+        "aggregate_gain": -0.135435,
+        "harmed_fraction": 0.7,
+        "max_single_series_harm": 1.156997
+       }
+      ],
+      "summary": {
+       "cells": 7,
+       "cells_readable": 7,
+       "cells_applicable": 7,
+       "unusable": [],
+       "mean_aggregate_gain_over_the_served_population": 0.017627,
+       "cells_at_or_above_the_coverage_floor": 7,
+       "worst_single_series_harm": 2.163178,
+       "worst_harmed_fraction": 0.7,
+       "production_screen_violations": {
+        "single_series_harm": 7,
+        "aggregate_not_material": 2,
+        "harmed_fraction": 2
+       },
+       "screen_rule": "outer_loop.screen: any single applicable cell that breaches a line eliminates the candidate; there is no averaging across cells"
+      },
+      "consumer_fits_spent": 14
+     },
+     "relative_to_the_parent_screen": {
+      "status": "INDEPENDENT ANALYSIS COLUMN ONLY -- no rule, threshold or gate is changed by it and it grants nothing",
+      "parent_passes_the_production_screen": false,
+      "parent_screen_violations": [
+       "aggregate_not_material",
+       "harmed_fraction",
+       "single_series_harm"
+      ],
+      "candidate_worst_single_series_harm_is_worse_than_the_parents": true,
+      "candidate_worst_harmed_fraction_is_worse_than_the_parents": true,
+      "candidate_beats_the_parent_utility_by_material": false,
+      "would_be_kept_under_4_5_c_with_the_parent_as_the_bar": false
+     },
+     "comparison_with_the_parent": {
+      "parent_mean_aggregate_gain": 0.203252,
+      "candidate_mean_aggregate_gain": 0.017627,
+      "difference": -0.185625,
+      "material": 0.005,
+      "denominator": "the full served population"
+     },
+     "outcome": "RISK_LINE_FAILED",
+     "failed_lines": [
+      "aggregate_not_material",
+      "harmed_fraction",
+      "single_series_harm"
+     ],
+     "why": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+     "frame": "C",
+     "common_denominator_comparison": {
+      "comparison_kind": "parent PROGRAM replay over the units already processed -- evidence, not a veto, under Frame C",
+      "face": "support_face",
+      "candidate": "hampel_filter({})",
+      "reference": "the parent program on the Skill card",
+      "denominator_rule": "one declared unit set for both sides; every unit keeps the full served population; a confirmed-not-executable cell scores its raw fallback at 0.0 and stays in the denominator; an UNKNOWN cell is neither zeroed nor dropped quietly",
+      "units_declared": 7,
+      "units_scored_on_both_sides": 7,
+      "candidate_cell_states": {
+       "READ": 7,
+       "RAW_FALLBACK": 0,
+       "UNKNOWN": 0
+      },
+      "reference_cell_states": {
+       "READ": 7,
+       "RAW_FALLBACK": 0,
+       "UNKNOWN": 0
+      },
+      "unknown_cells": {
+       "candidate": [],
+       "reference": []
+      },
+      "mean_aggregate_gain": {
+       "candidate": 0.017627,
+       "reference": 0.203252,
+       "difference": -0.185625,
+       "material": 0.005,
+       "candidate_beats_the_reference_by_material": false,
+       "counted_over": 7
+      },
+      "cross_unit_worst": {
+       "single_series_harm": {
+        "candidate": 2.163178,
+        "reference": 1.180821,
+        "candidate_worse": true
+       },
+       "harmed_fraction": {
+        "candidate": 0.7,
+        "reference": 0.4,
+        "candidate_worse": true
+       }
+      },
+      "per_unit_risk": {
+       "units_where_the_candidate_is_worse": {
+        "single_series_harm": [
+         "pos0",
+         "pos1",
+         "pos3",
+         "pos4",
+         "pos5"
+        ],
+        "harmed_fraction": [
+         "pos0",
+         "pos1",
+         "pos3",
+         "pos4",
+         "pos5",
+         "pos6"
+        ]
+       },
+       "cross_unit_worst_hides_a_per_unit_regression": {
+        "single_series_harm": false,
+        "harmed_fraction": false
+       },
+       "why_both_are_shown": "a candidate can hold the cross-unit worst while being worse than the reference on some individual unit; the two are different statements and neither implies the other"
+      },
+      "per_unit": [
+       {
+        "key": "pos0",
+        "position": 0,
+        "origin": 1176,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.108299,
+         "harmed_fraction": 0.2,
+         "max_single_series_harm": 1.177283,
+         "treated": 9
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.313973,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.947602,
+         "treated": 9
+        },
+        "difference": -0.205674,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos1",
+        "position": 1,
+        "origin": 1896,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.025822,
+         "harmed_fraction": 0.2,
+         "max_single_series_harm": 0.71219,
+         "treated": 10
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.285454,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.173032,
+         "treated": 10
+        },
+        "difference": -0.259632,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos2",
+        "position": 2,
+        "origin": 2136,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.118723,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.358934,
+         "treated": 8
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.126939,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.43889,
+         "treated": 8
+        },
+        "difference": -0.008216,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": false
+       },
+       {
+        "key": "pos3",
+        "position": 3,
+        "origin": 2376,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": -0.249105,
+         "harmed_fraction": 0.5,
+         "max_single_series_harm": 2.163178,
+         "treated": 18
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.096886,
+         "harmed_fraction": 0.4,
+         "max_single_series_harm": 0.553555,
+         "treated": 18
+        },
+        "difference": -0.345991,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos4",
+        "position": 4,
+        "origin": 2616,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.137736,
+         "harmed_fraction": 0.1,
+         "max_single_series_harm": 0.540148,
+         "treated": 12
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.430066,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.206858,
+         "treated": 12
+        },
+        "difference": -0.29233,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos5",
+        "position": 5,
+        "origin": 2856,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.117352,
+         "harmed_fraction": 0.2,
+         "max_single_series_harm": 0.828234,
+         "treated": 14
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": 0.246468,
+         "harmed_fraction": 0.05,
+         "max_single_series_harm": 0.109463,
+         "treated": 14
+        },
+        "difference": -0.129116,
+        "candidate_worse_on_single_series_harm": true,
+        "candidate_worse_on_harmed_fraction": true
+       },
+       {
+        "key": "pos6",
+        "position": 6,
+        "origin": 3576,
+        "both_determined": true,
+        "candidate": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": -0.135435,
+         "harmed_fraction": 0.7,
+         "max_single_series_harm": 1.156997,
+         "treated": 20
+        },
+        "reference": {
+         "state": "READ",
+         "status": "READ",
+         "aggregate_gain": -0.077023,
+         "harmed_fraction": 0.35,
+         "max_single_series_harm": 1.180821,
+         "treated": 20
+        },
+        "difference": -0.058412,
+        "candidate_worse_on_single_series_harm": false,
+        "candidate_worse_on_harmed_fraction": true
+       }
+      ],
+      "verdict_is_complete": true,
+      "why_the_verdict_is_withheld": []
+     },
+     "the_absolute_screen_would_have_said": {
+      "outcome": "RISK_LINE_FAILED",
+      "failed_lines": [
+       "aggregate_not_material",
+       "harmed_fraction",
+       "single_series_harm"
+      ],
+      "why": "the replay over the processed units fails aggregate_not_material, harmed_fraction, single_series_harm",
+      "note": "recorded, not acted on -- Frame C does not veto on it"
+     },
+     "frame_c_outcome": "QUEUED_FOR_VERIFICATION",
+     "written_back": {
+      "applied": true,
+      "draft_id": "resupplied_draft_3",
+      "channel": "a rights-less Draft; later units are offered it through resupplied_programs_for_verification and Fast decides"
+     }
+    },
+    {
+     "kind": "scope_clause",
+     "what_changes": "Narrow the serving scope to series where the high robust-z peak occupies a relatively early region (outlier_region_end_fraction bounded above), excluding series whose outlier region extends late into the series.",
+     "expected_change": "Expected to exclude T108, T109, T115, and T118 — all late-region outliers that lost under the current program — while retaining most of the 10 gaining early/mid-region series, thereby improving the harmed_fraction and single_series_harm lines.",
+     "calibration": {
+      "outcome": "NO_FEASIBLE_THRESHOLD",
+      "feature": "outlier_region_end_fraction",
+      "direction": "<=",
+      "candidates_tried": [
+       {
+        "threshold": 0.0,
+        "treated": 23,
+        "aggregate_gain": 0.118054,
+        "harmed_fraction": 0.3478,
+        "max_single_series_harm": 0.947602,
+        "lines": {
+         "coverage_floor": true,
+         "aggregate": true,
+         "harmed_fraction": false,
+         "single_series_harm": false
+        },
+        "feasible": false
+       },
+       {
+        "threshold": 1.0,
+        "treated": 91,
+        "aggregate_gain": 0.312695,
+        "harmed_fraction": 0.2308,
+        "max_single_series_harm": 1.180821,
+        "lines": {
+         "coverage_floor": true,
+         "aggregate": true,
+         "harmed_fraction": false,
+         "single_series_harm": false
+        },
+        "feasible": false
+       },
+       {
+        "threshold": 3.0,
+        "treated": 91,
+        "aggregate_gain": 0.312695,
+        "harmed_fraction": 0.2308,
+        "max_single_series_harm": 1.180821,
+        "lines": {
+         "coverage_floor": true,
+         "aggregate": true,
+         "harmed_fraction": false,
+         "single_series_harm": false
+        },
+        "feasible": false
+       },
+       {
+        "threshold": 6.0,
+        "treated": 91,
+        "aggregate_gain": 0.312695,
+        "harmed_fraction": 0.2308,
+        "max_single_series_harm": 1.180821,
+        "lines": {
+         "coverage_floor": true,
+         "aggregate": true,
+         "harmed_fraction": false,
+         "single_series_harm": false
+        },
+        "feasible": false
+       }
+      ],
+      "notes": [],
+      "shadow": {
+       "outcome": "NO_FEASIBLE_STUMP",
+       "considered": 96,
+       "vocabulary": [
+        "missing_fraction",
+        "longest_missing_run_fraction",
+        "local_robust_z_peak",
+        "estimated_region_start_fraction",
+        "estimated_region_end_fraction",
+        "level_region_fraction",
+        "level_region_end_fraction",
+        "outlier_region_end_fraction",
+        "level_excursion_score",
+        "estimated_level_offset",
+        "period_change_score",
+        "period_reliability"
+       ],
+       "deployable": false
+      },
+      "slow_threshold_as_returned": null,
+      "rationale": null
+     },
+     "outcome": "NO_FEASIBLE_THRESHOLD",
+     "why": "no frozen bin edge of 'outlier_region_end_fraction' in direction '<=' clears the four lines on the bank evidence",
+     "edges_tried": [
+      0.0,
+      1.0,
+      3.0,
+      6.0
+     ],
+     "frame": "C",
+     "frame_c_outcome": "NO_FEASIBLE_THRESHOLD",
+     "why_frame_c_refused": "legality and Scope calibration gate in every frame; Frame C changes only what the historical replay may do"
+    }
+   ],
+   "outcome": "PROPOSED",
+   "queued": 1,
+   "drafts_opened": 1
+  }
+ ],
+ "attempt_log": [
+  {
+   "proposed_after_unit_at_position": 5,
+   "kind": "workflow_program",
+   "what_you_proposed": [
+    {
+     "op": "outlier_iqr"
+    }
+   ],
+   "what_you_said_it_would_change": "Expected to change treatment of series T108, T109, T115, and T118 — the series that lost under outlier_mad — and possibly reduce the worst single-series harm (0.165) while preserving gains on the 13 series that gained in the support face.",
+   "outcome": "QUEUED_FOR_VERIFICATION",
+   "why": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+   "measured_on_the_processed_units": {
+    "denominator": "one declared unit set for both sides; every unit keeps the full served population; a confirmed-not-executable cell scores its raw fallback at 0.0 and stays in the denominator; an UNKNOWN cell is neither zeroed nor dropped quietly",
+    "units_declared": 6,
+    "your_cells": {
+     "READ": 0,
+     "RAW_FALLBACK": 6,
+     "UNKNOWN": 0
+    },
+    "your_mean_gain": 0.0,
+    "the_parent_delivers": 0.249964,
+    "difference": -0.249964,
+    "your_worst_single_series_harm": 0.0,
+    "the_parents": 0.947602,
+    "your_worst_harmed_fraction": 0.0,
+    "the_parents_harmed_fraction": 0.4,
+    "units_where_you_are_worse_than_the_parent": {
+     "single_series_harm": [],
+     "harmed_fraction": []
+    },
+    "reading_is_complete": true
+   },
+   "how_it_compared_with_the_parent_itself": {
+    "the_parent_passes_the_same_screen": false,
+    "the_parent_fails_these_lines": [
+     "harmed_fraction",
+     "single_series_harm"
+    ],
+    "your_worst_single_series_harm_is_worse_than_the_parents": null,
+    "your_worst_harmed_fraction_is_worse_than_the_parents": null,
+    "you_beat_the_parent_utility_by_material": false
+   },
+   "this_did_not_refuse_you": "under this rule the replay orders the queue; it does not veto",
+   "written_back": {
+    "applied": true,
+    "draft_id": "resupplied_draft_2",
+    "channel": "a rights-less Draft; later units are offered it through resupplied_programs_for_verification and Fast decides"
+   }
+  },
+  {
+   "proposed_after_unit_at_position": 5,
+   "kind": "workflow_program",
+   "what_you_proposed": [
+    {
+     "op": "winsorize"
+    }
+   ],
+   "what_you_said_it_would_change": "Expected to affect the same high local_robust_z_peak series in scope, but with a softer transformation; likely to reduce harm on T108 and T115 while retaining gains on most treated series.",
+   "outcome": "QUEUED_FOR_VERIFICATION",
+   "why": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+   "measured_on_the_processed_units": {
+    "denominator": "one declared unit set for both sides; every unit keeps the full served population; a confirmed-not-executable cell scores its raw fallback at 0.0 and stays in the denominator; an UNKNOWN cell is neither zeroed nor dropped quietly",
+    "units_declared": 6,
+    "your_cells": {
+     "READ": 6,
+     "RAW_FALLBACK": 0,
+     "UNKNOWN": 0
+    },
+    "your_mean_gain": 0.235436,
+    "the_parent_delivers": 0.249964,
+    "difference": -0.014528,
+    "your_worst_single_series_harm": 0.837992,
+    "the_parents": 0.947602,
+    "your_worst_harmed_fraction": 0.2,
+    "the_parents_harmed_fraction": 0.4,
+    "units_where_you_are_worse_than_the_parent": {
+     "single_series_harm": [
+      "pos1",
+      "pos4",
+      "pos5"
+     ],
+     "harmed_fraction": [
+      "pos1",
+      "pos4",
+      "pos5"
+     ]
+    },
+    "reading_is_complete": true
+   },
+   "risk_lines_that_failed": [
+    "single_series_harm"
+   ],
+   "how_it_compared_with_the_parent_itself": {
+    "the_parent_passes_the_same_screen": false,
+    "the_parent_fails_these_lines": [
+     "harmed_fraction",
+     "single_series_harm"
+    ],
+    "your_worst_single_series_harm_is_worse_than_the_parents": false,
+    "your_worst_harmed_fraction_is_worse_than_the_parents": false,
+    "you_beat_the_parent_utility_by_material": false
+   },
+   "this_did_not_refuse_you": "under this rule the replay orders the queue; it does not veto",
+   "written_back": {
+    "applied": true,
+    "draft_id": "resupplied_draft_1",
+    "channel": "a rights-less Draft; later units are offered it through resupplied_programs_for_verification and Fast decides"
+   }
+  },
+  {
+   "proposed_after_unit_at_position": 6,
+   "kind": "workflow_program",
+   "what_you_proposed": [
+    {
+     "op": "hampel_filter",
+     "params": {}
+    }
+   ],
+   "what_you_said_it_would_change": "Expected to improve the gate-failing harmed_fraction and single_series_harm lines: the delayed face loss on T108, T109, T115, T118 should shrink, and the worst single_series_harm (0.165) should drop below the 0.3 risk bound, while most of the 10 gaining series retain their benefit.",
+   "outcome": "QUEUED_FOR_VERIFICATION",
+   "why": "Frame C.  A proposal that is legal, and whose Scope clause the tool could calibrate, enters the verification queue.  The replay over the units this arm has already processed is measured and reported, but it does not refuse the candidate: it orders the queue and it comes back to you as feedback.  Entering the queue is not acceptance and carries no deployment right -- the candidate is only offered to later units, Fast decides whether to probe or deploy it, and the Skill is patched only after an independent later unit passes the authoritative delayed gate.",
+   "measured_on_the_processed_units": {
+    "denominator": "one declared unit set for both sides; every unit keeps the full served population; a confirmed-not-executable cell scores its raw fallback at 0.0 and stays in the denominator; an UNKNOWN cell is neither zeroed nor dropped quietly",
+    "units_declared": 7,
+    "your_cells": {
+     "READ": 7,
+     "RAW_FALLBACK": 0,
+     "UNKNOWN": 0
+    },
+    "your_mean_gain": 0.017627,
+    "the_parent_delivers": 0.203252,
+    "difference": -0.185625,
+    "your_worst_single_series_harm": 2.163178,
+    "the_parents": 1.180821,
+    "your_worst_harmed_fraction": 0.7,
+    "the_parents_harmed_fraction": 0.4,
+    "units_where_you_are_worse_than_the_parent": {
+     "single_series_harm": [
+      "pos0",
+      "pos1",
+      "pos3",
+      "pos4",
+      "pos5"
+     ],
+     "harmed_fraction": [
+      "pos0",
+      "pos1",
+      "pos3",
+      "pos4",
+      "pos5",
+      "pos6"
+     ]
+    },
+    "reading_is_complete": true
+   },
+   "risk_lines_that_failed": [
+    "aggregate_not_material",
+    "harmed_fraction",
+    "single_series_harm"
+   ],
+   "how_it_compared_with_the_parent_itself": {
+    "the_parent_passes_the_same_screen": false,
+    "the_parent_fails_these_lines": [
+     "aggregate_not_material",
+     "harmed_fraction",
+     "single_series_harm"
+    ],
+    "your_worst_single_series_harm_is_worse_than_the_parents": true,
+    "your_worst_harmed_fraction_is_worse_than_the_parents": true,
+    "you_beat_the_parent_utility_by_material": false
+   },
+   "this_did_not_refuse_you": "under this rule the replay orders the queue; it does not veto",
+   "written_back": {
+    "applied": true,
+    "draft_id": "resupplied_draft_3",
+    "channel": "a rights-less Draft; later units are offered it through resupplied_programs_for_verification and Fast decides"
+   }
+  },
+  {
+   "proposed_after_unit_at_position": 6,
+   "kind": "scope_clause",
+   "what_you_proposed": {
+    "feature": "outlier_region_end_fraction",
+    "op": "<="
+   },
+   "what_you_said_it_would_change": "Expected to exclude T108, T109, T115, and T118 — all late-region outliers that lost under the current program — while retaining most of the 10 gaining early/mid-region series, thereby improving the harmed_fraction and single_series_harm lines.",
+   "outcome": "NO_FEASIBLE_THRESHOLD",
+   "why": "no frozen bin edge of 'outlier_region_end_fraction' in direction '<=' clears the four lines on the bank evidence",
+   "frozen_bin_edges_tried": [
+    0.0,
+    1.0,
+    3.0,
+    6.0
+   ]
+  }
+ ],
+ "promotions_to_the_skill_card": [],
+ "pending_never_verified": {
+  "winsorize({})": {
+   "draft_id": "resupplied_draft_1",
+   "proposed_at_position": 5,
+   "what_changes": "Replaces the MAD outlier filtering with winsorization, which caps extreme values rather than removing/replacing them, changing the skew correction mechanism entirely."
+  },
+  "outlier_iqr({})": {
+   "draft_id": "resupplied_draft_2",
+   "proposed_at_position": 5,
+   "what_changes": "Replaces the frozen MAD outlier filter with an IQR-based outlier filter, which uses a different spread estimator and will modify a different set of series."
+  },
+  "hampel_filter({})": {
+   "draft_id": "resupplied_draft_3",
+   "proposed_at_position": 6,
+   "what_changes": "Replace the frozen outlier_mad step with a hampel_filter, an effect-distinct mechanism that flags isolated spikes via a rolling window rather than a global MAD threshold, targeting the same high-local-robust-z series but with different failure modes."
+  }
+ },
+ "drafts_closed_at_the_end": {
+  "frozen-skill": [
+   {
+    "draft_id": "resupplied_draft_1",
+    "state": "REVISABLE",
+    "closed": "REVISION_BUDGET_EXHAUSTED"
+   }
+  ],
+  "revising-skill": [
+   {
+    "draft_id": "resupplied_draft_1",
+    "state": "REVISABLE",
+    "closed": "REVISION_BUDGET_EXHAUSTED"
+   },
+   {
+    "draft_id": "resupplied_draft_1",
+    "state": null,
+    "closed": "NEVER_VERIFIED"
+   },
+   {
+    "draft_id": "resupplied_draft_2",
+    "state": null,
+    "closed": "NEVER_VERIFIED"
+   },
+   {
+    "draft_id": "resupplied_draft_3",
+    "state": null,
+    "closed": "NEVER_VERIFIED"
+   }
+  ]
+ },
+ "draft_ledgers": {
+  "frozen-skill": {
+   "drafts": [
+    {
+     "draft_id": "resupplied_draft_1",
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "root_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "current_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "revisions": 0,
+     "clauses_added_since_root": 0,
+     "max_revisions": 2,
+     "max_total_added_clauses": 2,
+     "created_at_origin": 0,
+     "delayed_failures": [],
+     "support_readings": [],
+     "revision_history": [],
+     "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+     "state": "REVISABLE",
+     "verification_attempts": 1,
+     "max_verification_attempts": 3,
+     "may_add_clause": false,
+     "history": [
+      {
+       "event": "verification",
+       "state_after": "REVISABLE"
+      }
+     ],
+     "closed": "REVISION_BUDGET_EXHAUSTED",
+     "deployable": false,
+     "why_not_deployable": "a Draft that failed the delayed gate is kept only so one more bounded Scope revision can be attempted; it is never written to the active snapshot and never serves a prediction"
+    }
+   ],
+   "open": [],
+   "by_state": {
+    "REVISABLE": [
+     "resupplied_draft_1"
+    ]
+   },
+   "max_revisions": 2,
+   "max_verification_attempts": 3,
+   "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+  },
+  "revising-skill": {
+   "drafts": [
+    {
+     "draft_id": "resupplied_draft_1",
+     "program_steps": [
+      {
+       "op": "outlier_mad",
+       "params": {}
+      }
+     ],
+     "root_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "current_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "revisions": 0,
+     "clauses_added_since_root": 0,
+     "max_revisions": 2,
+     "max_total_added_clauses": 2,
+     "created_at_origin": 0,
+     "delayed_failures": [],
+     "support_readings": [],
+     "revision_history": [],
+     "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+     "state": "REVISABLE",
+     "verification_attempts": 1,
+     "max_verification_attempts": 3,
+     "may_add_clause": false,
+     "history": [
+      {
+       "event": "verification",
+       "state_after": "REVISABLE"
+      }
+     ],
+     "closed": "REVISION_BUDGET_EXHAUSTED",
+     "deployable": false,
+     "why_not_deployable": "a Draft that failed the delayed gate is kept only so one more bounded Scope revision can be attempted; it is never written to the active snapshot and never serves a prediction"
+    },
+    {
+     "draft_id": "resupplied_draft_1",
+     "program_steps": [
+      {
+       "op": "winsorize",
+       "params": {}
+      }
+     ],
+     "root_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "current_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "revisions": 0,
+     "clauses_added_since_root": 0,
+     "max_revisions": 2,
+     "max_total_added_clauses": 2,
+     "created_at_origin": 2856,
+     "delayed_failures": [],
+     "support_readings": [],
+     "revision_history": [],
+     "census_key": "forecast|pooled-ridge-a1|sMASE|winsorize({})@serving_series_predicate[local_robust_z_peak>=3]",
+     "state": null,
+     "verification_attempts": 0,
+     "max_verification_attempts": 3,
+     "may_add_clause": false,
+     "history": [
+      {
+       "event": "opened_by_outer_loop",
+       "origin": 2856,
+       "provenance": {
+        "opened_by": "dev_auto2_frame_c",
+        "position": 5,
+        "queue_key": [
+         0.014528,
+         0
+        ],
+        "what_changes": "Replaces the MAD outlier filtering with winsorization, which caps extreme values rather than removing/replacing them, changing the skew correction mechanism entirely."
+       },
+       "state_after": null
+      }
+     ],
+     "closed": "NEVER_VERIFIED",
+     "deployable": false,
+     "why_not_deployable": "a Draft that failed the delayed gate is kept only so one more bounded Scope revision can be attempted; it is never written to the active snapshot and never serves a prediction"
+    },
+    {
+     "draft_id": "resupplied_draft_2",
+     "program_steps": [
+      {
+       "op": "outlier_iqr",
+       "params": {}
+      }
+     ],
+     "root_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "current_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "revisions": 0,
+     "clauses_added_since_root": 0,
+     "max_revisions": 2,
+     "max_total_added_clauses": 2,
+     "created_at_origin": 2856,
+     "delayed_failures": [],
+     "support_readings": [],
+     "revision_history": [],
+     "census_key": "forecast|pooled-ridge-a1|sMASE|outlier_iqr({})@serving_series_predicate[local_robust_z_peak>=3]",
+     "state": null,
+     "verification_attempts": 0,
+     "max_verification_attempts": 3,
+     "may_add_clause": false,
+     "history": [
+      {
+       "event": "opened_by_outer_loop",
+       "origin": 2856,
+       "provenance": {
+        "opened_by": "dev_auto2_frame_c",
+        "position": 5,
+        "queue_key": [
+         0.249964,
+         6
+        ],
+        "what_changes": "Replaces the frozen MAD outlier filter with an IQR-based outlier filter, which uses a different spread estimator and will modify a different set of series."
+       },
+       "state_after": null
+      }
+     ],
+     "closed": "NEVER_VERIFIED",
+     "deployable": false,
+     "why_not_deployable": "a Draft that failed the delayed gate is kept only so one more bounded Scope revision can be attempted; it is never written to the active snapshot and never serves a prediction"
+    },
+    {
+     "draft_id": "resupplied_draft_3",
+     "program_steps": [
+      {
+       "op": "hampel_filter",
+       "params": {}
+      }
+     ],
+     "root_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "current_scope": {
+      "scope_type": "serving_series_predicate",
+      "predicate": [
+       {
+        "feature": "local_robust_z_peak",
+        "op": ">=",
+        "threshold": 3.0
+       }
+      ]
+     },
+     "revisions": 0,
+     "clauses_added_since_root": 0,
+     "max_revisions": 2,
+     "max_total_added_clauses": 2,
+     "created_at_origin": 3576,
+     "delayed_failures": [],
+     "support_readings": [],
+     "revision_history": [],
+     "census_key": "forecast|pooled-ridge-a1|sMASE|hampel_filter({})@serving_series_predicate[local_robust_z_peak>=3]",
+     "state": null,
+     "verification_attempts": 0,
+     "max_verification_attempts": 3,
+     "may_add_clause": false,
+     "history": [
+      {
+       "event": "opened_by_outer_loop",
+       "origin": 3576,
+       "provenance": {
+        "opened_by": "dev_auto2_frame_c",
+        "position": 6,
+        "queue_key": [
+         0.185625,
+         0
+        ],
+        "what_changes": "Replace the frozen outlier_mad step with a hampel_filter, an effect-distinct mechanism that flags isolated spikes via a rolling window rather than a global MAD threshold, targeting the same high-local-robust-z series but with different failure modes."
+       },
+       "state_after": null
+      }
+     ],
+     "closed": "NEVER_VERIFIED",
+     "deployable": false,
+     "why_not_deployable": "a Draft that failed the delayed gate is kept only so one more bounded Scope revision can be attempted; it is never written to the active snapshot and never serves a prediction"
+    }
+   ],
+   "open": [],
+   "by_state": {
+    "REVISABLE": [
+     "resupplied_draft_1"
+    ],
+    "None": [
+     "resupplied_draft_1",
+     "resupplied_draft_2",
+     "resupplied_draft_3"
+    ]
+   },
+   "max_revisions": 2,
+   "max_verification_attempts": 3,
+   "held_outside_the_snapshot": "restricted Drafts are Runner records, never Skill-library entries; the count of surviving Skills stays a statement about what actually reached the active snapshot"
+  }
+ },
+ "actual_cost": {
+  "physical_consumer_fits": 60,
+  "physical_consumer_fits_by_arm": {
+   "frozen-skill": 11,
+   "revising-skill": 49
+  },
+  "fit_ceiling": 1000,
+  "llm_calls": 23,
+  "llm_calls_by_arm": {
+   "frozen-skill": 10,
+   "revising-skill": 13
+  },
+  "llm_ceiling": 400,
+  "llm_pre_allocated_per_arm": 200,
+  "llm_room_left_by_arm": {
+   "frozen-skill": 190,
+   "revising-skill": 187
+  },
+  "wall_seconds": 105.0,
+  "wall_ceiling": 21600,
+  "counting": "every physical fit, including the ones spent inside a call that then raised; no allowance carried over"
+ },
+ "ledgers": {
+  "llm_fast": 21,
+  "llm_outer": 2,
+  "llm_total": 23,
+  "replay_fits": 38,
+  "shadow_fits": 0,
+  "course_fits": 6,
+  "course_fits_cover": "the delayed gate and the evaluation face",
+  "support_fits": 12,
+  "support_fits_unrecorded_probes": 0,
+  "support_fits_note": "Support probe fits, counted only where the evaluator reported them; probes that reported none are counted as unrecorded rather than as zero.  Courses run before this counter existed have no Support line at all and their Support cost stays a derivation, not a reading",
+  "baseline_fits": 0,
+  "baseline_evaluations": 2,
+  "baseline_cache_hits": 4,
+  "baseline_evaluations_failed": 0,
+  "support_fits_unmeasured_after_error": 0,
+  "baseline_note": "the reference model, shared by every arm on a unit because it is cached per (executor, origin).  COMPLETED executions and cache hits are counted; they are not folded into support_fits and not priced, because the injected evaluator reports no fit count and charging a shared model is an open protocol question",
+  "baseline_evaluations_is_not_a_fit_total": "it counts completed reference evaluations, one per (executor, origin).  What each one costs the Consumer is not reported by the injected evaluator, so this line must not be read as, or added to, a total of Consumer fits",
+  "unmeasured_cost_note": "an evaluation that raised inside the Consumer had already spent an unrecoverable amount: scoped_evaluate reports consumer_fits only on a normal return.  Those are counted here as unmeasured rather than added to any total as zero",
+  "cache_hits": 0,
+  "cache_misses": 0,
+  "cache_hit_rate": null,
+  "cache_counts": "the replay prediction cache",
+  "llm_prompt_cache_enabled": false,
+  "why_no_llm_prompt_cache": "wiring CachedAgentBackend would change what the arms are charged for and how their proposals diverge; it is not enabled for HEC-1 and its absence is recorded rather than left as a zero that looks like a miss rate",
+  "wall_seconds": 0.0
+ },
+ "guard": {
+  "ordering_cap": 400,
+  "per_unit_arm_cap": 193,
+  "scripted_calls_not_billed": 0,
+  "blocked_before_backend": [],
+  "why_before": "a post-hoc budget check pays for the call it refuses; this one refuses first and bills nothing"
+ },
+ "boundary": {
+  "evaluation_face_reads": 0,
+  "sealed_reads": 0,
+  "target_held_in_reads": 0,
+  "risk_constants_touched": 0,
+  "scope_grid_touched": 0,
+  "consumer_touched": 0,
+  "known_winner_supplied_to_the_model": 0
+ }
+}
