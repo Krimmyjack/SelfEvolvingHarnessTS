@@ -144,7 +144,27 @@ class Ledgers:
     replay_fits: int = 0
     shadow_fits: int = 0
     course_fits: int = 0
+    #: The Support probe face.  ``course_fits`` covers only the delayed gate
+    #: and the evaluation face, so before this counter existed the Support
+    #: probes -- the largest single fit line in the course -- appeared in no
+    #: total at all.  Counted only where the evaluator reported a number.
+    support_fits: int = 0
+    #: Probes whose evaluator reported no fit count.  Kept apart from zero:
+    #: "not measured" and "cost nothing" are different facts.
+    support_fits_unrecorded: int = 0
     baseline_fits: int = 0
+    #: The shared reference model, as executions and cache hits.  Cached per
+    #: (executor, origin) and read by every arm on that unit, so it is a course
+    #: cost rather than any one arm's.  Counted rather than priced:
+    #: ``forecast_runtime._evaluate`` reports no fit count of its own, and how
+    #: a shared model should be charged is an open protocol question.
+    baseline_evaluations: int = 0
+    baseline_cache_hits: int = 0
+    #: Consumer work whose size cannot be recovered: a reference or candidate
+    #: evaluation that raised part-way.  Kept out of every total above, and
+    #: never rounded down to zero -- an unmeasured cost is not a free one.
+    baseline_evaluations_failed: int = 0
+    support_fits_unmeasured_after_error: int = 0
     cache_hits: int = 0
     cache_misses: int = 0
     wall_seconds: float = 0.0
@@ -161,7 +181,38 @@ class Ledgers:
             "replay_fits": self.replay_fits,
             "shadow_fits": self.shadow_fits,
             "course_fits": self.course_fits,
+            "course_fits_cover": "the delayed gate and the evaluation face",
+            "support_fits": self.support_fits,
+            "support_fits_unrecorded_probes": self.support_fits_unrecorded,
+            "support_fits_note": (
+                "Support probe fits, counted only where the evaluator "
+                "reported them; probes that reported none are counted as "
+                "unrecorded rather than as zero.  Courses run before this "
+                "counter existed have no Support line at all and their "
+                "Support cost stays a derivation, not a reading"),
             "baseline_fits": self.baseline_fits,
+            "baseline_evaluations": self.baseline_evaluations,
+            "baseline_cache_hits": self.baseline_cache_hits,
+            "baseline_evaluations_failed": self.baseline_evaluations_failed,
+            "support_fits_unmeasured_after_error": (
+                self.support_fits_unmeasured_after_error),
+            "baseline_note": (
+                "the reference model, shared by every arm on a unit because it "
+                "is cached per (executor, origin).  COMPLETED executions and "
+                "cache hits are counted; they are not folded into support_fits "
+                "and not priced, because the injected evaluator reports no fit "
+                "count and charging a shared model is an open protocol "
+                "question"),
+            "baseline_evaluations_is_not_a_fit_total": (
+                "it counts completed reference evaluations, one per (executor, "
+                "origin).  What each one costs the Consumer is not reported by "
+                "the injected evaluator, so this line must not be read as, or "
+                "added to, a total of Consumer fits"),
+            "unmeasured_cost_note": (
+                "an evaluation that raised inside the Consumer had already "
+                "spent an unrecoverable amount: scoped_evaluate reports "
+                "consumer_fits only on a normal return.  Those are counted "
+                "here as unmeasured rather than added to any total as zero"),
             # These count the **replay prediction cache** (arm x cell x face x
             # Consumer x Program), aggregated over the online arms.  The
             # shakedown reported 0/0 because nothing ever incremented them,
@@ -203,6 +254,14 @@ class BudgetGuard:
         self.spent_this_cell = 0
 
     def reserve(self, *, kind: str, where: Mapping[str, Any]) -> None:
+        """Refuse before the backend, or return.  Increments nothing.
+
+        Named ``reserve`` for the order it runs in, not because it holds a
+        slot: every counter here moves in ``spend``.  Callers must therefore
+        bill what the backend reports it sent, and must not subtract a call
+        for this check having happened -- doing so is what left 187 sent
+        requests unbilled across the three HEC-1 orderings.
+        """
         if self.ledgers.llm_total() + 1 > self.ordering_cap:
             self.blocked.append({"kind": kind, "where": dict(where),
                                  "reason": "ORDERING_LLM_CAP"})
@@ -246,6 +305,66 @@ class BudgetGuard:
                 "one refuses first and bills nothing"
             ),
         }
+
+
+class _MeteredFastBackend:
+    """Ordering-cap enforcement for the inner Fast backend, per request.
+
+    The cap used to be checked once, at the top of a cell, against a ledger
+    that was then written only after the cell finished.  With one call of
+    headroom left an arm could still send its whole per-cell allowance and be
+    billed past the cap afterwards -- a post-hoc check, which is the failure
+    this line has already paid for once.
+
+    Two caps, two fault classes, and this wrapper deliberately owns only one of
+    them.  The **ordering** cap is checked here, before the request is built,
+    and raises ``RunFault``: the course stops.  The **per-cell** cap stays with
+    ``BudgetedAgentBackend``, which raises ``AgentCallBudgetExceeded``: the cell
+    abstains and the course continues.  Moving the second one here would have
+    relabelled every capped cell as a stopped course.
+    """
+
+    def __init__(self, inner: Any, *, guard: "BudgetGuard",
+                 billable: bool) -> None:
+        self.inner = inner
+        self.guard = guard
+        self.billable = bool(billable)
+        #: What this wrapper has already charged, so the cell's reconciliation
+        #: records the calls without paying for them twice.
+        self.billed_calls = 0
+
+    @property
+    def calls(self) -> int:
+        return int(getattr(self.inner, "calls", 0) or 0)
+
+    @property
+    def maximum_calls(self) -> int:
+        return int(getattr(self.inner, "maximum_calls",
+                           contract.PER_UNIT_ARM_BUDGET["llm_calls"])
+                   or contract.PER_UNIT_ARM_BUDGET["llm_calls"])
+
+    def __getattr__(self, name: str) -> Any:
+        # The core reads token counters and the returned-model set straight off
+        # the backend; anything this wrapper does not define belongs to it.
+        return getattr(self.__dict__["inner"], name)
+
+    def complete(self, request: Any) -> Any:
+        self.guard.reserve(kind="fast_ordering",
+                           where={"physical_index": self.calls + 1})
+        before = self.calls
+        try:
+            response = self.inner.complete(request)
+        except Exception:
+            made = self.calls - before
+            if made:
+                self.guard.spend(kind="fast", calls=made,
+                                 billable=self.billable)
+                self.billed_calls += made
+            raise
+        made = max(1, self.calls - before)
+        self.guard.spend(kind="fast", calls=made, billable=self.billable)
+        self.billed_calls += made
+        return response
 
 
 class _OuterLlmBudgetSpent(RuntimeError):
@@ -1764,6 +1883,17 @@ class Arm:
         """
         return int(getattr(self._backend, "calls", 0) or 0)
 
+    def backend_billed_calls(self) -> int | None:
+        """What the backend has already charged, or ``None`` if it charges not.
+
+        ``_MeteredFastBackend`` bills each request as it goes so the ordering
+        cap can bite before the transport.  The cell's reconciliation subtracts
+        this rather than paying again; a backend without the wrapper (the
+        offline scripted one) reports ``None`` and is reconciled as before.
+        """
+        billed = getattr(self._backend, "billed_calls", None)
+        return None if billed is None else int(billed)
+
     def scripted_stage_calls(self) -> int:
         return len(list(getattr(self._backend, "requests", ()) or ()))
 
@@ -1846,14 +1976,177 @@ def _bank_rows_from_round(ctx: UnitContext, result: Any) -> list[dict[str, Any]]
             "serving_scope": probe.get("serving_scope"),
             "resolved_serving_series": probe.get("resolved_serving_series"),
             "source_skill_id": probe.get("source_skill_id"),
-            "relation": (probe.get("admission") or {}).get("relation"),
+            # The Episode's own relation, written on the probe by the round
+            # that classified it.  It used to be read off the admission
+            # verdict, which has no such field -- so it was always None and the
+            # census fell through to the verdict's *reason*, a deployment
+            # answer in a different vocabulary, and counted no POSITIVE,
+            # CONFLICT or NEGATIVE at all.  The reason is still carried, as a
+            # reason, because the two are different facts about one probe.
+            "relation": probe.get("relation"),
             "admission": (probe.get("admission") or {}).get("reason"),
+            "admitted": (probe.get("admission") or {}).get("admitted"),
             "features": {uid: dict(ctx.features.get(uid) or {})
                         for uid in ctx.eval_uids},
             "per_series_gain": {uid: float(value)
                                for uid, value in zip(ctx.eval_uids, gains)},
         })
     return rows
+
+
+def _draft_for_refused_deployment(
+        ledger: drafts.DraftLedger, *, steps: Any,
+        scope: Mapping[str, Any], origin: int, delayed_origin: int,
+        gate: Mapping[str, Any],
+) -> tuple[drafts.RestrictedDraft | None, dict[str, Any] | None]:
+    """The Draft this refused deployment belongs to, or a recorded refusal.
+
+    Three things have to be true at once, and none of them used to be:
+
+    * the Draft found by the deployed predicate must be *this program's*.  The
+      initialiser hands one predicate to every ``outlier_*`` program, so a
+      Scope-only lookup attributed one program's delayed failure to another's
+      Draft -- which in the live reverse ordering spent an ``outlier_mad``
+      Draft's last verification attempt on a ``winsorize`` refusal and closed
+      it as ``EFFECT_NONSTATIONARY``.
+    * the Draft that is minted must carry its full census key, so the ledger's
+      lineage set is the real one and a closed key cannot be reopened.
+    * a lineage that already exists -- open under another predicate, or closed
+      -- must not get a second shell.  A new shell restarts ``revisions`` and
+      ``verification_attempts``, which is how two shells of one identity took
+      six verification faces against a bound of three.
+
+    ``revisions=0``: the inner Slow is closed in HEC-1, so a Draft the runner
+    restricts here still carries the initialiser's predicate unrevised.  v3's
+    default of 1 counts the Support-window clause its own Slow wrote, which
+    does not exist in this protocol.
+    """
+    key = outer_loop.census_key(TASK_CONSUMER_KEY, steps, scope)
+    draft = ledger.by_scope(scope, program_steps=steps)
+    if draft is not None:
+        return draft, None
+    existing = (ledger.by_census_key(key)
+                or ledger.by_program_and_root(steps, scope))
+    if existing is not None:
+        return None, {
+            "lineage_key": key,
+            "draft_id": existing.draft_id,
+            "state": existing.state,
+            "closed": existing.closed,
+            "verification_attempts": existing.verification_attempts,
+            "why": (
+                "this lineage already has a Draft in this arm; a second shell "
+                "would restart the revision and verification counters, so the "
+                "reading is recorded on the cell and no Draft is minted"),
+        }
+    return ledger.restrict(
+        program_steps=steps, root_scope=scope, current_scope=scope,
+        origin=int(origin),
+        delayed_reading={"delayed_origin": int(delayed_origin),
+                         "lines": gate["lines"]},
+        revisions=0, census_key=key), None
+
+
+def _bill_fast(arm: "Arm", guard: "BudgetGuard", record: dict[str, Any],
+               calls_before: int, *, aborted: bool,
+               billed_before: int | None = None) -> int:
+    """Bill every Fast request this cell actually sent, however it ended.
+
+    ``BudgetedAgentBackend`` increments ``calls`` **before** it hands the
+    request to the delegate, so the delta counts requests that were sent --
+    including the one whose delegate then raised.  Three things this fixes, all
+    measured by M-R0:
+
+    * ``calls=spent - 1`` billed one fewer than was sent on every cell, because
+      the comment it carried ("the reserve took one") is not true of any
+      counter: ``BudgetGuard.reserve`` checks the caps and increments nothing.
+      187 calls went unbilled across the three orderings that way.
+    * a cell that ended in a fault returned before reaching ``spend`` at all,
+      so all five requests of a cell that hit the per-cell cap were free.  47
+      cells, 235 calls.
+    * the two are now recorded apart: ``llm_calls_this_cell`` is what was sent,
+      and ``llm_calls_billed_after_fault`` says the cell did not finish.
+
+    Reconciliation, not a second invoice.  ``_MeteredFastBackend`` charges each
+    request as it sends it, so that the ordering cap can refuse before the
+    transport; this function then bills only what that wrapper has not already
+    billed.  With the wrapper in place that remainder is zero, and the function
+    is purely a recorder.  Without it -- the offline scripted backend -- the
+    remainder is everything, which is the pre-wrapper behaviour.
+
+    Returns what the cell sent, so the caller can record it.
+    """
+    spent = max(0, arm.backend_calls() - calls_before)
+    billed_now = arm.backend_billed_calls()
+    already = (None if billed_now is None
+               else max(0, billed_now - int(billed_before or 0)))
+    unbilled = spent if already is None else max(0, spent - already)
+    if unbilled:
+        guard.spend(kind="fast", calls=unbilled)
+    record["llm_calls_this_cell"] = spent
+    record["llm_calls_billed_by_the_backend_meter"] = already
+    if aborted:
+        record["llm_calls_billed_after_fault"] = spent
+    return spent
+
+
+_EXECUTOR_COST_FIELDS = ("support_fits_spent",
+                         "support_evaluations_without_a_fit_count",
+                         "support_evaluations_with_unmeasured_cost",
+                         "baseline_evaluations", "baseline_cache_hits",
+                         "baseline_evaluations_failed")
+
+
+def _executor_cost(executor: Any) -> dict[str, int]:
+    """What this executor has spent so far.  Read, never reset.
+
+    The executor is built once per unit and shared by all four arms
+    (``UnitContext.__init__``), so a per-cell delta of these counters is that
+    cell's cost and nothing else's.
+    """
+    return {name: int(getattr(executor, name, 0) or 0)
+            for name in _EXECUTOR_COST_FIELDS}
+
+
+def _bill_support_fits(ledgers: "Ledgers", executor: Any,
+                       before: Mapping[str, int]) -> dict[str, Any]:
+    """The Support face's cost for one cell, read off the executor.
+
+    Read from the executor rather than from the round's probe list, because a
+    round that raises after probing never returns one.  Those fits were still
+    spent, and a cost that disappears when the cell fails is exactly the hole
+    M-R0 measured on the LLM side.
+
+    Two lines, not one.  ``support_fits`` is what ``scoped_evaluate`` reported
+    for candidate evaluations.  The reference model is counted separately as
+    executions and cache hits: it is cached per ``(executor, origin)`` and so
+    shared by every arm reading this unit, and charging it to whichever probe
+    happened to trigger it would report a shared cost as one arm's.  How it
+    should finally be priced is an open protocol question, so it is counted and
+    listed rather than folded in or silently dropped.
+    """
+    now = _executor_cost(executor)
+    delta = {name: max(0, now[name] - int(before.get(name, 0)))
+             for name in _EXECUTOR_COST_FIELDS}
+    ledgers.support_fits += delta["support_fits_spent"]
+    ledgers.support_fits_unrecorded += delta[
+        "support_evaluations_without_a_fit_count"]
+    ledgers.support_fits_unmeasured_after_error += delta[
+        "support_evaluations_with_unmeasured_cost"]
+    ledgers.baseline_evaluations += delta["baseline_evaluations"]
+    ledgers.baseline_cache_hits += delta["baseline_cache_hits"]
+    ledgers.baseline_evaluations_failed += delta["baseline_evaluations_failed"]
+    return {
+        "support_fits_this_cell": delta["support_fits_spent"],
+        "support_evaluations_without_a_fit_count": delta[
+            "support_evaluations_without_a_fit_count"],
+        "support_evaluations_with_unmeasured_cost": delta[
+            "support_evaluations_with_unmeasured_cost"],
+        "baseline_evaluations_this_cell": delta["baseline_evaluations"],
+        "baseline_cache_hits_this_cell": delta["baseline_cache_hits"],
+        "baseline_evaluations_failed_this_cell": delta[
+            "baseline_evaluations_failed"],
+    }
 
 
 class _VerifiableLedgerView:
@@ -1870,8 +2163,17 @@ class _VerifiableLedgerView:
     def resupplied_scopes(self) -> dict[str, dict[str, Any]]:
         return self._ledger.resupplied_scopes_for_verification()
 
-    def root_for_scope(self, scope: Mapping[str, Any] | None):
-        return self._ledger.root_for_scope(scope)
+    def root_for_scope(self, scope: Mapping[str, Any] | None,
+                       *, program_steps: Any = None):
+        # Passed straight through, so a caller that knows which program is
+        # being revised gets that program's root rather than whichever Draft
+        # happened to share the predicate.  Callers that do not know it get the
+        # ledger's ambiguity rule instead of a guess.
+        return self._ledger.root_for_scope(scope, program_steps=program_steps)
+
+    def root_lookup(self, scope: Mapping[str, Any] | None,
+                    *, program_steps: Any = None):
+        return self._ledger.root_lookup(scope, program_steps=program_steps)
 
 
 def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
@@ -1908,6 +2210,8 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
     record["active_program_signatures_at_start"] = dict(
         arm.active_program_signatures)
     calls_before = arm.backend_calls()
+    billed_before = arm.backend_billed_calls()
+    fits_before = _executor_cost(ctx.executor)
     scripted_before = arm.scripted_stage_calls()
     ledger_view = _VerifiableLedgerView(arm.draft_ledger)
     resupplied = arm.draft_ledger.resupplied_programs_for_verification()
@@ -1946,6 +2250,10 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
     except UnitFault as exc:
         record["faults"].append({"kind": type(exc).__name__,
                                  "why": str(exc)[:240]})
+        _bill_fast(arm, guard, record, calls_before, aborted=True,
+                   billed_before=billed_before)
+        record.update(_bill_support_fits(ledgers, ctx.executor,
+                                         fits_before))
         record.update({"deployed": None, "identity": True,
                        **_evaluate_face(ctx, evaluation_origin, None, None,
                                         ledgers, record),
@@ -1953,6 +2261,13 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
         return record
     except Exception as exc:  # noqa: BLE001 - classified below, never swallowed
         if _is_run_fault(exc, scientific=scientific):
+            # A run fault stops the course, but the requests it already sent
+            # were still sent.  Bill them before unwinding so the ordering's
+            # ledger is not left claiming they never happened.
+            _bill_fast(arm, guard, record, calls_before, aborted=True,
+                       billed_before=billed_before)
+            record.update(_bill_support_fits(ledgers, ctx.executor,
+                                             fits_before))
             if _is_transport_failure(exc):
                 raise RunFault("TRANSPORT_FAILED: %s: %s"
                                % (type(exc).__name__, str(exc)[:240]))
@@ -1960,14 +2275,18 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
         record["faults"].append({"kind": "UnitFault",
                                  "why": "%s: %s" % (type(exc).__name__,
                                                     str(exc)[:240])})
+        _bill_fast(arm, guard, record, calls_before, aborted=True,
+                   billed_before=billed_before)
+        record.update(_bill_support_fits(ledgers, ctx.executor,
+                                         fits_before))
         record.update({"deployed": None, "identity": True,
                        **_evaluate_face(ctx, evaluation_origin, None, None,
                                         ledgers, record),
                        "wall_seconds": round(time.time() - started, 2)})
         return record
 
-    spent = arm.backend_calls() - calls_before
-    guard.spend(kind="fast", calls=max(0, spent - 1))  # the reserve took one
+    spent = _bill_fast(arm, guard, record, calls_before, aborted=False,
+                       billed_before=billed_before)
     trace = getattr(arm._method, "last_trace", None)
     candidate_ids = list(getattr(trace, "candidate_program_steps", {}) or {})
     record["fast_decision"] = classify_fast_decision(
@@ -1979,8 +2298,8 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
     record["retrieved_skill_ids"] = list(
         getattr(trace, "retrieved_skill_ids", ()) or ())
     record["resupplied_candidate_ids"] = list(result._resupplied_candidate_ids)
-    record["llm_calls_this_cell"] = spent
     record["scripted_stage_calls"] = arm.scripted_stage_calls() - scripted_before
+    record.update(_bill_support_fits(ledgers, ctx.executor, fits_before))
 
     steps, scope = result._winner_steps, result._winner_serving_scope
     record["deployed"] = result.winner_program
@@ -2119,24 +2438,22 @@ def run_unit_arm(arm: Arm, ctx: UnitContext, *, position: int,
             features_now=ctx.features,
             predicate=(scope or {}).get("predicate"))
         if not gate["passes"] and scope:
-            # ``revisions=0``: the inner Slow is closed in HEC-1, so a Draft the
-            # runner restricts here still carries the initialiser's predicate
-            # unrevised.  v3's default of 1 counts the Support-window clause its
-            # own Slow wrote, which does not exist in this protocol.
-            entry = arm.draft_ledger.record_verification(
-                arm.draft_ledger.by_scope(scope)
-                or arm.draft_ledger.restrict(
-                    program_steps=steps, root_scope=scope, current_scope=scope,
-                    origin=ctx.origin,
-                    delayed_reading={"delayed_origin": delayed_origin,
-                                     "lines": gate["lines"]},
-                    revisions=0),
-                window=delayed_origin, failed_lines=gate["failed_lines"],
-                per_series_gain=delayed["per_series_gain"],
-                treated_prev=sorted(result._winner_resolved_series or ()),
-                treated_now=sorted(resolved),
-                material=contract.RISK["material"], reading=gate)
-            record["restricted_state"] = entry.get("state_after")
+            draft, refusal = _draft_for_refused_deployment(
+                arm.draft_ledger, steps=steps, scope=scope, origin=ctx.origin,
+                delayed_origin=delayed_origin, gate=gate)
+            record["restriction_refused"] = refusal
+            if draft is None:
+                record["restricted_state"] = None
+            else:
+                entry = arm.draft_ledger.record_verification(
+                    draft,
+                    window=delayed_origin, failed_lines=gate["failed_lines"],
+                    per_series_gain=delayed["per_series_gain"],
+                    treated_prev=sorted(result._winner_resolved_series or ()),
+                    treated_now=sorted(resolved),
+                    material=contract.RISK["material"], reading=gate)
+                record["restricted_state"] = entry.get("state_after")
+                record["restricted_draft_id"] = draft.draft_id
     else:
         record["delayed"] = None
         record["gate_disagreement"] = None
@@ -2466,8 +2783,15 @@ def run_course(*, phase: str, ordering_name: str, units: Sequence[Mapping[str, A
             return sealed.SealedProbeBackend(
                 explore=True, operators=("outlier_mad", "winsorize"),
                 force_pool=True)
-        return machinery["agentic"]._default_backend_factory(
-            int(contract.PER_UNIT_ARM_BUDGET["llm_calls"]))
+        # Metered per request, so the ordering cap refuses before the
+        # transport instead of being discovered after the cell is over.  The
+        # per-cell cap stays inside the wrapped backend and keeps its own
+        # fault class.  Offline is not wrapped: the scripted backend reaches
+        # no relay and must stay at zero.
+        return _MeteredFastBackend(
+            machinery["agentic"]._default_backend_factory(
+                int(contract.PER_UNIT_ARM_BUDGET["llm_calls"])),
+            guard=guard, billable=True)
 
     def outer_backend_factory():
         if offline:

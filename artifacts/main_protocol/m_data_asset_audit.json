@@ -1,0 +1,745 @@
+{
+  "audit_id": "M_DATA_ASSET_AUDIT",
+  "stage": "HEC_NEXT_E3_DATA_ASSET_AUDIT",
+  "status": "COMPLETE",
+  "written_at": "2026-09-05",
+  "plan_source": "docs/NEXT_EXPERIMENT_EXECUTION_PLAN_2026-09-05.md",
+  "plan_sections": ["§6", "附录 E.3"],
+  "parallel_to": "Opus M-R0 (not executed here)",
+  "evidence_grade": "READ_ONLY_LEDGER_AND_ADAPTER_AUDIT",
+  "boundary": {
+    "new_experiment_llm_calls": 0,
+    "consumer_fits": 0,
+    "downloads": 0,
+    "git_commits": 0,
+    "new_sha_or_hash_objects": 0,
+    "production_code_modified": false,
+    "contracts_modified": false,
+    "main_plan_modified": false,
+    "state_one_page_modified": false,
+    "shared_ledgers_modified": false,
+    "opus_files_modified": false,
+    "sealed_or_unknown_raw_values_read": false,
+    "sealed_or_unknown_labels_or_outcomes_read": false,
+    "missing_rate_computed_this_audit": false,
+    "adapter_preflight_or_cache_rebuild": false,
+    "target_chosen_by_trying_utility": false
+  },
+  "method_limits": [
+    "Roles follow existing ledgers, official public metadata, directory listings, and adapter source. Outcome numbers already in authorized reports are cited as exposure evidence, not re-opened.",
+    "Solar isolation is respected: only D4 freeze completeness fields (n=137, length=52560, missing=0) are used. The zip was not opened.",
+    "Yahoo-41 vaults and NAB leftover labels were not opened. Official leftover NAB label exposure is cited from P0, not re-verified by reading combined_windows.json.",
+    "Zero missing on Solar excludes gap-dependent Skills only. K0 outlier_mad @ local_robust_z_peak>=3 does not require NaN; whether that predicate holds on Solar is UNKNOWN without opening values.",
+    "NOAA 2025 is EXPOSED development, never fresh.",
+    "NAB families are judged one family at a time. AdExchange exposure is not copied onto unused official leftovers.",
+    "UCR is judged by experiment line, archive copy, and TRAIN/TEST member. A TEST-unread line does not make the whole asset unseen.",
+    "A later unread (series, origin) pair on an already-opened dataset identity does not restore fresh Target status."
+  ],
+  "current_authorized_skills_consulted": [
+    {
+      "skill_id": "fast_winner_forecast_ridge_smase_outlier_mad",
+      "source": "artifacts/main_protocol/hec1_k0_phase_s_v11_live.json",
+      "program": "outlier_mad({})",
+      "lineage_key": "forecast|pooled-ridge-a1|sMASE|outlier_mad({})@serving_series_predicate[local_robust_z_peak>=3]",
+      "requires_missing_values": false,
+      "requires_local_robust_z_peak_ge_3": true,
+      "status": "Phase-S K0; in-service for A5 start"
+    },
+    {
+      "program_family": "period_median_complete -> outlier_*",
+      "source": "AGENTS.md §5.1; plan §6 / 附录 D",
+      "requires_missing_values": true,
+      "note": "P4d natural-gap combination; gap-dependent. Not the in-service K0 card."
+    },
+    {
+      "program_family": "impute_* as non-identity treatment",
+      "source": "AGENTS.md §8.1",
+      "requires_missing_values": true,
+      "note": "On gapless series, imputation operators collapse to _linear_integrity identity. This is an operator property, not a Solar-specific measurement."
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "KDD2018_WITHOUT_MISSING",
+      "identity": "EXPOSED_DEVELOPMENT__KDD2018_WITHOUT_MISSING",
+      "task": "forecast",
+      "paths": {
+        "raw_tsf": "data/kdd2018/raw/kdd_cup_2018_dataset_without_missing_values.tsf",
+        "legacy_zip": "data/kdd2018/kdd_cup_2018.zip",
+        "cache": "data/kdd2018/series_cache.npz"
+      },
+      "version": {
+        "source": "Monash TSF / KDD Cup 2018 filled variant",
+        "cache_built_from": "kdd_cup_2018_dataset_without_missing_values.tsf",
+        "n_series": 270,
+        "authorized_nan_points_in_cache": 0
+      },
+      "exposure": {
+        "status": "EXPOSED",
+        "what_opened": [
+          "P1–P4c Forecast cells, origins, Support-A/B, Consumer outcomes, program gains"
+        ],
+        "evidence": [
+          "AGENTS.md §8.1",
+          "artifacts/main_protocol/p4d_natural_gap_roster.json source_alignment",
+          "historical P1–P4c artifacts labeled (incorrectly at the time) as with-missing"
+        ]
+      },
+      "authorized_roles": {
+        "development": true,
+        "source": "historical only; not the HEC-1 K0 domain",
+        "target_held_in": false,
+        "sealed_final": false
+      },
+      "legal_use_now": "development / replay of the no-gap outlier-denoise slice only. Do not merge with with-missing numbers. Do not call fresh. Imputation was never examined on this identity.",
+      "serving_adapter": {
+        "exists": true,
+        "kind": "P1 ForecastCell on series_cache.npz",
+        "code": [
+          "evaluation/main_protocol_p1/run_forecast_p1.py",
+          "evaluation/functional/run_e2_autonomous_natural_workflow_generation.py"
+        ],
+        "run_evidence": "P1–P4c live artifacts under artifacts/main_protocol/"
+      },
+      "unknown": [
+        "None that block role assignment. Historical filename label 'with missing values' was wrong; identity is the filled cache."
+      ]
+    },
+    {
+      "asset_id": "KDD2018_WITH_MISSING",
+      "identity": "EXPOSED_DEVELOPMENT_VARIANT__KDD2018_WITH_MISSING",
+      "task": "forecast",
+      "paths": {
+        "raw_zip": "data/kdd2018/raw/kdd_cup_2018_dataset_with_missing_values.zip",
+        "loader": "evaluation/main_protocol_p4/preflight_natural_gap_variant.py::load_variant"
+      },
+      "version": {
+        "source": "Monash Zenodo 4656719 Version 4, kdd_cup_2018_dataset_with_missing_values.zip",
+        "official_md5_matched": "bd6af1e03c576b6c95c5e4b58aba831f",
+        "n_series": 270,
+        "length_range": "9504-10920",
+        "authorized_corpus": {
+          "points": 2942364,
+          "missing_points": 503712,
+          "series_with_any_gap": 270,
+          "source": "artifacts/main_protocol/p4d_natural_gap_roster.json (pre-existing; not recomputed here)"
+        },
+        "structurally_readable": 239,
+        "note": "Same UID set as the filled variant; values agree on observed positions; not a fresh domain."
+      },
+      "exposure": {
+        "status": "EXPOSED",
+        "what_opened": [
+          "P4d–P4m development outcomes",
+          "HEC-1 Phase S and three Phase-T orderings (Support, delayed, evaluation faces on the course units)",
+          "K0 formation on Phase-S block [200:239] origin 2616"
+        ],
+        "pair_level_caveat": "p4t_exposure_ledger.json tracks unread (series, origin) pairs on a proposed held-out origin set {4056..5016} × readable[80:120]. Unread pairs do not restore fresh Target status for this identity.",
+        "evidence": [
+          "AGENTS.md §5.1 / §8.1",
+          "docs/NEXT_EXPERIMENT_EXECUTION_PLAN_2026-09-05.md §6",
+          "artifacts/main_protocol/p4d_natural_gap_preflight.json",
+          "artifacts/main_protocol/hec1_course_v11p0_{forward,reverse,interleaved}_live.json",
+          "artifacts/main_protocol/p4t_exposure_ledger.json"
+        ]
+      },
+      "authorized_roles": {
+        "development": true,
+        "source": "HEC-1 Phase S / K0 origin domain",
+        "target_held_in": "HEC-1 Phase T course (already run; further closed-loop would still be development on this identity)",
+        "sealed_final": false
+      },
+      "legal_use_now": "Closed-loop course and mechanism measurement only. Never fresh. Never Natural Final.",
+      "serving_adapter": {
+        "exists": true,
+        "kind": "HEC-1 / scoped serving ForecastCell",
+        "code": [
+          "evaluation/main_protocol_p4/preflight_natural_gap_variant.py::load_variant",
+          "evaluation/main_protocol_p4/run_main_baselines.py::_cell",
+          "evaluation/main_protocol_p4/scoped_serving_evaluator.py",
+          "evaluation/main_protocol_p4/run_hec1.py"
+        ],
+        "run_evidence": [
+          "artifacts/main_protocol/p4o_scoped_serving_preflight.json",
+          "artifacts/main_protocol/hec1_course_v11p0_forward_live.json",
+          "artifacts/main_protocol/hec1_course_v11p0_reverse_live.json",
+          "artifacts/main_protocol/hec1_course_v11p0_interleaved_live.json"
+        ],
+        "note": "This is the only in-service HEC-1 serving adapter. NOAA/Solar are not wired to it."
+      },
+      "unknown": []
+    },
+    {
+      "asset_id": "NOAA_GLOBAL_HOURLY_FRESH_V1",
+      "identity": "noaa_global_hourly_fresh_v1 / benchmark_noaa_fresh_v1",
+      "task": "forecast",
+      "paths": {
+        "manifest": "data/benchmark_noaa_fresh_v1/manifest.json",
+        "development_2024": "data/benchmark_noaa_fresh_v1/series/",
+        "confirmation_2025": "data/benchmark_noaa_fresh_v1/confirmation_2025/",
+        "raw_2025_csv": "data/benchmark_noaa_fresh_v1/raw_2025/",
+        "legacy_raw": "data/benchmark_v0/raw/noaa_global_hourly/"
+      },
+      "version": {
+        "cohort_id": "benchmark_noaa_fresh_v1",
+        "n_stations_materialized_2024": 20,
+        "locked_roster_historical": "12 train + 4 eval (health-screened)",
+        "development_index": [0, 8760],
+        "confirmation_index": [8760, 17520],
+        "grid_start": "2024-01-01T00:00:00",
+        "parse": "univariate TMP; 9999 -> NaN; missing hours NaN; no interpolation",
+        "natural_gaps": "authorized station record.json files already store native NaN counts for EXPOSED partitions; this audit did not recompute them"
+      },
+      "exposure": {
+        "status": "EXPOSED",
+        "never_fresh_again": true,
+        "partitions": {
+          "2024_development": {
+            "status": "EXPOSED",
+            "evidence": [
+              "artifacts/functional/e2/noaa_fresh_cohort_v2.md",
+              "evaluation/main_protocol_p4/run_forecast_p4_evolution_revision.py (dataset_id noaa_2024_exposed_p4_evolution_revision)",
+              "artifacts/main_protocol/p4_forecast_evolution_slow_revision_noaa_dev_20260831.json"
+            ]
+          },
+          "2025_confirmation_8760_17520": {
+            "status": "EXPOSED",
+            "protocol": "feedback-consuming adaptation on a then-fresh region; not Fast-only held-out",
+            "evidence": [
+              "AGENTS.md §5 / §8",
+              "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md",
+              "artifacts/functional/e2/fresh_confirmation_v1.json",
+              "artifacts/functional/e2/fresh_confirmation_v1_adjudication.md (overall_verdict FRESH_A5_DELIVERS; now development only)"
+            ]
+          },
+          "beyond_17520": {
+            "status": "SEALED_NO_NEW_BOOK",
+            "evidence": [
+              "AGENTS.md / PROJECT_STATE_AND_DATA_MAP: beyond_17520 still sealed, no new book may read it",
+              "confirmation record.json index_range is [8760, 17520]; this audit did not search for later hours in raw csv bodies"
+            ]
+          }
+        }
+      },
+      "authorized_roles": {
+        "development": true,
+        "source": "not the current HEC-1 K0 domain; historical Source-to-NOAA transfer already consumed 2025 outcomes",
+        "target_held_in": "not as a new Target; 2024/2025 already opened",
+        "sealed_final": false,
+        "m0b_second_forecast_set": "eligible as development only, after a serving adapter is wired"
+      },
+      "legal_use_now": "development / replay / M0-b (same-task second dataset) only. Do not call fresh. Do not open beyond_17520.",
+      "serving_adapter": {
+        "exists_hec1_scoped": false,
+        "exists_legacy_forecast_cell": true,
+        "legacy_code": [
+          "evaluation/functional/run_e2_autonomous_natural_workflow_generation.py DATASET_CONFIGS['noaa'] (anchors 240..660, origins 720/768)",
+          "evaluation/main_protocol_p4/run_forecast_p4_evolution_revision.py::_load_noaa_cell (12+4, NOAA 2024 arrays)",
+          "evaluation/functional/run_e2_fresh_confirmation.py (2025 confirmation path)"
+        ],
+        "legacy_run_evidence": [
+          "p4_forecast_evolution_slow_revision_noaa_dev_20260831.json",
+          "fresh_confirmation_v1.json"
+        ],
+        "gap": "No factory maps NOAA stations into HEC-1 course geometry (readable 20/20 faces, anchors [312..852], origin grid 1176..3816, scoped_serving_evaluator). Plan §6 flags this as the M0-b blocker."
+      },
+      "unknown": [
+        "Whether any raw hours exist past index 17520 on disk. Do not scan csv bodies without a new book.",
+        "Whether a HEC-1-compatible NOAA cell can be formed without a new structural filter that would itself need authorization."
+      ]
+    },
+    {
+      "asset_id": "SOLAR_10_MINUTES",
+      "identity": "Monash solar_10_minutes / LSTF Solar-Energy homologous",
+      "task": "forecast",
+      "paths": {
+        "raw_zip": "data/solar_10_minutes/raw/solar_10_minutes_dataset.zip"
+      },
+      "version": {
+        "source": "Monash Zenodo 4656144 Version 3, solar_10_minutes_dataset.zip",
+        "official_md5_matched": "84c0de18383c911091a3cd274661b029",
+        "n_series": 137,
+        "length": 52560,
+        "equal_length": true,
+        "authorized_missing_count": 0,
+        "frequency": "10_minutes",
+        "header_origin": "NREL solar-power-data; Lai et al. 2017 LSTF Solar-Energy homologous"
+      },
+      "exposure": {
+        "context": "AGGREGATE_SEEN (structure: 137 x 52560; numeric_values_parsed=false)",
+        "outcome": "SEALED",
+        "isolation": "D4 freeze: integrity fields only (zip md5, tsf parse, n=137, tokens=52560, missing=0). All other analysis forbidden until a Phase-3 sealed protocol.",
+        "evidence": [
+          "docs/D4_DOWNLOAD_FREEZE_2026-08-29.md",
+          "artifacts/functional/e2/cross_series_workflow_solar_target_plan.json (plan-only; program_or_consumer_outcome_computed=false)",
+          "docs/NEXT_EXPERIMENT_EXECUTION_PLAN_2026-09-05.md §6 (F2 sealed; 用途待核实)"
+        ]
+      },
+      "authorized_roles": {
+        "development": false,
+        "source": false,
+        "target_held_in": "not yet; requires a frozen sealed protocol that does not condition on this zip's content",
+        "sealed_final": "candidate F2, purpose still to verify; isolation in force"
+      },
+      "legal_use_now": "Do not open. Do not use as development. F2 sealed-final candidacy remains, but 0 missing only excludes gap-dependent Skills.",
+      "skill_necessary_conditions_on_authorized_metadata": [
+        {
+          "skill": "K0 outlier_mad @ local_robust_z_peak>=3",
+          "missing_required": false,
+          "structural_capacity": "POSSIBLE: 137 series and length 52560 exceed a 40-series cell and origin+192+48 windows used on KDD",
+          "predicate_match": "UNKNOWN",
+          "gain": "UNKNOWN",
+          "verdict": "NOT_EXCLUDED_BY_ZERO_MISSING"
+        },
+        {
+          "skill": "period_median_complete -> outlier_*",
+          "missing_required": true,
+          "verdict": "EXCLUDED_BY_ZERO_MISSING"
+        },
+        {
+          "skill": "impute_* as non-identity treatment",
+          "missing_required": true,
+          "verdict": "EXCLUDED_BY_ZERO_MISSING (operator identity-on-no-gap, AGENTS §8.1)"
+        }
+      ],
+      "serving_adapter": {
+        "exists_hec1_scoped": false,
+        "p1_flag": "evaluation/main_protocol_p1/run_forecast_p1.py traffic_or_solar_loader_available = False",
+        "legacy_plan_only": "artifacts/functional/e2/cross_series_workflow_solar_target_plan.json geometry (train 12 / support 4 / query 4, period 144, train_stop 928) is a different cell than HEC-1",
+        "run_evidence": "none (no Consumer outcome ever computed)"
+      },
+      "unknown": [
+        "Whether any serving series would satisfy local_robust_z_peak>=3. Requires opening values; not done.",
+        "Whether a HEC-1 origin grid fits after a content-blind protocol freeze.",
+        "Final F2 purpose: abandon-treatment / no-harm check vs. full A5/A3/Static exam. Plan leaves this unverified."
+      ]
+    },
+    {
+      "asset_id": "YAHOO_S5_A1",
+      "identity": "yahoo_s5_a1 / t6_42f_yahoo_a1_freeze_v1",
+      "task": "anomaly_detection",
+      "paths": {
+        "freeze": "artifacts/functional/e2/t6_42f_yahoo_a1_freeze.json",
+        "raw": "data/benchmark_yahoo_s5_v1/raw/A1Benchmark/",
+        "work": "data/benchmark_yahoo_s5_v1/work/",
+        "held_in_vault": "data/benchmark_yahoo_s5_v1/vaults/held_in/",
+        "held_out_vault": "data/benchmark_yahoo_s5_v1/vaults/held_out/",
+        "length_census": "data/benchmark_yahoo_s5_v1/_length_census.json"
+      },
+      "version": {
+        "library": "Yahoo S5 A1Benchmark only (A2/A3/A4 not fetched)",
+        "mirror": "muditdham/time-series-auto-encoder commit 24958b84; official yahoo/ydata 404",
+        "n_files_downloaded": 67,
+        "dropped_short": [
+          {"file": "real_54.csv", "n": 741},
+          {"file": "real_62.csv", "n": 741}
+        ],
+        "length_gate": "T6 MIN_LENGTH=1000",
+        "n_roster": 65,
+        "directory_counts_this_audit": {
+          "raw_A1Benchmark_csv": 67,
+          "work_csv": 65,
+          "held_in_vault_csv": 65,
+          "held_out_vault_csv": 65
+        },
+        "per_series_time_wall": "held_in [0, int(0.7n)); held_out [int(0.7n), n) for every roster series"
+      },
+      "yahoo_24_41_relation": {
+        "rule": "sorted(freeze['roster'], key=file)[:24] in evaluation/functional/run_e2_t6_natural_a5_a3.py::_load_yahoo_l1_roster (L1_ROSTER_N=24)",
+        "not_real_1_through_real_24": true,
+        "arithmetic": "67 downloaded = 65 roster + 2 length-gate drops; 65 = 24 EXPOSED + 41 SEALED",
+        "exposed_24_lexicographic": [
+          "real_1.csv", "real_10.csv", "real_11.csv", "real_12.csv", "real_13.csv",
+          "real_14.csv", "real_15.csv", "real_16.csv", "real_17.csv", "real_18.csv",
+          "real_19.csv", "real_2.csv", "real_20.csv", "real_21.csv", "real_22.csv",
+          "real_23.csv", "real_24.csv", "real_25.csv", "real_26.csv", "real_27.csv",
+          "real_28.csv", "real_29.csv", "real_3.csv", "real_30.csv"
+        ],
+        "sealed_41_lexicographic": [
+          "real_31.csv", "real_32.csv", "real_33.csv", "real_34.csv", "real_35.csv",
+          "real_36.csv", "real_37.csv", "real_38.csv", "real_39.csv", "real_4.csv",
+          "real_40.csv", "real_41.csv", "real_42.csv", "real_43.csv", "real_44.csv",
+          "real_45.csv", "real_46.csv", "real_47.csv", "real_48.csv", "real_49.csv",
+          "real_5.csv", "real_50.csv", "real_51.csv", "real_52.csv", "real_53.csv",
+          "real_55.csv", "real_56.csv", "real_57.csv", "real_58.csv", "real_59.csv",
+          "real_6.csv", "real_60.csv", "real_61.csv", "real_63.csv", "real_64.csv",
+          "real_65.csv", "real_66.csv", "real_67.csv", "real_7.csv", "real_8.csv",
+          "real_9.csv"
+        ],
+        "important": "real_4.csv through real_9.csv are in the sealed 41, not in the exposed 24, because the cut is lexicographic on filename."
+      },
+      "exposure": {
+        "download_freeze": "all 67 files had values loaded for the length gate; freeze records n and values hashes. Context INSTANCE_SEEN for the roster.",
+        "exposed_24_outcomes": "EXPOSED development. Time-split held-out of these 24 was used as development_exposed_eval, not true held-out.",
+        "sealed_41_outcomes": "SEALED. Labels/outcomes not opened. Vault files exist on disk for all 65; existence is not authorization to read.",
+        "evidence": [
+          "AGENTS.md §5 (67 / 65 / 24 / 41)",
+          "artifacts/functional/e2/t6_42f_yahoo_a1_freeze.json",
+          "artifacts/functional/e2/t6_42g_b_menu_headroom.json roster",
+          "evaluation/functional/run_e2_t6_natural_a5_a3.py L1_ROSTER_N and _load_yahoo_l1_roster",
+          "P3 AD: evaluation/main_protocol_p3/run_p3.py uses yahoo._load_yahoo_l1_roster"
+        ]
+      },
+      "authorized_roles": {
+        "development": "the 24 only",
+        "source": false,
+        "target_held_in": "the 24 already consumed as development; not a new Target",
+        "sealed_final": "the 41, after a freezable development pipeline exists"
+      },
+      "legal_use_now": "24 = AD development / M0-a setting comparison only. 41 = keep sealed. Do not fit more programs to the 24. Do not call the 24 fresh.",
+      "serving_adapter": {
+        "exists_for_24": true,
+        "code": [
+          "evaluation/functional/run_e2_t6_natural_a5_a3.py::_load_yahoo_l1_roster",
+          "evaluation/functional/consumers/aegists_iforest_v1.py WindowedIForestAdapter",
+          "evaluation/main_protocol_p3/run_p3.py"
+        ],
+        "run_evidence": [
+          "t6_42g_* through t6_44a_* and #43 M0-C artifacts",
+          "P3 AD wiring on the exposed 24"
+        ],
+        "exists_for_41": false,
+        "p1_main_protocol_flag": "evaluation/main_protocol_p1/anomaly_component.py yahoo_loader_available = False (P1 uses synthetic fixtures)"
+      },
+      "unknown": [
+        "Whether any post-freeze process loaded sealed-41 label columns. Ledgers say no; this audit did not open those csvs.",
+        "Wu & Keogh caveats are documented; they constrain claim caps, not the 24/41 split."
+      ]
+    },
+    {
+      "asset_id": "NAB_V1_1_REAL_FAMILIES",
+      "identity": "NAB tag v1.1 / upstream 0dcd73007a349ca0f4128c4c9b18133ce00d9296",
+      "task": "anomaly_detection",
+      "paths": {
+        "local_root": "data/benchmark_nab_v1_1/raw",
+        "plan": "artifacts/functional/e2/t6_nab_frozen_plan_v2.json"
+      },
+      "official_real_counts": {
+        "realAWSCloudwatch": 17,
+        "realAdExchange": 6,
+        "realKnownCause": 7,
+        "realTraffic": 7,
+        "realTweets": 10,
+        "official_real_total": 47,
+        "source": "https://github.com/numenta/NAB/tree/master/data and P0 ad_fresh_pool.official_real_series=47"
+      },
+      "families": [
+        {
+          "family": "realAdExchange",
+          "local_files": 6,
+          "local_names": [
+            "exchange-2_cpc_results.csv", "exchange-2_cpm_results.csv",
+            "exchange-3_cpc_results.csv", "exchange-3_cpm_results.csv",
+            "exchange-4_cpc_results.csv", "exchange-4_cpm_results.csv"
+          ],
+          "official_files": 6,
+          "role_used": "T6 Target (CPC 3 + CPM 3, all six kept even when two failed a timestamp gate)",
+          "context": "INSTANCE_SEEN",
+          "outcome": "EXPOSED",
+          "evidence": [
+            "t6_nab_frozen_plan_v2.json target list and evaluate_released true",
+            "t6_nab_42e0_skill_v2_replay.json / t6_nab_42e1_behavior_acceptance.json Target cells",
+            "docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md (6 Target outcomes opened)",
+            "AGENTS.md: AdExchange cannot be called fresh"
+          ],
+          "authorized_roles": {
+            "development": true,
+            "source": false,
+            "target_held_in": false,
+            "sealed_final": false
+          }
+        },
+        {
+          "family": "realAWSCloudwatch",
+          "local_files": 8,
+          "local_names": [
+            "ec2_cpu_utilization_24ae8d.csv", "ec2_cpu_utilization_53ea38.csv",
+            "ec2_cpu_utilization_5f5533.csv", "ec2_cpu_utilization_77c1ca.csv",
+            "ec2_cpu_utilization_825cc2.csv", "ec2_cpu_utilization_ac20cd.csv",
+            "ec2_cpu_utilization_c6585a.csv", "ec2_cpu_utilization_fe7f93.csv"
+          ],
+          "official_files": 17,
+          "role_used": "Source cohort 1: lexicographic first 8 of the local family",
+          "context": "INSTANCE_SEEN",
+          "outcome": "EXPOSED as Source (40-episode Source family includes this cohort)",
+          "evidence": [
+            "t6_nab_frozen_plan_v2.json source AWS keys",
+            "t6_nab_42e_census_v3.json cohorts includes source_aws_cloudwatch",
+            "PROJECT_STATE_AND_DATA_MAP: AWS 8 files, Source outcomes opened"
+          ],
+          "authorized_roles": {
+            "development": true,
+            "source": "already used; family capped at 4 cohorts",
+            "target_held_in": false,
+            "sealed_final": false
+          },
+          "not_local": [
+            "ec2_disk_write_bytes_1ef3de.csv", "ec2_disk_write_bytes_c0d644.csv",
+            "ec2_network_in_257a54.csv", "ec2_network_in_5abac7.csv",
+            "elb_request_count_8c0756.csv", "grok_asg_anomaly.csv",
+            "iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
+            "rds_cpu_utilization_cc0c53.csv", "rds_cpu_utilization_e47b3b.csv"
+          ]
+        },
+        {
+          "family": "realKnownCause",
+          "local_files": 6,
+          "local_names": [
+            "ambient_temperature_system_failure.csv",
+            "cpu_utilization_asg_misconfiguration.csv",
+            "ec2_request_latency_system_failure.csv",
+            "machine_temperature_system_failure.csv",
+            "nyc_taxi.csv",
+            "rogue_agent_key_hold.csv"
+          ],
+          "official_files": 7,
+          "role_used": "Source cohort 2: lexicographic first 6",
+          "context": "INSTANCE_SEEN",
+          "outcome": "EXPOSED as Source",
+          "evidence": [
+            "t6_nab_frozen_plan_v2.json",
+            "t6_nab_42e_census_v3.json source_known_cause",
+            "PROJECT_STATE_AND_DATA_MAP: known_cause 6 files"
+          ],
+          "authorized_roles": {
+            "development": true,
+            "source": "already used; family capped",
+            "target_held_in": false,
+            "sealed_final": false
+          },
+          "not_local": ["rogue_agent_key_updown.csv"]
+        },
+        {
+          "family": "realTraffic",
+          "local_files": 7,
+          "official_files": 7,
+          "role_used": "Source cohort 3 (#42e expansion); all 7 local files",
+          "context": "INSTANCE_SEEN (sol retrieval had already exposed some anomaly windows before Source use)",
+          "outcome": "EXPOSED as Source",
+          "evidence": [
+            "docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md Freshness 改判 INSTANCE_SEEN",
+            "t6_nab_42e_census_v3.json source_real_traffic keys",
+            "PROJECT_STATE_AND_DATA_MAP: realTraffic 7 files, Source outcomes opened"
+          ],
+          "authorized_roles": {
+            "development": true,
+            "source": "already used; may not be called virgin Target",
+            "target_held_in": false,
+            "sealed_final": false
+          }
+        },
+        {
+          "family": "realTweets",
+          "local_files": 10,
+          "official_files": 10,
+          "role_used": "Source cohort 4 (#42e); all 10 local files",
+          "context": "INSTANCE_SEEN (same pre-Source retrieval disclosure as Traffic)",
+          "outcome": "EXPOSED as Source",
+          "evidence": [
+            "STAGE_REPORT Freshness 改判",
+            "t6_nab_42e_census_v3.json source_real_tweets keys",
+            "PROJECT_STATE_AND_DATA_MAP: realTweets 10 files"
+          ],
+          "authorized_roles": {
+            "development": true,
+            "source": "already used; family capped; no 5th Source cohort",
+            "target_held_in": false,
+            "sealed_final": false
+          }
+        }
+      ],
+      "local_total": 37,
+      "p0_leftover": {
+        "official_minus_local": 10,
+        "p0_status": "FINAL_POOL_UNAVAILABLE",
+        "p0_claim": "leftover_label_outcome_exposed_by_legacy_global_load = 10",
+        "this_audit": "Did not open data/benchmark_nab_v1_1/raw/labels/combined_windows.json. Cite P0 rather than re-read leftover labels.",
+        "verdict": "The 10 official leftovers are not a legal fresh Target: they are not on disk as value files, and P0 already records leftover label/outcome exposure via a legacy global label load."
+      },
+      "serving_adapter": {
+        "exists_t6": true,
+        "code": "evaluation/functional/run_e2_t6_natural_a5_a3.py NAB loaders",
+        "run_evidence": "t6_nab_frozen_plan_v2, 42d census, 42e census/replay/acceptance",
+        "p1_main_protocol": "nab_loader_available = False"
+      },
+      "unknown": [
+        "Exact leftover keys inside combined_windows.json (not re-opened).",
+        "Artificial NAB families were not in the requested real-family audit and are not local."
+      ]
+    },
+    {
+      "asset_id": "UCR_BY_LINE",
+      "task": "classification",
+      "note": "Split, archive copy, and experiment line are the unit of exposure. P4d 'UCR TEST 0 reads' is one line only.",
+      "lines": [
+        {
+          "line": "Main-protocol P1/P3 Classification",
+          "archives": {
+            "Epilepsy2": "data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip",
+            "GunPoint": "data/ucr_task_context/GunPoint.zip",
+            "PowerCons": "data/ucr_task_context/PowerCons.zip"
+          },
+          "split": "TRAIN members only in evaluation/main_protocol_p1/classification_component.py",
+          "TRAIN": "EXPOSED (P1 smoke / P3 Support-A/B replay)",
+          "TEST": "not read by this line (no held-out member loader)",
+          "evidence": [
+            "classification_component.py header",
+            "AGENTS.md P3 Classification TRAIN replay"
+          ]
+        },
+        {
+          "line": "P4d/P4e Classification headroom",
+          "archives": {
+            "Adiac": "data/main_experiment_p0/ucr_fresh/Adiac.zip",
+            "ArrowHead": "data/main_experiment_p0/ucr_fresh/ArrowHead.zip"
+          },
+          "split": "TRAIN held-in menu sweep; TEST member bytes unread",
+          "TRAIN": "EXPOSED development diagnostics",
+          "TEST": "SEALED on this line (p4e_classification_headroom.json ucr_test_member_bytes_read=0)",
+          "menu_headroom": "ONE_FACE_POSITIVE_ONLY / no stable headroom (AGENTS.md §5.1)",
+          "plan_role": "not in the current HEC round (plan §6)"
+        },
+        {
+          "line": "P0b fresh UCR roster",
+          "archives": "data/main_experiment_p0/ucr_fresh/{Adiac,ArrowHead}.zip",
+          "TRAIN": "EXPOSED (adapter audit)",
+          "TEST": "SEALED (ROSTER.md: TEST members named/sized from ZIP directory only)",
+          "evidence": "data/main_experiment_p0/ucr_fresh/ROSTER.md; p0_readiness_20260830.md"
+        },
+        {
+          "line": "CLS capstone / CLS-CONF copies",
+          "BinaryHeartbeat_D1": {
+            "path": "data/ucr_conf_downloaded/D1/BinaryHeartbeat.zip",
+            "values_loaded": true,
+            "run": "terminated COMPUTE_BUDGET_EXCEEDED; not a completed cell",
+            "TEST": "conversion produced TRAIN and TEST txt; values loaded after format conversion"
+          },
+          "CatsDogs_D2": {
+            "path": "data/ucr_conf_downloaded/D2_sealed/CatsDogs.zip",
+            "status": "SEALED (sol 2026-08-26: remain sealed; zip members named only)"
+          },
+          "Epilepsy2_D3_capstone": {
+            "path": "data/ucr_conf_downloaded/D3_reserve/EpilepticSeizures.zip",
+            "historical_roster_note": "ROSTER.md said remain sealed; later superseded by capstone unseal",
+            "first_read_scope": "TRAIN.ts and TEST.ts parsed in full to float arrays (capstone_epilepsy2_unseal_record.json)",
+            "TRAIN": "EXPOSED",
+            "TEST": "EXPOSED on this line",
+            "evidence": "artifacts/functional/e2/capstone_epilepsy2_unseal_record.json; capstone_epilepsy2_final.md"
+          }
+        },
+        {
+          "line": "ucr_task_context 40-zip development pool",
+          "path": "data/ucr_task_context/",
+          "name_enumeration": "authorized",
+          "GunPoint_family_TRAIN": "EXPOSED (CLS L1/SA-1 development)",
+          "per_dataset_TEST": "UNKNOWN at asset level for zips other than those listed above; do not infer unread TEST from the P4d line"
+        }
+      ],
+      "serving_adapter": {
+        "train_only_p1": true,
+        "code": "evaluation/main_protocol_p1/classification_component.py",
+        "p0_multiclass": "P0b Adiac/ArrowHead TRAIN-only Macro-F1 adapter",
+        "capstone": "evaluation/functional/run_e2_capstone_epilepsy2.py (TRAIN+TEST)",
+        "run_evidence": "p0_readiness, p1/p3 classification artifacts, capstone_epilepsy2_final, p4e_classification_headroom"
+      },
+      "authorized_roles_now": {
+        "development": "TRAIN of listed exposed fixtures; CLS GunPoint-family TRAIN",
+        "source": "CLS development cards are GunPoint-family; not a new Source",
+        "target_held_in": false,
+        "sealed_final": "CatsDogs D2 remains sealed; Adiac/ArrowHead TEST remain sealed on the P0/P4e line; Epilepsy2 TEST is already open on the capstone line",
+        "current_hec_round": "UCR is out of scope (plan §6)"
+      },
+      "unknown": [
+        "TEST-member reads for each of the 40 ucr_task_context zips, except where a line-specific ledger exists.",
+        "Whether P1 later re-read Epilepsy2 TRAIN from the already-unsealed D3 zip after capstone (likely yes; still not TEST on the P1 path)."
+      ]
+    }
+  ],
+  "target_candidates": [
+    {
+      "rank": 1,
+      "name": "Monash Wind Farms Minutely (with missing values)",
+      "task": "forecast",
+      "why": "Official archive publishes a with-missing variant; series count and minimum length can host a KDD-like cell without using Solar or KDD outcomes.",
+      "public_metadata": {
+        "listing": "https://forecastingdata.org/ (Monash TSF table: Wind Farms, W Missing / W/O Missing)",
+        "paper_table": "Godahewa et al. 2021, OpenReview wEc1mgAjU- : Wind Farms, Energy, 339 series, min length 6345, max 527040, Missing=Yes, minutely",
+        "hf": "https://huggingface.co/datasets/Monash-University/monash_tsf (wind_farms_minutely)",
+        "zenodo_family_record_named_in_public_cards": "https://zenodo.org/records/4654858 (Wind Farms Production; with/without-missing pair is the Monash convention — download only the with-missing zip if authorized)"
+      },
+      "pattern_evidence_public_only": "The archive itself splits W Missing vs W/O Missing. That is official native-missingness, not an injected gap and not a utility probe. Wind SCADA outages are the documented generating process; this audit did not open any series.",
+      "access_gap": [
+        "Not present under data/ (no wind/london/rideshare directory).",
+        "No HEC-1 / scoped serving adapter.",
+        "Download not authorized.",
+        "Energy-adjacent to Solar (generation vs Solar PV). Different process and frequency; still disclose domain proximity if Solar remains F2."
+      ],
+      "hec1_geometry_fit_from_public_numbers": "min length 6345 can hold origin 3816 + horizon 48; 339 series can supply multiple 40-series blocks. Exact missing layout per series is UNKNOWN without download.",
+      "selection_rule": "task need + official missing-variant metadata. Not tried for Consumer gain."
+    },
+    {
+      "rank": 2,
+      "name": "Monash London Smart Meters (with missing values)",
+      "task": "forecast",
+      "why": "Explicit with-missing Zenodo record; 5560 series; household consumption rather than generation.",
+      "public_metadata": {
+        "zenodo": "https://zenodo.org/records/4656072",
+        "file": "london_smart_meters_dataset_with_missing_values.zip (219.7 MB, official md5 872f55a418e63981d4a9ef7b70bef478)",
+        "n_series": 5560,
+        "frequency": "half hourly",
+        "length_range_from_monash_table": "288–39648",
+        "original": "Kaggle Smart meters in London"
+      },
+      "pattern_evidence_public_only": "Dataset name and Zenodo title are 'with missing values'; Kaggle London smart-meter logs are known to contain outages/gaps. Not measured here.",
+      "access_gap": [
+        "Not local. Large download. No adapter.",
+        "Minimum length 288 cannot host HEC-1 origins near 3816. Using it would need a content-blind length gate (header token counts only) or a different origin grid, both of which need a freeze before download.",
+        "Energy consumption vs Solar PV / Wind generation: related domain, different process."
+      ]
+    }
+  ],
+  "no_local_unused_natural_gap_forecast_target": {
+    "verdict": true,
+    "why": [
+      "KDD with-missing is the in-service gapped development pool and is fully identity-exposed.",
+      "NOAA has native gaps in authorized record.json but 2024/2025 outcomes are EXPOSED.",
+      "NN5 / GEFCom2012 have documented missingness and are already development.",
+      "Solar is sealed but authorized missing count is 0.",
+      "Traffic leftover 480–861 is family-exposed (P0/D4) and missing_rate=0 in the registry census; not a natural-gap Target."
+    ]
+  },
+  "authorization_required": [
+    {
+      "item": "Download Monash wind_farms_minutely with-missing zip (or London Smart Meters with-missing)",
+      "why": "No local unused gapped forecast Target. Plan §8 lists download of a gapped forecast Target as a user grant."
+    },
+    {
+      "item": "NOAA → HEC-1 scoped serving adapter (code change)",
+      "why": "M0-b needs a second forecast development set. Legacy NOAA loaders exist; HEC-1 serving does not. Adapter work is out of this audit's permission."
+    },
+    {
+      "item": "Solar sealed protocol freeze (origins, cell, purpose) without conditioning on zip content",
+      "why": "Isolation still in force. F2 purpose (full exam vs abandon-treatment) is unverified."
+    },
+    {
+      "item": "Yahoo-41 one-shot AD final, after a freezable development pipeline",
+      "why": "AGENTS.md already requires this. Opening now is not authorized."
+    },
+    {
+      "item": "New book to read NOAA beyond_17520",
+      "why": "Explicitly sealed with no current book."
+    },
+    {
+      "item": "CatsDogs D2 unseal, or any UCR TEST other than already-opened capstone Epilepsy2 TEST",
+      "why": "Classification is out of the current HEC round; several TEST surfaces remain sealed on their own lines."
+    },
+    {
+      "item": "NAB official leftover 10 series download",
+      "why": "Not recommended as fresh: P0 already records leftover label exposure. Any use needs an explicit freshness ruling, not just a download."
+    },
+    {
+      "item": "M-W / M5 / M4 / closed-loop fits and LLM envelopes",
+      "why": "Out of this audit. Listed in the plan as separate user grants."
+    }
+  ]
+}

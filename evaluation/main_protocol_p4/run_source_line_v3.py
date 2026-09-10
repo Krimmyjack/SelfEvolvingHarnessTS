@@ -202,17 +202,39 @@ def _preflight(features: Mapping[str, Mapping[str, float]],
     only thing that knows whether ``original`` is itself already a revision.
     """
 
-    def check(original, proposed, _origin):
+    def check(original, proposed, _origin, *, program_steps=None):
         if not original:
             return narrowing.NarrowingVerdict(
                 accepted=False,
                 reason="the probe carried no Scope, so there is nothing to narrow",
             ).to_dict()
-        return narrowing.validate_narrowing(
+        lookup = ledger.root_lookup(original, program_steps=program_steps)
+        if lookup["ambiguous"]:
+            # Refusing, not falling through.  ``validate_narrowing`` skips the
+            # whole lifecycle clause budget when it is handed no root, so a
+            # Draft already at the two-clause bound would have a third clause
+            # accepted as if it were its first revision.  An unresolvable root
+            # is a reason to refuse the revision, never a reason to price it
+            # as a first one.
+            verdict = narrowing.NarrowingVerdict(
+                accepted=False,
+                reason=("the root of this Scope is ambiguous, so the "
+                        "lifecycle clause budget cannot be checked: %s"
+                        % lookup["why"]),
+            ).to_dict()
+            verdict["root_lookup"] = dict(lookup)
+            return verdict
+        verdict = narrowing.validate_narrowing(
             original, proposed, features=features,
             available_features=list(available),
-            root=ledger.root_for_scope(original)).to_dict()
+            root=lookup["root"]).to_dict()
+        verdict["root_lookup"] = dict(lookup)
+        return verdict
 
+    #: Declared so ``run_online_round`` knows it may hand this preflight the
+    #: program being revised.  A preflight without the marker keeps the old
+    #: three-argument call and is not broken by the identity being available.
+    check.accepts_program_steps = True
     return check
 
 
@@ -551,7 +573,11 @@ def _promote(*, m, cell, variant, loop, store, ledger, ctx, result, origin,
     # Slow revised it, or it was simply re-probed and admitted.  Looking it up
     # only by the selected refusal misses the second, which is exactly the path
     # the live run took at origin 2376.
-    revised = ledger.by_id(selected) or ledger.by_scope(scope)
+    # ``program_steps``: the Draft a winning policy *is* must be this program's.
+    # One predicate can front several programs, and matching on the Scope alone
+    # attributes one program's refusal to another program's Draft.
+    revised = ledger.by_id(selected) or ledger.by_scope(
+        scope, program_steps=steps)
 
     if not gate["passes"]:
         out["activated"] = False

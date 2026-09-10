@@ -79,6 +79,36 @@ def _plain(value: Any) -> Any:
         return [_plain(item) for item in value]
     return value
 
+
+def _steps_key(program_steps: Any) -> str:
+    """The typed program, as one comparable string.
+
+    Operators *and* their parameters, in order.  A Draft is a record about one
+    program; two programs that happen to share a Scope are two records, and
+    comparing only the Scope is what let one program's delayed failure be
+    recorded as another's verification face.
+    """
+    rows = []
+    for step in program_steps or ():
+        if isinstance(step, Mapping):
+            rows.append((str(step.get("op")), _plain(dict(step.get("params")
+                                                          or {}))))
+        elif isinstance(step, (tuple, list)) and step:
+            params = step[1] if len(step) > 1 else {}
+            rows.append((str(step[0]), _plain(dict(params or {}))))
+    return json.dumps(rows, sort_keys=True)
+
+
+def _program_root_identity(program_steps: Any, root_scope: Any) -> str:
+    """Program x root Scope: the rest of the census key, inside one ledger.
+
+    Task and Consumer are fixed for a ledger -- one arm runs one Task against
+    one Consumer -- so this pair identifies the lineage without the caller
+    having to know the full key.
+    """
+    return "%s@%s" % (_steps_key(program_steps),
+                      json.dumps(_plain(root_scope or {}), sort_keys=True))
+
 #: How many Slow revisions one Draft's Scope may receive over its whole life.
 #: Two: the first is the response to the Support-window refusal, the second is
 #: the response to the delayed conflict.  A third would make the delayed reading
@@ -328,22 +358,70 @@ class DraftLedger:
 
     # ---- creation ---------------------------------------------------------
 
+    def _mint_draft_id(self) -> str:
+        """The next id that no Draft in this ledger already carries.
+
+        A ledger can arrive already holding Drafts without ``_minted`` having
+        been advanced -- the M-R0d entry-state reconstruction appends its
+        Drafts directly, so a restored ledger holding ``resupplied_draft_1``
+        reports ``_minted == 0`` and the next ``open_restricted`` mints that
+        same id a second time.  Two Drafts then share an identity: ``by_id``
+        answers with whichever comes first, and a verification, a closure or a
+        promotion can be attributed to the wrong lineage.
+
+        Skipping used ids is the whole fix.  No existing Draft is renumbered
+        and none of their counters, states or closures are touched -- an id
+        already in the ledger is that Draft's identity and stays with it.
+        """
+        used = {draft.draft_id for draft in self.drafts}
+        while True:
+            self._minted += 1
+            candidate = "%s%d" % (RESUPPLY_PREFIX, self._minted)
+            if candidate not in used:
+                return candidate
+
     def restrict(self, *, program_steps: Sequence[tuple[str, Mapping[str, Any]]],
                  root_scope: Mapping[str, Any],
                  current_scope: Mapping[str, Any],
                  origin: int,
                  delayed_reading: Mapping[str, Any],
                  support_reading: Mapping[str, Any] | None = None,
-                 revisions: int = 1) -> RestrictedDraft:
-        self._minted += 1
+                 revisions: int = 1,
+                 census_key: str | None = None) -> RestrictedDraft:
+        """Mint the Draft a refused deployment becomes.
+
+        Bounded by the same rule ``open_restricted`` already enforces, and for
+        the same reason: one lineage per identity per ledger, ever.  A second
+        shell arrives with ``revisions=0`` and ``verification_attempts=0``, so
+        reopening a lineage -- closed or open -- is how a Draft walks past the
+        two-revision and three-verification bounds one legal-looking step at a
+        time.  M-R0 measured that happening: two shells of one identity took
+        four and six verification faces between them against a bound of three.
+
+        The guard fires on the ``census_key`` when the caller knows it, and on
+        ``(program, root Scope)`` regardless -- Task and Consumer are fixed
+        within one ledger, so that pair is the rest of the key and no caller
+        can bypass the bound by omitting it.
+        """
+        existing = (self.by_census_key(census_key)
+                    or self.by_program_and_root(program_steps, root_scope))
+        if existing is not None:
+            raise ValueError(
+                "lineage %r already has a Draft (%s, state=%r, closed=%r) in "
+                "this ledger; reopening it under a new shell would reset the "
+                "revision and verification counters"
+                % (census_key or _program_root_identity(program_steps,
+                                                        root_scope),
+                   existing.draft_id, existing.state, existing.closed))
         draft = RestrictedDraft(
-            draft_id="%s%d" % (RESUPPLY_PREFIX, self._minted),
+            draft_id=self._mint_draft_id(),
             program_steps=tuple((str(op), dict(params))
                                 for op, params in program_steps),
             root_scope=dict(root_scope),
             current_scope=dict(current_scope),
             revisions=int(revisions),
             created_at_origin=int(origin),
+            census_key=(str(census_key) if census_key else None),
         )
         draft.delayed_failures.append({
             "origin": int(origin),
@@ -376,6 +454,21 @@ class DraftLedger:
                 return draft
         return None
 
+    def by_program_and_root(self, program_steps: Any,
+                            root_scope: Any) -> RestrictedDraft | None:
+        """The lineage for this identity, open or closed.
+
+        Closed included: that is the whole point of the bound.  Used by
+        ``restrict`` so a caller that does not know the full census key still
+        cannot open a second shell for an identity this ledger already carries.
+        """
+        target = _program_root_identity(program_steps, root_scope)
+        for draft in self.drafts:
+            if _program_root_identity(draft.program_steps,
+                                      draft.root_scope) == target:
+                return draft
+        return None
+
     def open_restricted(self, *,
                         program_steps: Sequence[tuple[str, Mapping[str, Any]]],
                         root_scope: Mapping[str, Any],
@@ -392,15 +485,25 @@ class DraftLedger:
         both of which are selection, not authorisation -- so it enters with no
         state, no verification attempts and no deployment rights, and it earns
         an ``Active`` only by clearing Support and delayed on a *new* unit.
+
+        Guarded identically to ``restrict``.  Keying only on ``census_key``
+        left three ways through: no key at all, a *different* key for the same
+        identity, and a key whose lineage this ledger opened through the other
+        entry.  Each of them mints a shell with ``revisions=0`` and
+        ``verification_attempts=0``, which is the bound being walked past.
         """
-        if census_key and self.by_census_key(census_key) is not None:
+        existing = (self.by_census_key(census_key)
+                    or self.by_program_and_root(program_steps, root_scope))
+        if existing is not None:
             raise ValueError(
-                "census key %r already has a lineage in this course; reopening "
-                "it under a new shell would reset the revision and "
-                "verification counters" % census_key)
-        self._minted += 1
+                "lineage %r already has a Draft (%s, state=%r, closed=%r) in "
+                "this ledger; reopening it under a new shell would reset the "
+                "revision and verification counters"
+                % (census_key or _program_root_identity(program_steps,
+                                                        root_scope),
+                   existing.draft_id, existing.state, existing.closed))
         draft = RestrictedDraft(
-            draft_id="%s%d" % (RESUPPLY_PREFIX, self._minted),
+            draft_id=self._mint_draft_id(),
             program_steps=tuple((str(op), dict(params))
                                 for op, params in program_steps),
             root_scope=dict(root_scope),
@@ -544,7 +647,8 @@ class DraftLedger:
                 return draft
         return None
 
-    def by_scope(self, scope: Mapping[str, Any] | None) -> RestrictedDraft | None:
+    def by_scope(self, scope: Mapping[str, Any] | None,
+                 *, program_steps: Any = None) -> RestrictedDraft | None:
         """The open Draft a winning policy *is*, found by what it deploys.
 
         A restricted Draft does not only come back through a second refusal.
@@ -557,18 +661,34 @@ class DraftLedger:
         Skill and was handed a further revision at 2856 that cost six LLM calls
         and produced a record in which one program was simultaneously an active
         Skill and an unresolved Draft.
+
+        ``program_steps`` narrows the match to the Draft that is *this*
+        program.  Several Drafts can share one predicate -- the HEC-1
+        initialiser hands the same ``local_robust_z_peak >= 3.0`` to every
+        ``outlier_*`` program -- and matching on the Scope alone recorded one
+        program's delayed failure as another's verification face, consuming the
+        wrong lineage's last attempt and closing it (M-R0, reverse A5-online:
+        a ``winsorize`` refusal closed the ``outlier_mad`` Draft).  Left
+        optional so callers that keep one program per ledger are unchanged;
+        every caller that has the steps should pass them.
         """
         if not scope:
             return None
         target = json.dumps(_plain(scope), sort_keys=True)
+        wanted = None if program_steps is None else _steps_key(program_steps)
         for draft in self.drafts:
-            if (draft.closed is None
-                    and json.dumps(_plain(draft.current_scope), sort_keys=True)
-                    == target):
-                return draft
+            if draft.closed is not None:
+                continue
+            if json.dumps(_plain(draft.current_scope),
+                          sort_keys=True) != target:
+                continue
+            if wanted is not None and _steps_key(draft.program_steps) != wanted:
+                continue
+            return draft
         return None
 
-    def root_for_scope(self, scope: Mapping[str, Any] | None
+    def root_for_scope(self, scope: Mapping[str, Any] | None,
+                       *, program_steps: Any = None
                        ) -> Mapping[str, Any] | None:
         """The initialiser's predicate behind a Scope now under revision.
 
@@ -578,13 +698,70 @@ class DraftLedger:
         Draft's current predicate resolves to that Draft's root, and the
         preflight then counts added clauses against the initialiser rather than
         against the previous step.
+
+        A predicate can front several programs -- the HEC-1 initialiser hands
+        one ``local_robust_z_peak >= 3.0`` to every ``outlier_*`` program -- so
+        a Scope-only match can name more than one Draft.  Two rules keep this
+        from answering with another program's root:
+
+        * ``program_steps``, when the caller knows it, selects the Draft that
+          is this program's;
+        * without it, a match that resolves to **more than one distinct root**
+          is ambiguous, and ambiguity returns ``None``.  The preflight's
+          documented behaviour for "no root applies" is to count added clauses
+          against the previous step, which is the conservative answer; guessing
+          a root would silently price one program's revision against another's
+          initialiser.  Matches that agree on the root are not ambiguous: the
+          value returned is the same whichever Draft it came from.
+        """
+        return self.root_lookup(scope, program_steps=program_steps)["root"]
+
+    def root_lookup(self, scope: Mapping[str, Any] | None,
+                    *, program_steps: Any = None) -> dict[str, Any]:
+        """``root_for_scope`` with the ambiguity spelled out rather than lost.
+
+        ``root_for_scope`` has to answer with a predicate or with ``None``, and
+        those two answers do not distinguish "this Scope is itself the root, so
+        no root applies" from "several programs share this Scope and their
+        roots disagree".  The caller must, because ``validate_narrowing`` skips
+        the whole lifecycle clause budget when it is handed no root: a Draft
+        already two clauses past its initialiser would have a third accepted as
+        though it were the first revision.  Ambiguity therefore has to refuse,
+        not fall through, and this is what lets the preflight tell them apart.
         """
         if not scope:
-            return None
-        for draft in self.drafts:
-            if dict(draft.current_scope) == dict(scope):
-                return dict(draft.root_scope)
-        return None
+            return {"root": None, "matches": 0, "ambiguous": False,
+                    "distinct_roots": 0,
+                    "why": "no Scope was supplied to look a root up for"}
+        target = dict(scope)
+        wanted = None if program_steps is None else _steps_key(program_steps)
+        matches = [draft for draft in self.drafts
+                   if dict(draft.current_scope) == target
+                   and (wanted is None
+                        or _steps_key(draft.program_steps) == wanted)]
+        roots = {json.dumps(_plain(draft.root_scope), sort_keys=True)
+                 for draft in matches}
+        if not matches:
+            return {"root": None, "matches": 0, "ambiguous": False,
+                    "distinct_roots": 0,
+                    "why": ("no open Draft carries this predicate, so it is "
+                            "its own root and this is a first revision")}
+        if len(roots) > 1:
+            return {
+                "root": None, "matches": len(matches), "ambiguous": True,
+                "distinct_roots": len(roots),
+                "program_identity_supplied": wanted is not None,
+                "why": ("%d Drafts share this predicate and their roots "
+                        "disagree; answering with either one would price this "
+                        "program's revision against another program's "
+                        "initialiser, and answering with None would hide the "
+                        "lifecycle clause budget altogether"
+                        % len(matches)),
+            }
+        return {"root": dict(matches[0].root_scope), "matches": len(matches),
+                "ambiguous": False, "distinct_roots": 1,
+                "program_identity_supplied": wanted is not None,
+                "why": "one root applies to this predicate"}
 
     # ---- outcome ----------------------------------------------------------
 

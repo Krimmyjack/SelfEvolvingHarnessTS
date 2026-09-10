@@ -53,6 +53,26 @@ from evaluation.main_protocol_p4 import restricted_draft as drafts
 from evaluation.main_protocol_p4 import scope_initializer as initializer
 from evaluation.main_protocol_p4 import scope_narrowing_preflight as narrowing
 from evaluation.main_protocol_p4 import scope_threshold_tool as tool_module
+from SelfEvolvingHarnessTS.methods.ttha import experience_memory as memory
+
+#: The only strings that are a *relation*.  Imported from the module that
+#: defines them rather than restated, so the census and the Episode classifier
+#: cannot drift into two vocabularies that share a name.
+#:
+#: M-R0: a bank row used to be read as ``row["relation"] or row["admission"]``,
+#: and ``row["admission"]`` carries an ``AdmissionVerdict.reason`` -- a
+#: *deployment-admission* verdict, not a relation.  Reasons such as
+#: ``within_risk_budget`` are not in this tuple, so they are no longer mistaken
+#: for one; a row that carries no usable relation falls through to this
+#: module's own gain-based definition instead of silently answering with a
+#: string that matches nothing the census counts.
+RELATIONS = (
+    memory.RELATION_POSITIVE,
+    memory.RELATION_NEGATIVE,
+    memory.RELATION_CONFLICT,
+    memory.RELATION_ABSTAIN,
+    memory.RELATION_NEUTRAL,
+)
 
 #: How many times a program must appear as POSITIVE in the bank, with no card
 #: holding it, before the census proposes an ADD.
@@ -205,9 +225,36 @@ def behaviour_fingerprint(per_series_gain: Mapping[str, float] | None,
     return json.dumps(rows, separators=(",", ":"))
 
 
+def exact_reading(per_series_gain: Mapping[str, float] | None) -> str:
+    """The reading itself, at full precision, for deciding "is this the same".
+
+    Deliberately **not** ``behaviour_fingerprint``.  That rounds to six
+    decimals because its job is to collapse programs whose effects are
+    indistinguishable at the resolution the alias rule cares about; borrowing
+    it to decide whether two bank rows are the same observation would merge
+    -0.3000001 with -0.2999999 and quietly drop a genuinely different reading.
+    Two readings count as one observation only when the numbers are equal.
+
+    ``repr`` of a float round-trips exactly, so this compares the values that
+    were recorded rather than a summary of them.  No hash: the raw rows stay in
+    the bank and this string is only a comparison key.
+    """
+    rows = sorted((str(uid), repr(float(value)))
+                  for uid, value in dict(per_series_gain or {}).items())
+    return json.dumps(rows, separators=(",", ":"))
+
+
 def _relation(row: Mapping[str, Any], material: float) -> str:
-    declared = str(row.get("relation") or row.get("admission") or "").upper()
-    if declared:
+    """The row's relation: the Episode's if it has one, else read off the gains.
+
+    ``row["admission"]`` is deliberately *not* consulted.  It holds an
+    ``AdmissionVerdict.reason``, which answers "may this deploy?" and not "what
+    happened?"; reading it as a relation is what made ``positive_units`` and
+    ``adverse_units`` identically zero for the whole of HEC-1.  A declared value
+    is honoured only when it is one of the relations ``RELATIONS`` names.
+    """
+    declared = str(row.get("relation") or "").upper()
+    if declared in RELATIONS:
         return declared
     gains = [float(value) for value in
              dict(row.get("per_series_gain") or {}).values()]
@@ -304,19 +351,55 @@ def census(bank: Sequence[Mapping[str, Any]], *,
             "units": [],
             "unit_keys": [],
             "relations": [],
+            "readings": [],
             "rows": [],
             "source_skill_ids": [],
             "fingerprints": {},
+            "seen_observations": set(),
+            "row_tokens": set(),
+            "bank_rows_seen": 0,
+            "duplicate_observations_dropped": 0,
         })
+        bucket["bank_rows_seen"] += 1
+        relation = _relation(row, material)
+        # One unit probing one program twice writes two bank rows.  If the two
+        # readings are identical there is one observation, and counting it
+        # twice inflates ``adverse_units`` against a threshold that is written
+        # in units -- and doubles the weight of the same series in the evidence
+        # the threshold tool searches.  Deduplication happens here, in the
+        # census view; the bank keeps every row it was handed.
+        #
+        # Only *exact* repeats collapse: same unit, the same numbers, the same
+        # relation.  Sameness is decided on ``exact_reading`` -- the recorded
+        # per-series values -- and not on the six-decimal behaviour
+        # fingerprint, which exists for the alias rule and would merge
+        # -0.3000001 with -0.2999999.  Two different readings of one unit are
+        # left as two entries and the unit is flagged instead, because
+        # choosing between them (first, last, worst, or adverse-wins) is a
+        # protocol question this module must not answer on its own.
+        reading = exact_reading(row.get("per_series_gain"))
+        observation = (unit, reading, relation)
+        if observation in bucket["seen_observations"]:
+            bucket["duplicate_observations_dropped"] += 1
+            continue
+        bucket["seen_observations"].add(observation)
         bucket["units"].append(row.get("unit"))
         bucket["unit_keys"].append(unit)
         bucket["fingerprints"][unit] = fingerprint
-        bucket["relations"].append(_relation(row, material))
+        bucket["relations"].append(relation)
+        bucket["readings"].append(reading)
         skill_id = row.get("source_skill_id")
         if skill_id and skill_id not in bucket["source_skill_ids"]:
             bucket["source_skill_ids"].append(str(skill_id))
         features = dict(row.get("features") or {})
         for uid, gain in dict(row.get("per_series_gain") or {}).items():
+            # Exact, for the same reason: a rounded token would drop a
+            # genuinely different reading of one series out of the evidence
+            # the threshold tool searches.
+            token = (unit, str(uid), repr(float(gain)))  # exact, per unit
+            if token in bucket["row_tokens"]:
+                continue
+            bucket["row_tokens"].add(token)
             bucket["rows"].append({
                 "unit": row.get("unit"),
                 "series": str(uid),
@@ -334,22 +417,38 @@ def census(bank: Sequence[Mapping[str, Any]], *,
             continue
         if key != target:
             into["aliases"].append(bucket["program_signature"])
-        seen = {(row["unit"] and _unit_key(row["unit"]), row["series"])
-                for row in into["rows"]}
+        # Rows: exact, so an alias that read one series differently keeps both
+        # numbers in the evidence the threshold tool searches.
         for row in bucket["rows"]:
-            token = (row["unit"] and _unit_key(row["unit"]), row["series"])
-            if token not in seen:
+            token = (row["unit"] and _unit_key(row["unit"]), row["series"],
+                     repr(float(row["gain"])))
+            if token not in into["row_tokens"]:
+                into["row_tokens"].add(token)
                 into["rows"].append(row)
-                seen.add(token)
-        for unit, unit_key, relation in zip(
-                bucket["units"], bucket["unit_keys"], bucket["relations"]):
-            if unit_key not in into["unit_keys"]:
-                into["units"].append(unit)
-                into["unit_keys"].append(unit_key)
-                into["relations"].append(relation)
+        # Observations: a **union**, not first-wins per unit.  Dropping an
+        # alias's reading because the representative already had one for that
+        # unit is how a unit that disagrees with itself came out of the merge
+        # looking unanimous -- and then cast the vote its own evidence denies.
+        # Only an exact repeat of an observation already held collapses, and
+        # that collapse is counted like any other.
+        for unit, unit_key, relation, reading in zip(
+                bucket["units"], bucket["unit_keys"], bucket["relations"],
+                bucket["readings"]):
+            observation = (unit_key, reading, relation)
+            if observation in into["seen_observations"]:
+                into["duplicate_observations_dropped"] += 1
+                continue
+            into["seen_observations"].add(observation)
+            into["units"].append(unit)
+            into["unit_keys"].append(unit_key)
+            into["relations"].append(relation)
+            into["readings"].append(reading)
         for skill_id in bucket["source_skill_ids"]:
             if skill_id not in into["source_skill_ids"]:
                 into["source_skill_ids"].append(skill_id)
+        into["bank_rows_seen"] += bucket["bank_rows_seen"]
+        into["duplicate_observations_dropped"] += bucket[
+            "duplicate_observations_dropped"]
 
     ordered = sorted(merged.values(),
                      key=lambda g: (g["task_consumer_key"],
@@ -358,12 +457,60 @@ def census(bank: Sequence[Mapping[str, Any]], *,
     for group in ordered:
         counts = {name: group["relations"].count(name)
                   for name in sorted(set(group["relations"]))}
+        # Observations, kept as they were: how many readings this group holds.
         group["relation_counts"] = counts
-        group["unit_count"] = len(group["unit_keys"])
-        group["positive_units"] = counts.get("POSITIVE", 0)
-        group["adverse_units"] = (counts.get("CONFLICT", 0)
-                                  + counts.get("NEGATIVE", 0))
+        group["observations"] = len(group["relations"])
+
+        # Votes, which is what the thresholds are written in.  One unit, one
+        # vote, and only when the unit says one thing (R1, Fable's strict
+        # consensus rule).  A unit whose readings disagree contributes to
+        # neither ``positive_units`` nor ``adverse_units`` and is listed
+        # instead: NEGATIVE beside CONFLICT is a disagreement like any other,
+        # not an adverse majority, because "the effect is gone here" and "the
+        # effect is still there but it hurts someone" are different findings
+        # and picking one of them is a protocol decision, not a census one.
+        # Derived from the observations the group actually holds, after any
+        # alias merge, so nothing about a unit can be decided by which bucket
+        # happened to represent its alias class.
+        by_unit: dict[str, set[str]] = {}
+        observations_by_unit: dict[str, set[tuple[str, str]]] = {}
+        for unit_key, relation, reading in zip(
+                group["unit_keys"], group["relations"], group["readings"]):
+            by_unit.setdefault(unit_key, set()).add(relation)
+            observations_by_unit.setdefault(unit_key, set()).add(
+                (reading, relation))
+        votes: dict[str, int] = {}
+        split: list[str] = []
+        for unit_key, relations in by_unit.items():
+            if len(relations) == 1:
+                name = next(iter(relations))
+                votes[name] = votes.get(name, 0) + 1
+            else:
+                split.append(unit_key)
+        group["unit_count"] = len(by_unit)
+        group["unit_votes"] = dict(sorted(votes.items()))
+        group["units_without_a_consistent_relation"] = sorted(split)
+        group["positive_units"] = votes.get("POSITIVE", 0)
+        group["adverse_units"] = (votes.get("CONFLICT", 0)
+                                  + votes.get("NEGATIVE", 0))
+        group["vote_rule"] = (
+            "one unit, one vote, and only when every reading in that unit "
+            "carries the same relation; a unit that disagrees with itself is "
+            "counted in neither total and named in "
+            "units_without_a_consistent_relation")
         group["aliases"] = sorted(group.get("aliases") or ())
+        # The deduplication, stated rather than implied.  ``bank_rows_seen``
+        # is what the bank handed over; the counts above are observations.
+        group.pop("seen_observations", None)
+        group.pop("row_tokens", None)
+        group.pop("readings", None)
+        group["units_with_more_than_one_distinct_observation"] = sorted(
+            unit_key for unit_key, seen in observations_by_unit.items()
+            if len(seen) > 1)
+        group["multi_observation_units_are_not_aggregated_here"] = (
+            "a unit that carries two different readings of one program keeps "
+            "both entries; which one -- or which combination -- is the unit's "
+            "evidence is a protocol question, not a census one")
         group["behavior_fingerprints"] = dict(group.pop("fingerprints"))
     return ordered
 
@@ -378,6 +525,86 @@ def census_key(task_consumer_key: Any, program_steps: Any,
     return "%s|%s@%s" % (str(task_consumer_key or ""),
                         _program_signature(program_steps),
                         _root_scope_signature(root_scope))
+
+
+def _revisable_now(draft: drafts.RestrictedDraft,
+                   evidence: Sequence[Mapping[str, Any]]) -> bool:
+    """The condition the Draft loop already uses to propose a ``REVISE``.
+
+    Stated once so the ``NARROW`` fold cannot drift away from it: a lineage the
+    Draft loop is about to propose must not also be proposed as a ``NARROW``,
+    and a lineage it will not propose must not be folded onto silently.
+    """
+    verified_since_revision = bool(
+        draft.history and draft.history[-1].get("event") == "verification")
+    return bool(draft.state == drafts.REVISABLE and evidence
+                and draft.may_add_clause() and verified_since_revision)
+
+
+def _fold_narrow_onto(draft: drafts.RestrictedDraft,
+                      base: Mapping[str, Any], *,
+                      rows_by_signature: Mapping[str, Sequence[Mapping[str, Any]]],
+                      ) -> dict[str, Any]:
+    """What a ``NARROW`` becomes when its lineage already carries a Draft.
+
+    The Active card's adverse evidence and the Draft are the same lineage: the
+    Draft is the record of that card's own refused redeployment.  Opening a
+    second shell for it would restart the revision and verification counters,
+    so the mint refuses -- and it used to refuse only *after* Slow and the
+    replay screen had been paid for.  So the decision moves here:
+
+    * the Draft is open, ``REVISABLE`` and otherwise ready -> the ``NARROW``
+      becomes a ``REVISE`` of that Draft, starting from its ``current_scope``
+      and keeping its ``root_scope``, so the clause budget is still counted
+      against the initialiser and the ancestry is unbroken.  Nothing is
+      incremented here; ``record_revision`` still does that when a clause is
+      actually calibrated, and the later verification still costs an attempt.
+    * the Draft is in a state that forbids narrowing -> refused now, with the
+      reason named, and Slow is never called.
+
+    ``FLAGGED`` is untouched by this: it forbids narrowing for its own reason
+    and continues to.
+    """
+    signature = str(base["program_signature"])
+    if draft.closed is not None:
+        return {"refused": True, "outcome": "LINEAGE_CLOSED",
+                "why": ("this lineage's Draft is closed (%s); a narrowing "
+                        "would need a new shell, and a new shell restarts the "
+                        "revision and verification counters"
+                        % draft.closed)}
+    if draft.state == drafts.FLAGGED:
+        return {"refused": True, "outcome": "REVISION_TARGET_FLAGGED",
+                "why": ("the lineage's Draft is FLAGGED: the damage was "
+                        "dominated by series the Skill had already treated, "
+                        "so narrowing would repair the wrong surface")}
+    if draft.state == drafts.WAITING:
+        return {"refused": True, "outcome": "REVISION_TARGET_WAITING",
+                "why": ("the lineage's Draft is WAITING: only the coverage "
+                        "floor failed, and narrowing would reduce the "
+                        "coverage further")}
+    if not draft.may_add_clause():
+        return {"refused": True, "outcome": "REVISION_BUDGET_EXHAUSTED",
+                "why": ("the lineage's Draft has spent its revision budget "
+                        "(%d of %d)" % (draft.revisions, drafts.MAX_REVISIONS))}
+    if not (draft.history
+            and draft.history[-1].get("event") == "verification"):
+        return {"refused": True,
+                "outcome": "AWAITING_VERIFICATION_OF_LAST_REVISION",
+                "why": ("a second clause needs a second reading; this Draft "
+                        "has not been verified since its last revision")}
+    if _revisable_now(draft, rows_by_signature.get(signature) or []):
+        # The Draft loop is going to propose exactly this lineage, from this
+        # Draft's ``current_scope`` and against its ``root_scope``.  That *is*
+        # the merged candidate: the narrowing's adverse evidence is carried
+        # onto it, and no second candidate is opened beside it.
+        return {"already_proposed": True}
+    # Open, REVISABLE, in budget, verified -- and the Draft loop still will not
+    # propose it, which can only mean the bank holds no row under this
+    # program's signature.  A narrowing with no evidence to calibrate on is
+    # refused rather than sent to Slow to invent one.
+    return {"refused": True, "outcome": "NO_EVIDENCE_FOR_THE_LINEAGE",
+            "why": ("the lineage is revisable but the bank holds no row under "
+                    "%s to calibrate a clause on" % signature)}
 
 
 def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
@@ -405,16 +632,37 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
     What is held is therefore read from the lineage itself, not inferred from
     which bank rows happen to carry a ``source_skill_id``: a card can hold a key
     without any row in this window naming it.
+
+    Two sets, not one.  ``ADD`` is deduplicated against **every** lineage this
+    course has opened -- Active cards and Drafts, open and closed -- for the
+    reason spelled out above.  ``NARROW`` tests only the Active set the runner
+    passed, because its own evidence sentence is "an Active Skill came back
+    CONFLICT or NEGATIVE" and a Draft holds no deployment rights to narrow.
+    Until ``restrict`` began recording a census key, ``ledger.lineage_keys()``
+    was always empty and the two sets were indistinguishable; separating them
+    keeps ``NARROW``'s target set exactly what it has always been rather than
+    letting the repair hand it a new class of target.
     """
-    held = {str(key) for key in held_lineage_keys} | ledger.lineage_keys()
+    active = {str(key) for key in held_lineage_keys}
+    known = active | ledger.lineage_keys()
     candidates: list[dict[str, Any]] = []
     signals: list[dict[str, Any]] = []
+    #: Adverse evidence a ``NARROW`` folded into a Draft the loop below is
+    #: already going to propose.  One lineage produces one candidate per step,
+    #: so the evidence is carried onto that candidate rather than opening a
+    #: second one beside it.
+    folded_narrow_evidence: dict[str, dict[str, Any]] = {}
+
+    rows_by_signature: dict[str, list[dict[str, Any]]] = {}
+    for group in groups:
+        rows_by_signature.setdefault(
+            str(group["program_signature"]), []).extend(group["rows"])
 
     for group in groups:
         signature = str(group["program_signature"])
         key = str(group.get("census_key") or "")
         if (group["positive_units"] >= MIN_POSITIVE_UNITS_FOR_ADD
-                and key not in held):
+                and key not in known):
             candidates.append({
                 "kind": "ADD",
                 "task_consumer_key": group["task_consumer_key"],
@@ -443,8 +691,14 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
                     % group["positive_units"]),
             })
         if (group["adverse_units"] >= MIN_ADVERSE_UNITS_FOR_NARROWING
-                and key in held):
-            candidates.append({
+                and key in active):
+            narrow_evidence = {
+                "adverse_units": group["adverse_units"],
+                "unit_votes": dict(group.get("unit_votes") or {}),
+                "relation_counts": group["relation_counts"],
+                "units": list(group["units"]),
+            }
+            base = {
                 "kind": "NARROW",
                 "task_consumer_key": group["task_consumer_key"],
                 "program_signature": signature,
@@ -455,21 +709,46 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
                 "program_steps": list(group["program_steps"]),
                 "rows": list(group["rows"]),
                 "skill_ids": list(group["source_skill_ids"]),
-                "evidence": {
-                    "adverse_units": group["adverse_units"],
-                    "relation_counts": group["relation_counts"],
-                    "units": list(group["units"]),
-                },
-                "needs_clause": True,
+                "evidence": narrow_evidence,
                 "why": (
                     "an Active Skill came back CONFLICT or NEGATIVE on %d "
                     "already-processed units" % group["adverse_units"]),
-            })
-
-    rows_by_signature: dict[str, list[dict[str, Any]]] = {}
-    for group in groups:
-        rows_by_signature.setdefault(
-            str(group["program_signature"]), []).extend(group["rows"])
+            }
+            # The same identity test the mint uses.  Keying the lookup on the
+            # census key alone missed a Draft that carries no key, or carries a
+            # different one for the same (program, root Scope) -- and those are
+            # exactly the Drafts ``restrict`` used to mint before it recorded a
+            # key.  Missing one here put the narrowing back on the old road:
+            # a clause calibrated, a replay screen paid for, and only then a
+            # refusal at ``open_restricted``, which tests this pair.
+            existing = (ledger.by_census_key(key)
+                        or ledger.by_program_and_root(
+                            group["program_steps"],
+                            group.get("root_scope") or {}))
+            if existing is None:
+                # Nothing of this lineage on record: the original path, which
+                # ends in a Draft of its own.
+                candidates.append({**base, "needs_clause": True})
+            else:
+                fold = _fold_narrow_onto(
+                    existing, base, rows_by_signature=rows_by_signature)
+                if fold.get("refused"):
+                    # Refused here, before Slow and before the replay screen.
+                    # Paying for a clause and a screen only to be turned away
+                    # at the mint is what the previous shape did.
+                    candidates.append({
+                        **base, "needs_clause": False,
+                        "outcome_preset": fold["outcome"],
+                        "why_refused": fold["why"],
+                        "draft_id": existing.draft_id,
+                        "draft_state": existing.state,
+                    })
+                else:
+                    # The Draft loop below proposes this lineage from the
+                    # Draft's own current predicate.  One candidate per lineage
+                    # per step: the adverse evidence rides along on that one
+                    # rather than opening a second beside it.
+                    folded_narrow_evidence[existing.draft_id] = narrow_evidence
 
     for draft in ledger.open_drafts():
         signature = _program_signature(draft.program_steps)
@@ -505,11 +784,10 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
         # A second clause needs a second reading.  Without this, a Draft revised
         # at step k is proposed again at step k+1 on the very rows its first
         # clause was calibrated on, and both revisions are spent before any new
-        # unit has verified either.
-        verified_since_revision = bool(
-            draft.history and draft.history[-1].get("event") == "verification")
-        if (draft.state == drafts.REVISABLE and evidence
-                and draft.may_add_clause() and verified_since_revision):
+        # unit has verified either.  (``_revisable_now`` states the condition
+        # once, so the NARROW fold above cannot drift away from it.)
+        if _revisable_now(draft, evidence):
+            folded = folded_narrow_evidence.get(draft.draft_id)
             candidates.append({
                 "kind": "REVISE",
                 "task_consumer_key": "",
@@ -521,7 +799,9 @@ def propose_candidates(groups: Sequence[Mapping[str, Any]], *,
                 "base_scope": dict(draft.current_scope),
                 "root_scope": dict(draft.root_scope),
                 "evidence": {"bank_rows": len(evidence),
-                             "revisions_so_far": draft.revisions},
+                             "revisions_so_far": draft.revisions,
+                             **({"folded_from_narrow": folded}
+                                if folded else {})},
                 "needs_clause": True,
                 "why": (
                     "a REVISABLE Draft has %d new bank rows to calibrate a "
@@ -711,8 +991,12 @@ def consolidate(*, bank: Sequence[Mapping[str, Any]],
     record.groups = [
         {key: group[key] for key in (
             "task_consumer_key", "program_signature", "root_scope_signature",
-            "census_key", "aliases", "unit_count", "relation_counts",
-            "positive_units", "adverse_units")}
+            "census_key", "aliases", "unit_count", "observations",
+            "relation_counts", "unit_votes",
+            "units_without_a_consistent_relation",
+            "positive_units", "adverse_units", "bank_rows_seen",
+            "duplicate_observations_dropped",
+            "units_with_more_than_one_distinct_observation")}
         for group in groups]
     candidates, signals = propose_candidates(
         groups, ledger=ledger, held_lineage_keys=held_lineage_keys)
@@ -732,6 +1016,20 @@ def consolidate(*, bank: Sequence[Mapping[str, Any]],
         if candidate["kind"] == "REVOKE":
             record.revocation_recommendations.append(entry)
             record.candidates.append({**entry, "outcome": "RECOMMENDED"})
+            continue
+
+        if candidate.get("outcome_preset"):
+            # Decided in ``propose_candidates`` -- a narrowing whose lineage
+            # already carries a Draft that cannot take a clause.  Recorded
+            # here without calling Slow and without a replay screen: the old
+            # shape paid for both and was then turned away at the mint.
+            record.candidates.append({
+                **entry,
+                "outcome": candidate["outcome_preset"],
+                "why_refused": candidate.get("why_refused"),
+                "draft_id": candidate.get("draft_id"),
+                "draft_state": candidate.get("draft_state"),
+            })
             continue
 
         scope: Mapping[str, Any] | None
@@ -835,18 +1133,31 @@ def consolidate(*, bank: Sequence[Mapping[str, Any]],
             record.candidates.append(entry)
             continue
 
-        draft = ledger.open_restricted(
-            program_steps=_steps_tuple(candidate["program_steps"]),
-            root_scope=dict(candidate.get("root_scope") or scope or {}),
-            current_scope=dict(scope or {}),
-            origin=int(k_index),
-            census_key=candidate.get("census_key"),
-            provenance={
-                "outer_step": int(k_index),
-                "kind": candidate["kind"],
-                "evidence": candidate.get("evidence"),
-                "replay_cells": verdict["cells_replayed"],
-            })
+        try:
+            draft = ledger.open_restricted(
+                program_steps=_steps_tuple(candidate["program_steps"]),
+                root_scope=dict(candidate.get("root_scope") or scope or {}),
+                current_scope=dict(scope or {}),
+                origin=int(k_index),
+                census_key=candidate.get("census_key"),
+                provenance={
+                    "outer_step": int(k_index),
+                    "kind": candidate["kind"],
+                    "evidence": candidate.get("evidence"),
+                    "replay_cells": verdict["cells_replayed"],
+                })
+        except ValueError as exc:
+            # The ledger refuses a second shell for a key it already carries.
+            # A ``NARROW`` on an Active card whose failed redeployment is
+            # already recorded as a Draft lands here: opening one anyway is
+            # what resets the revision and verification counters, and merging
+            # the clause into the existing Draft would change what NARROW
+            # produces.  Recorded as a refusal for the report to count; the
+            # decision belongs to whoever rules on that question.
+            entry["outcome"] = "LINEAGE_ALREADY_HAS_A_DRAFT"
+            entry["why_refused"] = str(exc)[:240]
+            record.candidates.append(entry)
+            continue
         entry["outcome"] = "RESTRICTED_DRAFT_OPENED"
         entry["draft_id"] = draft.draft_id
         record.drafts_opened.append(draft.draft_id)

@@ -36,8 +36,8 @@ import numpy as np
 
 from evaluation.main_protocol_p1 import run_forecast_p1 as forecast_p1
 from evaluation.main_protocol_p4 import hec1_contract as contract
+from evaluation.main_protocol_p4 import hec1_scoreability as scoreability
 from evaluation.main_protocol_p4 import run_hec1 as runner
-from evaluation.main_protocol_p4 import scoped_serving_evaluator as scoped
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUT_JSON = PROJECT_ROOT / "artifacts/main_protocol/hec1_best_safe_global.json"
@@ -94,13 +94,28 @@ def _clears(reading: Mapping[str, Any]) -> bool:
 
 
 def evaluate_unit(unit: Mapping[str, Any],
-                  programs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+                  programs: Sequence[Mapping[str, Any]],
+                  cache: runner.ReplayPredictionCache) -> dict[str, Any]:
     """The best in-budget global program on one unit's evaluation face."""
     ctx = runner.UnitContext(unit)
     face_origin = ctx.face_origin(runner.EVALUATION_OFFSET)
     everyone = frozenset(ctx.eval_uids)
+    if not scoreability.unit_is_scoreable(unit):
+        return {
+            "unit": ctx.unit,
+            "evaluation_origin": face_origin,
+            "served": len(ctx.eval_uids),
+            "scoreable": False,
+            "why_unscoreable": scoreability.UNSCOREABLE_REASON,
+            "programs_evaluated": 0,
+            "in_budget": 0,
+            "best_safe_global": None,
+            "identity_when_none_clears": None,
+            "consumer_fits": 0,
+            "readings": [],
+        }
     rows: list[dict[str, Any]] = []
-    fits = 0
+    fits_before = int(cache.physical_fits)
     for program in programs:
         steps = _steps(program)
         if not steps:
@@ -110,12 +125,15 @@ def evaluate_unit(unit: Mapping[str, Any],
                          "identity": True})
             continue
         try:
-            reading = runner._policy_reading(ctx, face_origin, steps, everyone)
+            # One cached evaluator call already returns both the raw and the
+            # program prediction vectors.  Calling ``_policy_reading`` here
+            # would refit Static separately and silently charge 3 rather than
+            # the frozen 2 fits per (unit, program) pair.
+            reading = cache.reading(ctx, face_origin, steps, everyone)
         except runner.UnitFault as exc:
             rows.append({"program_id": program["program_id"],
                          "unusable": str(exc)[:160]})
             continue
-        fits += int(reading["consumer_fits"])
         rows.append({
             "program_id": program["program_id"],
             "aggregate_gain": reading["aggregate_gain"],
@@ -135,11 +153,12 @@ def evaluate_unit(unit: Mapping[str, Any],
         "unit": ctx.unit,
         "evaluation_origin": face_origin,
         "served": len(ctx.eval_uids),
+        "scoreable": True,
         "programs_evaluated": len(rows),
         "in_budget": len(feasible),
         "best_safe_global": best,
         "identity_when_none_clears": not feasible,
-        "consumer_fits": fits,
+        "consumer_fits": int(cache.physical_fits) - fits_before,
         "readings": rows,
     }
 
@@ -149,7 +168,8 @@ def build(*, limit: int, ordering_name: str) -> dict[str, Any]:
     programs = menu()
     units = contract.ordering(ordering_name)
     planned = units[:max(0, int(limit))]
-    rows = [evaluate_unit(unit, programs) for unit in planned]
+    cache = runner.ReplayPredictionCache("best-safe-global")
+    rows = [evaluate_unit(unit, programs, cache) for unit in planned]
     fits = sum(int(row["consumer_fits"]) for row in rows)
     per_unit = 2 * max(1, len([p for p in programs if p["steps"]]))
     return {
@@ -182,7 +202,9 @@ def build(*, limit: int, ordering_name: str) -> dict[str, Any]:
         },
         "ordering": ordering_name,
         "units_available": len(units),
-        "units_evaluated": len(rows),
+        "units_considered": len(rows),
+        "units_evaluated": sum(bool(row.get("scoreable")) for row in rows),
+        "units_unscoreable": sum(not bool(row.get("scoreable")) for row in rows),
         "fit_bill": {
             "per_unit_estimate": per_unit,
             "for_all_units": per_unit * len(units),
@@ -193,6 +215,13 @@ def build(*, limit: int, ordering_name: str) -> dict[str, Any]:
             ),
         },
         "units": rows,
+        "cache": cache.to_dict(),
+        "accounting_correction": (
+            "the plan-only v0 path called _policy_reading and would have spent "
+            "3 fits per non-identity candidate despite declaring 2; this first "
+            "real run uses ReplayPredictionCache, whose real-cell identity "
+            "tests establish the same predictions at 2 fits per pair"
+        ),
         "boundary": {
             "llm_calls": 0,
             "baseline_fits": fits,
@@ -220,8 +249,9 @@ def _md(payload: Mapping[str, Any]) -> str:
             payload["menu"]["total"], payload["menu"]["single_operators"],
             payload["menu"]["compositions"]),
         "| ordering | %s |" % payload["ordering"],
-        "| units available / evaluated | %s / %s |" % (
-            payload["units_available"], payload["units_evaluated"]),
+        "| units available / considered / evaluated | %s / %s / %s |" % (
+            payload["units_available"], payload.get("units_considered", 0),
+            payload["units_evaluated"]),
         "| fits per unit (estimate) | %s |" % payload["fit_bill"][
             "per_unit_estimate"],
         "| fits for all units | %s |" % payload["fit_bill"]["for_all_units"],
@@ -233,6 +263,10 @@ def _md(payload: Mapping[str, Any]) -> str:
         lines += ["| unit | best in-budget program | aggregate | identity |",
                   "| --- | --- | ---: | --- |"]
         for row in payload["units"]:
+            if not row.get("scoreable"):
+                lines.append("| %s x %s | `UNSCOREABLE` | — | — |" % (
+                    row["unit"]["block"], row["unit"]["origin"]))
+                continue
             best = row["best_safe_global"]
             lines.append("| %s x %s | `%s` | %+.4f | %s |" % (
                 row["unit"]["block"], row["unit"]["origin"],
@@ -252,13 +286,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                        help="how many units to evaluate; 0 lists the plan only")
     parser.add_argument("--ordering", choices=list(contract.ORDERINGS),
                        default="forward")
+    parser.add_argument(
+        "--output-stem", default="hec1_best_safe_global",
+        help="artifact basename; use a new label to preserve the plan artifact")
     args = parser.parse_args(argv)
     payload = build(limit=args.units, ordering_name=args.ordering)
-    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
-    OUT_JSON.write_text(
+    out_json = OUT_JSON.with_name(str(args.output_stem) + ".json")
+    out_md = OUT_MD.with_name(str(args.output_stem) + ".md")
+    if out_json.exists() or out_md.exists():
+        raise FileExistsError(
+            "refusing to overwrite an existing readout: %s / %s"
+            % (out_json, out_md))
+    if int(payload["boundary"]["baseline_fits"]) > int(
+            contract.BEST_SAFE_GLOBAL_FIT_CAP):
+        raise RuntimeError(
+            "Best-Safe-Global fit cap exceeded: %s > %s"
+            % (payload["boundary"]["baseline_fits"],
+               contract.BEST_SAFE_GLOBAL_FIT_CAP))
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n",
         encoding="utf-8")
-    OUT_MD.write_text(_md(payload), encoding="utf-8")
+    out_md.write_text(_md(payload), encoding="utf-8")
     print("menu programs   : %s" % payload["menu"]["total"])
     print("units evaluated : %s / %s"
           % (payload["units_evaluated"], payload["units_available"]))
@@ -266,7 +315,7 @@ def main(argv: Sequence[str] | None = None) -> int:
           % (payload["boundary"]["baseline_fits"],
              payload["fit_bill"]["for_all_units"]))
     print("status          : %s" % payload["status"])
-    print("wrote %s" % OUT_JSON.relative_to(PROJECT_ROOT).as_posix())
+    print("wrote %s" % out_json.relative_to(PROJECT_ROOT).as_posix())
     return 0
 
 
