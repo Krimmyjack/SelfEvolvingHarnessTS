@@ -1,5 +1,60 @@
 # 当前状态一页（始建 2026-09-03；最新更新置顶；所有执行线先读此页；账本只作归档）
 
+## 2026-09-11：TRAIN-2 已完成；Flash仅负责Git归档，后续设计待讨论
+
+主报告：`docs/DEV_TRAIN2_RESULT_2026-09-11.md`；可提交证据：
+`artifacts/main_protocol/dev_train2_closeout.json`。23:09（9/10）exit0，最终新旧60条决定
+全部有效，四臂两窗全10人评分无缺项；不是还在运行。
+
+| 四臂（10 train/10 eval，两窗） | 平均收益对Static | 受损次数/20 |
+| --- | ---: | ---: |
+| Static | 0 | 0 |
+| 形成段校准winsorize→FFT | +0.849895 | 1 |
+| 旧Skill | −0.164690 | 14 |
+| 新Skill | 0 | 0 |
+
+新臂30/30明确选择identity，模型及预测等同Static。新减旧+0.164690来自退回基线，
+不是已经学到高于Static的准备价值。500实验API/10fits，全局4路Fast、fit串行。
+形成段2条失败仍UNKNOWN、原始Slow响应缺失及序列化恢复均披露；不能说整包无故障。
+判断：骨架按用户目标运行；有效Workflow存在，但本次知识更新走向全面不处理。
+新卡的unknown-probe回退规则与本环境probe始终不可得直接冲突；成功方案读数已在Slow材料中，
+其注意/解释/采用问题尚未被独立归因。一个组、两个开发窗，不主张稳定条件化或完整A5。
+
+用户澄清：**交给Flash的是保存/commit任务，不是下一轮实验**。当前交接文件为
+`docs/FLASH_CHECKPOINT_COMMIT_TASK_2026-09-11.md`。Astra尚未stage或commit，HEAD仍c845b4b。
+`DEV_TRAIN3_GENERAL_GUIDANCE_TASK_2026-09-11.md`已降为未批准讨论草案，不得执行；
+后续机制、对照和预算由用户与Astra继续讨论。备忘录§19同为建议，非已批准路线。
+DECISIONS仍由Fable维护，本次不代写；旧状态段保留为历史。
+
+## 2026-09-10 22:30（UTC+8）：DEV-TRAIN-2 已恢复，新旧 Skill 对照正在运行
+
+原进程在 Slow 已编译新卡后，因 JSON 不支持嵌套 `mappingproxy` 于22:09退出；不是 Slow 弃权。
+已修实验层 JSON 序列化，并从现存子快照及父子 provenance 恢复边界包装，未重问 Slow、未改卡正文。
+缺失的原始提议响应、行为预测和尝试日志标为 UNAVAILABLE，不从最终卡片反编造。
+原失败 result、预算、Slow 输入、40条形成段记录及其评分已归档于运行目录
+`before_serialization_recovery/`；`serialization_recovery.json` 记录0 API/0 fit恢复核验。
+形成段38条有效、2条失败已被 Slow 消费，失败仍为 UNKNOWN，恢复不重跑或改写这些材料。
+
+22:29恢复进程 Windows PID=7576，沿原运行目录及原包级预算；已核实 DATA_READY 和两臂调用同时前进。
+预算由196增至200次尝试（形成195、Slow1、旧臂2、新臂2），fits仍8；Slow计数保持1。
+余下为旧/新各10条训练W及两个窗口各10条预测V，共60次Fast决策；全局4路、fits串行。
+Static/固定Workflow已完成形成段校准与后续预测冻结；所有后续输出齐全后才统一评分。
+形成段胜出的固定组合是 `winsorize>fft_decompose`，仅是校准结果；当前尚无新旧Skill效果结论。
+恢复核验为根本地检查通过；Grok只读恢复复核在8轮上限前未交付结论，不计独立复核通过。
+
+## 2026-09-10 21:33（UTC+8）：DEV-TRAIN-2 已发车，四臂同权限效果对照
+
+任务：`docs/DEV_TRAIN2_UNCAPPED_WORKFLOW_SKILL_TASK_2026-09-10.md`。
+用户已批准继续推进，并要求baseline并行。10 train/10 eval；逐训练序列W→共享Ridge→逐预测序列V；
+Static/形成段校准固定Workflow/旧Skill/一次Slow修订的新Skill四臂；同用cap=1.0。
+API cpa-grok-4.6，本地8318入口，逐响应校验grok-4.6-build；全包4路Fast、拟合与模型提交串行。
+形成段u9/u10/u11，复核u12/u13；复核全部输出冻结后才评分，不读密封或≥3096。
+已核实Windows进程3320及前进中的预算；Static+六个菜单模型7fits已完成，与形成段Fast重叠。
+运行目录`_scratch/dev_train1/runs/dev_train2_uncapped_workflow_10x10_20260910/`；
+启动收据`.aris/runs/dev_train2_uncapped_workflow_10x10_20260910/launch.json`。
+尚无新旧Skill效果结论。上一包结果见`docs/DEV_TRAIN1B_RESULT_2026-09-10.md`；
+以下9/8等状态均为历史，不代表当前待办。未commit，不代写Fable的DECISIONS。
+
 ## 2026-09-08（当前行动）：DEV-DEPLOY-1 已获同意、任务书就绪，执行回执待补
 
 任务书：`docs/DEV_DEPLOY1_FAST_ONLY_ALIGNMENT_TASK_2026-09-08.md`。

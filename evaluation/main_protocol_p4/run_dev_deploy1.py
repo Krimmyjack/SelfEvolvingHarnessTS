@@ -71,6 +71,7 @@ from evaluation.main_protocol_p4 import run_dev_seq3 as seq3
 from evaluation.main_protocol_p4 import run_hec1 as runner
 from evaluation.main_protocol_p4 import run_m_r0d_forward_k1_outer_step as live
 from evaluation.main_protocol_p4 import run_source_line as v1runner
+from SelfEvolvingHarnessTS.contracts.method import PreparationStatus
 from SelfEvolvingHarnessTS.operators.registry import OPERATOR_METADATA, OPERATOR_NAMES
 
 ART = base.ROOT / "artifacts" / "main_protocol"
@@ -647,6 +648,509 @@ class AccountFault(RuntimeError):
     (task book Sec 5.4(7))."""
 
 
+# ---------------------------------------------------------------------------
+# PreparationResult consumption (future runs only; historical JSON is not
+# rewritten).  A leftover DecisionTrace is not a valid decision.
+# ---------------------------------------------------------------------------
+
+VALID_MECHANISM_STATUSES = frozenset({
+    "IDENTITY_SELECTED",
+    "DEPLOYED",
+    "LEGALITY_FALLBACK_RAW",
+})
+MISSING_MECHANISM_STATUSES = frozenset({
+    "FAULT_NO_DECISION",
+    "PREPARE_FAILED",
+    "INVALID_PREPARATION_RESULT",
+    "EMPTY_SELECTION_NO_VALID_DECISION",
+    "UNKNOWN_CANDIDATE_NO_VALID_DECISION",
+})
+# Pre-repair runner statuses that scored identity/0 without a valid choice.
+HISTORICAL_MISSING_MECHANISM_STATUSES = frozenset({
+    "EMPTY_SELECTION_FALLBACK_TO_IDENTITY",
+    "UNKNOWN_CANDIDATE_FALLBACK_TO_IDENTITY",
+})
+_ANNOTATION_MARK = "dev_deploy_feedback_integrity_v1"
+_SENSITIVE_FRAGMENTS = (
+    "api_key", "apikey", "authorization", "secret", "password", "token",
+    "credential", "bearer",
+)
+
+
+def _sanitize_error_text(text: str, limit: int = 300) -> str:
+    raw = str(text or "")
+    lowered = raw.lower()
+    if any(fragment in lowered for fragment in _SENSITIVE_FRAGMENTS):
+        # A credential can precede the first colon as well as follow it.
+        return "[redacted error detail]"
+    return raw[:limit]
+
+
+def _status_value(result: Any) -> str:
+    if result is None:
+        return ""
+    status = getattr(result, "status", None)
+    if status is None:
+        return ""
+    if isinstance(status, PreparationStatus):
+        return str(status.value)
+    return str(getattr(status, "value", status) or "").lower()
+
+
+def _receipt_error(result: Any) -> str:
+    receipt = getattr(result, "receipt", None)
+    return str(getattr(receipt, "error", "") or "")
+
+
+def raise_if_account_fault(detail: str,
+                           *, cause: BaseException | None = None) -> None:
+    """Account/permission errors stop the line; they are not model abstentions."""
+    if _fault_kind(detail) == "ACCOUNT_OR_PERMISSION_FAULT":
+        exc = AccountFault(_sanitize_error_text(detail))
+        if cause is not None:
+            raise exc from cause
+        raise exc
+
+
+def compact_prepare_error(*, result: Any, trace: Any,
+                          thrown: BaseException | None = None,
+                          deploy_status: str) -> dict[str, Any] | None:
+    """Short, non-secret residue of a failed or missing decision.
+
+    Keeps error class, receipt.ok, compilation/execution status, whether a
+    trace existed, and the chosen_id sitting on that trace (untrusted).
+    Does not keep request bodies, env, or credential-bearing text.
+    """
+    if deploy_status in VALID_MECHANISM_STATUSES and thrown is None:
+        error = _receipt_error(result)
+        if not error:
+            return None
+    error = _receipt_error(result)
+    if thrown is not None and not error:
+        error = "%s: %s" % (type(thrown).__name__, thrown)
+    kind = deploy_status
+    if thrown is not None and result is None:
+        kind = "THROWN_%s" % type(thrown).__name__
+    receipt = getattr(result, "receipt", None)
+    return {
+        "kind": kind,
+        "receipt_ok": (None if receipt is None
+                       else bool(getattr(receipt, "ok", False))),
+        "error": _sanitize_error_text(error),
+        "compilation_status": getattr(trace, "compilation_status", None),
+        "execution_status": getattr(trace, "execution_status", None),
+        "trace_present": trace is not None,
+        "chosen_candidate_id_on_trace": (
+            (getattr(trace, "chosen_candidate_id", None) or None)
+            if trace is not None else None),
+        "n_candidate_ids_on_trace": (
+            len(tuple(getattr(trace, "candidate_ids", ()) or ()))
+            if trace is not None else 0),
+    }
+
+
+def _steps_map_from_trace(trace: Any) -> dict[str, tuple]:
+    if trace is None:
+        return {}
+    raw = dict(getattr(trace, "candidate_program_steps", None) or {})
+    return {str(k): tuple((str(o), dict(p)) for o, p in v)
+            for k, v in raw.items()}
+
+
+def interpret_prepare_outcome(*, result: Any, trace: Any,
+                              thrown: BaseException | None = None
+                              ) -> dict[str, Any]:
+    """Classify ``prepare()`` before any identity/program scoring.
+
+    A non-empty DecisionTrace does not make a FAILED or empty selection
+    into an active identity decision.
+    """
+    if result is not None:
+        error = _receipt_error(result)
+        if error:
+            raise_if_account_fault(error)
+
+    status_value = _status_value(result)
+    steps_map = _steps_map_from_trace(trace)
+    chosen_raw = (getattr(trace, "chosen_candidate_id", None)
+                  if trace is not None else None)
+    chosen = str(chosen_raw or "")
+
+    def _programs() -> dict[str, str]:
+        return {k: ps.program_label_with_params(ps.normalise_steps(v))
+                for k, v in steps_map.items()}
+
+    def _missing(deploy_status: str, why: str) -> dict[str, Any]:
+        return {
+            "deploy_status": deploy_status,
+            "valid_mechanism_decision": False,
+            "mechanism_gain_policy": "unknown",
+            "deployed_steps": None,
+            "chosen_candidate_id": chosen or None,
+            "candidate_programs": _programs(),
+            "why_unknown": why,
+        }
+
+    if thrown is not None and result is None:
+        return _missing(
+            "FAULT_NO_DECISION",
+            "the session raised %s before a consumed PreparationResult; "
+            "this is not a zero" % type(thrown).__name__)
+    if status_value == PreparationStatus.FAILED.value:
+        return _missing(
+            "PREPARE_FAILED",
+            "PreparationResult.status is FAILED; a leftover trace or "
+            "chosen_candidate_id is not a valid decision")
+    if result is None or trace is None:
+        return _missing(
+            "FAULT_NO_DECISION",
+            "the session faulted before a decision was reached; "
+            "this is not a zero")
+    if (status_value not in (PreparationStatus.PREPARED.value,
+                             PreparationStatus.ABSTAINED.value)
+            or not getattr(getattr(result, "receipt", None), "ok", False)):
+        return _missing(
+            "INVALID_PREPARATION_RESULT",
+            "missing/invalid success status or unsuccessful execution receipt")
+    if not chosen:
+        return _missing(
+            "EMPTY_SELECTION_NO_VALID_DECISION",
+            "empty chosen_candidate_id is not a deliberate identity choice")
+    if chosen == "identity":
+        return {
+            "deploy_status": "IDENTITY_SELECTED",
+            "valid_mechanism_decision": True,
+            "mechanism_gain_policy": "legal_zero",
+            "deployed_steps": (),
+            "chosen_candidate_id": "identity",
+            "candidate_programs": _programs(),
+            "why_unknown": None,
+        }
+    if chosen not in steps_map:
+        return _missing(
+            "UNKNOWN_CANDIDATE_NO_VALID_DECISION",
+            "chosen_candidate_id %r is not in the trace candidate map; "
+            "not a deterministic zero" % chosen)
+    return {
+        "deploy_status": "CANDIDATE_CHOSEN_PENDING_LEGALITY",
+        "valid_mechanism_decision": True,
+        "mechanism_gain_policy": "score_if_legal_else_raw_fallback",
+        "deployed_steps": steps_map[chosen],
+        "chosen_candidate_id": chosen,
+        "candidate_programs": _programs(),
+        "why_unknown": None,
+    }
+
+
+def apply_legality_and_score(
+        interpreted: Mapping[str, Any], *,
+        verify: Any = None, scorer: Any = None,
+        position: int = 0, uid: str = "",
+        origin: int = 0, delayed_origin: int = 0) -> dict[str, Any]:
+    """Turn a classified prepare outcome into deploy_status and gains.
+
+    Identity and the predefined legality-raw fallback keep a real 0.
+    Missing decisions stay UNKNOWN and are not scored as identity.
+    """
+    policy = interpreted["mechanism_gain_policy"]
+    if policy == "unknown":
+        return {
+            "deploy_status": interpreted["deploy_status"],
+            "deployed_program": "UNKNOWN",
+            "deployment_gain_at_origin": "UNKNOWN",
+            "fixed_program_gain_at_plus48": "UNKNOWN",
+            "valid_mechanism_decision": False,
+        }
+    if policy == "legal_zero":
+        steps = interpreted.get("deployed_steps") or ()
+        return {
+            "deploy_status": interpreted["deploy_status"],
+            "deployed_program": ps.program_label_with_params(steps),
+            "deployment_gain_at_origin": 0.0,
+            "fixed_program_gain_at_plus48": 0.0,
+            "valid_mechanism_decision": True,
+        }
+    steps = interpreted["deployed_steps"]
+    if verify is None or scorer is None:
+        raise TypeError("legal program path requires verify and scorer")
+    verification = verify(steps)
+    if bool(getattr(verification, "passed", False)):
+        receipt_o = scorer.sequence_reading(position, uid, steps, origin)
+        gain_o = (round(float(receipt_o.gain), 6)
+                  if receipt_o.gain is not None else "UNKNOWN")
+        receipt_d = scorer.sequence_reading(position, uid, steps,
+                                            delayed_origin)
+        gain_d = (round(float(receipt_d.gain), 6)
+                  if receipt_d.gain is not None else "UNKNOWN")
+        return {
+            "deploy_status": "DEPLOYED",
+            "deployed_program": ps.program_label_with_params(steps),
+            "deployment_gain_at_origin": gain_o,
+            "fixed_program_gain_at_plus48": gain_d,
+            "valid_mechanism_decision": True,
+        }
+    # Predefined legality fallback: raw actually ran; 0 is that fallback,
+    # not an active identity selection and not a fault dressing.
+    return {
+        "deploy_status": "LEGALITY_FALLBACK_RAW",
+        "deployed_program": "identity",
+        "deployment_gain_at_origin": 0.0,
+        "fixed_program_gain_at_plus48": 0.0,
+        "valid_mechanism_decision": True,
+        "active_model_choice": False,
+    }
+
+
+def finalize_fastonly_decision(
+        record: dict[str, Any], *, result: Any, trace: Any,
+        thrown: BaseException | None = None,
+        scorer: Any, ctx: Any, uid: str, origin: int,
+        delayed_origin: int, position: int) -> dict[str, Any]:
+    interpreted = interpret_prepare_outcome(
+        result=result, trace=trace, thrown=thrown)
+    record["chosen_candidate_id"] = interpreted["chosen_candidate_id"]
+    record["candidate_programs"] = interpreted["candidate_programs"]
+    if interpreted["why_unknown"]:
+        record["why_unknown"] = interpreted["why_unknown"]
+    scored = apply_legality_and_score(
+        interpreted,
+        verify=(None if interpreted["mechanism_gain_policy"]
+                != "score_if_legal_else_raw_fallback"
+                else (lambda steps: ctx.executor.verify(steps, origin))),
+        scorer=scorer, position=position, uid=uid, origin=origin,
+        delayed_origin=delayed_origin)
+    record["deploy_status"] = scored["deploy_status"]
+    record["deployed_program"] = scored["deployed_program"]
+    record["deployment_gain_at_origin"] = scored["deployment_gain_at_origin"]
+    record["fixed_program_gain_at_plus48"] = scored[
+        "fixed_program_gain_at_plus48"]
+    record["valid_mechanism_decision"] = scored["valid_mechanism_decision"]
+    if "active_model_choice" in scored:
+        record["active_model_choice"] = scored["active_model_choice"]
+    elif scored["valid_mechanism_decision"]:
+        record["active_model_choice"] = scored["deploy_status"] in (
+            "IDENTITY_SELECTED", "DEPLOYED")
+    else:
+        record["active_model_choice"] = False
+    record["prepare_error"] = compact_prepare_error(
+        result=result, trace=trace, thrown=thrown,
+        deploy_status=record["deploy_status"])
+    if not record["valid_mechanism_decision"] and not record.get("faults"):
+        record.setdefault("faults", []).append({
+            "kind": record["deploy_status"],
+            "why": ((record["prepare_error"] or {}).get("error")
+                    or record.get("why_unknown", "no valid decision")),
+        })
+    record["original_deploy_status"] = record["deploy_status"]
+    record["original_deployment_gain_at_origin"] = record[
+        "deployment_gain_at_origin"]
+    record["original_fixed_program_gain_at_plus48"] = record[
+        "fixed_program_gain_at_plus48"]
+    record["mechanism_gain_at_origin"] = record["deployment_gain_at_origin"]
+    record["mechanism_annotation"] = _ANNOTATION_MARK
+    if record["valid_mechanism_decision"]:
+        record["original_record_semantics"] = "valid mechanism decision on this run"
+    else:
+        record["original_record_semantics"] = (
+            record.get("why_unknown")
+            or "no valid mechanism decision; main reading is UNKNOWN")
+    return record
+
+
+def is_valid_mechanism_status(status: str) -> bool:
+    return str(status or "") in VALID_MECHANISM_STATUSES
+
+
+def annotate_recorded_decision(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Working view of one recorded row.  Does not write the source file.
+
+    Historical empty/unknown-selection fallbacks keep their original
+    status string and original numeric fields under ``original_*``, but
+    the mechanism gain used by new summaries is UNKNOWN.
+    """
+    out = dict(row)
+    status = str(out.get("original_deploy_status")
+                 or out.get("deploy_status") or "")
+    if "original_deployment_gain_at_origin" in out:
+        original_gain = out.get("original_deployment_gain_at_origin")
+        original_delayed = out.get("original_fixed_program_gain_at_plus48")
+    elif "original_recorded_gain_at_origin" in out:
+        original_gain = out.get("original_recorded_gain_at_origin")
+        original_delayed = out.get("original_recorded_gain_at_plus48")
+    else:
+        original_gain = out.get("original_recorded_gain_at_origin",
+                                out.get("deployment_gain_at_origin"))
+        original_delayed = out.get("original_recorded_gain_at_plus48",
+                                   out.get("fixed_program_gain_at_plus48"))
+    out["original_deploy_status"] = status
+    out["original_deployment_gain_at_origin"] = original_gain
+    out["original_fixed_program_gain_at_plus48"] = original_delayed
+    historical = status in HISTORICAL_MISSING_MECHANISM_STATUSES
+    missing = (
+        status in MISSING_MECHANISM_STATUSES
+        or historical
+        or not is_valid_mechanism_status(status))
+    if missing:
+        out["valid_mechanism_decision"] = False
+        out["active_model_choice"] = False
+        out["mechanism_gain_at_origin"] = "UNKNOWN"
+        out["deployment_gain_at_origin"] = "UNKNOWN"
+        out["fixed_program_gain_at_plus48"] = "UNKNOWN"
+        if historical:
+            out["original_record_semantics"] = (
+                "historical %s was stored as identity/0; that recorded "
+                "zero is not a valid mechanism decision" % status)
+        else:
+            out["original_record_semantics"] = (
+                out.get("why_unknown")
+                or "no valid mechanism decision; main reading is UNKNOWN")
+        out["why_unknown"] = out["original_record_semantics"]
+    else:
+        out["valid_mechanism_decision"] = True
+        out["mechanism_gain_at_origin"] = original_gain
+        out["deployment_gain_at_origin"] = original_gain
+        out["fixed_program_gain_at_plus48"] = original_delayed
+        if "active_model_choice" not in out:
+            out["active_model_choice"] = status in (
+                "IDENTITY_SELECTED", "DEPLOYED")
+        out["original_record_semantics"] = "valid mechanism decision"
+    out["mechanism_annotation"] = _ANNOTATION_MARK
+    return out
+
+
+def load_checkpoint_rows(saved: Mapping[str, Any]) -> dict[str, Any]:
+    """Annotate checkpoint sequences in memory; caller must not write back
+    to an original artifact path."""
+    return {row["series_uid"]: annotate_recorded_decision(row)
+            for row in saved.get("sequences") or []}
+
+
+def read_sequences_file_view(path: Path) -> list[dict[str, Any]]:
+    """Return an annotated view of ``sequences`` without writing ``path``."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(doc, Mapping) and "sequences" in doc:
+        rows = list(doc.get("sequences") or [])
+    elif isinstance(doc, Mapping) and "groups" in doc:
+        rows = []
+        for group in (doc.get("groups") or {}).values():
+            for unit in (group.get("units") or {}).values():
+                rows.extend(unit.get("sequences") or [])
+    else:
+        rows = list(doc if isinstance(doc, list) else [])
+    return [annotate_recorded_decision(row) for row in rows]
+
+
+def summarize_fastonly_unit(*, group: str, position: int, unit: Any,
+                            population: list[str], rows: list[Mapping[str, Any]],
+                            stopped_at: dict[str, Any] | None = None
+                            ) -> dict[str, Any]:
+    """Full-population summary.  Any UNKNOWN makes the main mean None.
+
+    Missing population members stay in ``sequences`` as FAULT_NO_DECISION
+    placeholders so the denominator is not silently shrunk.  They are not
+    checkpointed as completed decisions.
+    """
+    completed = [annotate_recorded_decision(r) for r in rows]
+    by_uid = {r["series_uid"]: r for r in completed}
+    sequences: list[dict[str, Any]] = []
+    for uid in population:
+        if uid in by_uid:
+            sequences.append(by_uid[uid])
+        else:
+            sequences.append({
+                "series_uid": uid, "group": group,
+                "position": int(position),
+                "deploy_status": "FAULT_NO_DECISION",
+                "deployed_program": "UNKNOWN",
+                "deployment_gain_at_origin": "UNKNOWN",
+                "fixed_program_gain_at_plus48": "UNKNOWN",
+                "valid_mechanism_decision": False,
+                "active_model_choice": False,
+                "mechanism_gain_at_origin": "UNKNOWN",
+                "why_unknown": "row missing from completed decisions; not a zero",
+                "original_record_semantics": (
+                    "missing row; not a zero"),
+                "original_deploy_status": "FAULT_NO_DECISION",
+                "original_deployment_gain_at_origin": "UNKNOWN",
+                "original_fixed_program_gain_at_plus48": "UNKNOWN",
+                "mechanism_annotation": _ANNOTATION_MARK,
+                "faults": [{"kind": "MISSING_ROW",
+                            "why": "not present in completed sequences"}],
+            })
+    mechanism_gains = [
+        r["deployment_gain_at_origin"] for r in sequences
+        if isinstance(r.get("deployment_gain_at_origin"), (int, float))]
+    complete = len(mechanism_gains) == len(population)
+    return {
+        "group": group, "position": int(position), "unit": unit,
+        "decision_population": list(population),
+        "decided": [uid for uid in population if uid in by_uid],
+        "stopped_at": stopped_at,
+        "sequences": sequences,
+        "deployment_gain_at_origin_mean": (
+            round(float(np.mean(mechanism_gains)), 6) if complete else None),
+        "deployment_gain_at_origin_mean_of_scored_subset_diagnostic_only": (
+            round(float(np.mean(mechanism_gains)), 6) if mechanism_gains
+            else None),
+        "n_scored": len(mechanism_gains), "n_total": len(population),
+        "n_missing_valid_decision": sum(
+            1 for r in sequences if not r.get("valid_mechanism_decision")),
+    }
+
+
+def mechanism_unit_stats(rows: list[Mapping[str, Any]],
+                         *, population_n: int | None = None) -> dict[str, Any]:
+    """Aggregate one unit's sequences under the mechanism reading.
+
+    Historical empty-selection zeros do not form a main mean.
+    """
+    annotated = [annotate_recorded_decision(r) for r in rows]
+    n = int(population_n) if population_n is not None else len(annotated)
+    origin_vals = [r.get("deployment_gain_at_origin") for r in annotated]
+    delayed_vals = [r.get("fixed_program_gain_at_plus48") for r in annotated]
+    origin_nums = [v for v in origin_vals if isinstance(v, (int, float))]
+    delayed_nums = [v for v in delayed_vals if isinstance(v, (int, float))]
+    complete = len(origin_nums) == n and len(annotated) == n
+    treated = sum(1 for r in annotated
+                  if r.get("deploy_status") == "DEPLOYED"
+                  and r.get("valid_mechanism_decision"))
+    by_status: dict[str, int] = {}
+    for r in annotated:
+        st = str(r.get("original_deploy_status") or r.get("deploy_status") or "")
+        by_status[st] = by_status.get(st, 0) + 1
+    origin_mean = (round(float(np.mean(origin_nums)), 6)
+                   if complete and origin_nums else None)
+    delayed_mean = (round(float(np.mean(delayed_nums)), 6)
+                    if complete and len(delayed_nums) == n and delayed_nums
+                    else None)
+    gate = None
+    harmed = None
+    max_harm = None
+    if complete and origin_nums:
+        origin_arr = np.array(origin_nums, dtype=float)
+        harmed = float((origin_arr < -ps.MATERIAL).mean())
+        max_harm = float(max(0.0, float(-origin_arr.min())))
+        gate = runner.authoritative_gate({
+            "treated": treated, "aggregate_gain": float(origin_arr.mean()),
+            "harmed_fraction": harmed,
+            "max_single_series_harm": max_harm})
+    return {
+        "n": n, "n_rows_present": len(annotated), "treated": treated,
+        "deploy_status_counts": by_status,
+        "origin_mean": origin_mean, "delayed_mean": delayed_mean,
+        "origin_mean_of_scored_subset_diagnostic_only": (
+            round(float(np.mean(origin_nums)), 6) if origin_nums else None),
+        "harmed_fraction": None if harmed is None else round(harmed, 4),
+        "max_single_series_harm": (
+            None if max_harm is None else round(max_harm, 6)),
+        "gate": gate,
+        "n_faulted": sum(1 for r in annotated if r.get("faults")),
+        "n_missing_valid_decision": sum(
+            1 for r in annotated if not r.get("valid_mechanism_decision")),
+        "complete": complete,
+    }
+
+
 def parent_snapshot_and_machinery() -> tuple[Any, dict[str, Any]]:
     """The exact K0 parent snapshot DEV-SEQ-3 g2's ``knowledge-frozen`` arm
     used throughout ("A" in the task book's "g2 A" -- see run_dev_seq2.py's
@@ -781,6 +1285,10 @@ def run_fastonly_decision(*, group: str, position: int, uid: str, ctx: Any,
     ``experience_episodes=()`` always -- this leg never writes an Episode and
     never carries one in, so there is nothing to accumulate across u9/u10/u11
     even within one run (task book: "0 TARGET_HELD_IN", "不写经验").
+
+    Consumes ``PreparationResult.status`` and ``ExecutionReceipt`` before
+    scoring.  FAILED / unparseable / empty selection are UNKNOWN, not
+    identity/0.  Explicit identity and legality-raw fallback keep a real 0.
     """
     started = time.time()
     origin = int(ctx.origin)
@@ -807,79 +1315,42 @@ def run_fastonly_decision(*, group: str, position: int, uid: str, ctx: Any,
                                      snapshot, ())
 
     guard.open_cell()
+    result = None
     trace = None
+    thrown: BaseException | None = None
     try:
         guard.reserve(kind="fast", where={"unit": ctx.unit, "group": group,
                                           "series_uid": uid})
         series0 = np.asarray(request.values, dtype=np.float64)
         method.bind_round_data(series0, task_kind=request.task_spec.task_type)
-        method.prepare(request, runtime_prior_slot=False, pool_mode="actionable")
+        result = method.prepare(request, runtime_prior_slot=False,
+                                pool_mode="actionable")
         trace = method.last_trace
+        error = _receipt_error(result)
+        if error:
+            raise_if_account_fault(error)
+    except AccountFault:
+        raise
     except runner.UnitFault as exc:
-        record["faults"].append({"kind": "UnitFault", "why": str(exc)[:240]})
+        raise_if_account_fault(str(exc), cause=exc)
+        record["faults"].append({"kind": "UnitFault",
+                                  "why": _sanitize_error_text(str(exc), 240)})
+        thrown = exc
     except Exception as exc:  # noqa: BLE001 - classified below, never swallowed
         detail = "%s: %s" % (type(exc).__name__, exc)
-        if _fault_kind(detail) == "ACCOUNT_OR_PERMISSION_FAULT":
-            raise AccountFault(detail[:300]) from exc
-        record["faults"].append({"kind": type(exc).__name__, "why": detail[:300]})
+        raise_if_account_fault(detail, cause=exc)
+        record["faults"].append({"kind": type(exc).__name__,
+                                  "why": _sanitize_error_text(detail)})
+        thrown = exc
 
     record["llm_requests_sent"] = int(getattr(backend, "calls", 0) or 0)
     record["returned_models"] = sorted(
         getattr(backend, "returned_models", set()) or set())
     record["wall_seconds"] = round(time.time() - started, 2)
-
-    if trace is None:
-        record.update({
-            "chosen_candidate_id": None, "deploy_status": "FAULT_NO_DECISION",
-            "deployed_program": "UNKNOWN",
-            "deployment_gain_at_origin": "UNKNOWN",
-            "fixed_program_gain_at_plus48": "UNKNOWN",
-            "why_unknown": "the session faulted before a decision was reached; "
-                          "this is not a zero",
-        })
-        return record
-
-    steps_map = {str(k): tuple((str(o), dict(p)) for o, p in v)
-                for k, v in dict(trace.candidate_program_steps or {}).items()}
-    chosen = str(trace.chosen_candidate_id or "")
-    record["chosen_candidate_id"] = chosen or None
-    record["candidate_programs"] = {
-        k: ps.program_label_with_params(ps.normalise_steps(v))
-        for k, v in steps_map.items()}
-
-    if chosen in ("", "identity"):
-        deployed_steps: tuple | None = ()
-        deploy_status = ("IDENTITY_SELECTED" if chosen == "identity"
-                        else "EMPTY_SELECTION_FALLBACK_TO_IDENTITY")
-    elif chosen not in steps_map:
-        deployed_steps = ()
-        deploy_status = "UNKNOWN_CANDIDATE_FALLBACK_TO_IDENTITY"
-    else:
-        candidate_steps_typed = steps_map[chosen]
-        verification = ctx.executor.verify(candidate_steps_typed, origin)
-        if verification.passed:
-            deployed_steps, deploy_status = candidate_steps_typed, "DEPLOYED"
-        else:
-            deployed_steps, deploy_status = (), "LEGALITY_FALLBACK_RAW"
-
-    record["deploy_status"] = deploy_status
-    record["deployed_program"] = ps.program_label_with_params(deployed_steps)
-
-    if not deployed_steps:
-        record["deployment_gain_at_origin"] = 0.0
-        record["fixed_program_gain_at_plus48"] = 0.0
-    else:
-        receipt_o = scorer.sequence_reading(position, uid, deployed_steps,
-                                            origin)
-        record["deployment_gain_at_origin"] = (
-            round(float(receipt_o.gain), 6) if receipt_o.gain is not None
-            else "UNKNOWN")
-        receipt_d = scorer.sequence_reading(position, uid, deployed_steps,
-                                            delayed_origin)
-        record["fixed_program_gain_at_plus48"] = (
-            round(float(receipt_d.gain), 6) if receipt_d.gain is not None
-            else "UNKNOWN")
-    return record
+    return finalize_fastonly_decision(
+        record, result=result, trace=trace, thrown=thrown,
+        scorer=scorer, ctx=ctx, uid=uid, origin=origin,
+        delayed_origin=delayed_origin, position=position)
 
 
 def run_fastonly_unit(*, group: str, position: int, scorer: Scorer,
@@ -895,8 +1366,18 @@ def run_fastonly_unit(*, group: str, position: int, scorer: Scorer,
     saved: dict[str, Any] = {}
     if checkpoint_path.is_file():
         saved = json.loads(checkpoint_path.read_text(encoding="utf-8"))
-    rows_by_uid: dict[str, Any] = {row["series_uid"]: row
-                                   for row in saved.get("sequences") or []}
+    if any((r.get("original_deploy_status") or r.get("deploy_status"))
+           in HISTORICAL_MISSING_MECHANISM_STATUSES
+           for r in saved.get("sequences", [])):
+        # Legacy receipts are immutable.  A future authorised partial resume
+        # writes its annotated working view beside, never over, that source.
+        checkpoint_path = checkpoint_path.with_name(
+            checkpoint_path.stem + ".feedback_integrity" + checkpoint_path.suffix)
+        if checkpoint_path.is_file():
+            saved = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+    # Annotate in memory only.  Historical empty-selection rows are not
+    # re-queried (no LLM replay) and are not treated as valid identity/0.
+    rows_by_uid: dict[str, Any] = load_checkpoint_rows(saved)
 
     lock = __import__("threading").Lock()
 
@@ -981,28 +1462,16 @@ def run_fastonly_unit(*, group: str, position: int, scorer: Scorer,
                     rows_by_uid[uid] = row
                     checkpoint()
 
-    rows = [rows_by_uid[uid] for uid in population if uid in rows_by_uid]
-    gains = [r["deployment_gain_at_origin"] for r in rows
-            if isinstance(r.get("deployment_gain_at_origin"), (int, float))]
+    completed_rows = [rows_by_uid[uid] for uid in population
+                      if uid in rows_by_uid]
     # Task book Sec 4/5 (DEV-DEPLOY-1) / Sec 5 (DEV-DEPLOY-2): a planned
     # population with any unknown means the batch mean is UNKNOWN, never the
     # mean of whatever subset happened to score -- the readable subset is a
-    # diagnostic, not a stand-in denominator.  round(mean(4 of 20)) silently
-    # posing as "this unit's mean" is exactly the failure DEV-DEPLOY-2's
-    # 2026-09-09 account-exhaustion incident exposed (g1/C/u13 scored 4/20).
-    complete = len(gains) == len(population)
-    return {
-        "group": group, "position": int(position), "unit": ctx.unit,
-        "decision_population": population,
-        "decided": [r["series_uid"] for r in rows],
-        "stopped_at": stopped,
-        "sequences": rows,
-        "deployment_gain_at_origin_mean": (
-            round(float(np.mean(gains)), 6) if complete else None),
-        "deployment_gain_at_origin_mean_of_scored_subset_diagnostic_only": (
-            round(float(np.mean(gains)), 6) if gains else None),
-        "n_scored": len(gains), "n_total": len(population),
-    }
+    # diagnostic, not a stand-in denominator.  Missing members stay in
+    # sequences as UNKNOWN placeholders; they are not checkpointed as done.
+    return summarize_fastonly_unit(
+        group=group, position=position, unit=ctx.unit,
+        population=population, rows=completed_rows, stopped_at=stopped)
 
 
 def run_fastonly_group(*, group: str, scorer: Scorer, snapshot: Any,
@@ -1028,6 +1497,10 @@ def run_fastonly_group(*, group: str, scorer: Scorer, snapshot: Any,
                                    "detail": str(exc)[:300]}}
             return {"group": group, "seed": GROUP_SEEDS[group], "units": units,
                    "status": "BOUNDARY_ACCOUNT_OR_PERMISSION_FAULT"}
+        if (units[position].get("stopped_at") or {}).get(
+                "why") in ("AccountFault", "ACCOUNT_OR_PERMISSION_FAULT"):
+            return {"group": group, "seed": GROUP_SEEDS[group], "units": units,
+                    "status": "BOUNDARY_ACCOUNT_OR_PERMISSION_FAULT"}
         if (units[position].get("stopped_at") or {}).get(
                 "why") == "PackageCeiling":
             return {"group": group, "seed": GROUP_SEEDS[group], "units": units,
@@ -1096,43 +1569,29 @@ def aggregate_part_b(pattern: str = "dev_deploy1_part_b__*.json"
             u = units.get((group, position))
             if u is None:
                 continue
-            rows = u["sequences"]
-            origin = np.array([r["deployment_gain_at_origin"] for r in rows],
-                              dtype=float)
-            delayed = np.array([r["fixed_program_gain_at_plus48"]
-                               for r in rows], dtype=float)
-            treated = sum(1 for r in rows if r["deploy_status"] == "DEPLOYED")
-            harmed_fraction = float((origin < -ps.MATERIAL).mean())
-            max_harm = float(max(0.0, float(-origin.min())))
-            gate = runner.authoritative_gate({
-                "treated": treated, "aggregate_gain": float(origin.mean()),
-                "harmed_fraction": harmed_fraction,
-                "max_single_series_harm": max_harm})
-            by_status: dict[str, int] = {}
-            for r in rows:
-                by_status[r["deploy_status"]] = by_status.get(
-                    r["deploy_status"], 0) + 1
-            per_position[position] = {
-                "n": len(rows), "treated": treated,
-                "deploy_status_counts": by_status,
-                "origin_mean": round(float(origin.mean()), 6),
-                "delayed_mean": round(float(delayed.mean()), 6),
-                "harmed_fraction": round(harmed_fraction, 4),
-                "max_single_series_harm": round(max_harm, 6),
-                "gate": gate,
-                "n_faulted": sum(1 for r in rows if r.get("faults")),
-            }
-        complete = len(per_position) == len(TEST_POSITIONS)
+            rows = u.get("sequences") or []
+            stats = mechanism_unit_stats(
+                rows, population_n=len(u.get("decision_population") or rows))
+            per_position[position] = stats
+        complete = (
+            len(per_position) == len(TEST_POSITIONS)
+            and all(p.get("complete") and p.get("origin_mean") is not None
+                    for p in per_position.values()))
+        origin_means = [p["origin_mean"] for p in per_position.values()
+                        if p.get("origin_mean") is not None]
+        delayed_means = [p["delayed_mean"] for p in per_position.values()
+                         if p.get("delayed_mean") is not None]
         by_group[group] = {
             "per_position": per_position,
             "equal_weighted_origin_mean": (
-                round(float(np.mean([p["origin_mean"]
-                                     for p in per_position.values()])), 6)
-                if complete else None),
+                round(float(np.mean(origin_means)), 6) if complete else None),
             "equal_weighted_delayed_mean": (
-                round(float(np.mean([p["delayed_mean"]
-                                     for p in per_position.values()])), 6)
-                if complete else None),
+                round(float(np.mean(delayed_means)), 6)
+                if complete and len(delayed_means) == len(TEST_POSITIONS)
+                else None),
+            "equal_weighted_origin_mean_of_complete_units_diagnostic_only": (
+                round(float(np.mean(origin_means)), 6) if origin_means
+                else None),
             "complete": complete,
         }
     return {"by_group": by_group, "missing_units": missing,
@@ -1171,7 +1630,13 @@ def main(argv: list[str] | None = None) -> int:
         out_path.write_text(json.dumps(result, ensure_ascii=False, indent=1,
                                        default=str), encoding="utf-8")
         print("wrote", out_path, "| status", result.get("status"))
-        return 0
+        incomplete = result.get("status") != "RAN" or any(
+            g.get("status") != "COMPLETE"
+            or any(u.get("stopped_at")
+                   or u.get("deployment_gain_at_origin_mean") is None
+                   for u in g.get("units", {}).values())
+            for g in result.get("groups", {}).values())
+        return 2 if incomplete else 0
 
     if args.part == "aggregate":
         result = aggregate_part_b()

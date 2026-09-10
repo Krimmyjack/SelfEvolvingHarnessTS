@@ -169,10 +169,19 @@ def _reconstruct_typed_steps(scorer: Scorer, row: Mapping[str, Any],
 def load_pooled_formation(scorer: Scorer) -> dict[str, Any]:
     rows_out: list[dict[str, Any]] = []
     unverified = 0
+    n_invalid_mechanism = 0
     for group in GROUPS:
         for position in FORMATION_POSITIONS:
             for row in _load_part1_checkpoint(group, position):
-                steps, verified = _reconstruct_typed_steps(scorer, row, position)
+                annotated = deploy1.annotate_recorded_decision(row)
+                if not annotated.get("valid_mechanism_decision"):
+                    # Do not reconstruct the historical identity/0 fallback
+                    # as a real identity program or as utility evidence.
+                    steps, verified = None, False
+                    n_invalid_mechanism += 1
+                else:
+                    steps, verified = _reconstruct_typed_steps(
+                        scorer, row, position)
                 if steps is None:
                     unverified += 1
                 uid = str(row["series_uid"])
@@ -192,27 +201,40 @@ def load_pooled_formation(scorer: Scorer) -> dict[str, Any]:
                     "public_features": row.get("public_features"),
                     "chosen_candidate_id": row.get("chosen_candidate_id"),
                     "candidate_programs": row.get("candidate_programs"),
-                    "deploy_status": row.get("deploy_status"),
+                    "deploy_status": annotated.get("original_deploy_status")
+                                     or row.get("deploy_status"),
+                    "valid_mechanism_decision": annotated.get(
+                        "valid_mechanism_decision"),
+                    "original_record_semantics": annotated.get(
+                        "original_record_semantics"),
                     "deployed_program": row.get("deployed_program"),
                     "deployed_program_steps_reconstructed": (
                         [{"op": o, "params": p} for o, p in steps]
                         if steps is not None else "UNKNOWN"),
                     "reconstruction_verified": verified,
-                    "deployment_gain_at_origin": row.get(
+                    "deployment_gain_at_origin": annotated.get(
                         "deployment_gain_at_origin"),
-                    "fixed_program_gain_at_plus48": row.get(
+                    "fixed_program_gain_at_plus48": annotated.get(
                         "fixed_program_gain_at_plus48"),
+                    "original_recorded_gain_at_origin": annotated.get(
+                        "original_deployment_gain_at_origin"),
+                    "original_recorded_gain_at_plus48": annotated.get(
+                        "original_fixed_program_gain_at_plus48"),
                     "action_facts": facts_support,
                     "dedup_key": dedup_key,
                     "llm_requests_sent": row.get("llm_requests_sent"),
                 })
     return {"rows": rows_out, "n_rows": len(rows_out),
            "n_unreconstructed": unverified,
+           "n_invalid_mechanism_decision": n_invalid_mechanism,
            "note": ("120 rows: DEV-DEPLOY-1 Part B's g1+g2, u9/u10/u11, all "
                     "20 series each.  Typed steps for the delivered program "
                     "are reconstructed from the recorded label and "
                     "self-checked against the already-recorded origin gain "
-                    "before being trusted (0 new LLM either way).")}
+                    "before being trusted (0 new LLM either way).  Historical "
+                    "EMPTY_SELECTION_FALLBACK_TO_IDENTITY / "
+                    "UNKNOWN_CANDIDATE_FALLBACK_TO_IDENTITY rows are marked "
+                    "invalid and are not treated as identity/0 evidence.")}
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +249,7 @@ def menu_readings_at_formation(scorer: Scorer) -> dict[str, Any]:
         origin = int(ctx.origin)
         period = int(ctx.config["period"])
         per_candidate: dict[str, Any] = {"identity": {
+            "program_steps": [],
             "status": "READ", "aggregate_gain": 0.0, "harmed_fraction": 0.0,
             "max_single_series_harm": 0.0,
             "per_series_gain": {uid: 0.0 for uid in scorer.population(position)}}}
@@ -239,9 +262,12 @@ def menu_readings_at_formation(scorer: Scorer) -> dict[str, Any]:
                 continue
             reading = scorer.population_reading(position, steps, origin)
             if reading is None:
-                per_candidate[op] = {"status": "LEGALITY_REJECTED"}
+                per_candidate[op] = {"status": "LEGALITY_REJECTED",
+                                     "program_steps": [
+                                         {"op": o, "params": p} for o, p in steps]}
                 continue
             per_candidate[op] = {
+                "program_steps": [{"op": o, "params": p} for o, p in steps],
                 "status": "READ", "aggregate_gain": reading["aggregate_gain"],
                 "harmed_fraction": reading["harmed_fraction"],
                 "max_single_series_harm": reading["max_single_series_harm"],
@@ -496,42 +522,63 @@ def _compact_action_facts(facts: Any) -> Any:
 
 def _render_case(row: Mapping[str, Any], *, include_effects: bool
                  ) -> dict[str, Any]:
+    annotated = deploy1.annotate_recorded_decision(row)
     case = {
-        "series_uid": row["series_uid"],
-        "window_origin": row["origin"],
-        "public_features_at_this_window": row["public_features"],
-        "candidates_proposed": row["candidate_programs"],
-        "chosen_candidate_id": row["chosen_candidate_id"],
-        "deploy_status": row["deploy_status"],
-        "actual_delivered_program": row["deployed_program"],
-        "actual_delivered_program_steps": row[
-            "deployed_program_steps_reconstructed"],
-        "action_facts": _compact_action_facts(row["action_facts"]),
+        "series_uid": annotated["series_uid"],
+        "window_origin": annotated.get("origin", row.get("origin")),
+        "public_features_at_this_window": annotated.get(
+            "public_features", row.get("public_features")),
+        "candidates_proposed": annotated.get(
+            "candidate_programs", row.get("candidate_programs")),
+        "chosen_candidate_id": annotated.get("chosen_candidate_id"),
+        "deploy_status": (annotated.get("original_deploy_status")
+                          or annotated.get("deploy_status")),
+        "valid_mechanism_decision": annotated.get("valid_mechanism_decision"),
+        "original_record_semantics": annotated.get("original_record_semantics"),
+        "actual_delivered_program": annotated.get(
+            "deployed_program", row.get("deployed_program")),
+        "actual_delivered_program_steps": row.get(
+            "deployed_program_steps_reconstructed"),
+        "action_facts": _compact_action_facts(row.get("action_facts")),
     }
     if include_effects:
-        case["deployment_gain_at_origin"] = row["deployment_gain_at_origin"]
-        case["fixed_program_gain_at_plus48"] = row[
-            "fixed_program_gain_at_plus48"]
+        if annotated.get("valid_mechanism_decision"):
+            case["deployment_gain_at_origin"] = annotated.get(
+                "deployment_gain_at_origin")
+            case["fixed_program_gain_at_plus48"] = annotated.get(
+                "fixed_program_gain_at_plus48")
+        else:
+            case["deployment_gain_at_origin"] = "UNKNOWN"
+            case["fixed_program_gain_at_plus48"] = "UNKNOWN"
+            case["original_recorded_gain_at_origin"] = annotated.get(
+                "original_deployment_gain_at_origin",
+                row.get("original_recorded_gain_at_origin"))
+            case["original_recorded_gain_is_not_valid_utility_evidence"] = True
     return case
 
 
 def _render_menu(menu_readings: Mapping[str, Any], *, include_effects: bool
                  ) -> dict[str, Any]:
-    """Aggregate-level only.  ``per_series_gain`` (20 series x 24 candidates
-    x 3 origins) is the single largest contributor to card size and adds no
-    signal beyond the aggregate/harm stats already here -- a full per-series
-    breakdown of the mechanical menu was never part of what the task book's
-    Sec 3.1 calls the menu reference; the compression is on presentation,
-    not on the readings the menu actually produced."""
+    """Same origin / UID / program readings, not a pair picker.
+
+    When ``include_effects`` is true (R and C, identical material), each
+    READ candidate keeps its existing ``per_series_gain`` map so a pair of
+    programs with the same aggregate but opposite per-series signs stays
+    distinguishable.  Unmeasured candidates stay UNAVAILABLE /
+    LEGALITY_REJECTED without imputed zeros.  C-minus
+    (``include_effects=False``) sees status and available typed steps:
+    no gain, no per-series map, no winner labels.
+    """
     out: dict[str, Any] = {}
     for position, per_candidate in menu_readings["per_position"].items():
         row: dict[str, Any] = {}
         for op, entry in per_candidate.items():
             if not include_effects:
                 row[op] = {"status": entry["status"]}
+                if "program_steps" in entry:
+                    row[op]["program_steps"] = entry["program_steps"]
             else:
-                row[op] = {k: v for k, v in entry.items()
-                          if k != "per_series_gain"}
+                row[op] = dict(entry)
         out[str(position)] = row
     return out
 
@@ -566,11 +613,17 @@ def build_card(*, arm: str, pooled: Mapping[str, Any],
             "the window verifier).  " + (
                 "Where READ, aggregate_gain/harmed_fraction/"
                 "max_single_series_harm/per_series_gain are this menu "
-                "candidate's own reading, independent of what any decision "
-                "actually chose."
+                "candidate's own reading at that origin, keyed by the "
+                "same series UID, independent of what any decision "
+                "actually chose.  per_series_gain is the paired "
+                "same-position/UID/program map; it is not filled with "
+                "zeros for UNAVAILABLE or LEGALITY_REJECTED candidates.  "
+                "A true identity zero is the identity candidate's map."
                 if include_effects else
-                "Only availability is shown here, not any gain: this arm "
-                "does not see menu effect numbers.")),
+                "Only availability and available typed program steps are "
+                "shown here, not any gain, "
+                "per_series_gain, or winner label: this arm does not see "
+                "menu effect numbers.")),
         "observable_feature_vocabulary": list(contract.SCOPE_CLASS["vocabulary"]),
         "what_each_feature_is_measured_over": know.FEATURE_SEMANTICS,
         "how_to_use_the_feature_semantics": (
@@ -993,16 +1046,23 @@ def _arm_review_mean(group: str, arm: str, run_id: str
         if not path.is_file():
             return None
         doc = json.loads(path.read_text(encoding="utf-8"))
-        per_position[position] = doc
+        rows = [deploy1.annotate_recorded_decision(r)
+                for r in doc.get("sequences", [])]
+        stats = deploy1.mechanism_unit_stats(
+            rows, population_n=len(doc.get("decision_population") or rows))
+        # Old summaries include invalid empty-selection zeros.  Re-read rows
+        # in memory; never rewrite the source artifact or trust its old mean.
+        per_position[position] = {
+            **doc, "sequences": rows,
+            "deployment_gain_at_origin_mean": stats["origin_mean"],
+            "fixed_program_gain_at_plus48_mean": stats["delayed_mean"],
+            "mechanism_reading": stats,
+        }
     origin = [d["deployment_gain_at_origin_mean"] for d in per_position.values()]
     if any(v is None for v in origin):
         return {"complete": False, "per_position": per_position}
-    delayed_vals = []
-    for d in per_position.values():
-        gains = [r["fixed_program_gain_at_plus48"] for r in d["sequences"]
-                 if isinstance(r.get("fixed_program_gain_at_plus48"),
-                              (int, float))]
-        delayed_vals.append(float(np.mean(gains)) if gains else None)
+    delayed_vals = [d["fixed_program_gain_at_plus48_mean"]
+                    for d in per_position.values()]
     return {
         "complete": True,
         "equal_weighted_origin_mean": round(float(np.mean(origin)), 6),
@@ -1016,6 +1076,8 @@ def _arm_review_mean(group: str, arm: str, run_id: str
 def _paired_diff(a: Mapping[str, Any] | None, b: Mapping[str, Any] | None,
                  key: str) -> Any:
     if not a or not b or not a.get("complete") or not b.get("complete"):
+        return "UNKNOWN"
+    if not isinstance(a.get(key), (int, float)) or not isinstance(b.get(key), (int, float)):
         return "UNKNOWN"
     return round(a[key] - b[key], 6)
 
