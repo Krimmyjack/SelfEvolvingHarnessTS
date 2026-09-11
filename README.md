@@ -14,13 +14,16 @@ target-local adaptation component, not the complete project-level research claim
 Current authority and routing, in order:
 
 1. [`AGENTS.md`](AGENTS.md) — long-term method and execution boundary;
-2. [`PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`](docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md)
-   — compact system, evidence, and data-exposure map;
-3. [`DATA_QUALITY_AND_FEEDBACK_MODEL.md`](docs/DATA_QUALITY_AND_FEEDBACK_MODEL.md)
+2. [`HARNESS_RESEARCH_DIRECTION_AND_PLAN.md`](docs/HARNESS_RESEARCH_DIRECTION_AND_PLAN.md)
+   — current research assessment and proposed next steps, updated 2026-09-11;
+3. [`MAINLINE_ROADMAP_AND_DEV_TRAIN1_TASK_DRAFT_2026-09-09.md`](docs/MAINLINE_ROADMAP_AND_DEV_TRAIN1_TASK_DRAFT_2026-09-09.md)
+   — TRAIN implementation, authorization, and closeout history;
+4. [`DATA_QUALITY_AND_FEEDBACK_MODEL.md`](docs/DATA_QUALITY_AND_FEEDBACK_MODEL.md)
    — task/consumer-relative quality and feedback semantics;
-4. [`ROADMAP_POST_V1_2026-08-22.md`](docs/ROADMAP_POST_V1_2026-08-22.md) — active route;
-5. [`STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md`](docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md)
-   — detailed adjudication history.
+5. [`PROJECT_STATE_AND_DATA_MAP_2026-08-23.md`](docs/PROJECT_STATE_AND_DATA_MAP_2026-08-23.md),
+   [`ROADMAP_POST_V1_2026-08-22.md`](docs/ROADMAP_POST_V1_2026-08-22.md), and
+   [`STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md`](docs/STAGE_REPORT_BATCH_RECIPE_LINE_2026-08-21.md)
+   — historical system, data, route, and adjudication records.
 
 The four files under the workspace-level `idea/` directory are historical design inputs,
 not current execution instructions. They must not override the sources above.
@@ -64,7 +67,18 @@ observe -> propose typed Program -> execute -> attribute first fault
         -> propose one-surface edit -> paired replay -> versioned snapshot
 ```
 
-Current evidence and route (2026-08-24):
+Current research assessment (2026-09-11): retain Agent Harness self-evolution for
+data readiness / augmentation, with forecasting data readiness as the next proposed
+testbed. The proposed mechanism is adaptive selection of informative downstream
+contrasts and reuse of the resulting investigation and Workflow-construction skills.
+Investigation skills and validated processing knowledge remain complementary.
+TRAIN2's new Skill recovered Static behavior but added no preparation gain; the
+formation-selected fixed Workflow performed better in that exposed development run.
+See the [current plan](docs/HARNESS_RESEARCH_DIRECTION_AND_PLAN.md) and
+[TRAIN2 result](docs/DEV_TRAIN2_RESULT_2026-09-11.md). This update records discussion
+and documentation only; the existing TRAIN3 draft is not approved for execution.
+
+Historical evidence and route (2026-08-24; later decisions are recorded above and in AGENTS.md):
 
 - Forecasting has one bounded natural positive result: accumulated experience reduced
   pooled first-positive cost from 123 to 69 retrains while terminal utility and harm tied.
