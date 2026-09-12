@@ -53,6 +53,13 @@ class AgentRole(str, Enum):
     SLOW = "slow"
 
 
+# Slow stages known to the message/retry surface. prep_menu_rank is the
+# ranking-only path (slow_prep_rank_v1); it must never share EditManifest /
+# no_proposal-envelope semantics with stage=edit.
+_SLOW_STAGE_EDIT = "edit"
+_SLOW_STAGE_PREP_MENU_RANK = "prep_menu_rank"
+
+
 class AgentProtocolError(ProtocolViolation):
     """The model returned an invalid local envelope or stage payload."""
 
@@ -204,7 +211,7 @@ class TTHAAgentCore:
         # 教学 no_proposal 信封（后端要求字段集精确相等 + reason_code
         # 下划线枚举——此前模型从未被教过该信封 → 弃权意图坍缩成
         # manifest（Wave 4a edit_id=abstain-... 回退证据））
-        if role is AgentRole.SLOW and stage == "edit":
+        if role is AgentRole.SLOW and stage == _SLOW_STAGE_EDIT:
             response_contract.update(
                 {
                     "no_proposal_allowed": True,
@@ -221,6 +228,22 @@ class TTHAAgentCore:
                             "insufficient_public_evidence | "
                             "no_authorized_minimal_edit | risk_too_high"),
                     },
+                }
+            )
+        if role is AgentRole.SLOW and stage == _SLOW_STAGE_PREP_MENU_RANK:
+            # Ranking stage: abstain lives inside slow_prep_rank_v1 payload
+            # (proposal.abstain). Do NOT emit EditManifest / no_proposal envelope.
+            response_contract.update(
+                {
+                    "no_proposal_allowed": False,
+                    "prep_menu_rank_rule": (
+                        "Emit a stage_result whose payload satisfies "
+                        "slow_prep_rank_v1. Use proposal.ordered_prep_keys "
+                        "(exactly allowlist_binding.k distinct M_large labels) "
+                        "or set proposal.abstain=true. Never emit edit_manifest, "
+                        "minimal_patch, new_value, base_harness_sha, or a "
+                        "no_proposal envelope. Never include E in form_memory."
+                    ),
                 }
             )
         if tool_schemas:
@@ -351,7 +374,7 @@ class TTHAAgentCore:
                     '"tool_name":"...","arguments":{...}}'
                     ' (a tool_request carries no stage field)'
                 )
-            if role is AgentRole.SLOW and stage == "edit":
+            if role is AgentRole.SLOW and stage == _SLOW_STAGE_EDIT:
                 outer_hint += (
                     ' OR {"schema_version":"agent-envelope/1",'
                     '"kind":"no_proposal","stage":"edit",'
@@ -479,7 +502,7 @@ class TTHAAgentCore:
                     validation_error_codes=tuple(validation_error_codes),
                 )
             if envelope["kind"] == "no_proposal":
-                if role is not AgentRole.SLOW or stage != "edit":
+                if role is not AgentRole.SLOW or stage != _SLOW_STAGE_EDIT:
                     raise AgentProtocolError(
                         "no_proposal is valid for the slow edit stage only"
                     )

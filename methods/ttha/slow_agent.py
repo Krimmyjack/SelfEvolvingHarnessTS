@@ -18,13 +18,17 @@ from SelfEvolvingHarnessTS.contracts.observables import (
 from SelfEvolvingHarnessTS.contracts.run_context import RunDependencyBinding
 from SelfEvolvingHarnessTS.contracts.task import TaskContext
 
+from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
+
 from .agent_core import (
+    AgentProtocolError,
     AgentRole,
     AgentStageResult,
     StagePostValidationError,
     TTHAAgentCore,
 )
-from .retrieval import resolve_harness_view
+from .retrieval import EffectiveHarnessView, resolve_harness_view
+from .schema_contracts import LocalSchemaError, validate_local_schema
 
 
 _PRIVATE_KEYS = frozenset(
@@ -303,11 +307,137 @@ def _public_features_from_card(card: Mapping[str, object]) -> dict[str, object]:
     }
 
 
+
+# ---------------------------------------------------------------------------
+# slow_prep_rank_v1 — prep-menu ranking (registered candidate; NOT EditManifest)
+# Citation: _scratch/research_pack_2026-09-12/p4_slow_prep_rank_v1/
+# ---------------------------------------------------------------------------
+
+SIMPLE_RESERVE_M = 2  # frozen H1
+PRIMARY_FIXED_DIV_K5: tuple[str, ...] = (
+    "identity",
+    "outlier_iqr(k=1.0)",
+    "outlier_mad(k=2.5)",
+    "winsorize(limits=0.05)",
+    "fft_decompose",
+)
+
+
+def _take_k(items: Sequence[str], k: int) -> list[str]:
+    out: list[str] = []
+    for lab in items:
+        if lab not in out:
+            out.append(lab)
+        if len(out) >= k:
+            break
+    return out
+
+
+def _pipe_head(label: str) -> str:
+    return label.split(">")[0].strip() if ">" in label else label.strip()
+
+
+def _simplex_ops_from_schedule(frozen_div: Sequence[str]) -> list[str]:
+    return [m for m in frozen_div if ">" not in m]
+
+
+def h1_simple_bias_shortlist(
+    slow_ranked: Sequence[str],
+    frozen_div: Sequence[str],
+    k: int,
+    m: int = SIMPLE_RESERVE_M,
+) -> tuple[list[str], dict[str, object]]:
+    """Frozen H1: reserve m Fixed-div simplex slots; fill k−m from Slow; demote
+    composites whose pipe-head ∈ Fixed-div simples. No E peek.
+    """
+    simples = _simplex_ops_from_schedule(frozen_div)
+    simple_set = set(simples)
+    forced = _take_k(simples, m)
+    forced_set = set(forced)
+
+    def is_div_simple_extension(lab: str) -> bool:
+        return (">" in lab) and (_pipe_head(lab) in simple_set)
+
+    fill: list[str] = []
+    skipped_ext: list[str] = []
+    for lab in slow_ranked:
+        if lab in forced_set or lab in fill:
+            continue
+        if is_div_simple_extension(lab):
+            skipped_ext.append(lab)
+            continue
+        fill.append(lab)
+        if len(fill) >= max(0, k - len(forced)):
+            break
+
+    if len(fill) < max(0, k - len(forced)):
+        for lab in slow_ranked:
+            if lab in forced_set or lab in fill:
+                continue
+            fill.append(lab)
+            if len(fill) >= max(0, k - len(forced)):
+                break
+
+    merged = list(dict.fromkeys(fill + forced))
+    if len(merged) < k:
+        for lab in list(frozen_div) + list(slow_ranked):
+            if lab not in merged:
+                merged.append(lab)
+            if len(merged) >= k:
+                break
+    out = _take_k(merged, k)
+    meta: dict[str, object] = {
+        "repair_variant": "H1_simple_bias_shortlist",
+        "rule": "H1_simple_bias_shortlist",
+        "m_reserved": m,
+        "forced_simplex": forced,
+        "frozen_div_simplex_all": simples,
+        "slow_ranked_raw": list(slow_ranked),
+        "slow_fill": fill,
+        "skipped_div_simple_extensions": skipped_ext,
+        "final_shortlist": out,
+        "n_fits": len(out),
+        "cost_fair_k": len(out) == k,
+        "no_E_peek": True,
+    }
+    return out, meta
+
+
+def _prep_rank_harness_view() -> EffectiveHarnessView:
+    """Minimal harness view for prep_menu_rank (no FailurePatternCard / snapshot)."""
+    instruction = (
+        "You are the TTHA Slow prep-menu ranker. Rank allowlisted prep labels "
+        "under fit budget k using form-only signals. Never emit EditManifest, "
+        "edit_manifest, minimal_patch, new_value, or E."
+    )
+    controls = {
+        "role": "slow",
+        "stage": "prep_menu_rank",
+        "edit_policy": {"ranking_only": True, "edit_manifest_forbidden": True},
+    }
+    payload = {
+        "schema_version": "effective-harness-view/1",
+        "instruction": instruction,
+        "skills": [],
+        "memories": [],
+        "controls": controls,
+    }
+    return EffectiveHarnessView(
+        instruction=instruction,
+        skills=(),
+        memories=(),
+        controls=_plain(controls),
+        effective_harness_view_sha=canonical_sha256(payload),
+    )
+
+
+
 class TTHASlowAgent:
     def __init__(self, core: TTHAAgentCore):
         self.core = core
         self.last_no_proposal_reason: str | None = None
         self.last_stage_result: AgentStageResult | None = None
+        self.last_h1_meta: dict[str, object] | None = None
 
     @staticmethod
     def _manifest_from_payload(payload: Mapping[str, object]) -> EditManifest:
@@ -462,11 +592,243 @@ class TTHASlowAgent:
             return None
         return self._manifest_from_payload(stage.payload)
 
+    def propose_prep_rank(
+        self,
+        *,
+        form_memory: Mapping[str, object],
+        m_large: Sequence[str],
+        k: int,
+        allowlist_binding: Mapping[str, object],
+        fixed_div_simplex_order: Sequence[str] | None = None,
+        apply_h1: bool = True,
+        h1_m: int = SIMPLE_RESERVE_M,
+        heldin_summaries: Sequence[Mapping[str, object]] = (),
+    ) -> list[str] | None:
+        """Rank prep-menu labels under fit budget k (slow_prep_rank_v1).
+
+        Distinct from ``propose_edit`` / EditManifest. Returns length-k
+        allowlisted keys, or None on abstain / validation failure
+        (``last_no_proposal_reason``). Optional H1 post-process defaults True.
+        """
+        self.last_no_proposal_reason = None
+        self.last_stage_result = None
+        self.last_h1_meta = None
+
+        if not isinstance(form_memory, Mapping):
+            raise TypeError("form_memory must be a mapping")
+        if "E" in form_memory:
+            raise ValueError("form_memory must not contain E")
+        _reject_private_or_path(form_memory, path="form_memory")
+        _reject_private_or_path(heldin_summaries, path="heldin_summaries")
+        _reject_private_or_path(allowlist_binding, path="allowlist_binding")
+
+        if not isinstance(k, int) or isinstance(k, bool) or k < 1:
+            raise ValueError("k must be a positive int")
+        menu = [str(x) for x in m_large]
+        if len(menu) < k:
+            raise ValueError("m_large must contain at least k labels")
+        expected_sha = canonical_sha256(list(menu))
+        binding = dict(allowlist_binding)
+        if int(binding.get("k", -1)) != int(k):
+            raise ValueError("allowlist_binding.k must equal k")
+        bid = binding.get("m_large_id")
+        bsha = binding.get("m_large_sha256")
+        if not bid and not bsha:
+            raise ValueError("allowlist_binding requires m_large_id and/or m_large_sha256")
+        if bsha and str(bsha) != expected_sha:
+            raise ValueError("allowlist_binding.m_large_sha256 mismatch vs m_large")
+        # Ensure sha is present for the model / post-validator.
+        binding.setdefault("m_large_sha256", expected_sha)
+        binding["k"] = int(k)
+
+        safe_form = {
+            "pick": form_memory["pick"],
+            "family": form_memory["family"],
+            "C_A": form_memory["C_A"],
+            "C_B": form_memory["C_B"],
+        }
+        if "top_families" in form_memory:
+            safe_form["top_families"] = form_memory["top_families"]
+
+        menu_set = set(menu)
+
+        def post_validate(payload: Mapping[str, object]) -> None:
+            if "edit_manifest" in payload:
+                raise StagePostValidationError(
+                    "EDIT_MANIFEST_FORBIDDEN",
+                    "prep_menu_rank must not emit edit_manifest.",
+                    retryable=True,
+                )
+            for poison in ("minimal_patch", "new_value", "base_harness_sha"):
+                if poison in payload:
+                    raise StagePostValidationError(
+                        "SEALED_EDIT_FIELD_FORBIDDEN",
+                        f"prep_menu_rank must not emit {poison}.",
+                        retryable=True,
+                    )
+            try:
+                validate_local_schema(
+                    payload,
+                    self.core.load_stage_schema("slow_prep_rank_v1"),
+                    path="slow_prep_rank_v1",
+                )
+            except (LocalSchemaError, AgentProtocolError) as exc:
+                raise StagePostValidationError(
+                    "PREP_RANK_SCHEMA_INVALID",
+                    str(exc),
+                    retryable=True,
+                ) from exc
+            fm = payload.get("form_memory")
+            if isinstance(fm, Mapping) and "E" in fm:
+                raise StagePostValidationError(
+                    "FORM_MEMORY_E_FORBIDDEN",
+                    "form_memory must not contain E.",
+                    retryable=True,
+                )
+            prop = payload.get("proposal")
+            if not isinstance(prop, Mapping):
+                raise StagePostValidationError(
+                    "PREP_RANK_MISSING_PROPOSAL",
+                    "proposal object is required.",
+                    retryable=True,
+                )
+            if prop.get("abstain") is True:
+                raise StagePostValidationError(
+                    "PREP_RANK_ABSTAIN",
+                    "proposal.abstain=true; no shortlist.",
+                    retryable=False,
+                )
+            raw = prop.get("ordered_prep_keys")
+            if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes, bytearray)):
+                raise StagePostValidationError(
+                    "PREP_RANK_KEYS_INVALID",
+                    "proposal.ordered_prep_keys must be an array of strings.",
+                    retryable=True,
+                )
+            keys = [str(x).strip() for x in raw]
+            if len(keys) != int(k) or len(set(keys)) != int(k):
+                raise StagePostValidationError(
+                    "PREP_RANK_K_MISMATCH",
+                    f"ordered_prep_keys must be exactly {k} distinct labels.",
+                    retryable=True,
+                )
+            ood = [lab for lab in keys if lab not in menu_set]
+            if ood:
+                raise StagePostValidationError(
+                    "PREP_RANK_OOD",
+                    "ordered_prep_keys must be ⊆ m_large.",
+                    retryable=True,
+                )
+            out_binding = payload.get("allowlist_binding")
+            if not isinstance(out_binding, Mapping):
+                raise StagePostValidationError(
+                    "PREP_RANK_BINDING_INVALID",
+                    "allowlist_binding must be an object.",
+                    retryable=True,
+                )
+            if int(out_binding.get("k", -1)) != int(k):
+                raise StagePostValidationError(
+                    "PREP_RANK_BINDING_K",
+                    "allowlist_binding.k must equal k.",
+                    retryable=True,
+                )
+            out_sha = out_binding.get("m_large_sha256")
+            if out_sha and str(out_sha) != expected_sha:
+                raise StagePostValidationError(
+                    "PREP_RANK_BINDING_SHA",
+                    "allowlist_binding.m_large_sha256 mismatch.",
+                    retryable=True,
+                )
+
+        public_input = {
+            "form_memory": _plain(safe_form),
+            "heldin_summaries_CB_safe": _plain(list(heldin_summaries)),
+            "M_large": list(menu),
+            "allowlist_binding": _plain(binding),
+            "k": int(k),
+            "constraints": [
+                "allowlist_only",
+                "no_E",
+                f"exactly_{k}_distinct",
+                "no_edit_manifest",
+            ],
+            "non_claims": [
+                "not_edit_manifest",
+                "not_propose_edit",
+                "not_TRAIN3_A5",
+                "registered_candidate",
+            ],
+        }
+        view = _prep_rank_harness_view()
+        case_id = str(binding.get("m_large_id") or "prep_menu_rank")
+        # Sanitize case_id for AgentRequest (canonical name)
+        safe_case = "".join(
+            ch if ch.isalnum() or ch in "-_" else "-" for ch in case_id
+        ).strip("-_") or "prep-menu-rank"
+        if safe_case[0].isdigit():
+            safe_case = f"prep-{safe_case}"
+
+        try:
+            stage = self.core.run_stage(
+                role=AgentRole.SLOW,
+                stage="prep_menu_rank",
+                case_id=safe_case,
+                public_input=public_input,
+                harness_view=view,
+                output_schema_name="slow_prep_rank_v1",
+                output_schema=self.core.load_stage_schema("slow_prep_rank_v1"),
+                source_snapshot_sha=canonical_sha256(
+                    {"schema_version": "prep-rank-no-snapshot/1", "stage": "prep_menu_rank"}
+                ),
+                validation_retries=1,
+                post_validator=post_validate,
+            )
+        except StagePostValidationError as exc:
+            self.last_no_proposal_reason = exc.error_code
+            return None
+        except AgentProtocolError as exc:
+            self.last_no_proposal_reason = getattr(exc, "error_code", None) or "AGENT_PROTOCOL_ERROR"
+            return None
+
+        self.last_stage_result = stage
+        if stage.no_proposal_reason is not None:
+            # Should not happen for prep_menu_rank (envelope forbids), but guard.
+            self.last_no_proposal_reason = stage.no_proposal_reason
+            return None
+
+        prop = stage.payload["proposal"]
+        assert isinstance(prop, Mapping)
+        if prop.get("abstain") is True:
+            self.last_no_proposal_reason = "PREP_RANK_ABSTAIN"
+            return None
+        ordered = [str(x) for x in prop["ordered_prep_keys"]]
+        pre_h1 = list(ordered)
+
+        if apply_h1:
+            frozen = (
+                tuple(fixed_div_simplex_order)
+                if fixed_div_simplex_order is not None
+                else PRIMARY_FIXED_DIV_K5
+            )
+            final, h1_meta = h1_simple_bias_shortlist(
+                pre_h1, frozen, k=int(k), m=int(h1_m)
+            )
+            self.last_h1_meta = h1_meta
+            # Re-check ⊆ allowlist length k
+            if len(final) != int(k) or any(lab not in menu_set for lab in final):
+                self.last_no_proposal_reason = "H1_ALLOWLIST_FAILED"
+                return None
+            return final
+        return pre_h1
+
 
 __all__ = [
     "FrozenProgramBindingError",
+    "PRIMARY_FIXED_DIV_K5",
+    "SIMPLE_RESERVE_M",
     "TTHASlowAgent",
     "bind_frozen_patch_program",
+    "h1_simple_bias_shortlist",
     "is_capability_body_surface_id",
     "verify_frozen_patch_program",
 ]

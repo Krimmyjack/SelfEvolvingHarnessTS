@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ttha://slow-prep-rank/1",
+  "$comment": "REGISTERED CANDIDATE in methods/ttha/schemas + schema_contracts._STAGE_SCHEMA_FILES. Do NOT overload EditManifest / slow_edit_v1 / propose_edit. Stage=prep_menu_rank via TTHASlowAgent.propose_prep_rank. Compatible with validate_local_schema (no `not` keyword; hard-reject of edit_manifest via additionalProperties:false + Python post-validator). Citation baseline: _scratch/research_pack_2026-09-12/p4_slow_prep_rank_v1/.",
+  "title": "slow_prep_rank_v1 — Slow prep-menu ranking (registered candidate)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role",
+    "stage",
+    "schema",
+    "proposal",
+    "allowlist_binding",
+    "form_memory"
+  ],
+  "properties": {
+    "role": {
+      "const": "slow",
+      "description": "Agent role; always slow for this stage."
+    },
+    "stage": {
+      "const": "prep_menu_rank",
+      "description": "Distinct from sealed stage=edit (slow_edit_v1)."
+    },
+    "schema": {
+      "const": "slow_prep_rank_v1"
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ordered_prep_keys",
+        "abstain"
+      ],
+      "properties": {
+        "ordered_prep_keys": {
+          "type": "array",
+          "description": "Ordered prep labels from M_large. Schema allows min/max; post-validator enforces length == allowlist_binding.k, distinct, ⊆ allowlist.",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 1200,
+          "description": "Optional form-only rationale; never gated on E."
+        },
+        "form_signals_used": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "pick",
+              "family",
+              "C_A",
+              "C_B",
+              "heldin_CB_safe"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "abstain": {
+          "type": "boolean",
+          "description": "If true, research adapter treats as non-ok (no shortlist)."
+        }
+      }
+    },
+    "allowlist_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "k"
+      ],
+      "description": "Bind ranking to a frozen M_large identity + fit budget k. Post-validator requires m_large_id and/or m_large_sha256 present and matching the concrete allowlist.",
+      "properties": {
+        "m_large_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-stable id, e.g. beijing_v2_ridge_m56."
+        },
+        "m_large_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Canonical SHA-256 of ordered M_large label list."
+        },
+        "k": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32,
+          "description": "Fit budget; post-validator requires len(ordered_prep_keys)==k when abstain=false."
+        }
+      }
+    },
+    "form_memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Form-only signals. HARD: no E / delayed utility / test scores. additionalProperties:false rejects E.",
+      "required": [
+        "pick",
+        "family",
+        "C_A",
+        "C_B"
+      ],
+      "properties": {
+        "pick": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "C_A": {
+          "type": "number"
+        },
+        "C_B": {
+          "type": "number"
+        },
+        "top_families": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16
+        }
+      }
+    },
+    "non_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional honesty tags, e.g. not_edit_manifest, not_sealed_propose_edit."
+    }
+  }
+}

@@ -28,6 +28,10 @@ _STAGE_SCHEMA_FILES = {
     # Runtime 装配。自足 schema，无注入点——它不描述 manifest，所以
     # slow_edit_v1 的四处 $defs 注入与它无关。
     "slow_scope_clause_v1": "slow_scope_clause_v1.json",
+    # Local graduation candidate (research pack p4_slow_prep_rank_v1):
+    # prep-menu ranking only — do NOT overload EditManifest / slow_edit_v1.
+    # No operator / skill $defs injection (unlike fast_propose_v1 / slow_edit_v1).
+    "slow_prep_rank_v1": "slow_prep_rank_v1.json",
 }
 
 
