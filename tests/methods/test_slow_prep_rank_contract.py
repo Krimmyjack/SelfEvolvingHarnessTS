@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import inspect
+
 import pytest
 
 from SelfEvolvingHarnessTS.contracts.canonical import canonical_sha256
@@ -12,6 +14,7 @@ from SelfEvolvingHarnessTS.methods.ttha.agent_core import (
 )
 from SelfEvolvingHarnessTS.methods.ttha.slow_agent import (
     PRIMARY_FIXED_DIV_K5,
+    TTHASlowAgent,
     h1_simple_bias_shortlist,
 )
 
@@ -113,6 +116,37 @@ def test_h1_simple_bias_shortlist_reserves_simplex():
     assert "outlier_iqr(k=1.0)" in out
     # pipe-head extension of Fixed-div simple should be demoted when room allows
     assert "outlier_mad(k=2.5)>winsorize>fft_decompose" in meta["skipped_div_simple_extensions"]
+    # forced simplex appear BEFORE slow-fill composites (prefix)
+    forced = meta["forced_simplex"]
+    assert out[: len(forced)] == forced
+    assert meta["merge_order"] == "forced_then_fill"
+    assert meta["m_clamped"] is False
+    assert meta["m_reserved"] == 2
+    # remaining slots are slow-fill (not forced)
+    assert all(lab not in forced for lab in out[len(forced) :])
+
+
+def test_h1_clamps_m_when_m_gt_k():
+    """k=1, m=2 → m clamped; length 1; does not silently claim m=2."""
+    slow = [
+        "outlier_mad(k=2.5)>winsorize>fft_decompose",
+        "fft_decompose",
+        "identity",
+    ]
+    out, meta = h1_simple_bias_shortlist(slow, PRIMARY_FIXED_DIV_K5, k=1, m=2)
+    assert len(out) == 1
+    assert meta["m_clamped"] is True
+    assert meta["m_requested"] == 2
+    assert meta["m_reserved"] == 1
+    assert len(meta["forced_simplex"]) == 1
+    assert out == meta["forced_simplex"]
+    assert meta["slow_fill"] == []
+
+
+def test_propose_prep_rank_default_apply_h1_false():
+    """API default: H1 off; runners must opt in with apply_h1=True."""
+    sig = inspect.signature(TTHASlowAgent.propose_prep_rank)
+    assert sig.parameters["apply_h1"].default is False
 
 
 def test_stage_schema_registered_in_contracts():
@@ -120,3 +154,7 @@ def test_stage_schema_registered_in_contracts():
     assert schema["properties"]["schema"]["const"] == "slow_prep_rank_v1"
     assert schema["properties"]["stage"]["const"] == "prep_menu_rank"
     assert schema.get("additionalProperties") is False
+    # C_B honesty: schema must not market C_B as pure form-only
+    fm_desc = schema["properties"]["form_memory"]["description"]
+    assert "form-only" not in fm_desc.lower() or "not" in fm_desc.lower()
+    assert "C_B-safe" in fm_desc or "delayed-calibration" in fm_desc

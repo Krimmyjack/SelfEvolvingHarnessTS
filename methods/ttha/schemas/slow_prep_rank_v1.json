@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "ttha://slow-prep-rank/1",
-  "$comment": "REGISTERED CANDIDATE in methods/ttha/schemas + schema_contracts._STAGE_SCHEMA_FILES. Do NOT overload EditManifest / slow_edit_v1 / propose_edit. Stage=prep_menu_rank via TTHASlowAgent.propose_prep_rank. Compatible with validate_local_schema (no `not` keyword; hard-reject of edit_manifest via additionalProperties:false + Python post-validator). Citation baseline: _scratch/research_pack_2026-09-12/p4_slow_prep_rank_v1/.",
-  "title": "slow_prep_rank_v1 — Slow prep-menu ranking (registered candidate)",
+  "$comment": "REGISTERED CANDIDATE in methods/ttha/schemas + schema_contracts._STAGE_SCHEMA_FILES. Do NOT overload EditManifest / slow_edit_v1 / propose_edit. Stage=prep_menu_rank via TTHASlowAgent.propose_prep_rank. Compatible with validate_local_schema (no `not` keyword; hard-reject of edit_manifest via additionalProperties:false + Python post-validator). Design record: docs/design/SLOW_PREP_RANK_V1.md (research pack historically under _scratch/...; gitignored).",
+  "title": "slow_prep_rank_v1 \u2014 Slow prep-menu ranking (registered candidate)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -35,7 +35,7 @@
       "properties": {
         "ordered_prep_keys": {
           "type": "array",
-          "description": "Ordered prep labels from M_large. Schema allows min/max; post-validator enforces length == allowlist_binding.k, distinct, ⊆ allowlist.",
+          "description": "Ordered prep labels from M_large. Index 0 = highest explore priority when a consumer walks in order. Schema allows min/max; post-validator enforces length == allowlist_binding.k, distinct, \u2286 allowlist. When H1 is applied (apply_h1=True), reserved Fixed-div simples are merged as a prefix (forced + fill); see docs/design/SLOW_PREP_RANK_V1.md.",
           "minItems": 1,
           "maxItems": 32,
           "uniqueItems": true,
@@ -47,7 +47,7 @@
         "rationale": {
           "type": "string",
           "maxLength": 1200,
-          "description": "Optional form-only rationale; never gated on E."
+          "description": "Optional rationale over allowlisted prep labels and held-in C_A/C_B signals; never gated on E."
         },
         "form_signals_used": {
           "type": "array",
@@ -61,7 +61,8 @@
               "heldin_CB_safe"
             ]
           },
-          "uniqueItems": true
+          "uniqueItems": true,
+          "description": "Which signals informed the ranking. C_B remains in the enum as the research C_B-safe held-in delayed-calibration utility (not deploy E); see docs/design/SLOW_PREP_RANK_V1.md."
         },
         "abstain": {
           "type": "boolean",
@@ -98,7 +99,7 @@
     "form_memory": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Form-only signals. HARD: no E / delayed utility / test scores. additionalProperties:false rejects E.",
+      "description": "Prep-rank signals: pick/family plus held-in C_A/C_B. C_B is held-in delayed-calibration block utility used by the research C_B-safe gate; it is NOT deploy E / held-out test utility. Do NOT call C_B a pure form-only signal \u2014 sealed multi-arm feedback accounting is still TBD (see docs/design/SLOW_PREP_RANK_V1.md / \u00a76.28.4 concern). HARD: no E. additionalProperties:false rejects E.",
       "required": [
         "pick",
         "family",
@@ -115,10 +116,12 @@
           "minLength": 1
         },
         "C_A": {
-          "type": "number"
+          "type": "number",
+          "description": "Held-in formation-block utility signal (research prior; not deploy E)."
         },
         "C_B": {
-          "type": "number"
+          "type": "number",
+          "description": "Held-in delayed-calibration block utility for research C_B-safe gates; not deploy E. Information role vs sealed multi-arm feedback accounting: see docs/design/SLOW_PREP_RANK_V1.md / \u00a76.28.4 concern."
         },
         "top_families": {
           "type": "array",

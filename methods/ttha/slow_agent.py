@@ -310,7 +310,7 @@ def _public_features_from_card(card: Mapping[str, object]) -> dict[str, object]:
 
 # ---------------------------------------------------------------------------
 # slow_prep_rank_v1 — prep-menu ranking (registered candidate; NOT EditManifest)
-# Citation: _scratch/research_pack_2026-09-12/p4_slow_prep_rank_v1/
+# Design record: docs/design/SLOW_PREP_RANK_V1.md
 # ---------------------------------------------------------------------------
 
 SIMPLE_RESERVE_M = 2  # frozen H1
@@ -349,36 +349,51 @@ def h1_simple_bias_shortlist(
 ) -> tuple[list[str], dict[str, object]]:
     """Frozen H1: reserve m Fixed-div simplex slots; fill k−m from Slow; demote
     composites whose pipe-head ∈ Fixed-div simples. No E peek.
+
+    Merge order is ``forced + fill`` (reserved simplex first). Index 0 is the
+    highest explore priority when a consumer walks the shortlist in order; for
+    bag-of-k C_B-safe pick, membership still matters but order is coherent with
+    guaranteeing simples are explored early.
+
+    If ``m > k``, clamp to ``m_eff = min(m, k)`` and set meta ``m_clamped``.
     """
+    if not isinstance(k, int) or isinstance(k, bool) or k < 1:
+        raise ValueError("k must be a positive int")
+    if not isinstance(m, int) or isinstance(m, bool) or m < 0:
+        raise ValueError("m must be a non-negative int")
+    m_eff = min(m, k)
+    m_clamped = m > k
     simples = _simplex_ops_from_schedule(frozen_div)
     simple_set = set(simples)
-    forced = _take_k(simples, m)
+    forced = _take_k(simples, m_eff)
     forced_set = set(forced)
 
     def is_div_simple_extension(lab: str) -> bool:
         return (">" in lab) and (_pipe_head(lab) in simple_set)
 
+    fill_budget = max(0, k - len(forced))
     fill: list[str] = []
     skipped_ext: list[str] = []
     for lab in slow_ranked:
+        if len(fill) >= fill_budget:
+            break
         if lab in forced_set or lab in fill:
             continue
         if is_div_simple_extension(lab):
             skipped_ext.append(lab)
             continue
         fill.append(lab)
-        if len(fill) >= max(0, k - len(forced)):
-            break
 
-    if len(fill) < max(0, k - len(forced)):
+    if len(fill) < fill_budget:
         for lab in slow_ranked:
+            if len(fill) >= fill_budget:
+                break
             if lab in forced_set or lab in fill:
                 continue
             fill.append(lab)
-            if len(fill) >= max(0, k - len(forced)):
-                break
 
-    merged = list(dict.fromkeys(fill + forced))
+    # Reserved simplex first, then Slow fill (not fill+forced).
+    merged = list(dict.fromkeys(forced + fill))
     if len(merged) < k:
         for lab in list(frozen_div) + list(slow_ranked):
             if lab not in merged:
@@ -389,7 +404,10 @@ def h1_simple_bias_shortlist(
     meta: dict[str, object] = {
         "repair_variant": "H1_simple_bias_shortlist",
         "rule": "H1_simple_bias_shortlist",
-        "m_reserved": m,
+        "merge_order": "forced_then_fill",
+        "m_requested": m,
+        "m_reserved": m_eff,
+        "m_clamped": m_clamped,
         "forced_simplex": forced,
         "frozen_div_simplex_all": simples,
         "slow_ranked_raw": list(slow_ranked),
@@ -399,6 +417,10 @@ def h1_simple_bias_shortlist(
         "n_fits": len(out),
         "cost_fair_k": len(out) == k,
         "no_E_peek": True,
+        "order_semantics": (
+            "index_0_highest_explore_priority; "
+            "forced_simplex_prefix_guarantees_early_simple_explore"
+        ),
     }
     return out, meta
 
@@ -407,8 +429,11 @@ def _prep_rank_harness_view() -> EffectiveHarnessView:
     """Minimal harness view for prep_menu_rank (no FailurePatternCard / snapshot)."""
     instruction = (
         "You are the TTHA Slow prep-menu ranker. Rank allowlisted prep labels "
-        "under fit budget k using form-only signals. Never emit EditManifest, "
-        "edit_manifest, minimal_patch, new_value, or E."
+        "under fit budget k using pick/family/C_A/C_B (and optional held-in "
+        "C_B-safe summaries). C_B is held-in delayed-calibration block utility "
+        "for the research C_B-safe gate — not deploy E; sealed multi-arm "
+        "feedback accounting is still TBD (see docs/design/SLOW_PREP_RANK_V1.md). "
+        "Never emit EditManifest, edit_manifest, minimal_patch, new_value, or E."
     )
     controls = {
         "role": "slow",
@@ -600,7 +625,7 @@ class TTHASlowAgent:
         k: int,
         allowlist_binding: Mapping[str, object],
         fixed_div_simplex_order: Sequence[str] | None = None,
-        apply_h1: bool = True,
+        apply_h1: bool = False,
         h1_m: int = SIMPLE_RESERVE_M,
         heldin_summaries: Sequence[Mapping[str, object]] = (),
     ) -> list[str] | None:
@@ -608,7 +633,15 @@ class TTHASlowAgent:
 
         Distinct from ``propose_edit`` / EditManifest. Returns length-k
         allowlisted keys, or None on abstain / validation failure
-        (``last_no_proposal_reason``). Optional H1 post-process defaults True.
+        (``last_no_proposal_reason``).
+
+        ``apply_h1`` defaults to False. H1 is an optional fixed control/repair
+        arm (Beijing role-swap repair / H1_CLAIM_HOLDS research), not a sealed
+        product prior; runners that want it must pass ``apply_h1=True``.
+
+        Signals: pick/family/C_A/C_B — C_B is held-in delayed-calibration
+        utility for research C_B-safe gates, not deploy E (see
+        docs/design/SLOW_PREP_RANK_V1.md).
         """
         self.last_no_proposal_reason = None
         self.last_stage_result = None
