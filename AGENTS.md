@@ -4,6 +4,15 @@
 长期权威。历史任务书与报告保留为证据记录；与本文件冲突时，以本文件和
 用户当前指令为准。
 
+**当前执行入口（2026-09-23 晚）**：后续设计为“离线学习 Workflow、部署时依据数据执行”（§5.11）。任务族筛选（§5.11.1）与 Planner 任务书 `DEV-AUG-OFFLINE-SKILL`（电力 / 交通 / 太阳能，A→B→C→D）均已收口（§5.11.2 阶段 A、§5.11.3 全包）；按任务书停止，下一包未起草、未启动。批级自主研究 Workflow 仍以 §5.9 为准；实体划分开发路线的历史收口见 §5.10。§5 中早期路线与收口保留为历史记录，不据其旧“下一步”另开实验。
+
+- **最新已收口**：`DEV-AUG-TASK-FAMILY-SCREEN`（2026-09-23 12:20–14:36，0 LLM）：五个候选域（电力、交通，新增太阳能、空气质量、风电）的 Source 池 38 案 × 12 个统一程序 × 3 seed，共 1368 拟合，0 失败。按拟合前冻结的规则只携带 D01、D03，满足 F2 的携带族为 0，**按规则不建议直接做无卡 / 共享卡 / 域卡实验**。实质：增强偏好在数据集族层面（族内 0 对结构—处理关联过门槛）；四族强增强大幅有益（Preset 对 None +16 ~ +36 pp），交通相反（Preset −6.2、最差 −35），交通族最优比 Preset 好 7.1 pp、8/8 复现，但被 F1 的写法排除。固定程序层面各族选本族最佳、相对统一默认的开发优势约 1.4–2.9 pp（三域时约一半来自交通、一半来自太阳能，随打平的统一默认而变；不是域卡对共享卡的实测效果）。划分文档 `docs/AUG_TASK_FAMILY_DIVISION_V1.json`（五族，PROPOSED）。详见 §5.11.1。
+- **上上包已收口**：`DEV-DOMAIN-AUG-TEMPORAL-COVERAGE`（数值 2026-09-22 02:14，报告/核账 09-23）COMPLETE：6 学习时期 / 2 选卡时期 / 4 测试时期、实体隔离，16 个 MetaTest 案。F_domain − F0 **+2.35 pp**（D01 +4.85、D02 −0.14；6/5/5；A12 时期 −2.38），D01 收益基本是回到预设；F_domain − F_shared **−0.04**（共享卡对 F0 +2.40）；F_domain − Fixed_dev **−1.42**；部署 token 比 F0 少 80%、新评估 13 vs 62。Fixed_dev 出现域差异（D01 P_NoMixRecipe、D02 Edit[-resample-random_conv]）。已知 30.91M token + 16 次已接受的未知 usage（上界约 32.9M）。判读 WEAK_POSITIVE_VS_NO_CARD / NOT_STABLE / DOMAIN_ORGANISATION_NOT_SUPPORTED，详见 §5.10.8。
+- **上一包已收口**：`DEV-DOMAIN-AUG-MATCHED-LAG-FEEDBACK`（2026-09-21 13:34）COMPLETE：四案 31 候选在同实体上回放到 h1 = t−768、h2 = t−384（各自 672 小时训练、2000 步、三 seed，186 次历史拟合 + 6 次接线，0 LLM），近端/延后各四起点评分；四种固定 selector 同池比较（pp of None，两域等权）：R_HistLate 对 R_CA +0.10（2 胜 2 负，最大伤害 −4.17）、对 Fixed_dev −0.73（0/2/2）；R_HistNear 对 R_CA +0.85、对 Fixed_dev +0.02，3/4 与延后同交付；成对同向率 c_a 0.717 / hist_near 0.729 / hist_late 0.741。判词 DEFAULT_RECOVERY_ONLY：两次胜利都是回到 P_NoMixRecipe，两次离开预设都变差，延后位置无独有贡献；历史阶段墙钟 16.7 min（3 路）。详见 §5.10.7。
+- **更早一包**：`DEV-DOMAIN-AUG-FIXED-POOL-SELECTION`（2026-09-21 02:41）COMPLETE：同候选池、同合法反馈视图下学习提交决策卡；每域三次独立 Slow 提案全部收敛为“默认预设 P_NoMixRecipe，除非其 C_A 对 None 两起点一致为负”；Select 三卡同交付、按 token 破同；Replay 8 案有卡对无卡 −0.14 pp（3/2/3）、对 C_A argmin −0.20、与 Fixed_dev（两域均 NoMix）8/8 逐案相同（否决分支 0/12 触发）、对 R_uniform +3.19；无卡 S0 在 11/12 决策等于 C_A argmin；40 请求 / 1.33M token / 13.9 min / 0 拟合；CAPABILITY = NO_INCREMENT（固定偏好复现），详见 §5.10.5。上一包 `DEV-DOMAIN-AUG-DECISION-PRIORITY` 收口见 §5.10.3。
+- **当前状态**：`DEV-AUG-OFFLINE-SKILL` 收口（2026-09-23 21:02）：零反馈部署下 F_domain − F0 **+17.66 pp**（95% 聚类区间 [+11.5, +24.8]，32/0/8）、F_shared − F0 +16.29、F_domain − F_shared +1.37（区间跨零；差距全在交通）；收益来自纠正“按材料外观否决强增强”的偏差，交付物均为统一固定程序（F_domain − NoMix −1.01、− Fixed_source +0.71）。详见 §5.11.3。Natural Final 继续封存；第二 Consumer PatchTST 冻结方案迁移已收口（§5.11.6：域卡方案对无卡 −3.96，退步集中在电力），PatchTST 条件化离线学卡已收口（§5.11.7：新卡对原 MLP 卡 +3.22、对无卡 −2.47，PatchTST 上增强空间小），TSFM（Time-MoE）条件化学卡在服务器运行（§5.11.8），TSFM 仅准备方案。 朴素卡对照已收口（§5.11.4：域卡 − 朴素卡 +6.44，主要来自太阳能）；`DEV-AUG-MAIN-COMPARISON` 已收口（§5.11.5：主表九臂齐全，F_domain − AutoDA +24.8，AutoDA 适配后对 None −2.7）。
+- **当前重点**：离线学到的域经验能否帮助 Agent 在新案例上零反馈地构造更有效的增强（§5.11）；主比较是同工具、同预算下的无卡、共享卡、域卡。不再在电力 / 交通两域上换反馈字段或提示词小修。
+
 ## 1. 项目目标
 
 本项目针对时序数据中“质量”标准随 Task、Consumer/模型和局部时序 Pattern
@@ -195,7 +204,7 @@ held-in 轨迹中已经发生的 Target Support。Fast Path 禁止读取：
 `RAW_SOURCE_EPISODES_TO_FAST_REJECTED`，保留作机制证据，不得通过重排、加权、
 检索或聚合相同 raw Episode 修复后重新接回 Fast。
 
-## 5. 当前状态锁（Main Protocol P4 拆分放行后，2026-08-30）
+## 5. 历史状态锁与阶段更新（当前推进见 §5.10）
 
 - Main Protocol 当前里程碑为：P0b 完成；P1 三任务基础合同完成；P2
   Forecast 风险控制生命周期机制通过；P3 三任务统一纵向接线通过。历史判词
@@ -726,6 +735,400 @@ Fast／Slow、逐序列 Workflow、共享 Consumer 及完整 A5 定义保留。�
 现有 TRAIN3 General 草案保持未批准状态；其同材料再改指导不能直接作为上述新机制
 实验。本文档任务不启动实验、不开放密封材料、不改历史读数。9/15 路线检查点保留；
 具体实现、数据与预算在后续实施规格中定稿，不由外部报告的时间和阈值自动授权。
+
+### 5.9 批级自主研究 Workflow（2026-09-13，用户确认的新设计）
+
+用户确认：Fast 面向一批训练数据生成处理策略，策略覆盖观察、决策、构造、实验和执行；整体训练价值作为反馈，在贯通 Fast 后优化效果及经验进化。用户进一步要求落实文档并安排后续任务。
+
+本节是对 §5.3、§5.6–5.8 中“Fast 必须逐序列独立生成”及对应下一步顺序的显式更新。后续批级开发以本节为准；历史实验及判词保留原设置，不并表、不重写。项目积累＋Target适应目标、完整A5定义、共享Consumer和最终E信息墙保留。
+
+- **单位统一**：Fast接收完整Job的Task、Consumer、全批可见Context和预算，生成并执行批级Workflow。一个候选的全部原始/派生材料共同训练一个Consumer；配对seed各自训练，不拼接不同模型的逐实体预测。
+- **批级不等于统一算子**：Workflow可按实际观察对实体/窗口分组、设置默认和例外，也可全体相同。不能从第一条数据决定后广播；不以多样性或每实体都改善为门。全人口宏效用为主，局部读数用于诊断。
+- **Fast/Slow分工**：Fast在held-in内可取得当前合法C_A反馈，组织观察、构造、比较、停止与commit；同一Job知识冻结。Slow在Job边界读取过程与合法延迟反馈，修改观察/构造/实验/决策指导或Specific适用条件；每次聚焦一个主要行为机制。
+- **知识通路**：原始跨作业Episode仍只供Slow/Runtime，Fast读取冻结General/Specific及当前合法工具结果。匹配可先取得候选Skill，再补查其要求的T观察；MATCH不等于效果已证明。
+- **交付控制**：新批级协议由Fast根据C_A提交已真实拟合的完整候选；C_B在commit冻结后作延迟检查，不能再由旧argmin覆写当前交付。此变化只适用于新明确标记的运行。最终E仍在所有输出冻结后统一开放，不回流本轮。
+- **可编辑边界**：允许观察、材料构造、实验组织、决策指导的有限改进；Consumer、评分、训练目标、预算与标签权限不交给Slow改。观察与材料诊断不冒充真实训练价值。
+- **推进顺序**：M1完成可运行闭环，M2优化Fast净收益/成本，M3检验Source积累与A3/A5。不得把每一个局部headroom预检都升级为M1建设前置门；也不将M1完成写成性能或持续学习通过。§6的单机制归因纪律用于后续效果试验，不阻止本次必要接口共同接通。
+- **首包历史状态（非最新进度）**：W首包三个分支已真实COMPLETE，31次拟合（含对齐1次）、12次实验LLM；Source候选实际形成且后续3/3请求加载。完成一次批级最小开发闭环，未支持Fast净收益或新H积累增益，不晋升M2/M3。实际收口见首包任务书§10.3与 `_scratch/dev_batch_research_workflow_v1/REPORT.md`；本包已停止，Natural Final及旧P4冻结状态不变。
+
+统一框架：[批级研究Workflow规格](docs/BATCH_RESEARCH_WORKFLOW_FRAMEWORK_2026-09-13.md)。
+首包：[DEV-BATCH-RESEARCH-WORKFLOW-V1](docs/DEV_BATCH_RESEARCH_WORKFLOW_V1_TASK_2026-09-13.md)。
+当前路线见 docs/HARNESS_RESEARCH_DIRECTION_AND_PLAN.md §6.30。本次没有批准git提交、覆盖历史包或新增哈希。
+
+### 5.10 域 Skill 的实体划分开发 setting（2026-09-19，用户确认重定）
+
+用户确认尽快按项目需求重定实验：同域不同序列/实体组承担 Skill 学习、选优和复用验证，恢复有界完整增强构造，不将研究压成固定配方的组件开关。本节更新当前开发任务的案例组织、动作范围和推进顺序；§1–3 的完整系统目标与 Natural Final 边界保留。
+
+**旧包状态与可复用教训**
+
+`DEV-TEMPO-AUG-DOMAIN-SKILL-OPTIMIZE` 已按原规格完成并停止，身份为 `EXPOSED_DEVELOPMENT_REPLAY`，出口 `NO_REPLAY_INCREMENT / GUARD_LEARNED_BUT_UNTRIGGERED`。卡学会“只在配方族内按 C_A 排序，其他公共参照的 C_A 领先不覆盖”；开发阶段确实改变提交，但 L6/L7 守卫没有触发，两批有卡交付与 NoMix 相同，相对无卡平均 −0.05 pp。L4 的 +36.1 pp 是相对影子 C_A argmin，不是真实无卡臂增量。
+
+这说明历史经验能够改变提交规则，但尚未证明新案例效用；不得外推为 Slow 学不会、公共参照普遍有害或条件化无价值。旧卡的“只留在配方族/不分组”不能作为新两域的默认知识。报告见 [_scratch/dev_tempo_aug_domain_skill_optimize/REPORT.md](_scratch/dev_tempo_aug_domain_skill_optimize/REPORT.md)。保留旧任务原预算、实际用量与 amendment，不以实际用量追改原上限；不据旧任务重跑。
+
+**当前实验设置与方法边界**
+
+- **两层划分**：外层 Source / Select / MetaTest 按实体互斥；内层仍按时间切 Consumer 训练窗口和评价块。先分实体，再切窗口，不能将重叠窗口随机拆成独立 Skill 案例。
+- **当前数据**：D01 Electricity、D02 Traffic。每域 Source 128 条序列/8 案例、Select 32 条/2 案例、MetaTest 32 条/2 案例；每案例 16 条序列，共同训练一个共享 Consumer。三个集合覆盖同样的两个时间切点，具体名单和几何读冻结 JSON。窗口数、实体数和 seed 数均不能冒充独立研究经历数。
+- **学习主体**：Skill 是可执行的观察、假说、构造、实验、提交与停止指导，含 Workflow 与可选 Principles；完整数值处理程序是 Fast 使用这些指导后的产物，两者不能混称。Opus 是开发执行者；实验内 Fast/Slow 及模型身份按任务书，角色不能混淆。
+- **域内复用**：每域从本轮 Source 的真实研究轨迹与合法后期效果生成多张候选，Select 实测选卡，随后按已知域身份加载到新实体组。无画像 Router。原始跨案例 Episode 只给 Slow；Fast 只读冻结卡与本案例合法工具结果。新包不导入旧 RD02 卡或人工按域指定答案。
+- **完整构造**：七个既有 TempoPFN 原语的合法 1–3 步组合、按观察条件化赋值、公共 NoMix 及关闭 0–2 组件的局部编辑都可用。参数分布、顺序和互斥规则沿用任务书；不开放任意代码、新算子、Consumer 调参或采样权重。NoMix 不具强制起点地位，显式组合不得被 edit-only 接口挡住。
+- **权限与经验分开**：不能从“单实体 loss 不等于其材料的独立因果贡献”推出“不准分组”；未尝试不等于有害。Skill 可提出有证据的候选优先级或提交偏好，但软指导不改工具权限；不强制复杂、分组、用满槽或偏离默认来制造行为差异。
+- **提交控制**：Fast 可依据当前合法观察、C_A 和冻结 Skill 提交任一自身已评估方案或公共参照；Runner 不强制改为 C_A argmin，不预置“3/3 才提交”或“必须留在 NoMix 家族”。C_A 有限且可能与后期冲突；恢复完整空间和更换 split 本身不保证解决该问题。
+- **必要比较**：同工具、同预算比较有卡、无卡、通用指导、随机搜索与开发选出的固定方案，四公共参照继续同场。主拆解是经验学习是否改善新实体任务，不要求无卡先胜 NoMix 才允许学 Skill；只胜 None 不能记为 Skill 增量。若学得固定偏好照实报告，不强制将其写成动态适应。
+- **信息权限**：Source/Select 的合法后期评分用于本轮学习/选优；MetaTest 有当前 C_A 支持反馈，但卡全程冻结、无 Slow。C_B/E 在输出冻结后统一开放，不回流本轮。MetaTest 是开发级新实体任务，不是 §3 的零反馈 held-out。数据源历史曝光身份保留为 `SERIES_DISJOINT_DEVELOPMENT`，不称全新终验。
+- **执行与状态**：本包已连续完成接线、16 个 Source 案例、两域形成、12 条 Select 分支、20 条 MetaTest 分支和报告，并停止。实际结果与偏差见 §5.10.1；不自动插入旧批次诊断、局部修订或下一包。后续常规技术问题在已授权范围内解决，数据边界、方法与预算的实质变化按 §9.2 处理。
+
+执行规格：[DEV-DOMAIN-AUG-ENTITY-SPLIT](docs/DEV_DOMAIN_AUG_ENTITY_SPLIT_TASK_2026-09-19.md)；实体与时间名单：[DOMAIN_AUG_ENTITY_SPLIT_V1.json](docs/DOMAIN_AUG_ENTITY_SPLIT_V1.json)。数据、模型、预算、输出与停止条件由任务书限定。本节不授权新封存区、git commit、新增 SHA/Hash，也不将本开发组件的完成等同于完整 A5 或持续进化通过。
+
+#### 5.10.1 实体划分包实际收口（2026-09-20）
+
+报告：[_scratch/dev_domain_aug_entity_split/REPORT.md](_scratch/dev_domain_aug_entity_split/REPORT.md)；机器读数：[result.json](_scratch/dev_domain_aug_entity_split/result.json)。身份仍是 `SERIES_DISJOINT_DEVELOPMENT`，不是 Natural Final；本次没有多轮进化或跨域共享 Skill 对照。
+
+- **方法读数**：F_domain 相对 F0 为 +0.74 pp（D01 +2.24、D02 −0.75；四案例 1 正、1 负、2 同交付），相对 Random_B4 +1.66 pp，相对 Fixed_dev/NoMix +0.01 pp。均以各案例 None 均值为分母。域卡对 None +10.88、固定 NoMix +10.87，不能把这约 11 pp 全归于 Agent 学习，也不从接近零推断总体等效。
+- **具体行为**：D01_Q02 的卡优先评估并提交 Comp[censor]，比 F0 好 4.48 pp（三 seed 同向）；F0 构造了 censor 却未评估，已用满 24 次工具调用。D02_Q02 卡提交联合编辑，比 F0 差 1.50 pp。MetaTest 十二条 Fast 的提交均等于自身池 C_A argmin；当前可观察作用主要是改变候选评估与预算分配，不是已学会更好的提交排序。
+- **选卡限度**：每域三卡在两个 Select 案例均同交付、J 并列，按更少评估破同。两域 Fixed_dev 都为 NoMix；卡片内容有域差异，不等于已经证明 per-domain 优于共享卡。完整构造接口已被实际使用，Source 出现显式原语、单/双编辑及条件化方案；不能再称“接口只有 NoMix 开关”。
+- **成本口径**：MetaTest F_domain/F0 为 809,220/1,759,785 个已记录 token，新增评估 7/14。50% 是新增候选拟合节省；四案例公共参照共 48 拟合也计入独立部署时，为 69/90 拟合（约少 23%，按工作量计算，不是本包缓存后的物理费用）。Source＋形成＋Select 共 11,195,705 个已记录 token、447 拟合，另有 12 次接线；0.60M 只指 Slow 形成调用，不能代表完整学习成本。
+- **运行与完整性**：609 次拟合全部成功，账本 309 请求、约 15.10M 已记录 token、付费墙钟 4h17m。预算按用户指示修订，原上限与 amendment 分列保留。Select 双进程事故覆盖两份响应并重跑两条 W3 轨迹，另有一次已接受的未知 usage；不能将重建后的 token 写成完整精确总额或声称协议零偏差。D02-W3 正文含 S06/S08 编号，虽未选中仍保留为文本契约偏差。原报告与工件不追改。
+- **推进边界**：保留新 setting 与 D01 的候选优先级正例，同时保留 D02 的伤害；不强制回到旧时间重放或把“只采用固定方案”写成 Skill 改进。若后续把固定程序纳入系统采用集，须与研究 Skill 本身的增量分开报告；当前不启动该修改或新实验。
+
+#### 5.10.2 下一包：研究决策优先级与并行复验（2026-09-20，待派工）
+
+用户要求安排后续任务，并将可独立的拟合/API 调用并行。本包复用上一包每域
+12 个已完成实体案例作为下一代学习材料；保留其历史测试身份和旧报告，不重跑
+Source。新名单按原洗牌继续取每域 96 个未用实体：2 个 Select、4 个 MetaTest
+案例，与上一包及彼此互斥；仍为 SERIES_DISJOINT_DEVELOPMENT。
+
+方法重点是从真实决策点、当时可见证据和离线后期反馈学习观察/构造/评估优先级。
+材料外观不等于下游效用；D01_Q02 的 censor 未评估既有主动降优先级也有工具消耗，
+不能仅归因于没有预算提示。每域三次独立 Slow 提案，实测与旧卡比较；新实体比较
+无卡、旧卡、新卡、随机、固定程序；本轮以旧卡替代再跑通用指导，保留四公共参照。
+共同契约修复与上下文去重由所有臂共享；不预写
+哪个域该用哪个原语，不强制复杂/分组，不把 NoMix 改成强制起点或唯一准入门。
+
+并行采用单协调器、跨案例最多 4 路/API 最多 4 在途，全包数值重任务目标 3 路，
+同案例依赖顺序与标签屏障保留。并行前修复按全局计数差分摊费用/判断缓存、请求
+编号竞争和双恢复覆盖；沿用现役数值环境，内存不足时降低并发而不改训练语义。
+不建设新调度/哈希平台。
+
+规格：[DEV-DOMAIN-AUG-DECISION-PRIORITY](docs/DEV_DOMAIN_AUG_DECISION_PRIORITY_TASK_2026-09-20.md)；
+名单：[DOMAIN_AUG_DECISION_PRIORITY_V1.json](docs/DOMAIN_AUG_DECISION_PRIORITY_V1.json)。
+本节写于派工前（READY_FOR_DISPATCH）；实际执行与收口见 §5.10.3。本节不开放 Natural Final 或额外域，
+不更新既有科学判词。完整范围、采用/比较规则、规模、费用记录与停止条件读任务书。
+
+#### 5.10.3 决策优先级包实际收口（2026-09-20 12:50）
+
+报告：[_scratch/dev_domain_aug_decision_priority/REPORT.md](_scratch/dev_domain_aug_decision_priority/REPORT.md)；方法与接线 [METHOD.md](_scratch/dev_domain_aug_decision_priority/METHOD.md)；
+机器读数 [result.json](_scratch/dev_domain_aug_decision_priority/result.json)。身份 `SERIES_DISJOINT_DEVELOPMENT`；8 个新实体案例共享两个切点，不是 Natural Final。
+
+- **方法读数**（pp of None，正 = 前者好，域内四案例等权再两域等权）：F_new − F_old **+0.45**（D01 0.00，四案例交付完全相同；D02 +0.89，2 胜 2 平，SE 0.36 / 1.77）；
+  F_new − F0 **−0.44**（2 胜 2 平 4 负）；F_new − RandomSearch_B4 −1.38（3/0/5）；F_new − Fixed_dev −0.78（0/5/3）；F_new − NoMix −0.11；F_new − None +8.20。
+  各臂对 None：Random_B4 +9.58、Fixed_dev +8.97、F0 +8.64、NoMix +8.31、F_new +8.20、F_old +7.75。判词 CAPABILITY = NO_INCREMENT / INCONCLUSIVE；
+  不能记为 Skill 增量，也不从近零推断等效。
+- **采用决定**：H_deploy 两域都按同一 J 选了固定程序（D01 Edit[-random_conv] J 0.922；D02 P_NoMixRecipe J 0.911，与 W_new 并列后固定优先）；对 F0 +0.33、
+  对 F_old +1.23、对 F_new +0.78、对 NoMix +0.67，全部来自固定程序本身；学习卡不在采用集内。固定程序进入采用集的小幅收益与研究 Skill 无增量分开记录。
+- **学到什么**：六次独立 Slow 提案全部形成互不相同的卡（无 KEEP）；D01 三张都收敛到“预设 C_A 不差于 None 时不被 C_A 领先的编辑覆盖”（源于父包 V02/S04 的后期反转），
+  W_new = N2（禁 shock 关闭覆盖）在 Select 与 MetaTest 的交付与旧卡完全相同，只减少材料检查（每案例 1 次 vs 3 次）；D02 W_new = N1 是“预设 C_A ≤ None 则 0 评估直接提交预设”的
+  固定偏好，在 2/4 新案例 1 次调用即提交，2/4 案例走评估分支（Q03 多评 Comp[amplitude] 得 +1.65 vs 旧卡；Q06 锁预设放弃了公共 C_A argmin，−1.49 vs F0）。
+- **研究过程**：共同材料语义段下，构造未评估 F0 1 / F_old 0 / F_new 0，“未验证写成有害”启发式 0/24 条轨迹；三条 Fast 臂提交 = 自身池 C_A argmin 各 7/8；C_A/E 冲突再现
+  （D02_Q05 三臂池内 E 最优均为未提交的 NoMix）。0-LLM 随机搜索（4 槽 + C_A argmin）是平均最强臂，Fast 卡臂只用 0–2 槽。
+- **运行与完整性**：402 拟合全部成功、0 重试、771 缓存；245 逻辑请求 / 248 HTTP；9.09M token；付费墙钟 1 h 25 min。并行实际使用：活跃案例 4、HTTP 峰值 4/4、
+  数值池 2（接线实测内存规则，计划 3）；Select 16 条轨迹 + 标签 19.7 min。三次中转瞬断（1 次 300 s 超时、2 次 500）均由同一逻辑请求的有界重试成功，冻结规则各记 1 次未知 usage
+  并停止派发，操作者逐次显式接受并恢复（无重复付费调用、无标签泄漏）；两处无科学影响的技术修复（写一次记录幂等、付费时钟顺序并按账本事件回填）。原任务书上限保留，未触顶。
+- **推进边界**：保留 D02_Q03 的候选供给正例与 D02_Q06 的锁定伤害；不把“采用固定程序”写成 Skill 改进；不自动追加提示词修订或新实验。报告提出的唯一下一项是
+  0-LLM 可部分回答的诊断（同 4 槽下随机供给 + C_A argmin 与 Fast 自选供给 + C_A argmin 的差距来源），需用户另行授权才启动。
+
+#### 5.10.4 同候选池的提交决策学习（2026-09-21 起草；实际执行与收口见 §5.10.5）
+
+用户要求继续推进并保留独立 API 并行。下一项为
+[DEV-DOMAIN-AUG-FIXED-POOL-SELECTION](docs/DEV_DOMAIN_AUG_FIXED_POOL_SELECTION_TASK_2026-09-21.md)，
+状态 READY_FOR_DISPATCH，起草时未启动实验。
+
+复用既有 F0 的实际已评估材料：每案四公共参照加其自造候选，同案所有 selector
+看到相同池与合法反馈。Learn 仅父包两域 S01–S08；Select 用父包 Q01/Q02；
+Replay 用后包 Q03–Q06。Slow 不读旧卡或包含 Q 结果的总结。外层实体互斥，
+结果早已曝光，明确记 EXPOSED_DEVELOPMENT_REPLAY，不恢复独立终验身份。
+
+每域三次独立 Slow 提案，Select 实测后冻结一张提交 Skill；Replay 比较有卡、
+无卡、C_A argmin、开发选定固定公共程序及池内均匀选择期望。当前 C_A 已有
+两起点、三 seed；本包整理已有细分反馈，不新增时间覆盖，不预设 3/3 或 NoMix
+守卫。不要求先证明相关性或显著胜固定方案才测试学习；各比较的实际差值照报。
+
+这是完整研究 Harness 的提交组件实验，完整原语组合/条件化/编辑构造能力保留，
+不将最终系统改成固定菜单。正常 38 次主要 LLM 请求，至多 4 路 HTTP；单协调器，
+新增 Consumer 拟合/预测推理/标签/SHA/commit 均为 0。范围、纠正/重试及未知 usage 规则、
+同池比较和收口终点按任务书；不自动开反馈重设计、缺口修复或下一包。
+
+#### 5.10.5 同池提交决策包实际收口（2026-09-21 02:41）
+
+报告：[_scratch/dev_domain_aug_fixed_pool_selection/REPORT.md](_scratch/dev_domain_aug_fixed_pool_selection/REPORT.md)；方法与接线 [METHOD.md](_scratch/dev_domain_aug_fixed_pool_selection/METHOD.md)；
+机器读数 [result.json](_scratch/dev_domain_aug_fixed_pool_selection/result.json)。身份 `EXPOSED_DEVELOPMENT_REPLAY`（实体互斥保留，后期结果历史已曝光；两个共享切点）。
+
+- **方法读数**（pp of None，正 = 前者好，域内四 Replay 案例等权再两域等权）：S_W* − S0 **−0.14**（D01 −1.21、D02 +0.92；3 胜 2 同交付 3 负；最大伤害 −5.20 于 D01_Q05；
+  跨案例 SD 3.3/2.0 远大于 seed SE 0.43/0.17）；S_W* − R_CA −0.20（3/1/4）；S_W* − Fixed_dev **0.00（8/8 同交付）**；S_W* − R_uniform +3.19；S_W* − None +8.31；S0 − R_CA −0.05（0/7/1）。
+  各臂对 None：H_select 8.91、R_CA 8.51、S0 8.45、S_W* = Fixed_dev = NoMix 8.31、R_uniform 5.12。判词 CAPABILITY = NO_INCREMENT（固定偏好复现）。
+- **学到什么**：六次独立 Slow 提案（每域三次、无旧卡、只读 S01–S08）全部形成互不相同但同机制的卡：默认提交预设，只有预设对 None 的 C_A 配对差在两起点（D01 另要求三 seed 且超 seed SE）一致为负才离开预设、改提交 C_A 领先者。
+  该否决条件在 16 个 Learn 池中 3 次为真（正是预设后期失败的三个案例），在 4 个 Select + 8 个 Replay 池中 0 次为真；有卡 Agent 12/12 次提交预设。动态分支未被实测，也未被否定。
+- **无卡行为**：共同合法视图下的单次提交 S0 在 11/12 决策等于池内 C_A argmin；池内对 NoMix 的候选机会平均 3.5 pp 存在，但 S0/R_CA 只兑现 +0.14，C_A/E 冲突再现（D01_Q06 预设 C_A 全正、E −4.28）。
+- **采用读数**：Fixed_dev 两域均 P_NoMixRecipe；H_select D01 = R_CA（与 S0 并列）、D02 = Fixed_dev（与 S_W* 并列）；对 S0 +0.46，是 Select 选择效应，不是 Skill 增量。
+- **运行与完整性**：40 逻辑请求 = 40 HTTP（38 主 + 2 次 S0 格式纠正，纠正后选择不变）、0 瞬断、0 未知 usage、0 操作者接受；1.19M 输入 / 0.13M 输出 token；付费墙钟 13.9 min；0 拟合 / 预测 / 标签 / SHA / commit。
+  偏差：Slow 输入实际 88k/84k token，高于任务书“约 60K”目标（为保留每案全部候选与反例未再删减，后端接受）；W* 两域由 Select token 破同产生。smoke 27/27、接线（R_CA = 父包 shadow argmin、池 E 比值一致）通过。
+- **推进边界**：按任务书 §10 第三/四种结果停止本包；不把“采用固定预设”写成 Skill 改进，也不据本包宣布没有可学信息。候选下一设计（T 内多历史伪切点 / 匹配延后间隔反馈，单独计训练成本）留给用户/Planner 决定，未起草、未启动。
+
+#### 5.10.6 下一包：同实体、同候选的历史延后反馈（2026-09-21，待派工）
+
+规格：[DEV-DOMAIN-AUG-MATCHED-LAG-FEEDBACK](docs/DEV_DOMAIN_AUG_MATCHED_LAG_FEEDBACK_TASK_2026-09-21.md)，
+状态 READY_FOR_DISPATCH。用户要求先试历史同间隔反馈，再决定接回完整 Agent；
+本次只起草任务书，未启动训练。
+
+冻结 D01/D02 各 Q03、Q04（上一包复验名单的编号前缀），共四案、31 份原 F0
+已评估候选，保留组合/编辑/条件化。每案原实体上取 h=t−768、t−384，
+每 h 仍训练此前 672 小时，分别评价 [h,h+192) 近端和 [h+192,h+384) 延后块，
+各四个 48 小时预测起点。显式新增历史读取仅本案原 roster 的 [t−1440,t)；
+不能在原 672 点 T 内缩短训练来凑切点。历史 scaler/特征/条件赋值各自重算。
+
+比较当前 C_A、历史近端、历史延后 argmin 和其他实体 Q01/Q02 上已冻结的固定
+程序；当前 E 只复用已有缓存，在四案选择冻结后连接。近/远策略共用历史模型，
+以区分一般历史平均与延后位置作用。身份 EXPOSED_DEVELOPMENT_REPLAY；
+回放当前候选不等于候选在历史切点时已独立提出，不称 fresh 或无偏回测。
+
+主拟合最多 186、接线 6、同配置重试最多 4，总尝试上限 196；LLM/HTTP/SHA/commit
+均为 0。数值任务默认全包 2 并行、实测资源允许时最多 3，单协调器与恢复锁沿用。
+不改变 Consumer、原增强随机流或完整构造权限；报告新增历史评分、推理和成本，
+不得写成零训练/零推理。完成本包即停，下一轮 Agent 学习不自动授权。
+
+#### 5.10.7 历史同间隔反馈包实际收口（2026-09-21 13:34）
+
+报告：[_scratch/dev_domain_aug_matched_lag_feedback/REPORT.md](_scratch/dev_domain_aug_matched_lag_feedback/REPORT.md)；方法与接线 [METHOD.md](_scratch/dev_domain_aug_matched_lag_feedback/METHOD.md)；
+机器读数 [result.json](_scratch/dev_domain_aug_matched_lag_feedback/result.json)、[selections.json](_scratch/dev_domain_aug_matched_lag_feedback/selections.json)、[feedback.json](_scratch/dev_domain_aug_matched_lag_feedback/feedback.json)。
+身份 `EXPOSED_DEVELOPMENT_REPLAY`，历史实例身份 `historical_calibration`；回放当前候选不等于它们在 h 时已独立提出。入口 `evaluation/main_protocol_p4/batch_research_domain_aug_matched_lag_feedback.py`。
+
+- **方法读数**（pp of None，正 = 前者好，域内两案等权再两域等权，主块 E）：R_HistLate − R_CA **+0.10**（D01 +1.15、D02 −0.95；2 胜 2 负；D01_Q03 +2.49、D02_Q03 +2.28 都是换回 P_NoMixRecipe，D01_Q04 −0.20、D02_Q04 **−4.17** 都是离开预设）；
+  R_HistLate − Fixed_dev **−0.73**（0 胜 2 同交付 2 负）；R_HistNear − R_CA +0.85、− Fixed_dev +0.02（1/2/1）；R_HistLate − R_HistNear −0.74（3/4 同交付，D02_Q04 近端选 Edit[-random_conv] +0.26 而延后选 Edit[-shock] −2.72）；R_CA − Fixed_dev −0.83。
+  对 None：R_HistNear 14.58 ≈ Fixed_dev 14.57 > R_HistLate 13.84 ≈ R_CA 13.74。判词 **DEFAULT_RECOVERY_ONLY**（也具“混合/变差”特征）。
+- **机会与对齐**：池内比 Fixed_dev 好的候选在 3/4 案存在（可得 +1.22 / +4.98 / +1.45），R_HistLate 0 次兑现，R_CA 兑现 1 次；候选成对与 E 同向率 c_a 0.717、hist_near 0.729、hist_late 0.741（差 1–2 对），单 h 只有 0.65–0.67 且逐案摆动到 0.25–0.32；两个 h 常给出相反排序（D02_Q03 条件化候选对预设 h1 +4% / h2 −55%）。
+  D02_Q04 中跨 seed、起点、两 h 完全一致的历史延后信号（Edit[-shock] 优于预设）在当前 t 反转（−2.72），跨起点/seed 一致性门槛救不了该案；D01_Q03 是历史反馈修正 C_A 排序的唯一清楚正例。
+- **构造与接线**：条件化程序在各 h 的 T-only 表上重解析（D02_Q03 C05 在 h1 变 12/4，D02_Q04 C04 变 10/6 与 11/5），字面阈值保留；当前 t 重编译 12/12 复现旧 assignment；接线 14/14（None×3 seed C_A 与 F0 逐位相同、8 个材料逐字节相同）；smoke 21/21（含 h 之后行投毒测试：历史 scaler/材料/权重不变）；8 实例一致性检查通过（近端起点 0–1 == C_A 逐起点分数）。
+- **运行与费用**：192 次拟合（6 接线 + 186 主）全部成功、0 重试、0 缓存、0 LLM/HTTP/SHA/commit；62 个历史物理材料（0 别名）、1116 次新增推理 + 372 次复用；并发按接线实测取 3（单 worker 峰值 406 MB）；历史阶段墙钟 16.7 min，单次拟合无竞争 6.8 s / 3 路竞争 12.7 s；worker 内构造 571 s、评分 11.6 s。新反馈的额外成本 = 当前池 93 次拟合的 2 倍历史训练；近/远共用模型。
+  偏差：接线删去“在当前 t 跑历史评分器”一项（会读 C_B/E 原始行），其余无预算/案例/公式偏差。
+- **推进边界**：按任务书 §9 第二/四种结果停止；不把“回到预设”写成动态能力，也不据四案两切点宣布历史反馈无信息。唯一可提的下一项（需授权）：把逐 h、逐块的历史配对差作为信息字段而非 argmin 决策交给完整 Fast，有卡/无卡臂共享该信息与预算；本包未起草、未启动。
+
+#### 5.10.8 跨时期域 Skill 学习包实际收口（数值 2026-09-22 02:14；报告 2026-09-23）
+
+任务书：[DEV-DOMAIN-AUG-TEMPORAL-COVERAGE](docs/DEV_DOMAIN_AUG_TEMPORAL_COVERAGE_TASK_2026-09-21.md)（回执 §10）；名单 [DOMAIN_AUG_TEMPORAL_COVERAGE_V1.json](docs/DOMAIN_AUG_TEMPORAL_COVERAGE_V1.json)。报告：[_scratch/dev_domain_aug_temporal_coverage/REPORT.md](_scratch/dev_domain_aug_temporal_coverage/REPORT.md)；
+方法与运行期修订 [METHOD.md](_scratch/dev_domain_aug_temporal_coverage/METHOD.md)；机器读数 [result.json](_scratch/dev_domain_aug_temporal_coverage/result.json)、[tables.md](_scratch/dev_domain_aug_temporal_coverage/tables.md)。
+身份 `SERIES_DISJOINT_TEMPORAL_DEVELOPMENT`：父包实体组按 12 个等宽时间锚点重排（Source 6 时期 × 每域 12 案、Select 2 时期 × 2 案、MetaTest 4 时期 × 2 组 = 每域 8 案），三角色实体集合互斥、逐案时间屏障通过；不是 Natural Final，MetaTest 带本地 C_A。
+
+- **方法读数**（pp of None，16 案等权）：F_domain − F0 **+2.35**（D01 +4.85、D02 −0.14；A09 +6.07 / A10 +5.53 / A11 +0.21 / A12 −2.38；6/5/5；最大伤害 −4.79）；F_domain − F_shared **−0.04**（3/8/5），F_shared − F0 +2.40；
+  F_domain − Random_B4 +1.55、− Menu_CA +2.91、− Fixed_dev **−1.42**、− NoMix +0.94、− None +14.64。各臂对 None：Fixed_dev 16.07 最高。H_deploy：D01 = Fixed_dev、D02 = F_domain（Select J 差 0.012，MetaTest 反转），H_deploy − F0 +2.59、− Fixed_dev −1.18。
+- **学到什么**：9 次独立 Slow 全部成卡；被选三卡同核心——P_NoMixRecipe 为 E 先验默认，C_A 仅在 seed 一致且超过 SE 时让步，稀疏条件化 / 单原语 Comp / FixedMixup 不作首选。D01 卡 7/8 案 0 评估直接提交预设，D01 的 +4.85 基本等于“F0 离开预设的代价”；D02 卡 8/8 案评估 1–2 个统一编辑、5 次离开预设，有得（D02_Q_A10_G01 +4.94）有失（D02_Q_A12_G02 −4.44、对 Fixed_dev −12.64）。
+  卡臂在 MetaTest 未评估任何条件化方案，构造被软偏好收缩到“预设 + 统一编辑”。共享卡的反 mixup 先验在 D02_Q_A09_G01 造成 −13.49。当前兑现的经验大部分两域通用，分域组织无可测额外价值。
+- **线索**：Fixed_dev 首次出现域差异（D01 = P_NoMixRecipe，D02 = Edit[-resample-random_conv]，与相邻编辑的 J 差 < 0.008）；这是开发集选优产物，不算 Slow 学会的领域 Workflow。
+- **成本**：部署每案 F_domain 80k token / 0.8 新评估 vs F0 400k / 3.9（−80% / −79%），未扣一次性学习（717 拟合、439 请求、19.87M token）。全包拟合 1383 / 1988、逻辑请求 720 / 1618、HTTP 734 / 1626；已知 30.91M token，16 次未知 usage 全部接受（1 次用户显式、15 次瞬断由用户常设决定下的 operator_loop 逐次接受），保守上界约 32.9M；付费时钟 8 h 03 min（含约 98 min 停机等待）；数值 2 路、HTTP 峰值 4。
+- **偏差**：主机内存 kill（4 条 Source 轨迹整条重起、2 拟合丢失）；传输额外尝试 14 次超过规划 8 次预留（预留被折进阶段 HTTP 帽，未单设计数门；每请求至多一次重试保持）；census 高于规划目标、低于硬上限；文本检查 “may” 误判（约 0.85M prompt token）；8 h 预警未单独写出（报告补记）；package_status 残留暂停字段已在收口时归档。无泄漏、无计分失效、无按结果换实体/日期/卡片。
+- **推进边界**：按任务书 §9 停止。不能再说“学习指导完全没效果”，也不能宣布 per-domain Skill 成功；尚缺领域专用经验相对通用经验的独立价值，以及动态研究超过固定程序的收益。后续应围绕已出现的具体领域差异设计，而不是只换 Slow 提示词或重复同种选卡；下一包未起草、未启动，由用户 / Planner 决定。
+
+### 5.11 离线学习 Workflow、零反馈部署（2026-09-23，用户确认的新设计）
+
+用户转述 Planner 安排并确认执行：后续按“离线学习 Workflow，部署时依据数据执行”设计。Skill 固定下来，但生成的处理方案可以随新数据变化。设计参考 Eval-Skill（arXiv 2606.07040：每域静态 Skill、离线探索与多例选优、测试时无反馈）；本项目的迁移方式不称原论文复现。
+
+- **目标**：检验离线学到的域经验，能否帮助 Agent 在新案例上构造更有效的增强。
+- **开发（Source）**：充分探索。允许比较方案、训练和读取反馈；成功、失败和反例都保留，供 Slow 学习。
+- **选卡（Select）**：模拟真实部署。候选卡面对新开发案例时，只能看合法历史和材料诊断；提交后由外部评分选优。增加案例覆盖，不再只用每域两例选卡。
+- **测试（Test）**：零下游反馈。Fast 可以观察、构造组合、检查材料，然后提交；之后才训练最终 Consumer、统一评分。当前案例的公共基线 C_A 分数也不提供。
+- **构造空间**：保留完整空间。原语组合、条件化处理和 NoMix 编辑都可用，不强制从 NoMix 开始。
+- **主比较**：相同工具和预算下的无卡、共享卡、域卡。NoMix 和开发选出的固定方案保留作参照。
+- **推进顺序**：先完成任务族与案例划分，再冻结实验规模；这一段不启动付费运行。最值得花力气的是找出结构可观察、处理差异能重复出现的任务族，让 Slow 有可学的经验。已有 Harness 接线继续复用。
+
+#### 5.11.1 任务族筛选收口（2026-09-23 14:36，0 LLM）
+
+报告：[_scratch/dev_aug_task_family_screen/REPORT.md](_scratch/dev_aug_task_family_screen/REPORT.md)；机器读数见同目录 plan.json（拟合前冻结）、result.json、tables.md、associations.json、family_set_options.json；划分文档：[docs/AUG_TASK_FAMILY_DIVISION_V1.json](docs/AUG_TASK_FAMILY_DIVISION_V1.json)（五族，状态 PROPOSED_BY_SCREEN_NOT_FROZEN）。入口 `evaluation/main_protocol_p4/batch_research_aug_task_family_screen.py`。
+
+- **设置**：D01 电力、D02 交通，新增 D03 太阳能、D04 空气质量（KDD 无缺失版，按非零平坦段过滤）、D05 风电（分钟 → 小时）。每域锚点表 Source < Select < Test，相邻角色间隔 ≥ 1056 h；实体池拟合前固定，D01/D02 的 Select/Test 只用从未使用过的实体。只用 Source 池：每域按结构第一主成分切 4 组 × 2 锚点（D04 为 3 组），12 个统一程序 × 3 seed，E 由评估器直接评分。
+- **读数（pp of None）**：
+  - Preset 对 None：电力 +16.2、交通 −6.2、太阳能 +28.9、空气质量 +28.5、风电 +36.3。
+  - 族最优：电力 Comp[censor] +18.9（对 Preset +2.7，6/8）；交通 Comp[censor] +0.9（对 Preset +7.1，**8/8**）；太阳能与空气质量为 Preset；风电 Edit[-calendar] +36.5（≈ Preset）。
+  - 域对处理差值的方差解释 11%–67%；族内结构—处理关联 0 对过族错误率门槛。
+  - 案例指纹留一 30/38，电力与交通互相混淆 4 例。
+  - C_A 最优等于 E 最优 13/38。
+- **规则判定**：携带 {D01, D03}，满足 F2 的携带族 0，按规则不建议实验。交通因 F1 措辞（要求族最优比 None 好 ≥ 3 pp）未被携带；这一缺口在最终结果前已向用户提示，规则未事后修改。
+- **含义**：
+  - 卡 vs 无卡：零反馈下“是否该强增强”影响 +16 ~ +36 pp（交通为反向风险）。
+  - 域卡 vs 共享卡：固定程序层面的族级选择差距约 1.4–2.9 pp（按族集合）；三域 {D01, D02, D03} 相对统一最佳 Comp[shock]，为电力 +0.15、交通 +4.33、太阳能 +4.12。统一最佳与 Preset 等四个程序只差 0.4 pp 以内。这个数不是实测效果，也不是 Workflow 上限（09-23 复核更正措辞）。
+- **规模估算**：{D01, D02, D03} lean 约 1440 拟合、25–68M token；full 约 2016 拟合、39–91M token。其中零反馈轨迹 token 是假设，冻结前宜先实测。
+- **运行**：1368 拟合 0 失败；拟合到 500 次时，被 Claude Code 在系统内存告急时回收，用户释放内存后 4 路从断点续跑，已完成单元格按绑定跳过，读数无影响。`entity_case.DOMAIN_INDEX` 新增 D03–D05（加法）；构建进程 torch 单线程。
+- **复核意见（2026-09-23，用户转来，未批准为任务书）**：
+  - 继续做电力、交通、太阳能三域学习实验，旧判词保留，下一实验的准入理由另定：交通属于“增强收益小、选错损失大”的情境，按已知域加载卡，不需要画像路由门。
+  - 复用筛选表作为脚本实验记录交给 Slow，辅以少量真实 Fast 轨迹；主比较为零反馈的无卡、共享卡、域卡，保留选卡覆盖。
+  - 下一包开头先实测零反馈轨迹成本，再冻结支出；不人工写入各域答案。
+- **待决定**：按规则停止，或前瞻性修订携带集合（Select/Test 池未触碰）；并冻结 Source F0 案例数、候选卡数、选卡目标 J 与零反馈轨迹预算。另一个可选项：把 zero_fraction 等结构字段加入 Fast 可见 overview（所有臂共享）。
+
+#### 5.11.2 DEV-AUG-OFFLINE-SKILL 阶段 A 检查点（2026-09-23 16:55）
+
+任务书：[DEV-AUG-OFFLINE-SKILL](docs/DEV_AUG_OFFLINE_SKILL_TASK_2026-09-23.md)（Planner 定稿，用户转来直接执行）。报告：[_scratch/dev_aug_offline_skill/REPORT_STAGE_A.md](_scratch/dev_aug_offline_skill/REPORT_STAGE_A.md)。入口 `evaluation/main_protocol_p4/batch_research_aug_offline_skill.py`，零反馈循环 `methods/ttha/batch_zero_feedback.py`（新路径；旧 `run_job` 不改）。身份 `DEVELOPMENT_ZERO_FEEDBACK_REUSE`，不是 Natural Final。
+
+- **实现**：
+  - Fast 没有 evaluate / compare，请求和工具输出都经过“下游分数通道”检查；commit 冻结未拟合的方案（COMMITTED_UNFITTED），全部冻结后才由外部评估器拟合、评分。
+  - 请求改为紧凑案例卡加批级分位数，逐实体表按需获取；`zero_fraction`、`flat_nonzero_fraction`、`weekly_excess_r2` 按筛选原公式接入，并真实参与编译。
+  - 每条轨迹上限：6 请求 / 18 工具 / 4 材料 / 20 万 token，最后一次请求只开放 commit。
+  - 缓存：按赋值键复用筛选材料和三 seed E，筛选目录只读。
+  - 接线 7/7（重训筛选材料的 C_A / E 与缓存逐位相同），smoke 20/20。
+- **读数**（pp of None，域内 8 例等权）：
+
+  | | 电力 | 交通 | 太阳能 | 三域等权 |
+  |---|---:|---:|---:|---:|
+  | F0 − None | | | | +0.04 |
+  | F0 − NoMix | −17.22（0/0/8） | +5.88（4/0/4） | −27.38（0/0/8） | −12.91 |
+  | F0 − Fixed_source | | | | −16.18 |
+  | F0 − Comp[shock] | | | | −13.31 |
+  | F0 − 菜单事后最优 | | | | −19.03 |
+
+  固定方案与事后最优都在同一批 Source 案例上选出，属样本内比较。
+- **行为**：
+  - 0/24 提交 NoMix。提交为单独 amplitude 7、单独 calendar 6、温和条件化方案 5、None 3，其余 3 例。
+  - 20/24 构造过 NoMix 编辑版，看过最大改动窗口后以“破坏日形态 / 抬高夜间零值”为由放弃。
+  - 这是一个与域相关的系统性偏差：电力、太阳能上错失强增强，交通上温和偏好反而占优。离线经验有明确可学空间，但卡能否改变零反馈决策尚未实测。
+- **用量**：
+  - 135 逻辑请求 = 135 HTTP，0 额外传输，0 未知用量。
+  - 3.43M token（上限 5M）；每条轨迹均值 142.7k、P90 161.6k、最大 171k，约 5.6 请求 / 15.8 工具 / 3.6 材料。
+  - 拟合 42 次（提交 39 + 接线 3），0 失败；缓存命中 11/24 案。
+  - 付费墙钟 49.5 min。
+  - 首次启动因目录创建顺序缺陷全部报错，0 付费、0 拟合，已修复重启。
+- **待决定**：B–D 预算。点估计约 34.5M、保守约 49.4M，拟定上限 57M token / 1,312 请求 / 1,258 拟合。另一可选项：压缩 inspect_material 窗口与 inspect_data segment 的输出，预计每条降 20–30%，B–D 所有臂一致适用。确认后 B→C→D→报告连续执行。
+
+#### 5.11.3 DEV-AUG-OFFLINE-SKILL 全包收口（2026-09-23 21:02）
+
+报告：[_scratch/dev_aug_offline_skill/REPORT.md](_scratch/dev_aug_offline_skill/REPORT.md)；方法 [METHOD.md](_scratch/dev_aug_offline_skill/METHOD.md)；机器读数 [result.json](_scratch/dev_aug_offline_skill/result.json)、[tables.md](_scratch/dev_aug_offline_skill/tables.md)；卡片 `slow/`、`freeze/cards_frozen.json`。身份 `DEVELOPMENT_ZERO_FEEDBACK_REUSE`。预算由用户 / Planner 在阶段 A 后冻结（57M token / 1312 请求 / 1258 拟合），保留工具输出不压缩。
+
+- **形成与选卡**：8 次 Slow（1 次契约纠错）全部成卡，共同核心为“材料外观不是下游效用”加按观察触发的统一默认：太阳能夜间零值 → NoMix；电力零值为 0、lag24 高 → shock / censor；交通按字段分档 → Edit[-random_conv] / FixedMixup / censor；共享卡 s2 默认 NoMix，weekly 与极值双高 → None。Select 96 条轨迹，J 选出 D01 d1、D02 d2、D03 d2（四卡 J 相同，按 token 破同）、共享 s2。
+- **测试读数**（40 例 × 3 臂，pp of None，域内等权再三域等权，两向聚类重采样）：
+  - F_domain − F0 **+17.66** [+11.5, +24.8]（电力 +17.4 / 交通 +2.8 / 太阳能 +32.8；32/0/8；留一时期 +15.5–+19.3；seed +15.2–+19.7）。
+  - F_shared − F0 +16.29 [+9.3, +24.2]（交通 −2.1；29/0/11）。
+  - F_domain − F_shared +1.37 [−1.2, +4.5]（19/8/13；交通 +4.9：共享卡的 None 规则在 11/16 交通案触发，而 Test 期交通 NoMix 对 None 为 +9.9，Source 期为 −6.2）。
+  - 对 None：F0 +4.47、F_shared +20.76、F_domain +22.13、NoMix +23.14、Fixed_source +21.42。
+- **归因**：卡臂只交付统一程序（域卡 shock 16 / Edit[-random_conv] 9 / NoMix 8 / censor 6 / FixedMixup 1；共享卡 NoMix 29 / None 11），没有条件化方案。F_domain − NoMix −1.01、− Fixed_source +0.71，即补回了 F0 与 NoMix 差距的 94.6%。正结果是“离线经验纠正零反馈 Agent 的系统性偏差、回到固定程序水平”，不是超过固定程序的动态构造。
+- **成本**：
+  - 部署每条轨迹：F0 145.7k、F_domain 61.4k（−58%）、F_shared 22.7k（−84%）token。
+  - 一次性学习：A 3.43M + Slow 0.87M + Select 4.14M = 8.44M token、264 拟合，另复用筛选 1368 拟合。
+  - Test：9.34M token、605 拟合。
+  - B–D 合计 14.35M / 57M token、770 请求、827 拟合（0 失败）；全包拟合 869 / 1300；4 次瞬断均按接受类别自动接受，各有 incident。
+- **偏差**：
+  - 两次启动接线缺陷，均 0 付费。
+  - Test 33/120 时控制器被 Claude Code 因宿主内存回收；用户确认后续跑，4 条在途轨迹整条重开，丢失 2 次在途拟合。
+  - 阶段 A 的机器预算记录 1261 已更正为 1258。
+- **推进边界**：按任务书完成 D 段和报告后停止，不自动追加修订轮、画像路由或新域。可考虑的下一项（交用户 / Planner）：在程序排序真正随案例 / 时期翻转的族上检验超过固定程序的动态能力；卡规则对时期漂移敏感（交通），是具体的研究对象。
+
+#### 5.11.4 朴素指导卡对照收口（DEV-AUG-OFFLINE-SKILL-NAIVE-CONTROL，2026-09-23 晚）
+
+报告：[_scratch/dev_aug_offline_skill/naive/REPORT_NAIVE.md](_scratch/dev_aug_offline_skill/naive/REPORT_NAIVE.md)。身份：已曝光 Test 上的事后机制消融；原主实验与冻结卡不变。
+
+- **设置**：同一 Slow、每域一张朴素卡，只给任务、Consumer、算子说明与 Source T 观察，通用原则与学习卡相同；一次生成加一次格式纠错，不选优；在 40 个 Test 案例上零反馈运行，预算不变。
+- **读数**（pp of None，三域等权，聚类 95% 区间）：
+  - 域卡 − 朴素卡 **+6.44** [+1.5, +11.1]：电力 −1.9、交通 −0.5、太阳能 **+21.8**；25/0/15。
+  - 朴素卡 − 无卡 +11.22 [+5.5, +16.9]。
+  - 共享卡 − 朴素卡 +5.07 [−0.5, +10.0]。
+  - 朴素卡对 None +15.69，其中电力 +23.5，高于域卡。
+- **改变的判断**：朴素卡凭任务知识写出“夜间零值序列跳过 regime / shock / resample / conv”，太阳能交付温和方案；学习卡依据 Source 证据直接提交 NoMix。
+- **部署成本**：朴素卡每条轨迹 143k token（≈ 无卡），域卡 61k（−57%）。
+- **运行**：5.87M 已知 token / 9M、114 / 126 拟合；2 例 INCOMPLETE；另有 4 次停机在途请求用量未记。一次仪器纠正（卡片文本检查把算子参数名 `t0` 误判为实体编号，停机后豁免 `t0`，按统一规则用已返回的回复重新校验，不新发调用）。
+
+#### 5.11.5 主实验补齐收口（DEV-AUG-MAIN-COMPARISON，2026-09-24 凌晨）
+
+任务书：[DEV-AUG-MAIN-COMPARISON](docs/DEV_AUG_MAIN_COMPARISON_TASK_2026-09-23.md)（回执在文末）。报告：[_scratch/dev_aug_main_comparison/REPORT.md](_scratch/dev_aug_main_comparison/REPORT.md)；方法 [METHOD_CORE.md](_scratch/dev_aug_main_comparison/METHOD_CORE.md)；主表 [main_table.md](_scratch/dev_aug_main_comparison/main_table.md)；摘要事实 [ABSTRACT_FACTS.md](_scratch/dev_aug_main_comparison/ABSTRACT_FACTS.md)。0 LLM。
+
+- **主表**（40 个 Test 案例，G = pp of None，三域等权）：NoMix +23.1、F_domain +22.1、Fixed_source +21.4、Fixed_global +21.2、F_shared +20.8、F_naive +15.7、F0 +4.5、None 0、AutoDA −2.7。
+- **成对差**：F_domain − F0 +17.7 [+11.5, +24.8]；− F_naive +6.4 [+1.5, +11.1]；− F_shared +1.4 [−1.2, +4.5]；− NoMix −1.0；− AutoDA +24.8 [+14.6, +33.2]。
+- **AutoDA-Timeseries**：官方模块原样调用，受控协议适配（同一 MLP、2000 步 AdamW、Catch22 特征、只增强输入）。三个登记配置在 Source 上都劣于不增强，选中 C3；Test 上对 None −2.7 [−5.5, +0.7]。机制读数：选择分布几乎不动，样本几乎总被增强。这不是官方 benchmark 复现，不能写成“AutoDA 无效”。
+- **成本**：部署 token 为 F0 146k、F_naive 143k、F_domain 61k、F_shared 23k；AutoDA 0 token，但每次联合训练 102 s，约为普通拟合的 8.2 倍。拟合 151 / 180。
+- **不能写**：域卡可靠胜过共享卡；超过 NoMix 或固定程序；条件化构造带来收益。经验来源消融与第二 Consumer 后置。
+
+#### 5.11.6 第二 Consumer 与 TSFM 准备（2026-09-24，用户授权）
+
+用户明确要求“今晚跑第二 consumer，同时准备上 TSFM 的方案，后续再开放作用域”。本次授权覆盖 PatchTST 的本机真实训练：冻结 OFFLINE-SKILL 的卡与已交付材料，沿用三域/40 Test/三 seed，检验跨 Consumer 材料迁移；不重跑 Fast/Slow、不称模型条件化学习。该授权更新顶部历史“模型切换未授权”在此有限范围的状态，Natural Final 继续关闭。
+
+执行任务书：`docs/DEV_AUG_PATCHTST_TRANSFER_TASK_2026-09-24.md`；输出 `_scratch/dev_aug_patchtst_transfer/`。TSFM 只准备 `docs/TSFM_AUGMENTATION_EXTENSION_PLAN_2026-09-24.md`，不启动 TSFM 训练。PatchTST 已于 09-24 01:21 本机启动（Windows 控制器初始 PID 50788；两次 Source 控制台/未知中断后修复无窗口启动，恢复 PID 41796），三次真实接线通过；主机内存约2.9GB，采用单路训练。
+
+**收口（09-24 05:39）**：582 次成功拟合，[REPORT.md](_scratch/dev_aug_patchtst_transfer/REPORT.md)。冻结的 MLP 派生交付在 PatchTST 上：域卡方案对无卡 −3.96 pp（区间跨零）、对朴素卡 −7.88、对 NoMix −3.63；退步几乎全来自电力（域卡 16/16 交付 C_shock，−20.2 pp），太阳能 NoMix 仍 +4.7。PatchTST 不增强（nMSE 0.307；电力 0.350 / 交通 0.330 / 太阳能 0.241）已胜过 MLP 上所有臂，NoMix 从 MLP 的 +23.1 降到 −1.7：换强 Consumer 后增强空间缩小、方案排序改变。含义限于冻结方案迁移，不代表针对 PatchTST 重新学习后的结果。
+
+#### 5.11.7 PatchTST 条件化离线学卡（DEV-AUG-PATCHTST-OFFLINE-SKILL，2026-09-24 启动）
+
+任务书与执行前盘点：[DEV-AUG-PATCHTST-OFFLINE-SKILL](docs/DEV_AUG_PATCHTST_OFFLINE_SKILL_TASK_2026-09-24.md)（Planner 安排，用户确认预算与四项决定）。入口 `evaluation/main_protocol_p4/batch_research_aug_patchtst_offline_skill.py`，输出 `_scratch/dev_aug_patchtst_offline_skill/`。身份 `EXPOSED_DEVELOPMENT_REVALIDATION`：Test 40 例已曝光，只是开发复验；可用的未评分实体只有交通足够（电力 13、太阳能 9，不足 16），用户决定不加独立验证。
+
+- **设计**：Consumer 冻结为迁移包的 PatchTST（lr 1e-4、500 步），Fast/Slow/朴素卡看到 PatchTST 描述，其余零反馈协议不变。Source 24 例 × 12 固定方案 + 24 条无卡轨迹均在 PatchTST 上训练评分；Slow 每域 2 张卡，只读 PatchTST 证据；原 Select 选卡；Test 四臂（新卡 / 原 MLP 卡 / 无卡 / PatchTST 朴素卡）同预算，参照 None、NoMix、PatchTST Source 固定方案；迁移结果单列。
+- **预算**（用户确认）：36M token、1450 逻辑请求、1800 拟合、24 h；API 12 路并行；GPU 按内存 1–2 路。
+- **启动前**：smoke 11/11；接线 PASS（同进程第二次拟合与迁移包模型逐位相同，E 相同；单拟合 22 s，进程峰值 1.23 GB）。09-24 11:42 启动，控制器 PID 10144。实际进度以 `status.json` 为准，本节在收口时补读数。
+- **收口（09-24 16:10 COMPLETE）**：报告 [_scratch/dev_aug_patchtst_offline_skill/REPORT.md](_scratch/dev_aug_patchtst_offline_skill/REPORT.md)。
+  - Test（pp of PatchTST None，三域等权）：无卡 +0.38、朴素卡 −0.32、新卡 −2.09、NoMix −1.68、Source 固定方案 −3.40、原 MLP 卡 −5.31。
+  - 新卡 − 原 MLP 卡 **+3.22** [−1.10, +8.36]（24/6/10；电力 +13.4 来自去掉 shock，太阳能 −4.45）；新卡 − 无卡 −2.47 [−11.65, +3.42]（电力 Q4 一例 −93.9 主导，NoMix 同案 −90.8；Source 最优电力编辑方案 +5.6 在 Test 为 −11.2，时期反转）；新卡 − Source 固定方案 +1.31（27/40 同交付）。
+  - 含义：方法能按 Consumer 重新学出不同规则并挽回迁移损失；但 PatchTST 上增强空间小且随时期反转，没有超过无卡或不增强。部署 token 新卡 65k vs 无卡 145k。22.50M token、1392 拟合尝试、付费 4.38 h。
+- **运行记录**：13:28 左右控制器被 Claude Code 内存回收（会话空闲、系统内存告急），当时无在途 LLM 请求，在途 72 次拟合中 34 次已写完、38 次重训；用户 14:15 在独立窗口按原命令续跑（PID 23232）。现场记录 `incidents/controller_reaped_1.json`；续跑后批次编号从 1 重排，覆盖了前一次运行的批次说明文件，拟合记录本身完整。
+- **BN 机制诊断（09-24 晚，Planner 安排）**：[DEV-AUG-PATCHTST-BN-DIAGNOSTIC](docs/DEV_AUG_PATCHTST_BN_DIAGNOSTIC_TASK_2026-09-24.md)。电力 16 例 × 3 seed 的 None / NoMix / Edit 已有模型，冻结学习参数，只用 T 父窗重估 BN 运行统计（0 LLM、0 优化器更新；原评分逐位复现，参数逐位不变）。**BN 运行统计不是负收益的原因**：相对各自 None，NoMix −9.58 → −10.67，Edit −11.19 → −12.62；Q1–Q3 变化约 ±1 pp，Q4 全体（包括 None 自身）更差；Q4_G1 第二起点的负偏差（增强 −1.30 / −1.37 对 None −0.52）重估后没有缩小；系统读数 −6.88 → −7.76。两次前向对训练过程本身的影响未检验（需要重训）。原包结果的稳健性补充：新卡 − 无卡在均值 −2.47、中位数 +1.27、截尾均值（每侧 10%）+0.53、去掉 Q4_G1 −0.54；原全样本主结果保留。
+
+#### 5.11.8 TSFM 条件化学卡与服务器迁移（2026-09-24 起草；用户确认）
+
+- **TSFM 包**：[DEV-AUG-TSFM-OFFLINE-SKILL](docs/DEV_AUG_TSFM_OFFLINE_SKILL_TASK_2026-09-24.md)，入口 `evaluation/main_protocol_p4/batch_research_aug_tsfm_offline_skill.py`。设计与 §5.11.7 同构，Consumer 为 Time-MoE-50M，每个方案都从同一预训练权重微调；先在 Source 上用不增强校准 lr × 每步父窗数 × 步数；不保存模型，训练后用 E 输入窗冻结预测，屏障之后再评分；付费前自动接线（展开与官方 `generate` 逐位一致、同进程重复逐位一致、子视图生效、双卡逐位一致）。在服务器 1–2 × RTX 5880 上由用户运行；Windows smoke 8/8，GPU 接线待本机空闲后实测。
+- **修订 1（用户选 B，09-24 晚）**：第一版（48 步展开 MSE、实体 T scaler、β2 0.999）在服务器校准时 12 个微调配置全部不如零样本（0.1985 对 0.1959），已停。改为 Time-MoE 原生微调：官方逐位置四头 Huber 损失 + 0.02 路由辅助损失、每个窗口按自身 192 点输入标准化（训练与服务一致）、AdamW β2 0.95；校准网格 lr {1e-5, 5e-5, 1e-4} × 每步父窗 {8, 32} × 步数 {25, 50, 100, 200}。输出目录 `_scratch/dev_aug_tsfm_native_offline_skill/`，与第一版分开。新增 `--selftest`（不调 LLM），`server/run_tsfm.sh` 启动付费阶段前自动运行。GPU 调度改为按每批任务估算显存（本机实测：不增强 / 增强，每步 8 窗 3.9 / 5.9 GB，每步 32 窗 9.9 / 约 16 GB）选卡，最近 90 秒内已派发但尚未占用显存的任务也计入。
+- **修订 2（09-24 晚）**：服务器原生版校准仍不如零样本（最优微调 0.2227 对零样本 0.206，最优点在网格最弱一角）；32 路并发下中转 152 次尝试 44 次瞬断，6/24 条 Source 无卡轨迹被打断，按原代码会被当作不增强流入证据，已停机。修改：调用失败打断的轨迹在补跑后仍未完成时本阶段停止；传输上限可上调并记修订（token / 请求 / 拟合 / 墙钟上限不变）；并发降为 8；`SEH_STOP_AFTER=source` 在 Source 屏障后停止，并补做 24 个 Source 案例的零样本核对（只供操作者决定，不进入任何证据）。本机测试 8/8，更新包 `update_v6.tar`。之后选 A（续跑全包）还是 B（收口），由 Source 零样本核对结果决定。
+- **修订 3（09-24 晚，只改传输）**：v6 的只跑 Source 续跑因中转故障停下（24 条完成 20 条，4 条被打断且未混入证据；18:16 起上游中断约 7 分钟，20:14 起中转超时被误调为 120 s，已改回）。改为 stream=true 并带 include_usage；流中途断开或读超时统一判为瞬断；每个请求仍最多重试一次，重试前等 90 s；阶段末尾有被打断的轨迹时先等 600 s 再补跑一轮。已实测两个中转的流式响应都带 usage，本机测试 6/6（含一次真实调用），服务器模拟测试 5/5；已直接部署到服务器，原文件备份为 `.bak_v6`。
+- **Source 零样本核对（09-24 21:25，STOPPED_AT_SOURCE）**：流式请求 9/9 成功，补完被打断的轨迹。24 个 Source 案例上，12 个方案微调后全部不如 Time-MoE 零样本（三域 pp：最好 random_conv −29.7，不增强 −40.1，最差 amplitude −48.5；每个方案至多胜 6/24；逐案事后取最好仍为 −18 / −14 / −49）。相对微调后的不增强，增强只挽回 +0.6 ~ +5.9。Time-MoE 零样本是四个 Consumer 中绝对误差最低的（电力 0.167，PatchTST 0.222）。校准看的 C_A+C_B 只差 8%，到 E 块差到 40%，离 T 越远，微调损伤越大。全包至此 184 次请求、3.5M token、962 次拟合；是否续跑（A）或收口（B）待用户 / Planner 决定。
+- **TSFM 切入点（09-24 晚，不调 LLM；任务书 §8–9）**：
+  - 零样本与全参数微调预测的混合：所有权重、所有方案都为负，排除。
+  - 冻结主干、只训练预测头：损伤从 −40 缩到约 −3；增强再挽回约 1 pp，但无一方案超过零样本。
+  - **推理上下文准备**：零样本改用更长的历史上下文（Time-MoE 最长支持 4096 点）。Source 上 672 点 +25.9 pp（23/24）；按 Source 冻结的逐域选择（电力 2688 点、交通和太阳能 1344 点，均用 T scaler 标准化），在 40 个 Test 案例上 **+36.1 pp（37 胜 3 负）**，三域 Test nMSE 从 0.247 降到 0.163（PatchTST 不增强 0.307，MLP 用 NoMix 0.330；输入长度不同，只作量级参照）。
+  - 这是 TSFM 上唯一大幅且可迁移的正向杠杆，属于“为 Consumer 准备推理输入”，不训练模型。
+- **服务器迁移包**：`C:\Users\辉\desktop\agent\server_export\`（仓库外，由 `make_export.py` 从本仓库只读生成）。代码副本只改可移植性（读 JSON 时映射 Windows 绝对路径、`SEH_*` 环境变量控制数据根目录 / LLM 地址 `https://cpa.cpa-lab.me/v1` / 并行）。数据打包在 `data_pack/`。服务器上的拟合换了硬件，不能和 Windows 缓存的拟合放进同一张表。
+
+#### 5.11.9 第三 Consumer：DLinear 的 Source 筛查（DEV-AUG-DLINEAR-SOURCE，2026-09-24）
+
+任务书 [DEV-AUG-DLINEAR-SOURCE](docs/DEV_AUG_DLINEAR_SOURCE_TASK_2026-09-24.md)（Planner 安排，用户要求在本机跑）。入口 `evaluation/main_protocol_p4/batch_research_aug_dlinear_source.py`，输出 `_scratch/dev_aug_dlinear_source/`。Consumer 为官方 DLinear（cure-lab/LTSF-Linear 0c11366），训练循环与 PatchTST 包相同，在 CPU 上训练；不调 LLM，只看 Source，不学卡，不进入 Test。
+
+- **校准**：只用不增强，6 个 Source 案例，看 C_A+C_B；选中 lr 1e-3、2000 步。
+- **24 案 × 4 方案 × 3 seed**（pp of DLinear None，三域等权）：NoMix +7.98（电力 +17.9 / 交通 −12.1 / 太阳能 +18.1）、censor +11.03（+18.6 / +0.0 / +14.5）、shock +10.23（+18.2 / −5.0 / +17.5）；收益集中在 A1 时期，A2 很小或为负。
+- **跨 Consumer**（同 24 案、同 4 方案，已有读数）：不增强的 E 由好到差为 PatchTST < DLinear < MLP，NoMix 收益依次为 +0.66 / +7.98 / +12.95；shock 在 MLP 上 +13.4，在 PatchTST 上 −3.8。Consumer 越弱，增强空间越大，方案排序随 Consumer 变化。
+- **成本**：拟合 315 次；受空闲内存限制只开 1 个 CPU 进程，墙钟 47 min。按任务书停止。
+
+#### 5.11.10 DLinear 条件化离线学卡（DEV-AUG-DLINEAR-OFFLINE-SKILL，2026-09-24/25，本机）
+
+任务书 [DEV-AUG-DLINEAR-OFFLINE-SKILL](docs/DEV_AUG_DLINEAR_OFFLINE_SKILL_TASK_2026-09-24.md)，报告 [_scratch/dev_aug_dlinear_offline_skill/REPORT.md](_scratch/dev_aug_dlinear_offline_skill/REPORT.md)。与 §5.11.7 同构，Consumer 为官方 DLinear（CPU），复用 DLinear Source 包的 288 次拟合；传输为流式，被打断的轨迹不得当作“不增强”流入结果。
+
+- **Test**（40 例，DLinear None 的 pp）：新卡 +8.64、原 MLP 卡 +8.80、朴素卡 +8.88、无卡 +1.11；NoMix +8.49，Source 固定方案 +7.64。
+- **新卡 − 无卡 +7.53，区间 [+0.58, +14.23]**（26/1/13，去掉任一时期仍为正）；新卡与原 MLP 卡、朴素卡之间无可分辨差别（−0.16、−0.23，区间都跨零）。卡把无卡 Agent 从“条件化小改动或不增强”纠正回统一固定程序的水平（电力 16/16 为 Source 固定方案）。
+- **跨 Consumer**：卡相对无卡的收益随增强空间单调变化，依次是 MLP +17.66、DLinear +7.53、PatchTST −2.47（NoMix 对 None 分别为 +23.1 / +8.5 / −1.7）。
+- **成本**：22.2M token、1002 次请求、1441 次拟合（0 失败）；本机网络切换导致 10 条轨迹被打断，阶段末全部续跑完成。
+
+#### 5.11.11 TSFM 上下文准备卡（DEV-TSFM-CONTEXT-CARD，2026-09-24/25，本机，评分查缓存）
+
+任务书 [DEV-TSFM-CONTEXT-CARD](docs/DEV_TSFM_CONTEXT_CARD_TASK_2026-09-24.md)，报告 [_scratch/dev_tsfm_context_card/REPORT.md](_scratch/dev_tsfm_context_card/REPORT.md)。TSFM 转向“推理上下文准备”，微调线收口（§5.11.8 修订 4–5）。
+
+- **设置**：Time-MoE-50M 零样本。零反馈 Agent 为每个案例选择上下文长度 × 标准化方式，共 10 种组合，评分查缓存的零样本上下文筛查。所有臂的历史访问范围、候选动作和 Consumer 说明完全相同。
+- **Test**（40 例，以 192 点、逐窗口标准化为基线的 pp）：
+  - 各臂：无卡 +31.30，共享卡 +35.95，**域卡 +37.67**；参照中统一 672 点 +34.43，逐域固定选择 +36.07。
+  - **域卡 − 无卡 +6.37 [+2.49, +12.85]（35/2/3）**；**域卡 − 统一 672 点 +3.25 [+1.10, +5.78]**；域卡 − 逐域固定选择 +1.60（区间跨零）；域卡 − 共享卡 +1.72（区间刚好跨零）。
+  - 域卡每条轨迹的 token 比无卡少约 33%。
+- **无卡的偏差**：只用逐窗口标准化，在太阳能等场景会截短到 336 点。卡学到的是交通取最长上下文并用 T scaler 标准化、太阳能不截短、电力在最近几周与 T 同分布时加长。
+- **意义**：本项目第一次出现学到的卡明显超过 Source 选出的统一固定方案。方法可以统一表述为：离线学习 Consumer 所需的数据准备经验，部署时对弱 Consumer 生成训练材料，对强预训练 Consumer 准备推理上下文。
+- **身份**：开发复验。各阶段的上下文读数都已曝光，评分是服务器数值。
+- **补充实验（09-25 凌晨，用户批准；任务书 §6）**：
+  - **朴素卡对照**：只凭常识写的卡建议短上下文，Test 上 35/40 选了 336 点，得分 +17.5。域卡 − 朴素卡 **+20.15 [+11.8, +29.1]**，朴素卡 − 无卡 −13.8。
+  - **新起点留出**：40 个从未评分过的预测起点，全部冻结部署。域卡 − 无卡 **+3.94 [+0.15, +8.17]**；域卡 − 朴素卡 **+20.11 [+10.8, +29.5]**；token 少约 35%。域卡 − 统一 672 点为 +1.15 [−1.0, +3.1]，没有复现 Test 上的 +3.25。
+  - **可写的结论**：离线经验（不是常识）让零反馈 Agent 为 TSFM 准备上下文更可靠，且与 Source 选出的最佳固定上下文相当。不写“超过固定方案”。
+- **摘要草稿**：`docs/ABSTRACT_DRAFT_VLDB_2026-09-25.md`（v2，暂不提 PatchTST）。
+
+### 5.12 分类增强：跨任务验证的接线与盘点（DEV-CLS-AUG-WIRING，2026-09-25）
+
+任务书 [DEV-CLS-AUG-WIRING](docs/DEV_CLS_AUG_WIRING_TASK_2026-09-25.md)（Planner 意见经用户转来；用户追加“验证过了到服务器上跑，需要多路的并行开起来验证”）；报告 [_scratch/dev_cls_aug_wiring/REPORT.md](_scratch/dev_cls_aug_wiring/REPORT.md)。定位：同一套离线学习—零反馈部署流程能否迁到分类任务的**接线与耗时预检**；0 LLM、只读 TRAIN、不学卡、不终评。旧分类线（修复算子、RidgeClassifier）的结论不外推为“分类增强无空间”。
+
+- **已定设计**（Planner）：域 = UCR 数据集族，Source / Select / Test 按数据集分开（目标 2 族 × 4/2/6），同源放同侧；TRAIN ≥ 100 且每类 ≥ 30，Source/Select 的 TRAIN 按类 2:1 分拟合/反馈；逐序列 z 标准化 → 训练批次内按概率增强 → FCN，不再重标准化；干净与增强样本同批前向，不增加步数；Source 筛查投入规则为至少两个非同源 Source 数据集上 |ΔMacro-F1| ≥ 1 pp 且三 seed 同向（本包不执行）。
+- **实现**：`methods/ttha/cls_aug_data.py`（numpy：TRAIN 解析、z 标准化、划分、指标）、`methods/ttha/cls_aug.py`（FCN 的 Torch 重实现，按 dl-4-tsc 与 Keras 语义对齐；AutoDA 官方算子封装）、`evaluation/main_protocol_p4/cls_aug_wiring.py`。
+- **读数**：本机 6 次、服务器 24 次完整拟合（2000 epoch）全部通过技术检查；服务器同 seed 跨卡逐位相同，与本机不逐位相同（正式拟合只在服务器跑）。服务器 4、5 号卡上不增强单次约 1–5 GPU 分钟（ElectricDevices / Crop 最重），增强臂 2–3 倍；单卡 8–12 路吞吐为单路 4.6–6 倍。PowerCons（反馈 60 条）三 seed Macro-F1 标准差 1.6–3.7 pp，与 1 pp 门槛同量级。
+- **算子事实**：AutoDA 默认启用 {Raw, Scale, Jitter, Downsampling, Resampling, FreqWarp}；Scale 是逐点乘性噪声（s = 0.5 恒等），MagnitudeWarp 是向随机正弦插值，TimeWarp 在 s ≥ 0.1 时 30–83% 的时间映射非单调，DRC/Perm/Rotation 在单变量 GPU 输入上报错。Planner 的五类候选中只有 Jitter、WindowSliceWarp 语义对得上。
+- **数据**：timeseriesclassification.com 当前整站 403；改用 UCR 官方归档 UCRArchive_2018.zip（服务器 `data/ucr_archive_2018/`），本地 17 个 .ts 与之逐一核对完全一致。合格 44 个、独立来源 24 个；按同源同侧，没有族能凑满 12 个（Image 12 个 / 5 个来源，Sensor 7 个 / 6 个来源）。已报告缺口，未降门槛。
+- **待定**（Planner / 用户）：名单结构、候选算子与强度（含 p）、投入规则与噪声的关系；定下后一次冻结完整实验规模与预算。
+
+#### 5.12.1 主包 DEV-CLS-AUG-OFFLINE-SKILL（2026-09-25 午启动，进行中）
+
+任务书 [DEV-CLS-AUG-OFFLINE-SKILL](docs/DEV_CLS_AUG_OFFLINE_SKILL_TASK_2026-09-25.md)；名单 [CLS_AUG_ROSTER_V1.json](docs/CLS_AUG_ROSTER_V1.json)（方案 a：旧线从未打开 TEST 的 12 个来源全部作 Test，曾打开的 12 个分 8 Source / 4 Select）。Planner 最终修订：四算子（Jitter、Scaling、MagWarp、WSlice）按固定顺序组成 11 个程序、整条程序 0.5 概率；Source/Select 一次分层 2:1 划分 × 3 seed（用户：卡少不跑三折）；Source 11 程序全网格，Select/Test 只训练实际交付；六臂（不增强、无卡、朴素卡、经验卡、Source 最佳固定程序、冻结随机程序），经验卡与朴素卡各两张、对称选卡；Test 交付全部冻结后一次打开官方 TEST。
+- **补充曝光事实**：早期 E2 线有 6 份报告打开过 22 个 UCR 数据集的官方 TEST（`artifacts/functional/e2/*_report.json`），不只 Epilepsy2；映射到 24 个来源恰好 12 净 / 12 曝光。
+- **执行**：拟合在服务器（只用空闲卡，Source 网格优先），LLM 在本机；Agent 只见匿名化的 TRAIN 统计与工具，不见任何分类器分数。无卡 Agent 在 8 个 Source、12 个 Test 上全部完成（20/20），交付高度集中在 MagWarp。偏差：一次 1584 次三折计划启动约 1 分钟即按修订停掉（0 结果）；一次调度器被自身 `pkill` 模式误杀（worker 未受影响，已改锚定模式）；为让 Source 网格优先，停掉 12 个在跑的 Test 拟合（约 20 分钟工作量，之后重跑）。
 
 ## 6. 单假设与 first-fault 纪律
 

@@ -1,0 +1,150 @@
+<!doctype html><html><head><meta charset="utf-8"><style>@page{size:1200px 620px;margin:0}html,body{margin:0;padding:0;background:#fff}svg{display:block}</style></head><body><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" width="1200" height="620" role="img" aria-label="Three panels. (a) Offline learning: Source cases produce no-card agent runs and scripted Consumer scores; a Slow agent consolidates them into candidate skill cards; the best card is selected on separate cases and frozen. (b) Zero-feedback deployment: a Fast agent observes a new case, reads the frozen card, uses inspection tools and commits a plan before any fit. (c) Consumer-aware preparation: the plan becomes a training-augmentation program for trainable forecasters, an inference-context policy for a frozen TSFM, or an augmentation program for a classifier. An information wall stops the downstream score from reaching the agent.">
+        <rect x="0" y="0" width="1200" height="620" fill="#ffffff"/>
+<style>
+.pnl{fill:#eceff3}.box{fill:#fff;stroke:#c4cbd6;stroke-width:1.3}.box-acc{fill:#e3f0f5;stroke:#1f6f8b;stroke-width:1.6}
+.box-dash{fill:#fff;stroke:#c4cbd6;stroke-width:1.3;stroke-dasharray:5 4}.chip{fill:#f6f7f9;stroke:#c4cbd6;stroke-width:1}
+.t{fill:#1a2230;font:600 14px Arial,Helvetica,sans-serif}.th{fill:#1a2230;font:600 15.5px Arial,Helvetica,sans-serif}
+.ts{fill:#667085;font:400 12px Arial,Helvetica,sans-serif}.tm{fill:#3b4658;font:500 11.5px Consolas,'Courier New',monospace}.tchip{font-size:11px}
+.lbl{fill:#667085;font:italic 400 11.5px Arial,Helvetica,sans-serif}.acc-t{fill:#1f6f8b}.wall-t{fill:#b4412f;font:600 12px Arial,Helvetica,sans-serif}
+.edge{fill:none;stroke:#3b4658;stroke-width:1.4}.edge-acc{fill:none;stroke:#1f6f8b;stroke-width:2}.edge-wall{fill:none;stroke:#b4412f;stroke-width:1.6;stroke-dasharray:4 4}
+.wall{stroke:#b4412f;stroke-width:2;stroke-dasharray:7 6}.ah{fill:#3b4658}.aha{fill:#1f6f8b}.ahw{fill:#b4412f}
+.cardln{stroke:#1f6f8b;stroke-width:1.4;opacity:.55}.spark{fill:none;stroke:#1f6f8b;stroke-width:1.4}
+</style>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+          <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="aha"/></marker>
+          <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahw"/></marker>
+        </defs>
+
+        <!-- information wall label -->
+        <text x="812" y="24" text-anchor="middle" class="wall-t">information wall</text>
+        <text x="812" y="40" text-anchor="middle" class="lbl">no downstream score crosses leftward</text>
+
+        <!-- panels -->
+        <rect x="16" y="52" width="420" height="552" rx="10" class="pnl"/>
+        <rect x="452" y="52" width="346" height="552" rx="10" class="pnl"/>
+        <rect x="826" y="52" width="358" height="552" rx="10" class="pnl"/>
+        <text x="32" y="80" class="th">(a) Offline learning</text>
+        <text x="32" y="99" class="ts">Source and Select cases · Consumer scores available</text>
+        <text x="468" y="80" class="th">(b) Zero-feedback deployment</text>
+        <text x="468" y="99" class="ts">new case · no downstream score</text>
+        <text x="842" y="80" class="th">(c) Consumer-aware preparation</text>
+        <text x="842" y="99" class="ts">one harness, different Consumers</text>
+
+        <!-- (a) -->
+        <rect x="136" y="118" width="180" height="58" rx="7" class="box"/>
+        <polyline points="146,138 152,131 158,134 164,126 170,130 176,125" class="spark"/>
+        <text x="246" y="147" text-anchor="middle" class="t">Source cases</text>
+        <text x="246" y="165" text-anchor="middle" class="ts">train and score freely</text>
+
+        <path d="M200 176 V200 H126 V222" class="edge" marker-end="url(#ah)"/>
+        <path d="M252 176 V200 H326 V222" class="edge" marker-end="url(#ah)"/>
+        <text x="163" y="194" text-anchor="middle" class="lbl">run agent</text>
+        <text x="258" y="194" class="lbl">score every candidate</text>
+
+        <rect x="36" y="226" width="180" height="64" rx="7" class="box"/>
+        <text x="126" y="253" text-anchor="middle" class="t">No-card agent runs</text>
+        <text x="126" y="272" text-anchor="middle" class="ts">inspections · choice · reason</text>
+        <rect x="236" y="226" width="180" height="64" rx="7" class="box"/>
+        <text x="326" y="253" text-anchor="middle" class="t">Scripted records</text>
+        <text x="326" y="272" text-anchor="middle" class="ts">Consumer score per program</text>
+
+        <path d="M126 290 V314 H196 V332" class="edge" marker-end="url(#ah)"/>
+        <path d="M326 290 V314 H256 V332" class="edge" marker-end="url(#ah)"/>
+        <text x="226" y="309" text-anchor="middle" class="lbl">census</text>
+
+        <rect x="126" y="336" width="200" height="62" rx="7" class="box-acc"/>
+        <text x="226" y="362" text-anchor="middle" class="t">Slow agent</text>
+        <text x="226" y="381" text-anchor="middle" class="ts">consolidates experience</text>
+
+        <path d="M226 398 V414 H176 V428" class="edge-acc" marker-end="url(#aha)"/>
+        <path d="M226 414 H276 V428" class="edge-acc" marker-end="url(#aha)"/>
+        <text x="40" y="455" class="ts">candidate</text>
+        <text x="40" y="471" class="ts">skill cards</text>
+        <rect x="134" y="432" width="84" height="54" rx="5" class="box-acc"/>
+        <line x1="146" y1="449" x2="200" y2="449" class="cardln"/><line x1="146" y1="459" x2="206" y2="459" class="cardln"/><line x1="146" y1="469" x2="186" y2="469" class="cardln"/>
+        <rect x="234" y="432" width="84" height="54" rx="5" class="box-acc"/>
+        <line x1="246" y1="449" x2="300" y2="449" class="cardln"/><line x1="246" y1="459" x2="306" y2="459" class="cardln"/><line x1="246" y1="469" x2="286" y2="469" class="cardln"/>
+
+        <path d="M176 486 V506 H226 V520" class="edge-acc" marker-end="url(#aha)"/>
+        <path d="M276 486 V506 H226" class="edge-acc"/>
+        <rect x="106" y="524" width="240" height="56" rx="7" class="box"/>
+        <text x="226" y="549" text-anchor="middle" class="t">Select on separate cases</text>
+        <text x="226" y="567" text-anchor="middle" class="ts">score of each card's committed plans</text>
+
+        <path d="M346 552 H410 V533 H472" class="edge-acc" marker-end="url(#aha)"/>
+        <text x="378" y="545" text-anchor="middle" class="lbl acc-t">freeze</text>
+
+        <!-- (b) -->
+        <rect x="472" y="118" width="170" height="58" rx="7" class="box"/>
+        <polyline points="482,138 488,131 494,134 500,126 506,130 512,125" class="spark"/>
+        <text x="567" y="147" text-anchor="middle" class="t">New case</text>
+        <text x="567" y="165" text-anchor="middle" class="ts">deployment-visible data</text>
+
+        <path d="M557 176 V206 H640 V232" class="edge" marker-end="url(#ah)"/>
+        <text x="600" y="200" text-anchor="middle" class="lbl">observes</text>
+
+        <rect x="560" y="236" width="222" height="118" rx="8" class="box" style="stroke-width:1.8"/>
+        <text x="671" y="262" text-anchor="middle" class="t">Fast agent</text>
+        <rect x="568" y="280" width="102" height="24" rx="4" class="chip"/><text x="619" y="296" text-anchor="middle" class="tm tchip">inspect data</text>
+        <rect x="674" y="280" width="102" height="24" rx="4" class="chip"/><text x="725" y="296" text-anchor="middle" class="tm tchip">check material</text>
+        <rect x="568" y="312" width="102" height="24" rx="4" class="chip"/><text x="619" y="328" text-anchor="middle" class="tm tchip">history profile</text>
+        <rect x="674" y="312" width="102" height="24" rx="4" class="chip"/><text x="725" y="328" text-anchor="middle" class="tm tchip">commit</text>
+
+        <rect x="476" y="500" width="110" height="66" rx="6" class="box-acc" style="stroke-width:2"/>
+        <line x1="490" y1="522" x2="562" y2="522" class="cardln"/><line x1="490" y1="532" x2="570" y2="532" class="cardln"/>
+        <text x="531" y="552" text-anchor="middle" class="t acc-t">frozen card</text>
+        <path d="M531 500 V330 H556" class="edge-acc" marker-end="url(#aha)"/>
+        <text x="539" y="424" class="lbl acc-t">read-only</text>
+        <text x="539" y="439" class="lbl acc-t">guidance</text>
+
+        <path d="M690 354 V416" class="edge" marker-end="url(#ah)"/>
+        <rect x="600" y="420" width="182" height="58" rx="7" class="box"/>
+        <text x="691" y="445" text-anchor="middle" class="t">Committed plan</text>
+        <text x="691" y="463" text-anchor="middle" class="ts">frozen before any fit</text>
+
+        <!-- wall -->
+        <line x1="812" y1="52" x2="812" y2="604" class="wall"/>
+
+        <!-- (c) -->
+        <path d="M782 449 H828" class="edge"/>
+        <path d="M828 175 V500" class="edge"/>
+        <path d="M828 175 H838" class="edge" marker-end="url(#ah)"/>
+        <path d="M828 320 H838" class="edge" marker-end="url(#ah)"/>
+        <path d="M828 500 H838" class="edge" marker-end="url(#ah)"/>
+
+        <rect x="842" y="153" width="138" height="44" rx="6" class="chip"/>
+        <text x="911" y="171" text-anchor="middle" class="tm">augmentation</text>
+        <text x="911" y="187" text-anchor="middle" class="tm">program</text>
+        <path d="M980 175 H992" class="edge" marker-end="url(#ah)"/>
+        <rect x="996" y="142" width="180" height="66" rx="7" class="box"/>
+        <text x="1086" y="164" text-anchor="middle" class="t">Trainable forecaster</text>
+        <text x="1086" y="181" text-anchor="middle" class="ts">MLP · DLinear</text>
+        <text x="1086" y="197" text-anchor="middle" class="ts">trained on prepared data</text>
+
+        <rect x="842" y="298" width="138" height="44" rx="6" class="chip"/>
+        <text x="911" y="316" text-anchor="middle" class="tm">context policy</text>
+        <text x="911" y="332" text-anchor="middle" class="tm">length · scaling</text>
+        <path d="M980 320 H992" class="edge" marker-end="url(#ah)"/>
+        <rect x="996" y="287" width="180" height="66" rx="7" class="box"/>
+        <text x="1086" y="309" text-anchor="middle" class="t">Pretrained TSFM</text>
+        <text x="1086" y="326" text-anchor="middle" class="ts">Time-MoE, zero-shot</text>
+        <text x="1086" y="342" text-anchor="middle" class="ts">reads prepared context</text>
+
+        <text x="842" y="464" class="lbl">cross-task extension</text>
+        <rect x="842" y="478" width="138" height="44" rx="6" class="chip" style="stroke-dasharray:5 4"/>
+        <text x="911" y="496" text-anchor="middle" class="tm">augmentation</text>
+        <text x="911" y="512" text-anchor="middle" class="tm">program</text>
+        <path d="M980 500 H992" class="edge" marker-end="url(#ah)"/>
+        <rect x="996" y="467" width="180" height="66" rx="7" class="box-dash"/>
+        <text x="1086" y="489" text-anchor="middle" class="t">Classifier</text>
+        <text x="1086" y="506" text-anchor="middle" class="ts">FCN · UCR datasets</text>
+        <text x="1086" y="522" text-anchor="middle" class="ts">trained on prepared data</text>
+
+        <!-- blocked feedback -->
+        <path d="M1160 533 V584 H824" class="edge-wall" marker-end="url(#ahw)"/>
+        <text x="990" y="577" text-anchor="middle" class="lbl">test outcome · scored once, after every plan is frozen</text>
+        <line x1="802" y1="576" x2="822" y2="592" stroke="#b4412f" stroke-width="2.4"/>
+        <line x1="822" y1="576" x2="802" y2="592" stroke="#b4412f" stroke-width="2.4"/>
+        <text x="792" y="596" text-anchor="end" class="lbl" style="fill:#b4412f">never returned to the agent</text>
+      </svg></body></html>
